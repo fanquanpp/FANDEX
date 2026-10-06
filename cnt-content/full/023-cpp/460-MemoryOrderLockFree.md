@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 490
 title: 内存序与无锁编程
 module: 'cpp'
 category: 计算机科学
@@ -10,7 +10,6 @@ updated: '2026-09-27'
 related:
   - 'cpp/730-Cpp23NewFeatures'
   - 'cpp/330-CppTemplate'
-  - 'cpp/620-CppExceptionAndPerformance'
   - 'cpp/630-CppDebugPerformanceAnalysis'
 prerequisites:
   - 'cpp/020-CppOverviewAndModernStandard'

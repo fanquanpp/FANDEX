@@ -4,10 +4,11 @@ title: Markdown 链接与图片
 module: 'markdown'
 category: 工具链
 difficulty: intermediate
-description: 行内链接、引用链接、图片嵌入与脚注。
+description: 行内链接、引用链接、自动链接、图片嵌入、替代文本必填与图片套链接的嵌套写法。
 author: fanquanpp
 updated: '2026-09-12'
 related:
+  - 'markdown/150-Footnote'
   - 'markdown/220-Mermaid'
   - 'markdown/280-EditorFeature'
   - 'markdown/290-ConversionTool'
@@ -15,6 +16,12 @@ related:
 prerequisites:
   - 'markdown/010-SyntaxGuide'
 ---
+
+## 知识点地图
+
+- **知识类别**：链接与图片——Markdown 文档的引用与媒体嵌入语法（行内式、引用式、自动链接、图片与嵌套写法）。脚注是另一种引用形态，归 150-Footnote 专篇，本篇不再展开。
+- **解决什么问题**：文档怎么可靠地指向外部资源与本仓库内文件；图片怎么在渲染器之间稳定显示（替代文本必填、相对路径）。
+- **什么时候用到**：写 README 与文档站；给图片写无障碍描述；引用图片的图片（徽章、缩略图跳转）。
 
 > **认知导入（Layer 0 生存层）**
 > 前置知识：006 列表语法。
@@ -219,22 +226,22 @@ URL 中的括号（常见于维基百科链接）会让解析器误判链接边�
 
 ## 5. 扩展语法
 
-### 5.1 GitHub Flavored Markdown (GFM)
+> 任务列表是列表语法的扩展，正文见 `markdown/170-TaskList` 与 `markdown/060-ListSyntax`，本篇不再重复。
 
-**任务列表**：
+### 5.2 图片套链接：嵌套写法
+
+图片本身作为链接的点击目标——把图片语法整体放进链接的文字位：
 
 ```markdown
-- [x] 完成任务 1
-- [ ] 完成任务 2
+[![产品截图](images/screenshot-small.png)](https://example.com/demo)
+
+徽章是同样写法的最常见形态：
+[![build status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/org/repo/actions)
 ```
 
-**渲染效果**：
+外层方括号是链接、内层 `![alt](src)` 是图片——两层语法嵌套，渲染为「点图片跳链接」。README 顶部的 CI 徽章全部是这一形态。
 
-- [x] 完成任务 1
-- [ ] 完成任务 2
-- [ ] 完成任务 3
-
-### 5.2 表格中的链接和图片
+### 5.3 表格中的链接和图片
 
 **示例**：
 
@@ -257,3 +264,42 @@ URL 中的括号（常见于维基百科链接）会让解析器误判链接边�
 Markdown 提供了简洁而强大的语法来添加链接和图片，使文档更加丰富和有吸引力。通过掌握这些语法，你可以创建包含外部链接、内部链接、图片和图片链接的文档。
 在使用链接和图片时，遵循最佳实践可以确保文档的可访问性、可靠性和美观度。同时，了解常见问题的解决方案可以帮助你快速解决在使用过程中遇到的问题。
 
+## 动手实践
+
+**练习 1（链接三式）**：把同一个目标地址分别用行内式、引用式（集中定义）、自动链接三种写法各写一遍，然后删掉引用定义中的一条，观察失效链接在渲染端的形态。
+
+**提示**：引用式的定义 `[id]: https://example.com "title"` 集中在文末；自动链接 `<https://example.com>` 不带自定义文字。
+
+**练习 2（替代文本必填性）**：写一个带完整 alt 的图片与一个空 alt 的图片，用无障碍检查视角（或阅读器纯文本模式）对比两者的差异；再故意写错相对路径观察占位表现。
+
+**提示**：alt 是图片挂了之后唯一的信息残留——它同时服务无障碍与失效兜底。
+
+**练习 3（图片套链接）**：为任一仓库写 README 顶部徽章行：3 个「图片套链接」徽章（构建状态、许可证、版本），全部用引用式定义 URL，验证点击跳转正确。
+
+<details>
+<summary>参考实现（先自己动手，再看这里）</summary>
+
+```markdown
+<!-- 练习 1 -->
+行内式：[Markdown Guide](https://www.markdownguide.org)
+引用式：[Markdown Guide][mdg]（文末定义）
+自动链接：<https://www.markdownguide.org>
+
+<!-- 文末 -->
+[mdg]: https://www.markdownguide.org "Markdown 指南"
+
+<!-- 练习 2 -->
+![仓库结构示意图](docs/images/structure.png)   <!-- 完整 alt -->
+![](docs/images/structure.png)                  <!-- 空 alt：挂了就什么都不剩 -->
+
+<!-- 练习 3 -->
+[![build](https://img.shields.io/badge/build-passing-brightgreen)][ci]
+[![license](https://img.shields.io/badge/license-MIT-blue)][lic]
+[![release](https://img.shields.io/badge/release-v1.0.0-orange)][rel]
+
+[ci]: https://github.com/org/repo/actions
+[lic]: https://github.com/org/repo/blob/main/LICENSE
+[rel]: https://github.com/org/repo/releases
+```
+
+</details>

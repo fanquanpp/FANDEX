@@ -1,5 +1,5 @@
 ---
-order: 580
+order: 600
 title: Kotlin 与 DSL
 module: 'kotlin'
 category: 后端技术

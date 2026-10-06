@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 520
 title: gh pr 实战：一条 PR 从创建到合并的全命令行操作
 module: 'github'
 category: 工具链

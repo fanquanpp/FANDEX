@@ -1,5 +1,5 @@
 ---
-order: 20
+order: 40
 title: Next.js App Router 路由系统
 module: 'nextjs'
 category: 前端技术
@@ -14,6 +14,12 @@ related:
 prerequisites:
   - 'nextjs/010-NextJS16Overview'
 ---
+
+## 知识点地图
+
+- 知识类别：App Router 路由系统——文件约定下的布局、动态路由、导航与状态页。
+- 解决什么问题：URL 结构怎么组织、页面间怎么导航与预取、加载/出错/404 三种状态怎么各归其位。
+- 什么时候用到：新建任何页面、设计站点信息架构、用户反馈"点过去白屏没反馈"或"404 页不生效"时。
 
 ## 0. 一句话理解
 

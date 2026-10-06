@@ -14,7 +14,15 @@ related:
   - 'css/010-WhatIsCSS'
   - 'javascript/010-WhatIsJavaScript'
   - 'react/010-OverviewEnvSetup'
+  - 'astro/010-AstroOverview'
+  - 'tailwind/010-TailwindOverview'
 ---
+
+## 知识点地图
+
+- **知识类别**：前端就业路线——把 HTML/CSS/JS/TS/React 五层主干排成 12 个月的执行计划。
+- **解决什么问题**：零基础想入行前端但不知先学什么后学什么、学到什么程度算够；以及防止"CSS 没练够就冲框架"这类顺序错误。
+- **什么时候用到**：选定前端方向的第 1 天；每阶段末的验收自查；求职季的简历与作品集组织。
 
 ## 岗位画像
 

@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 260
 title: Span 与 Memory
 module: 'csharp'
 category: 后端技术
@@ -4030,3 +4030,194 @@ Span<int> s = CollectionsMarshal.AsSpan(list);
 // 字节与结构体互转
 Span<int> ints = MemoryMarshal.Cast<byte, int>(bytes);
 ```
+
+## 速查补充：Span 与 Memory（承接自原 150 篇速查段）
+
+## Span\<T\> 与 Memory\<T\>
+
+**基本写法：Span 从数组创建**
+`Span<<类型>> <变量> = <数组>.AsSpan();`
+```csharp
+// 从数组创建 Span
+int[] array = { 1, 2, 3, 4, 5 };
+Span<int> span = array.AsSpan();
+```
+
+---
+
+**基本写法：Span 切片**
+`Span<<类型>> <变量> = <源Span>[<开始>..<结束>];`
+```csharp
+// 获取 Span 的切片
+Span<int> slice = span[1..4];
+```
+
+---
+
+**基本写法：Span 索引访问**
+`<类型> <变量> = <Span>[<索引>];`
+```csharp
+// 通过索引访问 Span 元素
+int first = span[0];
+```
+
+---
+
+**基本写法：Span 修改元素**
+`<Span>[<索引>] = <值>;`
+```csharp
+// 修改 Span 中的元素
+span[0] = 100;
+```
+
+---
+
+**基本写法：Span 遍历**
+`foreach (var <变量> in <Span>)`
+```csharp
+// 遍历 Span 的元素
+foreach (var item in span)
+{
+    Console.WriteLine(item);
+}
+```
+
+---
+
+**基本写法：stackalloc 栈分配**
+`Span<<类型>> <变量> = stackalloc <类型>[<大小>];`
+```csharp
+// 在栈上分配内存
+Span<int> buffer = stackalloc int[10];
+```
+
+---
+
+**基本写法：Memory 创建**
+`Memory<<类型>> <变量> = new <<类型>>[<大小>];`
+```csharp
+// 创建 Memory
+Memory<int> memory = new int[10];
+```
+
+---
+
+**基本写法：Memory 转 Span**
+`Span<<类型>> <变量> = <Memory>.Span;`
+```csharp
+// 从 Memory 获取 Span
+Span<int> span = memory.Span;
+```
+
+---
+
+**基本写法：Memory 异步访问**
+`async Task <方法>(Memory<<类型>> <参数>)`
+```csharp
+// 异步方法中使用 Memory
+async Task ProcessAsync(Memory<int> memory)
+{
+    await Task.Delay(100);
+    var span = memory.Span;
+    for (int i = 0; i < span.Length; i++)
+    {
+        span[i] = i;
+    }
+}
+```
+
+---
+
+## 速查补充：Span 高级操作（承接自原 150 篇速查段）
+
+## Span 高级操作
+
+**基本写法：Span 转数组**
+`<类型>[] <变量> = <Span>.ToArray();`
+```csharp
+// 将 Span 转换为数组
+int[] array = span.ToArray();
+```
+
+---
+
+**基本写法：Span Fill 填充**
+`<Span>.Fill(<值>);`
+```csharp
+// 用指定值填充 Span
+span.Fill(0);
+```
+
+---
+
+**基本写法：Span CopyTo 复制**
+`<Span>.CopyTo(<目标Span>);`
+```csharp
+// 将 Span 复制到目标 Span
+var source = new int[] { 1, 2, 3 }.AsSpan();
+var target = new int[3];
+source.CopyTo(target);
+```
+
+---
+
+**基本写法：MemoryMarshal 类型重解释**
+`Span<<目标类型>> <变量> = MemoryMarshal.Cast<<源类型>, <目标类型>>(<源Span>);`
+```csharp
+// 零拷贝将字节数组重新解释为 int 数组
+byte[] bytes = new byte[16];
+Span<int> ints = MemoryMarshal.Cast<byte, int>(bytes.AsSpan());
+ints[0] = 42;
+```
+
+---
+
+## 速查补充：BitHelper 与位操作（承接自原 150 篇速查段，与 MemoryMarshal 同族）
+
+## BitHelper 与位操作
+
+**基本写法：BitConverter 转换**
+`int <变量> = BitConverter.ToInt32(<字节数组>, <偏移>);`
+```csharp
+// 字节数组转整数
+byte[] bytes = { 1, 0, 0, 0 };
+int value = BitConverter.ToInt32(bytes, 0);
+```
+
+---
+
+**基本写法：整数转字节**
+`byte[] <变量> = BitConverter.GetBytes(<整数>);`
+```csharp
+// 整数转字节数组
+byte[] bytes = BitConverter.GetBytes(42);
+```
+
+---
+
+**基本写法：位运算**
+`int <变量> = <值1> | <值2>;`
+```csharp
+// 位或运算
+int flags = 0x01 | 0x02;
+```
+
+---
+
+**基本写法：位与运算**
+`int <变量> = <值1> & <值2>;`
+```csharp
+// 位与运算
+int mask = flags & 0x01;
+```
+
+---
+
+**基本写法：位移运算**
+`int <变量> = <值> << <位数>;`
+```csharp
+// 左移运算
+int shifted = 1 << 4;
+```
+
+---

@@ -1,5 +1,5 @@
 ---
-order: 840
+order: 930
 title: Java 毕业项目：控制台任务管理器的完整工程化
 description: Java 模块出口项目（Level 6）：把入门链学到的语法能力组装成一个可测试、可打包、带 README 的控制台任务管理器，user stories 验收、提示从高到无。
 module: 'java'
@@ -109,4 +109,4 @@ ATM 实训（方法划分 + 菜单循环）与本项目共享同一副骨架：`
 
 ## 完成后你能做什么
 
-你会独立交付一个「带测试、可打包、有文档」的 Java 程序——这正是进入 [Spring](/java/820-SpringBasicsIoCAOPBeanLifecycle) 与团队协作前的全部地基。下一步：把项目放进 GitHub，走到 [技术栈路线图](/roadmap/010-RoadmapOverview) 的 Java 后端路线阶段 2。
+你会独立交付一个「带测试、可打包、有文档」的 Java 程序——这正是进入 [Spring](/java/820-SpringIoCContainerBeansAndDI) 与团队协作前的全部地基。下一步：把项目放进 GitHub，走到 [技术栈路线图](/roadmap/010-RoadmapOverview) 的 Java 后端路线阶段 2。

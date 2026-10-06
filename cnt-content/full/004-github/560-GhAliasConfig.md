@@ -1,5 +1,5 @@
 ---
-order: 570
+order: 620
 title: gh alias 与 config 命令速查手册
 module: 'github'
 category: 工具链

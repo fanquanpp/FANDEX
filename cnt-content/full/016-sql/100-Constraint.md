@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 120
 title: 约束
 module: 'sql'
 category: 数据库

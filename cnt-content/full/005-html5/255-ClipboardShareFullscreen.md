@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 290
 title: 专项：剪贴板、系统分享与全屏——手势驱动的浏览器交互 API
 module: 'html5'
 category: 前端技术
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'html5/250-DragAPI'
-  - 'html5/240-HTML5OfflineStorageWebAPI'
+  - 'html5/245-WebStorage'
   - 'html5/200-AudioVideo'
   - 'html5/300-ServiceWorkerPWA'
 prerequisites:
@@ -192,7 +192,7 @@ pipBtn.addEventListener('click', async () => {
 ## 8. 与相邻知识的关系
 
 - 之前：[拖放 API](/html5/250-DragAPI) 与本篇同属「手势驱动的交互能力」，拖放还有数据传递职责，而本篇三件套更贴近系统能力桥接；
-- 并行：[音频与视频](/html5/200-AudioVideo) 是全屏与画中画的主要载体；[离线存储与 Web API](/html5/240-HTML5OfflineStorageWebAPI) 汇总了本篇之外的其他浏览器 API 家族；
+- 并行：[音频与视频](/html5/200-AudioVideo) 是全屏与画中画的主要载体；[Web Storage](/html5/245-WebStorage)、[Fetch API 与网络请求](/html5/246-FetchApiAndErrorHandling) 与 [Observer 家族与页面生命周期](/html5/284-ObserverAndPageLifecycleAPIs) 覆盖了本篇之外的其他浏览器 API 家族；
 - 之后：[Service Worker 与 PWA](/html5/300-ServiceWorkerPWA) 把分享的另一端接起来——PWA 可注册为 Web Share Target 接收其他应用的分享，本篇的 share() 与它构成完整闭环。
 
 ## 9. 面试题思路

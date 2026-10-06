@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 460
 title: OpenVAS 漏洞扫描
 module: 'cybersecurity'
 category: 云与基础设施

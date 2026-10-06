@@ -1,235 +1,78 @@
 ---
-order: 620
-title: 复制与高可用
+order: 670
+title: 复制与高可用：总览与选型决策地图
 module: 'mysql'
 category: 数据库
 difficulty: advanced
-description: MySQL复制架构：binlog格式、半同步/异步/延迟/组复制、InnoDB Cluster、备份恢复策略
+description: 复制族全景总览——binlog/异步/半同步/延迟复制/MGR/InnoDB Cluster/ClusterSet/GTID 的分工、数据安全语义与选型决策地图，逐篇指向专篇；延迟复制与误操作恢复为本篇保留的独有专题。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'mysql/590-Replication'
   - 'mysql/620-GroupReplication'
   - 'mysql/630-InnoDBCluster'
-  - 'mysql/860-PerformanceTuningSecurity'
+  - 'mysql/650-ReplicationDelayCauseSolution'
 prerequisites:
-  - 'mysql/590-Replication'
   - 'mysql/490-Binlog'
 ---
 
-## 前置知识
+## 知识点地图
 
-建议先阅读以下内容再进入本文：
+- **知识类别**：复制与高可用的「总览与选型层」——MySQL 高可用家族的全部方案（异步/半同步/延迟复制、组复制 MGR、InnoDB Cluster、ClusterSet、GTID）各自解决什么、数据安全语义差在哪、什么场景选谁。本篇是决策地图：**实现细节归各专篇，本篇管「怎么选」**。
+- **解决什么问题**：业务要「主库挂了自动切」（MGR/Cluster）还是「能接受人工切」（异步+脚本）；「绝不丢已提交事务」（半同步/MGR）还是「容忍秒级丢失换性能」（异步）；「误删了数据要捞回来」（延迟副本）；「跨机房容灾」（ClusterSet）——每个问题族都有对应方案与代价。
+- **什么时候用到**：架构评审与容量规划时选型；接手陌生环境时快速定位「这套复制是什么档位」；出故障时按本篇的分界判断该翻哪篇专篇。
 
-- [视图语法速查手册](/mysql/160-View)
+## 复制族全景：一张表看清分工
 
-## 1. 二进制日志 (Binary Log)
+| 方案 | 数据安全语义 | 切换形态 | 一句话定位 | 专篇 |
+| --- | --- | --- | --- | --- |
+| 异步复制 | 主提交即返回，可能丢最后一段 | 人工为主 | 基础形态：读写分离与副本的地基 | [主从复制](/mysql/590-Replication) |
+| 半同步复制 | 至少一个副本收到 binlog 才返回 | 人工为主 | 「少丢」档：超时退化回异步 | [主从复制](/mysql/590-Replication) |
+| 延迟复制 | 故意落后 N 秒 | 不参与切换 | 误操作恢复的「时间机器」 | 本篇独有专题（见下） |
+| 组复制 MGR | 多数派 Paxos：提交需过半确认 | 自动选主、防脑裂 | 数据不出错的一致性内核 | [MGR 组复制](/mysql/620-GroupReplication) |
+| InnoDB Cluster | MGR + Router + Shell | 自动切换、应用透明 | 官方打包的高可用方案 | [InnoDB Cluster](/mysql/630-InnoDBCluster) |
+| ClusterSet | 异步串接多套 Cluster | 区域级强制切换 | 机房级容灾（有 RPO 窗口） | [InnoDB Cluster](/mysql/630-InnoDBCluster) 的 ClusterSet 节 |
+| GTID | 事务全局身份 | 不改变安全语义 | 让切换/搭建/对账可脚本化 | [GTID](/mysql/600-GTID) |
 
-### 1.1 Binlog 概述
+层级关系一句话：**binlog 是地基（一切复制的运输载体），异步/半同步是传输层（语义差在「何时算成功」），MGR 是一致性内核，Cluster/ClusterSet 是打包产品，GTID 是让整套东西可脚本化的坐标系统**。
 
-二进制日志记录所有对数据库进行修改的操作（DDL 和 DML），是 MySQL 复制和数据恢复的基础。Binlog 与 InnoDB 的 redo log 不同：redo log 是引擎级别的物理日志，而 binlog 是 Server 级别的逻辑日志。
+## 选型决策地图
 
-```sql
--- 启用二进制日志
--- my.cnf 配置
--- [mysqld]
--- log-bin=mysql-bin
--- binlog_format=ROW
--- server-id=1
--- binlog_expire_logs_seconds=604800   -- 保留 7 天（expire_logs_days 已在 8.4 移除）
+按业务的真实约束走这四问：
 
--- 查看二进制日志状态
-SHOW VARIABLES LIKE 'log_bin%';
-SHOW VARIABLES LIKE 'binlog%';
+**第一问：主库挂了，允许多人介入吗？**
+- 允许（有 DBA 值守、分钟级 RTO 可接受）→ 异步/半同步 + 切换脚本，成本低、结构简单（[主从复制](/mysql/590-Replication)）。
+- 不允许（服务不能停超过几十秒）→ InnoDB Cluster：MGR 自动选主 + Router 流量自动改向，应用零改动（[InnoDB Cluster](/mysql/630-InnoDBCluster)）。
 
--- 查看当前二进制日志文件列表
-SHOW BINARY LOGS;
+**第二问：已提交事务能丢吗？**
+- 一秒级丢失可容忍（日志类、统计类）→ 异步复制够用。
+- 已提交必须到达至少一个副本 → 半同步（注意它的退化陷阱：rpl_semi_sync_master_timeout 到点后退化为异步，见 [主从复制](/mysql/590-Replication)）或 MGR（多数派确认，强得多但写入延迟与节点数挂钩）。
 
--- 查看当前正在使用的 binlog 文件
-SHOW BINARY LOG STATUS;   -- 8.4 语法（旧名 SHOW MASTER STATUS 已移除）
+**第三问：怕误操作（删库）吗？**
+- 怕 → 追加一台延迟副本（本篇独有专题），给「捞回误删数据」留一小时缓冲。
+- 不怕（有完备的备份 + binlog 恢复演练）→ 靠 [备份恢复](/mysql/560-LogicalBackup) 体系。
 
--- 查看 binlog 事件内容
-SHOW BINLOG EVENTS IN 'mysql-bin.000001';
-```
+**第四问：要跨机房容灾吗？**
+- 同机房高可用 → InnoDB Cluster 一套即可。
+- 机房级故障（断电/区域云故障）→ ClusterSet：主集群 + 异步副本集群，强制切换有数据丢失窗口需人工确认 RPO。
 
-### 1.2 Binlog 格式
+补充两条横向纪律：其一，**节点数按「能坏几台」倒推**——多数派语义下三节点容忍一台故障、五节点容忍两台（[MGR 组复制](/mysql/620-GroupReplication) 的 Paxos 语义）；其二，**GTID 尽早开**——无论选哪条路线，GTID 都让搭建、切换、对账从「对文件名和位点」变成「对事务号」（[GTID](/mysql/600-GTID)）。
 
-| 格式      | 记录内容   | 优点             | 缺点                   |
-| :-------- | :--------- | :--------------- | :--------------------- |
-| STATEMENT | SQL 语句   | 日志量小         | 非确定性函数结果不一致 |
-| ROW       | 行变更数据 | 数据一致性最高   | 日志量大               |
-| MIXED     | 自动切换   | 兼顾大小与一致性 | 切换逻辑复杂           |
+## 各方案 30 秒速览
 
-```sql
--- 设置 binlog 格式
-SET GLOBAL binlog_format = 'ROW';     -- 推荐：数据一致性最好
-SET GLOBAL binlog_format = 'STATEMENT';
-SET GLOBAL binlog_format = 'MIXED';
+**binlog（地基）**：Server 层逻辑日志，一切复制的运输载体；ROW 格式是默认之王（一致性最好）；与 redo log 的分工（物理 vs 逻辑、引擎层 vs Server 层）见 [Binlog](/mysql/490-Binlog)。
 
--- STATEMENT 格式示例
--- binlog 中记录：UPDATE orders SET status='shipped' WHERE id=1;
--- 问题：NOW()、UUID()、USER() 等函数在主从上执行结果不同
+**异步复制**：主库提交不等副本，IO/SQL 线程两段式搬运；读写分离与副本扩容的地基；延迟监控与 SOURCE/REPLICA 术语见 [主从复制](/mysql/590-Replication)，延迟的成因与治理见 [复制延迟](/mysql/650-ReplicationDelayCauseSolution)。
 
--- ROW 格式示例
--- binlog 中记录：
--- ### UPDATE `app_db`.`orders`
--- ### WHERE @1=1 @5='pending'
--- ### SET @5='shipped'
--- 精确记录行变更，无一致性问题
+**半同步复制**：提交时等一个 ACK，超时退化异步的「有损保险」；AFTER_SYNC（8.0 默认，lossless）与 AFTER_COMMIT 的语义差见 [主从复制](/mysql/590-Replication)。
 
--- 查看当前格式
-SHOW VARIABLES LIKE 'binlog_format';
-```
+**组复制 MGR**：Paxos 多数派提交、自动选主、防脑裂（宁可只读不可脑裂）；单主模式是主流用法；原理与配额见 [MGR 组复制](/mysql/620-GroupReplication)。
 
-### 1.3 Binlog 管理
+**InnoDB Cluster / ClusterSet**：MGR + Router + Shell 的打包产品；搭建、切换真实行为、巡检见 [InnoDB Cluster](/mysql/630-InnoDBCluster) 与 [MySQL Shell 工具链](/mysql/925-MySQLShellToolkit)。
 
-```sql
--- 手动切换到新的 binlog 文件
-FLUSH BINARY LOGS;
+**GTID**：`source_uuid:transaction_id` 的事务身份证；切换与故障转移的脚本化基础；开启条件与运维细节见 [GTID](/mysql/600-GTID)。
 
--- 设置 binlog 过期时间（秒）
-SET GLOBAL binlog_expire_logs_seconds = 604800;  -- 7天
-
--- 清理过期的 binlog
-PURGE BINARY LOGS BEFORE '2024-12-01 00:00:00';
-PURGE BINARY LOGS TO 'mysql-bin.000010';  -- 删除指定文件之前的日志
-
--- 查看 binlog 空间占用
-SHOW VARIABLES LIKE 'max_binlog_size';  -- 单个文件最大大小，默认1GB
-```
-
-## 2. 异步复制
-
-### 2.1 异步复制架构
-
-异步复制是 MySQL 最基础的复制模式，主库执行事务后立即返回客户端，不等待从库确认接收。
-
-```mermaid
-sequenceDiagram
-    participant M as 主库 Master
-    participant S as 从库 Slave
-    Note over M: 1. 事务提交
-    M->>S: 2. 写入 binlog
-    Note over S: 3. IO 线程拉取 binlog<br/>5. 写入 relay log<br/>6. SQL 线程执行 relay log
-    M-->>M: 4. 返回客户端
-```
-
-### 2.2 搭建异步复制
-
-```sql
--- ===== 主库配置 =====
--- my.cnf
--- [mysqld]
--- server-id=1
--- log-bin=mysql-bin
--- binlog_format=ROW
--- binlog_do_db=app_db          -- 可选：只复制指定库
-
--- 创建复制用户
-CREATE USER 'repl'@'%' IDENTIFIED WITH caching_sha2_password BY 'ReplP@ss123!';
-GRANT REPLICATION REPLICA ON *.* TO 'repl'@'%';   -- 8.0.22+ 新名
-
--- 获取主库状态
-SHOW BINARY LOG STATUS;   -- 8.4 语法（旧名 SHOW MASTER STATUS 已移除）
--- 记录 File 和 Position 值
-
--- ===== 从库配置 =====
--- my.cnf
--- [mysqld]
--- server-id=2
--- relay-log=relay-bin
--- read_only=ON
--- super_read_only=ON          -- 防止超级用户写入
-
--- 配置复制源
-CHANGE REPLICATION SOURCE TO
-    SOURCE_HOST='master-host',
-    SOURCE_PORT=3306,
-    SOURCE_USER='repl',
-    SOURCE_PASSWORD='ReplP@ss123!',
-    SOURCE_LOG_FILE='mysql-bin.000001',
-    SOURCE_LOG_POS=157,
-    GET_SOURCE_PUBLIC_KEY=1;   -- caching_sha2_password 需要
--- 凭据安全：独立 repl 账号 + 强随机密码 + 加密存储，传输走 TLS（见 710 篇）
-
--- 启动复制
-START REPLICA;  -- MySQL 8.0+ 使用 START REPLICA（替代 START SLAVE）
-
--- 查看复制状态
-SHOW REPLICA STATUS\G
--- 关键字段：
--- Replica_IO_Running: Yes
--- Replica_SQL_Running: Yes
--- Seconds_Behind_Source: 0
--- Last_Error: (空表示无错误)
-```
-
-### 2.3 复制过滤
-
-```sql
--- 主库过滤：只记录指定库的 binlog
--- binlog_do_db=app_db
--- binlog_ignore_db=test_db
-
--- 从库过滤：只应用指定库的 relay log
-CHANGE REPLICATION FILTER
-    REPLICATE_DO_DB=(app_db),
-    REPLICATE_IGNORE_TABLE=(app_db.temp_data),
-    REPLICATE_WILD_DO_TABLE=('app_db.log_%');
-
--- 注意：基于库的过滤可能引发跨库操作问题
--- 推荐使用 REPLICATE_WILD_DO_TABLE 进行表级别过滤
-```
-
-## 3. 半同步复制
-
-### 3.1 半同步复制原理
-
-半同步复制要求主库事务提交后，至少一个从库确认接收到该事务的 binlog 事件后，主库才向客户端返回提交成功。
-
-```sql
--- 半同步以插件提供；8.0.26 起插件与变量统一更名为 source/replica 拼写，
--- 旧名 rpl_semi_sync_master / rpl_semi_sync_slave 插件已在 8.4 移除
-
--- 安装半同步复制插件（主库）
-INSTALL PLUGIN rpl_semi_sync_source SONAME 'semisync_source.so';
-
--- 安装半同步复制插件（从库）
-INSTALL PLUGIN rpl_semi_sync_replica SONAME 'semisync_replica.so';
-
--- 主库配置
-SET GLOBAL rpl_semi_sync_source_enabled = ON;
-SET GLOBAL rpl_semi_sync_source_timeout = 5000;  -- 超时5秒降级为异步
-SET GLOBAL rpl_semi_sync_source_wait_for_replica_count = 1;  -- 至少1个从库确认
-
--- 从库配置
-SET GLOBAL rpl_semi_sync_replica_enabled = ON;
-
--- 从库重启复制线程以启用半同步
-STOP REPLICA;
-START REPLICA;
-
--- 查看半同步状态
-SHOW STATUS LIKE 'Rpl_semi_sync_source%';
--- Rpl_semi_sync_source_clients: 当前半同步从库数
--- Rpl_semi_sync_source_status: ON/OFF
--- Rpl_semi_sync_source_no_tx: 未成功半同步的事务数
--- Rpl_semi_sync_source_yes_tx: 成功半同步的事务数
-```
-
-### 3.2 半同步复制等待策略
-
-```sql
--- AFTER_SYNC（默认，推荐）：主库将事务写入binlog后等待从库确认，再提交事务
-SET GLOBAL rpl_semi_sync_source_wait_point = 'AFTER_SYNC';
--- 优点：从库确认后才提交，不会丢失已提交事务
-
--- AFTER_COMMIT：主库先提交事务，再等待从库确认
-SET GLOBAL rpl_semi_sync_source_wait_point = 'AFTER_COMMIT';
--- 缺点：主库已提交但从库未收到时，其他会话可能看到"幻影"数据
-```
-
-## 4. 延迟复制
+## 延迟复制：时间机器（本篇独有专题）
 
 ### 4.1 延迟复制配置
 
@@ -271,369 +114,76 @@ INTO OUTFILE '/tmp/recovery_data.csv';
 -- 在主库执行：LOAD DATA INFILE '/tmp/recovery_data.csv' ...
 ```
 
-## 5. 组复制 (Group Replication)
+## 动手实践
 
-### 5.1 组复制概述
+练习一（选型演练）：给三个业务各选一条高可用路线并写出理由——(a) 内部 BI 报表库，主库挂了两小时内恢复可接受；(b) 电商订单库，RTO < 60 秒、已提交订单不可丢；(c) SaaS 多租户库，要防机房断电也要防开发手滑删数据。
 
-组复制基于 Paxos 协议实现多主一致性，提供自动成员管理、故障检测和自动恢复能力。
+提示：对照四问决策地图——(a) 看 RTO 宽松；(b) 自动切换 + 不丢；(c) 机房级容灾 + 误操作恢复是两个独立需求。
 
-```sql
--- 组复制配置（每个节点）
--- my.cnf
--- [mysqld]
--- server-id=1
--- log-bin=mysql-bin
--- binlog_format=ROW
--- gtid_mode=ON
--- enforce_gtid_consistency=ON
--- plugin_load_add='group_replication.so'
--- group_replication_group_name='aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
--- group_replication_start_on_boot=OFF
--- group_replication_local_address='node1:33061'
--- group_replication_group_seeds='node1:33061,node2:33061,node3:33061'
--- group_replication_bootstrap_group=OFF  -- 仅引导节点设为ON
+<details>
+<summary>参考实现</summary>
 
--- 单主模式（默认）
-SET GLOBAL group_replication_single_primary_mode = ON;
+- (a) **异步复制 + 切换脚本**：RTO 宽松意味着不值得为自动切换付 MGR 的复杂度；一台从库做读写分离 + 半同步可选（报表库连「少丢」都未必需要）。
+- (b) **InnoDB Cluster（三节点）+ GTID**：自动选主满足 RTO；多数派提交满足「已提交不丢」；GTID 让切换与对账可脚本化。Router 让应用无感。
+- (c) **ClusterSet（主集群 + 异地副本集群）+ 延迟副本**：机房容灾靠 ClusterSet 的副本集群（注意异步意味着 RPO 有窗口，切换要人工确认）；「防手滑」是另一个需求——在主集群内加一台延迟 1 小时副本，或严格执行备份 + 恢复演练。一题双需求正好演示「容灾」与「误操作恢复」是两条独立防线。
+</details>
 
--- 多主模式
-SET GLOBAL group_replication_single_primary_mode = OFF;
-```
+练习二（状态速读）：`SHOW REPLICA STATUS\G` 的输出里挑出五个字段，分别回答「复制通不通、慢不慢、落后多少、错在哪」，并说明延迟副本的输出与普通副本多看哪两个字段。
 
-### 5.2 启动组复制
+提示：Replica_IO_Running/Replica_SQL_Running、Seconds_Behind_Source、Last_IO_Error/Last_SQL_Error、SQL_Delay/SQL_Remaining_Delay。
 
-```sql
--- 引导节点（第一个节点）
-SET GLOBAL group_replication_bootstrap_group = ON;
-START GROUP_REPLICATION;
-SET GLOBAL group_replication_bootstrap_group = OFF;
+<details>
+<summary>参考实现</summary>
 
--- 其他节点加入
-START GROUP_REPLICATION;
+- **通不通**：`Replica_IO_Running`（拉 binlog 的线程）与 `Replica_SQL_Running`（回放的线程）必须都是 Yes——一个 No 复制就是断的；
+- **落后多少**：`Seconds_Behind_Source`——0 不代表没延迟（空闲时恒 0，要看事件流速），持续增长才是真延迟；
+- **错在哪**：`Last_IO_Error`（网络/认证/binlog 被清理）与 `Last_SQL_Error`（回放冲突，如主键撞车）——两者根因层不同，修复路径完全不同；
+- **慢不慢（深层）**：`Retrieved_Gtid_Set` 与 `Executed_Gtid_Set` 的差集大小（GTID 开启时）比秒数更客观。
 
--- 查看组成员
-SELECT * FROM performance_schema.replication_group_members;
--- +---------------------------+-------------+-------------+--------------+
--- | MEMBER_HOST               | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE  |
--- +---------------------------+-------------+-------------+--------------+
--- | node1                     |        3306 | ONLINE      | PRIMARY      |
--- | node2                     |        3306 | ONLINE      | SECONDARY    |
--- | node3                     |        3306 | ONLINE      | SECONDARY    |
--- +---------------------------+-------------+-------------+--------------+
+延迟副本多看两个：`SQL_Delay`（配置的延迟秒数）与 `SQL_Remaining_Delay`（距离回放下一条还剩几秒）——它的「落后」是故意的，`Seconds_Behind_Source` 接近 SQL_Delay 才是健康态，误操作恢复时等 `SQL_Remaining_Delay` 归零前把 SQL 线程停在事故位点之前（完整恢复流程见本篇延迟复制节）。
+</details>
 
--- 查看当前主节点
-SELECT * FROM performance_schema.replication_group_members
-WHERE MEMBER_ROLE = 'PRIMARY';
-```
+练习三（实战题）：在实验环境给「捞误删」做一次完整演练：搭建 1 主 1 从（异步）+ 1 台延迟 60 秒副本，故意在主库删一张小表，然后只靠延迟副本把数据捞回来。写出全流程命令。
 
-### 5.3 组复制监控
+提示：CHANGE REPLICATION SOURCE TO ... SOURCE_DELAY=60；捞回的方式是「延迟副本停在误删语句之前，把数据导回主库」——不是让主库倒带。
+
+<details>
+<summary>参考实现</summary>
 
 ```sql
--- 查看组复制状态
-SELECT * FROM performance_schema.replication_group_member_stats\G
+-- 延迟副本上配置（60 秒延迟）
+STOP REPLICA;
+CHANGE REPLICATION SOURCE TO SOURCE_DELAY = 60;
+START REPLICA;
 
--- 关键指标
--- COUNT_TRANSACTIONS_IN_QUEUE: 等待冲突检测的事务数
--- COUNT_TRANSACTIONS_CHECKED: 已通过冲突检测的事务数
--- COUNT_CONFLICTS_DETECTED: 冲突事务数
--- COUNT_TRANSACTIONS_REMOTE_APPLYING: 远程事务正在应用数
--- TRANSACTIONS_COMMITTED_ALL_MEMBERS: 已在所有成员提交的GTID集
+-- 主库：误删（演练里是故意删）
+DROP TABLE vocaloids_setnull;
 
--- 查看组复制事务详情
-SELECT * FROM performance_schema.replication_applier_status;
-```
+-- 60 秒内赶到延迟副本：
+STOP REPLICA;                       -- 1. 先停（别让误删语句回放）
+SHOW REPLICA STATUS\G               -- 2. 确认 Executed_Gtid_Set 停在事故之前
 
-## 6. InnoDB Cluster
+-- 3. 从延迟副本把误删的表导出
+--    mysqldump -h delay-replica green vocaloids_setnull > rescue.sql
 
-### 6.1 InnoDB Cluster 架构
+-- 4. 导回主库（此时主库没有这张表，直接导入）
+--    mysql -h primary green < rescue.sql
 
-InnoDB Cluster 是 MySQL 官方的高可用解决方案，整合了 Group Replication、MySQL Router 和 MySQL Shell。
-
-```mermaid
-flowchart TD
-    App[Application] --> Router[MySQL Router<br/>读写分离、故障自动切换]
-    Router --> Cluster[InnoDB Cluster]
-    Cluster --> P[Primary R/W]
-    Cluster --> S1[Secondary R/O]
-    Cluster --> S2[Secondary R/O]
-    Cluster --> GR[Group Replication]
-```
-
-### 6.2 使用 MySQL Shell AdminAPI 管理
-
-```javascript
-// MySQL Shell (JavaScript 模式)
-
-// 创建 InnoDB Cluster
-var cluster = dba.createCluster('prodCluster', {
-  memberWeight: 50, // 故障切换优先级
-  expelTimeout: 5, // 驱逐超时（秒）
-  autoRejoinTries: 3, // 自动重连尝试次数
-  consistency: 'BEFORE_ON_PRIMARY_FAILOVER', // 一致性级别
-});
-
-// 添加实例
-cluster.addInstance('node2:3306', {
-  recoveryMethod: 'clone', // 使用克隆恢复数据
-  replicationConsistency: 'EVENTUAL',
-});
-
-cluster.addInstance('node3:3306', {
-  recoveryMethod: 'incremental', // 增量恢复
-});
-
-// 查看集群状态
-cluster.status();
-// 输出包含每个节点的状态、角色、地址信息
-
-// 集群描述
-cluster.describe();
-
-// 设置主节点（手动切换）
-cluster.setPrimaryInstance('node2:3306');
-
-// 移除实例
-cluster.removeInstance('node3:3306');
-
-// 重新加入实例
-cluster.rejoinInstance('node3:3306');
-```
-
-### 6.3 MySQL Router 配置
-
-```bash
-# 引导 MySQL Router（自动生成配置）
-mysqlrouter --bootstrap root@node1:3306 --user=mysqlrouter
-
-# 配置文件自动生成在 /etc/mysqlrouter/mysqlrouter.conf
-# 关键配置：
-# [routing:read_write]
-# bind_address=0.0.0.0
-# bind_port=6446           # 读写端口
-# destinations=metadata-cache://prodCluster/?role=PRIMARY
-# routing_strategy=first-available
-
-# [routing:read_only]
-# bind_address=0.0.0.0
-# bind_port=6447           # 只读端口
-# destinations=metadata-cache://prodCluster/?role=SECONDARY
-# routing_strategy=round-robin
-
-# 启动 Router
-systemctl start mysqlrouter
-```
-
-```sql
--- 应用连接方式
--- 写操作 → Router 6446 端口 → Primary 节点
--- 读操作 → Router 6447 端口 → Secondary 节点（轮询）
-```
-
-## 7. InnoDB ClusterSet
-
-### 7.1 ClusterSet 架构
-
-ClusterSet 是跨数据中心的灾备方案，将多个 InnoDB Cluster 组成一个集群集，提供全局高可用和灾难恢复能力。
-
-```mermaid
-flowchart TD
-    subgraph CS["InnoDB ClusterSet"]
-        subgraph DC1["Primary Cluster DC1"]
-            P["P"]
-            S1["S"]
-        end
-        subgraph DC2["Replica Cluster DC2"]
-            S2["S"]
-            S3["S"]
-        end
-        DC1 -->|异步复制| DC2
-    end
-```
-
-### 7.2 ClusterSet 管理
-
-```javascript
-// MySQL Shell
-
-// 创建 ClusterSet
-var cluster = dba.getCluster();
-var cs = cluster.createClusterSet('globalCS');
-
-// 添加副本集群
-cs.createReplicaCluster('node4:3306', 'replicaCluster', {
-  recoveryMethod: 'clone',
-  replicationConsistency: 'EVENTUAL',
-});
-
-// 查看 ClusterSet 状态
-cs.status();
-
-// 灾难切换（主集群不可用时）
-cs.forcePrimaryCluster('replicaCluster');
-
-// 计划内切换
-cs.setPrimaryCluster('replicaCluster');
-```
-
-## 8. GTID 复制
-
-### 8.1 GTID 概念
-
-GTID（Global Transaction Identifier）为每个事务分配全局唯一标识符，简化复制管理和故障恢复。
-
-```sql
--- GTID 格式：server_uuid:transaction_id
--- 例如：3E11FA47-71CA-11E1-9E33-C80AA9429562:1-5
-
--- 启用 GTID
--- my.cnf
--- gtid_mode=ON
--- enforce_gtid_consistency=ON
-
--- 查看已执行的 GTID
-SHOW BINARY LOG STATUS;   -- 8.4 语法（旧名 SHOW MASTER STATUS 已移除）
--- Executed_Gtid_Set: 3E11FA47-71CA-11E1-9E33-C80AA9429562:1-100
-
--- 基于 GTID 配置复制（无需指定 binlog 文件和位置）
-CHANGE REPLICATION SOURCE TO
-    SOURCE_HOST='master-host',
-    SOURCE_PORT=3306,
-    SOURCE_USER='repl',
-    SOURCE_PASSWORD='ReplP@ss123!',
-    SOURCE_AUTO_POSITION=1;  -- 使用 GTID 自动定位
-```
-
-### 8.2 GTID 故障恢复
-
-```sql
--- 注入空事务跳过有问题的 GTID
-SET GTID_NEXT='3E11FA47-71CA-11E1-9E33-C80AA9429562:101';
-BEGIN;
-COMMIT;
+-- 5. 延迟副本恢复回放：跳过那条 DROP（GTID 方式）
+SET GTID_NEXT='误删事务的GTID';
+BEGIN; COMMIT;                      -- 注入空事务占位
 SET GTID_NEXT='AUTOMATIC';
-
--- 重置 binlog 与 GTID 历史（旧名 RESET MASTER 已在 8.4 移除）
--- 危险操作，仅在新从库上使用
-RESET BINARY LOGS AND GTIDS;
-
--- 查看从库已检索的 GTID
-SHOW REPLICA STATUS\G
--- Retrieved_Gtid_Set: 已从主库拉取的 GTID
--- Executed_Gtid_Set: 已执行的 GTID
+START REPLICA;                      -- 继续回放，跳过误删
 ```
 
-## 9. 备份与恢复
+流程的要害在第 1 步的**抢时间**：延迟窗口内必须完成「停 SQL 线程 → 导出」。GTID 注入空事务（第 5 步）是跳过事故语句的脚本化手法（原理见 [GTID](/mysql/600-GTID)）；没有 GTID 时用 `START REPLICA UNTIL` 定位点跳过。演练价值：真事故时没有时间读文档，肌肉记忆只能来自演练。
+</details>
 
-### 9.1 mysqldump 逻辑备份
+## 自我检查
 
-```bash
-# 全库逻辑备份
-mysqldump -u root -p --single-transaction --routines --triggers --events \
-    --all-databases > full_backup.sql
-
-# 单库备份
-mysqldump -u root -p --single-transaction app_db > app_db_backup.sql
-
-# 仅表结构
-mysqldump -u root -p --no-data app_db > schema_only.sql
-
-# 仅数据
-mysqldump -u root -p --no-create-info app_db > data_only.sql
-
-# 压缩备份
-mysqldump -u root -p --single-transaction app_db | gzip > app_db.sql.gz
-
-# 恢复
-mysql -u root -p app_db < app_db_backup.sql
-gunzip < app_db.sql.gz | mysql -u root -p app_db
-```
-
-```sql
--- --single-transaction：使用一致性快照，不锁表（InnoDB 推荐）
--- --routines：包含存储过程和函数
--- --triggers：包含触发器
--- --events：包含事件
--- --set-gtid-purged=OFF：不输出 GTID 信息（用于非 GTID 环境）
--- --where：条件导出
-```
-
-### 9.2 MySQL Shell 并行逻辑备份（mysqlpump 已在 8.4 移除）
-
-```javascript
-// MySQL Shell（mysqlsh）中的并行导出/导入，取代已移除的 mysqlpump
-util.dumpSchemas(["app_db", "log_db"], "/backup/shell_dump", {threads: 8})
-util.dumpInstance("/backup/full_dump", {threads: 8})   // 实例级
-
-// 恢复（并行导入）
-util.loadDump("/backup/shell_dump", {threads: 8})
-```
-
-### 9.3 MySQL Enterprise Backup 物理备份
-
-```bash
-# 全量物理备份
-mysqlbackup --user=root --password --backup-dir=/backup/full \
-    backup
-
-# 增量备份
-mysqlbackup --user=root --password --backup-dir=/backup/incr \
-    --incremental --incremental-base=dir:/backup/full \
-    backup
-
-# 恢复
-mysqlbackup --backup-dir=/backup/full copy-back
-# 恢复前需确保数据目录为空
-
-# 压缩备份
-mysqlbackup --user=root --password --backup-dir=/backup/compressed \
-    --compress backup
-```
-
-### 9.4 基于时间点的恢复 (PITR)
-
-```bash
-# 1. 先恢复全量备份
-mysql -u root -p < full_backup.sql
-
-# 2. 找到全量备份记录的 binlog 位点（--source-data=2 写在文件头注释中）
-head -30 full_backup.sql | grep 'SOURCE_DATA'
-
-# 3. 从 binlog 中提取指定时间段的操作
-mysqlbinlog --start-datetime="2024-12-01 00:00:00" \
-    --stop-datetime="2024-12-01 14:30:00" \
-    mysql-bin.000010 mysql-bin.000011 | mysql -u root -p
-
-# 4. 或基于位置提取
-mysqlbinlog --start-position=157 --stop-position=1024 \
-    mysql-bin.000010 | mysql -u root -p
-```
-
-```sql
--- 查看误操作的时间点
-SHOW BINLOG EVENTS IN 'mysql-bin.000010'
-FROM 157 LIMIT 100;
-
--- 跳过误操作（基于 GTID）
--- 找到误操作的 GTID 后注入空事务跳过
-SET GTID_NEXT='3E11FA47-71CA-11E1-9E33-C80AA9429562:50';
-BEGIN;
-COMMIT;
-SET GTID_NEXT='AUTOMATIC';
-```
-
-### 9.5 备份策略建议
-
-| 策略         | 频率 | 工具                                  | 保留周期 |
-| :----------- | :--- | :------------------------------------ | :------- |
-| 全量逻辑备份 | 每日 | mysqldump                             | 7天      |
-| 全量物理备份 | 每周 | MySQL Enterprise Backup               | 4周      |
-| 增量物理备份 | 每日 | MySQL Enterprise Backup               | 7天      |
-| Binlog 备份  | 实时 | mysqlbinlog --read-from-remote-server | 7天      |
-| 延迟从库     | 实时 | 延迟复制                              | 持续运行 |
-
-```sql
--- 自动化备份验证：定期检查备份可恢复性
--- 在测试环境恢复备份并执行校验查询
-SELECT COUNT(*) FROM critical_table;
-CHECK TABLE critical_table;
-```
+- 能按「binlog 地基 / 传输层 / 一致性内核 / 打包产品 / 坐标系统」的层级说出高可用家族各成员的位置；
+- 能按 RTO（要不要自动切换）与 RPO（能不能丢）两轴给业务选型并说出代价；
+- 能说出半同步的退化陷阱（超时回异步）与 MGR 的多数派语义（节点数倒推容错）；
+- 能区分「容灾」（ClusterSet）与「误操作恢复」（延迟副本/备份）是两条独立防线；
+- 能读 SHOW REPLICA STATUS 的五个关键字段并说出延迟副本的健康态定义；
+- 能执行延迟副本的「停 → 导 → 回灌 → 跳过事故事务」完整恢复流程。

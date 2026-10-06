@@ -1,5 +1,5 @@
 ---
-order: 350
+order: 370
 title: 网络命名空间与虚拟网桥
 module: 'networking'
 category: 云与基础设施
@@ -12,8 +12,7 @@ related:
   - 'networking/250-KeepalivedDualHotStandby'
   - 'networking/310-Tunneling'
   - 'networking/290-NetworkTroubleshootTools'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## 前置知识

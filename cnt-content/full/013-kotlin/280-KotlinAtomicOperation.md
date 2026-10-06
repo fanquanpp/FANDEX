@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 310
 title: Kotlin 与原子操作
 module: 'kotlin'
 category: 后端技术

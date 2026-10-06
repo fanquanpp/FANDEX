@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 220
 title: GitOps 与 ArgoCD
 module: 'devops'
 category: 云与基础设施
@@ -25,6 +25,8 @@ prerequisites:
 > GitOps 的操作对象是 Git 而不是集群：把期望状态（YAML/Chart）提交到仓库，
 > 集群内的控制器（ArgoCD）持续比对"Git 里写的"与"集群里跑的"，自动把差异抹平。
 > 从此"改环境=提 PR"，回滚=revert 一个 commit。
+
+**分工声明（跨模块）**：GitOps 的**架构概念与选型比较**（原则、推拉模型、适用性判断）见 027-cloud 模块的 [GitOps 持续交付](/cloud-computing/155-GitOpsContinuousDelivery)——**概念在 cloud、工具深用在 devops**；本篇讲 ArgoCD，[Flux 与多环境 GitOps](/devops/185-FluxAndMultiEnvGitOps) 讲 Flux 一支与多环境工程化。
 
 ## 1. GitOps 四原则与 Push/Pull 之别
 

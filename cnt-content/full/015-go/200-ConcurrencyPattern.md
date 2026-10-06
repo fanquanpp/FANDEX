@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 220
 title: 并发模式
 module: 'go'
 category: 后端技术

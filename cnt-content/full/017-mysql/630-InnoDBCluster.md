@@ -1,5 +1,5 @@
 ---
-order: 610
+order: 660
 title: InnoDB Cluster：官方开箱即用的高可用方案
 module: 'mysql'
 category: 数据库
@@ -36,7 +36,7 @@ prerequisites:
 
 ## 动手：三节点集群从零搭建
 
-前提：三台机器各装好 MySQL 8.0+，网络互通，且实例开启 MGR 所需配置（Shell 的 `dba.configureInstance()` 会自动检查并代改）。
+前提：三台机器各装好 MySQL 8.0+，网络互通，且实例开启 MGR 所需配置（Shell 的 `dba.configureInstance()` 会自动检查并代改）。MySQL Shell 的安装、语言模式与 util 工具族见 [MySQL Shell 工具链](/mysql/925-MySQLShellToolkit)；本篇聚焦 AdminAPI 的集群搭建与切换语义，**日常巡检脚本**（status 三字段、RECOVERING 告警、摘流量维护）也在 925 篇。
 
 ```javascript
 // ===== 在 node1 上（MySQL Shell）=====

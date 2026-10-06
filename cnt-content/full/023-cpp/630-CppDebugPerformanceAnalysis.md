@@ -1,5 +1,5 @@
 ---
-order: 620
+order: 660
 title: C++ 调试与性能分析
 module: 'cpp'
 category: 计算机科学
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'cpp/460-MemoryOrderLockFree'
-  - 'cpp/620-CppExceptionAndPerformance'
   - 'cpp/770-CppProjectPractice'
 prerequisites:
   - 'cpp/020-CppOverviewAndModernStandard'
@@ -157,6 +156,41 @@ prerequisites:
 ```
 
 ## 3. 性能分析工具
+
+### 3.0 Google Benchmark：微基准的标准工具
+
+perf 与 gprof 回答「程序里谁最慢」，Google Benchmark 回答「同一个操作换一种写法快多少」。给候选实现各建一个基准，纳秒级对比：
+
+```cpp
+#include <benchmark/benchmark.h>
+#include <string>
+
+static void BM_StringCopy(benchmark::State& state) {
+    std::string src(64, 'x');
+    for (auto _ : state) {                  // 框架自动决定迭代次数，跑到统计稳定
+        std::string dst = src;              // 被测操作
+        benchmark::DoNotOptimize(dst);      // 关键：阻止编译器把这次拷贝整个消除
+        benchmark::ClobberMemory();         // 迫使内存真实读写，防止寄存器缓存
+    }
+}
+BENCHMARK(BM_StringCopy);
+BENCHMARK_MAIN();
+```
+
+逐行解释：
+
+- `for (auto _ : state)`：框架反复调用该循环并自动计时，迭代次数由框架按样本稳定性决定，不是写死的；
+- `benchmark::DoNotOptimize(dst)`：被测结果若从未被使用，O2 下编译器可能删除整段代码，让基准测了个寂寞——这个调用把结果「交给」编译器但代价极低；
+- `BENCHMARK(BM_StringCopy)` 注册用例，`BENCHMARK_MAIN()` 生成入口。
+
+命令行侧支持固定参数与对比：
+
+```bash
+./benchmark --benchmark_filter=StringCopy     # 只跑匹配用例
+./benchmark --benchmark_min_time=2s           # 拉长单用例时间减少抖动
+```
+
+适用场景：验证 [复制消除](/cpp/615-CopyElisionRVO) 实验里「拷贝 vs 移动」的量级、对比两种容器在目标负载下的表现。注意微基准测的是「代码片段」，上生产前用 perf 验证该片段在真实调用路径中的占比。
 
 ### 3.1 Gprof
 

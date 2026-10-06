@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 130
 title: Teleport 与 Suspense：组件树和 DOM 树是两张图
 module: 'vue3'
 category: 前端技术
@@ -294,6 +294,75 @@ const emit = defineEmits(['close']);
 ```
 
 三个细节都是本文与下一篇的交汇点：Teleport 解决层叠上下文；`@click.self` 只响应遮罩自身点击（事件在 body 下冒泡，遮罩是弹窗 DOM 的根，逻辑安全）；Transition 的类名时序让淡入淡出生效，原理见[Transition 与动画](/vue3/130-TransitionAnimation)。
+
+### 5.1 进阶：全局 Modal 管理器（响应式栈 + 单出口渲染）
+
+弹窗一多，"每处各写一个 AppModal"会让层级与状态失控。集中式管理器用**一个响应式栈**存全部弹窗，模板里只留一个 Teleport 出口：
+
+```ts
+// modal-manager.ts
+import { reactive } from 'vue'
+
+interface ModalEntry {
+  id: number
+  component: object
+  props: Record<string, unknown>
+}
+
+export const modalState = reactive<{ stack: ModalEntry[] }>({ stack: [] })
+let nextId = 1
+
+export function openModal(component: object, props: Record<string, unknown> = {}) {
+  const id = nextId++
+  modalState.stack.push({ id, component, props })   // 后打开的在栈顶 = 视觉上层
+  return id
+}
+
+export function closeModal(id: number) {
+  const idx = modalState.stack.findIndex((m) => m.id === id)
+  if (idx !== -1) modalState.stack.splice(idx, 1)
+}
+```
+
+```vue
+<!-- ModalHost.vue：挂在 App 根部，全站唯一的弹窗渲染出口 -->
+<template>
+  <Teleport to="body">
+    <AppModal v-for="m in modalState.stack" :key="m.id" v-bind="m.props">
+      <component :is="m.component" @close="closeModal(m.id)" />
+    </AppModal>
+  </Teleport>
+</template>
+```
+
+任何业务代码 `openModal(ConfirmDialog, { title: '确认删除' })` 即弹窗——集中管理换来三件事：层级天然有序（栈序）、调试有据（DevTools 里看 stack）、业务组件不再各自携带弹窗骨架。
+
+### 5.2 响应式形态：桌面弹窗与移动端抽屉
+
+`disabled` 支持响应式绑定，配合 `matchMedia` 可以让**同一个组件**在桌面端传送到 body 做居中弹窗、移动端留在原地渲染成底部抽屉：
+
+```vue
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+
+const isMobile = ref(false)
+let mql
+onMounted(() => {
+  mql = window.matchMedia('(max-width: 768px)')
+  isMobile.value = mql.matches
+  mql.addEventListener('change', (e) => (isMobile.value = e.matches))   // addListener 已废弃
+})
+onBeforeUnmount(() => mql?.removeEventListener('change', () => {}))
+</script>
+
+<template>
+  <Teleport to="body" :disabled="isMobile">
+    <div :class="isMobile ? 'drawer' : 'modal'">...</div>
+  </Teleport>
+</template>
+```
+
+`disabled=true` 时组件留在原地（抽屉形态吃父容器布局），false 时传送到 body（弹窗形态吃 fixed 定位）——一个组件两种形态，不需要两套实现。
 
 ## 6. 常见坑与调试实录
 

@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 100
 title: 12 要素应用
 module: 'cloud-computing'
 category: 云与基础设施

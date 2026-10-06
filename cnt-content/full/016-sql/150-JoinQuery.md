@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 170
 title: 连接查询：把两张表按业务逻辑拼回一张
 module: 'sql'
 category: 数据库
@@ -25,6 +25,32 @@ prerequisites:
 3. "做个分类 x 日期的统计骨架，没数据的日子也要占位。"——需要**两表全排列**。
 
 三个问题对应三种 JOIN：内连接、外连接的反向用法、交叉连接。这篇就用回声FM的三张表把 JOIN 一次做全。
+
+先建立全景图——两表各三行、只有部分键能对上时，五种 JOIN 各自留下什么：
+
+```mermaid
+flowchart LR
+    subgraph A[Table A]
+        A1[1-a]
+        A2[2-b]
+        A3[3-c]
+    end
+    subgraph B[Table B]
+        B1[1-x]
+        B2[2-y]
+        B3[4-z]
+    end
+    A1 --- B1
+    A2 --- B2
+```
+
+- INNER JOIN：1-a-x, 2-b-y（交集）
+- LEFT JOIN：1-a-x, 2-b-y, 3-c-NULL（A 全部 + 匹配的 B）
+- RIGHT JOIN：1-a-x, 2-b-y, NULL-4-z（B 全部 + 匹配的 A）
+- FULL JOIN：1-a-x, 2-b-y, 3-c-NULL, NULL-4-z（并集）
+- CROSS JOIN：3 x 3 = 9 行（笛卡尔积）
+
+记住这张图，后面每一节都在放大其中一种 JOIN 的细节。
 
 ### 1.1 练习场数据
 
@@ -265,6 +291,8 @@ FROM episodes e JOIN plays_per_ep p ON p.episode_id = e.id;
 5. **MySQL 写了 FULL JOIN**：直接语法错误。用第 4.2 节两种模拟写法。
 6. **ON 条件列错**：不报错只出鬼结果。写 JOIN 前先确认两表的关联列语义（外键 vs 主键）。
 7. **NATURAL JOIN / USING 的隐式行为**：按全部同名列自动匹配，表结构一变结果就变，团队代码里禁用，原理见[自然连接与 USING](/sql/160-NaturalJoinUsing)。
+8. **ON 条件里包函数**：`ON LOWER(u.email) = LOWER(o.email)` 让两边的索引都失效，大表上一次全表对全表的扫描。正确姿势是保持条件裸列等值；大小写问题用表达式索引或统一入库口径解决。
+9. **JOIN 表数量失控**：单条查询 5-7 张表以上，执行计划搜索空间指数增长、人也读不懂——先拆 CTE 分步，再拼装（见[CTE](/sql/230-CTE)）。
 
 ## 9. 练习
 

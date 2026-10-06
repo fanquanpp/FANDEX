@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 320
 title: git-reset 三种重置模式
 module: 'git'
 category: 工具链

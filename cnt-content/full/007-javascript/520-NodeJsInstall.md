@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 600
 title: Node.js 安装：把 JS 跑在浏览器之外
 module: 'javascript'
 category: 前端技术

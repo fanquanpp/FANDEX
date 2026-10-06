@@ -1,5 +1,5 @@
 ---
-order: 720
+order: 810
 title: Java 日志系统
 module: 'java'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 170
 title: Channel 原理
 module: 'go'
 category: 后端技术

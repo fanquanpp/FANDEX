@@ -1,5 +1,5 @@
 ---
-order: 620
+order: 670
 title: CSS Modules
 module: 'css'
 category: 前端技术

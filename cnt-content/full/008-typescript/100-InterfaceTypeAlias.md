@@ -15,6 +15,12 @@ related:
 prerequisites: []
 ---
 
+## 知识点地图
+
+- **知识类别**：接口（interface）与类型别名（type）——TS 描述对象形状的两种原生写法。
+- **解决什么问题**：函数参数、API 响应、组件 Props 都需要一个"形状契约"；interface 与 type 是这份契约的两个载体，各有适用场景。
+- **什么时候用到**：第一次给对象写类型注解时；决定"该用 interface 还是 type"时（第 4 节有决策表）；给别人写库时（声明合并能力只 interface 有）。
+- **分工提示**：本篇只讲接口与别名本体；基于它们的内置工具类型速查已迁至[内置工具类型全景速查](/typescript/495-UtilityTypesCatalog)。
 ## 前置知识
 
 - [基础类型系统](/typescript/080-BasicTypeSystem)：建议先完成前一篇的学习
@@ -1491,135 +1497,7 @@ let products: Product[] = [
 
 ---
 
-## readonly 与 Readonly
-
-**基本写法：使用 readonly 修饰符**
-`interface <接口名> { readonly <属性>: <类型> }`
-
-```typescript
-// 使用 readonly 修饰符
-interface Point {
-    readonly x: number
-    readonly y: number
-}
-```
-
-**讲解：**
-
-1. `readonly x: number` 的字段初始化后不可改。
-2. 适合坐标、配置等不可变数据。
-3. 再次提醒：这仅是编译期约束。
-
-
----
-
-**基本写法：使用 Readonly 工具类型**
-`type <别名> = Readonly<<接口>>`
-
-```typescript
-// 使用 Readonly 工具类型
-type ReadonlyUser = Readonly<User>
-```
-
-**讲解：**
-
-1. `Readonly<User>` 把 User 的所有属性一次性变成只读，无需逐个写 readonly。
-2. 工具类型是类型层面的函数：输入一个类型，输出一个新类型。
-3. 常见工具还有 Partial、Required、Pick、Omit、Record，见后几块。
-
-
----
-
-## Partial 与 Required
-
-**基本写法：使用 Partial 工具类型**
-`type <别名> = Partial<<接口>>`
-
-```typescript
-// 使用 Partial 使所有属性可选
-type PartialUser = Partial<User>
-```
-
-**讲解：**
-
-1. `Partial<User>` 把每个属性都变成可选，适合“编辑表单只传改动的字段”。
-2. 与 Required 互为逆操作。
-3. 注意：Partial 后的类型丢失了“必填”信息，更新场景要小心空值。
-
-
----
-
-**基本写法：使用 Required 工具类型**
-`type <别名> = Required<<接口>>`
-
-```typescript
-// 使用 Required 使所有属性必填
-type RequiredUser = Required<User>
-```
-
-**讲解：**
-
-1. `Required<User>` 把可选属性全部变成必填。
-2. 适合“从草稿到提交”的校验场景：草稿可缺字段，提交必须完整。
-3. 与 Partial 配合使用能精确控制不同阶段的状态类型。
-
-
----
-
-## Pick 与 Omit
-
-**基本写法：使用 Pick 工具类型**
-`type <别名> = Pick<<接口>, "<属性1>" | "<属性2>">`
-
-```typescript
-// 使用 Pick 选取部分属性
-type UserBasic = Pick<User, "name" | "age">
-```
-
-**讲解：**
-
-1. `Pick<User, "name" | "age">` 从 User 中挑选指定字段组成新类型。
-2. 第二个参数是键的联合，可以理解为“白名单”。
-3. 适合列表页只展示部分字段的场景。
-
-
----
-
-**基本写法：使用 Omit 工具类型**
-`type <别名> = Omit<<接口>, "<属性>">`
-
-```typescript
-// 使用 Omit 排除部分属性
-type UserWithoutAge = Omit<User, "age">
-```
-
-**讲解：**
-
-1. `Omit<User, "age">` 从 User 中剔除指定字段，其余保留。
-2. 与 Pick 相反：Pick 留谁，Omit 删谁。
-3. 适合“创建时不传 id”这类场景：用 Omit 去掉服务端生成的字段。
-
-
----
-
-## Record 类型
-
-**基本写法：使用 Record 工具类型**
-`type <别名> = Record<<键类型>, <值类型>>`
-
-```typescript
-// 使用 Record 创建键值对类型
-type UserMap = Record<string, User>
-```
-
-**讲解：**
-
-1. `Record<string, User>` 表示“字符串键映射到 User 值”的字典。
-2. 等价于手写索引签名，但可读性更好、还能限制键的联合。
-3. `Record<'a' | 'b', number>` 可以精确限定键集合。
-
-
----
+> 本节工具类型速查（readonly 与 Readonly、Partial 与 Required、Pick 与 Omit、Record 四组）已整体迁入[内置工具类型全景速查](/typescript/495-UtilityTypesCatalog)，本篇只保留接口与类型别名本体。
 
 ## 函数参数类型
 
@@ -1701,6 +1579,41 @@ interface ClockInterface {
 2. 它描述“能 new 出 ClockInterface 的类构造函数”，用于工厂函数约束。
 3. 这是依赖注入、工厂模式中常见的类型设计。
 
+## 动手实践
+
+任务（先写，写完再展开参考实现）：
+
+1. 用 interface 描述一篇笔记（title、tags、pinned、可选的 summary），再写一个函数 `rename(note: Note, title: string): Note` 返回改好标题的新对象——不改原对象。
+2. 把第 1 题的 Note 改用 type 写一遍，并故意写 `type Note2 = Note`（两个名字指向同一形状），体会别名与"新类型"的区别。
+3. 给第 1 题的形状补一个"同名字段合并"实验：再声明一次同名 interface 加新字段，观察合并；对 type 做同样的事观察报错。提示：这是第 4.2 节声明合并的亲手验证。
+
+<details>
+<summary>参考实现（先完成上面的任务再展开对照）</summary>
+
+```typescript
+// 1
+interface Note {
+  title: string;
+  tags: string[];
+  pinned: boolean;
+  summary?: string;
+}
+function rename(note: Note, title: string): Note {
+  return { ...note, title }; // 展开旧值、覆盖标题：不可变更新
+}
+
+// 2：type 写法。Note2 只是"另一个名字"，不是新类型，
+// Note2 与 Note 可以互相赋值——别名不改结构。
+type Note2 = Note;
+const n: Note2 = { title: "a", tags: [], pinned: false };
+const m: Note = n; // OK
+
+// 3：interface 合并成功（字段取并集），type 重复声明直接编译错误：
+interface Note { source: string } // 合并后 Note 多了 source
+// type Note = { x: number }      // <-- 取消注释：Duplicate identifier "Note"
+```
+
+</details>
 ## 8. 自测（小测验）
 
 **第 1 题（单选）**：想让"任意字符串键都对应字符串值"的字典结构，应该用哪种语法？

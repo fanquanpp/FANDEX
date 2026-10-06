@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 120
 title: Astro 7 新特性速览
 module: 'astro'
 category: 前端技术

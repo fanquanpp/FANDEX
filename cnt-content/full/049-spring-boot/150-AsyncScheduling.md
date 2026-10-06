@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 180
 title: 异步与定时任务：别让用户盯着转圈，也别让任务睡过头
 description: 以「注册后同步串行 1.5 秒的短信与新人券、到点没人跑的凌晨任务」引入：@Async 的代理本质与线程池治理四参数、异常的两种去向、cron 六位表达式、fixedRate 与 fixedDelay 的背压分野，附默认单线程调度池的饿死实验。
 module: 'spring-boot'

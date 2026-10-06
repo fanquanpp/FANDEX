@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 200
 title: 半连接与反半连接
 module: 'sql'
 category: 数据库

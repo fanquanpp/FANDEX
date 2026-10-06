@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 160
 title: SVG CSS 样式化
 module: 'svg'
 category: 前端技术
@@ -367,14 +367,9 @@ rect:hover {
 
 ## 9. 嵌入方式对 CSS 的影响
 
-| 嵌入方式       | 外部 CSS | 内部 style | 表现属性 |
-| -------------- | -------- | ---------- | -------- |
-| inline SVG     | √        | √          | √        |
-| `<object>`     | ×        | √          | √        |
-| `<img>`        | ×        | √          | √        |
-| CSS background | ×        | √          | √        |
+各嵌入方式（inline、`<img>`、CSS background、`<object>`、sprite 外链、favicon）对页面 CSS、内部样式与外部资源的完整能力对照，已系统整理为独立一篇：[SVG 嵌入与交付方式](/svg/128-SVGEmbeddingMethods)。
 
-> 仅 inline SVG 可被外部 CSS 完全控制，其他方式需要 SVG 文件内部自带样式。独立 `.svg` 文件想引用外部样式表，可在文件开头写处理指令 `<?xml-stylesheet href="svg.css" type="text/css"?>`，独立打开或 `<object>` 加载时生效；`<img>` 与 CSS background 属于"SVG 作为图片"的安全模式，浏览器禁止其加载任何外部资源，该指令不会生效。
+与本篇直接相关的两条结论：仅 inline SVG 可被页面 CSS 完全控制，其他方式需要 SVG 文件内部自带样式；`<img>` 与 CSS background 属于"SVG 作为图片"的安全模式，浏览器禁止其加载任何外部资源，`<?xml-stylesheet?>` 指令在该模式下不会生效。
 
 ## 10. 实战：响应式数据条
 

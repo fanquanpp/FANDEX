@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 150
 title: Kubernetes 存储
 module: 'cloud-computing'
 category: 云与基础设施

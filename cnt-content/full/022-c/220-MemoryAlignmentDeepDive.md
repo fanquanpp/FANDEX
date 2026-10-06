@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 260
 title: 内存对齐：struct 的大小为什么不是成员相加
 module: 'c'
 category: 计算机科学

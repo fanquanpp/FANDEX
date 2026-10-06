@@ -1,5 +1,5 @@
 ---
-order: 450
+order: 470
 title: 文件 I/O：fopen 到 fclose 的完整闭环
 module: 'c'
 category: 计算机科学

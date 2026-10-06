@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 330
 title: React 服务端渲染
 module: 'react'
 category: 前端技术
@@ -8,7 +8,7 @@ description: React SSR 原理与工程实践：renderToString 与流式渲染、
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'react/140-ServerComponents'
+  - 'react/400-ServerClientComponents'
   - 'react/130-ConcurrentRendering'
   - 'react/100-NextJSFullStack'
   - 'react/410-NextJsAppRouter'
@@ -18,8 +18,14 @@ prerequisites:
 
 ## 前置知识
 
-- [Server Components](/react/140-ServerComponents)：先分清 RSC 与 SSR 的分工
-- [React 服务端渲染](/react/100-NextJSFullStack)：Next.js 是 SSR 最主流的工程载体
+- [Server 和 Client 组件](/react/400-ServerClientComponents)：先分清 RSC 与 SSR 的分工
+- [Next.js 全栈开发](/react/100-NextJSFullStack)：Next.js 是 SSR 最主流的工程载体
+
+## 知识点地图
+
+- **知识类别**：服务端 / 渲染架构（SSR 原理与工程实践）。
+- **解决什么问题**：SPA 首屏白屏与 SEO 是结构性问题。SSR 让组件先在服务端跑一遍产出 HTML，用户与爬虫立刻有内容可看；流式渲染与选择性水合进一步决定「哪块先到」与「哪块才需要 JS」。
+- **什么时候用到**：选型阶段对比 SSR/SSG/ISR/RSC 时；排查 hydration mismatch、首屏闪烁时；理解 Next.js 渲染行为背后的原理时。
 
 ## 1. 概述
 

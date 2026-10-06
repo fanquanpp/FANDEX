@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 400
 title: Svelte 精要与 Vue 对照
 module: 'vue3'
 category: 前端技术
@@ -12,7 +12,7 @@ related:
   - 'vue3/280-Vue3CompileOptimization'
   - 'vue3/190-VueRouterDetailed'
 prerequisites:
-  - 'vue3/180-API'
+  - 'vue3/050-ReactiveSystem'
   - 'vue3/030-Vue3TemplateSyntax'
 ---
 

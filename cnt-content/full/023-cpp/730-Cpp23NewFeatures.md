@@ -1,5 +1,5 @@
 ---
-order: 700
+order: 740
 title: C++23 新特性
 module: 'cpp'
 category: 计算机科学
@@ -13,7 +13,6 @@ related:
   - 'cpp/330-CppTemplate'
   - 'cpp/460-MemoryOrderLockFree'
   - 'cpp/020-CppOverviewAndModernStandard'
-  - 'cpp/740-Cpp23Cpp26NewFeatures'
   - 'cpp/760-Cpp26LatestStandard'
 prerequisites:
   - 'cpp/020-CppOverviewAndModernStandard'
@@ -895,6 +894,36 @@ int main() {
 ```
 
 但要客观说明：`import std` 的**编译器/构建系统落地长期滞后于标准**。它要求编译器以二进制模块接口（BMI）形式预构建标准库，GCC 15、Clang（libc++）与 MSVC 的支持进度各不相同，CMake 也需要较新版本才能简化配置。生产环境中更稳妥的做法仍是 `#include` 头文件，或在确认工具链完整支持后再切换。这本身就是 C++23 的一个缩影：标准已定稿，生态落地需要时间。
+
+### 4.14 `std::string` 的 `contains` 与首尾判断
+
+```cpp
+#include <string>
+#include <iostream>
+
+void stringImprovements() {
+    std::string text = "Hello, World!";
+
+    // contains：检查是否包含子串（C++23 之前需要用 find）
+    if (text.contains("World")) {
+        std::println("包含 'World'");
+    }
+
+    // starts_with / ends_with（C++20 引入，C++23 完善支持）
+    if (text.starts_with("Hello")) {
+        std::println("以 'Hello' 开头");
+    }
+    if (text.ends_with("!")) {
+        std::println("以 '!' 结尾");
+    }
+}
+```
+
+**逐段讲解**：
+
+1. `contains` 直接表达「包含吗」，替代 C++20 之前的惯用法 `text.find("World") != std::string::npos`——语义一目了然，还顺手消灭了「忘记比 npos」的经典笔误。
+2. 三个方法对 `char` 与 `std::string_view` 也有重载：`text.contains('!')` 单字符同样直接查。
+3. 这组小方法模仿自 Qt 的 `QString::contains`（见 8.3 案例三）；同族改进还有 `std::to_underlying`（取枚举底层值）与 `std::byteswap`（字节序交换），见附录速查。
 
 ## 5. 对比分析
 
@@ -1815,9 +1844,23 @@ int& operator[](size_t i, size_t j);
 **基本写法：不可达声明**
 `std::unreachable();`
 ```cpp
-// 标记程序不应到达此处
-throw std::logic_error("unreachable");
+#include <utility>
+
+enum class Color { Red, Green, Blue };
+
+std::string_view colorName(Color c) {
+    switch (c) {
+        case Color::Red:   return "红色";
+        case Color::Green: return "绿色";
+        case Color::Blue:  return "蓝色";
+    }
+    // 告诉编译器这个位置不可达（switch 已穷举全部枚举值）
+    // 如果运行到这里，行为未定义（但编译器可以据此优化掉冗余分支）
+    std::unreachable();
+}
 ```
+
+> 对比旧写法 `throw std::logic_error("unreachable")`：异常版把「逻辑上不可达」伪装成运行时错误，编译器必须保留抛出路径；`std::unreachable()` 直接声明 UB，穷举型 switch 尾部不再需要假返回值。
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 220
 title: 文本处理命令速查手册
 module: 'shell'
 category: 工具链

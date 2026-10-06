@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 350
 title: AWS CLI 配置
 module: 'cloud-computing'
 category: 云与基础设施

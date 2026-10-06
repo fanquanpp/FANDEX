@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-28'
 related:
   - 'html5/040-DocTypeDeclaration'
-  - 'html5/240-HTML5OfflineStorageWebAPI'
+  - 'html5/245-WebStorage'
   - 'html5/110-TextSemantic'
   - 'html5/120-List'
 prerequisites:

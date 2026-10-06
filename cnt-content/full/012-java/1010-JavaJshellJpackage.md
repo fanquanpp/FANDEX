@@ -1,5 +1,5 @@
 ---
-order: 830
+order: 920
 title: JShell 与 JPackage 交互环境
 module: 'java'
 category: 后端技术

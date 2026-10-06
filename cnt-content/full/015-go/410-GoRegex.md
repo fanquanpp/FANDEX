@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 440
 title: Go 与正则表达式
 module: 'go'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 240
 title: SVG 实战项目
 module: 'svg'
 category: 前端技术
@@ -10,11 +10,9 @@ updated: '2026-09-13'
 related:
   - 'svg/140-SVGAnimationBasics'
   - 'svg/150-SVGJavaScriptInteraction'
-  - 'svg/160-SVGResponsivePerformance'
 prerequisites:
   - 'svg/140-SVGAnimationBasics'
   - 'svg/150-SVGJavaScriptInteraction'
-  - 'svg/170-SVGIconAccessibility'
 ---
 
 ## 前置知识

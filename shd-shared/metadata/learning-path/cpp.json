@@ -62,8 +62,8 @@
         },
         {
           "id": "cpp-103",
-          "title": "C++23与C++26新特性",
-          "doc": "740-Cpp23Cpp26NewFeatures"
+          "title": "C++23 新特性",
+          "doc": "730-Cpp23NewFeatures"
         },
         {
           "id": "cpp-104",
@@ -83,7 +83,7 @@
         {
           "id": "cpp-107",
           "title": "RAII资源管理",
-          "doc": "170-CppCoreGuidelinesResourceManagement"
+          "doc": "170-RAIIResourceManagementInPractice"
         },
         {
           "id": "cpp-108",

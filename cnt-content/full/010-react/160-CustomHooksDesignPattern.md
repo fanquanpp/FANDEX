@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 210
 title: 自定义 Hooks 设计模式：把逻辑抽成可复用的函数
 module: 'react'
 category: 前端技术

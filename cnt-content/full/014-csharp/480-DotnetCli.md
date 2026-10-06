@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 520
 title: dotnet CLI：从克隆到发布的一条命令链
 module: 'csharp'
 category: 后端技术

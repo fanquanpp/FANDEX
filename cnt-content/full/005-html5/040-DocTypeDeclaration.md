@@ -10,7 +10,7 @@ updated: '2026-09-29'
 related:
   - 'html5/190-HTML5FormValidation'
   - 'html5/230-HTML5MultimediaCanvasDrawing'
-  - 'html5/240-HTML5OfflineStorageWebAPI'
+  - 'html5/245-WebStorage'
   - 'html5/060-MetadataCharacterEncoding'
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'

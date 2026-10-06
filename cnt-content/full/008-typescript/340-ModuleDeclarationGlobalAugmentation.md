@@ -9,11 +9,11 @@ author: fanquanpp
 updated: '2026-09-29'
 related:
   - 'typescript/500-TemplateLiteralType'
-  - 'typescript/540-TypeGymnastics'
+  - 'typescript/540-TypeGymnasticsBoundaries'
   - 'typescript/360-TsconfigStrictMode'
   - 'typescript/280-DecoratorStandardImpl'
   - 'typescript/300-DeclarationFileWriting'
-  - 'typescript/330-ModuleResolutionModernToolchains'
+  - 'typescript/315-PackageExportsEsmInterop'
 prerequisites:
   - 'typescript/100-InterfaceTypeAlias'
   - 'typescript/290-NamespaceModule'

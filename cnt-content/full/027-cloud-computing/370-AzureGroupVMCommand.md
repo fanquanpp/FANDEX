@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 420
 title: Azure 资源组与 VM
 module: 'cloud-computing'
 category: 云与基础设施

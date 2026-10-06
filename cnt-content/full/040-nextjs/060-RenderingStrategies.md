@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 100
 title: 渲染策略与缓存
 module: 'nextjs'
 category: 前端技术

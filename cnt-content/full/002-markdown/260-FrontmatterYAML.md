@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'markdown/270-SpecDocumentWriting'
   - 'markdown/300-LintFormatTooling'
-  - 'markdown/310-AdvancedSyntaxDocumentAutomation'
+  - 'markdown/310-DocsSiteAndAutomation'
 prerequisites:
   - 'markdown/010-SyntaxGuide'
 ---
@@ -285,7 +285,7 @@ description: "札记: 关于 YAML 的坑"
 
 - 往前：[代码块语法](/markdown/090-CodeBlockSyntaxHighlight) 解释了本文 YAML 示例为什么用 ```yaml 围栏；[表格](/markdown/100-Table) 的"两套读者"思想同源——分隔行也是给机器的信号；
 - 横向：[代码块中的转义与嵌套围栏](/markdown/090-CodeBlockSyntaxHighlight) 是展示"frontmatter 源码"而不触发解析的标准手段；
-- 往后：[规范文档写作](/markdown/270-SpecDocumentWriting) 与 [文档自动化](/markdown/310-AdvancedSyntaxDocumentAutomation) 把 frontmatter 当作自动化管线的输入；[Lint 与格式化工具](/markdown/300-LintFormatTooling) 能在提交前拦住本文第 7 节的大部分陷阱。
+- 往后：[规范文档写作](/markdown/270-SpecDocumentWriting) 与 [文档自动化](/markdown/310-DocsSiteAndAutomation) 把 frontmatter 当作自动化管线的输入；[Lint 与格式化工具](/markdown/300-LintFormatTooling) 能在提交前拦住本文第 7 节的大部分陷阱。
 
 ## 小结
 

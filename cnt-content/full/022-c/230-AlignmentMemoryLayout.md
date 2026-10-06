@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 270
 title: 布局深水区：成员排序、跨平台与序列化陷阱
 module: 'c'
 category: 计算机科学
@@ -261,7 +261,7 @@ printf("%zu %zu\n", sizeof(struct Log), sizeof(struct LogGood));
 
 ## 9. 与之前和之后的知识的关系
 
-- 往前：[内存对齐](/c/220-MemoryAlignmentDeepDive) 的三条规则是本篇所有 sizeof 推算的工具；[内存深水区](/c/210-MemoryManagement) 的所有权问题在序列化里变成「编码与解码各管一段字节」；
+- 往前：[内存对齐](/c/220-MemoryAlignmentDeepDive) 的三条规则是本篇所有 sizeof 推算的工具；[内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 的所有权问题在序列化里变成「编码与解码各管一段字节」；
 - 往后：字节序的传输侧约定与 htonl 一族转换函数在 [Socket 网络编程](/c/390-SocketNetworkProgramming) 展开；位域与位运算的完整工具箱见 [位域](/c/240-BitField)。
 
 ## 10. 官方文档

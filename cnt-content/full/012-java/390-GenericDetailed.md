@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 360
 title: 泛型入门：把爆炸从运行时搬到编译期
 module: 'java'
 category: 后端技术

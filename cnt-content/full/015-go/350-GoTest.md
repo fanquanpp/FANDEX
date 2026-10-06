@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 380
 title: Go 与测试：让上次的 bug 不再复发
 module: 'go'
 category: 后端技术

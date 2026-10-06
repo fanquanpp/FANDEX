@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 160
 title: Shell 脚本编程基础
 module: 'shell'
 category: 工具链

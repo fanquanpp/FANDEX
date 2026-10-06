@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 310
 title: FDW 外部数据包装器：在 SQL 里查一切
 module: 'postgresql'
 category: 数据库
@@ -8,17 +8,17 @@ description: FDW 体系与 postgres_fdw 实战：外部服务器、用户映射�
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'postgresql/330-ExtensionModule'
+  - 'postgresql/340-ExtensionModuleDetailed'
   - 'postgresql/340-ExtensionModuleDetailed'
   - 'postgresql/390-StreamingReplication'
   - 'postgresql/430-SubscribePublish'
 prerequisites:
-  - 'postgresql/330-ExtensionModule'
+  - 'postgresql/340-ExtensionModuleDetailed'
 ---
 
 ## 前置知识
 
-- PostgreSQL 扩展机制（[扩展模块](/postgresql/330-ExtensionModule)）——FDW 是"协议级"扩展的统称；
+- PostgreSQL 扩展机制（[扩展模块详解](/postgresql/340-ExtensionModuleDetailed)）——FDW 是"协议级"扩展的统称；
 - 知道远程库的连接信息怎么拿到即可，本篇不要求任何外部环境准备。
 
 ## 问题引入：数据在别处，SQL 只会查本地

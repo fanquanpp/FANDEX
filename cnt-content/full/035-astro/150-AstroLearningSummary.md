@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 230
 title: Astro 学习总结：核心知识体系回顾
 module: 'astro'
 category: 前端技术
@@ -371,7 +371,7 @@ export default defineConfig({ base: '/repo/' })
 1. 复习 [Astro 页面与路由](/astro/030-PagesRouting)，把静态、动态、Rest 参数、嵌套路由与重定向一次吃透。
 2. 深入 [内容集合与 Schema](/astro/050-ContentCollections)，练习 glob loader 与 Live Content Collections，为更大规模的内容站做准备。
 3. 精读 [岛屿架构与客户端指令](/astro/060-IslandsClientComponents)，掌握多框架岛屿共存与岛屿间通信方案。
-4. 学习 [样式字体与资源](/astro/070-StylingFontsAssets)，把应援色主题落到作用域样式与字体 API 上，避免样式串扰。
+4. 学习 [样式与主题](/astro/070-AstroStylesAndTheming)、[Fonts API](/astro/072-AstroFontsApi) 与[图片与图标资产](/astro/133-AstroImagesPipeline)，把应援色主题落到作用域样式与字体 API 上，避免样式串扰。
 5. 补齐 [表单与 Actions](/astro/100-AstroFormsActions)，为报名、评论等输入场景建立服务端校验与错误反馈链路。
 6. 实践 [集成与 MDX](/astro/110-AstroIntegrationsMdx)，让评测文档可以内嵌交互岛屿，扩展内容的表现力。
 7. 走一遍 [构建与部署](/astro/080-BuildDeploy)，把平台发布到静态托管或带适配器的 SSR 环境，并配置好环境变量。

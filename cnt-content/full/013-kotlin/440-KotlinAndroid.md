@@ -1,5 +1,5 @@
 ---
-order: 460
+order: 480
 title: Kotlin 与 Android
 module: 'kotlin'
 category: 后端技术
@@ -21,6 +21,12 @@ prerequisites:
 建议先阅读以下内容再进入本文：
 
 - [协程基础](/kotlin/230-CoroutineBasics)
+
+## 知识点地图
+
+- **知识类别**：Android 平台上的 Kotlin 应用主线——ViewModel/StateFlow 状态层、生命周期安全协程、后台任务与构建产物（混淆）。
+- **解决什么问题**：Android 组件生命周期与协程生命周期的错配（配置变更、后台回收、进程死亡）会让状态丢失或协程泄漏；本文给出每个场景的标准组件与写法。
+- **什么时候用到**：新页面搭 ViewModel 状态层时；处理进程被系统杀死后的恢复；提交后台同步任务；上线前配置 R8 混淆并保证反射/序列化不被误伤。
 
 ## 概述
 
@@ -185,6 +191,39 @@ class MyActivity : AppCompatActivity() {
 ```
 
 注意：`launchWhenStarted` 已被官方废弃——它只是"挂起等待"，收集者仍然存活；`repeatOnLifecycle` 则真正取消收集，避免后台时白白处理更新。旧教程中出现它时应替换。
+
+### SavedStateHandle：进程死亡后的状态恢复
+
+ViewModel 活得过配置变更（旋转屏幕），但**活不过进程死亡**——系统内存不足杀死后台应用进程，用户点回来时 Activity 重建、ViewModel 全新实例，`MutableStateFlow` 里的数据清零。`SavedStateHandle` 是官方给 ViewModel 的「进程死亡保险柜」：
+
+```kotlin
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+
+class SearchViewModel(
+    private val repository: SearchRepository,
+    private val savedState: SavedStateHandle
+) : ViewModel() {
+
+    var query: String
+        get() = savedState.get<String>("query") ?: ""
+        set(value) { savedState["query"] = value }   // 写入即持久化（内存缓存 + 落盘）
+
+    fun restoreIfNeeded() {
+        val lastQuery = savedState.get<String>("query") ?: return
+        if (_uiState.value is UserUiState.Idle) load(lastQuery)   // 恢复上次搜索
+    }
+}
+```
+
+逐段解释与易错点：
+
+- `savedState["query"] = value` 的语义是「写入 Bundle，进程死亡时由系统快照保存」。它**不是**数据库：只适合少量恢复用数据（当前查询词、选中 tab、滚动位置 id），塞大对象会触发 `TransactionTooLargeException`。
+- 与 `onSaveInstanceState` 的关系：ViewModel 处理配置变更，SavedStateHandle 处理进程死亡，两者互补——内存里活着的用 StateFlow，死了重来的从 handle 恢复，然后**重新拉取真实数据**。
+- 易错点：`Bundle` 只接受可序列化类型（基本类型、String、Parcelable）。`data class` 直接放进去会运行时崩溃；要么转 Parcelable（`@Parcelize`），要么只存 id、恢复时重新查询。
+- 导航参数恢复：Navigation Compose 的路由参数自动进入 SavedStateHandle，`savedState.get<String>("userId")` 即可拿到，比手动解析 `arguments` 类型安全。
+
+**工程场景**：支付流程页被系统杀进程后用户返回，用 SavedStateHandle 恢复「订单 id」并重新查询订单状态——不能把订单对象本身存进去（含金额等敏感大对象），存 id 重新拉取还能顺带刷新支付结果。
 
 ### Intent 和导航
 
@@ -420,6 +459,72 @@ fun scheduleSync(context: Context) {
 ```
 
 注意系统对周期任务的最小间隔限制（15 分钟）；需要精确闹钟类场景用 AlarmManager，而不是 WorkManager。
+
+### CoroutineWorker 与协程的交接细节
+
+`CoroutineWorker` 的 `doWork()` 是挂起函数，WorkManager 内部已经为它接好了协程作用域，但三个交接点容易踩坑：
+
+```kotlin
+class SyncWorker(
+    appContext: Context,
+    params: WorkerParameters,
+    private val repository: Repository      // 构造注入：需要自定义 WorkerFactory
+) : CoroutineWorker(appContext, params) {
+
+    override suspend fun doWork(): Result {
+        // 1. 取消语义：任务约束不再满足（如断网）时 WorkManager 会取消协程，
+        //    doWork 内部的挂起点会抛 CancellationException —— 不要捕获吞掉
+        return try {
+            if (runAttemptCount > 3) return Result.failure()   // 2. 防无限重试
+            repository.syncData()
+            Result.success()
+        } catch (e: CancellationException) {
+            throw e                                              // 取消必须重抛
+        } catch (e: IOException) {
+            Result.retry()                                       // 可恢复错误走重试
+        } catch (e: Exception) {
+            Result.failure()                                     // 不可恢复直接失败
+        }
+    }
+}
+```
+
+- **依赖注入**：WorkManager 通过反射调用 Worker 的 `(Context, WorkerParameters)` 构造，自己加的第三个参数它不知道——需要 `HiltWorker` + `HiltWorkerFactory`（Hilt 方案）或自定义 `WorkerFactory` 塞进 `Configuration.Provider`。漏配的表现是运行时 `ClassNotFoundException` 风格的实例化失败。
+- **取消与重试是两条路**：系统取消（约束失效、显式 cancel）走协程取消，`Result.retry()` 是业务声明的「稍后再来」；把取消 catch 进 `retry()` 会与系统调度打架。
+- **前台服务**：长时间任务（超过 10 分钟量级）配 `setForeground(ForegroundInfo(...))` 提升为前台服务避免被杀，Android 12+ 需要声明 `FOREGROUND_SERVICE` 权限与对应的前台服务类型。
+
+### R8 混淆：给 Kotlin 反射与序列化留 keep 规则
+
+release 构建默认开启 R8（混淆 + 裁剪）。凡是「按名字找类/字段」的代码都会被它误伤：
+
+```kotlin
+// app/proguard-rules.pro
+
+# 1. 按注解路由的类（本文前述 @Route / 权限拦截按名反射读取的模型）
+-keep class com.example.app.api.** {
+    @com.example.app.RequiresPermission <methods>;
+}
+
+# 2. kotlinx.serialization：保留 @Serializable 类的 serializer 伴生对象
+-keepclassmembers class * implements kotlinx.serialization.KSerializer { *; }
+-keep,includedescriptorclasses class com.example.app.**$$serializer { *; }
+-keepclasseswithmembers class com.example.app.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+
+# 3. kotlin-reflect 按名查找的模块（若用了运行时反射生成路由表）
+-keep class com.example.app.routes.** { *; }
+
+# 4. WorkManager 通过反射实例化 Worker（retained 默认规则已覆盖，自定义为多保险）
+-keep class * extends androidx.work.CoroutineWorker {
+    <init>(android.content.Context, androidx.work.WorkerParameters);
+}
+```
+
+- 规则原理：`-keep` 阻止类被改名/裁剪；`-keepclassmembers` 保留成员但允许类改名。**keep 范围越大体积越大**，精确到注解或构造器签名是体积与正确性的平衡点。
+- 易错点：debug 构建不混淆，问题只在 release 出现——「本地好好的、包出去就崩」的反射类崩溃十有八九是缺 keep。排查用 `-printusage unused.txt` 看类是否被裁，或先 `-dontobfuscate` 二分定位。
+- kotlinx.serialization 官方自带 consumer 规则（依赖 AAR 内嵌），多数版本**无需手写**；手写第 2 组规则是为了覆盖把模型类放独立纯 Kotlin 模块、规则文件没被打进来的情况。
+- 更多反射与 keep 的原理讨论见[Kotlin 注解与反射](/kotlin/185-KotlinAnnotationAndReflection)。
 
 ## 小结
 

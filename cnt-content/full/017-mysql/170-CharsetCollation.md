@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 200
 title: 字符集与排序规则：中文与 emoji 的头号坑
 module: 'mysql'
 category: 数据库

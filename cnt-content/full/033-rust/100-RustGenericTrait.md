@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 130
 title: 泛型与 Trait
 module: 'rust'
 category: 后端技术
@@ -8,15 +8,25 @@ description: 泛型函数与结构体、Trait 定义实现、Trait 对象与生�
 author: fanquanpp
 updated: '2026-09-28'
 related:
-  - 'rust/090-RustCollectionsIterators'
+  - 'rust/090-RustCollections'
+  - 'rust/095-RustIteratorsFunctional'
   - 'rust/080-RustErrorHandling'
+  - 'rust/180-RustLifetimesDeepDive'
 prerequisites:
   - 'rust/080-RustErrorHandling'
 ---
 
+## 知识点地图
+
+- **知识类别**：抽象机制——泛型（编译期多态）与 Trait（行为契约），含静态/动态分发与生命周期标注。
+- **解决什么问题**：「同一份逻辑服务多种类型」怎么写才不复制粘贴；接口抽象在 Rust 里的形态（不是 class 继承）；报错信息里的 `'a` 是什么。
+- **什么时候用到**：写第一个接受多种类型的函数时；设计错误类型、日志输出、迭代能力时（第 3.1 节的三个场景）；读第三方库签名看到 `impl Trait`/`dyn Trait`/`'a` 时。
+
+**分界声明**：本篇第 4 节讲生命周期标注的**省略规则与最小补标**（看得懂签名、写得出 `'a`）；结构体多引用、高阶约束与复杂推断的完整体系见《生命周期深入》（rust/180-RustLifetimesDeepDive）——050 管直觉、100 管签名、180 管体系。
+
 ## 前置知识
 
-- [集合与迭代器](/rust/090-RustCollectionsIterators)：迭代器与闭包的基本用法——本文会反复出现 `Iterator` trait。
+- [集合类型](/rust/090-RustCollections)：迭代器与闭包的基本用法——本文会反复出现 `Iterator` trait。
 
 ## 学习目标
 
@@ -173,7 +183,7 @@ fn make_summary_dyn(kind: bool) -> Box<dyn Summary> {  // 动态分发
 | PartialEq / Eq | 相等比较 | `x == y` |
 | PartialOrd / Ord | 大小比较、排序 | `v.sort()` |
 | Default | 默认值 | `#[derive(Default)]` |
-| Iterator | 迭代器协议 | 见集合与迭代器一篇 |
+| Iterator | 迭代器协议 | 见集合类型与迭代器两篇 |
 | From / Into | 类型转换 | `String::from(s)` |
 
 通过 `#[derive(...)]` 派生这些 trait 是 Rust 最常用的"免费实现"：
@@ -194,6 +204,60 @@ fn main() {
 ```
 
 讲解：derive 只能用于"各字段也实现了该 trait"的类型；这大幅减少样板代码。自定义 `Display` 需要手写 `fmt` 方法（见错误处理一篇的自定义错误示例）。
+
+### 3.1 三个工程场景：Trait 是「能力的契约」
+
+表是速查，理解要靠场景。三个高频工程场景，各看「实现这个 Trait 换来了什么」：
+
+**场景一：Display——给领域类型一份可读输出**（调试与日志）：
+
+```rust
+use std::fmt;
+
+struct Song { title: String, bpm: u16 }
+
+impl fmt::Display for Song {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "《{}》({} BPM)", self.title, self.bpm)
+    }
+}
+
+// 日志里直接写：
+// println!("加入播放队列: {song}");   -> 加入播放队列: 《ネコミミアーカイブ》(174 BPM)
+```
+
+Debug 与 Display 的分工：`{:?}` 给开发者看（derive 一行、暴露内部字段），`{}` 给用户/日志看（手写、控制措辞）——日志系统里用 Display 的格式做聚合键（同一首歌日志格式稳定可 grep），Debug 只进开发环境。
+
+**场景二：From——错误类型的统一收口**（衔接错误处理篇）：
+
+```rust
+struct ParseError(String);
+
+impl From<std::num::ParseIntError> for ParseError {
+    fn from(e: std::num::ParseIntError) -> Self {
+        ParseError(e.to_string())
+    }
+}
+
+fn parse_bpm(raw: &str) -> Result<u16, ParseError> {
+    let bpm: u16 = raw.parse()?;      // ? 用 From 把 ParseIntError 自动转成 ParseError
+    Ok(bpm)
+}
+```
+
+`?` 运算符背后的机制就是 `From::from`：每个 `?` 都在问「这个错误能 From 成函数的错误类型吗」——为你的错误类型实现一批 `From`，全项目的 `?` 链就自动打通（rust/080 的 thiserror 派生宏正是批量生成这些 impl）。
+
+**场景三：Iterator——把集合加工流水线化**（衔接迭代器篇）：
+
+```rust
+let hot: Vec<&Song> = songs
+    .iter()                       // Iterator 协议的起点
+    .filter(|s| s.bpm >= 160)
+    .take(10)
+    .collect();                   // 任何实现 Iterator 的东西都能这样串
+```
+
+`filter/take/collect` 不是 Vec 的方法而是 Iterator trait 的默认方法——**实现一次 Iterator（一个 `next` 方法），整条适配器流水线全部免费获得**。这是「trait 即能力契约」的最直接体现：你的自定义集合只要实现 Iterator，就能被全生态的泛型函数消费（`sort`、`sum`、`collect` 全部就位）。零成本抽象的细节（适配器融合、惰性求值）见《迭代器与函数式风格》（rust/095-RustIteratorsFunctional）。
 
 ## 4. 生命周期标注
 

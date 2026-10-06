@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 170
 title: API 自动化测试
 module: 'software-testing'
 category: 云与基础设施
@@ -273,6 +273,6 @@ with pact:
 - 初学者要点：用 `requests.Session` 封装一个带 base_url 与鉴权头的
   APIClient，每条用例「发请求 → 断状态码 → 断响应体」，配上 pytest
   参数化做数据驱动，就是一套可用的 API 自动化框架。
-- 进阶注意：断言要「结构 + 关键值」两层；契约测试（Pact）把「消费者
+- 进阶注意：断言要「结构 + 关键值」两层；契约测试的完整展开（Pact 流程与工具链）见《API 测试工具链与契约测试》，其把「消费者
   期望什么」固化为可回归的契约，适合微服务间的接口防护网；性能维度
   交给专门的压测工具（JMeter/k6/Locust），不要在功能用例里顺带压测。

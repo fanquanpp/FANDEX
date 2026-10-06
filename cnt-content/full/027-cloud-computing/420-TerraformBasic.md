@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 480
 title: Terraform 基础
 module: 'cloud-computing'
 category: 云与基础设施

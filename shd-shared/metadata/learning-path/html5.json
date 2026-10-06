@@ -178,10 +178,10 @@
         },
         {
           "id": "html-023",
-          "title": "HTML5 离线存储与 Web API",
-          "desc": "localStorage、sessionStorage 与 File API",
+          "title": "Web Storage 与文件",
+          "desc": "localStorage、sessionStorage 与 File/Blob",
           "difficulty": "intermediate",
-          "doc": "240-HTML5OfflineStorageWebAPI"
+          "doc": "245-WebStorage"
         }
       ]
     },

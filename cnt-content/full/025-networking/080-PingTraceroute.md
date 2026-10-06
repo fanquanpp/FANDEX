@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 110
 title: 连通性检测
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/050-IPCommands'
   - 'networking/270-Tcpdump'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## ping 连通性测试

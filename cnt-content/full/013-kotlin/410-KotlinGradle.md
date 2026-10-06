@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 450
 title: Kotlin 与 Gradle
 module: 'kotlin'
 category: 后端技术
@@ -112,8 +112,12 @@ dependencies {
     // testImplementation：只在测试编译和运行时需要
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testImplementation("io.mockk:mockk:1.13.16")
+    // 协程测试：runTest 虚拟时间的入口（用法见协程测试篇）
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
 }
 ```
+
+测试依赖的完整选型与框架配置（JUnit 5/Kotest/MockK/Kotlin 协程测试）分别在[Kotlin 测试框架集成](/kotlin/380-KotlinTestBestPractice)与[Kotlin 协程测试](/kotlin/395-KotlinCoroutineTesting)。
 
 ### 使用版本目录管理依赖
 
@@ -365,6 +369,73 @@ org.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m
 # 配置缓存（Gradle 8.1 起稳定，可大幅缩短重复构建的配置阶段）
 org.gradle.configuration-cache=true
 ```
+
+### 文档与覆盖率工具链：Dokka 与 Kover
+
+两者都是 Gradle 插件，各三步接入：
+
+```kotlin
+// build.gradle.kts
+plugins {
+    id("org.jetbrains.dokka") version "1.9.20"
+    id("org.jetbrains.kotlinx.kover") version "0.8.3"
+}
+```
+
+```bash
+./gradlew dokkaHtml              # 生成 KDoc 文档站点（build/dokka/html）
+./gradlew koverHtmlReport        # 生成覆盖率报告（build/reports/kover）
+./gradlew koverVerify            # 校验覆盖率阈值（需先配置规则）
+```
+
+Dokka 的两个实用点：
+
+- KDoc 语法兼容 Markdown，`[ClassName]` 双方括号是**可点击的跨文件链接**，写库/SDK 的团队把它接进 CI，文档随版本发布（`dokkaHtml` 的多模块聚合版叫 `dokkaHtmlMultiModule`，挂在根项目）。
+- KDoc 不是 Javadoc：`@param`/`@return` 标签类似但属性文档写在属性声明上而非 getter；从 Javadoc 迁移时 `@author`/`@since` 这类标签 Dokka 不渲染——文档为读者服务，别照搬企业模板。
+
+Kover 覆盖率阈值示例（防覆盖率跳水进主干）：
+
+```kotlin
+kover {
+    verify {
+        rule("行覆盖率不低于 60%") {
+            bound { minValue = 60 }     // 百分比
+        }
+    }
+}
+```
+
+易错点：Kover 统计的是 **JaCoCo 同源的行/分支覆盖**，它测不出「断言写弱了」——覆盖率 100% 只说明每行执行过，不代表每行被验证。变异测试补这个盲区（原理与工具见 [CI/CD 测试](/software-testing/230-CICDTest)的变异测试节）。另一个易错点：Android 模块的覆盖率统计需要 `kover` 与 AGP 的构建变体配合，纯 JVM 模块开箱即用；给整个仓库上阈值前先单模块试跑。
+
+### 配置缓存与构建缓存出问题时的排查实操
+
+概念在前文「底层原理」已讲（配置缓存序列化任务图，构建缓存复用任务输出）。这里给排障顺序：
+
+```bash
+# 1. 配置缓存报错：看它生成的报告
+./gradlew --configuration-cache
+# 报错会给出 HTML 报告路径（build/reports/configuration-cache/），
+# 常见两种：构建脚本里用了「构建时未知」的值（读环境变量、File(...) 直接参与任务配置），
+# 或第三方插件不兼容。
+
+# 2. 判断是配置慢还是执行慢
+./gradlew --profile clean build
+# 打开 build/reports/profile/：Summary 里 Configuration 占比高 → 配置缓存有救；
+# 任务执行占比高 → 看哪个任务最慢、是否 up-to-date 失效。
+
+# 3. 任务明明没变却重跑：查 up-to-date 失效原因
+./gradlew build --info | grep "not up-to-date"
+# 典型原因：输入文件时间戳变化（代码生成任务不稳定输出）、
+# 任务用了 System.currentTimeMillis() 这类隐式输入、构建缓存未命中（路径大小写/绝对路径混进任务输入）。
+
+# 4. 构建缓存命中率验证
+./gradlew clean build          # 第一次
+./gradlew clean build          # 第二次应大量 FROM-CACHE
+```
+
+- 报告定位法优先于猜：配置缓存的 HTML 报告直接列出「哪个脚本第几行」用了不兼容 API；先读报告再改代码，避免「注释掉试试」式盲修。
+- 易错点：`gradle.properties` 里的 `org.gradle.configuration-cache=true` 对所有任务生效，包括 IDE 同步——插件不兼容时 IDE 同步也失败，回退开关是命令行 `--no-configuration-cache`（临时）与 `org.gradle.configuration-cache=false`（项目级关闭）。
+- CI 与本地的缓存行为差异：CI 干净环境只有**远程构建缓存**可用；本地命中不了常因为 `gradle.properties` 没开 `org.gradle.caching` 或任务输入里有本机绝对路径。
 
 ## 注意事项与常见陷阱
 

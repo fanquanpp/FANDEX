@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 100
 title: React 19 新特性
 module: 'react'
 category: 前端技术
@@ -10,7 +10,7 @@ updated: '2026-09-28'
 related:
   - 'react/040-HooksDeep'
   - 'react/050-ContextGlobalState'
-  - 'react/070-RouteDataFetch'
+  - 'react/070-ReactRouterRouting'
   - 'react/420-React19NewAPI'
 prerequisites:
   - 'react/040-HooksDeep'

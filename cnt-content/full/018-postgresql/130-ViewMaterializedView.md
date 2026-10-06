@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 70
 title: 视图与物化视图
 module: 'postgresql'
 category: 数据库

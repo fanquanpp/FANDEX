@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 230
 title: 线段树
 module: 'algorithm'
 category: 计算机科学

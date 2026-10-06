@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 280
 title: 窗口函数：不折叠行，也能跨行计算
 module: 'sql'
 category: 数据库

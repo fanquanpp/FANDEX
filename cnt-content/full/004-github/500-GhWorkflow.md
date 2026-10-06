@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 560
 title: gh workflow 工作流命令速查手册
 module: 'github'
 category: 工具链

@@ -1,5 +1,5 @@
 ---
-order: 650
+order: 730
 title: Intl 国际化 API（ECMA-402）
 module: 'javascript'
 category: 前端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'javascript/610-TemporalJavaScriptAPI'
-  - 'javascript/430-WebAPIBrowserInterface'
   - 'javascript/060-ControlFlow'
 prerequisites:
   - 'javascript/040-VariableDataType'

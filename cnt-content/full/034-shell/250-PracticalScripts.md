@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 260
 title: 实战脚本案例
 module: 'shell'
 category: 工具链

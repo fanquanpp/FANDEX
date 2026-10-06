@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 80
 title: GROUP BY 与分组集
 module: 'sql'
 category: 数据库

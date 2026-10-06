@@ -1,5 +1,5 @@
 ---
-order: 640
+order: 690
 title: Go 与 Wasm
 module: 'go'
 category: 后端技术

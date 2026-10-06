@@ -1,5 +1,5 @@
 ---
-order: 550
+order: 590
 title: 嵌入式 C 编程：在 64KB 里跑稳
 module: 'c'
 category: 计算机科学
@@ -9,21 +9,21 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'c/240-BitField'
-  - 'c/070-BitwiseBitField'
+  - 'c/070-BitwiseOperationAndMask'
   - 'c/340-SignalHandling'
   - 'c/250-FunctionCallStackFrame'
   - 'c/540-AttributeCompilerExtension'
 prerequisites:
   - 'c/270-VolatileKeyword'
-  - 'c/210-MemoryManagement'
+  - 'c/210-ProcessMemoryLayoutAndErrors'
 ---
 
 ## 前置知识
 
 - 已完成 [volatile 关键字](/c/270-VolatileKeyword)：知道 volatile 的三经典场景，以及它「不原子、不排序、不当锁」的能力边界；
-- 已完成 [内存深水区](/c/210-MemoryManagement)：能画出进程五段内存布局，知道「全局变量不写初值也是 0」靠的是 bss 段加载时统一清零。
+- 已完成 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)：能画出进程五段内存布局，知道「全局变量不写初值也是 0」靠的是 bss 段加载时统一清零。
 
-> 分工说明：volatile 的完整语义（给什么保证、不给什么保证）在 [const 与 volatile 正交语义](/c/260-CVolatileAndConstDeepDive) 与 270，本篇只讲它在寄存器与中断里的用法；位域为什么不宜直接映射 MMIO 在 [位域](/c/240-BitField)；掩码四件套在 [位运算](/c/070-BitwiseBitField)；栈帧与 -fstack-usage 在 [函数调用栈帧](/c/250-FunctionCallStackFrame)；GCC 属性与自定义段在 [属性与编译器扩展](/c/540-AttributeCompilerExtension)，本篇让 section 属性在向量表上落地。本篇把这些工具带进「没有操作系统」的世界，串成一条裸机主线：寄存器、启动、中断、可靠性、工具链与仿真。RTOS 内核实现、WCET 与实时调度理论、厂商 SDK 全家桶（STM32 HAL、Arduino）超出本篇主线，只在风格对照里露一面。
+> 分工说明：volatile 的完整语义（给什么保证、不给什么保证）在 [const 与 volatile 正交语义](/c/260-ConstAndVolatileQualifiers) 与 270，本篇只讲它在寄存器与中断里的用法；位域为什么不宜直接映射 MMIO 在 [位域](/c/240-BitField)；掩码四件套在 [位运算](/c/070-BitwiseOperationAndMask)；栈帧与 -fstack-usage 在 [函数调用栈帧](/c/250-FunctionCallStackFrame)；GCC 属性与自定义段在 [属性与编译器扩展](/c/540-AttributeCompilerExtension)，本篇让 section 属性在向量表上落地。本篇把这些工具带进「没有操作系统」的世界，串成一条裸机主线：寄存器、启动、中断、可靠性、工具链与仿真。RTOS 内核实现、WCET 与实时调度理论、厂商 SDK 全家桶（STM32 HAL、Arduino）超出本篇主线，只在风格对照里露一面。
 
 ## 学习目标
 
@@ -95,7 +95,7 @@ arm-none-eabi-size blink.elf
    1424       8      16    1448     5a8 blink.elf
 ```
 
-三列对应 [内存深水区](/c/210-MemoryManagement) 的老朋友：text 是代码与常量，占 Flash；data 是初始化过的全局变量，初值存 Flash、运行在 RAM，**两边都占**；bss 是未初始化变量，只占 RAM。dec 列是 text + data + bss 总和——Flash 预算按 text + data 算，RAM 预算按 data + bss 加上堆栈算。`-Os` 告诉编译器「以体积为先」：牺牲一部分速度，换更短的指令序列。
+三列对应 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 的老朋友：text 是代码与常量，占 Flash；data 是初始化过的全局变量，初值存 Flash、运行在 RAM，**两边都占**；bss 是未初始化变量，只占 RAM。dec 列是 text + data + bss 总和——Flash 预算按 text + data 算，RAM 预算按 data + bss 加上堆栈算。`-Os` 告诉编译器「以体积为先」：牺牲一部分速度，换更短的指令序列。
 
 修改实验一：给 blink.c 加两个「看起来会用到」的函数，再裁掉它们：
 
@@ -124,7 +124,7 @@ arm-none-eabi-size blink_gc.elf
 
 ## 3. 寄存器访问：外设寄存器就是固定地址的内存
 
-第 1 节的 `GPIO_OUT` 揭示了裸机的核心事实：**外设寄存器就是被映射到固定地址的内存单元**，往那个地址写一个字，引脚电平就变；读一个字，拿到的就是外设当前状态。声明它通常写成三层限定（[const 与 volatile 正交语义](/c/260-CVolatileAndConstDeepDive) 的 2x2 表在这里全部落地）：
+第 1 节的 `GPIO_OUT` 揭示了裸机的核心事实：**外设寄存器就是被映射到固定地址的内存单元**，往那个地址写一个字，引脚电平就变；读一个字，拿到的就是外设当前状态。声明它通常写成三层限定（[const 与 volatile 正交语义](/c/260-ConstAndVolatileQualifiers) 的 2x2 表在这里全部落地）：
 
 ```c
 /* 寄存器映射声明：三层限定各司其职 */
@@ -135,7 +135,7 @@ arm-none-eabi-size blink_gc.elf
 - `volatile` 是主角：没有它，`while (!(REG_STATUS & READY))` 这类轮询在 -O2 下会被优化成读一次然后死循环——这个实验 270 篇已经完整跑过一遍（-O0 退出、-O2 死循环），在真机上它表现为「单步能过、全速跑挂」，因为调试器介入会强迫真实访存，恰好掩盖了被优化的读。语义细节（它给什么、不给什么）在 260 与 270，这里直接用结论：**凡是内容会绕过 CPU 改变的地址，都要 volatile**。
 - `const` 只加在「硬件只写」或「硬件只读」的寄存器上：它对编译器是契约（260 篇），对硬件是防呆——固件误写只读寄存器，多数总线当场报错。
 
-寄存器的位操作就是 [位运算](/c/070-BitwiseBitField) 掩码四件套的主场：`REG_CTRL |= TE;` 置位、`REG_CTRL &= ~TE;` 清零、`(REG_STATUS & FLAG) != 0` 测试、`REG_CTRL ^= LED;` 翻转。两条纪律：
+寄存器的位操作就是 [位运算](/c/070-BitwiseOperationAndMask) 掩码四件套的主场：`REG_CTRL |= TE;` 置位、`REG_CTRL &= ~TE;` 清零、`(REG_STATUS & FLAG) != 0` 测试、`REG_CTRL ^= LED;` 翻转。两条纪律：
 
 1. **字面量带 U 后缀**：`24u * 1000u * 1000u / 1000u` 才是安全的频率换算，写成 `24 * 1000 * 1000` 可能在 16 位 int 平台上算到一半溢出——表达式溢出不看你赋值给什么类型，看参与运算的类型本身；
 2. **知道 `|=` 不是原子的**：它是「读、改、写」三步，两拍之间中断或硬件可能改掉了同寄存器的其他位，你的写回会把别人的修改覆盖掉。因此厂商常提供「写 1 置位、写 1 复位」的**原子置位/复位寄存器**（CMSIS 风格的 BSRR：写一个字，置位与清零一条指令完成），需要原子位操作时用它，系统级的原子性与内存序全图见 [原子与内存模型](/c/380-AtomicAndMemoryModel)。
@@ -294,7 +294,7 @@ uint32_t ticks_get(void) {           /* 在 16 位 MCU 上：32 位读是两条�
 
 **栈核算**是第二道保险。桌面程序栈溢出会得到保护页与清晰的崩溃报告；裸机栈只有几 KB，溢出后写坏的是相邻的全局变量——这是比崩溃更危险的结果（实录三）。工具是 250 篇的 `-fstack-usage`：编译时给每个函数的栈帧量尺寸，配合 `-Wstack-usage=N` 把超支函数变成编译告警。预算公式的心智版：最深调用链各帧之和，加上最深处被打断时 ISR 的压栈开销，再乘 1.5 到 2 的余量。裸机界还有一条硬规矩：**不用递归**——递归深度不可静态预算（递归的桌面级分析在 250 篇），解析嵌套数据改用显式栈或循环。
 
-**MISRA C** 一句概览：它是汽车、医疗、航空等安全关键行业广泛采用的 C 编码规范，规则如「禁止递归」「限制动态内存」「不依赖未定义行为」——精神是把语言的自由裁剪成「可静态分析、可审查」的子集。知道它存在、理解它的动机，就足够本篇了；完整规则集与合规流程超出主线，静态分析工具怎么落地这些规则见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+**MISRA C** 一句概览：它是汽车、医疗、航空等安全关键行业广泛采用的 C 编码规范，规则如「禁止递归」「限制动态内存」「不依赖未定义行为」——精神是把语言的自由裁剪成「可静态分析、可审查」的子集。知道它存在、理解它的动机，就足够本篇了；完整规则集与合规流程超出主线，静态分析工具怎么落地这些规则见 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)。
 
 ## 8. 工具链与仿真：交叉编译与 QEMU
 
@@ -367,9 +367,9 @@ static void delay(int n) {
 
 ## 12. 与之前和之后的知识的关系
 
-- 往前：volatile 的三场景（[const 与 volatile 正交语义](/c/260-CVolatileAndConstDeepDive)、[volatile 关键字](/c/270-VolatileKeyword)）在寄存器与中断共享变量上全部落地；掩码四件套（[位运算](/c/070-BitwiseBitField)）与位域争议（[位域](/c/240-BitField)）在驱动层合流；五段布局（[内存深水区](/c/210-MemoryManagement)）的嵌入式对应物是第 4 节的启动代码；栈核算（[函数调用栈帧](/c/250-FunctionCallStackFrame)）在这里从「性能问题」升级为「生存问题」；
+- 往前：volatile 的三场景（[const 与 volatile 正交语义](/c/260-ConstAndVolatileQualifiers)、[volatile 关键字](/c/270-VolatileKeyword)）在寄存器与中断共享变量上全部落地；掩码四件套（[位运算](/c/070-BitwiseOperationAndMask)）与位域争议（[位域](/c/240-BitField)）在驱动层合流；五段布局（[内存深水区](/c/210-ProcessMemoryLayoutAndErrors)）的嵌入式对应物是第 4 节的启动代码；栈核算（[函数调用栈帧](/c/250-FunctionCallStackFrame)）在这里从「性能问题」升级为「生存问题」；
 - 旁支：[信号处理](/c/340-SignalHandling) 是中断的桌面镜像——两条处理器纪律完全同构；malloc 纪律（[动态内存](/c/200-DynamicMemoryManagement)）在裸机的答案是「尽量不 malloc」；
-- 往后：当 C 不够用时——内联汇编、操作数约束、内存屏障与原子指令——见 [C 与汇编交互](/c/560-CAssemblyInteraction)；MISRA 式检查的工程化落地见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+- 往后：当 C 不够用时——内联汇编、操作数约束、内存屏障与原子指令——见 [C 与汇编交互](/c/560-CAssemblyInteraction)；MISRA 式检查的工程化落地见 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)。
 
 ## 13. 官方文档
 

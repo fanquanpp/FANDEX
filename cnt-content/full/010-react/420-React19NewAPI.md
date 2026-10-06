@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 490
 title: React 19 新增 API
 module: 'react'
 category: 前端技术
@@ -10,7 +10,6 @@ updated: '2026-10-05'
 related:
   - 'react/060-React19NewFeatures'
   - 'react/400-ServerClientComponents'
-  - 'react/140-ServerComponents'
   - 'react/430-InterruptibleRendering'
 prerequisites:
   - 'react/040-HooksDeep'

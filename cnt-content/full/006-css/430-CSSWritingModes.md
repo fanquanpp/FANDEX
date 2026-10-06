@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 460
 title: CSS 书写模式
 module: 'css'
 category: 前端技术
@@ -112,4 +112,4 @@ prerequisites:
 - 逻辑属性全集：`css/420-LogicalProperty`；
 - 文本与字体：`css/070-TextAndFontsBasics`；
 - 国际化与可访问性样式：`css/500-AccessibleStyling`；
-- 排版进阶：`css/490-TypographyAndGridSystem`。
+- 排版进阶：`css/490-TypeScaleAndSpacingTokens`。

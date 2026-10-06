@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 310
 title: Dependabot 实战：三个职责、一份配置、一条自动合并流水线
 module: 'github'
 category: 工具链

@@ -11,7 +11,6 @@ author: fanquanpp
 updated: '2026-09-18'
 related:
   - 'cybersecurity/010-SecurityBasicsDefense'
-  - 'networking/010-NetworkBasicsAndProtocol'
   - 'roadmap/090-DevOpsCloudRoute'
 ---
 

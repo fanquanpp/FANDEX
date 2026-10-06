@@ -1,5 +1,5 @@
 ---
-order: 630
+order: 670
 title: 未定义行为全景：编译器为什么「可以为所欲为」
 description: UB 的心智模型与防御体系：定义行为的四个层级、UB 的分类地图（内存/整数/求值顺序/并发）、优化器的「时间旅行」原理、sanitizer 与 constexpr 两道防线，附事故复现实验与面试题思路。
 module: 'cpp'
@@ -156,7 +156,7 @@ clang++ --analyze main.cpp     # clang 静态分析器
 ## 6. 与模块内知识的串联
 
 - 指针与引用篇的悬垂事故是内存类 UB 的两个入口；智能指针
-  （[深水区](/cpp/130-SmartPointerDeepDive)、[循环引用](/cpp/150-SmartPointerCircularReference)）
+  （[深水区](/cpp/130-SmartPointerDeepDive)，循环引用并入其 [weak_ptr 章节](/cpp/140-CppSmartPointer)）
   是「消灭生命周期类 UB」的工程终局；
 - [移动语义](/cpp/100-MoveSemanticsDetailed) 的 moved-from 状态是「有效但未指明」，
   **不是 UB**——但对它调用有前置条件的成员（如 `size()` 之外的值语义操作）就是 UB；

@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 210
 title: 记录类型与不可变性
 module: 'csharp'
 category: 后端技术

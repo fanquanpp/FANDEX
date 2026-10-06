@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 520
 title: 自定义 Hooks 复用逻辑
 module: 'react'
 category: 前端技术
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'react/160-CustomHooksDesignPattern'
   - 'react/430-InterruptibleRendering'
-  - 'react/440-ErrorBoundarySentry'
+  - 'react/440-ErrorMonitoringSentry'
   - 'react/040-HooksDeep'
 prerequisites:
   - 'react/040-HooksDeep'

@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 640
 title: Go 与性能分析
 module: 'go'
 category: 后端技术
@@ -41,6 +41,16 @@ prerequisites:
 > 本文以 Go 1.22 为基准版本，覆盖 Go 1.0 至 Go 1.24 的 pprof 与 runtime 生态演进，包括采样剖析的数学基础、CPU/堆/Goroutine/锁/阻塞剖析的运行时机制、`runtime/trace` 时间线分析、火焰图形式化、连续剖析（continuous profiling）平台与典型企业级调优案例研究。适用于已掌握 Go 基础语法与并发模型、希望系统化构建性能调优方法论与工程化能力的工程师。
 
 ---
+
+## 知识点地图
+
+- **知识类别**：性能分析（profiling）——pprof 各采样器、trace、
+  火焰图与生产级连续剖析。
+- **解决什么问题**：「服务慢」是症状不是诊断。性能分析把 CPU 时间、
+  内存分配、锁等待、goroutine 阻塞变成可归因的数据，让优化打在
+  真热点上而不是直觉上。
+- **什么时候用到**：上线前压测定位热点、线上内存/Goroutine 泄漏
+  排查、容量规划前的瓶颈识别、PGO 采样。
 
 ## 1. 历史动机与发展脉络
 
@@ -1705,3 +1715,90 @@ traces                # 查看所有调用栈
 ---
 
 *本文档基于 Go 1.22 编写，覆盖至 Go 1.24 的最新特性。如需了解最新进展，请参阅 [Go 官方文档](https://go.dev/doc/)。*
+
+## 动手实践
+
+**任务**：亲手制造两种典型性能病（CPU 热点与内存分配风暴），用 pprof
+各抓一次 profile，并从火焰图读出病灶——不做任何「背口诀式」优化，
+全部结论来自采样数据。
+
+1. 写两个函数：`hashLoop` 用 `crypto/sha256` 空转（CPU 密集热点），
+   `allocStorm` 在循环里反复 `fmt.Sprintf` 拼字符串（分配风暴）；
+2. main 里先只跑 hashLoop，`go tool pprof` 抓 15 秒 CPU profile，
+   `top` 应显示 sha256 系函数占大头；
+3. 注释掉 hashLoop 只跑 allocStorm，再抓 CPU profile，
+   `top -cum` 看 `runtime.mallocgc` 占比；
+4. 加 `-sample_index=alloc_objects`（或抓 heap profile）确认分配来源，
+   `list allocStorm` 逐行看分配落点；
+5. 优化 allocStorm（`strings.Builder` 预分配），前后对比每 op 分配数。
+
+**提示**：profile 有两种入口——测试里 `go test -cpuprofile`，
+服务里 `import _ "net/http/pprof"` 后 `go tool pprof http://...`；
+练习用测试入口最省事。对比优化效果看 `-benchmem` 的
+`allocs/op` 与 `B/op`，不要看总耗时（噪声大）。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+```go
+// perf_lab_test.go
+package main
+
+import (
+    "crypto/sha256"
+    "fmt"
+    "strings"
+    "testing"
+)
+
+func hashLoop(n int) {
+    for i := 0; i < n; i++ {
+        sha256.Sum256([]byte("fandex-batch"))
+    }
+}
+
+func allocStorm(n int) string {
+    var s string
+    for i := 0; i < n; i++ {
+        s = fmt.Sprintf("%s,%d", s, i) // 每轮分配新字符串，O(n^2) 拷贝
+    }
+    return s
+}
+
+func BenchmarkCPUOnly(b *testing.B)     { hashLoop(100_000) }
+func BenchmarkAllocOnly(b *testing.B)   { allocStorm(500) }
+func BenchmarkAllocFixed(b *testing.B) { // 优化版：Builder 预分配
+    var sb strings.Builder
+    sb.Grow(4096)
+    for i := 0; i < 500; i++ {
+        fmt.Fprintf(&sb, "%d", i)
+        sb.WriteByte(',')
+    }
+    _ = sb.String()
+}
+```
+
+```bash
+go test -run XXX -bench CPUOnly -cpuprofile cpu.out
+go tool pprof -top cpu.out | head -12
+# 预期 sha256.Sum256 / block 系列函数占 70%+ ——热点即数据
+
+go test -run XXX -bench AllocOnly -benchmem
+# 预期 allocs/op 上万：Sprintf 每轮分配新串 + 内部 buffer
+
+go test -run XXX -bench "AllocOnly|AllocFixed" -benchmem
+# 优化后 allocs/op 从上万降到常数级
+```
+
+**逐段讲解**：`-run XXX`（不存在的名字）让测试主体不跑、只跑基准
+——cpuprofile 只想要基准时段的样本；`-top` 读法是先看 `flat` 列
+（函数自身耗时占比），热点函数排在前面才算「真病灶」，`flat` 低
+`cum` 高的是调用链中转站不是病灶；`allocStorm` 的病是双重叠加：
+每轮 `Sprintf` 分配新串（分配风暴）且旧串拼接是 O(n^2) 拷贝
+（CPU 浪费），`strings.Builder` 内部持有 `[]byte` 复用底层数组，
+分配从「每轮一串」变「最终一串」；优化前后用同一基准对比
+`allocs/op` 而不是 wall time——分配数是确定性指标，
+时间受机器噪声影响大。这个「先采样、后优化、再复测」的闭环
+就是本篇全部内容的实践形态。
+
+</details>

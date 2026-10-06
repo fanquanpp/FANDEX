@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 450
 title: 逻辑属性
 module: 'css'
 category: 前端技术
@@ -115,7 +115,7 @@ margin/padding 的**老四值简写 `margin: 1px 2px 3px 4px` 是物理顺序**�
 
 - 之前：[盒模型详解](/css/050-CSS3BoxModelDetailed) 的物理四方向是逻辑属性的「翻译底稿」；
 - 并行：[书写模式](/css/430-CSSWritingModes) 是轴方向的开关；[滚动捕捉](/css/440-ScrollSnap) 与 [定位](/css/220-PositionDetailed) 的属性族都有对应逻辑版本；
-- 之后：多语言站点的排版规范（[排版与栅格](/css/490-TypographyAndGridSystem)）默认以逻辑属性书写。
+- 之后：多语言站点的排版规范（[排版与栅格](/css/490-TypeScaleAndSpacingTokens)）默认以逻辑属性书写。
 
 ## 自我检查
 
@@ -202,4 +202,4 @@ margin/padding 的**老四值简写 `margin: 1px 2px 3px 4px` 是物理顺序**�
 
 - [书写模式](/css/430-CSSWritingModes)：轴方向的完整开关，竖排排版的规则书；
 - [定位详解](/css/220-PositionDetailed)：`inset` 逻辑偏移所在的定位体系；
-- [排版与栅格系统](/css/490-TypographyAndGridSystem)：多语言排版的整体视角。
+- [排版与栅格系统](/css/490-TypeScaleAndSpacingTokens)：多语言排版的整体视角。

@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 220
 title: LATERAL 派生表
 module: 'sql'
 category: 数据库

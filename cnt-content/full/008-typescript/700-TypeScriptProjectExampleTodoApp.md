@@ -1,5 +1,5 @@
 ---
-order: 720
+order: 760
 title: TypeScript 项目实战：类型安全 TODO 应用
 module: 'typescript'
 category: 前端技术

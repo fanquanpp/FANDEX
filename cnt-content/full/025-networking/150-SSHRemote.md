@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 180
 title: SSH 远程连接
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/260-NetcatNmap'
   - 'networking/320-VPNConfig'
   - 'networking/230-IptablesFirewall'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## ssh 基本连接

@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 400
 title: 消息队列概述与选型
 module: 'devops'
 category: 云与基础设施
@@ -12,8 +12,7 @@ related:
   - 'devops/390-RabbitMQQuickStart'
   - 'devops/400-ReliableMessagingPatterns'
   - 'software-testing/410-EventDrivenArchitecture'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## 0. 一句话理解

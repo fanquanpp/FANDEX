@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 520
 title: C++正则表达式
 module: 'cpp'
 category: 计算机科学
@@ -10,7 +10,7 @@ updated: '2026-09-27'
 related:
   - 'cpp/520-CppSerialization'
   - 'cpp/530-CppNetworkProgramming'
-  - 'cpp/740-Cpp23Cpp26NewFeatures'
+  - 'cpp/730-Cpp23NewFeatures'
   - 'cpp/580-CppPythonInteraction'
 prerequisites: []
 ---

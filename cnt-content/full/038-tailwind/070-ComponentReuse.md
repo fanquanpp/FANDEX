@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 120
 title: Tailwind CSS 组件复用
 module: 'tailwind'
 category: 前端技术

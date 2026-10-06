@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 210
 title: Tailwind CSS 学习总结：核心知识体系回顾
 module: 'tailwind'
 category: 前端技术
@@ -52,7 +52,7 @@ flowchart TD
   end
   subgraph advanced["进阶方向"]
     I["009 动画与过渡"]
-    J["010 插件与表单"]
+    J["010 官方插件与自定义插件"]
     K["011 容器查询"]
   end
   A --> B
@@ -106,7 +106,7 @@ Flex 与 Grid 的选择口诀是"一维问 Flex、二维问 Grid"：歌姬一览
 
 ### 3. 布局系统：Flex 与 Grid
 
-Flex 擅长一维排布（一行或一列），Grid 擅长二维排布（行列同时控制）。平台首页的"歌姬一览"用 Grid 分格，卡片内部用 Flex 对齐，`gap-*` 统一替代子元素间距（见[布局系统](/tailwind/040-LayoutFlexGrid)）：
+Flex 擅长一维排布（一行或一列），Grid 擅长二维排布（行列同时控制）。平台首页的"歌姬一览"用 Grid 分格，卡片内部用 Flex 对齐，`gap-*` 统一替代子元素间距（见[Flexbox 一维弹性布局](/tailwind/041-FlexboxLayout)与[Grid 网格布局](/tailwind/043-GridLayout)）：
 
 ```html
 <!-- 歌姬一览：Grid 控制整体分格 -->
@@ -294,7 +294,7 @@ const cls = twMerge("p-2", extra) // extra = "p-4" 得到 "p-4"
 
 ## 后续学习路径
 
-1. 夯实布局：重读[布局系统](/tailwind/040-LayoutFlexGrid)，把主轴交叉轴与网格线原理用自己的话讲一遍。
+1. 夯实布局：重读[Flexbox 一维弹性布局](/tailwind/041-FlexboxLayout)与[Grid 网格布局](/tailwind/043-GridLayout)，把主轴交叉轴与网格线原理用自己的话讲一遍。
 2. 建立设计系统：跟随[主题定制与设计令牌](/tailwind/050-ThemeCustomization)为平台落地完整令牌体系，衔接[响应式与暗色模式](/tailwind/060-ResponsiveDark)完成多形态适配。
 3. 工程化复用：精读[组件复用](/tailwind/070-ComponentReuse)，用 cva 重构一个现有组件并对比维护成本。
-4. 进阶专题：按[组件复用](/tailwind/070-ComponentReuse)、[v4 新特性](/tailwind/080-V4Features)的顺序收束主线，再依次学习[动画与过渡](/tailwind/090-TailwindAnimationTransition)、[插件与表单](/tailwind/100-TailwindPluginsForms)、[容器查询](/tailwind/110-TailwindContainerQueries)三个进阶篇，补全模块全景。
+4. 进阶专题：按[组件复用](/tailwind/070-ComponentReuse)、[v4 新特性](/tailwind/080-V4Features)的顺序收束主线，再依次学习[动画与过渡](/tailwind/090-TailwindAnimationTransition)、[官方插件与自定义插件](/tailwind/100-TailwindPluginsForms)、[自定义插件机制](/tailwind/105-CustomPluginApi)、[容器查询](/tailwind/110-TailwindContainerQueries)、[交互控制与滚动工具类](/tailwind/088-InteractivityAndScrollUtilities)等进阶篇，补全模块全景。

@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 210
 title: 竞态检测与原子操作
 module: 'go'
 category: 后端技术

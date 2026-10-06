@@ -10,7 +10,7 @@ updated: '2026-09-29'
 related:
   - 'vue3/080-CompositionAPIAdvantageScene'
   - 'vue3/220-PiniaPersistencePlugin'
-  - 'vue3/100-CustomComposableWrapper'
+  - 'vue3/090-CustomHook'
   - 'vue3/270-Vue3ViteBuildConfig'
 prerequisites:
   - 'vue3/080-CompositionAPIAdvantageScene'

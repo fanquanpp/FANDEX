@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 350
 title: Vue3 服务端渲染：先出 HTML，再接上电
 module: 'vue3'
 category: 前端技术

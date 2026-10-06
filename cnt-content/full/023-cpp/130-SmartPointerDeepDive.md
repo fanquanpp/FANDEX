@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 160
 title: C++ 智能指针：把 delete 交给对象的生命周期
 module: 'cpp'
 category: 计算机科学
@@ -10,7 +10,7 @@ updated: '2026-09-28'
 related:
   - 'cpp/120-CppPointers'
   - 'cpp/140-CppSmartPointer'
-  - 'cpp/150-SmartPointerCircularReference'
+  - 'cpp/140-CppSmartPointer'
   - 'cpp/160-RAIIResourceManagement'
 prerequisites:
   - 'cpp/120-CppPointers'
@@ -257,7 +257,7 @@ main 结束
 玩家下线
 ```
 
-析构消息到齐：weak_ptr 不进计数，环被拆开，析构链跑完。需要访问时用 `guild.lock()` 临时升级成 shared_ptr。判别法则一句话：**拥有方向用 shared_ptr，反向引用和观察者用 weak_ptr**。lock/expired 组合与缓存场景，[150 篇](/cpp/150-SmartPointerCircularReference) 专门展开。
+析构消息到齐：weak_ptr 不进计数，环被拆开，析构链跑完。需要访问时用 `guild.lock()` 临时升级成 shared_ptr。判别法则一句话：**拥有方向用 shared_ptr，反向引用和观察者用 weak_ptr**。lock/expired 组合、循环引用破环与缓存场景，[140 篇](/cpp/140-CppSmartPointer) 第 6-9 节专门展开。
 
 ## 7. 所有权心智模型
 
@@ -363,7 +363,7 @@ delete；shared_ptr 只能管 new 出来的对象。修法：return std::make_sh
 ## 12. 与之前和之后的知识的关系
 
 - 往前：[C++ 指针](/cpp/120-CppPointers) 的「只看不拥有」纪律在这里升级为类型系统强制；移动语义（090/100 篇）解释了 unique_ptr 为什么只能 move；
-- 往后：[智能指针深水区](/cpp/140-CppSmartPointer) 拆控制块、线程边界与自定义删除器；[循环引用](/cpp/150-SmartPointerCircularReference) 把第 6 节拆到 use_count 逐行级别；[RAII](/cpp/160-RAIIResourceManagement) 把本文思路推广到文件、锁、连接等一切资源；
+- 往后：[智能指针深水区](/cpp/140-CppSmartPointer) 拆控制块、线程边界与自定义删除器；[智能指针深水区](/cpp/140-CppSmartPointer) 的 weak_ptr 与循环引用章节把第 6 节拆到 use_count 逐行级别；[RAII](/cpp/160-RAIIResourceManagement) 把本文思路推广到文件、锁、连接等一切资源；
 - 更远：容器（240 篇起）装 `unique_ptr` 时不可拷贝的要求，正是移动语义的落地。
 
 ## 13. 官方文档

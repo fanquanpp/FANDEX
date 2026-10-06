@@ -1,5 +1,5 @@
 ---
-order: 750
+order: 860
 title: Jupyter Notebook：边写边看的数据工作台
 module: 'python'
 category: 后端技术

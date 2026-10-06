@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 530
 title: AWS SQS/SNS 消息队列命令
 module: 'cloud-computing'
 category: 云与基础设施

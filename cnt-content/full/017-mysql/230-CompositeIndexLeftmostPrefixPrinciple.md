@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 250
 title: 联合索引与最左前缀：B+ 树的排序魔法
 module: 'mysql'
 category: 数据库
@@ -142,3 +142,29 @@ EXPLAIN SELECT * FROM combo_demo WHERE a = 1 AND b IN (1,2) AND c = 3;
 ## 下一步
 
 定位解决了，剩下的是"减少回表"：[前缀索引](/mysql/240-PrefixIndex) 管长列瘦身，[索引条件下推](/mysql/250-IndexConditionPushdown) 管回表瘦身——两者与本篇共同构成索引设计的三大件。
+
+### 降序索引：混合排序方向的 8.0 正解
+
+上面「ORDER BY a ASC, b DESC 要 filesort」的那一格，8.0 有了真答案——**降序索引**（8.0 前 DESC 语法被忽略、索引一律升序存储）：
+
+```sql
+-- 混合方向的真实需求：按用户查最近的操作记录
+CREATE INDEX idx_user_time_desc ON access_logs (user_id ASC, access_time DESC);
+
+-- 完美匹配，免 filesort（8.0 前反向扫描只能救「全列同向反转」）
+SELECT * FROM access_logs
+WHERE user_id = 1001
+ORDER BY access_time DESC LIMIT 50;
+
+-- 三列混合方向：ASC / DESC / DESC
+CREATE INDEX idx_region_date_amount ON sales (
+    region ASC,
+    sale_date DESC,
+    amount DESC
+);
+SELECT * FROM sales
+WHERE region = 'East'
+ORDER BY sale_date DESC, amount DESC LIMIT 100;
+```
+
+逐段讲机制：8.0 前的索引每个列都升序存储，`ORDER BY a ASC, b DESC` 只能靠反向扫描（救得了「两个方向同时反转」）或 filesort；8.0 起每个列可独立声明方向，索引的物理序直接等于 ORDER BY 的需求序。两个使用边界：其一，反向扫描对「同向反转」依然有效（`ORDER BY access_time ASC` 走同一个 DESC 索引反向扫），所以**单列方向其实无所谓**——降序索引的真实价值在**混合方向**（如上两例）；其二，方向写错一半（该 DESC 写成 ASC）就退化回 filesort——EXPLAIN 里看 Extra 是否出现 `Using filesort` 验证，与最左前缀的验证方法一致。

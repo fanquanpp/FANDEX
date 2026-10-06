@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 250
 title: Kotlin 2.x 新语言特性与 K2 编译器
 module: 'kotlin'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 560
 title: 错误边界与全局错误捕获
 module: 'javascript'
 category: 前端技术
@@ -11,7 +11,6 @@ related:
   - 'javascript/180-JavaScriptPrototypeInheritance'
   - 'javascript/110-Regex'
   - 'javascript/370-MemoryLeakTroubleshoot'
-  - 'javascript/430-WebAPIBrowserInterface'
 prerequisites: []
 ---
 

@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 250
 title: C# 14 新特性：扩展成员、field 关键字与 .NET 10
 module: 'csharp'
 category: 后端技术
@@ -9,12 +9,12 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'csharp/210-C12C13NewFeatures'
-  - 'csharp/150-CSharpAdvancedFeature'
+  - 'csharp/152-UnsafeCodeAndDynamicProgramming'
   - 'csharp/240-SourceGenerator'
   - 'csharp/230-SpanMemory'
 prerequisites:
   - 'csharp/040-CSharpOOP'
-  - 'csharp/150-CSharpAdvancedFeature'
+  - 'csharp/152-UnsafeCodeAndDynamicProgramming'
 ---
 
 ## 前置知识
@@ -387,3 +387,60 @@ public partial class ViewModel
 C# 14 没有引入颠覆性范式，而是把多年来使用频率最高的三处"语法缝隙"——扩展的完整性、属性的半自动化、null 条件链的写场景——一次焊平。对业务开发者的即时收益是更少的样板代码；对库作者与源生成器作者，`partial` 家族的补全和复合赋值运算符则打开了新的生成与优化空间。语言层面之外，.NET 10 的 BCL 也同步新增了 `LeftJoin`/`RightJoin` 等 LINQ 运算符，语言与库协同演进的节奏在 [C# 12/13 新特性](/csharp/210-C12C13NewFeatures)与 [.NET 平台](/csharp/250-CSharpDotNet)两章中可以找到完整脉络。
 
 下一篇推荐：[源生成器](/csharp/240-SourceGenerator)——C# 14 的 partial 特性矩阵正是它的主战场。
+
+## 速查补充：C# 14 新特性速记（承接自原 150 篇速查段）
+
+**基本写法：C# 14 扩展成员**
+`extension members for <类型> { }`
+```csharp
+// C# 14 引入扩展成员语法，统一扩展方法、属性等
+extension members for string
+{
+    public static bool IsBlank(string s) => string.IsNullOrWhiteSpace(s);
+    public string Reversed() => new string(this.Reverse().ToArray());
+}
+// 使用
+string str = "hello";
+bool blank = string.IsBlank(str);
+string rev = str.Reversed();
+```
+
+**基本写法：C# 14 null 条件分配**
+`<obj>?.<字段> = <值>;`
+```csharp
+// 仅当 obj 非空时才赋值字段
+class User { public string? Name { get; set; } }
+User? user = GetUser();
+user?.Name = "Alice";
+// 等价于 if (user != null) user.Name = "Alice";
+```
+
+**基本写法：C# 14 implicit span conversion**
+`Span<<T>> <变量> = <数组>;`
+```csharp
+// 隐式转换：数组与 Span<T> 之间自动转换
+int[] arr = { 1, 2, 3, 4, 5 };
+// 数组隐式转换为 Span<T>，无需显式 AsSpan 调用
+Span<int> span = arr;
+ReadOnlySpan<int> ros = arr;
+foreach (var v in span) Console.WriteLine(v);
+```
+
+**基本写法：C# 14 partial constructors**
+`partial <类型>()`
+```csharp
+// partial 构造函数：将构造逻辑拆分到多个 partial 文件
+partial class Service
+{
+    // 主文件声明 partial 构造函数
+    public partial Service();
+}
+// 另一个文件实现
+partial class Service
+{
+    public partial Service()
+    {
+        Console.WriteLine("partial 构造逻辑执行");
+    }
+}
+```

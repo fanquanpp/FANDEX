@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 90
 title: "哈希表：为什么 in set 快千倍"
 module: 'algorithm'
 category: 计算机科学

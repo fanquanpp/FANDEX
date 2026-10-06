@@ -1,5 +1,5 @@
 ---
-order: 30
+order: 40
 title: Hash 命令
 module: 'redis'
 category: 数据库

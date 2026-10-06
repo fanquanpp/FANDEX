@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 70
 title: 借用检查器报错实战
 module: 'rust'
 category: 后端技术

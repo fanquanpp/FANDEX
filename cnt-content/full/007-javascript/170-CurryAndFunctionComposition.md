@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 190
 title: 柯里化与偏函数：参数先收一半，剩下慢慢给
 module: 'javascript'
 category: 前端技术

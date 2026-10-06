@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 540
 title: 可访问性样式
 module: 'css'
 category: 前端技术
@@ -14,6 +14,15 @@ prerequisites:
   - 'css/360-MediaQuery'
 ---
 
+
+## 知识点地图
+
+- **知识类别**：可访问性样式（a11y styling）——对比度、焦点可见、
+  动效偏好、文本缩放四个维度的 CSS 落地。
+- **解决什么问题**：视觉障碍、运动障碍、前庭障碍用户使用样式化
+  页面时的障碍；样式代码常在无意间制造这些障碍。
+- **什么时候用到**：组件库与表单（联动 [505-FormControlStyling](/css/505-FormControlStyling)
+  的 :focus-visible 纪律）、营销页动效、内容站排版。
 
 ## 一句话理解
 

@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 220
 title: 云架构设计
 module: 'cloud-computing'
 category: 云与基础设施

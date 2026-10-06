@@ -15,6 +15,12 @@ related:
 prerequisites: []
 ---
 
+## 知识点地图
+
+- **知识类别**：Python 的异常处理体系——内建异常层级、`try/except/else/finally` 捕获结构、`raise` 抛出、自定义异常类、断言与异常组（3.11+）。它是错误从发生到被处置的完整通路。
+- **解决什么问题**：网络会断、文件会缺、用户输入会烂——程序必须有组织地面对失败：哪里抛、哪里接、接住后怎么恢复或翻译、没接住的怎么留下现场。没有这套纪律的代码要么裸奔崩溃、要么 `except Exception: pass` 把故障吞进黑箱。
+- **什么时候用到**：所有与外部世界交互的代码（文件、网络、数据库、用户输入）；分层架构里「底层抛领域异常、上层翻译成用户可读信息」的边界设计；`with` 资源清理的正确性依赖本篇的 `__exit__` 异常语义（见 [上下文管理器](/python/520-ContextManager)）。测试侧对异常的断言见 [Python 测试](/python/750-PythonTest) 与 [unittest 与 mock](/python/755-UnittestAndMockStdlib)。
+
 ## 前置知识
 
 - [装饰器进阶](/python/510-DecoratorAdvanced)：建议先完成前一篇的学习
@@ -1176,3 +1182,182 @@ def retry(max_retries=3, delay=1):
         return wrapper
     return decorator
 ```
+
+## 动手实践
+
+练习一（预测题）：不运行代码，判断输出：
+
+```python
+def risky():
+    try:
+        raise ValueError("原始错误")
+    except KeyError:
+        print("不会到这里")
+    finally:
+        print("finally 执行")
+
+try:
+    risky()
+except ValueError as e:
+    print(f"外层捕获: {e}")
+```
+
+提示：except 只拦截匹配的类型；finally 无论是否匹配都会执行。
+
+<details>
+<summary>参考实现</summary>
+
+输出三行：`finally 执行`、`外层捕获: 原始错误`。`risky` 里的 `except KeyError` 与 ValueError 不匹配，ValueError 穿过该 except 向上传播——但 `finally` 在传播**之前**执行（finally 是唯一「异常也要经过」的出口）；离开 `risky` 后外层 `except ValueError` 接住。这正是「异常没被接住时 finally 依然运行」的语义演示：资源清理（finally/with）与错误处置（except）是两条独立机制，别指望一个 except 顺带做清理。
+</details>
+
+练习二（实战题）：写一个分层异常小系统：`AppError(Exception)` 基类，子类 `ConfigError` 与 `NetworkError`；`load_config` 函数在文件缺失时抛 `ConfigError` 并用 `raise ... from` 链上原始的 FileNotFoundError。写调用方代码区分捕获两种异常并打印异常链。
+
+提示：`raise ConfigError(...) from exc`；查看链用 `e.__cause__`。
+
+<details>
+<summary>参考实现</summary>
+
+```python
+import json
+from pathlib import Path
+
+class AppError(Exception):
+    """应用异常基类：上层只需要捕获它一族。"""
+
+class ConfigError(AppError): ...
+class NetworkError(AppError): ...
+
+def load_config(path: str) -> dict:
+    try:
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise ConfigError(f"配置文件不存在: {path}") from exc
+    except json.JSONDecodeError as exc:
+        raise ConfigError(f"配置不是合法 JSON: {path}") from exc
+
+def handle(path: str) -> None:
+    try:
+        print(load_config(path))
+    except NetworkError as e:
+        print(f"网络问题: {e}")          # 先接子类
+    except ConfigError as e:
+        print(f"配置问题: {e}; 根因: {e.__cause__!r}")
+
+handle("missing.json")
+# 配置问题: 配置文件不存在: missing.json; 根因: FileNotFoundError(2, 'No such file...')
+```
+
+设计要点：子类异常必须**先接**（except 按顺序匹配，基类在前会把子类全吞掉）；`from exc` 保留异常链，traceback 里出现 `The above exception was the direct cause...`，排障时能看到「翻译前的真相」；不写 from 时新异常的 `__context__` 也会隐式链上原异常，但语义是「处理中顺带发生的」，显式 from 才是「我翻译它」。
+</details>
+
+练习三（实战题）：给 320 篇的 HTTP 重试场景写 `retry_on(exc_types, attempts=3)` 装饰器：只对指定异常重试，每次间隔翻倍（1s、2s、4s），最后一次失败把原异常原样抛出（保留异常链）。
+
+提示：装饰器与 `*args/**kwargs` 转发见 [装饰器](/python/500-Decorator)；「最后一次」判断用 `attempt == attempts - 1`。
+
+<details>
+<summary>参考实现</summary>
+
+```python
+import time
+import functools
+
+def retry_on(exc_types, attempts: int = 3):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            last: Exception | None = None
+            for attempt in range(attempts):
+                try:
+                    return func(*args, **kwargs)
+                except exc_types as exc:        # 只重试声明的类型
+                    last = exc
+                    if attempt < attempts - 1:
+                        time.sleep(2 ** attempt)
+            raise last from last                 # 原异常原样上抛，链上自己
+        return wrapper
+    return decorator
+
+@retry_on((TimeoutError, ConnectionError), attempts=3)
+def flaky_fetch(url: str) -> str:
+    raise TimeoutError(f"{url} 超时")
+
+try:
+    flaky_fetch("https://api.example.com")
+except TimeoutError as e:
+    print(f"三次重试后放弃: {e}")
+```
+
+要点：`except exc_types` 接元组——`except (A, B)` 是「任一匹配」，重试范围由调用方声明，绝不裸 `except Exception`（那会把 KeyboardInterrupt 之外的编程 bug 也重试三遍）；`raise last from last` 把最终失败与第一次异常链起来，调用方 traceback 能看到全部三次现场（其实最后一次的现场在 `__cause__`，前几次在日志里）。`functools.wraps` 保住被装饰函数的元信息。
+</details>
+
+练习四（找错题）：这个「读取可选配置」的函数有两处问题，先找再修：
+
+```python
+def get_setting(key, default=None):
+    try:
+        config = open("config.json", "r").read()
+        import json
+        return json.loads(config)[key]
+    except Exception:
+        return default
+```
+
+提示：open 没有 with；except Exception 吞了什么不该吞的？
+
+<details>
+<summary>参考实现</summary>
+
+```python
+import json
+from pathlib import Path
+
+def get_setting(key: str, default=None):
+    try:
+        data = json.loads(Path("config.json").read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return default                 # 文件缺失是「可选」的正常路径
+    except json.JSONDecodeError as exc:
+        raise ValueError("config.json 格式损坏") from exc   # 损坏要炸出来
+    return data.get(key, default)      # 键缺失也走默认值
+```
+
+两处问题：其一，`open(...).read()` 没有 with——文件对象在 read 之后靠 GC 关闭，异常路径与 CPython 引用计数之外的实现上都可能泄漏句柄；其二，`except Exception` 把 `KeyError`（调用方拼错键名）、`json.JSONDecodeError`（配置损坏）、甚至 `MemoryError` 全部翻译成「返回默认值」——配置写坏了系统却安静地跑在默认值上，是最危险的一类静默故障。修后版本按「缺文件可选、损坏必须炸、键缺失可选」三种语义分别处置，这正是本篇最佳实践「接住你能处置的，放过你不能处置的」的落地。
+</details>
+
+练习五（实战题）：写 `validate_positive(*values)`：对所有参数做正数校验，任何一个不合法时**收集全部**错误（而不是发现第一个就停），最后用 `ExceptionGroup`（3.11+）一次性抛出；单参数合法时正常返回 None。
+
+提示：收集错误列表后 `raise ExceptionGroup("校验失败", errors)`；配合 `except*` 语法。
+
+<details>
+<summary>参考实现</summary>
+
+```python
+def validate_positive(*values: float) -> None:
+    errors: list[ValueError] = []
+    for i, v in enumerate(values):
+        if not isinstance(v, (int, float)) or v <= 0:
+            errors.append(ValueError(f"第 {i} 个参数 {v!r} 不是正数"))
+    if errors:
+        raise ExceptionGroup("参数校验失败", errors)
+
+try:
+    validate_positive(1, -5, "abc", 0)
+except* ValueError as eg:
+    for err in eg.exceptions:
+        print(err)
+# 第 1 个参数 -5 不是正数
+# 第 2 个参数 'abc' 不是正数
+# 第 3 个参数 0 不是正数
+```
+
+要点：传统 raise 只能带一个异常，收集式校验要么只报第一个（用户要多轮才能改完），要么拼一条长字符串（丢失结构）；`ExceptionGroup` 把多个同类异常打包，`except*` 按类型分拣处理。`eg.exceptions` 是打包内的原始异常元组。这个模式在批量校验（表单、配置、文件清单）里是 3.11+ 的正解，与 TaskGroup 的多任务异常聚合是同一机制的两个消费端（TaskGroup 见 [异步编程进阶](/python/670-AsyncProgrammingDetailed)）。
+</details>
+
+## 自我检查
+
+- 能画出 BaseException 的主干分支（KeyboardInterrupt、SystemExit、Exception）并说出「业务代码只捕 Exception 及其子类」的理由；
+- 能写出 try/except/else/finally 四段各自的职责，并解释 finally 在异常传播路径上的执行时机；
+- 能用 `raise NewError(...) from exc` 保留异常链并说明与隐式 `__context__` 的语义差异；
+- 能设计分层异常体系（领域基类 + 具体子类）并按「子类先接」的顺序捕获；
+- 能说出裸 `except Exception: return default` 的静默故障风险，并按语义拆分处置路径；
+- 能用 ExceptionGroup 与 `except*` 做批量校验的多错误聚合。

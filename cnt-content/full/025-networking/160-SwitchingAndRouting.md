@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 190
 title: 交换与路由技术
 module: 'networking'
 category: 云与基础设施
@@ -12,10 +12,15 @@ related:
   - 'networking/020-OSITCPIPModel'
   - 'networking/220-NetworkSecurityTech'
   - 'networking/170-WirelessNetwork'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
+
+## 知识点地图
+
+- **知识类别**：交换与路由核心技术——VLAN、生成树、链路聚合（交换层）与静态路由、OSPF、BGP、策略路由（路由层）。VLAN 的专题细节与完整实验在 165 篇，BGP 的深水在 300 篇。
+- **解决什么问题**：多交换机组网如何隔离广播域、有环网络如何不广播风暴、如何把多条链路捆成一条、路由器之间如何自动学习路径。
+- **什么时候用到**：园区网/数据中心组网；排障时判断「二层通不通、路由对不对」；设备选型与配置下发。
 
 ## 1. VLAN 技术
 
@@ -282,3 +287,43 @@ interface GigabitEthernet0/0
 - 多出口链路负载分担
 - 特定流量走专线
 - 流量清洗引流
+
+
+## 动手实践
+
+**练习 1（STP 观察与根桥控制）**：在模拟器（eNSP/HCL，见 035 篇）连三台交换机成环，`display stp`（华为）或 `show spanning-tree`（Cisco）观察根桥选举；把性能最好的一台配置为根桥（`stp root primary`），再观察端口角色变化。
+
+**提示**：根桥所有端口都是指定端口（转发），非根桥上到根桥方向的口是根端口。
+
+**练习 2（链路聚合带宽验证）**：两台交换机之间捆两条链路做 Eth-Trunk，单条链路打流测带宽，再启用第二条对比；拔掉一条观察业务不中断。
+
+**提示**：两端负载均衡模式要一致；成员口速率/双工必须相同。
+
+**练习 3（OSPF 邻居排错）**：故意把两台 OSPF 路由器的一端 area 配错（area 1 vs area 0），`display ospf peer` 观察 neighbor 卡在什么状态；再故意改 MTU 不一致，观察卡 Exstart/Exchange 的现象。
+
+**提示**：邻居起不来的排查清单：hello/dead 定时器、area 号、认证、网段掩码、MTU。
+
+<details>
+<summary>参考实现（先自己动手，再看这里）</summary>
+
+```text
+练习 1（华为 eNSP 语法）:
+  [SW1] display stp          # 记下当前根桥 MAC
+  [SW-CORE] stp priority 0   # 或 stp root primary
+  [SW1] display stp brief    # 端口角色/状态刷新
+
+练习 2:
+  [SW1] interface Eth-Trunk 1
+  [SW1-Eth-Trunk1] mode lacp-static
+  [SW1-Eth-Trunk1] trunkport GigabitEthernet0/0/1 to 0/0/2
+  [SW1] display eth-trunk 1   # 两个成员口都 Selected 才算捆绑成功
+
+练习 3:
+  RT-A: ospf 1 → area 0 → network 10.1.1.0 0.0.0.255
+  RT-B: ospf 1 → area 1 → network 10.1.1.0 0.0.0.255   # area 不一致
+  [RT-A] display ospf peer    # 无 FULL 邻居
+  # 修正为同 area 后邻居进入 Full；再实验 MTU 不一致时
+  # 邻居卡在 Exstart/Exchange，display ospf interface 可见双方 MTU
+```
+
+</details>

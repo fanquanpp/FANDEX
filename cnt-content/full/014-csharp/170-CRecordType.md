@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 200
 title: C# 记录类型
 module: 'csharp'
 category: 后端技术
@@ -11,7 +11,7 @@ related:
   - 'csharp/020-CSharpOverviewEnvSetup'
   - 'csharp/030-CSharpBasicSyntax'
   - 'csharp/040-CSharpOOP'
-  - 'csharp/150-CSharpAdvancedFeature'
+  - 'csharp/152-UnsafeCodeAndDynamicProgramming'
   - 'csharp/070-CGenericCollection'
   - 'csharp/250-CSharpDotNet'
 prerequisites:
@@ -615,6 +615,75 @@ var tax = new Money(8.99m, "USD");
 var total = price.Add(tax);
 Console.WriteLine(total);   // Money { Amount = 108.98, Currency = USD }
 ```
+
+进阶形态（承接自面向对象篇的 Record 示例）：**校验收进紧凑构造器、运算符重载替代命名方法**：
+
+```csharp
+using System.Collections.Immutable;
+
+// 位置 record：校验在静态构造点进行，货币代码归一化
+public record Money(decimal Amount, string Currency)
+{
+    public Money
+    {
+        if (Amount < 0) throw new ArgumentOutOfRangeException(nameof(Amount));
+        if (string.IsNullOrWhiteSpace(Currency))
+            throw new ArgumentException("货币代码不能为空", nameof(Currency));
+        Currency = Currency.ToUpperInvariant(); // 紧凑构造器可给 init 属性赋归一化值
+    }
+
+    public bool IsPositive => Amount > 0;
+    public bool IsZero => Amount == 0;
+
+    // 运算符重载：让值对象支持 a + b 的自然写法
+    public static Money operator +(Money a, Money b)
+    {
+        if (a.Currency != b.Currency)
+            throw new InvalidOperationException("不能相加不同货币");
+        return a with { Amount = a.Amount + b.Amount };
+    }
+}
+```
+
+record 的不可变更新方法模式（`with` + 不可变集合）在聚合根上同样成立：
+
+```csharp
+public record Order(
+    Guid Id,
+    Customer Customer,
+    IReadOnlyList<OrderLine> Lines,
+    DateTime CreatedAt,
+    OrderStatus Status)
+{
+    public decimal TotalAmount => Lines.Sum(l => l.Subtotal);
+
+    // 业务方法：返回新实例（不可变更新）
+    public Order WithStatus(OrderStatus newStatus) => this with { Status = newStatus };
+
+    public Order AddLine(OrderLine line) => this with
+    {
+        Lines = Lines.Append(line).ToImmutableList()
+    };
+
+    public Order RemoveLine(Guid lineId) => this with
+    {
+        Lines = Lines.Where(l => l.Id != lineId).ToImmutableList()
+    };
+}
+
+public record OrderLine(Guid Id, string ProductName, int Quantity, decimal UnitPrice)
+{
+    public decimal Subtotal => Quantity * UnitPrice;
+}
+
+// 使用：AddLine 返回新 Order，旧实例原样保留——适合撤销/审计场景
+var order = new Order(Guid.NewGuid(), customer, ImmutableList.Create<OrderLine>(),
+    DateTime.UtcNow, OrderStatus.Pending)
+    .AddLine(new OrderLine(Guid.NewGuid(), "笔记本", 2, 5999m));
+order = order.WithStatus(OrderStatus.Paid);
+```
+
+`ToImmutableList()` 的调用不可省略：`Lines.Append(line)` 返回的仍是原引用的枚举视图，不落成不可变集合的话 `with` 出的新实例与旧实例会共享同一份可变列表。
 
 ### 4.9 record 与 EF Core
 

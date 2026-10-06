@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 260
 title: 协程基础
 module: 'kotlin'
 category: 后端技术
@@ -13,13 +13,19 @@ related:
   - 'kotlin/290-FlowReactiveStream'
   - 'kotlin/480-KotlinSpring'
   - 'kotlin/020-KotlinOverviewEnvSetup'
-  - 'kotlin/240-KotlinCoroutineAdvanced'
+  - 'kotlin/235-KotlinCoroutineCancellationTimeout'
   - 'kotlin/260-CoroutineExceptionHandling'
   - 'kotlin/250-CoroutineDispatcherContext'
 prerequisites:
   - 'kotlin/020-KotlinOverviewEnvSetup'
   - 'kotlin/040-KotlinFunctionAndLambda'
 ---
+
+## 知识点地图
+
+- **知识类别**：协程基础——挂起函数模型、结构化并发（作用域与父子 Job）、launch/async 构建器与生命周期速查。
+- **解决什么问题**：并发代码「从哪开始、在哪结束、异常去哪」的三大问题：作用域决定生命周期归属，构建器决定返回类型与异常语义。
+- **什么时候用到**：第一次写并发 Kotlin 代码；理解任何协程问题的原理细节（本篇是协程体系的形式化与原理基座）；查启动器/作用域/Job 控制的速查表。
 
 ## 前置知识
 
@@ -2117,6 +2123,13 @@ runBlocking {
 }
 ```
 
+**基本写法：带调度器阻塞启动**
+`runBlocking(<dispatcher>) { <body> }`
+```kotlin
+// 指定调度器阻塞
+runBlocking(Dispatchers.Default) { }
+```
+
 **基本写法：async 启动异步任务**
 `async { <body> }`
 ```kotlin
@@ -2146,6 +2159,13 @@ val results = awaitAll(d1, d2);
 ---
 
 ## 作用域构建器
+
+**基本写法：创建独立作用域**
+`CoroutineScope(<上下文>)`
+```kotlin
+// 创建独立作用域：需要自己负责取消（通常挂在生命周期上）
+val scope = CoroutineScope(Dispatchers.Default)
+```
 
 **基本写法：coroutineScope 协程作用域**
 `coroutineScope { <body> }`
@@ -2258,6 +2278,13 @@ suspend fun fetchUser(id: String): User = withContext(Dispatchers.IO) {
 delay(1000);
 ```
 
+**基本写法：按 Duration 延迟**
+`delay(<时长>.<单位>)`
+```kotlin
+// 使用 Duration 字面量延迟
+delay(500.milliseconds);
+```
+
 ---
 
 ## Job 控制
@@ -2313,6 +2340,53 @@ ensureActive();
 ```kotlin
 // 让出执行权给其他协程
 yield();
+```
+
+**基本写法：判断完成**
+`<job>.isCompleted`
+```kotlin
+// 判断协程是否完成
+if (job.isCompleted) { }
+```
+
+**基本写法：判断取消**
+`<job>.isCancelled`
+```kotlin
+// 判断协程是否被取消
+if (job.isCancelled) { }
+```
+
+---
+
+## 启动模式
+
+**基本写法：默认立即调度**
+`launch(start = CoroutineStart.DEFAULT) { }`
+```kotlin
+// 立即调度执行
+launch(start = CoroutineStart.DEFAULT) { }
+```
+
+**基本写法：懒加载启动**
+`launch(start = CoroutineStart.LAZY) { }`
+```kotlin
+// 调用 join 或 start 才执行
+val job = scope.launch(start = CoroutineStart.LAZY) { }
+job.start()
+```
+
+**基本写法：原子启动**
+`launch(start = CoroutineStart.ATOMIC) { }`
+```kotlin
+// 不可在执行前取消
+launch(start = CoroutineStart.ATOMIC) { }
+```
+
+**基本写法：不调度启动**
+`launch(start = CoroutineStart.UNDISPATCHED) { }`
+```kotlin
+// 在当前线程执行直到第一个挂起点
+launch(start = CoroutineStart.UNDISPATCHED) { }
 ```
 
 ---

@@ -1,5 +1,5 @@
 ---
-order: 40
+order: 50
 title: 类型不是标签，是承诺：字节、运算与转换
 module: 'cpp'
 category: 计算机科学

@@ -1,239 +1,46 @@
 ---
-order: 100
+order: 150
 title: Next.js 全栈开发
 module: 'react'
 category: 前端技术
 difficulty: advanced
-description: App Router、Server Components、Server Actions、中间件、API Routes、数据库集成、认证与部署。
+description: Next.js 全栈拼图：Server Actions、中间件、API Routes、数据库集成、认证与部署。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'react/080-PerformanceOptimization'
-  - 'react/090-TestEngineering'
   - 'react/110-JSXDeepAnalysis'
   - 'react/120-FiberArchitecture'
+  - 'react/400-ServerClientComponents'
+  - 'react/410-NextJsAppRouter'
 prerequisites: []
 ---
 
-## 前置知识
+## 知识点地图
 
-- [测试与工程化](/react/090-TestEngineering)：建议先完成前一篇的学习
+- **知识类别**：服务端 / Next.js 全栈能力（服务端写操作、请求管道、API 层、数据层、认证与部署）。
+- **解决什么问题**：React 组件解决「界面怎么画」，全栈应用还差四块：客户端怎么安全地写数据（Server Actions）、请求进来先经过什么（中间件）、没有组件参与的原生 HTTP 接口怎么写（Route Handlers）、数据存哪里与怎么部署上线。本篇把这四块拼成一整张全栈地图。
+- **什么时候用到**：从「前端页面」走向「完整产品」时；评审「这个操作放 Server Action 还是 API 路由」这类架构问题时。
+
+## 与相邻篇章的分工
+
+- App Router 的文件约定、布局嵌套、并行/拦截路由等**路由与渲染结构**见 [Next.js App Router](/react/410-NextJsAppRouter)——本篇不再重复文件树，只讲挂在路由之上的全栈能力；
+- Server/Client Components 的边界规则、RSC 协议与流式渲染原理见 [Server 与 Client 组件](/react/400-ServerClientComponents)——本篇默认你已知道「默认服务端、按需客户端」，直接进入数据与部署；
+- 本篇的主角是**写路径与运维面**：Server Actions（§1）、中间件（§2）、Route Handlers（§3）、数据库（§4）、认证（§5）、部署（§6）。
 
 ## 学习目标
 
-- 掌握「1. App Router」的核心机制、典型用法与常见陷阱
-- 掌握「2. Server Components」的核心机制、典型用法与常见陷阱
-- 掌握「3. Server Actions」的核心机制、典型用法与常见陷阱
-- 掌握「4. 中间件」的核心机制、典型用法与常见陷阱
-- 掌握「5. API Routes」的核心机制、典型用法与常见陷阱
+- 掌握「1. Server Actions」的核心机制、典型用法与常见陷阱
+- 掌握「2. 中间件」的核心机制、典型用法与常见陷阱
+- 掌握「3. API Routes」的核心机制、典型用法与常见陷阱
 
 
 
-## 1. App Router
+## 1. Server Actions
 
-Next.js 15 的 App Router 基于文件系统路由，使用 React Server Components 作为默认渲染模式。
+Server Actions 是客户端调用服务端函数的官方通道，本节示例承接 [Next.js App Router](/react/410-NextJsAppRouter) 的路由结构；边界与序列化约束的原理见 [Server 与 Client 组件](/react/400-ServerClientComponents)。
 
-### 1.1 项目结构
-
-```mermaid
-flowchart TD
-    T0["app/"]
-    T1["layout.tsx              # 根布局（必须）"]
-    T2["page.tsx                # 首页 (/)"]
-    T3["loading.tsx             # 加载状态"]
-    T4["error.tsx               # 错误处理"]
-    T5["not-found.tsx           # 404"]
-    T6["global-error.tsx        # 全局错误"]
-    T7["default.tsx             # Parallel Fallback"]
-    T8["template.tsx            # 重新挂载的布局"]
-    T9["route.ts                # API 路由"]
-    T10["(marketing)/            # 路由组（不影响 URL）"]
-    T11["layout.tsx"]
-    T12["about/page.tsx      # /about"]
-    T13["contact/page.tsx    # /contact"]
-    T14["dashboard/"]
-    T15["layout.tsx"]
-    T16["page.tsx            # /dashboard"]
-    T17["settings/page.tsx   # /dashboard/settings"]
-    T18["blog/"]
-    T19["page.tsx            # /blog"]
-    T20["[slug]/page.tsx     # /blog/:slug（动态路由）"]
-    T21["api/"]
-    T22["users/route.ts      # /api/users"]
-    T23["auth/[...nextauth]/route.ts  # Catch-all 路由"]
-    T0 --> T1
-    T0 --> T2
-    T0 --> T3
-    T0 --> T4
-    T0 --> T5
-    T0 --> T6
-    T0 --> T7
-    T0 --> T8
-    T0 --> T9
-    T0 --> T10
-    T13 --> T14
-    T17 --> T18
-    T20 --> T21
-    T21 --> T22
-    T21 --> T23
-```
-
-### 1.2 布局与模板
-
-```tsx
-// app/layout.tsx — 根布局（跨路由持久化，不会重新挂载）
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'FANDEX App',
-  description: 'React 全栈应用',
-};
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="zh-CN">
-      <body>
-        <nav>全局导航</nav>
-        <main>{children}</main>
-      </body>
-    </html>
-  );
-}
-```
-
-```tsx
-// app/template.tsx — 路由切换时重新挂载
-export default function Template({ children }: { children: React.ReactNode }) {
-  return <div className="animate-in">{children}</div>;
-}
-```
-
-### 1.3 并行路由与拦截路由
-
-```tsx
-// app/layout.tsx — 并行路由
-export default function Layout({
-  children,
-  team,
-  analytics,
-}: {
-  children: React.ReactNode;
-  team: React.ReactNode;
-  analytics: React.ReactNode;
-}) {
-  return (
-    <div>
-      {children}
-      <div className="grid grid-cols-2">
-        <div>{team}</div>
-        <div>{analytics}</div>
-      </div>
-    </div>
-  );
-}
-```
-
-```tsx
-// app/@modal/(.)login/page.tsx — 拦截路由
-// 当从其他页面导航到 /login 时，显示为模态框
-export default function LoginModal() {
-  return (
-    <dialog open>
-      <LoginForm />
-    </dialog>
-  );
-}
-
-// app/login/page.tsx — 直接访问 /login 时显示完整页面
-export default function LoginPage() {
-  return <LoginForm />;
-}
-```
-
-## 2. Server Components
-
-### 2.1 数据获取
-
-```tsx
-// app/posts/page.tsx — Server Component（默认）
-import { db } from '@/lib/db';
-
-// 直接访问数据库
-async function PostsPage() {
-  const posts = await db.post.findMany({
-    orderBy: { createdAt: 'desc' },
-    include: { author: true },
-  });
-
-  return (
-    <div>
-      <h1>文章列表</h1>
-      {posts.map((post) => (
-        <article key={post.id}>
-          <h2>{post.title}</h2>
-          <p>作者：{post.author.name}</p>
-        </article>
-      ))}
-    </div>
-  );
-}
-
-export default PostsPage;
-```
-
-### 2.2 数据缓存与重新验证
-
-```tsx
-// 静态数据 — 构建时获取，永久缓存
-const staticData = await fetch('https://api.example.com/config', {
-  cache: 'force-cache',
-});
-
-// 动态数据 — 每次请求都获取
-const dynamicData = await fetch('https://api.example.com/news', {
-  cache: 'no-store',
-});
-
-// 定时重新验证 — 每 60 秒重新获取
-const revalidatedData = await fetch('https://api.example.com/posts', {
-  next: { revalidate: 60 },
-});
-
-// 按需重新验证 — 通过 tag
-const taggedData = await fetch('https://api.example.com/posts', {
-  next: { tags: ['posts'] },
-});
-
-// 在 Server Action 中触发
-import { revalidateTag } from 'next/cache';
-revalidateTag('posts');
-```
-
-### 2.3 Server/Client 边界
-
-```tsx
-// Server Component 可以导入 Client Component
-import { LikeButton } from './LikeButton'; // 'use client'
-
-async function PostPage({ id }: { id: string }) {
-  const post = await getPost(id); // 服务端获取数据
-
-  return (
-    <article>
-      <h1>{post.title}</h1>
-      <div>{post.content}</div>
-      {/* 将服务端数据作为 props 传给客户端组件 */}
-      <LikeButton postId={id} initialLiked={post.isLikedByUser} />
-    </article>
-  );
-}
-```
-
-> **注意**：Server Component 不能使用 useState、useEffect、onClick 等客户端 API，也不能导入 Client Component 后再将其作为 Server Component 使用。
-
-## 3. Server Actions
-
-### 3.1 表单 Action
+### 1.1 表单 Action
 
 ```tsx
 // app/actions/post.ts
@@ -270,7 +77,7 @@ export async function deletePost(id: string) {
 }
 ```
 
-### 3.2 useActionState 配合
+### 1.2 useActionState 配合
 
 ```tsx
 'use client';
@@ -297,9 +104,9 @@ export default function NewPostPage() {
 }
 ```
 
-## 4. 中间件
+## 2. 中间件
 
-### 4.1 基本用法
+### 2.1 基本用法
 
 ```tsx
 // middleware.ts — 项目根目录
@@ -327,7 +134,7 @@ export const config = {
 };
 ```
 
-### 4.2 高级中间件
+### 2.2 高级中间件
 
 ```tsx
 import { NextResponse } from 'next/server';
@@ -359,9 +166,9 @@ export function middleware(request: NextRequest) {
 }
 ```
 
-## 5. API Routes
+## 3. API Routes
 
-### 5.1 Route Handlers
+### 3.1 Route Handlers
 
 ```tsx
 // app/api/users/route.ts
@@ -394,7 +201,7 @@ export async function POST(request: Request) {
 }
 ```
 
-### 5.2 动态路由
+### 3.2 动态路由
 
 ```tsx
 // app/api/users/[id]/route.ts
@@ -419,7 +226,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 }
 ```
 
-### 5.3 流式响应
+### 3.3 流式响应
 
 ```tsx
 // app/api/chat/route.ts
@@ -447,9 +254,9 @@ export async function POST(request: Request) {
 }
 ```
 
-## 6. 数据库集成
+## 4. 数据库集成
 
-### 6.1 Prisma
+### 4.1 Prisma
 
 ```bash
 npm install prisma @prisma/client
@@ -499,7 +306,7 @@ export const db = globalForPrisma.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;
 ```
 
-### 6.2 Drizzle ORM
+### 4.2 Drizzle ORM
 
 ```bash
 npm install drizzle-orm postgres
@@ -537,9 +344,9 @@ const client = postgres(process.env.DATABASE_URL!);
 export const db = drizzle(client, { schema });
 ```
 
-## 7. 认证（NextAuth.js）
+## 5. 认证（NextAuth.js）
 
-### 7.1 安装配置
+### 5.1 安装配置
 
 ```bash
 npm install next-auth@beta @auth/prisma-adapter
@@ -585,7 +392,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 export const { GET, POST } = handlers;
 ```
 
-### 7.2 在组件中使用
+### 5.2 在组件中使用
 
 ```tsx
 import { auth } from '@/app/api/auth/[...nextauth]/route';
@@ -625,9 +432,9 @@ function AuthButton() {
 }
 ```
 
-## 8. 部署
+## 6. 部署
 
-### 8.1 Vercel 部署（推荐）
+### 6.1 Vercel 部署（推荐）
 
 ```bash
 # 安装 Vercel CLI
@@ -648,7 +455,7 @@ Vercel 自动配置：
 - 图片优化
 - 分析与监控
 
-### 8.2 Docker 部署
+### 6.2 Docker 部署
 
 ```dockerfile
 # Dockerfile
@@ -692,7 +499,7 @@ docker build -t my-next-app .
 docker run -p 3000:3000 my-next-app
 ```
 
-### 8.3 next.config.ts 关键配置
+### 6.3 next.config.ts 关键配置
 
 ```ts
 import type { NextConfig } from 'next';
@@ -733,7 +540,7 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 ```
 
-### 8.4 部署平台对比
+### 6.4 部署平台对比
 
 | 平台                 | 特点                   | 适用场景           |
 | :------------------- | :--------------------- | :----------------- |

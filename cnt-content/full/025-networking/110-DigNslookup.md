@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 140
 title: DNS 查询
 module: 'networking'
 category: 云与基础设施
@@ -10,8 +10,7 @@ updated: '2026-10-05'
 related:
   - 'networking/100-DNSDHCP'
   - 'networking/290-NetworkTroubleshootTools'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## dig 基本查询

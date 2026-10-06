@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 250
 title: 自定义指令进阶
 module: 'vue3'
 category: 前端技术
@@ -8,7 +8,7 @@ description: 自定义指令高级用法
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'vue3/180-API'
+  - 'vue3/050-ReactiveSystem'
   - 'vue3/170-ProvideInject'
   - 'vue3/130-TransitionAnimation'
   - 'vue3/280-Vue3CompileOptimization'

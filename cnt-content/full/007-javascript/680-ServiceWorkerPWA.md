@@ -1,5 +1,5 @@
 ---
-order: 680
+order: 760
 title: Service Worker 与 PWA
 module: 'javascript'
 category: 前端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'javascript/460-StorageForTheWeb'
-  - 'javascript/430-WebAPIBrowserInterface'
   - 'javascript/440-FetchApiAndAbortController'
 prerequisites:
   - 'javascript/460-StorageForTheWeb'
@@ -22,7 +21,7 @@ Service Worker 是一段运行在页面之外的脚本，站在网页与网络�
 ## 前置知识
 
 - [网络存储](/javascript/460-StorageForTheWeb)：Cache Storage 与其他存储 API 同属浏览器持久化体系。
-- [Web API 与浏览器接口](/javascript/430-WebAPIBrowserInterface)：Service Worker 本质上是宿主提供的一组 Web API。
+- [宿主环境与 Web API 总览](/javascript/430-HostEnvironmentAndWebApiOverview)：Service Worker 本质上是宿主提供的一组 Web API。
 - [fetch 与 AbortController](/javascript/440-FetchApiAndAbortController)：拦截层大量使用 fetch 与 Response 的知识。
 
 ## 学习目标
@@ -79,6 +78,39 @@ self.addEventListener('activate', (event) => {
 
 更新检测的时机也有讲究：浏览器会在每次页面导航时重新拉取 sw.js 做字节级比对（并且至少每 24 小时强制检查一次），内容一致则直接复用旧脚本。因此发布时无需任何手动刷新机制，只要新脚本内容有差异，新 SW 就会自动进入 install 阶段排队等待接管。
 
+## 与页面通信：postMessage 双通道
+
+> 本节承接自[网络请求 API](/javascript/450-FetchApiWebStreams) 拆分（其原第 11.4 节）；该篇第 11.1~11.3 节与本篇第一、二节重复，已去重。SW 与页面是两个执行环境，数据靠 `postMessage` 双向传递：
+
+```javascript
+// 主线程 → Service Worker
+navigator.serviceWorker.controller.postMessage({
+  type: 'CACHE_URL',
+  url: '/api/data',
+});
+
+// Service Worker 接收
+self.addEventListener('message', (event) => {
+  if (event.data.type === 'CACHE_URL') {
+    caches.open('v1').then((cache) => cache.add(event.data.url));
+  }
+});
+
+// Service Worker → 主线程(通过 Client)
+self.addEventListener('message', (event) => {
+  event.source.postMessage({ type: 'REPLY', data: 'ok' });
+});
+
+// 主线程接收
+navigator.serviceWorker.addEventListener('message', (event) => {
+  console.log('收到 SW 消息:', event.data);
+});
+```
+
+---
+
+易错点：两侧的 `message` 事件监听写在**不同环境**——`self.addEventListener('message', ...)` 在 sw.js 里，`navigator.serviceWorker.addEventListener('message', ...)` 在页面里；把页面侧的监听误挂到 `window` 上收不到 SW 的回信。
+
 ## 三、Cache Storage 与三种缓存策略
 
 Cache Storage 是按名字分组的 Request 到 Response 的缓存表，与 HTTP 缓存相互独立、由代码全权控制。不同资源的新鲜度要求不同，对应的策略也不同：
@@ -123,6 +155,80 @@ async function staleWhileRevalidate(request) {
 
 存储配额是另一个必须正视的现实：Cache Storage 的配额由浏览器按整站统筹，`navigator.storage.estimate()` 可以查询已用空间与上限；配额紧张时浏览器可能整体回收站点存储。因此缓存列表要有条目上限与淘汰策略，而真正重要的数据（例如待重发的购票单）应存入 IndexedDB，不要依赖缓存的长久性。
 
+## Cache API 基础操作
+
+> 承接自网络请求篇拆分（原第 12.1、12.2.4 节）；原第 12.2.1~12.2.3 的三种策略实现与本篇第三节重复，已去重。上一节的三种策略都是这几个原语的不同排列：
+
+```javascript
+// 打开一个缓存
+const cache = await caches.open('my-cache');
+
+// 添加(Request 或 URL)
+await cache.add('/api/data');
+await cache.addAll(['/api/users', '/api/posts']);
+
+// 手动 put
+const response = await fetch('/api/data');
+await cache.put('/api/data', response.clone());
+
+// 读取
+const cached = await cache.match('/api/data');
+if (cached) {
+  const data = await cached.json();
+}
+
+// 删除
+await cache.delete('/api/data');
+
+// 查询所有键
+const keys = await cache.keys();
+```
+
+#### 12.2.4 Network Only / Cache Only
+
+```javascript
+// Network Only:强制网络
+async function networkOnly(request) {
+  return fetch(request);
+}
+
+// Cache Only:仅缓存(离线场景)
+async function cacheOnly(request) {
+  const cached = await caches.match(request);
+  return cached || Response.error();
+}
+```
+
+### 速查卡（承接自 Web 存储篇）
+
+**基本写法：打开缓存**
+`caches.open(<名称>)`
+```javascript
+// 用于 Service Worker 缓存
+caches.open("v1").then(cache => {});
+```
+
+---
+
+**基本写法：缓存请求**
+`<cache>.put(<请求>, <响应>)`
+```javascript
+// 缓存 fetch 响应
+caches.open("v1").then(cache => {
+    fetch("/api").then(res => cache.put("/api", res.clone()));
+});
+```
+
+---
+
+**基本写法：读取缓存**
+`<cache>.match(<请求>)`
+```javascript
+// 从缓存匹配请求
+caches.open("v1").then(cache => cache.match("/api"))
+    .then(res => {});
+```
+
 ## 四、Fetch 拦截与离线回退
 
 `fetch` 事件是 SW 的核心：页面发出的每个同源请求都会先经过这里，`event.respondWith(promise)` 用自定义响应替换默认行为。未被 respondWith 覆盖的请求按浏览器默认流程走，因此"选择性拦截"是完全可行的。
@@ -152,6 +258,116 @@ self.addEventListener('fetch', (event) => {
 缓存键的规范化是拦截层容易忽略的一环：同一个资源经由带查询参数与不带查询参数的 URL 访问时，会被缓存成两个条目，命中率随之下降。策略上可以在缓存前用 `new URL(request.url)` 剥离无关参数，或对带时间戳的请求统一归一到规范地址，让"同一资源只有一份缓存"成为默认。
 
 这套分流逻辑让购票页在地铁里也能打开：导航请求失败时立即呈现缓存的离线页与"恢复网络后自动重试"的提示；脚本、样式全部来自缓存，页面秒开；唯独购票按钮会提示联网。离线体验的边界感由此确立——离线可以浏览，交易必须在线。离线页本身也应该在 install 阶段预缓存（本篇第二节正是这样做的），否则"离线回退页也要联网取"就成了死循环。
+
+## 分流路由、版本管理与 Workbox
+
+> 承接自网络请求篇拆分（原第 12.3~12.5 节）。上一节的 fetch 拦截示例是最小骨架，工程里的完整分流、多缓存版本清理与"不想手写策略"的 Workbox 方案如下：
+
+### 分流路由：按请求类型各就各位
+
+```javascript
+// 按请求类型路由
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // 1. 仅 GET 请求缓存
+  if (request.method !== 'GET') {
+    return;
+  }
+
+  // 2. 静态资源 → Cache First
+  if (request.destination === 'style' ||
+      request.destination === 'script' ||
+      request.destination === 'font' ||
+      request.destination === 'image') {
+    event.respondWith(cacheFirst(request));
+    return;
+  }
+
+  // 3. API 请求 → Network First
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // 4. 导航请求 → Network First,离线时返回缓存 HTML
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirst(request).catch(() => caches.match('/offline.html')));
+    return;
+  }
+
+  // 5. 其他 → Stale-While-Revalidate
+  event.respondWith(staleWhileRevalidate(request));
+});
+```
+
+### 多缓存版本管理
+
+```javascript
+const CACHE_VERSION = 'v3';
+const STATIC_CACHE = `static-${CACHE_VERSION}`;
+const API_CACHE = `api-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys
+          .filter((key) => !key.endsWith(CACHE_VERSION))
+          .map((key) => caches.delete(key))
+      );
+      await self.clients.claim();
+    })()
+  );
+});
+```
+
+### 用 Workbox 免手写
+
+```javascript
+// 使用 Google Workbox 简化 Service Worker
+import { registerRoute } from 'workbox-routing';
+import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
+import { ExpirationPlugin } from 'workbox-expiration';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+
+// 静态资源
+registerRoute(
+  ({ request }) => ['style', 'script', 'font'].includes(request.destination),
+  new CacheFirst({
+    cacheName: 'static-v1',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({ maxEntries: 60, maxAgeSeconds: 30 * 24 * 60 * 60 }),
+    ],
+  })
+);
+
+// API
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/'),
+  new NetworkFirst({
+    cacheName: 'api-v1',
+    networkTimeoutSeconds: 3,
+  })
+);
+
+// 图片
+registerRoute(
+  ({ request }) => request.destination === 'image',
+  new StaleWhileRevalidate({
+    cacheName: 'images-v1',
+    plugins: [new ExpirationPlugin({ maxEntries: 50 })],
+  })
+);
+```
+
+---
+
+Workbox 的价值不在"能实现"（以上手写版都能实现），而在把**过期淘汰、可缓存状态码、网络超时**这些工程细节变成插件参数。手写版适合理解原理，生产项目建议从 Workbox 起步。
 
 ## 五、Manifest 与安装提示
 
@@ -227,6 +443,390 @@ self.addEventListener('push', (event) => {
 
 推送需要服务端生成 VAPID 密钥、前端用 PushManager 订阅，且通知权限必须由用户显式授予；后台同步则要求请求"可以安全重放"（幂等或带去重 id）。订阅流程的骨架是：页面调用 `registration.pushManager.subscribe({ userVisibleKey: ... })` 拿到订阅对象，把其中的 endpoint 上报给业务服务器；服务器之后向该 endpoint 投递加密消息，浏览器负责唤醒 SW。两者共同的工程要点是：把待办数据先落盘（IndexedDB），再依赖浏览器唤醒机制，绝不假设 SW 会一直活着。通知权限的申请时机也要克制：在用户完成一次有价值的操作后再请求授权，拒绝率远低于页面加载即弹窗。
 
+## 实战项目：离线优先笔记应用（承接自 Web 存储篇）
+
+> 本节整体承接自 [Web 存储](/javascript/460-StorageForTheWeb) 原第 15 节：项目的四大支柱（SW 拦截、IndexedDB 存储、localStorage 偏好、后台同步）正是本篇前六节的综合演练；IndexedDB 数据层的原理细节见 [IndexedDB](/javascript/470-IndexedDBADatabaseInYourBrowser) 第 14 节的同型项目。
+
+### 项目目标与完整实现
+
+### 15.1 项目目标
+
+构建一个支持离线编辑、跨设备同步、冲突解决的笔记应用：
+
+1. Service Worker 拦截网络请求，实现离线访问
+2. IndexedDB 存储笔记数据，支持离线编辑
+3. localStorage 存储用户偏好与元数据
+4. 后台同步机制，网络恢复时自动推送
+
+### 15.2 完整实现
+
+```javascript
+/**
+ * 离线优先笔记应用
+ */
+class OfflineNotesApp {
+  constructor() {
+    this.dbName = 'NotesAppDB';
+    this.dbVersion = 1;
+    this.db = null;
+    this.configStorage = new NamespacedStorage('notesConfig');
+  }
+
+  async init() {
+    await this.initDB();
+    await this.registerServiceWorker();
+    this.setupOnlineListener();
+  }
+
+  /**
+   * 初始化 IndexedDB
+   */
+  async initDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.dbVersion);
+
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+
+        // 笔记存储
+        if (!db.objectStoreNames.contains('notes')) {
+          const noteStore = db.createObjectStore('notes', { keyPath: 'id' });
+          noteStore.createIndex('updatedAt', 'updatedAt', { unique: false });
+          noteStore.createIndex('syncStatus', 'syncStatus', { unique: false });
+        }
+
+        // 待同步操作队列
+        if (!db.objectStoreNames.contains('pendingOps')) {
+          db.createObjectStore('pendingOps', {
+            keyPath: 'id',
+            autoIncrement: true,
+          });
+        }
+      };
+
+      request.onsuccess = (e) => {
+        this.db = e.target.result;
+        resolve();
+      };
+
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 注册 Service Worker
+   */
+  async registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      try {
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        console.log('Service Worker registered:', reg.scope);
+      } catch (e) {
+        console.error('SW registration failed:', e);
+      }
+    }
+  }
+
+  /**
+   * 监听网络状态
+   */
+  setupOnlineListener() {
+    window.addEventListener('online', () => {
+      console.log('Network restored, syncing...');
+      this.syncPendingOps();
+    });
+  }
+
+  /**
+   * 创建笔记
+   */
+  async createNote(title, content) {
+    const note = {
+      id: `note_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+      title,
+      content,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      syncStatus: 'pending',
+    };
+
+    await this.saveNote(note);
+    await this.queueOp({ type: 'create', noteId: note.id, data: note });
+
+    if (navigator.onLine) {
+      await this.syncPendingOps();
+    }
+
+    return note;
+  }
+
+  /**
+   * 更新笔记
+   */
+  async updateNote(id, updates) {
+    const note = await this.getNote(id);
+    if (!note) throw new Error('Note not found');
+
+    Object.assign(note, updates, {
+      updatedAt: Date.now(),
+      syncStatus: 'pending',
+    });
+
+    await this.saveNote(note);
+    await this.queueOp({ type: 'update', noteId: id, data: updates });
+
+    if (navigator.onLine) {
+      await this.syncPendingOps();
+    }
+
+    return note;
+  }
+
+  /**
+   * 删除笔记
+   */
+  async deleteNote(id) {
+    await this.queueOp({ type: 'delete', noteId: id });
+    return this.deleteNoteFromDB(id);
+  }
+
+  /**
+   * 保存笔记到 IndexedDB
+   */
+  async saveNote(note) {
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('notes', 'readwrite');
+      const store = tx.objectStore('notes');
+      const request = store.put(note);
+      request.onsuccess = () => resolve(note);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 获取笔记
+   */
+  async getNote(id) {
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('notes', 'readonly');
+      const store = tx.objectStore('notes');
+      const request = store.get(id);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 获取所有笔记
+   */
+  async getAllNotes() {
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('notes', 'readonly');
+      const store = tx.objectStore('notes');
+      const index = store.index('updatedAt');
+      const request = index.getAll();
+      request.onsuccess = () => resolve(request.result.reverse());
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 从 IndexedDB 删除笔记
+   */
+  async deleteNoteFromDB(id) {
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('notes', 'readwrite');
+      const store = tx.objectStore('notes');
+      const request = store.delete(id);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 将操作加入待同步队列
+   */
+  async queueOp(op) {
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('pendingOps', 'readwrite');
+      const store = tx.objectStore('pendingOps');
+      const request = store.add({
+        ...op,
+        timestamp: Date.now(),
+      });
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 同步待处理操作
+   */
+  async syncPendingOps() {
+    const ops = await this.getPendingOps();
+
+    for (const op of ops) {
+      try {
+        await this.syncOpToServer(op);
+        await this.markOpSynced(op.id);
+      } catch (e) {
+        console.error('Sync failed for op:', op, e);
+        break;  // 失败则停止，下次重试
+      }
+    }
+  }
+
+  /**
+   * 获取待同步操作
+   */
+  async getPendingOps() {
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('pendingOps', 'readonly');
+      const store = tx.objectStore('pendingOps');
+      const request = store.getAll();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 同步单个操作到服务器
+   */
+  async syncOpToServer(op) {
+    const response = await fetch('/api/notes/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(op),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Sync failed: ${response.status}`);
+    }
+
+    // 处理冲突
+    const result = await response.json();
+    if (result.conflict) {
+      await this.resolveConflict(op, result.serverVersion);
+    }
+
+    // 更新笔记同步状态
+    if (op.type !== 'delete') {
+      const note = await this.getNote(op.noteId);
+      if (note) {
+        note.syncStatus = 'synced';
+        await this.saveNote(note);
+      }
+    }
+  }
+
+  /**
+   * 标记操作已同步
+   */
+  async markOpSynced(opId) {
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('pendingOps', 'readwrite');
+      const store = tx.objectStore('pendingOps');
+      const request = store.delete(opId);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 冲突解决（简单 LWW 策略）
+   */
+  async resolveConflict(localOp, serverVersion) {
+    const localNote = await this.getNote(localOp.noteId);
+
+    if (serverVersion.updatedAt > localNote.updatedAt) {
+      // 服务器版本较新，采用服务器版本
+      await this.saveNote({
+        ...serverVersion,
+        syncStatus: 'synced',
+      });
+      console.warn('Conflict resolved: server version wins');
+    } else {
+      // 本地版本较新，重新推送
+      console.warn('Conflict resolved: local version wins');
+    }
+  }
+
+  /**
+   * 获取存储使用情况
+   */
+  async getStorageInfo() {
+    if (navigator.storage && navigator.storage.estimate) {
+      const estimate = await navigator.storage.estimate();
+      return {
+        usage: (estimate.usage / 1024 / 1024).toFixed(2) + ' MB',
+        quota: (estimate.quota / 1024 / 1024).toFixed(2) + ' MB',
+        percentage: (estimate.usage / estimate.quota * 100).toFixed(2) + '%',
+      };
+    }
+    return null;
+  }
+}
+
+// Service Worker 代码（/sw.js）
+/*
+const CACHE_NAME = 'notes-app-v1';
+const STATIC_ASSETS = [
+  '/',
+  '/index.html',
+  '/static/css/main.css',
+  '/static/js/main.js',
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  // 网络优先，失败时回退缓存
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request))
+  );
+});
+*/
+
+// 使用示例
+async function main() {
+  const app = new OfflineNotesApp();
+  await app.init();
+
+  // 创建笔记
+  const note = await app.createNote('我的第一篇笔记', 'Hello, offline!');
+
+  // 离线状态下也能编辑
+  await app.updateNote(note.id, { content: 'Updated content' });
+
+  // 获取所有笔记
+  const allNotes = await app.getAllNotes();
+  console.log('All notes:', allNotes);
+
+  // 检查存储使用情况
+  const storageInfo = await app.getStorageInfo();
+  console.log('Storage:', storageInfo);
+}
+
+main();
+```
+
+### 15.3 项目总结
+
+本项目展示了离线优先应用的完整存储架构：
+
+1. **分层存储**：IndexedDB 存数据、localStorage 存配置、Cache API 存资源
+2. **离线优先**：所有操作先写入本地，再异步同步到服务器
+3. **操作队列**：pendingOps 存储待同步操作，保证最终一致性
+4. **冲突解决**：基于时间戳的 LWW（Last-Write-Wins）策略
+5. **网络感知**：online 事件触发自动同步
+6. **Service Worker**：拦截网络请求，离线时回退缓存
+
+---
+
 ## 易错点与最佳实践
 
 1. **修改了 sw.js 但页面毫无变化**。SW 脚本本身受 HTTP 缓存影响，旧的 sw.js 可能被缓存数小时。错误示范与修正：
@@ -262,3 +862,29 @@ navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
 2. **运行时缓存清理器**：实现按"最大缓存条目数"的 LRU 清理逻辑，在 activate 与每次 cache.put 后触发。思路：Cache API 没有顺序保证，需要自己维护 key 的时间戳索引（可存于 IndexedDB），超出上限时从最旧开始删除。
 
 3. **安装转化埋点**：统计安装弹窗的曝光、接受与拒绝次数，并验证"收藏行为之后再弹窗"是否提升转化。思路：暂存 beforeinstallprompt，把 prompt() 的调用挂在收藏按钮的点击回调上，用 userChoice 结果作为埋点事件上报。
+
+## 附录：Service Worker 事件生命周期
+
+> 承接自网络请求篇附录 E。
+
+```mermaid
+stateDiagram-v2
+    [*] --> 注册
+    注册 --> Installing: 注册
+    Installing --> Installed
+    Installed --> Activating
+    Activating --> Activated
+    Activated --> 运行中
+    运行中 --> 被新版本替换: fetch / push / sync / message
+    被新版本替换 --> Redundant
+```
+
+主要事件:
+- `install`:首次安装或新版本下载后触发
+- `activate`:新版本接管时触发,适合清理旧缓存
+- `fetch`:页面发起网络请求时触发
+- `push`:收到 Push 通知时触发
+- `sync`:后台同步(网络恢复时)
+- `periodicsync`:周期性后台同步
+- `message`:与主线程通信
+- `notificationclick`:用户点击通知

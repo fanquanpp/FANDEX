@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 420
 title: Vue3 项目示例：个人博客站点
 module: 'vue3'
 category: 前端技术
@@ -8,15 +8,15 @@ description: 综合运用组合式 API、Pinia 与 Vue Router 的个人博客项
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'vue3/340-PerformanceOptimization'
-  - 'vue3/240-Vue3AdvancedComponentFeature'
+  - 'vue3/325-Vue3PerformanceToolkit'
+  - 'vue3/145-DynamicComponentPatterns'
   - 'vue3/290-Vue3TheoryKnowledge'
 prerequisites: []
 ---
 
 ## 前置知识
 
-- [Vue3 高级组件特性](/vue3/240-Vue3AdvancedComponentFeature)：建议先完成前一篇的学习
+- [动态组件、递归组件与函数式组件](/vue3/145-DynamicComponentPatterns)：建议先完成前一篇的学习
 
 ## 学习目标
 

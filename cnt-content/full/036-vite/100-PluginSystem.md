@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 120
 title: Vite 插件系统
 module: 'vite'
 category: 前端技术
@@ -14,6 +14,14 @@ prerequisites:
   - 'vite/030-ConfigFile'
   - 'vite/080-BuildSplit'
 ---
+
+## 知识点地图
+
+- **知识类别**：Vite 插件生态与运行机制（钩子时序、顺序控制、enforce/apply、生态选型），对应 vite.dev 的「API: Plugin API」章节。
+- **解决什么问题**：Vite 核心只提供「底座」，所有框架与大多数工程能力都来自插件；不理解钩子时序就解释不了「为什么我的 transform 没跑」「为什么两个插件互相覆盖」；不懂选型标准就分不清该装插件、写插件还是改构建配置。
+- **什么时候用到**：接入框架/工程化插件并排查插件间冲突；评估一个第三方插件能否引入（兼容性、维护状态）；读懂脚手架的 plugins 数组；为「写自己的插件」建立机制地图（动手篇见 110）。
+- **本篇主线**：插件 = 带钩子的对象；钩子按构建阶段排布（3 节），插件间按数组顺序 + enforce 分层（4 节）；选型先问「能力该长在哪一层」（2 节）；虚拟模块作为机制的综合案例只留速览（5 节），手把手实现见 110。
+- **本篇不讲**：从零写插件的完整工作流（见 [Vite 插件开发](/vite/110-VitePluginDevelopment)）；产物体积分析的使用（见 [生产构建与拆包](/vite/080-BuildSplit)）。
 
 ## 0. 一个类比：乐高插口与手机应用商店
 
@@ -94,6 +102,14 @@ export default defineConfig({
   ],
 })
 ```
+
+**选型时问的三个问题**（决定「装它 / 换它 / 自己写」）：
+
+1. **能力该长在哪一层？** 能用配置解决的（别名、代理、分包）不装插件；能用构建期脚本解决的（生成文件）不进 dev 管线；只有「参与模块转换/产物生成」的需求才配插件——插件是 dev server 的常驻住户，每多一个都多一份冷启动与钩子开销；
+2. **它兼容 Vite 8 的 Rolldown 管线吗？** 只用了 `transform`/`resolveId`/`load` 等通用钩子的插件天然兼容；依赖 Rollup 专属阶段钩子或 renderStart 之类生成期深水钩子的，要在 registry.vite.dev 查兼容标注（详见 [Vite 8 与 Rolldown](/vite/120-Vite8Rolldown)）；
+3. **它和现有插件谁先谁后？** 两个插件都改 `transform` 时，数组顺序就是执行顺序；带 `enforce: 'pre'/'post'` 的插件会跳出常规层——引入新插件前先想清楚它应该站在你现有插件的哪一边（时序详见第 3、4 节）。
+
+真实选型复盘：某团队想给项目加「构建期生成版本号注入页面」。候选方案里「写个脚本在 build 前生成 version.ts」比「装一个 meta 注入插件」更合适——需求只是产出一个文件，不参与模块转换，脚本零运行时成本。反例是「自动生成路由」：它要在 dev 管线里实时响应文件增删并触发 HMR，脚本方案做不到，虚拟模块插件（第 5 节）才是对的层。
 
 ## 3. 钩子机制：插口上的触点
 
@@ -177,55 +193,34 @@ export default defineConfig({
 
 `apply` 还可以传函数：`apply: (config, env) => env.mode === 'staging'`，实现按模式生效。
 
-## 5. 编写第一个插件：虚拟模块
+## 5. 虚拟模块速览：插件机制的综合案例
 
-目标是实现一个"加载虚拟模块"的插件：业务代码 `import data from 'virtual:demo'` 时，返回插件生成的 JSON 数据。这个模式广泛用于：自动生成路由、注入构建版本号、注入运行时配置。
+虚拟模块是「插件机制能做什么」的最好综合案例：业务代码 `import data from 'virtual:demo'`，插件用 `resolveId`（认领 ID）+ `load`（凭空供货）两个钩子生成这个不存在于磁盘的模块。它广泛用于自动生成路由、注入构建版本号、聚合图标精灵图。
+
+机制骨架一眼版：
 
 ```ts
-// plugins/virtual-demo.ts
-import type { Plugin } from 'vite'
-
 export function virtualDemo(): Plugin {
   const virtualModuleId = 'virtual:demo'
-  const resolvedId = '\0' + virtualModuleId  // \0 前缀避免与其他插件冲突
+  const resolvedId = '\0' + virtualModuleId // \0 前缀避免与真实文件解析冲突
 
   return {
     name: 'virtual-demo',
-    // 解析阶段：把虚拟模块 ID 解析为唯一标识
     resolveId(id) {
-      if (id === virtualModuleId) return resolvedId
+      if (id === virtualModuleId) return resolvedId // 认领
     },
-    // 加载阶段：返回模块源码
     load(id) {
       if (id === resolvedId) {
-        return `export const data = ${JSON.stringify({ hello: 'vite' })}`
+        return `export const data = ${JSON.stringify({ hello: 'vite' })}` // 供货
       }
     },
   }
 }
 ```
 
-```ts
-// 业务代码中使用
-import { data } from 'virtual:demo'
-console.log(data.hello)  // 'vite'
-```
+三个必记规则：`\0` 前缀是 Rolldown 约定的「非磁盘模块」标记，业务代码里绝不能出现；`load` 只对认领过的 ID 供货；虚拟模块内容完全由插件运行时生成，因此能接 HMR、能读构建配置。
 
-```ts
-// vite.config.ts 中注册
-import { defineConfig } from 'vite'
-import { virtualDemo } from './plugins/virtual-demo'
-
-export default defineConfig({
-  plugins: [virtualDemo()],
-})
-```
-
-讲解：
-
-- `\0` 前缀是 Rollup/Rolldown 约定的"不可见 ID"标记，防止虚拟模块被真实文件系统解析命中——业务代码里绝不能出现 `\0` 开头的路径。
-- `resolveId` 返回 `\0` 开头的 ID 后，`load` 拿到的入参就是加了 `\0` 的 ID，靠它区分"这是虚拟模块"。
-- 虚拟模块不依赖磁盘文件，内容完全由插件在运行时生成——这是它强大的原因。
+本篇只立机制地图；从真实需求出发的完整实现（数据加工、插件间协作、dev 接口与 HMR 联动、测试发布）见 [Vite 插件开发](/vite/110-VitePluginDevelopment) 第 1-2 节。
 
 ## 6. transform 钩子：转换源码
 
@@ -353,6 +348,26 @@ export default defineConfig({
 ```
 
 这是学习钩子机制的最佳可视化工具——改一行插件代码，刷新页面就能看到效果。
+
+## 动手实践
+
+任务：用 vite-plugin-inspect 亲眼看见「钩子时序」，把第 3、4 节的纸面知识变成实证。
+
+1. 在任意 Vite 项目安装并注册 `vite-plugin-inspect`（`pnpm add -D vite-plugin-inspect`，plugins 里放最前），启动 dev 后打开终端输出的 inspect 面板地址；
+2. 随便打开一个 `.ts` 模块详情页，数一数它经历了多少个插件的 `transform`——记录插件处理顺序，对照第 4 节的 enforce 分层，判断哪些插件是 pre 层、哪些在 normal 层；
+3. 自己写一个最小 transform 插件（只打印 `console.log('[my-plugin]', id)`），分别在 `enforce: 'pre'` 与不写 enforce 两种情况下注册到数组末尾，在 inspect 面板观察它的位置变化，并用终端日志验证执行顺序；
+4. 把 `apply: 'build'` 加到自己的插件上，重启 dev，验证它不再执行（终端无打印），`pnpm build` 时恢复。
+
+<details>
+<summary>参考要点（先自己试，再展开对照）</summary>
+
+第 2 题判读：inspect 的模块详情按执行顺序列出每个插件的介入（alias/resolve/transform...）。你会看到 @vitejs/plugin-react（vite:react-babel 或 oxc 系）通常在 transform 序列靠前（内部声明 pre），visualizer 这类只关心构建期的插件在 dev 阶段根本不出现（apply: 'build'）。
+
+第 3 题结论：不写 enforce 时，插件严格按数组顺序排在 normal 层尾部；`enforce: 'pre'` 后它整体提到所有 normal 层插件之前——即使它在数组里排最后。这就是 4.1 节「enforce 优先于数组顺序」的实证。打印日志的顺序应与 inspect 面板一致，两套证据互验。
+
+第 4 题：apply 是「环境开关」，与 enforce 正交——一个管「跑不跑」，一个管「谁先跑」。生产插件常见的组合是 `apply: 'build'` + 无 enforce（产物加工类不需要抢 dev 管线的位置）。
+
+</details>
 
 ## 9. 常见错误与对策表
 

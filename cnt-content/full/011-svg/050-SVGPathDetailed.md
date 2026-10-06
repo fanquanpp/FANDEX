@@ -21,6 +21,14 @@ prerequisites:
 
 - [SVG 基本图形详解](/svg/040-SVGBasicShapeDetailed)
 
+## 知识点地图
+
+- **知识类别**：SVG 路径（`<path>` 与 `d` 属性命令语言），SVG 绘图能力的天花板，对应 MDN「Paths」指南主题。
+- **解决什么问题**：矩形、圆这些基本形状画不出图标曲线、地图边界、签名笔迹；`d` 属性用一串命令字母描述任意轮廓，是所有 SVG 图标与图表的最终形态——设计工具导出的每一个矢量图，底层都是一串 path。
+- **什么时候用到**：手写或微调图标路径；读懂设计工具（Figma/Illustrator）导出的路径数据并在代码里改色改形；用 JS 程序化生成折线/曲线；做描边动画（stroke-dasharray 沿路径画线）。
+- **本篇主线**：M/L/H/V 定骨架，C/Q/S/T 管曲线，A 画圆弧，Z 闭合——先掌握「直线族 + 闭合」就能画多边形图标，再进阶贝塞尔与弧线。第 1-3 节是历史与形式化推导（学术背景，选读）；急用先看第 4 节代码示例与第 9 节工程场景，遇到坑再回第 6 节陷阱清单。
+- **本篇不讲**：路径上的端点符号 marker（见 [端点标记 marker](/svg/112-SVGPathMarkers)）、路径裁剪与蒙版（见 [裁剪与蒙版](/svg/110-SVGClipMask)）、路径描边动画的完整参数（第 4.10 节只做引子）。
+
 ## 1. 历史动机与发展脉络
 
 ### 1.1 路径数据的演进
@@ -881,6 +889,165 @@ console.log(center);
 <path d="..." pathLength="100" />
 <!-- 实际长度可能为 200,pathLength 仅影响 stroke-dasharray 等的归一化 -->
 ```
+
+## 工程场景：d 命令的取舍与易错点
+
+以下三个场景按「先读懂、再清理、后程序化」的进阶顺序排列，每个都给出关键代码的逐段解释与「换成别的写法会发生什么」。
+
+### 场景一：清理 Figma 导出的路径（读懂数据）
+
+真实背景：设计师从 Figma 导出一个 24x24 的搜索图标，导出的 SVG 经常携带冗余：三位小数、负坐标偏移、无意义的嵌套 group。前端拿到后要读懂并瘦身：
+
+```svg
+<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10.5 3C6.35786 3 3 6.35786 3 10.5C3 14.6421 6.35786 18 10.5 18
+           C12.2792 18 13.9106 17.3846 15.2014 16.3532
+           L20.4241 21.5759"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+</svg>
+```
+
+逐段解释：
+
+- `M10.5 3` 起点 (10.5, 3) 在 24x24 画布顶部偏左——圆心在 (10.5, 10.5)、半径 7.5 的搜索圆圈从顶部起笔。**小数坐标是设计工具按几何精确值导出的常态，不是错误**；转换成整数会破坏视觉重心，只有 SVGO 这类工具按精度预算取舍（第 7.4 节）；
+- 三个 `C` 命令画出 3/4 圆：贝塞尔近似圆弧时每段控制点系数约 0.5523 倍半径（`7.5 * 0.5523 = 4.14`，与数据中 `6.35786 - 3 = 3.358` 的差值是 Figma 用了分段近似）。**换成 `A` 命令**（`M10.5 3 A7.5 7.5 0 1 1 3 10.5`）更短更精确，但下游若要继续在曲线上插值取样，`C` 的控制点直接可用而 `A` 需要先解中心参数（第 4.14 节）；
+- `L20.4241 21.5759` 画手柄斜线到右下角。注意它没有回到圆——搜索图标是「不闭合的圆 + 一条线」，`Z` 在这里**不能用**，加了 Z 会画出一条从手柄尖端回到起点的多余边；
+- 工程动作清单：路径合并（多 path 并一 path 减节点）、精度收敛（SVGO `precision: 2` 足够 24px 图标）、删除 fill="none" 之外无用的默认属性。改完必须目检——路径数据没有报错，只有「看起来不对」。
+
+### 场景二：地图边界简化（命令取舍与数据量）
+
+真实背景：把一份省级行政区 GeoJSON 转成 SVG 背景图，原始边界含上万顶点，转出的 path 有 400KB，首屏渲染卡顿。简化要在「顶点数」与「形状保真」之间取舍：
+
+```js
+// 简化核心：Douglas-Peucker 抽稀 + 相对坐标压缩
+function simplify(points, tolerance) {
+  if (points.length < 3) return points;
+  let maxDist = 0, index = 0;
+  const [x1, y1] = points[0];
+  const [x2, y2] = points[points.length - 1];
+  for (let i = 1; i < points.length - 1; i++) {
+    const d = pointToSegmentDist(points[i], [x1, y1], [x2, y2]);
+    if (d > maxDist) { maxDist = d; index = i; }
+  }
+  if (maxDist > tolerance) {
+    const left = simplify(points.slice(0, index + 1), tolerance);
+    const right = simplify(points.slice(index), tolerance);
+    return left.slice(0, -1).concat(right);
+  }
+  return [points[0], points[points.length - 1]];
+}
+
+function toPath(points) {
+  const [sx, sy] = points[0];
+  let d = `M${sx.toFixed(1)} ${sy.toFixed(1)}`;
+  for (let i = 1; i < points.length; i++) {
+    const [x, y] = points[i];
+    d += `l${(x - points[i - 1][0]).toFixed(1)} ${(y - points[i - 1][1]).toFixed(1)}`;
+  }
+  return d + 'Z';
+}
+```
+
+逐段解释：
+
+- `simplify` 是 Douglas-Peucker 递归抽稀：找离首尾连线最远的点，超容差就分段递归，否则整段压成两点。**tolerance 的量纲是坐标系单位**——地图投影坐标下 0.01 与经纬度下 0.0001 是完全不同的精度，照抄示例值会得到「颗粒边界」或「几乎没简化」两个极端；
+- `toPath` 用小写 `l` 相对命令：每个顶点只存与上一点的差值，数字短（少负号少整数位），配合 `toFixed(1)` 一位小数，400KB 的绝对坐标 path 通常能压到 1/5。**换成绝对 `L`** 功能完全等价，只是体积翻倍；换 `M` 连接则每段都是独立子路径，fill 会碎裂成散点；
+- 收尾 `Z` 闭合行政区轮廓，fill-rule 用默认 nonzero 时**顶点方向必须一致**（第 6.7 节），否则有飞地的省份（如河北-北京）会镂空出错；GeoJSON 的环方向规范与 SVG fill 规则不一致是这一步最隐蔽的坑，实践中直接用 `fill-rule="evenodd"` 更稳；
+- 精度与体积的最终裁决是渲染效果：抽稀后的边界在目标缩放级别下目检「锯齿可见性」，宁可多 10% 体积也不要肉眼可见的折角。
+
+### 场景三：加载动画的 stroke-dashoffset（程序化驱动）
+
+真实背景：登录页需要一个「logo 轮廓被画出来」的加载动画。核心技巧是把描边总长设为虚线单位，用 dashoffset 从「全隐藏」推到「全显示」：
+
+```svg
+<svg viewBox="0 0 100 100" class="loader">
+  <path d="M20 80 C20 40 45 20 50 20 C55 20 80 40 80 80"
+        fill="none" stroke="#4f5bd5" stroke-width="4"
+        stroke-linecap="round" pathLength="100" class="trace" />
+  <style>
+    .trace {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      animation: draw 1.6s ease-out forwards;
+    }
+    @keyframes draw {
+      to { stroke-dashoffset: 0; }
+    }
+  </style>
+</svg>
+```
+
+逐段解释：
+
+- `pathLength="100"` 是本技巧的灵魂：把路径的逻辑长度**归一化为 100**，dasharray 与 dashoffset 就用 0-100 的整数说话，不必先量出真实长度。**不写它**就得用 JS 的 `getTotalLength()` 量真实长度再硬编码——路径一改，动画参数全要重调；
+- `stroke-dasharray: 100` 把虚线设为「100 实 + 100 空」，`stroke-dashoffset: 100` 把实段推离起点，看到的只有空白；动画把 offset 归零，实段滑入视野，形成「描画」错觉。offset 与 dasharray 用同一个值是自变量成对出现，**只改一个**会露出第二段虚线（闪现「画了又擦」的鬼影）；
+- `ease-out` 让起笔快收笔慢，接近人手绘的节奏；换 `linear` 就是机械匀速，观感立刻「程序味」十足——动效里时长之外，缓动才是手感；
+- 与第 4.10 节的关系：4.10 讲的是 dasharray 的周期性虚线用法（蚂蚁线），本场景用同一对属性做「单段位移动画」——同一组属性，两种完全不同的心智模型，这是 SVG 描边最容易被混淆的一对用法。
+
+## 动手实践
+
+任务一（热身）：把场景一的搜索图标路径改成 `A` 弧线版本（圆部分用一条 `A` 命令），要求视觉与原版一致、`d` 字符串更短。
+
+提示：`A rx ry rot large-arc sweep x y`；从 (10.5, 3) 画到圆左侧的 (3, 10.5) 需要 large-arc=1 还是 0？sweep 两个方向都试一遍再定。
+
+任务二（进阶）：给场景二的 `toPath` 增加「至少保留隔 20 个顶点一个锚点」的下限保护（避免 tolerance 过大时轮廓塌缩成三角形），并解释这个保护为什么不能只靠调小 tolerance。
+
+提示：Douglas-Peucker 是全局最优优先，不保证点数下限；可以在递归返回前比较结果点数与 `Math.ceil(len / 20)` 取大者。
+
+任务三（挑战）：把场景三的加载动画改成「画完再擦掉」的循环：画出后停顿 0.3s，再反向擦除，无限循环。只允许改 CSS。
+
+提示：dashoffset 从 100 到 0 再到 -100 的关键帧序列；`-100` 时实段完全滑出会露出第二段虚线，把 dasharray 写成 `100 100` 并让 offset 在 -100 处恰好对齐空段即可自检验证。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+任务一：
+
+```svg
+<path d="M10.5 3 A7.5 7.5 0 1 1 3 10.5 L20.42 21.58"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+```
+
+large-arc=1 因为圆被「断开」的部分超过半圈（从顶部画到左侧逆时针缺的是 3/4 圆还是 1/4 取决于 sweep；sweep=1 顺时针走大弧）。若视觉出现「小弧缺口」，把 sweep 翻转即可——这正是 A 命令 4 解的日常排错。
+
+任务二：
+
+```js
+function toPath(points, minSpacing = 20) {
+  const [sx, sy] = points[0];
+  let d = `M${sx.toFixed(1)} ${sy.toFixed(1)}`;
+  let lastKept = 0;
+  for (let i = 1; i < points.length; i++) {
+    if (i - lastKept >= minSpacing || i === points.length - 1) {
+      const [x, y] = points[i];
+      d += `l${(x - points[lastKept][0]).toFixed(1)} ${(y - points[lastKept][1]).toFixed(1)}`;
+      lastKept = i;
+    }
+  }
+  return d + 'Z';
+}
+```
+
+调小 tolerance 只是「更不删」，复杂轮廓上仍可能整段被压掉；点数下限是结构性保证，与容差正交。
+
+任务三：
+
+```css
+.trace {
+  stroke-dasharray: 100 100;
+  animation: draw-erase 3.2s ease-in-out infinite;
+}
+@keyframes draw-erase {
+  0% { stroke-dashoffset: 100; }
+  40% { stroke-dashoffset: 0; }
+  55% { stroke-dashoffset: 0; }
+  95%, 100% { stroke-dashoffset: -100; }
+}
+```
+
+offset 为 -100 时实段起点在 -100（不可见）、终点在 0（不可见），空段恰好铺满整条路径，擦除完成且无鬼影。40%-55% 的同值平台就是「停顿 0.3s」（总时长 3.2s 的约 15%）。
+
+</details>
 
 ## 7. 工程实践
 

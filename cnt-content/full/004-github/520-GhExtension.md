@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 580
 title: gh extension 扩展命令速查手册
 module: 'github'
 category: 工具链

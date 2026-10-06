@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 570
 title: JVM 调优
 module: 'java'
 category: 后端技术
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- [JVM 内存模型](/java/610-JVMMemoryModel)：建议先完成前一篇的学习
+- [JVM 内存模型](/java/610-JVMRuntimeDataAreasAndObjectLayout)：建议先完成前一篇的学习
 
 ## 学习目标
 

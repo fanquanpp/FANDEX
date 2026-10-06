@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 310
 title: History API
 module: 'html5'
 category: 前端技术

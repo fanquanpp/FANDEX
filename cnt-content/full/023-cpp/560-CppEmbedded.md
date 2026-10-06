@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 590
 title: C++嵌入式开发
 module: 'cpp'
 category: 计算机科学

@@ -1,5 +1,5 @@
 ---
-order: 700
+order: 750
 title: 数据加密：InnoDB TDE 与密钥管理
 module: 'mysql'
 category: 数据库
@@ -11,7 +11,7 @@ related:
   - 'mysql/710-SSLEncryption'
   - 'mysql/730-FirewallPlugin'
   - 'mysql/490-Binlog'
-  - 'mysql/860-PerformanceTuningSecurity'
+  - 'mysql/690-AccountPermissionManagement'
 prerequisites:
   - 'mysql/710-SSLEncryption'
   - 'mysql/410-InnoDBSystemArchitecture'

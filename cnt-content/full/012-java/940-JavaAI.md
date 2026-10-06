@@ -1,5 +1,5 @@
 ---
-order: 760
+order: 850
 title: Java 与 AI
 module: 'java'
 category: 后端技术

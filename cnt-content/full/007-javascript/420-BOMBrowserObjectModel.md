@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 490
 title: BOM 浏览器对象模型
 module: 'javascript'
 category: 前端技术
@@ -1323,6 +1323,16 @@ Google Docs 使用 Operational Transformation（OT）算法，通过 `postMessag
 | `SharedWorker` | 共享状态、长连接 | 兼容性、调试难 | 共享会话 |
 | `storage` 事件 | 兼容性好 | 仅字符串、非即时 | 降级方案 |
 | `WebSocket` | 跨域、双向、跨设备 | 需服务端 | 实时通信 |
+
+### 12.4 setTimeout vs requestAnimationFrame vs requestIdleCallback
+
+| API | 用途 | 触发时机 | 帧同步 |
+| --- | --- | --- | --- |
+| `setTimeout(fn, 0)` | 通用延迟 | 4ms 后（嵌套 ≥5 次时） | 否 |
+| `requestAnimationFrame` | 视觉动画 | 下一帧渲染前 | 是 |
+| `requestIdleCallback` | 低优先级任务 | 浏览器空闲时 | 否 |
+
+调度语义的完整展开（嵌套钳制、累积漂移、实时时钟与倒计时实战）见 [定时器与时间调度](/javascript/485-TimersAndScheduling) 专篇。
 
 ---
 

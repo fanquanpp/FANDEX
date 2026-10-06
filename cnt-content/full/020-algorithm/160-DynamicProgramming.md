@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 190
 title: 动态规划（方法论与线性 DP）
 module: 'algorithm'
 category: 计算机科学
@@ -26,6 +26,12 @@ prerequisites:
 > 使用方式：本篇是动态规划的参考深水篇（方法论与线性 DP 册），适合系统梳理与回查；DP 入门的动手路径请配合主线篇目（递归与回溯 140）使用。
 
 从一道题开始：爬 n 阶楼梯，每次走 1 或 2 阶，共有几种走法？暴力递归会成千上万次重复计算同一个子问题，而把答案记下来、再按依赖顺序递推，复杂度就从指数级掉到线性——这就是动态规划的全部直觉。本篇给出可复用的方法论闭环：先建模状态、再推导转移、后优化实现；状态、转移、初始化三要素贯穿始终。读完后你能独立完成「定义状态、写出转移方程、确定遍历顺序」的全流程，并知道什么时候该把递归改成递推。经典模型家族（背包、区间、树形、状压、数位）在姊妹篇展开。
+
+## 知识点地图
+
+- **知识类别**：动态规划基础——从暴力递归到记忆化到递推的推导链条、一维与二维 DP 设计法。位掩码 DP 等专题在 240/165 篇。
+- **解决什么问题**：重叠子问题 + 最优子结构的问题（斐波那契、爬楼梯、背包、LIS、编辑距离）从指数降到多项式。
+- **什么时候用到**：资源分配与组合优化；序列比较（diff、编辑距离）；面试动态规划题的系统化解法。
 
 ## 前置知识
 
@@ -1391,3 +1397,76 @@ DP 的数学基础与工程应用涉及多个学科，以下关联模块提供�
 - 定义状态的口诀是什么？（状态要能唯一决定「后续的最优解怎么算」——问什么就把什么放进状态）
 - 一道题写出两个都对但复杂度不同的状态定义时，怎么选？（状态数 × 每状态转移数 = 总复杂度，选总账更小的）
 - 能把爬楼梯、最大子数组和、最长递增子序列三题的状态、转移、初始化三要素独立默写出来。
+
+
+## 动手实践
+
+**练习 1（三段递进）**：对爬楼梯问题（每次上 1 或 2 阶）分别写暴力递归、记忆化、递推三个版本，n=30 计时对比，验证「指数到线性」的跨越；再指出递推版的空间优化点。
+
+**提示**：递推只依赖前两项，滚动变量把 O(n) 空间降到 O(1)。
+
+**练习 2（0-1 背包与完全背包）**：同一组物品，分别用「逆序容量循环」与「正序容量循环」求最大价值，验证前者是 0-1 背包（每件一件）、后者自动变成完全背包（每件无限件）。
+
+**提示**：逆序保证 dp[i][c] 只依赖上一行；正序允许同层重复取——一行之差定义两种问题。
+
+**练习 3（LIS 双解法）**：实现最长递增子序列的 O(n^2) DP 与 O(n log n) 贪心+二分（配合 172 篇的 lower_bound），随机序列上验证两解长度一致。
+
+**提示**：贪心法维护「各长度 LIS 的最小结尾」，tails 数组恒有序所以可二分。
+
+<details>
+<summary>参考实现（先自己动手，再看这里）</summary>
+
+```python
+from functools import lru_cache
+import bisect, random, time
+
+# 练习 1
+def climb_naive(n):
+    return n if n <= 1 else climb_naive(n-1) + climb_naive(n-2)
+
+@lru_cache(maxsize=None)
+def climb_memo(n):
+    return n if n <= 1 else climb_memo(n-1) + climb_memo(n-2)
+
+def climb_dp(n):
+    a, b = 1, 1                # 滚动变量：O(n) 时间 O(1) 空间
+    for _ in range(n):
+        a, b = b, a + b
+    return a
+
+t = time.perf_counter(); climb_naive(30); t1 = time.perf_counter() - t
+t = time.perf_counter(); climb_memo(30);  t2 = time.perf_counter() - t
+assert climb_dp(30) == climb_naive(30) == climb_memo(30)
+print(f"naive {t1:.4f}s, memo {t2:.6f}s")   # 指数 vs 线性
+
+# 练习 2
+def knapsack(weights, values, cap, unbounded=False):
+    dp = [0] * (cap + 1)
+    for w, v in zip(weights, values):
+        rng = range(w, cap + 1) if unbounded else range(cap, w - 1, -1)
+        for c in rng:
+            dp[c] = max(dp[c], dp[c - w] + v)
+    return dp[cap]
+
+assert knapsack([1,3,4], [15,30,45], 4) == 45
+assert knapsack([1,3,4], [15,30,45], 4, unbounded=True) == 90
+
+# 练习 3
+def lis_nlogn(nums):
+    tails = []
+    for x in nums:
+        i = bisect.bisect_left(tails, x)
+        if i == len(tails): tails.append(x)
+        else: tails[i] = x
+    return len(tails)
+
+nums = [random.randint(0, 99) for _ in range(200)]
+n = len(nums)
+dp = [1] * n
+for i in range(n):
+    for j in range(i):
+        if nums[j] < nums[i]: dp[i] = max(dp[i], dp[j] + 1)
+assert max(dp) == lis_nlogn(nums)
+```
+
+</details>

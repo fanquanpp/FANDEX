@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 170
 title: 内存淘汰策略
 module: 'redis'
 category: 数据库
@@ -14,9 +14,13 @@ prerequisites:
   - 'redis/010-OverviewCoreDataStructure'
 ---
 
+## 知识点地图
 
+- **知识类别**：Redis 内存淘汰（eviction）——maxmemory 触发条件、LRU/LFU/Random/TTL 四类八种策略的原理与配置。
+- **解决什么问题**：内存达到上限后「删谁的键」的决策机制；让缓存实例在有限内存下保住最该保住的数据；让 `evicted_keys` 告警有明确的处置路径。
+- **什么时候用到**：容量规划、缓存策略选型、内存告警处置；与过期删除（redis/020-KeyManagement）的边界是：过期删「到期的键」，淘汰删「还没到期但内存不够时的键」。
 
----
+前置：了解键空间与 TTL 基础概念（redis/010-OverviewCoreDataStructure）。
 
 ## 1. 内存淘汰概述
 
@@ -180,6 +184,42 @@ CONFIG SET lfu-decay-time 1
 CONFIG SET lfu-log-factor 10
 ```
 
+### 3.6 LFU 在线调优实验
+
+两个参数怎么调不能靠拍脑袋，用 `OBJECT FREQ` 在线上直接做实验（Redis 4.0+，前提 `maxmemory-policy` 为 LFU 系）：
+
+```bash
+# OBJECT FREQ：查看某键当前的 LFU 计数（0-255 的对数计数器）
+OBJECT FREQ hot:key
+# (integer) 153
+
+# 实验一：观察 lfu-log-factor 对增长速度的影响
+CONFIG SET lfu-log-factor 10    # 默认
+SET bench:k1 x
+# 用脚本循环 GET bench:k1 共 1 万次，OBJECT FREQ bench:k1 → 记录值
+CONFIG SET lfu-log-factor 100   # 十倍
+# 新键重跑 1 万次 GET → 记录值，对比两次计数
+# 结论预期：factor=10 时 1 万次访问能把 counter 推到 80~120；
+#          factor=100 时大概只到 30~50——高段位更难进，区分度更高
+
+# 实验二：观察 lfu-decay-time 对冷化的影响
+CONFIG SET lfu-decay-time 1     # 默认：1 分钟减 1
+# 停止访问 10 分钟后 OBJECT FREQ → 计数下降约 10
+CONFIG SET lfu-decay-time 10
+# 同样停 10 分钟 → 计数只降 1
+```
+
+调参决策表（结合 `evicted_keys` 增速与缓存命中率）：
+
+| 现象 | 调整方向 | 理由 |
+| :--- | :--- | :--- |
+| 命中率还行但偶发热键被淘汰 | `lfu-log-factor` 调大 | 拉开冷热键的计数差距，热键更难被超过 |
+| 新上线的键很快被淘汰 | `lfu-decay-time` 调大或排查 `LFU_INIT_VAL` | 新键初始 counter=5，衰减太快等不到积累访问 |
+| 历史热点下线后长期占内存 | `lfu-decay-time` 调小 | 加速冷化，让「曾经的热」尽快让位 |
+| counter 普遍接近 255 | `lfu-log-factor` 调大 | 饱和即失去区分度，等于退化成「大家都热」 |
+
+**易错点**：`OBJECT FREQ` 读的是采样计数，改动 `lfu-log-factor` 后**已有键**的 counter 不会重算（参数只影响后续增长），实验必须用新键做对照；另外 `INFO stats` 的命中率（`keyspace_hits/misses`）是所有策略的裁判，LFU 参数调得好不好最终看它。
+
 ## 4. 策略选择
 
 ### 4.1 决策流程
@@ -234,6 +274,25 @@ INFO memory
 # 2. 缓存命中率低 → 考虑换策略（LRU → LFU）
 # 3. 内存碎片率高 → 重启或使用 activedefrag
 ```
+
+## 4A. 动手实践
+
+任务一：验证采样 LRU 的「不精确性」。设 `maxmemory-policy allkeys-lru`、`maxmemory-samples 3`，写入 100 个键后按 1..100 顺序各 GET 一次（构造访问序），再写入 20 个新键触发淘汰，记录被淘汰的键编号分布；改 `maxmemory-samples 10` 重跑对比。
+
+<details>
+<summary>任务一参考观察与提示</summary>
+
+预期：samples=3 时被淘汰的键会包含不少「访问序靠后但非最旧」的键（近似 LRU 的误差窗口）；samples=10 后分布明显更贴近真 LRU。观察手段：淘汰前后对比 `DBSIZE` 与键集合差集。实验要控制单键大小让 20 个新键足以触发淘汰。这正是 2.4 节「采样数对效果影响」的可触摸版本。
+</details>
+
+任务二：按 3.6 节的实验一流程，实测你所在 Redis 版本在 `lfu-log-factor` 10 与 100 下、1 万次 GET 后新键的 `OBJECT FREQ` 值，并判断你们业务的访问频率分布更适合哪个因子。
+
+<details>
+<summary>任务二参考判读</summary>
+
+用 python 脚本循环 GET 1 万次（管道发送更接近真实负载）。factor=10 时 counter 通常落在 80~130，factor=100 时落在 25~55。决策：业务键的访问频次普遍在「每小时几十次」量级 → 用大因子把高频键和低频键拉开；访问频次普遍极高（每秒十次以上）→ 默认 10 即可，再大会让所有键都挤在中段失去区分度。
+</details>
+
 ## 触发条件
 
 **基本写法：设置最大内存**

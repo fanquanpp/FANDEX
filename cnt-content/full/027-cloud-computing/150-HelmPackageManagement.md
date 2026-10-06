@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 170
 title: Helm 包管理
 module: 'cloud-computing'
 category: 云与基础设施
@@ -265,7 +265,8 @@ helm dependency build       # 按 Chart.lock 精确重建（CI 用）
 | 先渲染   | 任何 upgrade 前 `helm template` 或 --dry-run |
 
 进阶方向：大型团队会向 **GitOps 演进**——Argo CD/Flux 监听 Git 仓库，
-把「helm upgrade」变成仓库提交，Helm 退居「渲染引擎」。Helm 与
+把「helm upgrade」变成仓库提交，Helm 退居「渲染引擎」，原则、实配与
+晋升回滚见 [GitOps 持续交付](/cloud-computing/155-GitOpsContinuousDelivery)。Helm 与
 Kustomize 的分工：Helm 管「参数化整包」，Kustomize 管「在既有清单上
 做差异叠加」，两者可以组合使用。
 
@@ -277,4 +278,4 @@ Kustomize 的分工：Helm 管「参数化整包」，Kustomize 管「在既有�
 - 进阶注意：values 是 Chart 的公开 API，保持模板只引用声明过的键；
   `--set` 适合临时实验、不适合生产流水线；version 与 appVersion 语义
   分开；Helm 4 已发布但概念延续 3.x，历史资料中的 Tiller 内容一律
-  过时；规模化的下一步通常是 Argo CD/Flux GitOps 化。
+  过时；规模化的下一步通常是 Argo CD/Flux GitOps 化，见 [GitOps 持续交付](/cloud-computing/155-GitOpsContinuousDelivery)。

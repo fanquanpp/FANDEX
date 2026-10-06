@@ -18,7 +18,7 @@ prerequisites:
 ## 前置知识
 
 - [Pinia 状态管理详解](/vue3/210-PiniaStateManagementDetailed)：会定义 store（选项式与 setup 两种写法），知道 $patch、$state；
-- [自定义组合函数封装](/vue3/100-CustomComposableWrapper)：知道 watch / $subscribe 的用法。
+- [自定义组合式函数](/vue3/090-CustomHook)：知道 watch / $subscribe 的用法。
 
 ## 学习目标
 

@@ -1,5 +1,5 @@
 ---
-order: 840
+order: 950
 title: Python 与深度学习
 module: 'python'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 540
 title: Go 与 OAuth2
 module: 'go'
 category: 后端技术

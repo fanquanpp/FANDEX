@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 430
 title: 可靠消息模式与生产实践
 module: 'devops'
 category: 云与基础设施
@@ -220,7 +220,7 @@ done
 ```
 
 生产化提醒：脚本版适合体会原理，真实环境用 Prometheus kafka_exporter +
-[监控告警](/devops/300-MonitorAndAlert)的规则来做。
+[监控告警](/devops/240-MonitorAndObservability)的规则来做。
 
 本地消息表实验（30 分钟）：建 `orders` 与 `outbox` 两张表（同一 SQLite/MySQL 库），实现
 「下单事务同时写两表 + 轮询中继发消息」；中继循环里在 `producer.send` 之后人为抛异常

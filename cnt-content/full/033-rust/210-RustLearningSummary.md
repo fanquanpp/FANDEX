@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 260
 title: Rust 学习总结：核心知识体系回顾
 module: 'rust'
 category: 后端技术
@@ -21,7 +21,7 @@ prerequisites: []
 
 - [Rust 是什么：安全与性能兼得的系统语言](/rust/010-WhatIsRust)：理解所有权思想的直觉版与 Cargo 工作流。
 - [所有权与借用](/rust/050-RustOwnershipBorrowing)：所有权三规则、移动与借用、切片。
-- [结构体、枚举与模式匹配](/rust/070-RustStructEnumMatch)：自定义类型与 match 穷尽检查。
+- [结构体与方法](/rust/070-RustStructAndImpl)：自定义类型与 match 穷尽检查。
 
 ## 学习目标
 
@@ -190,7 +190,7 @@ fn main() {
 
 ### 5. 集合与迭代器
 
-Vec、HashMap、HashSet 是最常用的三大堆上集合；索引越界会 panic，用 `get()` 则返回 Option 安全访问。迭代器是零成本抽象的典范：`map/filter/collect` 等适配器链在编译后与手写循环等价，`entry().or_insert()` 则是"不存在则初始化"的统计惯用法，详见[集合与迭代器](/rust/090-RustCollectionsIterators)。
+Vec、HashMap、HashSet 是最常用的三大堆上集合；索引越界会 panic，用 `get()` 则返回 Option 安全访问。迭代器是零成本抽象的典范：`map/filter/collect` 等适配器链在编译后与手写循环等价，`entry().or_insert()` 则是"不存在则初始化"的统计惯用法，详见[集合类型](/rust/090-RustCollections)。
 
 ```rust
 use std::collections::HashMap;

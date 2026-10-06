@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 180
 title: AI 协作开发：把大模型变成结对程序员而不是代笔
 description: 横切全部路线的 AI 协作指南：教练四角色、提示词结构、AI 代码审查清单、测试兜底与安全边界，附「让 AI 出题不代写」的学习纪律。
 module: 'roadmap'

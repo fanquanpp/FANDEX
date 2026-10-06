@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 270
 title: 源生成器
 module: 'csharp'
 category: 后端技术
@@ -1491,3 +1491,52 @@ context.RegisterPostInitializationOutput(ctx =>
 掌握源生成器不仅需要理解 Roslyn API，更需要具备编译器思维：分析编译管道、设计纯函数管线、处理缓存有效性、生成可读且高效的代码。随着 .NET 生态全面转向 AOT 与 Native AOT，源生成器将成为每个 .NET 工程师的必备技能。
 
 > "The best code is the code you don't write—but the second best is the code the compiler writes for you." — Anonymous
+
+## 速查补充：源生成器接口速查（承接自原 150 篇速查段）
+
+## 源生成器
+
+**基本写法：IIncrementalGenerator 接口**
+`[Generator] public class <生成器名> : IIncrementalGenerator { ... }`
+```csharp
+// 定义增量源生成器
+[Generator]
+public class MyGenerator : IIncrementalGenerator
+{
+    public void Initialize(IncrementalGeneratorInitializationContext context)
+    {
+        // 生成器初始化
+    }
+}
+```
+
+---
+
+**基本写法：ISourceGenerator 接口**
+`[Generator] public class <生成器名> : ISourceGenerator { ... }`
+```csharp
+// 定义源生成器
+[Generator]
+public class MySourceGenerator : ISourceGenerator
+{
+    public void Execute(GeneratorExecutionContext context)
+    {
+        // 生成代码
+    }
+    public void Initialize(GeneratorInitializationContext context) { }
+}
+```
+
+---
+
+**基本写法：添加源代码**
+`context.AddSource("<名称>", <代码>);`
+```csharp
+// 添加生成的源代码
+context.AddSource("Generated.g.cs", """
+    namespace Generated;
+    public class Helper { }
+    """);
+```
+
+---

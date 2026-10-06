@@ -1,5 +1,5 @@
 ---
-order: 460
+order: 510
 title: GitHub CLI 认证配置
 module: 'github'
 category: 工具链

@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 470
 title: "并发设计：可见性、死锁与 AQS 的直觉"
 module: 'java'
 category: 后端技术
@@ -11,7 +11,6 @@ related:
   - 'java/480-MultithreadingBasics'
   - 'java/490-JucConcurrencyTools'
   - 'java/500-ThreadPoolExecutorPractice'
-  - 'java/610-JVMMemoryModel'
 prerequisites:
   - 'java/500-ThreadPoolExecutorPractice'
 ---
@@ -90,7 +89,7 @@ worker 看到了停止信号
 worker 已退出
 ```
 
-volatile 的语义是「写穿透到主内存，读不再用旧副本」，顺便禁止相关重排序。但记住边界：**只保证可见，不保证原子**——`volatile int count` 上的 count++ 照样丢更新，修计数请回 [JUC 并发工具](/java/490-JucConcurrencyTools) 的 CAS。规范条文深挖见 [JVM 内存模型](/java/610-JVMMemoryModel)。
+volatile 的语义是「写穿透到主内存，读不再用旧副本」，顺便禁止相关重排序。但记住边界：**只保证可见，不保证原子**——`volatile int count` 上的 count++ 照样丢更新，修计数请回 [JUC 并发工具](/java/490-JucConcurrencyTools) 的 CAS。规范条文深挖见 [JVM 内存模型](/java/610-JVMRuntimeDataAreasAndObjectLayout)。
 
 ## 3. 核心概念二：死锁与现场抓捕
 
@@ -236,7 +235,7 @@ void reload(Map<String, String> fresh) {
 
 - 往前：[多线程入门](/java/480-MultithreadingBasics) 的竞态、[JUC 并发工具](/java/490-JucConcurrencyTools) 的 CAS、[线程池实战](/java/500-ThreadPoolExecutorPractice) 的池，本文把它们统一到两条主线：可见性靠 happens-before，互斥靠 state 加队列；
 - 往后，并发四篇分工：**480 裸线程与 synchronized**、**490 不锁也能对**、**500 线程池**、**本文设计层**——知道工具为什么对，才能在工具失灵时自己诊断；
-- 更远：JMM 规范全文见 [JVM 内存模型](/java/610-JVMMemoryModel)；不共享状态、改走异步编排是 [CompletableFuture](/java/520-CompletableFutureAsync) 的事；[ThreadLocal 内存泄漏](/java/530-ThreadLocalMemoryLeak) 则是「不共享，各存各的」路线的代价清单。
+- 更远：JMM 规范全文见 [JVM 内存模型](/java/610-JVMRuntimeDataAreasAndObjectLayout)；不共享状态、改走异步编排是 [CompletableFuture](/java/520-CompletableFutureAsync) 的事；[ThreadLocal 内存泄漏](/java/530-ThreadLocalMemoryLeak) 则是「不共享，各存各的」路线的代价清单。
 
 ## 10. 官方文档
 

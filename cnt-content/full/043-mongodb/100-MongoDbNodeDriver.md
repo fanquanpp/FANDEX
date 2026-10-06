@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 130
 title: Node.js 驱动集成
 module: 'mongodb'
 category: 数据库

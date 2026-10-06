@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 250
 title: 反射实现通用函数：从手写校验器到泛型替代
 module: 'go'
 category: 后端技术

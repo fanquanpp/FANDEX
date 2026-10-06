@@ -16,6 +16,12 @@ related:
 prerequisites: []
 ---
 
+## 知识点地图
+
+- **知识类别**：TypeScript 基础类型系统——注解、推断与最常用的类型构造（原始类型、特殊类型、联合/交叉、别名、字面量、断言、守卫、推断）。
+- **解决什么问题**：写 TS 的每一行都要回答"这个值是什么类型"，本篇是这些答案的最小完备集合。
+- **什么时候用到**：从第一行 TS 代码开始，全程查用；后续每个专题篇（联合、守卫、断言）都是这里某一节的深水区展开。
+- **速查说明**：本篇正文（第 1~14 节）教学、文末卡片区（无编号的 H2）速查，两套标题是"详解 vs 速查"的刻意分工。
 ## 前置知识
 
 - [TS 前篇 04：泛型基础](/typescript/070-TSBasicsGenerics)：建议先完成前一篇的学习
@@ -748,6 +754,96 @@ const numbers = [1, 2, 3] as const;
 
 （3）原则：断言不改运行时行为，只改类型认知；能用守卫就用守卫。
 
+### 6.4 断言场景速查（承接自 520 杂糅篇）
+
+> 520-AdvancedTypeCalculus 已按类别归并拆分。其「类型断言」章的基础语法与本篇 6.1/6.2 重复、最佳实践与本篇 6.3/9.3 重复，均已去重；下面保留本篇没有展开的三个使用场景。
+
+**场景一：从 unknown 收回具体类型。** `unknown` 类型的值必须收窄或断言后才能操作：
+
+```typescript
+function processValue(value: unknown): void {
+  if (typeof value === 'string') {
+    console.log((value as string).toUpperCase()); // 断言后才能调字符串方法
+  }
+  if (typeof value === 'number') {
+    console.log((value as number).toFixed(2));
+  }
+}
+processValue('hello'); // 输出: HELLO
+processValue(42);      // 输出: 42.00
+```
+
+换成守卫写法更安全：`if (typeof value === 'string')` 成立后，`value` 已经被收窄为 `string`，分支内直接写 `value.toUpperCase()` 不需要断言。断言版的意义在于「编译器无法自动收窄」的场合，比如跨过中间层的返回值。
+
+**场景二：从联合类型中挑一个成员。**
+
+```typescript
+interface Cat { meow(): void }
+interface Dog { bark(): void }
+type Animal = Cat | Dog;
+
+function makeSound(animal: Animal): void {
+  if ((animal as Cat).meow) {
+    (animal as Cat).meow();
+  } else {
+    (animal as Dog).bark();
+  }
+}
+```
+
+易错点：这个写法靠「属性存在性」分辨成员，一旦两个成员都有可选的 `meow` 就会误判。等价且更安全的写法是 `'meow' in animal`（in 守卫，见本篇第 7 节）或判别式联合。
+
+**场景三：断言为更具体的子类型。**
+
+```typescript
+interface Person { name: string; age: number }
+interface Employee extends Person { employeeId: number; department: string }
+
+function getEmployeeInfo(person: Person): void {
+  const employee = person as Employee; // 断言：编译器只知道 Person
+  console.log(`Name: ${employee.name}, ID: ${employee.employeeId}`);
+}
+```
+
+为什么合法：Employee 是 Person 的子类型，向下断言总是允许的。风险是调用方传入的其实只是 Person，`employeeId` 在运行时是 `undefined`——断言不检查这一点，运行期才爆炸。能拿到具体类型时优先改函数签名为 `getEmployeeInfo(employee: Employee)`。
+
+### 6.5 非空断言速查（承接自 520 杂糅篇）
+
+非空断言 `!` 告诉编译器「这个值不会是 null/undefined」。本篇 6.2 已有 `getElementById(...)!` 一例，这里补全它的三种典型位置与注意事项。
+
+```typescript
+// 位置一：变量本身
+let maybeNull: string | null = 'Hello';
+let definitelyString: string = maybeNull!;
+
+// 位置二：可选属性
+interface User { name: string; email?: string }
+const user: User = { name: 'Alice' };
+const email: string = user.email!; // 断言 email 存在
+
+// 位置三：可选方法
+interface Greeter { greet?: () => void }
+const greeter: Greeter = { greet: () => console.log('Hello!') };
+greeter.greet!(); // 断言 greet 存在后调用
+```
+
+**初始化后肯定存在的值**（类内延迟赋值）是最常见的正当用途：
+
+```typescript
+class User {
+  private name: string | null = null;
+  constructor(name: string) { this.setName(name); }
+  private setName(name: string): void { this.name = name; }
+  public getName(): string {
+    return this.name!; // 构造函数已初始化，肯定不为 null
+  }
+}
+const user = new User('Alice');
+console.log(user.getName()); // 输出: Alice
+```
+
+**注意事项：** 非空断言只在编译期生效，运行时值为 null 时照旧抛错；「经过检查后的值」不需要再断言——`if (value) { value.length }` 里 TS 已自动收窄，多写 `value!.length` 反而掩盖后续变化。替代方案优先级：类型守卫 > 可选链 `?.` > 非空断言 `!`。
+
 ## 7. 类型守卫
 
 类型守卫是运行时检查，用于确定变量的具体类型。
@@ -1198,6 +1294,85 @@ handleResponse(errorResponse);
 
 （5）示例中的 `payload: true` 补全了类型，原代码此处为空值，编译期就会报错。
 
+### 10.4 承接综合示例：断言与非空断言（自杂糅篇 520）
+
+```typescript
+// 断言综合：unknown 按形状分流
+function processUnknown(value: unknown): void {
+  if (typeof value === 'string') {
+    const str = value as string;
+    console.log(`String length: ${str.length}`);
+  }
+  if (typeof value === 'number') {
+    const num = value as number;
+    console.log(`Number squared: ${num * num}`);
+  }
+  if (typeof value === 'object' && value !== null) {
+    const obj = value as { name: string; age: number }; // 注意：只断言了形状
+    console.log(`Object: ${obj.name}, ${obj.age}`);
+  }
+}
+
+// 非空断言：链式访问可选层
+interface User {
+  id: number;
+  name: string;
+  email?: string;
+  address?: { street: string; city: string };
+}
+function getUserEmail(user: User): string {
+  return user.email!;             // 断言 email 存在
+}
+function getStreet(user: User): string {
+  return user.address!.street!;   // 链式非空断言：每层都要断言
+}
+const user: User = {
+  id: 1, name: 'Alice', email: 'alice@example.com',
+  address: { street: '123 Main St', city: 'New York' },
+};
+processUnknown('Hello'); // String length: 5
+processUnknown(42);      // Number squared: 1764
+processUnknown(user);    // Object: Alice, 1
+console.log(getUserEmail(user)); // alice@example.com
+console.log(getStreet(user));    // 123 Main St
+```
+
+易错点：`user.address!.street!` 这种链式断言只要有一层实际为空就直接运行时崩溃，而且崩在离断言很远的地方。链式可选访问 `user.address?.street ?? ''` 更啰嗦但不会崩，生产代码建议后者。
+
+## 动手实践
+
+任务（先写，写完再展开参考实现）：
+
+1. 定义一个 `Result<T, E>` 可辨识联合（成功带 value、失败带 error），并写一个 `unwrap` 函数：成功返回值、失败抛错。提示：判别字段叫什么由你定，但两个分支的字段集必须不同。
+2. 用联合 + 守卫写 `formatId(id: string | number): string`：数字补零到 6 位，字符串原样返回。提示：`typeof` 守卫就够了，别用断言。
+3. 下面这段代码在不改签名的前提下让它通过编译，并说明你选了哪条路：`const el = document.querySelector("#main"); el.innerHTML = "";`。提示：至少有守卫、非空断言、可选链三种走法，想想运行时语义差别。
+
+<details>
+<summary>参考实现（先完成上面的任务再展开对照）</summary>
+
+```typescript
+// 1. Result 与 unwrap
+type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
+function unwrap<T, E>(r: Result<T, E>): T {
+  if (r.ok) return r.value;
+  throw new Error(`unwrap failed: ${JSON.stringify(r.error)}`);
+}
+
+// 2. typeof 守卫分派
+function formatId(id: string | number): string {
+  if (typeof id === "number") return String(id).padStart(6, "0");
+  return id;
+}
+
+// 3. 三条路及其语义：
+const el = document.querySelector("#main");
+if (el) el.innerHTML = "";            // 守卫：null 时静默跳过
+// el!.innerHTML = "";                 // 非空断言：null 时运行时抛错
+// el?.setProperty?                    // 可选链适合"链中间可能断"，对赋值不适用
+// 生产代码推荐守卫版：把"元素可能不存在"变成显式分支。
+```
+
+</details>
 ## 11. 常见问题与解决方案
 
 ### 11.1 类型错误

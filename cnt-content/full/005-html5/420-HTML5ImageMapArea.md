@@ -1,5 +1,5 @@
 ---
-order: 450
+order: 490
 title: 专项：图像热区 map 与 area
 module: 'html5'
 category: 前端技术

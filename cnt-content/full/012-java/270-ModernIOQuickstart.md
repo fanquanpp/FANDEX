@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 260
 title: 现代文件读写救急锦囊： Files.readString / writeString
 module: 'java'
 category: 后端技术

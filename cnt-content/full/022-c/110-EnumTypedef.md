@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'c/130-StructAndUnion'
   - 'c/190-ComplexDeclarationParsing'
-  - 'c/520-C23C2y'
+  - 'c/520-C23CoreFeatures'
   - 'c/170-FunctionPointerCallback'
 prerequisites:
   - 'c/080-ControlFlow'
@@ -264,9 +264,9 @@ C23 补上了最后一块拼图——固定底层类型：
 enum Status : uint8_t { STATUS_IDLE, STATUS_RUNNING, STATUS_STOPPED };  /* C23 */
 ```
 
-C23 之前，枚举的兼容整型由实现自行挑选（要求只是「装得下所有枚举值」的某个 char/有符号/无符号整型），于是 `sizeof(enum Status)` 不可移植，把枚举直接写入文件或网络包是隐性雷区。C23 的 `enum E : 类型` 把话挑明。各编译器的支持进度与标准开关（GCC 15 起默认 gnu23、Clang 需显式 -std=c23）见 [C23 与 C2y](/c/520-C23C2y)。
+C23 之前，枚举的兼容整型由实现自行挑选（要求只是「装得下所有枚举值」的某个 char/有符号/无符号整型），于是 `sizeof(enum Status)` 不可移植，把枚举直接写入文件或网络包是隐性雷区。C23 的 `enum E : 类型` 把话挑明。各编译器的支持进度与标准开关（GCC 15 起默认 gnu23、Clang 需显式 -std=c23）见 [C23 与 C2y](/c/520-C23CoreFeatures)。
 
-位标志是另一个常见用途：`PERM_READ = 1 << 0` 式的枚举可以按位组合出权限集合。注意组合结果（如 3）往往不在枚举清单里——C 允许，但承载组合值的变量声明成 int 更诚实。位运算细节见 [位运算与位域](/c/070-BitwiseBitField)。
+位标志是另一个常见用途：`PERM_READ = 1 << 0` 式的枚举可以按位组合出权限集合。注意组合结果（如 3）往往不在枚举清单里——C 允许，但承载组合值的变量声明成 int 更诚实。位运算细节见 [位运算与位域](/c/070-BitwiseOperationAndMask)。
 
 ## 6. 常见错误与调试实录
 
@@ -413,8 +413,8 @@ ST_COUNT 哨兵让表尺寸自动跟随枚举增长；「枚举连续」这个�
 ## 9. 与之前和之后的知识的关系
 
 - 往前：[控制流程](/c/080-ControlFlow) 的 switch 在本篇长出编译期穷举检查；[变量与常量](/c/050-VariableConstant) 的 #define 是本文对比的另一半；
-- 旁支：[位运算与位域](/c/070-BitwiseBitField) 支撑位标志枚举；[预处理与宏](/c/290-PreprocessorMacro) 解释 X-Macro 与 typedef vs #define 的底层差异；
-- 往后：[结构体与联合体](/c/130-StructAndUnion) 与本文共享 tag 命名空间并延续 typedef struct 惯例；[复杂声明解析](/c/190-ComplexDeclarationParsing) 把三步读法推进到徒手拆任何声明；[C23 与 C2y](/c/520-C23C2y) 给出固定底层类型的标准全景；枚举当下标的状态表，在 [数组详解](/c/120-ArrayDetailed) 正式展开。
+- 旁支：[位运算与位域](/c/070-BitwiseOperationAndMask) 支撑位标志枚举；[预处理与宏](/c/290-PreprocessorMacro) 解释 X-Macro 与 typedef vs #define 的底层差异；
+- 往后：[结构体与联合体](/c/130-StructAndUnion) 与本文共享 tag 命名空间并延续 typedef struct 惯例；[复杂声明解析](/c/190-ComplexDeclarationParsing) 把三步读法推进到徒手拆任何声明；[C23 与 C2y](/c/520-C23CoreFeatures) 给出固定底层类型的标准全景；枚举当下标的状态表，在 [数组详解](/c/120-ArrayDetailed) 正式展开。
 
 ## 10. 官方文档
 

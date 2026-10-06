@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 100
 title: Vite 生产构建与代码分割
 module: 'vite'
 category: 前端技术
@@ -14,6 +14,14 @@ prerequisites:
   - 'vite/030-ConfigFile'
 ---
 
+
+## 知识点地图
+
+- **知识类别**：Vite 生产构建与代码分割（`build` 配置、动态 import、manualChunks、产物分析），对应 vite.dev 的「Build Options」与「Guide: Building for Production」章节。
+- **解决什么问题**：开发环境秒开、构建上线后首屏 5 秒——开发不打包掩盖了体积问题；构建产物是黑盒，不知道哪个依赖拖慢了首屏。本篇给出一套「拆分 -> 分析 -> 预算」的完整优化闭环。
+- **什么时候用到**：上线前性能体检；首屏慢的归因排查；依赖升级后核对产物变化；CI 里守住体积预算。
+- **本篇主线**：第 1 节的事故现场是全篇的「为什么」——后面每一节都是给那 5 秒做的一刀手术。拆分手段（动态 import/manualChunks）解决「下多少」，分析工具链（visualizer/source-map-explorer/size-limit）与加载策略（modulepreload/prefetch）解决「下得对不对、来得早不早」。
+- **本篇不讲**：Rolldown 本身的迁移（见 [Vite 8 与 Rolldown](/vite/120-Vite8Rolldown)）；插件机制（见 [插件生态与机制](/vite/100-PluginSystem)）。
 
 ## 0. 一个类比：搬家打包与快递分装
 
@@ -329,6 +337,72 @@ visualizer 生成交互式 treemap（矩形面积图）：每个矩形的大小�
 ### 8.3 体积预算意识
 
 业界经验值：**移动端首屏 JS（gzip 后）200KB 左右是"表现良好"的上限**。500KB 压缩前的 chunk，gzip 后大约 150KB，已经接近红线。建议在 CI 中加体积检查（如 `size-limit`），防止体积悄悄膨胀。
+
+### 8.4 性能预算落地：把 8.3 的数字搬进 CI
+
+体积预算停留在「团队共识」里就会失效——人会忘，CI 不会。用 `size-limit` 把预算写成可执行断言：
+
+```json
+// package.json
+{
+  "size-limit": [
+    { "name": "首屏入口", "path": "dist/assets/index-*.js", "limit": "150 KB", "gzip": true },
+    { "name": "单 chunk 上限", "path": "dist/assets/*.js", "limit": "300 KB", "gzip": true }
+  ],
+  "scripts": {
+    "size": "pnpm build && size-limit"
+  }
+}
+```
+
+落地要点：
+
+- CI 流水线在 build 后追加 `size-limit` 步骤，超预算直接红——「这次 PR 让首屏多了 40KB」从口口相传变成流水线上的硬失败；
+- 预算值不是抄来的：先跑一次当前产物记录基线，预算设为「基线 x 1.1」，每季度随重构收敛一次；
+- `path` 用通配符匹配带哈希的文件名；`gzip: true` 让断言对齐传输体积（8.3 的红线是 gzip 后口径）。
+
+### 8.5 加载时序策略：modulepreload 与 prefetch
+
+拆分之后出现新问题：浏览器「发现需要下一个 chunk」有延迟——主 chunk 执行到 `import()` 才发起下一个请求，形成请求瀑布。两类注入手段：
+
+- **modulepreload（关键路径）**：Vite 构建时自动为入口 chunk 的静态依赖注入 `<link rel="modulepreload">`，浏览器并行预取并预解析。需要干预的场景：某路由的手动分组 vendor（4 节的 `vendor-chart`）不在自动注入清单里，可在 `index.html` 手写一行 `<link rel="modulepreload" href="/assets/vendor-chart-xxx.js">`，或用 `build.modulePreload.resolveDependencies` 编程化注入；
+- **prefetch（非关键路径）**：用户大概率会去、但不在当前页必需的资源（如登录后的仪表盘），加 `<link rel="prefetch">` 让浏览器空闲时提前拉取——牺牲一点带宽换下一跳的瞬时切换。判断标准一句话：**当前路由渲染要用的用 modulepreload，下个路由大概率要用的用 prefetch**。
+
+误用的代价：把太多 chunk 塞进 modulepreload，等于变相回到「一次性下完」——瀑布消失了，首屏带宽竞争回来了。注入清单要跟着「真实首屏依赖」走，而不是「我们觉得重要的」。
+
+### 8.6 source-map-explorer：gzip 之后的归因
+
+visualizer 回答「哪个模块体积大」，但它看的是压缩前体积。两个它回答不了的问题，交给基于 sourcemap 的归因工具：
+
+1. **tree-shaking 真的生效了吗**：明明 `import { debounce } from 'lodash-es'`，产物里却出现了一堆没用到的方法。`source-map-explorer` 把产物字节逐条映射回源文件，直接看到哪些源文件真实进入了产物：
+   ```bash
+   pnpm build --sourcemap
+   npx source-map-explorer dist/assets/index-*.js
+   ```
+2. **体积超预算时的精确定位**：size-limit 报红后，用归因结果决定「换库、拆分还是砍功能」，而不是凭 treemap 的矩形目测。
+
+工具链分工一句话：**visualizer 看模块占比（压缩前），source-map-explorer 看产物归因（映射回源文件），size-limit 守门（gzip 口径）**——三件套各管一段，别指望任何一个单独回答所有体积问题。
+
+## 动手实践：复现并修好那 5 秒
+
+任务：亲手把第 1 节的事故完整复现一遍，再按本篇手段修复，记录前后数据。
+
+1. **制造事故**：新建 Vite 项目，`pnpm add echarts`，在入口文件**静态** `import * as echarts from 'echarts'`（只用它画一个 100x100 的小图）；执行 `pnpm build`，记录入口 chunk 体积与 chunk 数量；
+2. **第一刀：动态 import**：把 echarts 改为图表组件内 `const { init } = await import('echarts')` 动态加载，重新 build，对比入口体积变化；
+3. **第二刀：按需引入**：改用 `echarts/core` + 按需注册（只引柱状图与 Canvas 渲染器），对比体积；
+4. **归因验证**：给第 1 步的产物跑 `source-map-explorer`，确认 echarts 全量模块确实在产物里；给第 3 步产物再跑一次，确认只剩用到的模块；
+5. **守门**：把最优体积写进 `size-limit` 预算，本地故意 `pnpm add lodash`（完整 CJS 版）静态引入，验证 CI 式检查会红。
+
+<details>
+<summary>参考数据与要点（先自己跑，再展开对照）</summary>
+
+参考量级（echarts 5.x，构建默认压缩）：第 1 步入口 chunk 约 1MB+（echarts 全量约 800KB-1MB 混入主包）；第 2 步入口回落到几十 KB，echarts 独立成异步 chunk（首屏不再下载它，代价是进图表页时多一次请求）；第 3 步按需引入后异步 chunk 降到 300-400KB 以下（只含 core+柱状图+Canvas）。
+
+第 4 步的判读：第 1 步归因图里能看到 echarts 的 lib/chart/ 下所有图表类型源文件；第 3 步只剩 BarChart 与 CanvasRenderer 相关文件——tree-shaking 在按需引入下真正生效的证据。注意：**echarts 全量静态引入时 tree-shaking 帮不了你**，它的入口 re-export 全部图表且带副作用标记，摇不动的部分必须靠按需 API 主动裁剪。
+
+第 5 步：lodash 完整 CJS 版约 70KB+（无 tree-shaking），一旦静态引入即触发预算红线。把「添加依赖 -> 产物红 -> 归因定位」这个循环跑顺，你就拥有了 8.4-8.6 全套工具的实战肌肉记忆。
+
+</details>
 
 ## 9. 常见错误与对策表
 

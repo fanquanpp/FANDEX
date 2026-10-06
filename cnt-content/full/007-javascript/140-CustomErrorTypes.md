@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 160
 title: 自定义错误类型：让上层分得清"哪里错了、为什么错"
 module: 'javascript'
 category: 前端技术

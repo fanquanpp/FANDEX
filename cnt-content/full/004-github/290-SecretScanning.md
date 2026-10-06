@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 320
 title: 密钥扫描与推送保护：密钥进了公开仓库，就当它已经泄露
 module: 'github'
 category: 工具链

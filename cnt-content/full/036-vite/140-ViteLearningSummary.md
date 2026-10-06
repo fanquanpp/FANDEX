@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 160
 title: Vite 学习总结：核心知识体系回顾
 module: 'vite'
 category: 前端技术
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'vite/030-ConfigFile'
-  - 'vite/070-DevServerHMR'
+  - 'vite/070-DevServerAndProxy'
   - 'vite/080-BuildSplit'
 prerequisites: []
 ---
@@ -162,7 +162,7 @@ HMR 的边界决定开发体验：CSS 与框架组件有现成的热替换边界
 
 ### 5. 开发服务器与 HMR
 
-HMR 的本质是"模块图 + WebSocket"：服务器监听文件变化，沿模块图找出受影响的边界，把最新模块推给浏览器就地替换，页面状态不丢失。Vite 对 CSS、Vue、React 提供开箱即用的热替换，原生模块可用 `import.meta.hot` 自定义（见[开发服务器与 HMR](/vite/070-DevServerHMR)）：
+HMR 的本质是"模块图 + WebSocket"：服务器监听文件变化，沿模块图找出受影响的边界，把最新模块推给浏览器就地替换，页面状态不丢失。Vite 对 CSS、Vue、React 提供开箱即用的热替换，原生模块可用 `import.meta.hot` 自定义（见[开发服务器与 HMR](/vite/070-DevServerAndProxy)）：
 
 ```typescript
 // src/config/theme.ts —— 应援色配置热更新：改配置不用整页刷新
@@ -319,6 +319,6 @@ server: {
 ## 后续学习路径
 
 1. 补齐配置细节：精读[配置文件详解](/vite/030-ConfigFile)的"不配、配、配好"三段对比，把每一项为什么存在讲给自己听。
-2. 深入开发体验：按[开发服务器与 HMR](/vite/070-DevServerHMR)复现模块图与热替换边界的实验。
+2. 深入开发体验：按[开发服务器与 HMR](/vite/070-DevServerAndProxy)复现模块图与热替换边界的实验。
 3. 优化生产产物：跟随[生产构建与代码分割](/vite/080-BuildSplit)从事故现场走一遍优化链路，再读[插件系统](/vite/100-PluginSystem)尝试动手写插件。
 4. 展望架构演进：阅读[Vite 8 与 Rolldown 新特性](/vite/120-Vite8Rolldown)理解单引擎时代，并关注[环境变量与模式](/vite/050-ViteEnvModes)、[服务端渲染 SSR](/vite/130-ViteSSR)、[Vitest 测试集成](/vite/090-ViteVitestTesting)的后续更新。

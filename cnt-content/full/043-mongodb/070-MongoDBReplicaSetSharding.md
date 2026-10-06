@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 90
 title: 副本集与分片架构
 module: 'mongodb'
 category: 数据库
@@ -12,6 +12,12 @@ related:
 prerequisites:
   - 'mongodb/050-MongoDBSchemaDesign'
 ---
+
+## 知识点地图
+
+- 知识类别：副本集与分片——oplog/心跳/选举三大机制、成员角色（Priority/Hidden/Delayed/Arbiter）、读写语义三件套、shard key 选型与 balancer。
+- 解决什么问题：单机的可用性天花板（副本集）与容量/吞吐天花板（分片）；以及"读哪个成员、读到多新的数据、写被认为多可靠"的语义控制。
+- 什么时候用到：生产部署的必经决策；排查主从延迟、选举抖动、数据倾斜。
 
 ## 0. 从单机到分片：演进路线（先读这里）
 
@@ -223,6 +229,36 @@ sh.setBalancerState(false) // 大批量导入等窗口期可暂停（办完事�
 1. chunk 迁移期间要在 shard 之间搬数据，占用带宽与缓存，高峰期会放大延迟——这就是大导入前先停 balancer、选低峰迁移的原因。
 2. **jumbo chunk**：同一个 shard key 值的数据量大到无法再拆（比如某超级大 V 的全部数据），balancer 搬不动它；哈希键几乎不会产生 jumbo，这正是它受欢迎的原因之一。
 3. 实践顺序：**先定分片、再灌数据**。往一个已分片的空集合写入比"先写满再补分片"便宜得多，后者要做一次全量均衡。
+
+## 动手实践
+
+**任务一：亲手制造一次选举。** 在本机三成员副本集上：a) kill 主节点，用 rs.status() 观察选举过程与新主产生（记录耗时）；b) 再 kill 新主，观察只剩一主一从时的状态——只有一个数据成员存活时它能被选出为主吗（提示：多数派不存在，集群降级为只读）。提示：把两次实验的"服务不可写时长"记下来，这就是副本集故障恢复的实测值。
+
+**任务二：readPreference 与延迟读实验。** 三成员副本集上，给从节点人为制造延迟（从节点用 `db.adminCommand({ configureFailPoint: "rsSyncApplyStop", mode: "alwaysOn" })` 或直接暂停一个成员的同步），分别用 primary 与 secondaryPreferred 读刚写入的数据，对比可见性差异。提示：这个实验就是"读到旧数据"的第一现场——写后立刻读的业务要么用 primary 读，要么用 causal consistency 会话。
+
+**任务三：shard key 预演。** 对一个订单集合（含 userId、orderId、createdAt 字段）分别评估三种 shard key：{ userId: 1 }、{ orderId: "hashed" }、{ userId: 1, createdAt: 1 }，按第 7 节四条原则（写散列、查询路由、单调递增避免、基数）逐条打分，并预测每种 key 下"查某用户近一个月订单"是否需要 scatter-gather。提示：结论没有唯一答案，但每个 key 的"查询必须带 shard key"这条约束要写清楚——查询模式决定选型，不是反过来。
+
+先自己操作，再对照参考流程：
+
+<details>
+<summary>任务一参考流程</summary>
+
+```bash
+# 0. 前提：070 第 5 节的单机三成员副本集已搭建并初始化
+mongosh --port 27017 --eval "rs.status().members.map(m => m.name + ' ' + m.stateStr)"
+
+# 1. 找到主节点（PRIMARY 标记者），kill 它的进程
+# 2. 10 秒内反复观察（另一终端）：
+mongosh --port 27018 --eval "rs.status().members.map(m => m.name + ' ' + m.stateStr)"
+# 预期：某从节点经历 STARTUP2/PRIMARY 过渡（选举），最终出现新 PRIMARY
+
+# 3. 再 kill 新主，剩一个从 + 原 Arbiter（若有）
+# 预期：无多数派 -> 无主 -> 集群只读（读也受限）
+# 4. 重启被 kill 的两个成员，观察自动归队与主从角色回正
+```
+
+要点：a) 选举依赖**多数派存活**——三成员挂两个就瘫痪，这是"Arbiter 不能替代数据成员"的根本原因；b) 新主产生通常在 10 秒级（electionTimeoutMillis 默认 10s），这个数字是"写入中断时长"的上界估计；c) 实验后用 rs.status() 确认所有成员健康，把故障注入的窗口时间记进实验笔记。
+</details>
 
 ## 小结与延伸
 

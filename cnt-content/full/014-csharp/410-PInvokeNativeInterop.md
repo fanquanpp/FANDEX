@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 450
 title: P/Invoke 与原生互操作
 module: 'csharp'
 category: 后端技术
@@ -9,11 +9,11 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'csharp/050-ValueTypeReferenceType'
-  - 'csharp/150-CSharpAdvancedFeature'
+  - 'csharp/152-UnsafeCodeAndDynamicProgramming'
   - 'csharp/230-SpanMemory'
 prerequisites:
   - 'csharp/050-ValueTypeReferenceType'
-  - 'csharp/150-CSharpAdvancedFeature'
+  - 'csharp/152-UnsafeCodeAndDynamicProgramming'
 ---
 
 # P/Invoke 与原生互操作
@@ -23,7 +23,7 @@ prerequisites:
 ## 前置知识
 
 - [值类型与引用类型](/csharp/050-ValueTypeReferenceType)：封送的实质是内存布局的翻译，必须先理解托管对象的布局规则。
-- [C# 高级特性](/csharp/150-CSharpAdvancedFeature)：委托与函数指针是原生回调的基础。
+- [C# 高级特性](/csharp/152-UnsafeCodeAndDynamicProgramming)：委托与函数指针是原生回调的基础。
 - [Span 与 Memory](/csharp/230-SpanMemory)：零拷贝访问非托管内存时离不开 span 与不安全代码。
 
 ## 学习目标
@@ -217,3 +217,37 @@ internal static partial class VsAudio
 1. 为 vsaudio 库补一个 `VsGetPeakLevel(IntPtr mixer)` 声明并封装为 `Mixer.GetPeakLevel()`：要求返回 double、内部处理错误码，并写一个单元测试用 `NativeLibrary` 加载桩库验证调用链。
 2. 定义 C 侧结构体 `struct TicketCipher { char serial[16]; int kind; double price; }` 的托管对应版本，编写测试断言 `Marshal.SizeOf` 等于 C 侧 `sizeof`，再故意去掉 `Pack` 观察差异。
 3. 把第四节 `DllImport` 版本的渲染函数改写为 `LibraryImport` 源生成版本，对比编译产物中生成的封送代码（`*.g.cs`），记录两版在字符串与委托处理上的差别。
+
+## 速查补充：LibraryImport / DllImport（承接自原 150 篇速查段）
+
+## Native AOT 与互操作
+
+**基本写法：LibraryImport 特性**
+`[LibraryImport("<库>", EntryPoint = "<入口>")] public static partial <类型> <方法>(<参数>);`
+```csharp
+// 使用 LibraryImport 声明 P/Invoke
+[LibraryImport("user32.dll", EntryPoint = "MessageBoxW")]
+public static partial int MessageBox(IntPtr hWnd, string text, string caption, int options);
+```
+
+---
+
+**基本写法：DllImport 特性**
+`[DllImport("<库>")] public static extern <类型> <方法>(<参数>);`
+```csharp
+// 使用 DllImport 声明 P/Invoke
+[DllImport("user32.dll")]
+public static extern int MessageBox(IntPtr hWnd, string text, string caption, int options);
+```
+
+---
+
+**基本写法：Marshal 字符串**
+`[MarshalAs(UnmanagedType.<类型>)]`
+```csharp
+// 指定字符串封送方式
+[DllImport("user32.dll", CharSet = CharSet.Unicode)]
+public static extern int MessageBox(IntPtr hWnd, [MarshalAs(UnmanagedType.LPWStr)] string text, [MarshalAs(UnmanagedType.LPWStr)] string caption, int options);
+```
+
+---

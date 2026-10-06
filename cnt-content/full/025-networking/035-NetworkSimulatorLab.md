@@ -1,5 +1,5 @@
 ---
-order: 40
+order: 60
 title: 网络实验环境与模拟器
 module: 'networking'
 category: 云与基础设施
@@ -8,12 +8,9 @@ description: 网络是操作性知识：eNSP 与 HCL 两台模拟器的选型与
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'networking/010-NetworkBasicsAndProtocol'
   - 'networking/270-Tcpdump'
-  - 'networking/190-NetworkDiagnosis'
   - 'networking/165-VLANAndTrunk'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 前置知识：网络分层模型（见 [网络基础与协议](networking/010-NetworkBasicsAndProtocol)）。

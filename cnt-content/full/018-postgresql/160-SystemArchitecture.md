@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 100
 title: 体系架构
 module: 'postgresql'
 category: 数据库
@@ -8,7 +8,7 @@ description: PostgreSQL体系架构：进程模型、后台进程、共享内存
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'postgresql/470-ReplicationHA'
+  - 'postgresql/472-HAFailoverPatroni'
   - 'postgresql/190-LockMechanism'
   - 'postgresql/200-DeadlockDetectionHandling'
   - 'postgresql/170-TransactionConcurrencyControl'

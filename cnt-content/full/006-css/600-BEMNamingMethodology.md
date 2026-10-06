@@ -1,5 +1,5 @@
 ---
-order: 600
+order: 650
 title: BEM 命名方法论
 module: 'css'
 category: 前端技术

@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 100
 title: Redis Stream 核心篇：消息日志模型与基础命令
 module: 'redis'
 category: 数据库

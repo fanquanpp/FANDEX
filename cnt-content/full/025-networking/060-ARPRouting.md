@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 90
 title: ARP 与路由
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/050-IPCommands'
   - 'networking/080-PingTraceroute'
   - 'networking/160-SwitchingAndRouting'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## arp 命令

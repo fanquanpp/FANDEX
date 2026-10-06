@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 460
 title: DOM 操作与事件：按钮点了没反应的时候
 module: 'javascript'
 category: 前端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'javascript/420-BOMBrowserObjectModel'
-  - 'javascript/430-WebAPIBrowserInterface'
   - 'javascript/440-FetchApiAndAbortController'
   - 'javascript/700-JavaScriptProjectExampleTodoApp'
 prerequisites:
@@ -129,6 +128,30 @@ li.classList.toggle('done');       // 有则删、无则加：切换
 
 浏览器会造一个**事件对象**传给回调：`e.target` 是目标元素（用户到底点了谁），`e.type` 是事件类型；`console.log(e)` 可展开看全部成员。常用事件先记四个：`click`、`input`、`keydown`、`submit`。
 
+### 7.1 三种绑定方式对照（含一个真实错例）
+
+同一个点击，三种挂法：
+
+```javascript
+// 方式一：HTML 行内属性（不推荐，但必须认识）
+// <button onclick="doSave()">保存</button>
+
+// 方式二：DOM 属性赋值——同一事件只能有一个处理器，后赋值覆盖前者
+btn.onclick = function () { console.log("方式二"); };
+
+// 方式三：addEventListener——可挂多个、可移除、可选捕获阶段
+btn.addEventListener("click", () => console.log("方式三-a"));
+btn.addEventListener("click", () => console.log("方式三-b")); // 两个都执行
+```
+
+真实错例（出自课堂演示页）：行内属性把调用写成了赋值——
+
+```html
+<button onclick="alert=('box被点击了')">点我</button>
+```
+
+点击后**什么都不弹**，控制台报 `Invalid left-hand side in assignment`：`alert=(...)` 是"把调用结果赋给 alert 这个名字"，不是调用 alert。行内绑定的三个固有毛病也顺带看清：JS 混进 HTML 里难维护、作用域坑多（函数必须挂在全局）、一个属性只能塞一段代码。**工程口径**：读得懂方式一（老代码里有），写只用方式三；方式二在"快速原型、只要一个处理器"时可以接受。
+
 ## 8. 事件冒泡的第一次现身
 
 给每条待办单独挂监听？列表会增删，新元素没挂上就漏。先看一个现象：
@@ -157,7 +180,7 @@ document.querySelector('li button').addEventListener('click', () =>
 ul 收到点击，目标是： A
 ```
 
-明明只点了按钮，ul 的监听也触发了——事件**命中目标后沿父级一路向上**（button → li → ul → body……），像水泡往上冒，所以叫**冒泡**（bubbling）。父元素靠 `e.target` 分辨「孩子们里谁被点了」，一个监听管一整个列表，新加的条目自动被覆盖。本文只要求理解「会往上冒」；三个阶段、stopPropagation、事件委托的完整版图，[Web API 与浏览器接口](/javascript/430-WebAPIBrowserInterface) 讲透。
+明明只点了按钮，ul 的监听也触发了——事件**命中目标后沿父级一路向上**（button → li → ul → body……），像水泡往上冒，所以叫**冒泡**（bubbling）。父元素靠 `e.target` 分辨「孩子们里谁被点了」，一个监听管一整个列表，新加的条目自动被覆盖。本文只要求理解「会往上冒」；三个阶段、stopPropagation、事件委托的完整版图，[DOM 事件系统深入](/javascript/415-DOMEventSystemDeepDive) 讲透。
 
 ## 9. 完整小交互：待办清单的单项
 
@@ -261,10 +284,17 @@ document.querySelector('#list').addEventListener('click', () =>
 
 挑战题（半小时）：把待办升级为「点击待办旁的删除按钮，只删这一条」。要求：删除按钮带 `data-id`，监听挂在 ul 上（用冒泡），回调里用 `e.target.closest('li')` 找到所属待办再移除。验收：只删被点的；点文字仍切换完成；新增待办不用重新挂监听也能删。提示：`e.target` 与 `e.currentTarget` 的差别是关键。
 
+
+综合任务（承接自扫描素材的三个课堂项目，先自己做再对照提示）：
+
+1. **选项卡互斥切换**：三个内容 div 叠放，点第几个标签只显示第几个（提示：循环给标签挂监听，回调里再把所有内容 div 的 `style.display` 置 `"none"`、当前置 `"block"`——"先全灭再点亮"是互斥的标准套路）。
+2. **全选 / 全不选 / 反选**：一个总开关复选框加一组爱好复选框（提示：`document.getElementsByName("ck")` 或 `querySelectorAll` 拿到列表后遍历赋 `checked`；反选一行：`box.checked = !box.checked`）。
+3. **领养宠物表单校验**：宠物名输入框非空且长度不超过 6，不合法时点提交才在提示 div 里显示文字（提示：`value.trim()` 去首尾空格；提示区"点击提交后才出现"是**延迟渲染**需求——div 初始为空，校验失败才写 `innerText`）。
+
 ## 14. 与之前和之后的知识的关系
 
 - 往前：[运行环境](/javascript/020-JavaScriptOverviewRuntimeEnv) 解释了本文为什么只在浏览器；[数组高阶方法](/javascript/090-ArrayHigherOrderMethod) 的「函数当参数」是 addEventListener 的日常；拉真实数据渲染进页面，接 [异步编程入门](/javascript/250-AsyncProgramming) 的 fetch；
-- 往后：[BOM 浏览器对象模型](/javascript/420-BOMBrowserObjectModel) 管树外的窗口与地址栏；[Web API 与浏览器接口](/javascript/430-WebAPIBrowserInterface) 把冒泡与委托讲透；[fetch 与 AbortController](/javascript/440-FetchApiAndAbortController) 接手网络请求；[项目实战：待办应用](/javascript/700-JavaScriptProjectExampleTodoApp) 把第 9 节长成完整工程。
+- 往后：[BOM 浏览器对象模型](/javascript/420-BOMBrowserObjectModel) 管树外的窗口与地址栏；[DOM 事件系统深入](/javascript/415-DOMEventSystemDeepDive) 把冒泡与委托讲透；[fetch 与 AbortController](/javascript/440-FetchApiAndAbortController) 接手网络请求；[项目实战：待办应用](/javascript/700-JavaScriptProjectExampleTodoApp) 把第 9 节长成完整工程。
 
 ## 15. 官方文档
 

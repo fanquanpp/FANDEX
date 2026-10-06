@@ -1,5 +1,5 @@
 ---
-order: 870
+order: 920
 title: MySQL 语法速查手册
 module: 'mysql'
 category: 数据库
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'mysql/460-TransactionLockMechanism'
   - 'mysql/850-MySQLConfigOps'
-  - 'mysql/900-MySQLApplicationController'
+  - 'mysql/900-AppLayerDbAccessPatterns'
   - 'mysql/740-SQLInjectionBasicsDetection'
 prerequisites:
   - 'mysql/160-View'
@@ -628,3 +628,55 @@ prerequisites:
  SHOW PROCESSLIST; -- 进程列表
  SHOW VARIABLES LIKE 'slow_query%'; -- 慢查询状态
 ```
+
+## 性能调优综合检查清单
+
+巡检与接手新环境时按两级过一遍（归因手段见 [系统库与可观测](/mysql/335-ObservabilitySystemSchemas)）：
+
+### 服务器级别
+
+```sql
+-- 1. Buffer Pool 命中率（> 99% 健康基线）
+SELECT (1 - (SELECT Variable_value + 0 FROM performance_schema.global_status
+    WHERE Variable_name = 'Innodb_buffer_pool_reads') /
+    (SELECT Variable_value + 0 FROM performance_schema.global_status
+    WHERE Variable_name = 'Innodb_buffer_pool_read_requests')) * 100
+    AS hit_rate_pct;
+
+-- 2. 连接水位（当前/历史峰值 vs 上限）
+SHOW VARIABLES LIKE 'max_connections';
+SHOW STATUS LIKE 'Threads_connected';
+SHOW STATUS LIKE 'Max_used_connections';
+
+-- 3. 临时表落盘比例（Created_tmp_disk_tables / Created_tmp_tables < 5%）
+SHOW STATUS LIKE 'Created_tmp%';
+-- 过高 -> 增大 tmp_table_size 与 max_heap_table_size
+
+-- 4. 排序溢出（Sort_merge_passes 持续增长 -> sort_buffer 太小或索引缺）
+SHOW STATUS LIKE 'Sort%';
+```
+
+### 查询级别
+
+```sql
+-- 1. 最贵 SQL（P95 分位视图）
+SELECT * FROM sys.statements_with_runtimes_in_95th_percentile LIMIT 5;
+
+-- 2. 冗余索引与未使用索引（索引瘦身清单）
+SELECT * FROM sys.schema_redundant_indexes;
+SELECT * FROM sys.schema_unused_indexes;
+
+-- 3. 统计信息新鲜度（估算行数严重失真时先跑这个）
+ANALYZE TABLE orders, products, customers;
+
+-- 4. 表碎片（DATA_FREE 占比 > 20% 进重建队列）
+SELECT TABLE_NAME,
+       ROUND(DATA_FREE / (DATA_LENGTH + INDEX_LENGTH) * 100, 1) AS frag_pct
+FROM information_schema.TABLES
+WHERE TABLE_SCHEMA = 'app_db' AND DATA_FREE > 0
+ORDER BY DATA_FREE DESC;
+-- 重建消除碎片（等价 OPTIMIZE TABLE，在线成本评估见 685 篇）：
+-- ALTER TABLE orders ENGINE=InnoDB;
+```
+
+每条的阈值与读法见 [配置运维](/mysql/850-MySQLConfigOps)（内存与连接的账）与 [系统库与可观测](/mysql/335-ObservabilitySystemSchemas)（语句与索引的归因）；本清单是「拿起来就用」的一页纸版本。

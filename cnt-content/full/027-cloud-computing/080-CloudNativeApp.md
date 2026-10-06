@@ -1,21 +1,28 @@
 ---
-order: 80
+order: 90
 title: 云原生应用
 module: 'cloud-computing'
 category: 云与基础设施
 difficulty: advanced
-description: 云原生应用设计、12-Factor方法论、容器化最佳实践、Kubernetes编排、服务网格集成、GitOps工作流。
+description: 云原生概览：定义与成熟度、12-Factor、容器化与编排概览、可观测性概览。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/030-PublicCloudPrivateCloudHybridCloud'
   - 'cloud-computing/070-DockerDeepAnalysis'
   - 'cloud-computing/120-KubernetesArchitecture'
-  - 'cloud-computing/200-CloudDatabaseService'
+  - 'cloud-computing/155-GitOpsContinuousDelivery'
 prerequisites:
   - 'cloud-computing/010-CloudComputingBasics'
 ---
 
+## 知识点地图
+
+- **知识类别**：云原生方法论总览——定义与成熟度模型、12-Factor、容器化与编排概览、可观测性概览。
+- **解决什么问题**：初学者面对云原生这个词时缺少一张「全景图」：哪些是原则（12 要素）、哪些是平台（K8s）、哪些是方法论（GitOps、可观测性）。
+- **什么时候用到**：规划应用向云原生迁移的路线；向团队解释云原生的组成与各专篇的分工。
+
+概览-专篇分层说明：本文只保留各主题的**概念层**；细节分别在 12 要素的工程化落地（[Twelve-Factor](/cloud-computing/090-TwelveFactorApp)）、容器实现（[Docker 深度剖析](/cloud-computing/070-DockerDeepAnalysis)）、编排实现（[Kubernetes 架构](/cloud-computing/120-KubernetesArchitecture)）、可观测性实现（[可观测性](/cloud-computing/170-Observability)）与 GitOps 专篇（[GitOps 持续交付](/cloud-computing/155-GitOpsContinuousDelivery)）。
 
 ## 1. 云原生定义与演进
 
@@ -261,58 +268,9 @@ $$
 
 **Cluster Autoscaler**：根据 Pod 调度失败自动增减节点。
 
-## 5. GitOps 工作流
+## 5. GitOps：声明的发布与协调
 
-### 5.1 GitOps 核心原则
-
-1. **声明式**：系统所有配置声明式描述
-2. **版本控制**：所有声明存储在 Git 中
-3. **自动拉取**：系统自动从 Git 拉取期望状态
-4. **持续协调**：软件代理持续对比实际状态与期望状态
-
-### 5.2 GitOps 工具对比
-
-| 工具          | 推模型 | 拉模型 | 多集群 | 生态           |
-| ------------- | ------ | ------ | ------ | -------------- |
-| ArgoCD        |        | 支持   | 支持   | CNCF Graduated |
-| Flux          |        | 支持   | 支持   | CNCF Graduated |
-| Rancher Fleet | 支持   | 支持   | 支持   | SUSE 生态      |
-
-> ArgoCD 与 Flux 都以拉模型为主（集群内 Agent 监听 Git）；Fleet 两者皆可，
-> 常用于 Rancher 体系的大规模多集群分发。
-
-### 5.3 ArgoCD 工作流
-
-```mermaid
-flowchart TD
-    T0["开发者推送代码 → CI 构建镜像 → 更新 Git 仓库中的镜像标签"]
-    T1["ArgoCD 检测到 Git 变更 → 生成 Diff → 自动/手动同步 → K8s 应用更新"]
-    T2["ArgoCD 持续对比 Git 状态与集群状态 → 检测漂移 → 自动修正"]
-    T0 --> T1
-    T1 --> T2
-```
-
-**Application 清单**：
-
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-spec:
-  project: default
-  source:
-    repoURL: https://github.com/org/k8s-manifests
-    targetRevision: main
-    path: overlays/production
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: production
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-```
+GitOps 是本篇成熟度模型里 Level 3「声明式」阶段的交付方法：所有部署与运维声明存进 Git，集群内 Agent 持续拉取并协调，漂移可检测、回滚即 revert。核心原则（声明式、Git 单一信源、自动拉取、持续协调）、推拉模型对比与 ArgoCD/Flux 实配已整体收录到专篇 [GitOps 持续交付](/cloud-computing/155-GitOpsContinuousDelivery)，本文不再重复。
 
 ## 6. 云原生可观测性
 

@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 70
 title: 可空引用类型 NRT
 module: 'csharp'
 category: 后端技术
@@ -318,3 +318,24 @@ if (TryGetCheapestTicket(out var cheapest))
   `default!` 惯用法替调用方省掉了什么；
 - 能为一个存量项目制定 annotations -> warnings -> enable 的迁移计划，
   并说出信任边界（反序列化、外部接口）上为什么要保留显式校验。
+
+## 速查补充：Nullable 基本写法（承接自原 150 篇速查段）
+
+**基本写法：启用可空引用类型**
+`#nullable enable`
+```csharp
+// 启用可空引用类型警告
+#nullable enable
+string name = "张三";
+```
+
+---
+
+**基本写法：可空引用类型变量**
+`<类型>? <变量名>`
+```csharp
+// 标记引用类型允许为 null
+string? nickname = null;
+```
+
+---

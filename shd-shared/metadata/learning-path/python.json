@@ -106,8 +106,8 @@
       "nodes": [
         {
           "id": "python-170",
-          "title": "推导式与生成器",
-          "doc": "170-ComprehensionGenerator"
+          "title": "迭代器协议与 itertools",
+          "doc": "170-IteratorProtocolAndItertools"
         },
         {
           "id": "python-180",
@@ -231,7 +231,7 @@
         {
           "id": "python-600",
           "title": "元类与单例模式",
-          "doc": "600-MetaclassSingleton"
+          "doc": "600-SingletonPattern"
         },
         {
           "id": "python-610",
@@ -299,8 +299,8 @@
         },
         {
           "id": "python-710",
-          "title": "Python 进阶与最新特性",
-          "doc": "710-PythonAdvancedLatestFeature"
+          "title": "Python 版本新特性时间线",
+          "doc": "715-PythonVersionNewFeatures"
         },
         {
           "id": "python-720",

@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 260
 title: React 错误边界
 module: 'react'
 category: 前端技术
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 1. 一句话理解
 
-错误边界（Error Boundary）是 React 的"局部保险丝"：一个包住子组件树的类组件，当子树在**渲染期间**抛出错误时，捕获它并渲染一段降级 UI，而不是让整棵 React 树卸载白屏。类比楼宇的空气开关：某条线路短路只跳掉那条支路的闸，全楼不断电。与 Sentry 等监控平台的分工见[错误边界与 Sentry 集成](/react/440-ErrorBoundarySentry)，本文聚焦机制本身。
+错误边界（Error Boundary）是 React 的"局部保险丝"：一个包住子组件树的类组件，当子树在**渲染期间**抛出错误时，捕获它并渲染一段降级 UI，而不是让整棵 React 树卸载白屏。类比楼宇的空气开关：某条线路短路只跳掉那条支路的闸，全楼不断电。生产环境的上报与监控平台集成见[错误监控与 Sentry](/react/440-ErrorMonitoringSentry)，本文聚焦机制本身。
 
 ## 2. 为什么需要它：没有边界时会发生什么
 
@@ -187,6 +187,41 @@ function LikeButton() {
 ```
 
 分层策略建议：路由级放一个粗粒度边界（整页降级 + 返回首页），功能区块各放细粒度边界（局部降级），关键交互用 `showBoundary` 把异步错误也汇入统一降级通道。
+
+一个值得单独立条的反模式：**只放一个根级边界**。
+
+```tsx
+// 反模式：整个应用只有一个根级 Error Boundary
+function BadApp() {
+  return (
+    <ErrorBoundary fallback={<AppCrash />}>
+      <Header />
+      <Sidebar />
+      <Main />
+      <Footer />
+    </ErrorBoundary>
+  );
+  // 任何子组件出错都导致整个应用降级——「局部保险丝」退化成了总闸
+}
+
+// 正确：在功能区块下沉边界
+function GoodApp() {
+  return (
+    <ErrorBoundary fallback={<AppCrash />}>
+      <Header />
+      <ErrorBoundary fallback={<SidebarError />}>
+        <Sidebar />
+      </ErrorBoundary>
+      <ErrorBoundary fallback={<MainError />}>
+        <Main />
+      </ErrorBoundary>
+      <Footer />
+    </ErrorBoundary>
+  );
+}
+```
+
+侧边栏崩了却要整个应用降级，等于没有分层。自检方法：问「这个区块崩溃时，页面其余部分还能用吗」——答案应该是「能」。
 
 ## 7. 常见陷阱
 

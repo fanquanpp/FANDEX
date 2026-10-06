@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 590
 title: CSS 性能优化详解
 module: 'css'
 category: 前端技术
@@ -8,7 +8,7 @@ description: CSS性能优化深度指南：关键CSS内联、异步加载、选�
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'css/640-CSSTheoryKnowledge'
+  - 'css/640-VisualFormattingModel'
   - 'css/650-CSSNewFeatures'
   - 'css/660-HTMLSemanticSEO'
   - 'css/670-ResponsiveImage'

@@ -1,5 +1,5 @@
 ---
-order: 400
+order: 410
 title: Kafka 快速上手
 module: 'devops'
 category: 云与基础设施

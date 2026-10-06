@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 430
 title: 乐观锁与悲观锁
 module: 'sql'
 category: 数据库

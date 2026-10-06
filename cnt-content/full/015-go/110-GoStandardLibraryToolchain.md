@@ -1,14 +1,15 @@
 ---
 order: 120
-title: Go 标准库与工具链
+title: Go 标准库导览
 module: 'go'
 category: 后端技术
 difficulty: intermediate
-description: io/os/net/http/filepath/encoding/json/time 等核心包、go test/bench/vet/fmt/doc、构建标签、cgo 与 Go 工具链详解。
+description: 核心标准包导览：io/bufio/fmt、os/filepath、net/http、encoding/json、time 与常用速查表——标准库入门地图；工具链专篇见 115。
 author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'go/070-GoErrorHandling'
+  - 'go/115-GoToolchainAndBuild'
   - 'go/100-GoGeneric'
   - 'go/590-GoWebDevelopmentMicroservice'
   - 'go/250-SlicePrinciple'
@@ -26,6 +27,7 @@ prerequisites: []
 - 掌握「3. 网络与 HTTP」的核心机制、典型用法与常见陷阱
 - 掌握「4. JSON 处理」的核心机制、典型用法与常见陷阱
 - 掌握「5. 时间处理」的核心机制、典型用法与常见陷阱
+- 工具链（go 命令、构建标签、交叉编译、cgo、代码生成）见 115-GoToolchainAndBuild
 
 
 ## 1. 核心 I/O 包
@@ -256,6 +258,8 @@ host, port, _ := net.SplitHostPort("example.com:8080")
 
 ## 4. JSON 处理
 
+> 本节是导览速写；JSON 的类型映射、结构体标签与性能深读见 [330-GoJSON](/go/330-GoJSON)。
+
 ### 4.1 encoding/json
 
 ```go
@@ -303,6 +307,8 @@ func (t *Time) UnmarshalJSON(b []byte) error {
 
 ## 5. 时间处理
 
+> 本节是导览速写；Time/Duration 的代数结构、单调时钟与陷阱深读见 [400-GoTime](/go/400-GoTime)。
+
 ### 5.1 time 包
 
 ```go
@@ -346,259 +352,10 @@ time.AfterFunc(5*time.Second, func() {
 })
 ```
 
-## 6. Go 工具链
+标准库导览到此为止。原第 6-10 节（go test/vet/fmt/doc、构建标签、
+交叉编译、cgo、go generate、pprof 与 trace）已整体迁入并扩写为工具链专篇
+[115-GoToolchainAndBuild](/go/115-GoToolchainAndBuild)。
 
-### 6.1 go test
-
-```go
-// 单元测试（文件名 _test.go，函数名 TestXxx）
-func TestAdd(t *testing.T) {
-    result := Add(2, 3)
-    if result != 5 {
-        t.Errorf("Add(2, 3) = %d, want 5", result)
-    }
-}
-
-// 表驱动测试
-func TestAdd(t *testing.T) {
-    tests := []struct {
-        name     string
-        a, b     int
-        expected int
-    }{
-        {"positive", 2, 3, 5},
-        {"negative", -1, -2, -3},
-        {"zero", 0, 0, 0},
-    }
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            if got := Add(tt.a, tt.b); got != tt.expected {
-                t.Errorf("Add(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.expected)
-            }
-        })
-    }
-}
-```
-
-```bash
-# 运行测试
-go test ./...
-go test -v ./...              # 详细输出
-go test -run TestAdd ./...    # 运行指定测试
-go test -count=1 ./...        # 禁用缓存
-
-# 基准测试
-go test -bench=. -benchmem    # 运行基准测试，显示内存分配
-```
-
-### 6.2 基准测试
-
-```go
-func BenchmarkAdd(b *testing.B) {
-    for i := 0; i < b.N; i++ {
-        Add(2, 3)
-    }
-}
-
-// 子基准测试
-func BenchmarkJSON(b *testing.B) {
-    data := User{Name: "Alice", Age: 30}
-    b.Run("marshal", func(b *testing.B) {
-        for i := 0; i < b.N; i++ {
-            json.Marshal(data)
-        }
-    })
-    b.Run("unmarshal", func(b *testing.B) {
-        bytes, _ := json.Marshal(data)
-        for i := 0; i < b.N; i++ {
-            var u User
-            json.Unmarshal(bytes, &u)
-        }
-    })
-}
-```
-
-### 6.3 go vet
-
-```bash
-# 静态分析，检测常见错误
-go vet ./...
-
-# 检测内容：
-# - Printf 格式字符串错误
-# - 未使用的变量
-# - 错误的结构体标签
-# - 死锁
-# - 不可达代码
-```
-
-### 6.4 go fmt
-
-```bash
-# 格式化代码
-go fmt ./...
-gofmt -w .   # 直接使用 gofmt
-gofmt -d .   # 显示差异（不修改）
-```
-
-### 6.5 go doc
-
-```bash
-# 查看文档
-go doc fmt.Println
-go doc net/http.Handler
-go doc -all fmt  # 查看包的全部文档
-
-# 启动本地文档服务器
-godoc -http=:6060
-```
-
-## 7. 构建标签与条件编译
-
-### 7.1 构建标签
-
-```go
-// 文件顶部添加构建标签（必须紧贴文件开头）
-//go:build linux
-
-// 或组合条件
-//go:build linux && amd64
-//go:build linux || darwin
-//go:build !windows
-
-// 示例：platform_linux.go
-//go:build linux
-
-package platform
-
-func getOS() string {
-    return "linux"
-}
-```
-
-```bash
-# 按标签构建
-go build -tags "linux" .
-go build -tags "debug,verbose" .
-```
-
-### 7.2 文件名约定
-
-```
-platform_linux.go     # 仅 Linux
-platform_windows.go   # 仅 Windows
-platform_darwin.go    # 仅 macOS
-arch_amd64.go         # 仅 amd64
-arch_arm64.go         # 仅 arm64
-```
-
-## 8. 交叉编译
-
-```bash
-# 编译 Linux 可执行文件（在 Windows/macOS 上）
-GOOS=linux GOARCH=amd64 go build -o app-linux .
-
-# 编译 Windows 可执行文件
-GOOS=windows GOARCH=amd64 go build -o app.exe .
-
-# 编译 ARM 可执行文件
-GOOS=linux GOARCH=arm64 go build -o app-arm64 .
-
-# 常见组合
-# GOOS       GOARCH
-# linux      amd64
-# linux      arm64
-# windows    amd64
-# darwin     amd64
-# darwin     arm64  (Apple Silicon)
-```
-
-## 9. cgo
-
-cgo 允许 Go 调用 C 代码：
-
-```go
-// #include <stdio.h>
-// #include <stdlib.h>
-//
-// void say_hello(const char* name) {
-//     printf("Hello, %s!\n", name);
-// }
-import "C"
-import "unsafe"
-
-func main() {
-    name := C.CString("World")
-    defer C.free(unsafe.Pointer(name))
-    C.say_hello(name)
-}
-
-// 使用 C 库
-// #cgo LDFLAGS: -lm
-// #include <math.h>
-import "C"
-
-func main() {
-    result := C.sqrt(144)
-    fmt.Println(float64(result)) // 12
-}
-```
-
-> **注意**：cgo 会增加编译时间、影响交叉编译、带来性能开销。非必要不使用。
-
-## 10. 其他工具
-
-### 10.1 go generate
-
-```go
-// 在源码中添加指令
-//go:generate stringer -type=Status
-
-type Status int
-
-const (
-    StatusUnknown Status = iota
-    StatusActive
-    StatusInactive
-)
-```
-
-```bash
-# 执行代码生成
-go generate ./...
-```
-
-### 10.2 pprof 性能分析
-
-```go
-import _ "net/http/pprof"
-
-go func() {
-    http.ListenAndServe(":6060", nil)
-}()
-```
-
-```bash
-# CPU 分析
-go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30
-
-# 内存分析
-go tool pprof http://localhost:6060/debug/pprof/heap
-
-# 交互式分析
-(pprof) top 10
-(pprof) web           # 生成调用图
-(pprof) list funcName # 查看函数级分析
-```
-
-### 10.3 go tool trace
-
-```bash
-# 运行追踪
-go test -trace=trace.out ./...
-go tool trace trace.out
-# 在浏览器中查看 goroutine 调度、GC、网络等事件
-```
 ## fmt 格式化
 
 **基本写法：格式化输出**

@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 190
 title: 索引类型：PostgreSQL 为什么有六种索引
 module: 'postgresql'
 category: 数据库

@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 120
 title: ss 与 netstat
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/020-OSITCPIPModel'
   - 'networking/270-Tcpdump'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## ss 基本用法

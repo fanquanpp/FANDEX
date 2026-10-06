@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 330
 title: 字符串 SDS 结构
 module: 'redis'
 category: 数据库

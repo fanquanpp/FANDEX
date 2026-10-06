@@ -1,5 +1,5 @@
 ---
-order: 400
+order: 450
 title: GCP Compute 与 Storage
 module: 'cloud-computing'
 category: 云与基础设施

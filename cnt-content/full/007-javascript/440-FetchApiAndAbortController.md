@@ -1,5 +1,5 @@
 ---
-order: 450
+order: 510
 title: fetch 与 AbortController
 module: 'javascript'
 category: 前端技术
@@ -8,11 +8,9 @@ description: fetch 请求全解：流式读取、超时取消与错误语义。
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'javascript/430-WebAPIBrowserInterface'
-  - 'javascript/450-FetchApiWebStreams'
+  - 'javascript/455-WebStreamsDataFlow'
   - 'javascript/460-StorageForTheWeb'
-prerequisites:
-  - 'javascript/430-WebAPIBrowserInterface'
+prerequisites: []
 ---
 
 # fetch 与 AbortController
@@ -21,8 +19,8 @@ prerequisites:
 
 ## 前置知识
 
-- [Web API 与浏览器接口](/javascript/430-WebAPIBrowserInterface)：fetch 与 AbortController 都是宿主环境提供的 Web API。
-- [fetch 与 Web Streams](/javascript/450-FetchApiWebStreams)：响应体流式读取依赖 ReadableStream 概念。
+- [宿主环境与 Web API 总览](/javascript/430-HostEnvironmentAndWebApiOverview)：fetch 与 AbortController 都是宿主环境提供的 Web API。
+- [Web Streams 数据流](/javascript/455-WebStreamsDataFlow)：响应体流式读取依赖 ReadableStream 概念。
 - [网络存储](/javascript/460-StorageForTheWeb)：请求结果常与本地缓存策略配合使用。
 
 ## 学习目标
@@ -220,6 +218,187 @@ getTickets('/api/concerts/42/tickets'); // 第一次请求被自动取消，只�
 
 封装时还有两点值得顺手处理：其一，给调用方保留主动取消的能力（返回带 `cancel` 的对象或接受外部 signal）；其二，把 AbortError 归一化为可识别的错误类型，避免上层把"用户主动取消"当成失败弹出报错弹窗。如果团队同时有 POST 场景，可以把同样的骨架推广为 `createLatestRequest`：把请求方法与请求体一并纳入参数，取消与超时逻辑完全复用。封装的边界也要守住——它只负责"传输层的横切关注点"，鉴权头注入、响应 schema 校验这类业务性逻辑应放在各自的层里，保持每层可独立测试。如果调用方还需要把自己的取消信号并入（例如路由离开时统一撤销），封装应预留 signal 参数，用 `AbortSignal.any` 把内部信号与外部信号合并后传给 fetch，三层取消（外部路由、内部最新请求、超时）互不冲突。取消体系一旦分层清晰，"请求发出去了但没人要结果"的资源浪费与状态错乱就都有了系统性出口。
 
+## 六、文件上传与下载
+
+fetch 的日常外延是文件传输：上传用 FormData 承载表单与文件，下载把响应转成 Blob 再交给浏览器保存。
+
+```javascript
+// 文件上传：使用 FormData 自动设置 multipart/form-data
+async function uploadFile(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('metadata', JSON.stringify({ name: file.name }));
+
+  // 注意：不要手动设置 Content-Type，浏览器会自动添加 boundary
+  const response = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData,
+  });
+  return response.json();
+}
+
+// 带进度监控的上传：Fetch 暂不支持上传进度，需回退到 XMLHttpRequest
+function uploadWithProgress(file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/upload');
+
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable) {
+        const percent = (e.loaded / e.total) * 100;
+        onProgress(percent);
+      }
+    });
+
+    xhr.addEventListener('load', () => resolve(JSON.parse(xhr.responseText)));
+    xhr.addEventListener('error', () => reject(new Error('上传失败')));
+
+    const formData = new FormData();
+    formData.append('file', file);
+    xhr.send(formData);
+  });
+}
+
+// 文件下载：将 Blob 转为可下载 URL
+async function downloadFile(url, filename) {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const downloadUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = downloadUrl;
+  a.download = filename;
+  a.click();
+  // 释放 Blob URL，避免内存泄漏
+  URL.revokeObjectURL(downloadUrl);
+}
+```
+
+三个易错点就藏在注释里：FormData 场景手动设置 `Content-Type` 会丢失 boundary，服务端直接解析失败；上传进度是 fetch 的能力空白（`response.body` 只覆盖下载方向），需要进度条时回退 XHR 的 `upload.progress`；`URL.createObjectURL` 创建的 Blob URL 不会自动回收，用完必须 `revokeObjectURL`，否则大文件会一直驻留内存。
+
+### 6.1 Fetch 与 XMLHttpRequest 怎么选
+
+| 维度 | Fetch | XMLHttpRequest |
+| --- | --- | --- |
+| 设计范式 | Promise，链式调用 | 事件回调 |
+| 取消能力 | 原生 AbortController | 调用 `xhr.abort()` |
+| 上传进度 | 不支持（需 Stream API） | 原生支持 `upload.progress` |
+| 流式响应 | 支持 `response.body.getReader()` | 不支持 |
+| 超时控制 | `AbortSignal.timeout()` | `xhr.timeout` |
+| 浏览器兼容 | IE 不支持 | 全部支持 |
+| 代码简洁度 | 高 | 低 |
+
+选型结论：新项目一律 Fetch；唯一需要 XHR 的场景是上传进度条（上文的 `uploadWithProgress`）。
+
+## 七、工程实践：带重试与外部取消信号的封装
+
+第五节的 `createLatestGet` 管住了「最新请求获胜」，生产环境还差一块：瞬时故障的重试（网络抖动、5xx），以及「调用方随时可以喊停」的外部取消。下面的 `http` 函数把超时、指数退避重试、外部信号传播三件事收进一个入口：
+
+```javascript
+/**
+ * 生产级 Fetch 封装：支持超时、重试、取消、统一错误处理
+ * @param {string} url 请求 URL
+ * @param {Object} options Fetch 配置
+ * @param {number} options.timeout 超时毫秒，默认 10 秒
+ * @param {number} options.retries 重试次数，默认 0
+ * @param {AbortSignal} options.externalSignal 外部传入的取消信号
+ * @returns {Promise<Response>} Fetch Response
+ */
+async function http(url, options = {}) {
+  const {
+    timeout = 10000,
+    retries = 0,
+    externalSignal,
+    ...fetchOptions
+  } = options;
+
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    // 监听外部信号：外部取消时取消内部请求
+    const onExternalAbort = () => controller.abort();
+    if (externalSignal) {
+      if (externalSignal.aborted) controller.abort();
+      else externalSignal.addEventListener('abort', onExternalAbort, { once: true });
+    }
+
+    try {
+      const response = await fetch(url, {
+        ...fetchOptions,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      if (externalSignal) {
+        externalSignal.removeEventListener('abort', onExternalAbort);
+      }
+      if (!response.ok) {
+        throw new HttpError(response.status, await response.text());
+      }
+      return response;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (externalSignal) {
+        externalSignal.removeEventListener('abort', onExternalAbort);
+      }
+      // 外部取消不重试
+      if (err.name === 'AbortError' && externalSignal?.aborted) throw err;
+      lastError = err;
+      // 最后一次尝试不再重试
+      if (attempt === retries) break;
+      // 指数退避
+      const backoff = Math.min(1000 * Math.pow(2, attempt), 30000);
+      await new Promise((r) => setTimeout(r, backoff));
+    }
+  }
+  throw lastError;
+}
+
+class HttpError extends Error {
+  constructor(status, body) {
+    super(`HTTP ${status}`);
+    this.status = status;
+    this.body = body;
+  }
+}
+```
+
+逐段看设计取舍：**每次尝试新建 controller**——复用会撞上第五节易错点 5（abort 一次即报废）；**外部信号只在 aborted 时或通过一次性监听器传播**——`{ once: true }` 确保监听器不堆积，`removeEventListener` 在每个出口都清理；**外部取消不重试**——用户已经不要结果了，重试是浪费；**指数退避封顶 30 秒**——防止服务恢复瞬间被重试风暴二次打挂。更系统的重试策略（按状态码分类、抖动、熔断）见 [fetch 与 Web Streams](/javascript/450-FetchApiWebStreams) 的请求重试与熔断一章。
+
+## 延伸：Fetch 的形式化语义与取消的传播路径
+
+（本节为总览篇迁入的形式化补充，供需要精确语义的读者选读。）
+
+Fetch 操作可建模为一个三元组 $\langle \text{Request}, \text{Response}, \text{AbortSignal} \rangle$。设 $R$ 为 Request，$A$ 为 AbortSignal，则 Fetch 是从 Request 与 AbortSignal 到 Response Promise 的函数：
+
+$$
+\text{fetch}: R \times A \rightarrow \text{Promise}\langle \text{Response} \rangle
+$$
+
+Response 内部是一个可读流，其类型签名为：
+
+$$
+\text{Response.body}: \text{ReadableStream}\langle \text{Uint8Array} \rangle
+$$
+
+`ReadableStream` 满足下列异步迭代器协议：
+
+$$
+\text{next}: \text{ReadableStream} \rightarrow \text{Promise}\langle \{ \text{done}: \text{boolean}, \text{value}: \text{Uint8Array} \} \rangle
+$$
+
+取消的传播路径：当调用 `controller.abort()` 时，AbortSignal 触发 `abort` 事件，Fetch 内部传播取消信号到底层网络栈：
+
+$$
+\text{abort}() \rightarrow \text{signal.aborted} := \text{true} \rightarrow \text{TcpConnection.close}()
+$$
+
+对于已发出的 HTTP 请求，浏览器会关闭 TCP 连接，导致服务器端可能收到 `ECONNRESET`。因此**取消 Fetch 不能保证服务器未收到请求**——购票扣款这类写操作不能依赖「取消 = 没发生」，业务层需配合幂等性设计（请求带幂等键，服务端去重）。
+
+## 动手实践（补充）
+
+4. **可取消且带重试的下载器**：结合本篇 `http` 封装与第五节 `createLatestGet`，实现「列表页快速切换时自动作废旧请求 + 网络抖动自动重试两次」的商品详情拉取。参考要点：每次尝试新建 controller；外部 signal 通过 `addEventListener('abort', ..., { once: true })` 桥接内部 controller；外部触发的取消直接上抛不重试。
+
 ## 易错点与最佳实践
 
 1. **Response body 只能读一次**。错误代码与修正：
@@ -258,3 +437,54 @@ console.log(await res.json(), await copy.text());
 2. **搜索联想的防抖与取消结合**：在输入框上实现"停止输入 300ms 后才请求，且新请求自动取消旧请求"。思路：`setTimeout` 延迟发请求，配合本篇 `createLatestGet` 的取消逻辑；思考为什么"取消"不能完全替代"防抖"——前者回收结果，后者减少请求次数，二者关注点不同。
 
 3. **并发限流的批量拉取**：需要为 20 场演唱会拉取余票，但要求最多同时 4 个在途请求，且页面离开时全部取消。思路：用信号量或分批 `Promise.all` 控制并发，把同一个 `AbortController.signal` 传给所有请求，`controller.abort()` 一次即可整体撤回。
+
+## 附录：fetch 语法速查
+
+（自总览篇迁入，供复习时快速对照。）
+
+**基础请求**
+
+```javascript
+// 返回 Promise<Response>
+const res = await fetch("/api/user");
+const data = await res.json();
+```
+
+**带请求配置**
+
+```javascript
+// POST JSON
+const res = await fetch("/api/user", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ name: "Tom" }),
+});
+```
+
+**错误与状态处理**
+
+```javascript
+// fetch 仅在网络错误时 reject
+if (!res.ok) throw new Error(`HTTP ${res.status}`);
+```
+
+**中止请求**
+
+```javascript
+// 超时或取消请求
+const ctrl = new AbortController();
+setTimeout(() => ctrl.abort(), 5000);
+const res = await fetch("/api", { signal: ctrl.signal });
+```
+
+**读取响应流**
+
+```javascript
+// 流式读取大响应（完整展开见 450 篇）
+const reader = res.body.getReader();
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  console.log(value); // Uint8Array 分块
+}
+```

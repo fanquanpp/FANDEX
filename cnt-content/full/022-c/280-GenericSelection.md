@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 320
 title: 泛型选择：_Generic 与类型分派
 module: 'c'
 category: 计算机科学
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'c/300-InlineFunctionMacro'
   - 'c/290-PreprocessorMacro'
-  - 'c/520-C23C2y'
+  - 'c/520-C23CoreFeatures'
   - 'c/180-FunctionPointerCallbackJumpTable'
 prerequisites:
   - 'c/110-EnumTypedef'
@@ -346,7 +346,7 @@ hello (string)
 
 `_Generic` 的短板是「看不见类型的名字」：分支函数签名各不相同，想在宏里声明一个「和参数同类型」的临时变量，C11 没有语法。C23 把 GCC/Clang 用了十几年的扩展 `typeof`/`typeof_unqual` 转正为**标准关键字**：`typeof(expr)` 在类型位置引用 expr 的类型，`typeof_unqual` 再去掉顶层限定符。老代码里常见的 `__typeof__` 就是它的扩展期写法（双下划线避免与用户标识符撞车）。
 
-配合示例如下，需要 C23 模式编译（编译器支持矩阵见 [C23 上手](/c/520-C23C2y)，typeof 的完整专题在 [C23 深水区](/c/530-C23NewFeatures)）：
+配合示例如下，需要 C23 模式编译（编译器支持矩阵见 [C23 上手](/c/520-C23CoreFeatures)，typeof 的完整专题在 [C23 深水区](/c/530-C23NewFeatures)）：
 
 ```c
 /* c23_generic.c：typeof 与 _Generic 协同
@@ -486,7 +486,7 @@ printf("%s\n", _Generic((3.14f), float: "float", double: "double", default: "?")
 
 - 往前：[枚举与 typedef](/c/110-EnumTypedef) 的自定义类型名是分支列表的常客；[函数指针与回调](/c/170-FunctionPointerCallback) 的「函数名即地址」是伪重载的支点；[数组详解](/c/120-ArrayDetailed) 的退化规则在剥离规则里重演；
 - 旁支：[跳转表](/c/180-FunctionPointerCallbackJumpTable) 是运行时按值分发的对照面；[预处理器与宏](/c/290-PreprocessorMacro) 提供宏外壳与 `#`/`##` 手艺，本篇提供类型内核；[内联函数与宏](/c/300-InlineFunctionMacro) 解释分支函数为什么写 `static inline`；
-- 往后：[C23 上手](/c/520-C23C2y) 与 [C23 深水区](/c/530-C23NewFeatures) 收编 typeof/typeof_unqual 与枚举底层类型，`_Generic` 在 C23 下更顺手。
+- 往后：[C23 上手](/c/520-C23CoreFeatures) 与 [C23 深水区](/c/530-C23NewFeatures) 收编 typeof/typeof_unqual 与枚举底层类型，`_Generic` 在 C23 下更顺手。
 
 ## 10. 官方文档
 

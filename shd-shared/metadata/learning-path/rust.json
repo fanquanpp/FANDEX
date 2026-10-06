@@ -38,7 +38,7 @@
         {
           "id": "rust-102",
           "title": "结构体、枚举与模式匹配",
-          "doc": "070-RustStructEnumMatch"
+          "doc": "070-RustStructAndImpl"
         },
         {
           "id": "rust-103",
@@ -48,7 +48,7 @@
         {
           "id": "rust-104",
           "title": "集合与迭代器",
-          "doc": "090-RustCollectionsIterators"
+          "doc": "090-RustCollections"
         }
       ]
     },

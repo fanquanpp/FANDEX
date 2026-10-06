@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 380
 title: AWS Lambda 命令
 module: 'cloud-computing'
 category: 云与基础设施

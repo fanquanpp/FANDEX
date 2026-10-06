@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 530
 title: 编译与运行时
 module: 'cs-fundamentals'
 category: 计算机科学

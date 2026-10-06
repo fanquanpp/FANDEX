@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 310
 title: C++20 Ranges 范围库
 module: 'cpp'
 category: 计算机科学
@@ -11,7 +11,7 @@ related:
   - 'cpp/060-LambdaExpression'
   - 'cpp/390-TemplateMetaprogramming'
   - 'cpp/660-Cpp20Module'
-  - 'cpp/740-Cpp23Cpp26NewFeatures'
+  - 'cpp/730-Cpp23NewFeatures'
 prerequisites:
   - 'cpp/020-CppOverviewAndModernStandard'
 ---

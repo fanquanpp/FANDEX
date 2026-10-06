@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 330
 title: Entity Framework Core 迁移与优化
 module: 'csharp'
 category: 后端技术

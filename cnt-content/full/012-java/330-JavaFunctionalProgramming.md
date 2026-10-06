@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 310
 title: Java 函数式编程
 module: 'java'
 category: 后端技术

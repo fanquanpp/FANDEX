@@ -37,8 +37,13 @@
         },
         {
           "id": "godot-004",
-          "title": "资源与自动加载单例",
-          "doc": "050-ResourcesAndAutoload"
+          "title": "资源系统与自定义数据",
+          "doc": "050-ResourcesAndCustomData"
+        },
+        {
+          "id": "godot-018",
+          "title": "Autoload 单例与场景切换管理",
+          "doc": "055-AutoloadAndSceneManagement"
         },
         {
           "id": "godot-005",
@@ -109,7 +114,7 @@
         {
           "id": "godot-014",
           "title": "Gode：用 JavaScript 与 TypeScript 写 Godot",
-          "doc": "150-GodeJavaScriptTypeScript"
+          "doc": "150-GodeTypeScriptFramework"
         }
       ]
     },

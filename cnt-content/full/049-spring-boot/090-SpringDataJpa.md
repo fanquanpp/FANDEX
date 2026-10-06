@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 110
 title: Spring Data JPA：三层塔——规范、引擎与仓库抽象
 description: 以「JDBC 四段式体力活与全自动 ORM 的黑盒恐惧」引入：JPA、Hibernate、Spring Data JPA 三层分工，实体映射与派生查询方法，@Query 与分页，N+1 复现与 JOIN FETCH、@EntityGraph 两种对策，附 H2 起步一键切 MySQL 实验。
 module: 'spring-boot'

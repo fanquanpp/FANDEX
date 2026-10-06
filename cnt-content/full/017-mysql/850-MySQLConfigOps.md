@@ -1,5 +1,5 @@
 ---
-order: 830
+order: 880
 title: MySQL 配置与运维
 module: 'mysql'
 category: 数据库
@@ -11,10 +11,16 @@ related:
   - 'mysql/810-JSONTypeJSONTable'
   - 'mysql/460-TransactionLockMechanism'
   - 'mysql/890-MySQLQuickLookup'
-  - 'mysql/900-MySQLApplicationController'
+  - 'mysql/900-AppLayerDbAccessPatterns'
 prerequisites:
   - 'mysql/160-View'
 ---
+
+## 知识点地图
+
+- **知识类别**：MySQL 的「配置与运维」主线——参数调优（配置文件与内存参数）、日志管理、备份策略、监控与定期维护。本篇是运维模板文：给「接手一台服务器该配什么、日常该看什么、周期该做什么」一套可抄的底稿。**分工边界**：`sql_mode` 与系统变量的三层作用域（GLOBAL/SESSION/PERSIST）已由专篇 [服务器 SQL 模式与系统变量](/mysql/855-ServerSqlModeAndVariables) 承载，本篇不写第二份；Buffer Pool 的内存参数与命中率监控在本篇「Buffer Pool 内存专题」一节；事件与锁的可观测（谁在干什么）见 [系统库与可观测](/mysql/335-ObservabilitySystemSchemas)。
+- **解决什么问题**：新环境交付时参数从哪抄；上线后「连接数涨、临时表落盘、排序溢出」这些渐进恶化的指标去哪看、调哪个参数；周期性的备份与维护任务怎么脚本化。
+- **什么时候用到**：服务器交付与容量变更时；季度巡检时；出事后复盘「当初该配什么」。执行计划的归因（为什么慢）见 [EXPLAIN 详解](/mysql/320-EXPLAINDetailed)，本篇管「环境层面的账」。
 
 ## 前置知识
 
@@ -503,3 +509,137 @@ prerequisites:
  # 备份完成
  echo "Backup completed: $DATE"
 ```
+
+
+## Buffer Pool 内存专题
+
+Buffer Pool 是 InnoDB 最重要的内存区域，缓存数据页和索引页——内存参数的账要从它算起。
+
+### 大小规划与在线调整
+
+```sql
+-- 查看当前大小与单位
+SHOW VARIABLES LIKE 'innodb_buffer_pool_size';
+
+-- 专用数据库服务器建议物理内存的 60%-80%（16GB 内存配 10GB）
+SET GLOBAL innodb_buffer_pool_size = 10737418240;   -- 10GB，5.7+ 在线调整
+
+-- 调整以 chunk 为单位发生（默认 128MB）
+SHOW VARIABLES LIKE 'innodb_buffer_pool_chunk_size';
+
+-- 多实例降低内部争用：Buffer Pool >= 1GB 时按每实例约 1GB 分
+SHOW VARIABLES LIKE 'innodb_buffer_pool_instances';
+SET GLOBAL innodb_buffer_pool_instances = 8;
+```
+
+逐段解释规划逻辑：60%-80% 的上限来自「给操作系统页缓存与其他进程留余量」——内存被 OS 换出（swap）的代价远大于少几 GB 缓存；在线调整按 chunk 粒度进行（扩容是把新 chunk 挂进池），大调整建议低峰期做；`instances` 只在池大于 1GB 时有意义（小池多实例反而碎）。
+
+### 预热与转储
+
+```sql
+-- 关闭时保存热点页清单，启动时自动加载（默认都开）
+SHOW VARIABLES LIKE 'innodb_buffer_pool_dump_at_shutdown';
+SHOW VARIABLES LIKE 'innodb_buffer_pool_load_at_startup';
+
+-- 手动触发（重启演练、维护窗口后快速回温）
+SET GLOBAL innodb_buffer_pool_dump_now = ON;
+SET GLOBAL innodb_buffer_pool_load_now = ON;
+
+-- 看进度
+SHOW STATUS LIKE 'Innodb_buffer_pool_load_status';
+```
+
+为什么值得单独一节：冷启动的 Buffer Pool 命中率从零爬升，高峰期业务在「每查一次都是磁盘读」的状态下跑几分钟到几十分钟——转储/加载机制把热点页清单（默认每秒约 0.1% 的页）写盘，重启后直接恢复，是重启演练的标准配套。
+
+### 命中率监控
+
+```sql
+-- 命中率 = 1 - Innodb_buffer_pool_reads / Innodb_buffer_pool_read_requests
+SELECT
+    ROUND((1 - (SELECT Variable_value + 0 FROM performance_schema.global_status
+                WHERE Variable_name = 'Innodb_buffer_pool_reads') /
+              (SELECT Variable_value + 0 FROM performance_schema.global_status
+               WHERE Variable_name = 'Innodb_buffer_pool_read_requests')) * 100, 3)
+    AS hit_rate_pct;
+
+-- 哪些表占着缓存（缓存被谁挤占的答案）
+SELECT OBJECT_SCHEMA AS db, OBJECT_NAME AS tbl, COUNT(*) AS pages_cached
+FROM information_schema.INNODB_BUFFER_PAGE
+GROUP BY OBJECT_SCHEMA, OBJECT_NAME
+ORDER BY pages_cached DESC LIMIT 20;
+```
+
+读法纪律：命中率 > 99% 是健康基线，< 95% 先查「工作集是否大于池」（表清单看谁占页）再谈扩容；`INNODB_BUFFER_PAGE` 查询本身会扫描全部页元数据（大池上要锁内部结构，可能造成短暂卡顿）——**只在低峰期跑**，别在业务高峰对生产库做这个查询。
+
+## 动手实践
+
+练习一（预测题）：16GB 内存、专库专用的服务器，以下哪个 Buffer Pool 配置最合理？为什么？
+
+```text
+A. innodb_buffer_pool_size = 1G,   instances = 16
+B. innodb_buffer_pool_size = 10G,  instances = 8
+C. innodb_buffer_pool_size = 16G,  instances = 1
+```
+
+提示：给谁留内存？多实例的意义是什么？
+
+<details>
+<summary>参考实现</summary>
+
+**B**。A 的 1G 太小（缓存工作集根本装不下）且 16 个实例分 1G 每个只有 64MB（实例数只有在池 >= 1GB 时才有正面意义）；C 把内存全吃光——操作系统页缓存（日志写入、文件系统元数据）与 mysqld 其他内存结构（每连接排序缓冲、临时表）没有余量，触发 swap 后性能断崖。B 按 60%-80% 上限取 10GB、按每实例约 1GB 配 8 实例，两条纪律都满足。
+</details>
+
+练习二（实战题）：写一个「内存参数总账」查询脚本：给定 max_connections 与 sort_buffer_size/join_buffer_size/tmp_table_size 的会话级配置，估算「满连接时这些每连接缓冲的理论最大内存占用」，加上 buffer_pool 与 global 级缓冲，给出总内存预算公式。说明为什么「每连接参数 x max_connections」是上界而不是实际值。
+
+提示：sort_buffer_size 是「需要时才分配、用完释放」的会话缓冲；实际值取决于并发排序量。
+
+<details>
+<summary>参考实现</summary>
+
+```sql
+SELECT
+  @@max_connections                                     AS max_conn,
+  @@sort_buffer_size   / 1024 / 1024                    AS sort_mb_per_conn,
+  @@join_buffer_size   / 1024 / 1024                    AS join_mb_per_conn,
+  @@tmp_table_size     / 1024 / 1024                    AS tmp_mb_per_conn,
+  @@innodb_buffer_pool_size / 1024 / 1024 / 1024        AS bp_gb;
+```
+
+预算公式：`总内存 = Buffer Pool + (sort_mb + join_mb + tmp_mb) x max_connections + 全局日志/结构缓冲 + OS 余量`。是上界的理由：sort/join buffer 是**按需惰性分配**的——只有真正执行排序/连接的会话在那一刻才分配，空闲连接不占；tmp_table_size 是内存临时表的单表上限而非预分配。所以真实占用远低于上界，但**容量规划必须按上界**——业务高峰 + 一条失控的批量查询同时触发满量分配时，OS 只看得到总账。这也是「调大每连接缓冲前先算 max_connections 的乘积」这条纪律的来源。
+</details>
+
+练习三（找错题）：这份巡检脚本有一处危险调用与一处口径问题，先找再修：
+
+```bash
+#!/bin/bash
+# 每分钟巡检
+mysql -e "SELECT OBJECT_SCHEMA, OBJECT_NAME, COUNT(*)
+          FROM information_schema.INNODB_BUFFER_PAGE
+          GROUP BY 1,2 ORDER BY 3 DESC LIMIT 20"
+mysql -e "SHOW GLOBAL STATUS LIKE 'Innodb_buffer_pool_read%'" | awk '{...计算命中率...}'
+```
+
+提示：INNODB_BUFFER_PAGE 的查询对运行中的服务器做什么？
+
+<details>
+<summary>参考实现</summary>
+
+```bash
+#!/bin/bash
+# 命中率：高频采集安全（只是读计数器）
+mysql -e "SHOW GLOBAL STATUS LIKE 'Innodb_buffer_pool_read%'"
+# INNODB_BUFFER_PAGE：低峰期手动跑（它会扫描全部缓冲页元数据，大池上短暂持锁）
+#   -> 从每分钟自动巡检改为：crontab 每周日凌晨一次 + 文档注明低峰约束
+```
+
+两处问题：其一，INNODB_BUFFER_PAGE 的 GROUP BY 全表聚合要遍历池内每一个页的元数据，大 Buffer Pool（数十 GB）上会造成可感知的停顿——官方文档明确警告生产环境勿频繁查询，放进每分钟巡检是自伤；其二，命中率口径：两次采样点之间服务若重启，累计计数器清零会使「后采样 - 前采样」出现负值——脚本要做采样对齐或对负值弃判。修复方向：高频部分只留计数器类（SHOW STATUS 便宜安全），重的结构扫描（INNODB_BUFFER_PAGE、DATA_FREE 大表扫描）降频到维护窗口。
+</details>
+
+## 自我检查
+
+- 能给出专库服务器的 Buffer Pool 配置（大小比例 + 实例数）并说出两条规划纪律；
+- 能解释缓冲池转储/加载在重启演练中的作用与默认开关状态；
+- 能写出命中率公式并说出 < 95% 时的排查顺序（先看谁占页，再谈扩容）；
+- 能算出「每连接缓冲 x max_connections」的内存上界并解释它为什么是上界；
+- 能说出 sql_mode 与变量作用域的归属篇（855）并避免在本篇重复；
+- 能区分「高频安全的计数器采集」与「低峰才能跑的结构扫描」两类巡检。

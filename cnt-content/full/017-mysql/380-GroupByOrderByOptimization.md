@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 410
 title: GROUP BY 与 ORDER BY 优化：告别 filesort
 module: 'mysql'
 category: 数据库

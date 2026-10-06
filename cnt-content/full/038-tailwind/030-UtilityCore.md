@@ -4,15 +4,22 @@ title: Tailwind CSS 核心概念与工具类
 module: 'tailwind'
 category: 前端技术
 difficulty: beginner
-description: Tailwind CSS 核心工具类清单：颜色、间距、排版、边框、圆角、阴影、滤镜七大族逐一盘点，含类名命名规律、状态变体与任意值
+description: Tailwind CSS 核心工具类清单：颜色、间距、排版、边框、圆角、阴影、滤镜七大族逐一盘点，排版族覆盖换行优化与装饰线全集，含类名命名规律、状态变体与任意值
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'tailwind/020-InstallConfig'
-  - 'tailwind/040-LayoutFlexGrid'
+  - 'tailwind/041-FlexboxLayout'
 prerequisites:
   - 'tailwind/020-InstallConfig'
 ---
+
+## 知识点地图
+
+- 知识类别：Tailwind 工具类（utility class）的命名规律与七大功能族清单，外加状态变体入门与任意值语法。
+- 解决什么问题：脱离手写 CSS，用统一刻度的类名完成组件的常规样式——配色、留白、排版、描边、圆角、阴影、滤镜。
+- 什么时候用到：写任何 Tailwind 页面的每一步；本篇是全模块的"字典地基"，布局、变体、主题各篇都建立在七大族之上。
+- 变体的引擎层原理（peer/has/not/任意变体/叠加顺序）在[变体引擎与交互状态](/tailwind/055-VariantsAndStates)系统展开。
 
 ## 前置知识
 
@@ -22,6 +29,7 @@ prerequisites:
 
 - 能拆解任意工具类名的"前缀 + 色相/对象 + 刻度"结构，从类名直接读出它对应的 CSS 声明。
 - 能用颜色、间距、排版、边框、圆角、阴影、滤镜七大族工具类，脱离自定义 CSS 完成常规组件样式。
+- 排版不止五维度基本盘：会用 text-balance/truncate 控制换行、decoration 家族美化装饰线、list 与表格工具类整理结构化内容、fill/stroke 给 SVG 着色。
 - 能用 `hover:`/`focus:`/`disabled:` 等状态变体表达交互状态，理解 `group-hover:` 的父子联动机制。
 - 能判断何时该用任意值语法，并知道如何把高频例外值提升为 `@theme` 设计令牌或 `@utility` 自定义工具类。
 - 能识别 `bg-opacity-*`、动态拼接类名等旧写法或错误写法，并给出 v4 下的正确替代。
@@ -127,9 +135,9 @@ v4 在 4.2 版本还新增了 mauve（灰紫）、olive（橄榄）、mist（雾
 
 间距刻度速查（常用值）：`1` = 4px、`2` = 8px、`3` = 12px、`4` = 16px、`6` = 24px、`8` = 32px、`12` = 48px、`16` = 64px。v4 还支持任意动态值，`mt-17` 这种非预设数值也可直接使用。
 
-## 4. 排版族：字号、字重、行高、字距一次配齐
+## 4. 排版族：从五维度基本盘到杂志级细节
 
-排版涉及五个维度：字号（font-size）、字重（font-weight）、行高（line-height）、字距（letter-spacing）、对齐（text-align）。
+排版的五个基本维度：字号（font-size）、字重（font-weight）、行高（line-height）、字距（letter-spacing）、对齐（text-align）。
 
 | 维度 | 前缀 | 示例类 | 说明 |
 | --- | --- | --- | --- |
@@ -158,7 +166,124 @@ v4 在 4.2 版本还新增了 mauve（灰紫）、olive（橄榄）、mist（雾
 </span>
 ```
 
-讲解：字号刻度按等比缩放设计（`xs` 12px、`sm` 14px、`base` 16px、`lg` 18px、`xl` 20px、`2xl` 24px、`3xl` 30px……），标题层级用 `text-2xl` 到 `text-6xl` 拉开视觉落差。`leading-*` 与 `tracking-*` 让标题更紧凑、正文更宽松，是"高级感"排版的小技巧。
+讲解：字号刻度按等比缩放设计（`xs` 12px、`sm` 14px、`base` 16px、`lg` 18px、`xl` 20px、`2xl` 24px、`3xl` 30px……），标题层级用 `text-2xl` 到 `text-6xl` 拉开视觉落差。`leading-*` 与 `tracking-*` 让标题更紧凑、正文更宽松，是"高级感"排版的小技巧。这五个维度是"每一页都要用"的基本盘；下面四组是"好页面与普通页面拉开差距"的细节——换行控制、装饰线、列表样式与 SVG 着色。
+
+### 4.1 换行与留白：text-balance、whitespace 与断词
+
+长标题与长单词是排版的两大翻车源，对应三组工具：
+
+| 类名 | CSS | 解决什么 |
+| --- | --- | --- |
+| `text-balance` | text-wrap: balance | 标题多行时各行长度均衡，告别"第一行撑满、第二行一个字" |
+| `text-pretty` | text-wrap: pretty | 正文段落避免孤行（最后一行只剩一两个字） |
+| `whitespace-nowrap` / `truncate` | white-space: nowrap（truncate 叠加溢出省略） | 单行标签不换行；`truncate` 一行搞定"超长省略号" |
+| `whitespace-pre-line` | white-space: pre-line | 保留文本里的换行符（用户输入的简介） |
+| `break-words` / `hyphens-auto` | overflow-wrap / hyphens | 长 URL、长单词不再撑爆容器 |
+
+```html
+<!-- 标题换行均衡：三行标题各行长度接近，视觉重量平均 -->
+<h1 class="text-balance text-3xl font-bold tracking-tight">
+  从零到上线：一门给设计专业的 Web 入门课
+</h1>
+
+<!-- 列表项单行省略：课程名超长时截断，不撑破布局 -->
+<li class="truncate">JavaScript 高级程序设计（第 4 版·全彩·附赠源码与视频）</li>
+
+<!-- 用户简介保留换行 -->
+<p class="whitespace-pre-line text-sm text-gray-600">{user.bio}</p>
+
+<!-- 长 URL 防爆版：容器内断词换行 -->
+<p class="break-words text-sm text-gray-500">
+  https://example.com/courses/web-basics/chapters/very-long-chapter-slug-name
+</p>
+```
+
+讲解：`text-balance` 加给**标题**、`text-pretty` 加给**正文**，两者是 v4.1 起内建的换行优化——一行类替代过去的手动 `<br>` 或手调 max-width。`truncate` 是"宽度不足"的通用答案（需要元素本身有宽度约束，如 `max-w-*` 或 flex 的 `min-w-0`）；`whitespace-nowrap` 只禁止换行不省略，用它却忘了限宽就会横向撑破容器。中文排版少用 `hyphens-auto`（中文没有连字符断词），它的用户是英文长词。
+
+### 4.2 装饰线家族：下划线的四要素
+
+下划线（以及删除线、上划线）可以拆成四个维度分别控制：
+
+| 类名 | 控制什么 |
+| --- | --- |
+| `underline` / `line-through` / `no-underline` | 有无线与线型 |
+| `decoration-gray-400` / `decoration-primary` | 线的颜色 |
+| `decoration-1` 到 `decoration-4` | 线的粗细 |
+| `underline-offset-2` 到 `underline-offset-8` | 线与文字的距离 |
+| `decoration-dotted` / `decoration-dashed` / `decoration-wavy` | 线的样式 |
+
+```html
+<!-- 链接的"体面"下划线：细一点、淡一点、离字远一点 -->
+<a href="/syllabus" class="underline decoration-1 underline-offset-4 decoration-gray-400 hover:decoration-gray-900">
+  查看完整大纲
+</a>
+
+<!-- 错误文本：波浪线示意"拼写或格式可疑" -->
+<p class="text-sm text-red-600 line-through decoration-2">原价 199 元</p>
+
+<!-- 热词标记：波浪下划线 -->
+<em class="not-italic underline decoration-wavy decoration-blue-500 underline-offset-4">闭包</em>
+```
+
+讲解：浏览器默认下划线"又粗又贴字"，中文里尤其容易穿过笔画——`underline-offset-*` 把线挪下去是中文排版的实用微调。线的颜色与文字颜色默认相同，`decoration-*` 让线比字浅一档，链接既明显又不吵。`hover:decoration-gray-900` 这类组合说明装饰线维度也支持全部状态变体。
+
+### 4.3 列表样式与表格工具类
+
+无序列表、有序列表与表格各有自己的默认样式开关：
+
+| 类名 | 作用 |
+| --- | --- |
+| `list-disc` / `list-decimal` / `list-none` | 圆点 / 数字 / 去标记 |
+| `list-inside` / `list-outside` | 标记在文本内侧 / 外侧 |
+| `border-collapse` / `border-separate` | 单元格边框合并 / 分离 |
+| `table-fixed` / `table-auto` | 列宽固定均分 / 按内容自适应 |
+| `caption-top` / `caption-bottom` | 表格标题位置 |
+
+```html
+<!-- 大纲列表：数字编号 + 嵌套 -->
+<ol class="list-decimal list-inside space-y-1 text-sm text-gray-600">
+  <li>HTML 网页的骨架</li>
+  <li>CSS 网页的皮肤</li>
+  <li>JavaScript 网页的灵魂</li>
+</ol>
+
+<!-- 数据表格：边框合并 + 固定列宽，长内容不挤乱其他列 -->
+<table class="w-full table-fixed border-collapse text-sm">
+  <thead>
+    <tr class="border-b border-gray-300 text-left">
+      <th class="py-2">章节</th>
+      <th class="py-2">时长</th>
+    </tr>
+  </thead>
+  <tbody class="divide-y divide-gray-100">
+    <tr><td class="py-2 truncate">环境搭建与第一个页面</td><td class="py-2">18 分钟</td></tr>
+  </tbody>
+</table>
+```
+
+讲解：v4 的 Preflight 已把列表默认标记去掉，`list-disc`/`list-decimal` 是"要回标记"的开关——常与 `list-inside`（标记参与缩进流）配合。表格三件套的分工：`border-collapse` 让相邻单元格边框合并成一条线（数据表标配）；`table-fixed` 让列宽只看表头定义、不看内容长短（配合 `truncate` 保证行高稳定），`table-auto` 则按内容分配——内容长度不可控的后台表格优先 fixed。
+
+### 4.4 SVG 着色：fill-* 与 stroke-*
+
+内联 SVG 图标可以像文字一样吃到工具类：`fill-*` 管填充色、`stroke-*` 管描边色，且支持全部变体——这是"图标跟随主题与状态"的关键：
+
+```html
+<!-- 实心收藏图标：默认灰、悬停变红，颜色全部走工具类 -->
+<button class="group">
+  <svg viewBox="0 0 24 24" class="size-6 fill-gray-300 transition-colors group-hover:fill-red-500" aria-hidden="true">
+    <path d="M12 21l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.18L12 21z" />
+  </svg>
+</button>
+
+<!-- 线性图标：stroke 跟随文字色 -->
+<svg viewBox="0 0 24 24" class="size-5 stroke-gray-500" fill="none" stroke-width="2" aria-hidden="true">
+  <path d="M4 6h16M4 12h16M4 18h16" />
+</svg>
+```
+
+讲解：SVG 内部的 `fill="#xxx"` 硬编码会盖住工具类——要图标吃到类系统，SVG 元素本身别写 fill/stroke 属性，交给类。`fill-current`/`stroke-current` 是"继承当前文字颜色"的速记，让图标的颜色完全跟随父级 `text-*`，是图标组件化的标准做法。
+
+
 
 ## 5. 边框族：描边与分割线
 
@@ -319,7 +444,7 @@ v4 在 4.2 版本还新增了 mauve（灰紫）、olive（橄榄）、mist（雾
 </div>
 ```
 
-讲解：父元素加 `group` 标记，子元素用 `group-hover:` 就能响应父元素的悬停状态，实现"整卡联动"而无需为子元素单独挂事件。`dark:` 变体在 v4 中默认跟随系统（`prefers-color-scheme`），如需类名切换模式，用 `@custom-variant dark` 自定义。
+讲解：父元素加 `group` 标记，子元素用 `group-hover:` 就能响应父元素的悬停状态，实现"整卡联动"而无需为子元素单独挂事件。本节是入门清单：`peer-`、`has-`、`not-`、任意变体与叠加顺序等引擎面内容见[变体引擎与交互状态](/tailwind/055-VariantsAndStates)。`dark:` 变体在 v4 中默认跟随系统（`prefers-color-scheme`），如需类名切换模式，用 `@custom-variant dark` 自定义。
 
 ## 10. 任意值与 @utility：清单之外的补充
 
@@ -366,6 +491,73 @@ v4 在 4.2 版本还新增了 mauve（灰紫）、olive（橄榄）、mist（雾
 | 圆角图片四角发方 | 图片盖住了圆角 | 图片溢出容器圆角 | 容器加 `overflow-hidden` |
 | v3 透明度写法残留 | `bg-opacity-50` 无效 | v4 已移除该旧类 | 用 `bg-black/50` 斜杠修饰符 |
 
-## 12. 一句话记忆
+## 12. 动手实践
+
+**任务一：给"错误卡片"上全套样式。** 用七大族工具类完成一张错误提示卡：红色系背景与文字、统一内边距、细描边、圆角、浅阴影、左侧竖条（border-l 加粗），全程不写一行自定义 CSS。提示：颜色族选 red 色阶（背景用 50、文字用 600、描边用 200）；竖条是 `border-l-4`。
+
+**任务二：杂志级排版迁移。** 把一段"默认样式"的图文升级为排版规范：标题紧凑字距且多行均衡、正文宽松行高、辅助信息小字号浅灰、大纲用数字列表、装饰线离字一档。提示：`tracking-tight` 与 `text-balance` 给标题、`leading-relaxed` 给正文、`text-sm text-gray-400` 给辅助行、`list-decimal list-inside` 给大纲、`underline-offset-4 decoration-gray-400` 给链接；对照第 4 节示例逐项核对。
+
+**任务三：任意值到令牌的提升。** 页面里出现第三处 `w-[280px]` 时停下来：把它提升为 `@theme` 令牌或 `@utility`，并说明这个动作防住了什么。提示：对照第 10 节使用原则；防住的是"同一个尺寸三处写法开始漂移"。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现</summary>
+
+```html
+<div class="rounded-lg border border-red-200 border-l-4 border-l-red-500 bg-red-50 p-4 shadow-sm">
+  <h3 class="text-sm font-semibold text-red-600">支付失败</h3>
+  <p class="mt-1 text-sm text-red-500">银行卡余额不足，请更换支付方式后重试。</p>
+</div>
+```
+
+七个族里动用了六个：颜色（bg/text/border 的 red 阶梯）、间距（p-4 与 mt-1）、排版（字号与字重）、边框（描边 + 左侧加粗竖条）、圆角（rounded-lg）、阴影（shadow-sm）。`border-red-200` 管"普通三边"、`border-l-red-500` 单独覆盖左边——方向性边框色与整体边框色是两套类，可并存。红色阶梯的分工是 50 铺底、200 描边、500 强调、600 正文：同一色相不同明度表达层级，这就是"色阶"存在的意义。
+</details>
+
+<details>
+<summary>任务二参考实现</summary>
+
+```html
+<article class="max-w-2xl">
+  <h2 class="text-balance text-xl font-bold leading-tight tracking-tight text-gray-900">为什么坚持写代码</h2>
+  <p class="mt-3 text-base leading-relaxed text-gray-600">
+    编程是一项手艺，手艺靠刻意练习积累。每天固定写一点，比周末突击四小时更有效。
+  </p>
+  <ol class="mt-3 list-inside list-decimal space-y-1 text-sm text-gray-600">
+    <li>HTML 网页的骨架</li>
+    <li>CSS 网页的皮肤</li>
+    <li>JavaScript 网页的灵魂</li>
+  </ol>
+  <a href="#syllabus" class="mt-3 inline-block text-sm text-blue-600 underline decoration-gray-400 decoration-1 underline-offset-4 hover:decoration-blue-600">
+    查看完整大纲
+  </a>
+  <p class="mt-1 text-sm text-gray-400">更新于 2026-10-06</p>
+</article>
+```
+
+排版规范落在四层类上：标题 `leading-tight tracking-tight text-balance` 收紧行距字距且多行均衡；正文 `leading-relaxed` 放宽到 1.625 的行高，长段阅读不易串行；大纲 `list-decimal list-inside` 找回序号、`space-y-1` 统一条目间距；链接下划线用 `decoration-gray-400 underline-offset-4` 做到"看得见但不吵"，悬停时装饰线加深呼应文字变色。辅助行 `text-sm text-gray-400` 退居信息次要层。整套"高级感"全部来自刻度系统的对比与新换行属性，没有任何魔法值。
+</details>
+
+<details>
+<summary>任务三参考实现</summary>
+
+```css
+/* src/styles/global.css */
+@import "tailwindcss";
+
+@theme {
+  --spacing-sidebar: 280px;
+}
+```
+
+```html
+<!-- 三处 w-[280px] 全部替换为 -->
+<aside class="w-sidebar">侧栏</aside>
+```
+
+提升动作防住两类事故：其一，"宽度漂移"——三处 280px 中有一处被手滑改成 272px，视觉对不齐却没人知道，令牌化后这类值有唯一出处；其二，"语义缺失"——`w-[280px]` 只说明多宽，`--spacing-sidebar` 说明了**这是侧栏的宽度**，后来者改布局时会先找到它。判断时点记一句话：任意值是"例外"，例外第三次出现就变成了"规范"，该入令牌了。
+</details>
+
+## 13. 一句话记忆
 
 工具类就是成套扳手：按"属性前缀 + 刻度值"的规律从颜色、间距、排版、边框、圆角、阴影、滤镜七大族里挑选组合，状态切换靠 `hover:` 等前缀，刻度的例外用任意值与 `@utility` 补充。

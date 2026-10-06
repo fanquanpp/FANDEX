@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 150
 title: git-stash 暂存工作进度
 module: 'git'
 category: 工具链

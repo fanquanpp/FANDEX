@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 490
 title: 安全函数与边界检查：溢出从源头杜绝
 module: 'c'
 category: 计算机科学
@@ -9,8 +9,8 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'c/430-StdioFileIO'
-  - 'c/210-MemoryManagement'
-  - 'c/490-StaticAnalysisDebug'
+  - 'c/210-ProcessMemoryLayoutAndErrors'
+  - 'c/485-StaticAnalysisAndSanitizers'
   - 'c/410-CrossPlatformProgramming'
 prerequisites:
   - 'c/120-ArrayDetailed'
@@ -22,7 +22,7 @@ prerequisites:
 - 已完成 [数组](/c/120-ArrayDetailed)：知道数组名传递会退化为指针、`sizeof` 求数组大小的用法与限制；
 - 知道 `char buf[16]` 与 `char *p` 的区别，用过 `strcpy`、`strlen`、`fgets` 中至少一个。
 
-> 分工说明：本篇讲「危险函数与边界」的源头治理——怎么不写出溢出。[内存深水区](/c/210-MemoryManagement) 讲事故发生后 ASan 报告怎么逐行读（工具抓现场）；[静态分析与调试](/c/490-StaticAnalysisDebug) 讲静态分析工具箱（编译器之外的检查器）；[文件 I/O](/c/430-StdioFileIO) 讲 `fgets` 的完整用法。本篇与三者互补：210 教你破案，本篇教你别作案。
+> 分工说明：本篇讲「危险函数与边界」的源头治理——怎么不写出溢出。[内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 讲事故发生后 ASan 报告怎么逐行读（工具抓现场）；[静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers) 讲静态分析工具箱（编译器之外的检查器）；[文件 I/O](/c/430-StdioFileIO) 讲 `fgets` 的完整用法。本篇与三者互补：210 教你破案，本篇教你别作案。
 
 ## 学习目标
 
@@ -310,7 +310,7 @@ gcc -fstack-protector-strong ...
 
 `_FORTIFY_SOURCE` 让 glibc 在编译期把可判断的 `strcpy(buf, "constant-too-long")` 直接判为错误，运行期换成带检查的 `__strcpy_chk` 版本——它强化的是标准函数，不要求改代码。
 
-**运行期检测**（测试环境专用，性能开销大）：ASan 抓越界与 use-after-free、UBSan 抓带符号溢出与越界，CI 里全量测试跑一遍（第 1 节的现场就是这么抓的）；fuzzing（如 libFuzzer 用随机输入喂解析函数）专治「长度字段没人验」类逻辑洞。工具箱的全貌在 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+**运行期检测**（测试环境专用，性能开销大）：ASan 抓越界与 use-after-free、UBSan 抓带符号溢出与越界，CI 里全量测试跑一遍（第 1 节的现场就是这么抓的）；fuzzing（如 libFuzzer 用随机输入喂解析函数）专治「长度字段没人验」类逻辑洞。工具箱的全貌在 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)。
 
 **输入验证习惯**（不限于字符串）：外部来的长度先验「非负 + 上限」；数组索引先验 `0 <= i < n`；消息格式里带长度前缀时，长度与实际收到的字节数必须比对——Heartbleed 缺的就是最后这一比。
 
@@ -354,8 +354,8 @@ void log_msg(const char *user, const char *msg) {
 ## 10. 与之前和之后的知识的关系
 
 - 往前：[数组](/c/120-ArrayDetailed) 的越界与 [指针](/c/140-PointerDeep) 的解引用规则是本篇所有事故的语法根源；[文件 I/O](/c/430-StdioFileIO) 的 `fgets` 是安全读入的第一道门；
-- 旁支：事故现场解读在 [内存深水区](/c/210-MemoryManagement)；整数本身的回绕规则在 [数据类型](/c/040-DataTypeDetailed)；`size_t` 与整型转换的完整阶梯在 [运算符与表达式](/c/060-OperatorExpression)；
-- 往后：系统调用层的读写同样要循环处理部分读写，见 [文件系统操作](/c/400-FileSystemOperation) 与 [Socket 网络编程](/c/390-SocketNetworkProgramming) 的 `recv_n`；工具箱（cppcheck、clang-tidy、fuzzing）在 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+- 旁支：事故现场解读在 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)；整数本身的回绕规则在 [数据类型](/c/040-DataTypeDetailed)；`size_t` 与整型转换的完整阶梯在 [运算符与表达式](/c/060-OperatorExpression)；
+- 往后：系统调用层的读写同样要循环处理部分读写，见 [文件系统操作](/c/400-FileSystemOperation) 与 [Socket 网络编程](/c/390-SocketNetworkProgramming) 的 `recv_n`；工具箱（cppcheck、clang-tidy、fuzzing）在 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)。
 
 ## 11. 官方文档
 

@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 120
 title: 变更流与实时应用
 module: 'mongodb'
 category: 数据库
@@ -12,6 +12,12 @@ related:
 prerequisites:
   - 'mongodb/030-MongoDBAggregationPipeline'
 ---
+
+## 知识点地图
+
+- 知识类别：Change Streams 实时变更订阅——三种监听粒度、聚合管道过滤、事件结构（fullDocument/updateDescription）、resume token 断点续听与容错重启。
+- 解决什么问题：数据变化后的联动动作（刷缓存、发通知、同步下游）不再靠轮询；订阅端宕机后能从断点接着听。
+- 什么时候用到：缓存失效推送、跨系统数据同步（ESD 入口）、审计流水、微服务间"数据库即消息源"的轻量方案。
 
 ## 0. 让数据变化主动找你（先读这里）
 
@@ -261,6 +267,63 @@ if (evt.operationType === "update" || evt.operationType === "delete") {
 | 适用 | 低频报表、离线任务 | 缓存失效、实时大屏、CDC |
 
 一句话补充：使用 Atlas 的项目可以把"监听 + 处理"托管给 Atlas Triggers（数据库触发器），无需自建常驻进程。
+
+## 动手实践
+
+**任务一：三种粒度与事件结构观察。** 订阅一个集合的 watch，从另一个连接执行 insert/update/delete 各一次，把每个事件的 operationType、documentKey、updateDescription 完整打印出来对比。提示：update 事件的重点在 updateDescription.updatedFields 与 removedFields——"改了什么"比"文档全量"省流量，只在必要时才用 fullDocument: "updateLookup"。
+
+**任务二：管道过滤 + 投影。** 给 watch 加聚合管道：只推 orderStatus 字段发生变化、且新值为 "shipped" 的事件，投影只保留 documentKey 与新状态。验证插入、无关字段更新、目标状态更新三种操作，前两种应静默。提示：管道写在 watch 的第一个参数里；$match 阶段对 update 事件过滤的是 updateDescription.fullDocument——带 fullDocument: "updateLookup" 才能在管道里读到完整文档字段。
+
+**任务三：断点续听实战。** 写监听循环把每个事件的处理进度（resume token）存进一个 checkpoint 集合；处理到第 5 个事件时 kill 监听进程，再插入 3 条新数据后重启监听，验证它从断点接着消费而不是从头或漏掉。提示：重启后 watch 的参数是 resumeAfter: <存下的 token>；token 过期（oplog 滚掉）会报 ChangeStreamHistoryLost——这正是第 5 节"token 保存周期要短于 oplog 窗口"的实证。
+
+先自己操作，再对照参考实现：
+
+<details>
+<summary>任务三参考实现（Node 驱动形态）</summary>
+
+```javascript
+const checkpointColl = db.collection("stream_checkpoints")
+const KEY = "orders-watcher"
+
+async function watchWithResume() {
+  const saved = await checkpointColl.findOne({ _id: KEY })
+  const options = saved
+    ? { resumeAfter: saved.token, fullDocument: "updateLookup" }
+    : { fullDocument: "updateLookup" }
+
+  const stream = db.collection("orders").watch([], options)
+  console.log("watching", saved ? "from checkpoint" : "from now")
+
+  for await (const event of stream) {
+    try {
+      await handle(event)                       // 业务处理（刷缓存/发通知）
+      await checkpointColl.updateOne(
+        { _id: KEY },
+        { $set: { token: event._id, at: new Date() } },
+        { upsert: true },                       // 处理成功才推进 token
+      )
+    } catch (err) {
+      console.error("handle failed, will retry from same token", err)
+      throw err                                 // 交给外层重启循环
+    }
+  }
+}
+
+// 容错外壳：崩了就退避重启，token 保证不丢不重
+async function main() {
+  for (;;) {
+    try {
+      await watchWithResume()
+    } catch (err) {
+      console.error("watch loop crashed, restart in 5s", err)
+      await new Promise((r) => setTimeout(r, 5000))
+    }
+  }
+}
+```
+
+要点：a) 事件自带 \_id 就是 resume token——"处理成功后存 token"的顺序保证 at-least-once 语义（最多重放一条，不丢）；b) 业务处理要幂等，因为崩溃恢复后同一条事件可能再处理一次；c) for await 断开（选举、网络）会抛错，外层重启循环 + token 是标准容错壳，第 6 节的手写版本与此同构。
+</details>
 
 ## 小结与延伸
 

@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 90
 title: 注解与导出属性
 module: 'gdscript'
 category: 游戏开发

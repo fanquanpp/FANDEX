@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 80
 title: 2D 游戏对象：精灵与相机
 module: 'godot'
 category: 游戏开发
@@ -16,6 +16,14 @@ prerequisites:
 ---
 
 在 Godot 的 2D 世界里，你能"看见"的一切都出自同一族节点：角色、敌人、子弹、背景，最后还得加上一台 Camera2D（2D 相机）决定玩家看到哪里。本篇从继承关系讲起，依次介绍 Node2D 的变换属性、Sprite2D（2D 精灵）的静态贴图与图集帧、AnimatedSprite2D（2D 动画精灵）的帧动画，最后落到 Camera2D 的锚点、缩放与边界控制。读完本篇，你应该能独立搭出一个"会动、会播动画、镜头会跟人"的 2D 场景。
+
+## 知识点地图
+
+- **知识类别**：2D 游戏物体与相机——Node2D/Sprite2D/AnimatedSprite2D/Camera2D 四件套与坐标变换，对应 Godot 官方 2D 入门主线。
+- **解决什么问题**：把美术资源变成场景里「会动、会播动画」的物体；控制玩家「看到哪里、跟得多紧」；处理镜头移动衍生出的两个必然问题——HUD 不能跟着镜头跑、远景需要视差滚动。
+- **什么时候用到**：所有 2D 项目的画面层；横版/俯视角的镜头跟随；多层卷轴背景；HUD 与计分板搭建的前置知识。
+- **真实工程锚点**：本篇的 CanvasLayer 与视差两节取材自本机扫描素材 e-core 2D 教程九集快照（A1/A3 节：Game.tscn 的双 Background 无限滚动 + CanvasLayer 计分板结构、A4 第 10 条「HUD 不放 CanvasLayer 会随相机滚动」的踩坑实录）。
+- **本篇不讲**：物理移动与碰撞（见 [080 篇](/godot/080-CharacterPhysicsAndCollision)）；Tween 动画（见 110 篇）；HUD 容器布局（见 100 UI 篇，本篇只讲「为什么要 CanvasLayer」）。
 
 前置说明：本篇默认你已经了解节点与场景的基本概念，会挂脚本、会用 _process 回调，这些内容在《第一个脚本与生命周期》中讲解。角色如何真正"走上斜坡、撞墙停下"，属于物理话题，由《角色移动与碰撞检测》负责，本篇只关心"显示"。
 
@@ -177,6 +185,78 @@ func teleport_to(pos: Vector2) -> void:
     global_position = pos
     reset_smoothing()                  # 传送后立刻对齐，不做平滑过渡
 ```
+
+## 6. CanvasLayer：让 HUD 摆脱镜头
+
+镜头一动，场景里的一切都会在屏幕上跟着位移——包括你辛苦摆好的计分板。CanvasLayer（画布层）的职责就是「开一个不随镜头移动的绘制层」：
+
+```text
+Game (Node2D)
+  Background / Player / Enemy ...   <- 默认画布层（layer 0），随镜头滚动
+  Camera2D
+  HUD (CanvasLayer)                 <- layer 1，永远钉在屏幕上
+    ScoreLabel
+    GameOverLabel
+```
+
+踩坑实录（e-core 2D 教程 A4 第 10 条）：教程前几集把计分 Label 直接摆在场景里，镜头跟随玩家后计分板「飘出了屏幕」——修复就是把两个 Label 挪进 CanvasLayer。这条坑的机制解释：Camera2D 变换的是**当前 canvas** 的所有内容，CanvasLayer 拥有独立的 canvas 变换，天然豁免。
+
+三个使用要点：
+
+- `layer` 属性决定叠放次序（默认 0，越大越靠上）；HUD 用 1，全屏过场遮罩用 2；
+- CanvasLayer 不是 Control，直接往里面摆 Control 类（Label/Button）没问题，但要做全屏布局时先放一个 Control 子节点再设锚点（100 UI 篇展开）；
+- 反向需求也存在：小地图、某些特效想让「镜头也照不到它」——同样用独立 CanvasLayer 配合 viewport 挂载实现。记住一句话：**内容跟世界走放普通层，跟屏幕走放 CanvasLayer**。
+
+## 7. Parallax2D：视差滚动背景
+
+横版卷轴的经典质感来自视差：远景动得慢、近景动得快，画面立刻有了纵深。教程第 2 集的「双 Background 无限滚动」是手工版：两张背景 Sprite 排在一起，脚本里每帧把超出屏幕的那张挪到队尾循环。Godot 4.3+ 提供了专门的 Parallax2D 节点，把这套逻辑收敛成两个属性：
+
+| 属性 | 作用 |
+| --- | --- |
+| `scroll_scale` | 滚动比率：Vector2(0.2, 0.2) 表示镜头移 1px 它只移 0.2px（远景），1.0 = 与世界同步，>1 = 快于世界（前景） |
+| `repeat_size` | 无限滚动的平铺尺寸：子内容每隔该距离重复一次，横版填 (宽, 0) |
+
+最小配置（三层纵深）：
+
+```text
+Game (Node2D)
+  Camera2D（跟随玩家）
+  Sky (Parallax2D)        scroll_scale = (0.05, 0.05)   天空：几乎不动
+    Sprite2D（天空贴图）
+  Mountains (Parallax2D)  scroll_scale = (0.3, 0.05)    远山：横向慢速
+    Sprite2D（山峦贴图，repeat_size = (1024, 0)）
+  Bushes (Parallax2D)     scroll_scale = (0.6, 1.0)     近景灌木
+    Sprite2D（灌木贴图，repeat_size = (768, 0)）
+```
+
+讲解与易错点：
+
+- scroll_scale 的 y 分量通常比 x 更小（远景在纵向上几乎锁死），全 0 则完全锁定；
+- repeat_size 要等于贴图**平铺单元**的宽度（含拼接留白），设小了接缝闪现，设大了露底色；
+- 旧教程里的 ParallaxLayer + ParallaxBackground 组合在 4.3 后被 Parallax2D 取代（官方推荐迁移）：新节点是普通 Node2D，可以直接挂在场景任意位置、也接受 lighting，心智负担更小；读旧教程时做一层翻译即可；
+- 视差层是「视觉欺骗」，不参与碰撞与导航——远景的群山不能当掩体，这条路走不通。
+
+## 8. 动手实践
+
+任务：搭一个「镜头跟人 + HUD 钉屏 + 三层视差」的横版小场景。
+
+1. 用 AnimatedSprite2D 摆一个角色，加 Camera2D 作为其子节点并配好 limit（左右 3200、上下 640）与平滑；跑动观察镜头到边界时是否平滑停住（limit_smoothed 需要配合位置平滑才生效——先开着，再关掉位置平滑对比一次）；
+2. 放一个计分 Label 在场景里，跑动复现「计分板飘走」；然后把 Label 挪进 CanvasLayer（layer=1），验证钉屏；
+3. 按第 7 节配三层 Parallax2D；故意把远山的 repeat_size 设成贴图宽度的一半，观察接缝闪现，修正后记录正确值；
+4. 给镜头加 drag_horizontal_enabled 与左右各 0.3 的拖拽边距，对比「中心死跟」与「边缘拖拽」两种跟随手感的差异。
+
+<details>
+<summary>参考现象与解释（先自己试，再展开对照）</summary>
+
+第 1 题：关掉位置平滑后 limit 照样生效（硬夹取），但镜头贴边界时没有缓冲——limit_smoothed 只在 position_smoothing_enabled 开启时有意义，这两个属性是配套的，单独开 limit_smoothed 是无效配置。
+
+第 2 题：Label 在普通层时随镜头位移跑出视野；挪进 CanvasLayer 后镜头怎么动它都钉在屏幕同一位置。机制：Camera2D 的变换只作用于默认 canvas，CanvasLayer 有独立 canvas。
+
+第 3 题：repeat_size 偏小时两张平铺重叠、图案周期性「跳格」；正确值 = 平铺单元实际宽度。视差的视觉参数没有对错，手感对了就是对了——三层比率 0.05/0.3/0.6 是起步参考。
+
+第 4 题：拖拽边距让角色在屏幕中央区域自由移动、镜头只在角色逼近屏幕边缘 30% 时跟进——转向跑时画面更稳，是横版动作的常用手感；做精确平台跳跃的项目反而常用中心死跟（玩家对「角色在屏幕正中」的位置预期更强）。
+
+</details>
 
 ## 小结
 

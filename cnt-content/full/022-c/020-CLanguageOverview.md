@@ -10,7 +10,7 @@ updated: '2026-09-28'
 related:
   - 'c/010-CZeroBasisStart'
   - 'c/030-ProgramStructureBasicSyntax'
-  - 'c/520-C23C2y'
+  - 'c/520-C23CoreFeatures'
   - 'cpp/010-WhatIsCpp'
 prerequisites:
   - 'c/010-CZeroBasisStart'
@@ -65,7 +65,7 @@ gcc hello.o -o hello         # 阶段四：链接（把库里的 printf 接进�
 | C99 | 1999 | 行注释 `//`、`for` 内声明变量、`stdint.h` 固定宽度整型 |
 | C11 | 2011 | 多线程 `<threads.h>`、边界检查接口、泛型宏 |
 | C17 | 2017 | 仅缺陷修订，无新特性 |
-| C23 | 2023 | `nullptr`、`auto`、数字分隔符、`bool` 成关键字（[专篇详解](/c/520-C23C2y)） |
+| C23 | 2023 | `nullptr`、`auto`、数字分隔符、`bool` 成关键字（[专篇详解](/c/520-C23CoreFeatures)） |
 
 编译器对标准的支持度随版本不同，写代码前用 `gcc -std=c23` 这类开关显式声明目标标准；支持矩阵的查法在 C23 深水区篇有完整演示（验证于 2026-09，以 [cppreference C 页](https://en.cppreference.com/w/c) 为准）。
 

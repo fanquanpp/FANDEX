@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 320
 title: 索引统计信息与直方图：优化器的眼镜
 module: 'mysql'
 category: 数据库

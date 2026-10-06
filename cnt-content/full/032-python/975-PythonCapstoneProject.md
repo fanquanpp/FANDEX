@@ -1,5 +1,5 @@
 ---
-order: 810
+order: 920
 title: Python 毕业项目：个人记账与统计 CLI 工具的完整工程化
 description: Python 模块出口项目：把 start 模块的记账原型升级为正式工程——argparse 子命令、JSON 与 SQLite 双存储、异常处理、pytest 单元测试、logging、pyproject.toml 打包、README 与 Git 管理，五个里程碑从高提示走到无提示，附可逐条勾选的验收断言。
 module: 'python'

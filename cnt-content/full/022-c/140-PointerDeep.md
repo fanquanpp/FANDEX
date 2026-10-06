@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 170
 title: 指针：地址、解引用与指针算术
 module: 'c'
 category: 计算机科学
@@ -10,8 +10,8 @@ updated: '2026-10-05'
 related:
   - 'c/150-PointerArrayDifference'
   - 'c/160-DoublePointerPointerArray'
-  - 'c/210-MemoryManagement'
-  - 'c/260-CVolatileAndConstDeepDive'
+  - 'c/210-ProcessMemoryLayoutAndErrors'
+  - 'c/260-ConstAndVolatileQualifiers'
 prerequisites:
   - 'c/120-ArrayDetailed'
   - 'c/090-FunctionDetailed'
@@ -24,7 +24,7 @@ prerequisites:
 
 零基础起步见 [C 语言零基础起步](/c/010-CZeroBasisStart)。没读过也没关系，本文用到数组与函数的知识时会当场带一句。
 
-> 分工说明：C 模块的指针主线由三篇组成。本篇负责把指针本身建立起来：地址、解引用、NULL、const 三组合、指针算术、void*；[指针与数组的区别](/c/150-PointerArrayDifference) 专攻「数组什么时候是数组、什么时候变成指针」这层似是而非的关系；[二级指针与指针数组](/c/160-DoublePointerPointerArray) 是深水篇，负责多级间接寻址与指针数组的完整工程体系。malloc/free 的用法在 [动态内存](/c/200-DynamicMemoryManagement)，堆事故现场在 [内存深水区](/c/210-MemoryManagement)，const 的类型系统语义在 [const 与 volatile 详解](/c/260-CVolatileAndConstDeepDive)——本篇只在衔接处提它们，不重复展开。
+> 分工说明：C 模块的指针主线由三篇组成。本篇负责把指针本身建立起来：地址、解引用、NULL、const 三组合、指针算术、void*；[指针与数组的区别](/c/150-PointerArrayDifference) 专攻「数组什么时候是数组、什么时候变成指针」这层似是而非的关系；[二级指针与指针数组](/c/160-DoublePointerPointerArray) 是深水篇，负责多级间接寻址与指针数组的完整工程体系。malloc/free 的用法在 [动态内存](/c/200-DynamicMemoryManagement)，堆事故现场在 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)，const 的类型系统语义在 [const 与 volatile 详解](/c/260-ConstAndVolatileQualifiers)——本篇只在衔接处提它们，不重复展开。
 
 ## 学习目标
 
@@ -83,6 +83,32 @@ swap     后: x = 9, y = 1
 ```
 
 同一份交换逻辑，`swap_bad` 换了个寂寞，`swap` 一击命中。差别只有一处：`swap` 拿到的不是变量的值，而是变量的**地址**。能装地址的变量，就是**指针（pointer）**。它凭什么有这么大的权力？先建立心智模型。
+
+经典课堂还准备了第三版，专门堵住「我传了指针怎么还没换到」的疑惑：
+
+```c
+/* 第三版：传了指针，却在函数里交换指针本身 */
+void swap_pointers(int *pa, int *pb) {
+    int *t = pa;
+    pa = pb;      /* 换的是 pa、pb 这两个指针形参的拷贝 */
+    pb = t;
+}
+
+int main(void) {
+    int x = 1, y = 9;
+    swap_pointers(&x, &y);
+    printf("swap_pointers 后: x = %d, y = %d\n", x, y);   /* 还是 1, 9 */
+    return 0;
+}
+```
+
+三版对照出同一条规则的三个深度：
+
+1. `swap_bad`：传**变量的值**，改形参拷贝——无效；
+2. `swap_pointers`：传**指针的值**，改指针形参的拷贝——还是无效，因为 `pa`/`pb` 自己也是按值传递的副本，转手只动了副本；
+3. `swap`：传**变量的地址**，解引用改**原变量**——有效。
+
+记法：**想改变类型 T 的变量，参数类型必须是 `T *`，函数体内解引用写**。`swap_pointers` 想真正换两根指针（比如交换链表节点），参数就得是 `int **`——这正是深水篇 [二级指针与指针数组](/c/160-DoublePointerPointerArray) 的输出参数模式。
 
 ## 2. 地址与指针：内存是编号的房间
 
@@ -204,7 +230,7 @@ error: assignment of read-only variable 'p2'
 
 `int *const` 还有一个连带要求：它声明后不能再说「算了换个指向」，所以初始化必须写在声明同一行。写 `int *const p2;` 再补 `p2 = &a;` 直接触发上面的第二条报错——这个指针成了永远指不了任何地方的废指针。
 
-修改实验：把 `const int *p1` 指向一个普通 int 后，试着用另一个 `int *` 指向同一处去写。能编译、能跑——这不算破坏 const 吗？这条边界属于 const 的类型系统语义与工程用法（「API 只读承诺」），在 [const 与 volatile 详解](/c/260-CVolatileAndConstDeepDive) 深入，本篇先掌握三组合的读法与语法。
+修改实验：把 `const int *p1` 指向一个普通 int 后，试着用另一个 `int *` 指向同一处去写。能编译、能跑——这不算破坏 const 吗？这条边界属于 const 的类型系统语义与工程用法（「API 只读承诺」），在 [const 与 volatile 详解](/c/260-ConstAndVolatileQualifiers) 深入，本篇先掌握三组合的读法与语法。
 
 ## 6. 指针算术：按元素跨步，不按字节
 
@@ -356,7 +382,7 @@ int *p;        /* 未初始化：里面是上一位使用者留下的垃圾 */
 *p = 1;        /* UB：写到哪只有天知道 */
 ```
 
-NULL 解引用大概率当场崩，野指针更阴险：`p` 里是随机的历史残留值，`*p = 1` 多数时候崩溃，偶尔恰好落在某块可写内存上——于是**悄悄改坏了别的变量**，程序继续带着错数据跑。这类事故在 [内存深水区](/c/210-MemoryManagement) 有完整的 ASan 现场。防线只有一条：定义即初始化，暂时没得指就置 NULL。
+NULL 解引用大概率当场崩，野指针更阴险：`p` 里是随机的历史残留值，`*p = 1` 多数时候崩溃，偶尔恰好落在某块可写内存上——于是**悄悄改坏了别的变量**，程序继续带着错数据跑。这类事故在 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 有完整的 ASan 现场。防线只有一条：定义即初始化，暂时没得指就置 NULL。
 
 ### 实录三：悬空指针——free 之后没置 NULL
 
@@ -365,7 +391,7 @@ free(p);       /* 内存已归还分配器 */
 p = NULL;      /* 少了这一行，p 就成了悬空指针（dangling pointer） */
 ```
 
-`free` 只还内存，不改指针：`p` 里还留着旧地址，再解引用就是 use-after-free。置 NULL 的价值在第 4 节两条纪律上兑现：之后的误用会**立刻**崩在案发现场，而不是悄悄踩别人的内存；且 `free(NULL)` 是标准规定的安全空操作，重复 free 的风险一并消除。事故逐行解读见 [内存深水区](/c/210-MemoryManagement)，本篇记住纪律即可。
+`free` 只还内存，不改指针：`p` 里还留着旧地址，再解引用就是 use-after-free。置 NULL 的价值在第 4 节两条纪律上兑现：之后的误用会**立刻**崩在案发现场，而不是悄悄踩别人的内存；且 `free(NULL)` 是标准规定的安全空操作，重复 free 的风险一并消除。事故逐行解读见 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)，本篇记住纪律即可。
 
 ## 9. 小项目：minmax 双输出
 
@@ -412,7 +438,7 @@ min = 42, max = 97
 三个设计点都是本篇知识的直接变现：
 
 - `&lo, &hi` 是「出参（output parameter）」模式，`scanf("%d", &n)` 里你早就在用同款；
-- 形参写 `const int *arr`：只读承诺——本函数保证不碰数组内容，谁调谁放心（语义深入见 [const 与 volatile 详解](/c/260-CVolatileAndConstDeepDive)）；
+- 形参写 `const int *arr`：只读承诺——本函数保证不碰数组内容，谁调谁放心（语义深入见 [const 与 volatile 详解](/c/260-ConstAndVolatileQualifiers)）；
 - `minmax` 内部没有 `sizeof` 算长度——数组传参的尺寸陷阱下一篇揭底。
 
 ## 10. 二级指针：先混个眼熟
@@ -462,11 +488,53 @@ printf("%td\n", p - nums);   /* 此刻打印什么？ */
 
 验收清单：`{88, 42, 97}` 中找 97 返回指向 97 的指针、`result - arr` 为 2；找 100 返回 NULL 且不崩；`n = 0` 返回 NULL；`-fsanitize=address` 下运行干净。
 
+### 练习库：指针专题五题（每题 10 分钟，配口算答案）
+
+以下五题按「先口算/纸上写，再上机验证」的节奏排布，覆盖第 6 节算术与第 3 节解引用的高频考点。
+
+题一（基类型步进口算）：同一个偏移，三种类型各跨几字节？
+
+```c
+int    *pi = (int *)0x1000;
+double *pd = (double *)0x1000;
+char   *pc = (char *)0x1000;
+
+printf("%p %p %p\n", (void *)(pi + 1), (void *)(pd + 1), (void *)(pc + 1));
+```
+
+参考答案（64 位平台）：`0x1004`、`0x1008`、`0x1001`——步长只看基类型大小（int 4、double 8、char 1），与指针自身的 8 字节无关。
+
+题二（三指针轮换）：三个变量 a、b、c 里存着 1、2、3，只用三个指针把**变量里的值**轮换成 3、1、2（b 的值给 a，c 的给 b，a 的给 c）。要求只通过 `*p` 写入，不直接写变量名。
+
+提示（思路方向）：`int *pa = &a, *pb = &b, *pc = &c;` 之后借助一个临时 int：`t = *pa; *pa = *pb; ...` 按「b 给 a、c 给 b、a 给 c」的次序捋一遍，纸上先画箭头再写代码。
+
+验收：轮换后打印 `3 1 2`；若写成 `*pa = *pb; *pb = *pc; *pc = t;` 得到的也是正确结果——用「先存再覆盖」防的是哪一步出错，说给同伴听。
+
+题三（数组逆序存放）：把 `{1,2,3,4,5,6}` 原地逆序成 `{6,5,4,3,2,1}`，要求用两个相向而行的指针而不是下标。
+
+提示（思路方向）：头指针 `lo = arr`、尾指针 `hi = arr + n - 1`，循环条件 `lo < hi`，每次 `swap(lo++, hi--)`——`swap` 用第 1 节的指针版直接复用。
+
+验收：奇数长度（中间元素不动）与 `n = 0`、`n = 1` 都不崩；ASan 干净。
+
+题四（最大最小归位）：把数组中最大值与第一个元素交换、最小值与最后一个元素交换。
+
+提示（思路方向）：两轮扫描各记「最值的指针」而不是下标；两个坑——数组本身就是降序时两次交换会互相拆台（先处理后一遍核对结果）；最小值若有多个，题目要写清取哪一个。
+
+验收：`{3,1,4,1,5}` 变成 `{5,1,4,3,1}`（最大 5 换到头，最小取最先出现的 1 换到尾）；写一条注释说明「重复最值」你选了哪个并为什么。
+
+题五（去负数前移）：把数组里的负数就地删掉、非负数依次前移，尾部剩余位置补 0。如 `{1,-2,3,-4,5}` 变成 `{1,3,5,0,0}`。
+
+提示（思路方向）：写指针 `w`（下一个非负数该放的格子）与读指针 `r` 同向赛跑，`*r >= 0` 时 `*w++ = *r`；扫完后从 `w` 到 `arr + n` 补 0——「读写双指针」是标准库大量算法的原型。
+
+验收：全负数组得到全 0；全非负数组内容不变；ASan 干净。
+
+（混合文本提取数字的进阶题在 [C 字符串处理](/c/125-CStringsHandling) 第 6 节实战——字符数组上的双指针同款思路。）
+
 ## 13. 与之前和之后的知识的关系
 
 - 往前：[函数详解](/c/090-FunctionDetailed) 的值传递解释了 swap_bad 为何失败，指针正是对值传递的破解；[数组详解](/c/040-DataTypeDetailed) 的连续布局是算术按元素跨步的前提；
-- 旁支：[指针与数组的区别](/c/150-PointerArrayDifference) 处理本文按下不表的退化规则；[const 与 volatile 详解](/c/260-CVolatileAndConstDeepDive) 展开 const 三组合背后的类型系统；[函数调用栈帧](/c/250-FunctionCallStackFrame) 解释本文打印的那些地址大多住在栈上；
-- 往后：[二级指针与指针数组](/c/160-DoublePointerPointerArray) 把 `**` 与指针数组铺开成完整体系；[函数指针与回调](/c/170-FunctionPointerCallback) 把指针指向函数；[动态内存](/c/200-DynamicMemoryManagement) 与 [内存深水区](/c/210-MemoryManagement) 让指针在堆上安家并演示翻车现场。
+- 旁支：[指针与数组的区别](/c/150-PointerArrayDifference) 处理本文按下不表的退化规则；[const 与 volatile 详解](/c/260-ConstAndVolatileQualifiers) 展开 const 三组合背后的类型系统；[函数调用栈帧](/c/250-FunctionCallStackFrame) 解释本文打印的那些地址大多住在栈上；
+- 往后：[二级指针与指针数组](/c/160-DoublePointerPointerArray) 把 `**` 与指针数组铺开成完整体系；[函数指针与回调](/c/170-FunctionPointerCallback) 把指针指向函数；[动态内存](/c/200-DynamicMemoryManagement) 与 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 让指针在堆上安家并演示翻车现场。
 
 ## 14. 官方文档
 

@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 250
 title: 分区裁剪与分区连接
 module: 'postgresql'
 category: 数据库
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'postgresql/250-QueryOptimization'
   - 'postgresql/270-PartitionedTable'
-  - 'postgresql/240-IndexQueryOptimization'
+  - 'postgresql/250-QueryOptimization'
   - 'postgresql/260-ParallelQuery'
 prerequisites:
   - 'postgresql/010-OverviewInstallConfig'

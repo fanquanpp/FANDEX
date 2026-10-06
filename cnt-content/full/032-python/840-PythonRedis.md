@@ -1,5 +1,5 @@
 ---
-order: 660
+order: 770
 title: Python 与 Redis
 module: 'python'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 400
+order: 420
 title: TypeScript 迁移实战
 module: 'typescript'
 category: 前端技术

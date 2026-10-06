@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 70
 title: Git 基础操作：init、add、commit，人生第一次提交
 module: 'git'
 category: 工具链

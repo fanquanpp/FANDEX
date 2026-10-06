@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 140
 title: Transition 与动画：Vue 怎么知道你的动画什么时候演完
 module: 'vue3'
 category: 前端技术
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'vue3/120-TeleportSuspense'
-  - 'vue3/180-API'
+  - 'vue3/050-ReactiveSystem'
   - 'vue3/190-VueRouterDetailed'
   - 'vue3/320-Vue3PerformancePractice'
 prerequisites:

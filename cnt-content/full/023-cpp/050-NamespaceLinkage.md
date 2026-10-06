@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 70
 title: helper 打架，链接器炸了：命名空间、链接与多文件工程
 module: 'cpp'
 category: 计算机科学

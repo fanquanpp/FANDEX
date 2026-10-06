@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 140
 title: 动画系统：AnimationPlayer 与 Tween
 module: 'godot'
 category: 游戏开发

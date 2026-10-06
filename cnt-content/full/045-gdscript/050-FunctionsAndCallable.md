@@ -16,6 +16,12 @@ prerequisites:
 
 函数把一段逻辑打包成可复用的单元，是所有 GDScript 代码的骨架。但 GDScript 在函数这件事上有不少独到设计：函数本身是"第一类值"，可以像普通数据一样被存进变量、传给别的函数，这个身份就叫 Callable（可调用体）；此外还有可选参数、可变参数、lambda 闭包、静态方法与抽象方法等特性。本篇从最基本的函数声明讲起，一路讲到 Callable 的进阶用法，为后续的信号与协程主题打底。
 
+## 知识点地图
+
+- 知识类别：GDScript 的函数体系——声明与作用域、返回值与参数规则、Callable 一等公民化、lambda 闭包、static 函数。
+- 解决什么问题：逻辑怎么封装复用、函数怎么当值传递（回调、策略）、lambda 捕获的语义与代价。
+- 什么时候用到：拆分长函数、给信号接回调、把行为当参数传递（排序比较器、按钮回调）、写工具类静态函数。
+
 ## 学习目标
 
 - 掌握函数声明的完整语法：参数类型标注、返回类型与作用域查找规则；
@@ -215,6 +221,18 @@ var typed := func (x: int) -> void: print(x)
 - 闭包捕获：lambda 会捕获所在作用域的局部变量，且是"按值捕获一次"——捕获之后，外层变量再怎么变化，lambda 里看到的仍是捕获那一刻的值；
 - 官方特别警告：避免把 lambda 存入 RefCounted 对象的成员变量。lambda 会隐式持有捕获到的环境（其中可能包含对象引用），放进引用计数管理的对象里容易形成引用循环，造成内存泄漏。
 
+**捕获对象后对象先亡：freed 陷阱（真实工程实录）。** "按值捕获一次"捕获的是引用值，但引用指向的对象可能比 lambda 先死——之后 lambda 一执行就是访问已释放对象。speed-rouge 的 adaptive.gd 留有实录（66-70 行形态，注释原话「捕获变 null 须先挡」）：卡片退出场景后 Tween 的回调 lambda 仍捕获着 card，执行时崩溃。修复模式是把判活写成 lambda 的第一行：
+
+```gdscript
+card.tree_exited.connect(func():
+    if not is_instance_valid(card):
+        return          # 捕获的对象先亡：直接让路
+    cards.erase(card)
+)
+```
+
+判断准则一句话：**lambda 里只要出现捕获的 Node/对象引用，第一行先 is_instance_valid 判活**。这是闭包生命周期的头号坑位，完整展开（含静态缓存防线）见第 75 篇《对象生命周期与内存管理》第 4、5 节。
+
 ## static 函数
 
 static func 声明静态方法，属于类本身而非实例：不能访问实例成员，也不能使用 self：
@@ -239,6 +257,40 @@ print(MathUtil.sum2(1, 2))   # 3
 ```
 
 规则有三条：抽象方法只能出现在 @abstract 声明的抽象类中；抽象类的具体子类必须实现全部抽象方法，否则报错；抽象方法不能用于 static 方法。抽象类的完整规则（不能实例化、注解置于 class_name 之前等）在下一篇"类、面向对象与内存管理"中展开。
+
+## 动手实践
+
+**任务一：Callable 三种来源对照。** 用三种方式拿到同一个"开火"行为的 Callable——方法引用（`_fire`）、bind 预绑定参数（`_deal_damage.bind(10)`）、lambda——分别赋给变量、`call()` 执行、传给另一个函数执行，观察三者在调试器里的名字与可读性。提示：bind 的价值在"给通用回调填上具体参数"；lambda 的价值在"就地封一个短逻辑"——三者的适用场合在实验里自然浮现。
+
+**任务二：默认参数与可变参数混用。** 写 `func spawn(kind: String, count: int = 1, tags: Array = []) -> Node`，验证：a) 调 `spawn("goblin")` 与 `spawn("goblin", 3, ["elite"])` 的行为；b) 默认数组是不是每次调用新建（改返回节点的 tags 会不会污染下一次调用）。提示：默认值表达式在每次调用时求值，与某些语言"默认值只算一次"不同——亲自验证一遍。
+
+**任务三：修一个必崩的 lambda（freed 陷阱）。** 创建一个 Button，给它的 `pressed` 信号接一个 lambda（lambda 里访问按钮的父节点）；点击后立刻 `queue_free` 父节点，再连点按钮触发崩溃；用 `is_instance_valid` 先挡修复。提示：崩溃信息会指向 lambda 内那一行——这正是"捕获变 null 须先挡"要防的现场；修复后再想一层：信号连接会不会随对象销毁自动断开、什么时序下仍会踩空。
+
+先自己操作，再对照参考实现：
+
+<details>
+<summary>任务三参考实现</summary>
+
+```gdscript
+extends Control
+
+@onready var btn: Button = $KillMe
+
+func _ready() -> void:
+    btn.pressed.connect(func():
+        # 捕获了 self（Control）——若本节点先于按钮死亡，lambda 执行即踩空
+        if not is_instance_valid(self):
+            return                  # 先挡：捕获对象已亡，直接让路
+        print("parent still alive: ", name)
+    )
+
+func kill_parent_first() -> void:
+    # 复现：先杀本节点，按钮若还在别处被引用并触发，lambda 就会踩空
+    queue_free()
+```
+
+要点：a) lambda 捕获按值发生在创建时，但对象可以在捕获之后、执行之前死亡——两个时刻之间的空窗就是事故现场；b) `is_instance_valid` 判活是防御性写法，成本一行代码；c) 更根治的思路是让信号连接随接收方一起死（connect 时保证接收方是会先死的那个对象），防御性判活是兜底不是设计。
+</details>
 
 ## 小结
 

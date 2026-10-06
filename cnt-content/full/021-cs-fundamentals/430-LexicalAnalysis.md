@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 460
 title: 词法分析
 module: 'cs-fundamentals'
 category: 计算机科学

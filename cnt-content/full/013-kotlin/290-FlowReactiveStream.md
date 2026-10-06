@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 320
 title: Flow 与响应式流
 module: 'kotlin'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 690
+order: 730
 title: "C++ 与 Rust 对比：同一件事的两种写法"
 module: 'cpp'
 category: 计算机科学
@@ -8,7 +8,7 @@ description: "以给一个计数服务选语言的真实决策为线索，把 C+
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'cpp/740-Cpp23Cpp26NewFeatures'
+  - 'cpp/730-Cpp23NewFeatures'
   - 'cpp/130-SmartPointerDeepDive'
   - 'cpp/430-MultithreadingConcurrency'
 prerequisites:
@@ -347,7 +347,7 @@ fn main() {
 
 几条可执行的判断：
 
-1. **存量 C++ 工程**（游戏引擎、历史业务系统）：继续用 C++，用现代标准（见 [C++23/26 新特性](/cpp/740-Cpp23Cpp26NewFeatures)）与静态工具降险；确有内存安全痛点的独立模块（解析器、网络协议栈）值得用 Rust 重写后 FFI 挂回。
+1. **存量 C++ 工程**（游戏引擎、历史业务系统）：继续用 C++，用现代标准（见 [C++23/26 新特性](/cpp/730-Cpp23NewFeatures)）与静态工具降险；确有内存安全痛点的独立模块（解析器、网络协议栈）值得用 Rust 重写后 FFI 挂回。
 2. **全新基础设施**（代理、数据库、CLI 工具、WASM 模块）：默认 Rust——安全由编译器担保、工具链统一、单二进制部署，长期维护成本可预期。
 3. **团队现状优先**：一支资深 C++ 团队做时间紧的项目，换语言的培训成本可能吃掉安全收益；反之年轻团队从零起步，Rust 的「编译器即评审」反而降低了指导成本。
 4. **别用语言论战代替工程判断**：两门语言的性能同一梯队，差距通常远小于算法与架构的差距。选型依据应是错误类别、生态与团队，而非 benchmark 上的百分之几。
@@ -364,7 +364,7 @@ fn main() {
 
 - 之前：本文大量对照建立在[智能指针](/cpp/130-SmartPointerDeepDive)（`unique_ptr`/`shared_ptr` 的所有权语义）与[多线程并发](/cpp/430-MultithreadingConcurrency)（数据竞争与锁）之上，这两篇不熟请先回读；
 - 之后：想系统学 Rust，从 [Rust 是什么](/rust/010-WhatIsRust)进入 Rust 模块主线，本仓库 Rust 篇章与此文一一呼应；
-- 旁支：C++ 侧更细的工具链对比（CMake vs Cargo）见[构建工具链](/cpp/640-CppToolchain)；`std::expected` 与 C++23 错误处理演进见 [C++23/26 新特性](/cpp/740-Cpp23Cpp26NewFeatures)。
+- 旁支：C++ 侧更细的工具链对比（CMake vs Cargo）见[构建工具链](/cpp/640-CppToolchain)；`std::expected` 与 C++23 错误处理演进见 [C++23/26 新特性](/cpp/730-Cpp23NewFeatures)。
 
 ## 官方文档
 
@@ -386,4 +386,4 @@ C++ 与 Rust 的分野源于一个决策：安全靠纪律还是靠编译器。C
 
 ## 下一步
 
-想继续深入 C++ 现代化，读 [C++23/26 新特性](/cpp/740-Cpp23Cpp26NewFeatures)；决定学 Rust，从 [Rust 是什么](/rust/010-WhatIsRust)进入完整主线。
+想继续深入 C++ 现代化，读 [C++23/26 新特性](/cpp/730-Cpp23NewFeatures)；决定学 Rust，从 [Rust 是什么](/rust/010-WhatIsRust)进入完整主线。

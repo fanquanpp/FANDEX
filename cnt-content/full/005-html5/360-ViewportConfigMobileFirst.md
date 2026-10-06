@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 430
 title: 视口配置与移动优先
 module: 'html5'
 category: 前端技术

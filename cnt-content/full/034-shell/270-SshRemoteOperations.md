@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 280
 title: SSH 与远程操作
 module: 'shell'
 category: 工具链
@@ -11,10 +11,18 @@ related:
   - 'shell/260-CronScheduling'
   - 'shell/250-PracticalScripts'
   - 'shell/220-ProcessJobControl'
+  - 'shell/272-TmuxTerminalMultiplexer'
 prerequisites:
   - 'shell/260-CronScheduling'
 ---
 
+## 知识点地图
+
+- **知识类别**：远程操作——SSH 连接与认证（密钥免密）、ssh config 多主机管理、远程执行与引号层级、scp/rsync 传输、端口转发。
+- **解决什么问题**：人不在服务器旁边怎么安全地操作它；每次输密码太慢、密码登录不安全怎么免密；内网服务怎么从本地访问；多台机器怎么批量执行。
+- **什么时候用到**：拥有第一台云服务器的那天起；部署、巡检、调试内网服务的每一步。
+
+与《tmux 终端复用与会话保持》（shell/272-TmuxTerminalMultiplexer）的配合：本篇管「怎么连上、怎么传、怎么转发」，**断线会让跑一半的任务死掉——长任务的保活与断线续连是 272 的主题**，两篇组合才是完整的远程工作流（本篇第 10 节小结后有实践题验证）。
 
 ## 1. 从"配钥匙"说起：SSH 是什么
 
@@ -319,3 +327,31 @@ done
 - 端口转发三件套 `-L/-R/-D` 是访问内网资源的瑞士军刀，`-N` 表示只建隧道
 - 批量脚本加 `BatchMode=yes`、`ConnectTimeout`，失败不中断、最后汇总
 - host 指纹告警先核实再清除；安全加固（禁密码登录、禁 root 直登）建议在能保住现有密钥登录后再做
+
+## 11. 动手实践：配钥匙到端口转发的三级自检
+
+先只读任务与提示，做完再展开参考观察。需要一台可连的远程主机（云服务器、虚拟机或 WSL 均可）。
+
+**第一级：密钥免密。** 生成 Ed25519 密钥对并 `ssh-copy-id` 部署，验证 `ssh host "echo ok"` 不再要密码；然后**故意改坏权限**（`chmod 755 ~/.ssh`）再连一次，观察失败信息并修复。回答：权限为什么是免密登录的第一陷阱？
+
+<details>
+<summary>第一级参考观察</summary>
+
+权限 755 时 sshd 拒绝密钥（日志 `Authentication refused: bad ownership or modes`）——authorized_keys 若谁都能改，任何人都能把自己的公钥写进去冒充你，sshd 宁可拒绝也不信任过宽的权限。修复 `chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys`。这题的价值：先见一次失败现场，日后排查就有对照（第 3.2 节表格的三行权限各对应一个现实故障）。
+</details>
+
+**第二级：config 别名与批量执行。** 把主机写进 `~/.ssh/config`（含端口与密钥路径），用别名执行第 8 节的批量脚本（至少两台别名，可指向同一台机）；故意停掉其中一台的 sshd（或写错别名）验证 `BatchMode=yes` 下脚本不卡死、失败主机被记录并继续。
+
+<details>
+<summary>第二级参考观察</summary>
+
+错误别名的主机在 5 秒超时后失败并打印退出码 255，其余主机照常完成——对照删掉 `BatchMode=yes` 的版本：脚本会停在「输密码」提示上永远挂起。这就是巡检脚本与交互登录的本质差异：**脚本里的 ssh 必须假设「一切交互都会卡死」**，BatchMode 与 ConnectTimeout 是把交互工具变成自动化工具的两个开关。
+</details>
+
+**第三级：端口转发闭环。** 在远程主机起一个服务（`python3 -m http.server 8000` 监听 127.0.0.1），本地 `ssh -L 8080:localhost:8000 host -N` 后用浏览器或 curl 访问 `http://localhost:8080`；再验证「远程主机只听 127.0.0.1、外部直接访问不通」的前置条件——确认转发是真的在起作用。
+
+<details>
+<summary>第三级参考观察</summary>
+
+本地 curl localhost:8080 返回远端服务的内容；而从第三台机器直连 `host:8000` 不通（只听回环）——证明流量走的是 SSH 隧道而不是网络直连。把两个证据放在一起，才构成「端口转发生效」的完整验证：只看到本地通是不够的，要排除「本来就能直连」的可能。长任务场景（隧道里跑构建、看内网管理台）配 272 篇的 tmux：隧道会话放进 tmux 里，断线重连后隧道还在。
+</details>

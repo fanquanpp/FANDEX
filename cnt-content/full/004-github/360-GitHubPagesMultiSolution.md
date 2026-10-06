@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 400
 title: GitHub Pages 多站点方案
 module: 'github'
 category: 工具链

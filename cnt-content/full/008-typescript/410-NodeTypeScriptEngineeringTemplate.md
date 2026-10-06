@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 440
 title: Node.js 与 TypeScript 工程化
 module: 'typescript'
 category: 前端技术
@@ -13,6 +13,12 @@ related:
 prerequisites:
   - 'typescript/030-TypeScriptOverviewEnvSetup'
 ---
+
+## 知识点地图
+
+- **知识类别**：Node.js + TypeScript 工程化——目录结构、tsconfig 分层、开发/构建/启动脚本组成的工程骨架。
+- **解决什么问题**：「Node 项目怎么组织 TS」「开发热重载与构建产物怎么分工」「ESM 的 tsconfig 到底怎么配」「esbuild 那么快为什么还要 tsc」。
+- **什么时候用到**：新建 Node 服务/CLI 工程；把旧 CJS 工程迁到 ESM；给团队定工程模板；排查「本地跑得好好的，CI 类型检查炸了」。
 
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
@@ -76,6 +82,53 @@ graph TD
 ```
 
 三个文件的分工读一遍就懂：base 管「这份代码按什么规则编译」，dev 在其上加「只检查、别产出」，build 原样继承——构建配置简单到只剩一行 extends，正是模板想要的效果。
+
+### Node ESM 的 tsconfig 逐项核对
+
+`module: NodeNext` 一旦确定，有四个选项被连带锁定，漏一个就是运行时报错：
+
+```jsonc
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",  // 必须与 module 同步；写 NodeNext 会自动带出，但显式写出更醒目
+    "verbatimModuleSyntax": true,    // 类型导入必须显式 import type——ESM 下 tsc 无法再靠「有没有被 import」猜
+    "sourceMap": true,               // 配合 node --enable-source-maps
+    "declaration": true              // 库工程必开；纯应用可关
+  }
+}
+```
+
+- `verbatimModuleSyntax` 在 CJS 时代是可选项（tsc 会帮你删掉没用的类型导入），在 NodeNext/ESM 下是准必需：ESM 的 `import` 语句会被 Node 原样执行，类型导入若不显式标注 `type`，可能引入真实运行时依赖。
+- `package.json` 里 `"type": "module"` 与 tsconfig 的 `module` 是两套系统但必须一致：一个是 Node 的运行时判定，一个是 tsc 的编译目标。两者不一致时，编译产物会被 Node 以错误的模块格式加载。
+- 相对导入必须写编译产物的扩展名（`import { x } from './config.js'`，源文件是 `config.ts`）——原理与排查见[模块解析进阶与 ESM/CJS 互操作](/typescript/315-PackageExportsEsmInterop)。
+
+## 构建工具选型：tsc vs esbuild/swc 的真相
+
+Node TS 工程最常见的架构误判是把「转译器」当「编译器」用。三者的本质差异：
+
+| 工具 | 类型检查 | 产物质量 | 速度 | 适用位置 |
+| --- | --- | --- | --- | --- |
+| `tsc` | 全量检查 | 稳定规范（含 .d.ts） | 慢（万行级秒到十秒） | CI 门禁、库发布 |
+| `esbuild`/`swc` | **零检查**（只转译、类型直接剥掉） | 快但默认不做声明文件 | 快一个数量级 | 开发热重载 |
+| `tsx` | 零检查（esbuild 内核） | 直接运行 TS | 快 | dev 脚本 |
+
+「esbuild 不做类型检查」意味着：把 `build: "esbuild src/index.ts --bundle"` 当唯一构建的工程，任何类型错误都能一路带进生产——`strict` 配置形同虚设，因为没人读它。这不是 esbuild 的缺陷，是分工：转译器负责快，检查器负责对。
+
+工程上的正解是「双轨制」，本模板的三个脚本正是为此设计：
+
+```json
+{
+  "scripts": {
+    "dev": "tsx watch src/index.ts",          // 快轨：转译器，热重载，零检查
+    "build": "tsc -p tsconfig.build.json",    // 慢轨：编译器，全量检查 + 产物
+    "typecheck": "tsc -p tsconfig.dev.json",  // CI 门禁：只检查不产出
+    "prepublishOnly": "pnpm typecheck && pnpm build"  // 发布前强制走慢轨
+  }
+}
+```
+
+选型决策树：**库里有没有给别人用的类型（.d.ts）？有 → tsc 主导构建。是纯应用且构建耗时已影响迭代 → esbuild 转译 + tsc 仅做 typecheck 门禁（fastify/nest 生态常见组合）。全流程 tsc 都够快 → 别引入第二个工具。** 盲目上 esbuild 只为省 3 秒构建、却要另养一套产物校验，得不偿失。
 
 ## 三个脚本命令
 

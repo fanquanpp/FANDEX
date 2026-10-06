@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 220
 title: Fork 工作流：给没有写权限的仓库提交你的第一个 PR
 module: 'github'
 category: 工具链
@@ -14,6 +14,12 @@ related:
 prerequisites:
   - 'github/010-GitHubOverview'
 ---
+
+## 知识点地图
+
+- **知识类别**：Fork 工作流——没有写权限时向任意仓库贡献改动的标准路径，GitHub 开源协作的基本功。
+- **解决什么问题**：`git push` 被拒（`Permission to ... denied`）之后怎么办；如何在不动原仓库的前提下维护自己的长期副本；以及你的副本如何持续跟上游保持同步。
+- **什么时候用到**：给开源项目提第一个 PR；社团/班级仓库你有投稿权但没有推送权；接手一个外部项目做本地实验。与分支保护（[分支模型与分支保护规则](/github/170-BranchModelBranchRule)）的区别：那条链路管「有写权限的人怎么进主干」，本文管「没写权限的人怎么递改动」。
 
 ## 前置知识
 
@@ -194,6 +200,41 @@ rebase 过的分支历史变了，必须强推。**安全红线：用 `--force-w
 1. 找一个你用过的开源项目里的小问题（文档错字即可），完整走一遍六步，直到 PR 被合并或关闭。
 2. 故意在一个 fork 里落后上游 20 个提交，分别用命令行和 Sync fork 按钮同步一次，对比体验。
 3. 制造一次冲突：改一个上游最近也改过的文件，触发 `This branch has conflicts`，按第四节流程解开。
+
+## 动手实践：本周任务——给社团仓库递第一份投稿
+
+社团最经典的第一次开源协作演练（来自真实的社团活动设计）：**注册 GitHub -> Fork 社团笔记仓库 MyNotebook -> 提交你的第一个 PR -> 截图打卡**。四步全做完，Fork 工作流就算出师了。
+
+**任务**：以「本周任务打卡」为目标完成一次完整投稿。在仓库的成员笔记目录下新建一篇 `<你的名字>-week1.md`，写 100 字以上本周学习记录，走完 fork 到 PR 的全流程，最后把 PR 链接截图发到社团群里打卡。
+
+提示：
+- fork 前 `git remote -v` 检查双远程（第 2 节第二步），没有 upstream 就补上；
+- 分支名用 `feat/<你的名字>-week1`，避免与他人撞名；
+- PR 描述照第 2 节第五步的模板写，标题一句话说清改了什么；
+- 「打卡截图」截 PR 页面顶部：分支名、`Open` 状态、描述三样齐全才算合格证据。
+
+参考实现（先自己写，再对照）：
+
+```bash
+# 1. Fork：网页上打开 club-org/MyNotebook，点 Fork（复制到个人账号）
+# 2. 双远程
+git clone https://github.com/your-name/MyNotebook.git
+cd MyNotebook
+git remote add upstream https://github.com/club-org/MyNotebook.git
+# 3. 开分支、写笔记、提交
+git fetch upstream
+git checkout -b feat/zhangsan-week1 upstream/main
+echo "# 第一周学习记录：装好了 Git，跑通了第一次提交" > notes/zhangsan-week1.md
+git add notes/zhangsan-week1.md
+git commit -m "docs: 添加张三第一周学习记录"
+git push origin feat/zhangsan-week1
+# 4. 网页上从 feat/zhangsan-week1 向 club-org/MyNotebook:main 发起 PR，
+#    描述写「新增成员笔记 + 说明改动原因」，提交后截图打卡
+```
+
+对照要点：这套打卡流程把六步压缩成了「能被别人验证的最小闭环」——截图
+之所以是证据，是因为 PR 页面自带分支名与状态元信息，造不了假。第一次走
+通之后，给任何开源项目投稿都是同一套动作换个仓库地址。
 
 ## 下一步
 

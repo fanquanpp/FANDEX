@@ -1,5 +1,5 @@
 ---
-order: 40
+order: 50
 title: OpenFeign 声明式调用：把远程调用写成一行接口
 description: 以「RestTemplate 五段式样板在 30 个调用点重复」引入：@FeignClient 接口与动态代理的心智模型、name 与 url 两条寻址路、NEVER_RETRY 背后的幂等纪律、fallback 兜底与 FULL 日志调试，附调通、超时与日志实验。
 module: 'spring-cloud'

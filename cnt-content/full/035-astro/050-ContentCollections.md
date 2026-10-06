@@ -23,6 +23,14 @@ prerequisites:
 - [ ] 能说出「schema 未声明字段被静默剥离」这类隐形问题的对策
 - [ ] 能看懂集合相关的六类构建报错并对症处理
 
+## 知识点地图
+
+- **知识类别**：Astro 内容集合（Content Collections）与 Schema——内容的数据层，对应 Astro 官方文档 Content Collections 指南。
+- **解决什么问题**：散落的 Markdown/JSON 文件没有类型、没有校验，frontmatter 写错要到浏览器页面白屏才发现。内容集合把内容变成「构建期带校验的数据库」：loader 管数据从哪来，schema 管数据长什么样，`getCollection`/`render` 是查询与渲染 API。
+- **什么时候用到**：博客、文档站、作品集等一切「内容驱动」的 Astro 站点；需要把外部数据源（CMS、REST）纳入与本地内容同等类型安全待遇时。
+- **本篇主线**：以本仓库 FANDEX 的真实 `content.config.ts` 为第一素材（1.2 节），三个场景例（最小配置、FANDEX 实配、REST 自定义 loader、多语言 schema 复用）覆盖 loader 选型的主流形态。
+- **本篇不讲**：MDX 的插件链路（见 110 篇）；内容页的路由生成（见 [030 篇](/astro/030-PagesRouting) 第 8 节的黄金组合）。
+
 ## 一句话理解
 
 > 内容集合 = 内容世界的数据库：loader 决定「数据从哪来」，schema 决定「数据长什么样」（不合格直接构建失败），`getCollection` 是查询 API，`render` 把 Markdown 编译成组件。错误被拦在构建期，而不是在用户的浏览器里爆炸。
@@ -112,6 +120,80 @@ const docs = defineCollection({
 | `file()` | 单个 JSON/YAML 文件 | 一个文件装整组数据（如「国家列表」） |
 | 自定义 loader | CMS、数据库、REST API | 实现 loader 函数，从任意数据源拉取 |
 | live loader | 请求期实时内容（见第 5 节） | 不重建站点、请求时拉取 |
+
+表里"自定义 loader"只有一行名字，实现契约其实很短，直接把它落成可运行的代码。场景：站点头部有一条公告栏，公告存在团队自己的 REST API 里，希望"构建时拉一次、进内容层、享受 schema 校验"：
+
+```ts
+// src/content.config.ts（节选）：从 REST API 拉取站点公告
+import { defineCollection } from 'astro:content'
+import { z } from 'astro/zod'
+
+const announcements = defineCollection({
+  loader: () => ({
+    // name 用于日志与缓存标识，起一个能认出数据源的名字
+    name: 'announcements-api',
+    // load 在每次构建（或开发服务器启动）时执行一次
+    async load({ store, logger }) {
+      logger.info('拉取站点公告')
+      const res = await fetch('https://api.fanclub.example/announcements')
+      const list = await res.json()
+      for (const item of list) {
+        // store 是内容层的写入口：set 的 id 就是条目的唯一标识
+        store.set({
+          id: String(item.id),                    // 重复 set 同一 id 即覆盖，天然支持增量
+          data: {
+            title: item.title,
+            publishedAt: new Date(item.published_at),
+          },
+        })
+      }
+    },
+  }),
+  schema: z.object({
+    title: z.string(),
+    publishedAt: z.date(),
+  }),
+})
+```
+
+三个契约点逐个说：**name** 是这条 loader 在日志与内部缓存里的标识；**load** 拿到 `store`（内容层的写入口）与 `logger`，每次构建调用一次，fetch 回来的每条数据经 `store.set({ id, data })` 落进集合——id 由你指定（也可以用约定路径让它自动生成，即 1.2 节 `generateId` 那条规则的来源），同一 id 重复 set 就是覆盖，所以"第二次构建数据变了"不需要任何清理逻辑，全量重写一遍 store 即可。之后这个集合与本地 Markdown 集合毫无区别：同样过 schema 校验、同样用 `getCollection('announcements')` 查询、同样类型安全。拉取失败要 fail-fast（fetch 不做 try-catch 吞错），坏数据宁可挡在构建期也不让它变成空公告栏上线。
+
+live loader 与它的边界见第 5 节——一句话预告：这份自定义 loader 是**构建期**数据源，live loader 是**请求期**数据源，契约不同（loadCollection/loadEntry 而非 load/store）。
+
+### 1.4 场景例：多语言内容的 schema 复用
+
+第三个场景：站点要出中英双语内容（如 `posts/zh/hello.md` 与 `posts/en/hello.mdx`）。多语言的坑不在路由而在 schema——两个语言版本的 frontmatter 必须保持同一契约，否则「英文版漏写 tags」这类漂移到上线才被发现。做法是把语言无关的字段抽成基础 schema，再按语言扩展：
+
+```ts
+// src/content.config.ts（节选）：基础 schema 复用
+import { defineCollection, z } from 'astro:content'
+import { glob } from 'astro/loaders'
+
+// 语言无关的字段契约：标题、摘要、标签、日期——两种语言完全一致
+const baseSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  tags: z.array(z.string()).default([]),
+  updated: z.coerce.date(),
+})
+
+// 语言特有字段各自扩展：中文要术语表链接，英文要原文链接
+const posts = defineCollection({
+  loader: glob({ pattern: '{zh,en}/*.md', base: './src/content/posts' }),
+  schema: baseSchema.extend({
+    // 条件字段：按 id 前缀（zh/ 或 en/）区分语言的特有字段
+    glossary: z.string().optional(),   // zh 专属：术语表锚点
+    sourceUrl: z.string().url().optional(), // en 专属：原文出处
+  }),
+})
+```
+
+讲解：
+
+- `baseSchema.extend()` 是 zod 的标准扩展语法——公共契约写一次，语言差异以「可选扩展字段」追加。**不这么做**的常见形态是把整个 schema 复制两份，三个月后两份漂移到互不相认；
+- 条件校验要更严格时用 `superRefine`：例如「zh 条目 glossary 必填」可以在 schema 层按 id 前缀断言，而不是散在各页面里 if；
+- 与 [030 篇](/astro/030-PagesRouting) 的动态路由配合：`getStaticPaths` 按 `{ zh, en }` 两套 params 展开即可出双语站点，schema 层保证的是「每条内容在两种语言下数据形状一致」——数据一致是路由展开的前提；
+- 多语言内容更完整的 i18n 路由方案（URL 前缀、语言回退）见 [i18n 篇](/astro/115-AstroI18nRouting)，本节只负责「数据层不漂移」。
 
 ## 2. frontmatter：标准借书卡
 
@@ -276,12 +358,24 @@ export const collections = { releases };
 
 查询走 `getLiveCollection` / `getLiveEntry`（注意不是 getCollection），只能在按需渲染的页面里用。选型口诀：**变化慢、要 SEO、要快——构建期集合；变化快、等不起重建——live 集合**。FANDEX 的全部内容都是构建期集合：文档站要的就是快与稳。
 
+用一个对照实验把边界压实：把上一节"REST API 站点公告"同一个数据源分别接成自定义 loader（构建期）与 live loader（请求期），观察三条差异——**新鲜度**：构建期版公告要等下一次 `astro build` 才更新，live 版下一次刷新页面就是新的；**速度**：构建期版页面是纯静态 HTML（公告已烘进产物），live 版每个访客请求都触发一次 API 拉取（首字节时间被数据源拖住，除非自己加缓存）；**查询 API**：构建期版用 `getCollection`，live 版用 `getLiveCollection` 且只许在按需渲染的页面里调——同一个页面代码两边不能混用。实验的结论就是选型口诀的展开：公告一小时变一次、全站要快，构建期版赢；公告秒级变（突发停服通知）、接受一次 API 延迟，live 版赢。多数站点两类并用：正文走构建期，公告、库存这类边角数据走 live 或干脆走岛屿+客户端 fetch。
+
 ## 6. 练习
 
 1. 给 1.1 节的 blog 集合新增一个可选字段 `cover: z.string().optional()`，然后验证：不写该字段的旧文档是否照常通过？再把它改成必填（无 default），观察报错形态。
 2. 写一个「相关文章」组件：输入当前文章的 tags，用 `getCollection` 找出标签重合数最多的 3 篇（排除自身）。
 3. 在 FANDEX 仓库里读 `app-web/src/content.config.ts`，回答：为什么 `order` 要 `default(0)` 而 `updated` 用 `z.coerce.date()` 不给默认值？（提示：排序语义 vs 必填语义）
 4. 把第 4 节对策表抄进项目 README 的排错章节，并给「隐形字段丢失」补一个你能想到的检测办法（提示：`.strict()` 或自定义 zod superRefine）。
+5. fail-fast 动手任务：给 1.3 节的自定义 loader 做「坏数据实验」——在 fetch 返回后故意往列表里塞一条缺 `title` 的数据，先在 `store.set` 外层包一层 try-catch 把异常吞掉只打日志，构建并观察站点表现；再去掉 try-catch 让异常直接抛出，对比两次构建结果。提示：思考「公告栏少一条」与「构建红灯」在团队协作里的后果差异——前者上线了才被发现，后者提交时就有人来修。参考做法见下。
+
+<details>
+<summary>第 5 题参考（先自己跑，再展开对照）</summary>
+
+吞错版：构建绿灯通过，站点公告栏少一条数据，没人知道数据源坏了——直到有读者发现内容缺失、有人回头查日志才定位，链路长达数天。fail-fast 版：构建立刻红灯，报错信息指向 loader 的 store.set 行，提交该数据的人当场修复。
+
+原则落点（1.3 节结论的实验证明）：**构建期的数据错误要挡在构建期**——「宁可红灯也不带病上线」。允许的例外只有一种：数据源明确可降级（如可选的社交数据），此时降级行为要显式声明（logger.warn + 页面渲染空态），而不是静默吞掉。
+
+</details>
 
 ## 7. 下一步
 

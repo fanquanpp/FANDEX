@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-28'
 related:
   - 'python/100-FunctionDetailed'
-  - 'python/170-ComprehensionGenerator'
 prerequisites:
   - 'python/100-FunctionDetailed'
 ---

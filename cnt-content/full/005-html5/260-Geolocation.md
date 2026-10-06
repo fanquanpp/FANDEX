@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 300
 title: 地理位置定位
 module: 'html5'
 category: 前端技术
@@ -123,6 +123,7 @@ Geolocation 的全部面就三块，按需取用：
 | `accuracy` | 精度半径，单位米。这个数字很重要：500 米的精度下展示"步行 3 分钟"就是欺骗用户 |
 | `altitude` / `altitudeAccuracy` | 海拔，多数设备为 `null` |
 | `heading` / `speed` | 朝向（度，正北顺时针）与速度（米/秒），静止时常为 `null` |
+| `position.timestamp` | 本次定位的时间戳（毫秒），判断数据新鲜度时用 |
 
 **持续追踪 `watchPosition(...)`**。签名与单次定位相同，但位置每变化就回调一次，返回一个 `watchId`。适合导航、跑步记录。两个纪律：拿到 `watchId` 后，页面离开或功能停止时必须 `clearWatch(watchId)`；`enableHighAccuracy: true` 是"建议"不是命令——它提示浏览器优先用 GPS，更准但更耗电，室内可能反而更慢。
 
@@ -197,3 +198,13 @@ const fence = new Geofence(31.2304, 121.4737, 500); // 场地 500 米范围
 - 定位点要实时共享给朋友？传输层看 `html5/320-WebSocket`；
 - 离线也能跑的定位 PWA，看 `html5/300-ServiceWorkerPWA`；
 - 想深入坐标系（GCJ-02 火星坐标、WGS-84）与逆地理编码，是接地图 SDK 时的必修课，先知道有这回事，用的时候再查。
+<!-- 恢复自 cnt-content/full/005-html5/240-HTML5OfflineStorageWebAPI.md（实施前 HEAD 62c90663 版本）；拆分时该小节未随迁，2026-10-07 内容保全复核恢复 -->
+
+## Geolocation API 最佳实践
+
+
+- **权限请求**：在需要时才请求位置权限，不要在页面加载时就请求
+- **错误处理**：妥善处理位置获取失败的情况
+- **精度设置**：根据实际需求设置精度，高精度模式会消耗更多电量
+- **用户隐私**：尊重用户隐私，明确告知用户位置信息的使用目的
+

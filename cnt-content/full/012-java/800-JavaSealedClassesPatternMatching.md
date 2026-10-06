@@ -1,5 +1,5 @@
 ---
-order: 620
+order: 690
 title: 密封类与模式匹配
 module: 'java'
 category: 后端技术
@@ -297,3 +297,61 @@ public sealed class RateLimited2 implements PurchaseResult
 1. **购票结果分派器**：按第 1 节建模 `PurchaseResult`，再写一个 `render` 方法覆盖全部许可子类，其中 `RateLimited` 需按剩余秒数输出不同文案。思路：先写 record 解构版，再给其中一个分支加 `when` 守卫，最后试着注释掉一个 case 观察编译错误。
 2. **订单状态机**：实现第 4 节的 `OrderState`，编写 `next(OrderState state)` 返回下一状态（`Draft -> Paid` 需要订单号参数时可让方法签名携带 `String orderId`）。思路：switch 中对 `Refunded` 返回自身即可，注意穷举不要加 default。
 3. **Visitor 迁移**：手写第 5 节的票类 Visitor 版本，再改写为模式匹配版本，统计两者的代码行数与"新增一种票时要改动的文件数"。思路：Visitor 要改接口与两个实现，模式匹配只改一个 switch，体会封闭体系下的维护成本差异。
+
+## 补充速查：模式的边界情况
+
+以下条目承接自原 Java 新特性篇的模式匹配附录，覆盖易被忽略的边界写法。
+
+**基本写法：null 与 default 合并分支**
+`case null, default -> <结果>;`
+```java
+// Java 21，null 与兜底分支合并处理
+String label = switch (obj) {
+    case String s -> s;
+    case null, default -> "fallback";
+};
+```
+
+---
+
+**基本写法：未命名模式变量**
+`case <类型> _ -> <结果>;`
+```java
+// Java 22+，不需要组件值时用 _ 占位
+static boolean isCircle(Shape s) {
+    return switch (s) {
+        case Circle _ -> true;
+        case Square _ -> false;
+    };
+}
+```
+
+---
+
+**基本写法：数组类型模式**
+`case <类型>[] <名> -> ...;`
+```java
+// 数组类型同样可作 case 模式
+static String desc(Object o) {
+    return switch (o) {
+        case int[] arr    -> "int[" + arr.length + "]";
+        case String[] arr -> "str[" + arr.length + "]";
+        default           -> "other";
+    };
+}
+```
+
+---
+
+**基本写法：子类型分支必须在父类型之前**
+`case <子类型> -> ...; case <父类型> -> ...;`
+```java
+// 顺序写反会编译报错：父分支已覆盖子分支
+static String of(Number n) {
+    return switch (n) {
+        case Integer i -> "int " + i;
+        case Double d  -> "dbl " + d;
+        case Number x  -> "num " + x;
+    };
+}
+```

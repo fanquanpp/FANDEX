@@ -1,5 +1,5 @@
 ---
-order: 550
+order: 600
 title: 关键渲染路径优化
 module: 'css'
 category: 前端技术

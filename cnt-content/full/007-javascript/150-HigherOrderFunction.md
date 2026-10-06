@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 170
 title: 高阶函数：把"怎么做"当成参数传
 module: 'javascript'
 category: 前端技术

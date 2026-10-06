@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 270
 title: SHA-1 哈希完整性校验
 module: 'git'
 category: 工具链

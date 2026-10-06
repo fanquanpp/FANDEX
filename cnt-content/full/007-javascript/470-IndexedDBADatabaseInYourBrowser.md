@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 550
 title: IndexedDB 浏览器数据库
 module: 'javascript'
 category: 前端技术
@@ -1015,6 +1015,142 @@ await db.forEach('users', (user, key) => {
 
 ---
 
+### 8.4 离线缓存工具：IndexedDB 与 localStorage 协作（承接自 Web 存储篇）
+
+> 本节整体承接自 [Web 存储](/javascript/460-StorageForTheWeb) 原第 6.2 节：数据存 IndexedDB、元数据存 localStorage 的混合缓存是两种存储各展所长的标准范例。
+
+```javascript
+/**
+ * 离线数据缓存工具
+ * 结合 IndexedDB 与 localStorage
+ */
+class OfflineCache {
+  constructor() {
+    this.dbName = 'OfflineCacheDB';
+    this.dbVersion = 1;
+    this.db = null;
+    this.metaStorage = new NamespacedStorage('cacheMeta');
+  }
+
+  async init() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.dbVersion);
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('cache')) {
+          db.createObjectStore('cache', { keyPath: 'key' });
+        }
+      };
+      request.onsuccess = (e) => {
+        this.db = e.target.result;
+        resolve();
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 缓存数据
+   */
+  async set(key, value, ttl = 3600000) {
+    const item = {
+      key,
+      value,
+      expiry: Date.now() + ttl,
+      createdAt: Date.now(),
+    };
+
+    // 元数据存 localStorage（用于快速判断是否存在）
+    this.metaStorage.set(key, { expiry: item.expiry });
+
+    // 实际数据存 IndexedDB
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('cache', 'readwrite');
+      const store = tx.objectStore('cache');
+      const request = store.put(item);
+      request.onsuccess = () => resolve(true);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 读取数据
+   */
+  async get(key) {
+    // 先检查元数据是否过期
+    const meta = this.metaStorage.get(key);
+    if (!meta || Date.now() > meta.expiry) {
+      await this.delete(key);
+      return null;
+    }
+
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('cache', 'readonly');
+      const store = tx.objectStore('cache');
+      const request = store.get(key);
+      request.onsuccess = () => {
+        const item = request.result;
+        resolve(item ? item.value : null);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 删除数据
+   */
+  async delete(key) {
+    this.metaStorage.remove(key);
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('cache', 'readwrite');
+      const store = tx.objectStore('cache');
+      const request = store.delete(key);
+      request.onsuccess = () => resolve(true);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * 清理所有过期数据
+   */
+  async cleanup() {
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('cache', 'readwrite');
+      const store = tx.objectStore('cache');
+      const request = store.openCursor();
+      const now = Date.now();
+      const toDelete = [];
+
+      request.onsuccess = (e) => {
+        const cursor = e.target.result;
+        if (cursor) {
+          if (cursor.value.expiry < now) {
+            toDelete.push(cursor.value.key);
+          }
+          cursor.continue();
+        } else {
+          // 删除过期项
+          toDelete.forEach(key => {
+            store.delete(key);
+            this.metaStorage.remove(key);
+          });
+          resolve(toDelete.length);
+        }
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+}
+
+// 使用
+const cache = new OfflineCache();
+await cache.init();
+await cache.set('users', [{ name: 'Alice' }], 5 * 60 * 1000);
+const users = await cache.get('users');
+```
+
+为什么"元数据存 localStorage"：判断"缓存是否存在/是否过期"是高频同步操作，localStorage 的同步读取正好胜任；而大数据体存 IndexedDB 才不受 5MB 配额限制。**一处数据两处登记**的代价是两者可能失同步，所以读取路径必须以 IndexedDB 的实际记录为准，localStorage 只作快速否决。
+
 ## 9. 对比分析
 
 ### 9.1 与其他浏览器存储机制对比
@@ -1915,6 +2051,147 @@ async function exportToCSV(storeName) {
 - **Bernstein, P. et al. 1987.** Concurrency Control and Recovery in Database Systems. —— 并发控制理论
 
 ---
+
+## 17. 速查卡（承接自 Web 存储篇）
+
+> 以下四组速查卡整体承接自 [Web 存储](/javascript/460-StorageForTheWeb) 尾部速查区；与上文第 19.1 节的 API 速查表互补：速查表查"有哪些方法"，卡片看"每一步怎么写"。
+
+### IndexedDB 基础
+
+**基本写法：打开数据库**
+`indexedDB.open(<名称>, [<版本>])`
+```javascript
+// 打开或创建数据库返回请求
+let req = indexedDB.open("myDB", 1);
+```
+
+
+**基本写法：监听事件**
+`<请求>.onsuccess = <回调>` | `<请求>.onupgradeneeded = <回调>`
+```javascript
+// 升级时创建对象仓库
+let req = indexedDB.open("myDB", 1);
+req.onupgradeneeded = e => {
+    let db = e.target.result;
+    db.createObjectStore("users", { keyPath: "id" });
+};
+req.onsuccess = e => { let db = e.target.result; };
+```
+
+
+**基本写法：创建仓库与索引**
+`<db>.createObjectStore(<名称>, { keyPath: <键> })`
+```javascript
+// 在 upgrade 时创建仓库
+let store = db.createObjectStore("users", { keyPath: "id" });
+store.createIndex("name", "name", { unique: false });
+```
+
+
+### IndexedDB 事务
+
+**基本写法：开启事务**
+`<db>.transaction(<仓库名>, <模式>)`
+```javascript
+// 事务读写数据
+let tx = db.transaction("users", "readwrite");
+let store = tx.objectStore("users");
+```
+
+
+**基本写法：添加数据**
+`<store>.add(<对象>)`
+```javascript
+// 添加记录
+let tx = db.transaction("users", "readwrite");
+tx.objectStore("users").add({ id: 1, name: "Tom" });
+```
+
+
+**基本写法：读取数据**
+`<store>.get(<键>)`
+```javascript
+// 按键读取
+let req = db.transaction("users").objectStore("users").get(1);
+req.onsuccess = e => console.log(e.target.result);
+```
+
+
+**基本写法：修改数据**
+`<store>.put(<对象>)`
+```javascript
+// put 存在则更新不存在则添加
+tx.objectStore("users").put({ id: 1, name: "Jerry" });
+```
+
+
+**基本写法：删除数据**
+`<store>.delete(<键>)`
+```javascript
+// 按键删除记录
+tx.objectStore("users").delete(1);
+```
+
+
+**基本写法：清空仓库**
+`<store>.clear()`
+```javascript
+// 清空整个仓库
+tx.objectStore("users").clear();
+```
+
+
+### IndexedDB 游标
+
+**基本写法：遍历数据**
+`<store>.openCursor()`
+```javascript
+// 使用游标遍历所有记录
+let req = db.transaction("users").objectStore("users").openCursor();
+req.onsuccess = e => {
+    let cursor = e.target.result;
+    if (cursor) { console.log(cursor.value); cursor.continue(); }
+};
+```
+
+
+**基本写法：使用索引查询**
+`<store>.index(<索引名>).get(<值>)`
+```javascript
+// 通过索引查询
+let req = store.index("name").get("Tom");
+```
+
+
+### Promise 封装
+
+**基本写法：Promise 封装 IndexedDB**
+`function <open>(<名称>, <版本>, <升级回调>) { }`
+```javascript
+// 将请求 API 转为 Promise
+function openDB(name, version, upgrade) {
+    return new Promise((resolve, reject) => {
+        let req = indexedDB.open(name, version);
+        req.onupgradeneeded = e => upgrade(e.target.result);
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+    });
+}
+```
+
+
+**基本写法：async await 操作**
+`await <封装的请求>`
+```javascript
+// 配合 async await 优雅操作
+async function getUser(db, id) {
+    return new Promise((resolve, reject) => {
+        let req = db.transaction("users").objectStore("users").get(id);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+}
+```
 
 ## 19. 附录
 

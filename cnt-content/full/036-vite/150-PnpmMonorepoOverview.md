@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 170
 title: pnpm 与 Monorepo 工程化
 module: 'vite'
 category: 前端技术

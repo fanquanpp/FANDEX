@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 310
 title: 类型转换
 module: 'sql'
 category: 数据库

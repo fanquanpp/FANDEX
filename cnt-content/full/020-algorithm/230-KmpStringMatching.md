@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 270
 title: KMP 字符串匹配
 module: 'algorithm'
 category: 计算机科学

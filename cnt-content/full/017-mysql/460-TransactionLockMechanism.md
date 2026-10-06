@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 490
 title: 事务与锁机制
 module: 'mysql'
 category: 数据库
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'mysql/120-DQL'
 ---
+
+## 知识点地图
+
+- **知识类别**：事务与锁的「动手层」——事务三板斧（START TRANSACTION/COMMIT/ROLLBACK）与 SAVEPOINT、隔离级别实测（脏读/不可重复读/丢失更新的双会话复现）、三种并发正确姿势（原子 UPDATE、悲观 FOR UPDATE、乐观版本号）、死锁复现与排查、长事务与隐式提交的坑。
+- **解决什么问题**：两笔并发扣费把余额算错——「SELECT 出余额、应用层算好、UPDATE 写回」的直觉写法在并发下必然丢失更新；「事务里怎么写出不冲突的扣费」是本篇要给的标准答案；「两边互相等对方手里的锁」的死锁要用复现 + SHOW ENGINE INNODB STATUS 学会读现场。
+- **什么时候用到**：任何「读-改-写」共享数据的代码（库存、余额、配额、任务队列）；排查「数据莫名对不上」（并发异常）；排查「突然整体卡住」（长事务持锁与死锁）。事务在 SQL 层面的隐式提交行为（DDL、SET autocommit 等会悄悄 COMMIT 你的事务）是配套的暗礁，见下文坑点；锁的完整分类学与间隙锁理论见 [锁分类](/mysql/450-LockClassification) 与 [间隙锁与幻读](/mysql/470-GapLockNextKeyLockSolutionPhantomRead)，隔离级别的实现内幕见 [事务隔离实现](/mysql/420-TransactionIsolationImplementation) 与 [MVCC 原理](/mysql/430-MVCCPrinciple)。
 
 ## 场景：两笔并发扣费，余额算错了一次
 
@@ -38,6 +44,17 @@ INSERT INTO accounts VALUES (1, '车主小陈', 100.00);
 ```
 
 约定：下文用「会话 A」「会话 B」表示两个独立的客户端连接。
+
+## 事务是什么：ACID 一分钟
+
+在动手前把四个字母立住，后面所有实验都是在验证它们：
+
+- **Atomicity（原子性）**：事务是最小执行单元，不可分割——转账的"扣"与"到账"同生共死；
+- **Consistency（一致性）**：事务执行前后，数据保持业务一致（总额不变、约束不被破坏）；
+- **Isolation（隔离性）**：并发执行的事务相互隔离——本篇实验一、二就在测它；
+- **Durability（持久性）**：事务提交后，修改永久保存（底层靠 redo log，见[日志体系](/mysql/550-LogSystem)）。
+
+一句话分工：**原子性靠 undo（回滚）、持久性靠 redo（重做）、隔离性靠 MVCC 与锁**。本篇只动手操作第一层；实现层在[隔离级别底层实现](/mysql/420-TransactionIsolationImplementation)。
 
 ## 动手一：事务三板斧与保存点
 
@@ -65,7 +82,22 @@ START TRANSACTION;
 COMMIT;
 ```
 
-两个常见意外要现在就知道：连接断开或客户端退出时，未提交事务自动回滚；事务里执行 DDL（ALTER/DROP 等）会**隐式提交**当前事务——"改个表结构顺便"发生在事务里，会把前面没提交的修改一起提交掉。
+两个常见意外要现在就知道：连接断开或客户端退出时，未提交事务自动回滚；事务里执行 DDL（ALTER/DROP 等）会**隐式提交**当前事务——"改个表结构顺便"发生在事务里，会把前面没提交的修改一起提交掉。这个隐式提交的完整可复现实验在 [隔离级别底层实现](/mysql/420-TransactionIsolationImplementation) 的动手环节。
+
+主从表一起插入是事务的第二大日常场景：订单与订单明细、充值单与充值流水，必须落进同一个事务：
+
+```sql
+START TRANSACTION;
+    INSERT INTO orders (user_id, total_amount) VALUES (1, 500);
+    SET @order_id = LAST_INSERT_ID();               -- 刚插入行的自增主键
+    INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
+    (@order_id, 101, 2, 200),
+    (@order_id, 102, 1, 100);
+    UPDATE products SET stock = stock - 3 WHERE id IN (101, 102);
+COMMIT;
+```
+
+逐段讲解：`LAST_INSERT_ID()` 返回**当前会话最近一次** INSERT 产生的自增值——会话级变量，天然不会串到别的连接；用它把主表订单号带给明细表，替代"先查最大 ID"的竞态写法（两个并发订单会查到同一个"最大 ID"）。若明细表第二条 INSERT 失败，COMMIT 换 ROLLBACK，订单头也会消失，不会留下没有明细的半张订单。
 
 ## 动手二：亲手复现并发异常
 

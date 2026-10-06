@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 250
 title: 学生选课系统项目（集合综合实战）
 module: 'java'
 category: 后端技术

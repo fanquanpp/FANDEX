@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 160
 title: 贪心算法
 module: 'algorithm'
 category: 计算机科学

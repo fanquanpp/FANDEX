@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 570
 title: GCP GKE Kubernetes 命令
 module: 'cloud-computing'
 category: 云与基础设施

@@ -9,9 +9,9 @@ author: fanquanpp
 updated: '2026-09-29'
 related:
   - 'c/055-ScopeStorageLinkage'
-  - 'c/260-CVolatileAndConstDeepDive'
-  - 'c/210-MemoryManagement'
-  - 'c/520-C23C2y'
+  - 'c/260-ConstAndVolatileQualifiers'
+  - 'c/210-ProcessMemoryLayoutAndErrors'
+  - 'c/520-C23CoreFeatures'
   - 'c/060-OperatorExpression'
 prerequisites:
   - 'c/020-CLanguageOverview'
@@ -115,7 +115,7 @@ int main(void) {
 g = 0, s = 0, local = -1842076688
 ```
 
-规矩一句话：**静态存储期**的对象不初始化就自动清零（整数 0、浮点 0.0、指针空），因为它们住在静态区，程序加载时由系统统一清零；**自动存储期**的对象不初始化就是不确定值，因为栈上没人替你打扫。内存分区图见 [内存深水区](/c/210-MemoryManagement)。工程纪律从今天起：声明时即初始化，`int x = 0;` 不丢人，丢人的是三天后查一个「莫名随机」的 Bug。
+规矩一句话：**静态存储期**的对象不初始化就自动清零（整数 0、浮点 0.0、指针空），因为它们住在静态区，程序加载时由系统统一清零；**自动存储期**的对象不初始化就是不确定值，因为栈上没人替你打扫。内存分区图见 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)。工程纪律从今天起：声明时即初始化，`int x = 0;` 不丢人，丢人的是三天后查一个「莫名随机」的 Bug。
 
 ### 2.4 命名规则与惯例
 
@@ -178,7 +178,7 @@ C 里说「常量」，可能指四种完全不同的东西，逐一见面的。
 
 1. **前导 0 是八进制**：`010` 是 8 不是 10。填日期写成 `09` 会直接编译失败（9 不是八进制数字）；
 2. **后缀决定类型**：`uint64_t x = 1 << 32;` 里 1 是 int（常见平台 32 位），左移 32 位是未定义行为；写成 `1ULL << 32` 才安全。后缀不是装饰，是类型；
-3. **C23 新写法**：二进制 `0b1111'0000` 与数字分隔符 `1'000'000`（单引号插在数字之间，编译器忽略，纯为可读）。更多 C23 变化见 [C23 与 C2y 新特性](/c/520-C23C2y)。
+3. **C23 新写法**：二进制 `0b1111'0000` 与数字分隔符 `1'000'000`（单引号插在数字之间，编译器忽略，纯为可读）。更多 C23 变化见 [C23 与 C2y 新特性](/c/520-C23CoreFeatures)。
 
 ### 4.2 宏常量：#define 的文本替换
 
@@ -229,7 +229,7 @@ constexpr int MAX_SIZE = 256;   /* 方案三：C23 constexpr，有类型有作�
                                    还能当数组大小，详见 C23 篇 */
 ```
 
-const 与 volatile 组合、const 指针的完整语法，深水区在 [const 与 volatile 详解](/c/260-CVolatileAndConstDeepDive)。
+const 与 volatile 组合、const 指针的完整语法，深水区在 [const 与 volatile 详解](/c/260-ConstAndVolatileQualifiers)。
 
 ### 4.4 枚举常量：编译期整数
 
@@ -292,7 +292,7 @@ copy  = 0x7ffc09d3a616
 copy  = Hello
 ```
 
-读出三条事实：a 与 b 地址相同——编译器把相同字面量合并成一份（标准允许合并且去重，但不要求，所以别写依赖这个行为的代码）；copy 在栈上，与只读区相距十万八千里；对 `a[0]` 赋值在 Linux 上通常直接段错误，但「没崩」不等于「没错」，这是 UB。工程纪律：指向字面量的指针一律写成 `const char *`，让编译器把误改拦成编译错误。字面量地址挨着代码段——五段布局的完整地图见 [内存深水区](/c/210-MemoryManagement)。
+读出三条事实：a 与 b 地址相同——编译器把相同字面量合并成一份（标准允许合并且去重，但不要求，所以别写依赖这个行为的代码）；copy 在栈上，与只读区相距十万八千里；对 `a[0]` 赋值在 Linux 上通常直接段错误，但「没崩」不等于「没错」，这是 UB。工程纪律：指向字面量的指针一律写成 `const char *`，让编译器把误改拦成编译错误。字面量地址挨着代码段——五段布局的完整地图见 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)。
 
 ## 5. 变量遮蔽第一课
 
@@ -388,8 +388,8 @@ int *a, *b;   /* 两个都是 int* */
 ## 7. 实际项目中的使用场景
 
 - **常量选型入闸**：新代码评审里，看到「用宏定义浮点常量」「用 const 当数组大小」可以直接引用 4.5 节的表；嵌入式项目里寄存器地址这类只读常量统一 `const` 全局只读，见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)；
-- **警告当门禁**：-Wall -Wextra -Wshadow -Werror 进 CI，本节三类 Bug 在合入前就死掉；未初始化这类漏网之鱼交给静态分析与 sanitizer，见 [静态分析与调试](/c/490-StaticAnalysisDebug)；
-- **只读字符串统一签名**：库接口里所有「我不改你的字符串」的参数写成 `const char *`，这是 [const 与 volatile 详解](/c/260-CVolatileAndConstDeepDive) 要展开的接口自我文档化。
+- **警告当门禁**：-Wall -Wextra -Wshadow -Werror 进 CI，本节三类 Bug 在合入前就死掉；未初始化这类漏网之鱼交给静态分析与 sanitizer，见 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)；
+- **只读字符串统一签名**：库接口里所有「我不改你的字符串」的参数写成 `const char *`，这是 [const 与 volatile 详解](/c/260-ConstAndVolatileQualifiers) 要展开的接口自我文档化。
 
 ## 8. 小练习
 
@@ -421,7 +421,7 @@ int main(void) {
 
 - 往前：[数据类型详解](/c/040-DataTypeDetailed) 的类型知识在本文直接变现——字面量的后缀本质是选类型，初始化的类型匹配靠它把关；
 - 往后：[作用域、存储期与链接性](/c/055-ScopeStorageLinkage) 回答本文按下不表的问题——同名变量谁遮谁、static 局部变量为什么记得住值、extern 与头文件怎么配合；[运算符与表达式](/c/060-OperatorExpression) 的求值处处要用左值右值的第一课；
-- 更远：const 的深水区在 [const 与 volatile 详解](/c/260-CVolatileAndConstDeepDive)，C23 的 constexpr、auto、typeof 在 [C23 与 C2y 新特性](/c/520-C23C2y)。
+- 更远：const 的深水区在 [const 与 volatile 详解](/c/260-ConstAndVolatileQualifiers)，C23 的 constexpr、auto、typeof 在 [C23 与 C2y 新特性](/c/520-C23CoreFeatures)。
 
 ## 10. 官方文档
 

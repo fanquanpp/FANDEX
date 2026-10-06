@@ -1,5 +1,5 @@
 ---
-order: 610
+order: 650
 title: TypeScript 毕业项目：类型安全的 API 客户端库
 description: TypeScript 模块出口项目：从需求清单出发做一个类型安全的 API 客户端库——fetch 封装与泛型请求函数、端点类型映射表、unknown 收窄衔接运行时校验、判别式联合错误模型、Equal/Expect 类型测试、vitest 单元测试与 tsc 声明文件构建发布。只给需求、验收断言与提示，不给答案代码。
 module: 'typescript'
@@ -10,8 +10,8 @@ updated: '2026-09-28'
 related:
   - 'typescript/070-TSBasicsGenerics'
   - 'typescript/430-ConditionalTypeDistribute'
-  - 'typescript/450-InferTypeDeepDive'
-  - 'typescript/540-TypeGymnastics'
+  - 'typescript/450-TypeCompositionPractice'
+  - 'typescript/540-TypeGymnasticsBoundaries'
   - 'typescript/550-TypeTestingAndAssertions'
   - 'typescript/660-RuntimeSchemaValidation'
   - 'javascript/715-JavaScriptCapstoneProject'
@@ -62,7 +62,7 @@ prerequisites:
 
 先读：[泛型基础](/typescript/070-TSBasicsGenerics) 第 2、5 节；[keyof、typeof 与索引访问类型](/typescript/210-KeyofTypeofIndexedAccessTypes)。
 
-方向：别先写请求函数，先把端点映射表定下来——全库单一事实来源，也是第一处「自己决定」。再依次做封装、泛型化、映射表推导接线（T1 到 T4）。推导卡住回看 [430 分发](/typescript/430-ConditionalTypeDistribute) 与 [450 infer](/typescript/450-InferTypeDeepDive)。
+方向：别先写请求函数，先把端点映射表定下来——全库单一事实来源，也是第一处「自己决定」。再依次做封装、泛型化、映射表推导接线（T1 到 T4）。推导卡住回看 [430 分发](/typescript/430-ConditionalTypeDistribute) 与 [450 infer](/typescript/450-TypeCompositionPractice)。
 
 完成后应看到：
 
@@ -82,7 +82,7 @@ npx tsc --noEmit
 
 ### 里程碑 3：双测试防线——类型层与值层（对应 T7、T8）
 
-先读：[550 类型测试](/typescript/550-TypeTestingAndAssertions)；[540 深水区](/typescript/540-TypeGymnastics) 第 8 节；推导不顺时回看 [530 实用模式](/typescript/530-TypeGymnasticsPracticalPatterns) 与 [460 条件与映射](/typescript/460-ConditionalMappedType)。
+先读：[550 类型测试](/typescript/550-TypeTestingAndAssertions)；[540 深水区](/typescript/540-TypeGymnasticsBoundaries) 第 8 节；推导不顺时回看 [530 实用模式](/typescript/530-TypeGymnasticsPracticalPatterns) 与 [460 条件与映射](/typescript/460-ConditionalMappedType)。
 
 方向：先写类型测试锁契约，再写 vitest 单测锁行为，顺序别反——类型测试先红过一次，你才知道它真能抓错。单测 mock fetch，别碰真网。
 
@@ -109,10 +109,10 @@ npx vitest run
 | 功能 | 关键词 | 对应文档 |
 | --- | --- | --- |
 | 请求函数与端点表 | 泛型、extends、as const、typeof、keyof | [泛型基础](/typescript/070-TSBasicsGenerics)、[约束与默认值](/typescript/230-GenericConstraintDefault)、[as const](/typescript/170-ConstAssertion)、[keyof 与 typeof](/typescript/210-KeyofTypeofIndexedAccessTypes) |
-| 映射与推导 | 映射类型、分发、infer、模板字面量 | [条件与映射](/typescript/460-ConditionalMappedType)、[430 分发](/typescript/430-ConditionalTypeDistribute)、[440 infer](/typescript/440-ConditionalTypeInfer)、[450 深入](/typescript/450-InferTypeDeepDive)、[500 模板字面量](/typescript/500-TemplateLiteralType) |
+| 映射与推导 | 映射类型、分发、infer、模板字面量 | [条件与映射](/typescript/460-ConditionalMappedType)、[430 分发](/typescript/430-ConditionalTypeDistribute)、[440 infer](/typescript/440-ConditionalTypeInfer)、[450 深入](/typescript/450-TypeCompositionPractice)、[500 模板字面量](/typescript/500-TemplateLiteralType) |
 | unknown 收窄 | 类型谓词、unknown 与 any | [类型守卫](/typescript/150-TypeGuardCustomGuard) |
 | 错误建模 | 判别式联合、never 穷尽检查 | [字面量与联合](/typescript/110-LiteralUnionTypes)、[never 语义](/typescript/190-NeverTypeSemantics) |
-| 类型测试 | Equal/Expect、@ts-expect-error、可维护性三问 | [类型测试](/typescript/550-TypeTestingAndAssertions)、[深水区](/typescript/540-TypeGymnastics) 第 3、7、8 节 |
+| 类型测试 | Equal/Expect、@ts-expect-error、可维护性三问 | [类型测试](/typescript/550-TypeTestingAndAssertions)、[深水区](/typescript/540-TypeGymnasticsBoundaries) 第 3、7、8 节 |
 | 运行时校验 | zod、z.infer 单源（E2） | [Schema 校验](/typescript/660-RuntimeSchemaValidation) |
 | 构建与声明 | declaration、exports、tsc --noEmit | [工程化配置](/typescript/350-TypeScriptEngineeringConfig)、[tsc 速查](/typescript/370-TscCompilerCommands)、[声明文件](/typescript/300-DeclarationFileWriting) |
 

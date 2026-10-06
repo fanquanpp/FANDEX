@@ -27,7 +27,7 @@ prerequisites:
 本章文档难度标记为 intermediate，是因为末尾包含 BFC 与 margin 塌陷两个进阶主题。按难度分层阅读：
 
 - **入门必读（第 1-2 节、第 3.1-3.2 节）**：盒模型的四层组成、`content-box` 与 `border-box`、margin/padding 的基本用法——这是布局的地基，第一遍精读并完成动手试试；
-- **进阶选读（第 3.3 节、第 4 节）**：margin 塌陷与 BFC 触发条件，第一遍可以跳过，先读 `css/060-MarginCollapse` 与 `css/230-StackingContext` 的速通部分，再回头看本节；
+- **进阶选读（第 3.3 节）**：margin 塌陷速写；机制深读见 `css/060-MarginCollapse`，BFC 与格式化上下文家族见 `css/065-BFCAndFormattingContexts`；
 - **参考章节（第 5-7 节）**：应用、最佳实践与高级技巧，随用随查。
 
 这样安排后，本章的“入门路径”实际难度为 beginner：先会算盒子尺寸，再逐步进入格式化上下文。
@@ -207,194 +207,29 @@ margin-left: 40px;
 </html>
 ```
 
-### 3.3 外边距塌陷 (Margin Collapse)
+### 3.3 外边距塌陷（速写）
 
-**定义**：在垂直方向上，相邻的两个外边距会取最大值，而非累加。
+垂直方向上，相邻（或父子、或空元素自身首尾）的外边距会**合并取最大值**
+而非相加——这是 BFC 内块盒排版的默认规则，不是 bug。
 
-#### 3.3.1 常见的外边距塌陷场景
+- 机制本位的完整推演（三种合并情形、为什么取最大、什么条件不合并）
+  见 [060-MarginCollapse](/css/060-MarginCollapse)；
+- 工程手段视角（用 BFC 边界拦住穿透）见
+  [065-BFCAndFormattingContexts](/css/065-BFCAndFormattingContexts)。
 
-1. **相邻元素的外边距塌陷**
+本篇记住一条判断路径就够：塌陷了 -> 先确认双方是否同属一个 BFC ->
+是则改间距策略（统一只用 margin-bottom 或加 padding），需要硬隔离
+再上 `display: flow-root`。
 
-```html
-<div style="margin-bottom: 30px;">元素 1</div>
-<div style="margin-top: 20px;">元素 2</div>
-<!-- 实际间距: 30px (取最大值)，而非 50px -->
-```
+## 4. BFC 与格式化上下文
 
-1. **父子元素的外边距塌陷**
+BFC（块级格式化上下文）已扩写为独立专篇
+[065-BFCAndFormattingContexts](/css/065-BFCAndFormattingContexts)：
+四种格式化上下文（BFC/IFC/FFC/GFC）与 display 值的对应、触发条件
+速查、清浮动/防塌陷/自适应两栏的 BFC 视角解法与动手实践都在那里。
 
-```html
-<div style="margin-top: 20px;">
-  <div style="margin-top: 30px;">子元素</div>
-</div>
-<!-- 实际间距: 30px (取最大值)，而非 50px -->
-```
-
-1. **空元素的外边距塌陷**
-
-```html
-<div style="margin-top: 20px; margin-bottom: 30px;"></div>
-<!-- 实际高度: 30px (取最大值)，而非 50px -->
-```
-
-#### 3.3.2 解决外边距塌陷的方法
-
-| 方法           | 适用场景     | 代码示例                         |
-| -------------- | ------------ | -------------------------------- |
-| **添加边框**   | 父子元素塌陷 | `border: 1px solid transparent;` |
-| **添加内边距** | 父子元素塌陷 | `padding: 1px;`                  |
-| **使用 BFC**   | 各种塌陷场景 | `overflow: hidden;`              |
-| **使用浮动**   | 相邻元素塌陷 | `float: left;`                   |
-| **使用定位**   | 相邻元素塌陷 | `position: absolute;`            |
-
-**代码示例**:
-
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-  <head>
-    <style>
-      .parent {
-        background-color: #f0f0f0;
-        /* 方法 1: 添加边框 */
-        /* border: 1px solid transparent; */
-        /* 方法 2: 添加内边距 */
-        /* padding: 1px; */
-        /* 方法 3: 使用 BFC */
-        overflow: hidden;
-      }
-      .child {
-        margin-top: 30px;
-        padding: 20px;
-        background-color: #fff;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="parent">
-      <div class="child">子元素</div>
-    </div>
-  </body>
-</html>
-```
-
-## 4. BFC (块级格式化上下文)
-
-### 4.1 BFC 的定义
-
-**块级格式化上下文** (Block Formatting Context) 是一个独立的渲染区域，内部元素的布局不会影响外部元素，外部元素也不会影响内部元素。
-
-### 4.2 触发 BFC 的条件
-
-| 条件                      | 代码示例                                                        |
-| ------------------------- | --------------------------------------------------------------- |
-| **浮动元素**              | `float: left;` 或 `float: right;`                               |
-| **绝对定位元素**          | `position: absolute;` 或 `position: fixed;`                     |
-| **行内块元素**            | `display: inline-block;`                                        |
-| **表格单元格**            | `display: table-cell;`                                          |
-| **弹性容器**              | `display: flex;` 或 `display: inline-flex;`                     |
-| **网格容器**              | `display: grid;` 或 `display: inline-grid;`                     |
-| **overflow 不为 visible** | `overflow: hidden;` 或 `overflow: auto;` 或 `overflow: scroll;` |
-| **根元素**                | `<html>` 元素                                                   |
-
-### 4.3 BFC 的作用
-
-#### 4.3.1 清除浮动
-
-当父元素包含浮动子元素时，父元素会塌陷，使用 BFC 可以解决这个问题：
-
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-  <head>
-    <style>
-      .parent {
-        background-color: #f0f0f0;
-        /* 触发 BFC */
-        overflow: hidden;
-      }
-      .child {
-        float: left;
-        width: 100px;
-        height: 100px;
-        margin: 10px;
-        background-color: #fff;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="parent">
-      <div class="child">子元素 1</div>
-      <div class="child">子元素 2</div>
-      <div class="child">子元素 3</div>
-    </div>
-  </body>
-</html>
-```
-
-#### 4.3.2 防止外边距重叠
-
-使用 BFC 可以防止父子元素或相邻元素的外边距重叠：
-
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-  <head>
-    <style>
-      .container {
-        /* 触发 BFC */
-        overflow: hidden;
-      }
-      .box {
-        margin: 20px;
-        padding: 20px;
-        background-color: #f0f0f0;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="box">Box 1</div>
-    <div class="container">
-      <div class="box">Box 2 (在 BFC 中)</div>
-    </div>
-  </body>
-</html>
-```
-
-#### 4.3.3 实现两栏布局
-
-使用 BFC 可以实现经典的两栏布局：
-
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-  <head>
-    <style>
-      .container {
-        width: 100%;
-      }
-      .sidebar {
-        float: left;
-        width: 200px;
-        height: 300px;
-        background-color: #f0f0f0;
-      }
-      .content {
-        /* 触发 BFC */
-        overflow: hidden;
-        height: 300px;
-        background-color: #e0e0e0;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="sidebar">侧边栏</div>
-      <div class="content">主内容区</div>
-    </div>
-  </body>
-</html>
-```
+一句话版：**BFC 是一个内外隔离的布局容器**——清浮动、拦 margin
+穿透、两栏自适应三件事的共同原理是它的三条边界规则。
 
 ## 5. 盒模型的实际应用
 

@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 600
 title: "异步深水区：异常传播、超时取消与阻塞陷阱"
 module: 'python'
 category: 后端技术
@@ -98,7 +98,28 @@ ConnectionError('页面B 连接失败')
 '页面C'
 ```
 
-结论二：`return_exceptions=True` 时异常对象作为结果出现在原位置，一个失败不再影响别人。批量抓取「能拿多少拿多少」的场景用它；「一个失败整体就该失败」的场景（金融下单、事务链）用默认模式——失败得越早越好。Python 3.11+ 还有更严格的 `asyncio.TaskGroup`：任一任务异常会取消全部兄弟并打包成 `ExceptionGroup`，适合「要么全成、要么全撤」。
+结论二：`return_exceptions=True` 时异常对象作为结果出现在原位置，一个失败不再影响别人。批量抓取「能拿多少拿多少」的场景用它；「一个失败整体就该失败」的场景（金融下单、事务链）用默认模式——失败得越早越好。Python 3.11+ 还有更严格的 `asyncio.TaskGroup`：任一任务异常会取消全部兄弟并打包成 `ExceptionGroup`，适合「要么全成、要么全撤」。TaskGroup 的完整形态：
+
+```python
+import asyncio
+
+async def fetch(url: str) -> dict:
+    await asyncio.sleep(1)               # 模拟网络请求
+    return {"url": url, "status": 200}
+
+async def fetch_all() -> None:
+    async with asyncio.TaskGroup() as tg:
+        t1 = tg.create_task(fetch("https://api.example.com/users"))
+        t2 = tg.create_task(fetch("https://api.example.com/posts"))
+        t3 = tg.create_task(fetch("https://api.example.com/comments"))
+    # 走到这里说明三个任务全部成功——失败走不到这里
+    results = [t.result() for t in (t1, t2, t3)]
+    print(f"获取 {len(results)} 个资源")
+
+asyncio.run(fetch_all())
+```
+
+与 gather 的结构差异：TaskGroup 用 `async with` 圈定「任务组」的生命周期——退出 `async with` 时所有任务必然完成（或组内已有人失败，异常以 `ExceptionGroup` 从 `async with` 抛出）。它没有 gather 那种「返回结果列表」的形态，结果逐个从 task 对象上 `.result()` 取；换来的是**结构化**保证：不会有任务逃出组的作用域，也就不会有 660 篇讲的「裸 create_task 留下无人认领的异常」。
 
 ## 3. 实验二：超时与取消实录
 
@@ -135,6 +156,21 @@ main 捕获 TimeoutError: TimeoutError()
 ```
 
 超时的实现机制就是取消：到点后 `wait_for` 向内层协程注入 `CancelledError`，内层有机会清理（关连接、写日志），然后外层把这次取消翻译成 `TimeoutError` 告知调用方。修改实验：把 `timeout` 改成 0.5，先预测「收到取消」的打印会不会更早出现、外层行为变不变，再运行验证（答案：取消来得更早，外层仍是同样的 `TimeoutError`，两层互不影响）。
+
+3.11+ 还可以用上下文管理器版超时 `asyncio.timeout`，与 TaskGroup 组合成「限时全撤」：
+
+```python
+async def resilient_fetch() -> None:
+    try:
+        async with asyncio.timeout(3.0):
+            async with asyncio.TaskGroup() as tg:
+                tg.create_task(fetch("https://api1.example.com"))
+                tg.create_task(fetch("https://api2.example.com"))
+    except TimeoutError:
+        print("限时已到，组内任务已被全部取消")
+```
+
+两个 `async with` 嵌套的读法：内层 TaskGroup 管任务生命周期，外层 timeout 管整组的 deadline——超时触发时 cancel 信号会穿透进组内每个任务，语义与 `wait_for` 单任务版完全同构，只是作用对象从「一个协程」变成「一组」。
 
 手动取消用的是同一机制。复用上面的 `fetch_slow`，`task.cancel()` 之后 await 这个 task，会撞出 `CancelledError`：
 
@@ -201,6 +237,24 @@ SELECT count(*) FROM orders 的结果
 
 即使 with 块里抛异常，`finally` 里的关闭照样执行。手写类版需要实现 `__aenter__`/`__aexit__` 两个异步方法，`@asynccontextmanager` 装饰器是它的快捷方式——与同步 `@contextmanager` 的关系，和 `async with` 与 `with` 的关系完全同构。数据库连接、HTTP 客户端、锁，凡是「用完要还、还要等一等」的资源，都套这个模板。
 
+消费端「边等边收」的形态是**异步生成器**（`async def` 里带 `yield`），配 `async for` 使用：
+
+```python
+async def stream_events():
+    """模拟事件流：每 0.5 秒吐一条"""
+    for i in range(5):
+        await asyncio.sleep(0.5)
+        yield {"event_id": i, "data": f"事件 {i}"}
+
+async def consume_events() -> None:
+    async for event in stream_events():
+        print(f"收到: {event['event_id']}")
+
+asyncio.run(consume_events())
+```
+
+逐段解释：`async def` + `yield` 的组合产出异步生成器——`yield` 提供「可迭代」，`await` 提供「等 IO」；`async for` 每取一条都允许挂起，适合 WebSocket 消息流、分页 API 的逐页拉取、传感器数据流。同步世界的对应物（生成器与 for，见 [生成器深水区](/python/180-GeneratorCoroutine)）在这里逐概念对应：惰性一样、协议换成 `__aiter__`/`__anext__`。
+
 ## 5. 常见错误与调试实录
 
 错误一：在协程里调阻塞函数，等于没异步。同样「并发」跑三个各睡 1 秒的任务：
@@ -248,6 +302,31 @@ asyncio.sleep 版总耗时 1.0 秒
 ```python
 result = await asyncio.to_thread(time.sleep, 1)   # 阻塞发生在线程里，循环照常转
 ```
+
+### 错误一的延伸：文件 IO 的异步写法（aiofiles）
+
+阻塞调用的名单里还有文件读写——`open(...).read()` 在大文件上是毫秒到秒级的阻塞。异步代码里处理文件有两条路，取舍不同：
+
+```python
+import asyncio
+import aiofiles
+
+# 路线一：aiofiles——语法与同步 open 几乎一致，await 替换阻塞点
+async def read_config(path: str) -> str:
+    async with aiofiles.open(path, "r", encoding="utf-8") as f:
+        content = await f.read()
+    return content
+
+async def write_report(path: str, content: str) -> None:
+    async with aiofiles.open(path, "w", encoding="utf-8") as f:
+        await f.write(content)
+
+# 路线二：to_thread 包同步读——不引第三方库，大块读写一次进线程
+async def read_config_stdlib(path: str) -> str:
+    return await asyncio.to_thread(lambda: open(path, "r", encoding="utf-8").read())
+```
+
+逐段解释两者的机制与取舍：aiofiles 本身**不做真异步 IO**——它把每个读写操作委托给线程池执行，`await f.read()` 挂起协程、等线程里的阻塞读完成，语法糖的成分大于性能魔法；`to_thread` 路线是同一机制的手工版。选型：异步代码里只有零星几次文件读写，`to_thread` 一行不引依赖；读写散布在各处、想要与同步代码同形的 API（尤其文件操作嵌在多层函数里），aiofiles 的 `async with` 形态更可读，且 `async with` 保证异常路径也关闭文件（上下文管理器协议见 [上下文管理器](/python/520-ContextManager) 与本篇第 4 节）。易错点：无论哪条路，**事件循环线程里都不该出现裸 `open().read()`**——小文件读一次看不出问题，日志文件滚到 GB 级时一次阻塞读能让全部并发连接冻结几百毫秒，这正是本错误要抓的「隐藏阻塞」在文件系统的形态。大批量文件的并行读写要控制并发度（`gather` + 信号量，见 660 篇），无节制地同时开几千个文件句柄会撞操作系统的打开文件数上限。
 
 错误二：后台任务的异常没人接收。`create_task` 之后只顾睡觉，不 await 它：
 

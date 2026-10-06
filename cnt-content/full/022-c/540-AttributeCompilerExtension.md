@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 580
 title: 属性与编译器扩展：让编译器当 reviewer
 module: 'c'
 category: 计算机科学
@@ -12,7 +12,7 @@ related:
   - 'c/080-ControlFlow'
   - 'c/220-MemoryAlignmentDeepDive'
   - 'c/410-CrossPlatformProgramming'
-  - 'c/520-C23C2y'
+  - 'c/520-C23CoreFeatures'
 prerequisites:
   - 'c/090-FunctionDetailed'
   - 'c/290-PreprocessorMacro'
@@ -23,7 +23,7 @@ prerequisites:
 - 已完成 [函数](/c/090-FunctionDetailed)：会写函数声明与原型，理解声明与定义的区别；
 - 已完成 [预处理器与宏](/c/290-PreprocessorMacro)：知道条件编译怎么写（属性的可移植封装要用它）。
 
-> 分工说明：内联的机制与「宏还是函数」的决策在 [内联函数与宏](/c/300-InlineFunctionMacro)（本篇只讲 `always_inline` 属性本身）；对齐的原理与填充规则在 [内存对齐](/c/220-MemoryAlignmentDeepDive) 与 [成员排序](/c/230-AlignmentMemoryLayout)（本篇只讲 `packed`/`aligned` 属性用法）；跨编译器的完整兼容层在 [跨平台编程](/c/410-CrossPlatformProgramming)；C23 语言特性的总览在 [C23 上手](/c/520-C23C2y)。
+> 分工说明：内联的机制与「宏还是函数」的决策在 [内联函数与宏](/c/300-InlineFunctionMacro)（本篇只讲 `always_inline` 属性本身）；对齐的原理与填充规则在 [内存对齐](/c/220-MemoryAlignmentDeepDive) 与 [成员排序](/c/230-AlignmentMemoryLayout)（本篇只讲 `packed`/`aligned` 属性用法）；跨编译器的完整兼容层在 [跨平台编程](/c/410-CrossPlatformProgramming)；C23 语言特性的总览在 [C23 上手](/c/520-C23CoreFeatures)。
 
 ## 学习目标
 
@@ -271,7 +271,7 @@ printf("%u\n", h->len);
 ## 9. 与之前和之后的知识的关系
 
 - 往前：函数声明与原型的规则（090 篇）决定属性挂在哪；`switch` 贯穿语义（080 篇）是 `[[fallthrough]]` 的前提；内联机制（300 篇）是 `always_inline` 的语境；
-- 旁支：对齐与填充的原理在 [内存对齐](/c/220-MemoryAlignmentDeepDive)；三编译器差异的汇总在 [跨平台编程](/c/410-CrossPlatformProgramming)；C23 特性全景在 [C23 上手](/c/520-C23C2y)；
+- 旁支：对齐与填充的原理在 [内存对齐](/c/220-MemoryAlignmentDeepDive)；三编译器差异的汇总在 [跨平台编程](/c/410-CrossPlatformProgramming)；C23 特性全景在 [C23 上手](/c/520-C23CoreFeatures)；
 - 往后：属性在嵌入式里与寄存器、段、启动代码全面相遇，见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)。
 
 ## 10. 官方文档

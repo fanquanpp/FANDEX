@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 360
 title: Nuxt 快速上手：手搭 SSR 的工程化形态
 module: 'vue3'
 category: 前端技术

@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 90
 title: 统一响应与全局异常：让前端只需要写一种解析逻辑
 description: 以「同一项目里有的接口返回裸对象、有的把异常堆栈甩给前端」的团队日常引入：Result 契约与业务码分段、业务码与 HTTP 状态码双轨制、BusinessException 加 @RestControllerAdvice 落地、报文与日志的分野，附从裸奔到统一的对照实验。
 module: 'spring-boot'

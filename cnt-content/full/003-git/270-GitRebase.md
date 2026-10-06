@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 290
 title: git-rebase 变基与改写历史
 module: 'git'
 category: 工具链

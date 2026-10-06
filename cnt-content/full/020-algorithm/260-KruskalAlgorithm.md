@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 300
 title: Kruskal 算法
 module: 'algorithm'
 category: 计算机科学

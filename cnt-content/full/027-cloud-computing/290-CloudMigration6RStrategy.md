@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 340
 title: 云迁移 6R 策略
 module: 'cloud-computing'
 category: 云与基础设施

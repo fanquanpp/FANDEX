@@ -1,18 +1,17 @@
 ---
-order: 80
-title: 函数、作用域与闭包：不重复自己
+order: 90
+title: 函数基础：不重复自己
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
-description: 从「结算逻辑复制三遍，改一处漏两处」讲起：参数与返回值、函数声明与表达式、作用域链、闭包「函数记住了出生地」与最小计数器、箭头函数预告、rest 参数，附 xxx is not a function 与 Cannot access 调试实录。
+description: 从「结算逻辑复制三遍，改一处漏两处」讲起：参数与返回值、函数声明与表达式、函数是值、rest 参数，附 xxx is not a function 与 Cannot access 调试实录。作用域链与闭包拆分至 085 篇专讲。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-06'
 related:
+  - 'javascript/085-ScopeChainAndClosure'
   - 'javascript/070-ObjectArray'
   - 'javascript/090-ArrayHigherOrderMethod'
-  - 'javascript/100-ThisKeywordDeepDive'
   - 'javascript/150-HigherOrderFunction'
-  - 'javascript/350-MemoryManagementAndGarbageCollection'
   - 'python/100-FunctionDetailed'
 prerequisites:
   - 'javascript/070-ObjectArray'
@@ -32,11 +31,9 @@ prerequisites:
 
 1. 把复制三遍的结算逻辑封装成一个函数，说清「参数进、返回值出」的数据流；
 2. 区分函数声明与函数表达式，预测哪种能在定义之前调用、哪种会报错；
-3. 预测嵌套代码里变量的查找路径，解释内层与外层同名时谁赢；
-4. 用「函数记住了出生地」解释计数器为什么能一直计数，并写出最小闭包示例；
-5. 用 rest 参数写出接收任意多个参数的求和函数，并读懂 `TypeError: xxx is not a function` 报错。
+3. 用 rest 参数写出接收任意多个参数的求和函数，并读懂 `TypeError: xxx is not a function` 报错。
 
-预计 60 到 75 分钟，含 3 组修改实验与 4 道练习。
+预计 45 到 60 分钟，含 3 组修改实验与 4 道练习。变量查找与闭包拆分到 [作用域链与闭包](/javascript/085-ScopeChainAndClosure) 专篇，本篇专注函数本身。
 
 ## 1. 你现在要解决什么问题
 
@@ -139,77 +136,15 @@ const checkoutB = function (price) {            // 写法二：函数表达式
 const checkoutC = (price) => price * 0.9 + 5;   // 写法三：箭头函数（表达式家族）
 ```
 
-三者都能 `checkoutX(80)` 调用。差别先记一条：**声明有「提升」——定义写在调用后面也能用；表达式和普通变量一样，执行到那一行才存在。** 这是第 9 节真实报错的根源。
+三者都能 `checkoutX(80)` 调用。差别先记一条：**声明有「提升」——定义写在调用后面也能用；表达式和普通变量一样，执行到那一行才存在。** 这是第 7 节真实报错的根源。
 
 箭头函数是表达式里最短的写法：单参数可省括号，函数体只有一句时可省 `return`。本篇先把它当语法糖用；它和普通函数还有更深的一层差别（`this`），[this 篇](/javascript/100-ThisKeywordDeepDive) 讲透，今天只需要认识这张脸。
 
 顶层工具函数（如结算、格式化）用**声明**，定义位置随意、提升友好；存进对象、要传来传去的函数用**表达式或箭头**——090 篇起你会天天传箭头函数，手感自然来。
 
-## 5. 作用域链：变量从出生地向外找
+函数能嵌套定义，内层能看见外层的变量——这条「作用域链」规则，以及「返回出去的函数还记得出生地变量」的闭包机制，是函数与变量规则交汇的地方，[作用域链与闭包](/javascript/085-ScopeChainAndClosure) 篇专门展开；本篇先继续把函数自身的零件补齐。
 
-函数嵌函数时，内层能看见哪些变量？看一个真实结构：
-
-```javascript
-const shopName = '老王商店';          // 全局：谁都能看见
-
-function checkout(price) {
-  const discount = 0.9;               // checkout 作用域
-
-  function addShipping(total) {
-    return total + 5;                 // 只用参数，最干净
-  }
-
-  const total = addShipping(price * discount);
-  console.log(shopName + ' 结算：' + total);   // 本层没有 → 外层找 → 全局找到
-  return total;
-}
-
-checkout(80);
-```
-
-预期输出：
-
-```text
-老王商店 结算：77
-```
-
-规则一句话：**查变量时从当前层出发，一层层往外找，找到就用，到全局还没找到才报 `ReferenceError`。** 这条链是「出生时」就定下来的，写在代码里的嵌套结构就是查找路线。
-
-同名遮蔽：内层声明的名字会**遮住**外层同名变量——外层的还在，只是这一层看不见它。
-
-## 6. 闭包：函数记住了出生地
-
-现场感受一下：`addShipping` 出生在 `checkout` 里，把它**返回出去**，在外面调用——它还记得出生地的变量吗？
-
-最小示例，计数器：
-
-```javascript
-function createCounter() {
-  let count = 0;                    // count 出生在 createCounter 里
-
-  return function () {
-    count = count + 1;              // 用的正是出生地的 count
-    return count;
-  };
-}
-
-const nextRound = createCounter();  // 拿到这个内层函数
-console.log(nextRound());           // 1
-console.log(nextRound());           // 2
-console.log(nextRound());           // 3
-
-const otherMatch = createCounter(); // 另开一局，互不干扰
-console.log(otherMatch());          // 1
-console.log(nextRound());           // 4（第一局接着数）
-```
-
-直觉说 `createCounter` 早就执行完了，`count` 应该被回收。实际它活着：**返回的内层函数带着对出生地的记挂活下去，`count` 也跟着活下去。** 这就是**闭包**——函数连同它出生时的那片作用域，打包成一体。
-
-用 040 篇「变量是名字绑定对象」的视角想：`createCounter` 每调用一次，就造出一个新的 `count` 和一个新的内层函数；`nextRound` 与 `otherMatch` 各自记着各自的 `count`，所以互不干扰。闭包也是「私有变量」的来路：`count` 藏在函数背后，外面摸不到，只能通过返回的函数操作——比全局变量安全得多。
-
-两个后话先记现象：闭包为什么可能拖累内存、怎么排查——[内存管理与垃圾回收](/javascript/350-MemoryManagementAndGarbageCollection) 与 [闭包内存泄漏](/javascript/360-ClosureMemoryLeakOptimization) 讲透；本篇只要求**能预测计数器行为**。
-
-## 7. rest 参数：来多少个参数都接得住
+## 5. rest 参数：来多少个参数都接得住
 
 结算常要算好几项商品，参数个数不固定。rest 参数把它们全收进一个数组：
 
@@ -229,15 +164,13 @@ console.log(sum());                 // 0（空数组加了个寂寞，但不出�
 
 `...prices` 读作「把剩下的参数全收进数组 `prices`」。它只能放在参数列表**最后**，前面可以有普通参数，如 `function order(user, ...items)`。旧代码里的同类写法叫 `arguments`，读老项目时认得即可，新代码一律用 rest。
 
-## 8. 修改实验
+## 6. 修改实验
 
 实验一：给 `checkout` 加第二个参数 `shippingFee`，三处调用分别传 `5`、`0`、`8`，输出全部验证。
 
-实验二：`createCounter` 改成接收起始值，`createCounter(100)` 后第一脚踩出 `101`，并验证两局依旧互不干扰。
+实验二：仿照 `sum` 写一个 `max(...nums)`，用 for-of 加 if 找出最大值并返回。验收：`max(3, 9, 4)` 返回 `9`，`max(-5, -2)` 返回 `-2`（初值别设 0，想想为什么）。
 
-实验三：仿照 `sum` 写一个 `max(...nums)`，用 for-of 加 if 找出最大值并返回。验收：`max(3, 9, 4)` 返回 `9`，`max(-5, -2)` 返回 `-2`（初值别设 0，想想为什么）。
-
-## 9. 常见错误与调试实录
+## 7. 常见错误与调试实录
 
 **错误一：`xxx is not a function`。** 来自一次真实手滑：
 
@@ -276,31 +209,90 @@ ReferenceError: Cannot access 'checkout' before initialization
 
 把 `const checkout = function ...` 换成 `function checkout(...)` 声明，程序立刻能跑——这就是「声明有提升」。看到 `before initialization`，就往报错行**上方**找表达式定义：挪上去，或改成函数声明。
 
-## 10. 实际项目中的使用场景
+## 8. 实际项目中的使用场景
 
 - 工具函数库与游戏逻辑：格式化金额、校验表单字段、伤害计算、掉落判定，各封装成函数，全项目共用一份逻辑；
 - 何时该拆函数：同一段逻辑出现第二遍时（本篇开场就是标准）；一个函数只做一件事，说不清它「做什么」就是做太多了；
 - 不该做的：函数里偷偷修改外面的变量——数据走参数进、返回值出（Python 对 `global` 的差评同样成立）；「返回值没人接」式调用也属浪费；
 - 「把函数当值传来传去」从 [数组高阶方法](/javascript/090-ArrayHigherOrderMethod) 起成为日常，[高阶函数](/javascript/150-HigherOrderFunction) 讲透；现在只需记住：函数是值。
 
-## 11. 小练习
+## 9. 课堂实战题集：八道函数题（承接自扫描素材）
 
-预测题（5 分钟，先写答案再运行）：
+以下八题来自真实课堂的例题集（同一批知识点反复出现的三份作业），按难度排列。先自己写，再展开参考实现；重点不是答案，而是每题训练的函数技能。
+
+| 题 | 技能点 | 签名建议 |
+| :--- | :--- | :--- |
+| 1. 两数最大值 | 参数与 return | `getMax(a, b)` |
+| 2. 矩形面积 | 多参数 | `rectArea(w, h)` |
+| 3. 圆面积 | 参数与近似值 | `circleArea(r)` |
+| 4. 1~n 求和 | 循环 + 累加 | `sum(n)` |
+| 5. 成绩等级 | 多分支返回 | `grade(score)` |
+| 6. 数字转"亿/万"文本 | 提前 return | `fmtCount(n)` |
+| 7. 阶乘 | 递归 + 结束条件 | `fact(n)` |
+| 8. 数组求和 | 数组也是值、也能当参数 | `arraySum(arr)` |
+
+写之前先复习两个口径：**形参**是定义时小括号里占位置的，**实参**是调用时真正传的数据；**return 有双重语义**——既把结果交出去，也当场终止函数，return 之后的代码是死代码。
+
+<details>
+<summary>参考实现（先完成八题再展开对照）</summary>
 
 ```javascript
-const name = '全局';
-function outer() {
-  const name = '外层';
-  function inner() {
-    console.log(name);
-  }
-  return inner;
+// 1：两数最大值——三元版与 if 版等价
+function getMax(a, b) { return a > b ? a : b; }
+
+// 2：矩形面积
+function rectArea(w, h) { return w * h; }
+console.log(rectArea(100, 20)); // 2000
+
+// 3：圆面积（教材口径用 3.14，工程里用 Math.PI）
+function circleArea(r) { return r * r * 3.14; }
+console.log(circleArea(2)); // 12.56
+
+// 4：1~n 求和（sum(100) 得 5050）
+function sum(n) {
+  let total = 0;
+  for (let i = 1; i <= n; i++) total += i;
+  return total;
 }
-const speak = outer();
-speak();
+
+// 5：成绩等级——分支从大到小写，"其余"兜底
+function grade(score) {
+  if (score >= 90) return "优秀";
+  if (score >= 80) return "良好";
+  if (score >= 60) return "及格";
+  return "不及格";
+}
+
+// 6：数字转"亿/万"文本——内容站计数展示的标配（100000000 显示成 1亿）
+function fmtCount(n) {
+  if (n >= 100000000) return n / 100000000 + "亿";
+  if (n >= 10000) return n / 10000 + "万";
+  return String(n);
+}
+console.log(fmtCount(230000000)); // "2.3亿"
+console.log(fmtCount(56000));     // "5.6万"
+
+// 7：阶乘——递归必须有结束条件（没有它的 bar() 版本会栈溢出）
+function fact(n) {
+  if (n === 1) return 1;      // 结束条件：先减后乘的坑在 --n 写法
+  return n * fact(n - 1);
+}
+console.log(fact(5)); // 120
+
+// 8：数组求和——证明"数组也是值、也能当参数"
+function arraySum(arr) {
+  let total = 0;
+  for (let i = 0; i < arr.length; i++) total += arr[i];
+  return total;
+}
+console.log(arraySum([1, 2, 3, 4])); // 10
 ```
 
-这题同时考作用域链与闭包：`inner` 的 `name` 找到的是哪一个？为什么 `outer` 执行完了还找得到？
+第 6 题值得多说一句：`n / 10000` 会得到小数（`5.6`），与字符串拼接后正好是"5.6万"——**除法保留小数 + 拼接转文本**是这条需求的两步链条，想保留整数用 `Math.floor`。
+
+</details>
+
+## 10. 小练习
 
 修改题（10 分钟）：给 `checkout` 加参数 `discount`，调用时分别传 `0.9` 与 `0.85`，验证同一份代码出两套价格。再想一步：折扣该作参数传进来还是写死？说出取舍理由。
 
@@ -331,30 +323,29 @@ console.assert(typeof average(1, 2) === 'number', '返回值必须是数字');
 
 提示分两级：「提示」空参数时 `sum()` 返回 0，除以 0 会得到什么？需要一个判断；「展开」本题断言只用能整除的数据。
 
-## 12. 与之前和之后的知识的关系
+## 11. 与之前和之后的知识的关系
 
-- 往前：[对象与数组](/javascript/070-ObjectArray) 的玩家数组马上可以交给函数统一结算；[变量与数据类型](/javascript/040-VariableDataType) 的「名字绑定」在作用域链与闭包里全面兑现；
-- 往后：[数组高阶方法](/javascript/090-ArrayHigherOrderMethod) 把函数当参数传给 map/filter；[this 篇](/javascript/100-ThisKeywordDeepDive) 补完箭头函数的另一半；[闭包内存泄漏](/javascript/360-ClosureMemoryLeakOptimization) 接手本篇按下不表的内存话题；[生成器](/javascript/320-GeneratorFunctions) 是「函数可以暂停」的进阶形态。
+- 往前：[对象与数组](/javascript/070-ObjectArray) 的玩家数组马上可以交给函数统一结算；[变量与数据类型](/javascript/040-VariableDataType) 的「名字绑定」在 [作用域链与闭包](/javascript/085-ScopeChainAndClosure) 里全面兑现；
+- 往后：[作用域链与闭包](/javascript/085-ScopeChainAndClosure) 接手本篇按下不表的变量查找与闭包；[数组高阶方法](/javascript/090-ArrayHigherOrderMethod) 把函数当参数传给 map/filter；[this 篇](/javascript/100-ThisKeywordDeepDive) 补完箭头函数的另一半；[生成器](/javascript/320-GeneratorFunctions) 是「函数可以暂停」的进阶形态。
 
-## 13. 官方文档
+## 12. 官方文档
 
 - MDN 函数指南：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Functions
-- MDN 闭包：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Closures
-- rest 参数：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Functions/rest_parameters
-- `return` 语句：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/return
+- MDN rest 参数：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Functions/rest_parameters
+- MDN `return` 语句：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/return
+- MDN 箭头函数：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Functions/Arrow_functions
 
-## 14. 自我检查
+## 13. 自我检查
 
 - 能不看资料写出「参数进、返回值出」的函数，并说出不写 return 时调用结果是什么；
 - 能解释函数声明与函数表达式的提升差别，并预测两种写法在「先调用后定义」下的命运；
-- 拿到一段嵌套代码，能逐层说出变量查找路径，并解释同名遮蔽；
-- 能现场写出 `createCounter` 并预测它与第二次调用实例的计数行为；
+- 能用 rest 参数写出不定长参数的函数，说出它与旧写法 `arguments` 的关系；
 - 拿到 `TypeError: xxx is not a function`，能说出三步排查，第一步就是 `typeof` 验真身。
 
 ## 本章总结
 
-函数把一段逻辑打包：数据走参数进、结果走 return 出，同一逻辑只写一遍。函数是值——声明有提升，表达式执行到才存在；箭头函数是表达式家族的短写法，`this` 差别留给 100 篇。变量查找从出生地一层层向外，内层同名会遮蔽外层。返回出去的内层函数记得出生地的变量，这就是闭包——计数器因此能一直数，私有变量因此藏得住。rest 参数用 `...` 把任意个实参收成数组。最常撞的报错是 `xxx is not a function`：名字就在报错里，`typeof` 一验便知真身。
+函数把一段逻辑打包：数据走参数进、结果走 return 出，同一逻辑只写一遍。函数是值——声明有提升，表达式执行到才存在；箭头函数是表达式家族的短写法，`this` 差别留给 100 篇。rest 参数用 `...` 把任意个实参收成数组。最常撞的报错是 `xxx is not a function`：名字就在报错里，`typeof` 一验便知真身。函数嵌套定义后「变量去哪找、函数记住了谁」，去 [作用域链与闭包](/javascript/085-ScopeChainAndClosure) 找答案。
 
 ## 下一步
 
-进入 [数组高阶方法](/javascript/090-ArrayHigherOrderMethod)：把函数当参数传出去，map 和 filter 会把你写过的「循环 + 判断」变成一行——函数作为值的正式登场。
+进入 [作用域链与闭包](/javascript/085-ScopeChainAndClosure)：函数嵌函数时变量怎么找、返回出去的函数为什么还记得出生地的变量——五按钮经典题在那里揭晓。

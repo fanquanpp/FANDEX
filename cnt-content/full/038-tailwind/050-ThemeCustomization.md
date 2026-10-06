@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 90
 title: Tailwind CSS 主题定制与设计令牌
 module: 'tailwind'
 category: 前端技术
@@ -14,6 +14,13 @@ related:
 prerequisites:
   - 'tailwind/020-InstallConfig'
 ---
+
+## 知识点地图
+
+- 知识类别：Tailwind 4 的主题定制与设计令牌（Design Token）体系——`@theme` 声明、三层令牌架构、`@theme inline` 桥接、运行时换肤与一致性防线。
+- 解决什么问题：颜色、圆角、阴影等设计决策散落全站时的"改一处、动全身"考古；亮暗换肤时的闪白与失效；多份令牌拷贝的静默漂移。
+- 什么时候用到：项目从"能跑"走向"可维护"的转折点——需要换肤、需要对接设计稿、需要与组件库变量方案打通时。
+- 工具类的基础命名规律见[核心概念与工具类](/tailwind/030-UtilityCore)；令牌落到交互组件的复用见[组件复用](/tailwind/070-ComponentReuse)。
 
 ## 前置知识
 
@@ -223,6 +230,33 @@ FANDEX 仓库就是这条路线的真实落地，流程分四步，你可以照�
 第一，**跨作用域引用必须 inline**。官方文档明确：当 `var()` 引用的变量定义在更深层选择器（如 `[data-theme='dark']`）时，若不走 `@theme inline`，编译期解析可能取不到值而回退兜底色——症状是"暗色模式下部分颜色死活不变"。
 
 第二，**别在 `@theme` 外混用 `light-dark()` 与 `var()`**。CSS 原生的 `light-dark()` 函数看起来是亮暗适配的"银弹"，但 Tailwind 4 的解析器在 `@theme` 块之外不支持 `light-dark()` 与 `var()` 混合写法——FANDEX 的令牌注释里专门记录了这一点，最终改用 `[data-theme]` 选择器方案。想在 `@theme` 内自定义颜色时也一样：要么写死值，要么走 `@theme inline` 引用外部变量，不要叠 `light-dark()`。
+
+### 4.1 第三方场景：对接 shadcn/ui 式变量约定
+
+`@theme inline` 最常见的实战，是项目引入一套"自带变量方案"的组件库（shadcn/ui 风格：`.dark` 作用域下定义 `--background`、`--foreground` 等），让 Tailwind 工具类直接消费对方的变量：
+
+```css
+/* 组件库带来的变量文件（示意）：变量定义在 .dark 作用域，Tailwind 不感知 */
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+}
+```
+
+```css
+/* 我们的桥接层：inline 让 bg-background 指向外部变量本身 */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+```
+
+```html
+<!-- 组件库切换 .dark 后，工具类自动跟随 -->
+<body class="bg-background text-foreground">...</body>
+```
+
+讲解：这里是 `@theme inline` 而不是普通 `@theme` 的教科书场景——变量本体归组件库管（在 `.dark` 作用域），Tailwind 只负责把 `bg-background` 暴露成工具类。若用普通 `@theme`，Tailwind 会尝试把 `--background` 输出到 `:root` 并在编译期解析，`.dark` 作用域的值取不到。反过来，如果整站换肤完全由我们的令牌层驱动（如第 3 步的 `data-theme` 方案），变量就该归我们管、走普通 `@theme`——**谁拥有变量，决定了用哪种写法**。
 
 ## 5. 令牌的一致性防线：漂移检查
 

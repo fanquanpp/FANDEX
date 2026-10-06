@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 200
 title: 分布式版本控制原理
 module: 'git'
 category: 工具链

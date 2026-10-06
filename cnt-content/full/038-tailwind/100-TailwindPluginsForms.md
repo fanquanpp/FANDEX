@@ -1,20 +1,21 @@
 ---
-order: 110
-title: 插件与表单
+order: 170
+title: 官方插件：forms 与 typography
 module: 'tailwind'
 category: 前端技术
 difficulty: intermediate
-description: 'Tailwind CSS 插件与表单：@plugin 加载 forms/typography 官方插件、三种重置策略选择、prose 长文排版兜底、plugin() API 与 matchUtilities 按令牌批量生成工具类'
+description: 'Tailwind CSS 官方插件：@plugin 指令加载 forms/typography、三种重置策略选择、prose 长文排版兜底与中文微调，附购票表单与专栏排版的联动验证'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'tailwind/050-ThemeCustomization'
   - 'tailwind/080-V4Features'
+  - 'tailwind/105-CustomPluginApi'
 prerequisites:
   - 'tailwind/050-ThemeCustomization'
 ---
 
-工具类擅长"精确打击"，但有两类需求天然不适合逐个类名去凑：表单控件的**出厂统一调校**（每个 input 都要同款边框、焦点环）与长文正文的**排版兜底**（CMS 与 MDX 来的内容没法逐段加类）。官方插件体系正是为这两类"批处理"需求准备的。本篇覆盖两个最常用的官方插件 forms 与 typography，再进到自定义插件 API 与主题联动。
+工具类擅长"精确打击"，但有两类需求天然不适合逐个类名去凑：表单控件的**出厂统一调校**（每个 input 都要同款边框、焦点环）与长文正文的**排版兜底**（CMS 与 MDX 来的内容没法逐段加类）。官方插件体系正是为这两类"批处理"需求准备的。本篇覆盖两个最常用的官方插件 forms 与 typography；等官方插件覆盖不到平台特有需求时，怎么用 plugin() API 写自己的插件，见[自定义插件机制](/tailwind/105-CustomPluginApi)。
 
 ## 前置知识
 
@@ -27,8 +28,6 @@ prerequisites:
 1. 能用 @plugin 指令加载插件，说出 Tailwind 4 与旧版加载方式的差异。
 2. 能配置 @tailwindcss/forms 的策略，让购票表单的控件观感统一。
 3. 能用 @tailwindcss/typography 的 prose 类为 MDX / CMS 正文提供排版兜底。
-4. 能用 plugin() API 编写自定义插件，注册组件类与批量工具类。
-5. 能让插件通过 theme() 与设计令牌联动，实现"主题改色、插件跟随"。
 
 ## 1. 插件生态与加载方式
 
@@ -121,81 +120,6 @@ strategy 的选择还可以按"团队构成"来定：全员熟悉 Tailwind 用 b
 
 prose 的预设基于英文排版习惯，中文项目通常还要动行高与字重：标题行高压到 1.3 左右、正文从 400 字重起步，避免中文标题"撑"得太高。这些调整写进 prose-* 修饰类一次到位，比逐篇文章覆盖可靠得多——排版预设的价值就在"改一处、全站生效"。
 
-## 4. 自定义插件 API：plugin() 注册自己的"批处理"
-
-当官方插件覆盖不到平台特有需求时，可以用 `plugin()` 编写自己的插件。核心是四个注册函数：`addComponents`（带默认样式的组件类）、`addUtilities` / `matchUtilities`（工具类）、`addBase`（全局基础样式）、`addVariant`（自定义变体）。
-
-```javascript
-// plugins/fan-badge.js：自定义插件——注册粉丝团徽章组件类
-import plugin from 'tailwindcss/plugin'
-
-export const fanBadge = plugin(
-  ({ addComponents, theme }) => {
-    addComponents({
-      '.fan-badge': {
-        display: 'inline-flex',
-        alignItems: 'center',
-        borderRadius: theme('radius.sm'),    // 直角小圆角，遵守平台规范
-        paddingInline: theme('spacing.2'),
-        backgroundColor: theme('colors.primary'),
-        color: '#ffffff',
-        fontWeight: theme('fontWeight.bold'),
-      },
-    })
-  },
-  { darkMode: 'class' }, // 插件元信息：声明变体与暗色模式的选择器约定
-)
-```
-
-```css
-/* global.css：加载自定义插件 */
-@plugin "./plugins/fan-badge.js";
-```
-
-```html
-<!-- 使用：一个类名得到完整徽章样式 -->
-<span class="fan-badge">粉丝团编号 3939</span>
-```
-
-什么时候用插件、什么时候用 Tailwind 4 原生的 `@utility`（见 008 篇）？简单判断：**单个工具类用 @utility，一组带默认样式的类或需要批量生成的东西用插件**。`.fan-badge` 这种"一个类名背后一整套样式 + 引用主题令牌"的组件类，插件是正确载体；而 `.tabular-nums` 这类单点工具类，@utility 更轻。
-
-插件 API 里还有一个常被忽略的 `addVariant`：注册自定义变体，比如给粉丝团等级做一套 `fanlv-*` 变体（对应 `.fanlv-2 &` 这样的选择器），之后 `fanlv-2:border-primary` 就像原生变体一样可用。它把"只有本平台才有的状态维度"提升为一等公民，避免每个使用点都手写任意祖先变体。
-
-插件的开发体验也有讲究：Tailwind 4 的 dev server 会监听 @plugin 引用的文件，改插件代码即自动重建，浏览器直接看效果；发布前用一份最小 demo 页面过一遍注册的所有类，确认没有"注册了但拼错类名"的死代码。插件注册是静默的，类名打错不会报错——demo 页面就是你的冒烟测试。
-
-## 5. 插件与主题联动：theme() 是那根线
-
-插件与主题联动的关键就是 `theme()`：它读取的是当前主题令牌的值，所以**令牌一改，插件注册的所有类同步更新**。更进一步，`matchUtilities` 可以按令牌**批量生成**工具类——主题里有多少个值，就生成多少个变体：
-
-```javascript
-// plugins/glow.js：按主题色板批量生成"应援光晕"工具类
-import plugin from 'tailwindcss/plugin'
-
-export const glow = plugin(({ matchUtilities, theme }) => {
-  matchUtilities(
-    {
-      // 值来自色板：colors 里的每个颜色都会生成一个 glow-text-* 类
-      'glow-text': (value) => ({
-        textShadow: `0 0 12px ${value}, 0 0 2px ${value}`,
-      }),
-    },
-    { values: theme('colors') },
-  )
-})
-```
-
-```html
-<!-- 主题里有 primary / danger 等颜色，这里就有 glow-text-primary 等类 -->
-<h2 class="glow-text-primary">魔法未来 2026 开票中</h2>
-<p class="glow-text-danger">剩余 3 张，先到先得</p>
-```
-
-这层联动回答了一个架构问题：**设计系统的"延伸件"（徽章、光晕、批注样式）应该挂在哪？** 答案是挂在插件里、引用主题令牌。主题（005 篇）负责定义"平台有哪些设计决策"，插件负责把决策"批量实例化"成可用的类；新应援色加进色板的那一刻，`glow-text-新色`、`.fan-badge` 的选中态、表单焦点环全部就位，不需要任何人手动同步。
-
-落地时给每个插件写一段说明注释能省掉未来的很多解释：声明它消费哪些令牌、注册哪些类前缀、与哪些插件有覆盖关系。这份"插件契约"随插件数量增长会变成设计系统的目录页——新人接手时先读契约再读实现，改令牌前先搜契约里的消费方，联动关系就从"口口相传"变成了"可检索的事实"。
-
-延伸一步，matchUtilities 的 values 不限于 colors——spacing、radius、fontWeight 都可以作为取值源。平台里"应援光晕"用色板、"卡片抬升"用阴影令牌、"徽章圆角"用 radius 令牌，全部走同一套"令牌到工具类"的批量通道。插件写多了会发现，它们其实是同一个模式的重复应用。
-
 ## 易错点与最佳实践
 
 1. **Tailwind 4 里还去 config 的 plugins 数组注册**。CSS-first 之后配置文件不再被默认加载，插件静默不生效：
@@ -211,25 +135,18 @@ export const glow = plugin(({ matchUtilities, theme }) => {
 
 3. **prose 与自己的栅格打架**。`prose` 自带 65ch 最大宽度，嵌进窄侧栏或宽主区时都显得突兀。修正：布局受外层控制时加 `max-w-none`，让宽度职责归容器。
 
-4. **插件里硬编码颜色与间距**。写死 `backgroundColor: '#39C5BB'` 后，主题换色插件纹丝不动，成为"设计系统里的钉子户"。修正：一律 `theme('colors.primary')` 引用令牌，让插件成为令牌的消费者。
-
-5. **把交互逻辑塞进插件**。插件只在构建期运行，注册的是静态样式，不能响应点击或请求。修正：需要交互的是组件层（JS + data 属性驱动，见 009 篇），插件只提供样式底座。
-
 ## 本篇小结
 
-1. Tailwind 4 用 @plugin 指令在 CSS 里加载插件，取代旧版配置文件的 plugins 数组。
-2. forms 插件统一表单控件观感，推荐 `strategy: base` 把外观决策交给工具类；控件选中色用 text-* 跟随主题。
-3. typography 的 prose 为"没有类名的内容"提供排版兜底，元素级修饰（prose-headings: 等）做微调，宽度归外层容器。
-4. plugin() API 的四个注册函数对应四类产物；单个工具类用 @utility，组件类与批量生成用插件。
-5. 插件通过 theme() 消费设计令牌、用 matchUtilities 按令牌批量造类，实现"主题改一处，插件全套跟随"。
+1. Tailwind 4 用 @plugin 指令在 CSS 里加载插件，取代旧版配置文件的 plugins 数组；插件注册顺序决定覆盖关系，"打底型"在前、"个性化型"在后。
+2. forms 插件统一表单控件观感，推荐 `strategy: base` 把外观决策交给工具类；控件选中色用 text-* 跟随主题；暗色界面记得给控件补底色类。
+3. typography 的 prose 为"没有类名的内容"提供排版兜底，元素级修饰（prose-headings: 等）做微调，宽度归外层容器；中文项目补行高字重的本地化修饰。
+4. 官方插件管不到平台特有需求时，用 plugin() API 写自己的插件——机制详见[自定义插件机制](/tailwind/105-CustomPluginApi)。
 
 ## 动手实践
 
 **任务一：表单统一化。** 接入 forms 插件（strategy: base），把本篇第 2 节的购票表单、粉丝团报名表、P主投稿表三个表单的控件换成统一焦点环，然后到 @theme 里把 primary 改成另一个颜色，验证三个表单焦点环全部联动。提示：radio 的选中色就是 text-primary；改令牌前先在浏览器确认当前颜色，改完硬刷新对比。
 
 **任务二：专栏排版。** 为歌姬访谈专栏启用 prose，加 prose-headings 竖条修饰与 dark:prose-invert，对比接 CMS 原始内容前后的可读性。提示：别忘了 max-w-none 与外层容器宽度的分工——先故意不加 max-w-none 塞进 280px 侧栏看看会发生什么。
-
-**任务三：写一个票档插件。** 实现 `ticket-tier` 插件：用 addComponents 注册 `.ticket-tier` 卡片类（引用主题令牌），再用 matchUtilities 按色板生成 `tier-glow-*` 工具类，最后在页面用两个不同应援色验证。提示：先在 @theme 里确认有哪几个色板令牌可消费，再决定 values 传什么。
 
 先自己写，再对照参考实现：
 
@@ -279,43 +196,9 @@ const content = await fetchInterviewHtml()
 对照组实验：去掉 `max-w-none` 把这段塞进 280px 侧栏，prose 自带的 65ch 最大宽度会与容器冲突，内容区被压到只剩一小条或溢出——这一眼就看清"宽度职责归外层容器"这条纪律的由来。`set:html` 输出的内容没有类名可写，prose 的元素级选择器正是为这种"碰不到类名的 HTML"准备的。
 </details>
 
-<details>
-<summary>任务三参考实现（ticket-tier 插件）</summary>
+## 相关阅读
 
-```css
-/* src/styles/global.css */
-@plugin "./ticket-tier-plugin.cjs";
-```
-
-```javascript
-// src/styles/ticket-tier-plugin.cjs
-const plugin = require('tailwindcss/plugin')
-
-module.exports = plugin(
-  ({ addComponents, matchUtilities, theme }) => {
-    // 组件类：引用令牌，不写死颜色
-    addComponents({
-      '.ticket-tier': {
-        borderRadius: theme('borderRadius.lg'),
-        padding: theme('spacing.4'),
-        borderWidth: '1px',
-        borderColor: theme('colors.border'),
-      },
-    })
-    // 按色板批量生成 tier-glow-*：色板有几个色就有几个类
-    matchUtilities(
-      { 'tier-glow': (value) => ({ boxShadow: `0 0 18px ${value}` }) },
-      { values: theme('colors') },
-    )
-  },
-)
-```
-
-```html
-<div class="ticket-tier tier-glow-primary">SS 档</div>
-<div class="ticket-tier tier-glow-danger">内场票</div>
-```
-
-验收两点：`.ticket-tier` 的圆角、内边距、边框色全部来自令牌（在 @theme 改一次验证联动）；`tier-glow-*` 的可用类数量与色板一致（没有注册过的色名写上去静默无效，这正是 matchUtilities 按 values 造类的边界）。写完把"消费令牌 + 注册前缀"两行契约注释加到文件头，本篇第 5 节的落地建议就从阅读变成了习惯。
-</details>
+- 用 plugin() API 写平台自己的插件（addComponents/addUtilities/addVariant/matchVariant）：[自定义插件机制](/tailwind/105-CustomPluginApi)
+- 插件消费的设计令牌从哪来：[Tailwind 主题定制与设计令牌](/tailwind/050-ThemeCustomization)
+- prose 兜底的正文之外，能控类的排版细节（换行、装饰线、列表样式）：[Tailwind CSS 核心概念与工具类](/tailwind/030-UtilityCore)
 

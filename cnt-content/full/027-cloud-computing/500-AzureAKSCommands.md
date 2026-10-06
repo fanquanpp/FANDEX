@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 560
 title: Azure AKS Kubernetes 命令
 module: 'cloud-computing'
 category: 云与基础设施
@@ -412,5 +412,5 @@ az aks delete --name my-aks --resource-group my-rg --yes --no-wait
 
 - 集群用 Helm 管理（见 [Helm 包管理](/cloud-computing/150-HelmPackageManagement)），不要手写一堆 YAML。
 - 监控深入：Log Analytics 查询与告警（见 [可观测性](/cloud-computing/170-Observability)）。
-- 让升级和部署全自动：GitOps（见 [多云与混合架构](/cloud-computing/280-MultiCloudHybridArchitecture) 中的 ArgoCD/Flux 部分）。
+- 让升级和部署全自动：GitOps（见 [GitOps 持续交付](/cloud-computing/155-GitOpsContinuousDelivery) 的 ArgoCD/Flux 部分）。
 - 命令记不全没关系，`az aks create --help` 和 `az find "az aks nodepool"` 是随身的官方手册。

@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 160
 title: VACUUM 机制
 module: 'postgresql'
 category: 数据库

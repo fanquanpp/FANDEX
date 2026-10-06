@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 220
 title: 网络设计与规划
 module: 'networking'
 category: 云与基础设施
@@ -9,11 +9,9 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'networking/380-NetworkStorageTechnology'
-  - 'networking/190-NetworkDiagnosis'
   - 'networking/100-DNSDHCP'
   - 'networking/200-LoadBalanceTech'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 
@@ -108,6 +106,18 @@ flowchart TD
 **NVGRE**：使用 GRE 隧道封装。
 
 **Geneve**：VXLAN 和 NVGRE 的统一替代。
+
+### 2.x 设备命名规范（自原系统管理篇并入）
+
+| 位置   | 设备类型 | 命名格式             | 示例         |
+| :----- | :------- | :------------------- | :----------- |
+| 核心层 | 交换机   | DC-CORE-01           | DC-CORE-01   |
+| 汇聚层 | 交换机   | DC-AGG-{楼栋}-01     | DC-AGG-A1-01 |
+| 接入层 | 交换机   | DC-ACC-{楼层}-{编号} | DC-ACC-3F-01 |
+| 防火墙 | FW       | DC-FW-01             | DC-FW-01     |
+| 路由器 | RT       | DC-RT-01             | DC-RT-01     |
+
+命名格式「位置-类型-序号」让告警邮件、配置备份、工单系统不用点开详情就知道设备角色；楼层/楼栋字段在排障时直接缩范围。
 
 ## 3. SD-WAN
 

@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 150
 title: 死锁检测与处理
 module: 'postgresql'
 category: 数据库

@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 70
 title: 基数统计
 module: 'redis'
 category: 数据库

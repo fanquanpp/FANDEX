@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 160
 title: 动画与过渡
 module: 'tailwind'
 category: 前端技术

@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 370
 title: "类型特征与 SFINAE：让模板按类型上岗"
 module: 'cpp'
 category: 计算机科学
@@ -8,7 +8,7 @@ description: "以「只接受整型的 serialize 传 string 爆出上百行模�
 author: fanquanpp
 updated: '2026-09-28'
 related:
-  - 'cpp/360-TypeExtractionSFINAE'
+  - 'cpp/360-TypeTraitsExtractionAndDetection'
   - 'cpp/410-Cpp20Concept'
   - 'cpp/370-VariadicTemplate'
   - 'cpp/330-CppTemplate'
@@ -20,7 +20,7 @@ prerequisites:
 
 - 已完成 [C++ 模板](/cpp/330-CppTemplate)：会写函数模板，听过「模板实参推导」和「重载决议」，没读过也能跟；认识 `std::string`（[STL 容器与迭代器](/cpp/240-CppSTLContainersIterators)）。
 
-本篇与 [类型萃取深水区](/cpp/360-TypeExtractionSFINAE) 的分工：**350 主教学——type_traits 与 enable_if 最小用法、SFINAE 一句话原则、void_t 探测成员的第一份模板；360 深水区——读标准库萃取、detect 通用框架、三种分派写法并排**。两篇示例不重复：本文全程用 `serialize`，360 换成排行榜与容器。
+本篇与 [类型萃取深水区](/cpp/360-TypeTraitsExtractionAndDetection) 的分工：**350 主教学——type_traits 与 enable_if 最小用法、SFINAE 一句话原则、void_t 探测成员的第一份模板；360 深水区——读标准库萃取、detect 通用框架、三种分派写法并排**。两篇示例不重复：本文全程用 `serialize`，360 换成排行榜与容器。
 
 先交代新枪：这些内容在 C++20 大部分被 concepts（概念）取代——但存量代码与标准库源码仍是 SFINAE，读懂才能维护，第 5 节做对照。
 
@@ -229,7 +229,7 @@ tag(3.14);       // 预测：？
 ## 10. 与之前和之后的知识的关系
 
 - 往前：[C++ 模板](/cpp/330-CppTemplate) 的形参 T 与重载决议，在本文被组合成「按条件上岗」；`static_assert` 与 [constexpr 与编译期计算](/cpp/340-ConstexprCompileTime) 同属编译期一家；
-- 往后：[类型萃取深水区](/cpp/360-TypeExtractionSFINAE) 把第 4 节的探测装配成 detect 框架；[变参模板](/cpp/370-VariadicTemplate) 的 `void_t<Args...>` 与 `conjunction` 都吃参数包；[C++20 概念](/cpp/410-Cpp20Concept) 是现代终点。
+- 往后：[类型萃取深水区](/cpp/360-TypeTraitsExtractionAndDetection) 把第 4 节的探测装配成 detect 框架；[变参模板](/cpp/370-VariadicTemplate) 的 `void_t<Args...>` 与 `conjunction` 都吃参数包；[C++20 概念](/cpp/410-Cpp20Concept) 是现代终点。
 
 ## 11. 官方文档
 
@@ -251,4 +251,4 @@ tag(3.14);       // 预测：？
 
 ## 下一步
 
-进入 [类型萃取深水区](/cpp/360-TypeExtractionSFINAE)：iterator_traits 萃取读法、detect 框架、tag 分派与 if constexpr 的三版对照在那等你。
+进入 [类型萃取深水区](/cpp/360-TypeTraitsExtractionAndDetection)：iterator_traits 萃取读法、detect 框架、tag 分派与 if constexpr 的三版对照在那等你。

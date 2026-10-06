@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 210
 title: 无线网络
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/160-SwitchingAndRouting'
   - 'networking/220-NetworkSecurityTech'
   - 'networking/180-NetworkDesignPlanning'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 前置知识：以太网与交换基础（见 [交换与路由](networking/160-SwitchingAndRouting)）；802.1X 认证
@@ -258,3 +257,21 @@ AC 可达性与负载（AC 是控制面单点，CAPWAP 断则全部 AP 脱管）
 - 漫游问题用 802.11k/v/r 组合解决，功率「宁小勿大」是漫游流畅的前提；
 - 容量规划在高密度场景几乎总是瓶颈，规划顺序：先容量定 AP 数，再覆盖定位置，最后功率收边；
 - 6GHz 频段（WiFi 6E/7）带来干净频谱与 320MHz 信道，但穿障更弱，规划时按「同房间可用」设计。
+
+## 附：AC 双机热备（自原系统管理篇并入）
+
+```bash
+# 华为 AC 双机热备配置（华为 VRP 语法）
+[AC1] wlan
+[AC1-wlan-view] ac protect enable
+[AC1-wlan-view] ac protect protect-ac 192.168.1.2 priority 6
+[AC1-wlan-view] ac protect local-ac 192.168.1.1 priority 8
+
+[AC2] wlan
+[AC2-wlan-view] ac protect enable
+[AC2-wlan-view] ac protect protect-ac 192.168.1.1 priority 8
+[AC2-wlan-view] ac protect local-ac 192.168.1.2 priority 6
+```
+
+priority 数值小者为主（两台互指对方为主备时注意数值方向）；主 AC 故障时 AP 通过 CAPWAP 断链切换到备 AC，业务 SSID 不变——AP 本地转发模式下已在线用户几乎无感，集中转发模式会瞬断重连。热备解决「AC 单点」，AP 本身由双电源/双上联保障。
+

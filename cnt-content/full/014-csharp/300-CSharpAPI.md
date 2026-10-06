@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 340
 title: C#与最小 API
 module: 'csharp'
 category: 后端技术

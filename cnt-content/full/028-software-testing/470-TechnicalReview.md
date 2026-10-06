@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 570
 title: 技术方案评审
 module: 'software-testing'
 category: 云与基础设施

@@ -14,6 +14,13 @@ prerequisites:
   - 'gode/010-GodeOverviewAndInstallation'
 ---
 
+## 知识点地图
+
+- 知识类别：Gode 的 TypeScript 编译体系——三时机自动编译、tsconfig 的来源与调整、编译诊断归属、内置编译器与工具链边界。
+- 解决什么问题："我没跑过编译命令，JS 是哪来的"；什么时候需要动 tsconfig；类型错误由谁报、报在哪。
+- 什么时候用到：想收紧或放宽类型检查、接 Node 生态类型、排查"改了 tsconfig 不生效"、决定 .gode/build 是否入库。
+- 前置：010 篇的实现原理一节（内置 tsc 的位置）；与 080 篇的分工——本篇管编译与配置，那篇管调试运行时。
+
 前几篇的代码都"开箱即用"——你在 Quaver 式项目里保存 theory.ts，按 F5 就能跑，从没执行过任何编译命令。那 TypeScript 是什么时候变成 JavaScript 的？产物在哪、会不会污染仓库、tsconfig.json 从哪来？本篇揭开这套机制：理解编译模型后，你既能放心地忽略生成的 JavaScript，也能按需收紧类型检查或接入 Node 类型。
 
 ## 编译模型

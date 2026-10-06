@@ -14,6 +14,13 @@ prerequisites:
   - 'astro/020-QuickStartProject'
 ---
 
+## 知识点地图
+
+- **知识类别**：Astro 页面与路由——文件路由、动态路由（`[slug]` 与 `getStaticPaths`）、Rest 参数、404 与重定向，对应 Astro 官方文档 Routing 指南。
+- **解决什么问题**：「这个 URL 由哪个文件决定」与「一批结构相同的页面怎么批量生成」；网站改版后的旧链接去向（重定向与 404）；页面共用的门面（Layout 与嵌套布局）。
+- **什么时候用到**：任何 Astro 站点的页面组织；内容站的批量页面生成（博客、文档站）；改版迁移的链接治理。
+- **本篇主线**：文件路径即 URL 的心智（城市路牌类比）贯穿全篇；动态路由的落点是 `getStaticPaths` 的「构建期枚举」——静态站的所有 URL 在构建产物里可枚举、可验收。
+- **本篇不讲**：内容集合本身的数据层（见 [内容集合](/astro/050-ContentCollections)，本篇第 8 节只讲组合）；Server Islands 的请求期渲染（见 [Server Islands](/astro/063-AstroServerIslands)）。
 
 ## 0. 城市道路与路牌：理解路由的第一把钥匙
 
@@ -135,6 +142,40 @@ const { title } = Astro.props   // getStaticPaths 传入的数据
 | `props` | 否 | 传给页面的任意数据，模板中通过 `Astro.props` 访问 |
 
 关键理解：静态模式下，`getStaticPaths` 在**构建期**执行，声明"这个动态路由要生成哪些页面"。漏掉的参数组合不会生成页面。这正是"内容规模可枚举"的静态站的正确打开方式。
+
+### 3.4 工程场景：文档站的双 id 兼容路由
+
+真实背景：FANDEX 文档站的每篇文档天然有**两个标识**——所属模块 id 与文档文件名（如 `svg` 模块的 `050-SVGPathDetailed`）。站点改版后 URL 方案从旧的平铺形态迁到按模块分层，但外部书签、搜索引擎收录与学习路径地图里的旧链接必须继续可用。用 `getStaticPaths` 返回「多个 params 组合」一次生成两套路由：
+
+```astro
+---
+// src/pages/modules/[moduleId]/[docId].astro —— 新路由
+import { getCollection } from 'astro:content';
+const modules = await getCollection('modules');
+---
+<!-- 新路由页面：按 模块id/文档id 分层 -->
+
+---
+// src/pages/docs/[docId].astro —— 旧路由兼容页（同一内容第二入口）
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('docs');
+  return docs.map((doc) => ({
+    params: { docId: doc.id },
+  }));
+}
+---
+
+<meta http-equiv="refresh" content={`0;url=/modules/${Astro.props.moduleId}/${Astro.props.docId}/`} />
+<link rel="canonical" href={`/modules/${Astro.props.moduleId}/${Astro.props.docId}/`} />
+```
+
+讲解：
+
+- `getStaticPaths` 的本质是「URL 平面的枚举器」：同一份内容数据可以映射出多套 params 组合——旧路由文件生成兼容入口，新路由文件生成规范入口，互不干扰；
+- 兼容页的两件套缺一不可：`meta refresh` 让旧链接的访客零感跳转；`canonical` 指向新地址，告诉搜索引擎「排名记在新 URL 头上」——只做跳转不做 canonical，新旧两个 URL 会分摊搜索权重；
+- **不这么做的后果**：旧链接全部 404——搜索引擎逐步移除收录、外部教程里的引用全部失效，内容质量没降、流量先掉一半。这是内容站改版最贵的隐形事故，而它的修复成本只是两个小文件。
 
 ## 4. 多级参数与 Rest 参数：更复杂的门牌
 
@@ -353,6 +394,18 @@ return new Response(null, {
 
 讲解：`301` 是"永久重定向"状态码，告诉搜索引擎"旧地址已废弃，用新地址收录"，是网站改版、文章迁移的标准做法。配置式重定向更简单直观，且在纯静态模式下也能工作（构建时生成带 meta refresh 的跳转页），优先使用；页面级 `return new Response(...)` 适合目标地址需要运行时计算的场景。
 
+### 7.3 「不配会发生什么」：构建产物对比
+
+三类配置的缺失各有明确的产物形态，构建一次就能自查：
+
+| 缺失项 | 构建产物形态 | 线上后果 |
+| --- | --- | --- |
+| 未配 `404.astro` | dist 里没有 404 页面，托管平台回退默认错误页 | 用户看到平台默认的英文白页，流失感最强 |
+| 未配 `redirects` | 旧路径无产物，请求直接命中 404 | 书签与搜索引擎旧链接全灭（见 3.4 节后果） |
+| 重定向用了页面级 Response 但未开按需渲染 | 构建报错或跳转页不存在 | 修复方式：该页 `prerender = false` + 适配器，或改用配置式 |
+
+验收习惯：每次改版构建后，随机抽三个旧 URL 在本地 `curl -I` 验证状态码（应得 301/302 或 200，而不是 404）——重定向配置的「看起来配了」与「真的生效」之间隔着一次实测。
+
 ## 8. 路由与内容集合：黄金组合
 
 动态路由 + 内容集合是内容站的核心模式：先用 `getCollection` 查询全部内容，再用 `getStaticPaths` 为每篇内容生成页面。
@@ -387,6 +440,24 @@ const { Content } = await render(doc)  // 把 Markdown 正文编译为组件
 ```
 
 讲解：这个文件运行时，全站每篇文档都有对应页面；`doc.data` 是经 schema 校验的 frontmatter（见 005 篇），`<Content />` 输出 Markdown 正文。构建期自动生成全部文章页，零运行时成本。
+
+## 动手实践
+
+任务：给自己的站点做一次「路由体检」，并亲手跑通双入口路由。
+
+1. 枚举 `src/pages/` 下全部文件，写出每个文件对应的 URL（含动态路由按 getStaticPaths 展开后的展开式），与真实站点的 URL 清单对账——「文件即 URL」的心智自检；
+2. 复刻 3.4 节的双 id 兼容路由：一个内容源、两个路由文件，构建后检查 `dist/` 里两套页面都存在，用 `curl -I` 验证兼容页的跳转行为；
+3. 制造事故：给一个动态路由故意漏掉一条 getStaticPaths 记录，构建后在浏览器访问那个 URL，记录现象（本地 dev 与构建产物行为可能不同），再补全修复；
+4. 按 7.3 节的产物对比表做「删 404.astro」实验：构建前后对比 dist 内容与线上（本地静态服务器）404 行为。
+
+<details>
+<summary>参考现象（先自己试，再展开对照）</summary>
+
+第 3 题：dev 模式下访问未枚举的参数会得到 404 或报错提示（getStaticPaths 未覆盖）；构建产物里该 URL 直接不存在，部署后请求落空。两类环境的表现差异是「静态站 URL 构建期定死」的最好实证。
+
+第 4 题：删除 404.astro 后 dist 里不再有 404.html，本地静态服务器的错误页退化为服务器默认（裸文本），与配了之后的自定义页对比——平台默认页无导航无品牌，用户唯一动作是关闭标签页。
+
+</details>
 
 ## 9. 常见错误与对策表
 

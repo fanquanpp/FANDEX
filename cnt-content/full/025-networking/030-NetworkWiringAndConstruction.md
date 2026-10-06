@@ -1,5 +1,5 @@
 ---
-order: 30
+order: 50
 title: 网络布线与施工
 module: 'networking'
 category: 云与基础设施
@@ -8,7 +8,6 @@ description: 综合布线工程设计、铜缆端接、光纤熔接、配线架�
 author: fanquanpp
 updated: '2026-09-28'
 related:
-  - 'networking/010-NetworkBasicsAndProtocol'
   - 'networking/040-NetworkSystemManagement'
   - 'networking/020-OSITCPIPModel'
   - 'networking/160-SwitchingAndRouting'

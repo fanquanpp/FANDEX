@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 510
 title: 目标代码生成
 module: 'cs-fundamentals'
 category: 计算机科学

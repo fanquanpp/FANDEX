@@ -10,10 +10,18 @@ updated: '2026-09-28'
 related:
   - 'redis/020-KeyManagement'
   - 'redis/030-HashCommand'
-  - 'redis/040-ListSetCommands'
-  - 'redis/140-PersistenceModule'
+  - 'redis/040-ListTypeAndCommands'
+  - 'redis/042-SetTypeAndSetOperations'
+  - 'redis/150-RDBSnapshotPersistence'
+  - 'redis/160-AOFLogPersistence'
 prerequisites: []
 ---
+
+## 知识点地图
+
+- **知识类别**：入门与总览——Redis 的内存键值模型、五种核心数据结构（String/Hash/List/Set/ZSet）、性能来源与全模块导航。
+- **解决什么问题**：第一次接触 Redis 时「它是什么、为什么快、我该用哪种结构」三个问题；建立「访问模式决定结构选型」的心智模型。
+- **什么时候用到**：学 Redis 的第一篇；给新业务选结构前的速查（第 5 节选型表）；向别人解释 Redis 时的一页纸大纲。
 
 ## 1. 从一个周末球局工具开始
 
@@ -109,7 +117,7 @@ RPOP signup:order                   # "player:1003"（最早报名的先出）
 
 List 一体两面：当队列（LPUSH+RPOP / BRPOP 阻塞版）、当栈（同端进出）、
 当定长时间线（LPUSH+LTRIM 只留最新 N 条）。命令全集与队列/栈套路见
-《List 与 Set 实战命令》（redis/040-ListSetCommands）。
+《List 类型与常用命令》（redis/040-ListTypeAndCommands）。
 
 ### 3.4 Set：无序去重 + O(1) 成员判断
 
@@ -123,7 +131,8 @@ SINTER signup:set court:b           # 两场都报的人（交集）
 ```
 
 「重复报名」这类业务规则，用 Set 的去重返回值一行代码就挡住了。交集、
-并集、差集还能回答「共同关注」「推荐好友」类问题，见 040 篇第 3 节。
+并集、差集还能回答「共同关注」「推荐好友」类问题，命令全集见
+《Set 集合类型与集合运算》（redis/042-SetTypeAndSetOperations）。
 
 ### 3.5 ZSet：带分数的排行榜
 
@@ -145,7 +154,7 @@ ZSet 是 Redis 的招牌结构：插入、更新、按名次取区间都是 O(lo
 
 1. **数据在内存**。磁盘数据库的毫秒级延迟主要是寻道与页缓存开销；
    内存访问比它快几个数量级，Redis 把「全部数据放内存」作为前提，
-   持久化只做兜底（见 140 篇）。
+   持久化只做兜底（见 150/160 篇）。
 2. **命令执行单线程**。所有命令排队进入一个事件循环顺序执行，单条
    命令天然原子，没有锁竞争。代价是：**任何慢命令都会拖住所有请求**——
    这解释了为什么 KEYS、大集合 SMEMBERS、超大 offset 的 SETBIT 是
@@ -166,8 +175,8 @@ Vector Set（8.0 新增的向量相似检索）。它们的使用方式都在本
 | :-------------------------------- | :------ | :----------------------------- |
 | 计数、限流、分布式锁的凭证        | String  | redis/260（底层）、redis/250   |
 | 对象的字段级读写                  | Hash    | redis/030-HashCommand          |
-| 队列、栈、最新动态                | List    | redis/040-ListSetCommands      |
-| 去重、成员判断、交并差            | Set     | redis/040-ListSetCommands      |
+| 队列、栈、最新动态                | List    | redis/040-ListTypeAndCommands  |
+| 去重、成员判断、交并差            | Set     | redis/042-SetTypeAndSetOperations |
 | 排行榜、延时任务                  | ZSet    | redis/270-SkipListAndSortedSet |
 | 签到、日活、布尔矩阵              | Bitmap  | redis/060-BitMapRedis          |
 | 亿级去重计数（允许 0.81% 误差）   | HLL     | redis/050-NumberStats          |
@@ -208,11 +217,13 @@ Vector Set（8.0 新增的向量相似检索）。它们的使用方式都在本
 
 本模块建议按这条主线推进：
 
-- 数据结构与命令：020 Key 管理 → 030 Hash → 040 List/Set → 050 计数 →
-  060 位图 → 070 GEO → 090-094 Stream → 100 Vector Set；
-- 生产三板斧：110 缓存策略 → 120 缓存三大问题 → 130 内存淘汰；
-- 持久化与高可用：140-170 持久化 → 180-220 复制/哨兵/集群；
-- 进阶：230-250 事务/Lua/分布式锁，260-280 底层结构与模块，310 Redis 8 全景。
+- 数据结构与命令：020 Key 管理 → 030 Hash → 040 List → 042 Set →
+  050 计数 → 060 位图 → 070 GEO → 090-094 Stream → 100 Vector Set；
+- 生产三板斧：115 发布订阅 → 120 缓存三大问题 → 125 缓存读写模式 →
+  130 内存淘汰；
+- 持久化与高可用：150/160/170 持久化 → 185-220 代理/复制/哨兵/集群；
+- 进阶：230-250 事务/Lua/Functions/分布式锁，260-280 底层结构与模块，
+  305-320 协议/版本/安全/可观测，310 Redis 8 全景。
 
 学完本篇你应该能回答：五种结构分别解决什么访问模式、Redis 为什么快、
 慢命令为什么会拖垮整个实例。带着这三个答案进入下一篇《Key 管理与过期策略》。

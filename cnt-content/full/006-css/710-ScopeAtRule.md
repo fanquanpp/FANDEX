@@ -1,5 +1,5 @@
 ---
-order: 710
+order: 760
 title: "@scope 规则：给样式圈一块地盘"
 module: 'css'
 category: 前端技术

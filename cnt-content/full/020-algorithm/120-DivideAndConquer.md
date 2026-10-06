@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 150
 title: 分治算法
 module: 'algorithm'
 category: 计算机科学

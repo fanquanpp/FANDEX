@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 190
 title: enumerate 与 zip 详解
 module: 'python'
 category: 后端技术

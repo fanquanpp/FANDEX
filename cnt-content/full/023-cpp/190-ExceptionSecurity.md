@@ -1,13 +1,14 @@
 ---
-order: 190
+order: 220
 title: 异常安全
 module: 'cpp'
 category: 计算机科学
 difficulty: intermediate
-description: 异常安全保证(Exception Safety Guarantees)、RAII、强异常安全事务与异常中立性的完整原理与工程实践
+description: 异常机制基础到异常安全保证的一条主线：throw/catch 与标准异常层次、RAII 与栈展开、基本/强/不抛三级保证、copy-and-swap 事务式编程与异常中立性。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-06'
 related:
+  - 'cpp/195-CppErrorHandlingStrategies'
   - 'cpp/470-StringProcessing'
   - 'cpp/510-FileIOFileSystem'
   - 'cpp/430-MultithreadingConcurrency'
@@ -22,22 +23,215 @@ prerequisites:
 
 # 异常安全（Exception Safety）
 
+## 知识点地图
+
+- **知识类别**：错误处理 - 异常机制与异常安全保证（cppreference「错误处理」主题主线篇）。
+- **解决什么问题**：异常不只是「出错了跳到 catch」，它带来一连串连锁问题——异常抛出后，半途的函数里已获取的资源谁来释放？一个操作做到一半被打断，对象处于什么状态？这些问题分别由**栈展开 + RAII**（机制层）与**三级异常安全保证**（契约层）回答。本篇把「异常怎么用」的基础与「异常发生时程序还剩什么保证」的深水区排成一条主线。
+- **什么时候用到**：
+  - 任何「构造即获取资源」的类（文件句柄、锁、连接）——栈展开时析构是否正确执行取决于 RAII；
+  - 容器与库的编写者——承诺给调用方哪一级保证（基本/强/不抛）是 API 契约的一部分；
+  - 移动构造、swap、析构——这些函数的 noexcept 与否直接改变容器行为。
+
+分工声明：三套错误通道（异常、`std::expected`、错误码）怎么选，见[错误处理策略选型](/cpp/195-CppErrorHandlingStrategies)；本篇假定你已决定用异常，专注「用好它」。策略选型篇与本篇的关系是「选路」与「开车」。
+
 ## 前置知识
 
-- [文件 IO 与文件系统](/cpp/510-FileIOFileSystem)：建议先完成前一篇的学习
+- [RAII 资源管理](/cpp/160-RAIIResourceManagement)：栈展开依赖 RAII，不懂它先补；
+- [智能指针](/cpp/140-CppSmartPointer) 与 [移动语义](/cpp/100-MoveSemanticsDetailed)：copy-and-swap 与强保证的素材。
 
 ## 学习目标
 
-- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与证明」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+- 会用 `throw/try/catch`、标准异常层次与自定义异常，能解释 catch 为什么按引用；
+- 用「栈展开」模型准确说出异常传播路径上每一步发生了什么（局部对象析构、noexcept 边界、terminate）；
+- 陈述基本保证、强保证、不抛保证的形式化定义，并为一个写操作选择合适的等级；
+- 用 copy-and-swap 或事务式写法把一个「多次修改」操作升级为强保证；
+- 理解为什么移动构造与析构函数的 noexcept 影响容器实现策略。
 
+预计 90 到 120 分钟。
 
 > 本章节系统讲解 C++ 异常安全保证体系，包括基本保证（Basic Guarantee）、强保证（Strong Guarantee）与不抛出保证（No-throw Guarantee）的形式化定义、事务性编程范式、copy-and-swap 惯用法，以及在 STL、Boost、Chromium 等工业级代码库中的实践。内容对标 MIT 6.170 / Stanford CS106L / CMU 15-410 课程深度。
 
 ---
+
+## 0. 异常基础主线：throw、catch 与栈展开
+
+本章前 8 节是深水区；先把「异常发生时到底发生了什么」走一遍，后面的形式化定义才有落点。这一节同时是全文的阅读地图：第 1-3 节回答「异常从哪来」，第 4-8 节回答「异常来了之后你还剩什么」。
+
+### 0.1 一段最小的异常流
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+
+double safe_divide(double a, double b) {
+    if (b == 0.0) {
+        throw std::runtime_error("division by zero");   // 1. 构造异常对象并抛出
+    }
+    return a / b;
+}
+
+int main() {
+    try {
+        double r = safe_divide(10.0, 0.0);              // 2. 调用链上寻找匹配的 catch
+        std::cout << r << '\n';                          //    （这一行永远不会执行）
+    } catch (const std::runtime_error& e) {              // 3. 按类型匹配，捕获
+        std::cerr << "caught: " << e.what() << '\n';     // 4. 异常对象在 catch 块结束才析构
+    }
+}
+```
+
+逐行拆解：
+
+- `throw` 的对象是**拷贝**到一个独立于栈的存储区（异常对象），即使你抛的是局部变量，栈展开销毁它之后异常对象仍活着——这就是为什么 catch 可以安全地引用它。
+- catch 必须写 `const std::exception&` 形式的**引用**：按值捕获会切割派生类（自定义异常的成员全丢），引用则多态地保留完整对象。这是异常体系第一高频错误。
+- catch 按书写顺序匹配（基类放前面会截胡派生类），`catch (...)` 只能放最后。
+
+### 0.2 标准异常层次：抛谁、抓谁
+
+| 层次 | 异常 | 典型来源 |
+| :--- | :--- | :--- |
+| 根 | `std::exception` | 所有标准异常的基类，兜底 catch 的对象 |
+| 逻辑错误（编译前可查） | `std::logic_error` | 前置条件违反 |
+| | `std::invalid_argument` | 参数不合法（如 `bitset` 收到非 0/1 字符） |
+| | `std::out_of_range` | 越界（`vector::at`、`map::at`） |
+| 运行时错误（运行中才暴露） | `std::runtime_error` | 运行期条件不满足 |
+| | `std::overflow_error` / `underflow_error` | 算术溢出 |
+| 资源与系统 | `std::bad_alloc` | `new` 分配失败 |
+| | `std::bad_cast` | `dynamic_cast` 引用版失败 |
+
+使用规则：
+
+1. **抛派生类，抓基类**。业务代码抛自定义异常或 `std::runtime_error` 系列，边界处 `catch (const std::exception&)` 兜底——层次保证「抓得全」。
+2. `logic_error` 与 `runtime_error` 的分界是「这个错误能不能在编码时预见」：参数校验失败是 logic（调用方可以避免），文件损坏是 runtime（防不住）。
+3. `bad_alloc` 值得单独 catch 吗？多数程序不接——内存耗尽后能做的恢复极少，让它直达顶层 terminate 往往更诚实。
+
+### 0.3 自定义异常：继承哪个基类、放什么成员
+
+```cpp
+#include <stdexcept>
+#include <string>
+
+class ConfigError : public std::runtime_error {          // 选 runtime_error：配置加载是运行期失败
+public:
+    enum class Kind { FileNotFound, SyntaxError, TypeMismatch };
+
+    ConfigError(Kind k, std::string path, std::string detail)
+        : std::runtime_error("config error in " + path + ": " + detail),
+          kind_(k), path_(std::move(path)) {}
+
+    Kind kind() const noexcept { return kind_; }          // 结构化信息供程序分支
+    const std::string& path() const noexcept { return path_; }
+
+private:
+    Kind kind_;
+    std::string path_;                                    // 富上下文，但注意拷贝成本
+};
+```
+
+三个设计决策：
+
+- 继承 `runtime_error` 而非直接继承 `exception`：免费获得 `what()` 的消息机制与「能被 `catch (const std::runtime_error&)` 抓住」的位置；
+- 消息拼进 `what()` 给人看，结构化成员（`kind_`）给程序分支用——两者用途不同，都保留；
+- 成员在异常对象里意味着**每次抛出都有构造与拷贝成本**，所以异常只用于失败率低的路径（这正是 [策略选型](/cpp/195-CppErrorHandlingStrategies) 第 7 节的性能修正依据）。
+
+### 0.4 栈展开：异常路径上的隐藏工作
+
+异常从 `throw` 点向上传播、逐层退出函数的过程叫**栈展开（stack unwinding）**。每一层发生的事：
+
+```text
+throw 点所在函数：throw 之后的代码全部跳过
+    |
+    v
+退出每层函数时：所有已构造完成的局部对象按构造的逆序析构   <-- RAII 生效点
+    |
+    v
+某层函数的 catch 类型匹配 --> 进入 catch，异常对象在此层 catch 结束时析构
+    |
+    v（没有匹配）
+退出 main / 无 catch / 析构函数中再抛 --> std::terminate，程序终止
+```
+
+由此得出三条铁律：
+
+1. **裸资源在异常路径上必死**：`int* p = new int[100]; risky(); delete[] p;` 中 `risky` 抛异常则 `delete` 永远不执行——换成 `std::vector`/`unique_ptr` 问题消失。这就是「异常安全建立在 RAII 之上」的含义。
+2. **析构函数默认参与栈展开**，析构中再抛 = 双重异常 = `std::terminate`，所以析构必须不抛（下文第 6 节展开）。
+3. **noexcept 是展开路径上的雷区**：异常穿过 `noexcept` 函数边界立即 terminate，没有协商余地。
+
+### 0.5 三个工程场景把机制串起来
+
+**场景一：配置文件加载（完整版，含资源类与兜底）**
+
+```cpp
+class FileHandler {                                  // RAII 包装：构造获取、析构释放
+public:
+    explicit FileHandler(const std::string& name) : filename_(name) {
+        if (name.empty()) {
+            throw ConfigError(ConfigError::Kind::FileNotFound, name, "empty filename");
+        }
+        // ... 实际的 fopen / open 调用 ...
+    }
+    ~FileHandler() noexcept { /* fclose 等，绝不抛 */ }
+    void read() {
+        if (filename_ == "error.txt") {
+            throw ConfigError(ConfigError::Kind::SyntaxError, filename_, "read failed");
+        }
+    }
+private:
+    std::string filename_;
+};
+
+int main() {
+    try {
+        FileHandler f("data.txt");
+        f.read();
+        FileHandler bad("");                         // 构造抛出：bad 未构造成功，
+    } catch (const ConfigError& e) {                 // 但 f 已被栈展开正确析构
+        if (e.kind() == ConfigError::Kind::FileNotFound) use_default();
+        else throw;                                  // 处理不了的继续上抛
+    } catch (const std::exception& e) {              // 兜底：层次里更上层的意外
+        std::cerr << "unexpected: " << e.what() << '\n';
+    }
+}
+```
+
+看懂三个点：构造抛出后 `bad` 的析构**不会**执行（它从未构造成功），但已构造完成的 `f` 会析构——对象级别的「要么全成、要么当没发生」由语言保证；`bad` 自己持有的裸资源如果没交给 RAII 成员，就漏了；第二层 catch 兜底演示了层次捕获的顺序纪律。
+
+**场景二：多步数据库事务的强保证需求**
+
+```cpp
+// 需求：把转账做到「要么两边都改、要么都不改」——这是强保证的现实原型
+void transfer(Account& from, Account& to, long amount) {
+    if (from.balance < amount) throw std::runtime_error("insufficient funds");
+    from.debit(amount);        // 若下一行抛，from 已扣、to 未加：状态被破坏
+    to.credit(amount);         // 这就是为什么需要第 2-3 节的保证等级分析
+}
+// 强保证版：先把两步写进日志/暂存，全部成功后一次性提交（第 3 节的事务式编程）
+```
+
+**场景三：线程边界必须有人接住**
+
+```cpp
+void worker() {
+    try {
+        process_batch();
+    } catch (const std::exception& e) {
+        report(e);                                   // 线程里抛出的异常若无人接，
+    }                                                 // std::terminate 杀掉整个进程
+}
+// 线程入口是异常的天然终点，漏掉 catch 的代价不是「一个线程挂了」
+// 而是「整个程序没了」——线程边界 catch 是团队规范级别的要求。
+```
+
+### 0.6 读法建议
+
+- 先读完本章，建立「throw -> 栈展开 -> RAII 析构 -> catch」的动态图景；
+- 第 1-3 节回答「异常机制从哪来、形式化边界在哪」，赶时间可跳读；
+- 第 4 节（代码示例）与第 8 节（案例研究）是保证等级的落地示范，与 0.5 的场景二直接衔接；
+- 第 7 节（工程实践）是检查清单，写代码时回来翻；
+- 文末「异常抛出 / 异常捕获 / 标准异常类」等速查节是本基础的摘要版，供复习。
+
+---
+
 
 ## 1. 历史动机与演化
 
@@ -1838,6 +2032,92 @@ void push(int value) {
 - **Chromium Base**：`base/optional.h` 与 `base/status.h`。
 - **Facebook Folly**：`folly/Expected.h` 与 `folly/Exception.h`。
 - **Boost.Exception**：`boost/exception/exception.hpp`。
+
+---
+
+## 动手实践
+
+### 练习一（必做）：亲手观测栈展开
+
+任务：写一个三层调用 `main -> middle -> leaf` 的程序。`leaf` 抛异常；`middle` 里先构造一个「打印构造/析构日志」的局部 RAII 对象，**不写 catch**。运行并回答：该对象的析构函数打印了吗？把 `middle` 改成 noexcept 后再跑，发生了什么？
+
+提示：RAII 对象析构打印「dtor」即可；noexcept 版本预期是程序以 `terminate` 终止、析构日志不出现。
+
+<details>
+<summary>参考实现（先自己写再看）</summary>
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+
+struct Tracer {
+    explicit Tracer(const char* name) : name_(name) {
+        std::cout << "ctor " << name_ << '\n';
+    }
+    ~Tracer() { std::cout << "dtor " << name_ << '\n'; }
+    const char* name_;
+};
+
+void leaf() { throw std::runtime_error("boom"); }
+
+void middle() {
+    Tracer t("middle-local");      // 栈展开时 dtor 会被打印
+    leaf();                        // 异常继续向上传播
+}
+
+int main() {
+    try {
+        middle();
+    } catch (const std::exception& e) {
+        std::cout << "caught: " << e.what() << '\n';
+    }
+}
+// 预期输出：ctor middle-local / dtor middle-local / caught: boom
+```
+
+自检：把 `void middle()` 改成 `void middle() noexcept`，输出变成只有 ctor，然后进程以 `terminate called after throwing an instance of ...` 终止——异常撞上 noexcept 边界没有协商，这就是 0.4 节铁律 3 的实证。
+
+</details>
+
+### 练习二（选做）：给写操作补强保证
+
+任务：实现一个 `MessageLog` 类，内部 `std::vector<std::string>`。写 `append_all(const std::vector<std::string>& msgs)`：初版直接循环 `push_back`（基本保证）；升级为强保证（失败时 log 内容不变）。用 0.5 场景二的思路对照检查。
+
+提示：两条路线——copy-and-swap（先在副本上追加，最后 swap）或「先 reserve 再追加」（reserve 不抛时追加中只有 string 拷贝可能抛，但已插入的部分仍需回滚）。
+
+<details>
+<summary>参考实现（先自己写再看）</summary>
+
+```cpp
+#include <string>
+#include <vector>
+
+class MessageLog {
+public:
+    // 基本保证版：抛出后 log 仍是有效 vector，但可能已插入一部分
+    void append_all_basic(const std::vector<std::string>& msgs) {
+        for (const auto& m : msgs) msgs_.push_back(m);
+    }
+
+    // 强保证版：副本失败则*this 无痕，成功后 O(1) 交换
+    void append_all_strong(const std::vector<std::string>& msgs) {
+        std::vector<std::string> tmp(msgs_);      // 可能抛：此时*this 未动
+        for (const auto& m : msgs) tmp.push_back(m);  // 可能抛：同上
+        msgs_.swap(tmp);                          // 不抛（swap 保证）
+    }
+
+private:
+    std::vector<std::string> msgs_;
+};
+```
+
+自检：强保证版的代价是「每次全量拷贝 msgs_」——消息多时性能不可接受。这正是第 5 节对比分析的核心权衡：强保证常用「先拷贝再提交」实现，数据量大时基本保证 + 文档声明往往是更诚实的工程选择。
+
+</details>
+
+### 练习三（挑战，不给参考实现）
+
+给 0.5 场景一的 `FileHandler` 补齐真实实现（用 `fopen/fclose`），并做异常注入测试：用参数控制 `read()` 在第 N 次调用时抛出，断言所有 `FileHandler` 的析构都被调用、没有文件句柄泄漏（用进程 fd 计数或 valgrind 验证）。自查：构造函数抛出路径上，已打开的 fd 由谁关闭？答案应当是「没有人」——所以构造函数内获得第二个资源前，第一个必须已交给 RAII 成员。
 
 ---
 

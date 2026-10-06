@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 220
 title: 并查集
 module: 'algorithm'
 category: 计算机科学
@@ -14,7 +14,6 @@ related:
   - 'algorithm/190-SegmentTree'
   - 'algorithm/200-FenwickTree'
   - 'algorithm/090-HeapAndPriorityQueue'
-  - 'algorithm/170-BinarySearchAlgorithms'
 prerequisites:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/080-Tree'

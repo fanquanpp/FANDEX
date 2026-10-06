@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 140
 title: Spring Security 与 JWT：过滤器链上的无状态认证
 description: 以「接口裸奔的三种死法与前后端分离后 Session 的别扭」引入：认证与授权之分、JWT 三段结构与签名的边界、SecurityFilterChain 过滤器链心智模型、lambda DSL 完整配置、登录签发到方法级授权的全流程，附 curl 四连实验与新旧写法对照表。
 module: 'spring-boot'

@@ -1,5 +1,5 @@
 ---
-order: 650
+order: 690
 title: C++20 模块
 module: 'cpp'
 category: 计算机科学
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'cpp/390-TemplateMetaprogramming'
   - 'cpp/290-Cpp20Range'
-  - 'cpp/740-Cpp23Cpp26NewFeatures'
+  - 'cpp/730-Cpp23NewFeatures'
   - 'cpp/160-RAIIResourceManagement'
   - 'cpp/050-NamespaceLinkage'
 prerequisites:

@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 530
 title: React 的 Vite 工具链：脚手架现状与 vite.config.ts 实战
 module: 'react'
 category: 前端技术
@@ -8,9 +8,8 @@ description: 讲清 React 脚手架的现在时：create-react-app 已退场，�
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'react/090-TestEngineering'
+  - 'react/090-LintFormatAndProjectStructure'
   - 'nextjs/010-NextJS16Overview'
-  - 'vite/070-DevServerHMR'
   - 'vite/050-ViteEnvModes'
 prerequisites:
   - 'react/010-OverviewEnvSetup'
@@ -221,7 +220,7 @@ console.log(import.meta.env.VITE_APP_TITLE ?? '缺失')
 ## 9. 与之前和之后的知识的关系
 
 - 往前：[概述与环境配置](/react/010-OverviewEnvSetup) 给了环境与 JSX 起点，本文接上「项目怎么组织、怎么跑、怎么发」的工程线；
-- 往后：[测试与工程化](/react/090-TestEngineering) 把工具链延伸到测试与 CI；全栈线直接开 [Next.js 16 概述与快速上手](/nextjs/010-NextJS16Overview)；
+- 往后：[React 测试](/react/220-ReactTest) 与 CI 门禁见 [React 与 CI/CD](/react/370-ReactCICD)；代码规范与项目结构见 [Lint、格式化与项目结构](/react/090-LintFormatAndProjectStructure)；全栈线直接开 [Next.js 16 概述与快速上手](/nextjs/010-NextJS16Overview)；
 - Vite 深入：[Vite 开发服务器与 HMR](/vite/070-DevServerHMR) 讲透 Fast Refresh 底下的热更新机制，[环境变量与模式](/vite/050-ViteEnvModes) 补全第 4 节。
 
 ## 10. 官方文档
@@ -245,4 +244,4 @@ React 的脚手架故事在 2023 年翻页：CRA 退场，纯 SPA 线由 Vite re
 
 ## 下一步
 
-两条路任选：继续工程线，进入 [测试与工程化](/react/090-TestEngineering)；或直接开全栈线 [Next.js 16 概述与快速上手](/nextjs/010-NextJS16Overview)。
+两条路任选：继续工程线，进入 [React 测试](/react/220-ReactTest) 与 [React 与 CI/CD](/react/370-ReactCICD)；或直接开全栈线 [Next.js 16 概述与快速上手](/nextjs/010-NextJS16Overview)。

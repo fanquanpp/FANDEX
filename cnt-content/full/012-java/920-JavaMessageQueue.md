@@ -1,5 +1,5 @@
 ---
-order: 740
+order: 830
 title: Java 与消息队列
 module: 'java'
 category: 后端技术

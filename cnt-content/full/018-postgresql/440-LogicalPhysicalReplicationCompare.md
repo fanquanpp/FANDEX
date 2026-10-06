@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 400
 title: 逻辑复制与物理复制对比
 module: 'postgresql'
 category: 数据库

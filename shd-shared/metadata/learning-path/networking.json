@@ -10,8 +10,8 @@
       "nodes": [
         {
           "id": "networking-001",
-          "title": "网络基础与协议",
-          "doc": "010-NetworkBasicsAndProtocol"
+          "title": "IP 编址与子网划分",
+          "doc": "012-IPPlanningAndSubnetting"
         },
         {
           "id": "networking-002",

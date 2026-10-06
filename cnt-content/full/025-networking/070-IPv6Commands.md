@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 100
 title: IPv6 网络命令
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/100-DNSDHCP'
   - 'networking/050-IPCommands'
   - 'networking/020-OSITCPIPModel'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## IPv6 地址配置

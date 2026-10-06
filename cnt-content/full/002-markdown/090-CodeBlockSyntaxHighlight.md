@@ -11,7 +11,6 @@ related:
   - 'markdown/320-ImageCDNAcceleration'
   - 'markdown/330-PRCollaboration'
   - 'markdown/100-Table'
-  - 'markdown/070-BlockquoteNestedList'
 prerequisites:
   - 'markdown/010-SyntaxGuide'
 ---

@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 110
 title: CSS 简写属性
 module: 'css'
 category: 前端技术

@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 450
 title: 设计模式详解
 module: 'software-testing'
 category: 云与基础设施

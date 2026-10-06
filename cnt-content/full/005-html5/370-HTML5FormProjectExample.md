@@ -1,5 +1,5 @@
 ---
-order: 400
+order: 440
 title: HTML5 项目示例：交互式表单应用
 module: 'html5'
 category: 前端技术
@@ -2067,6 +2067,6 @@ const data = {
 
 - 表单基础：`html5/190-HTML5FormValidation`（本项目的验证部分）；
 - 签名板：`html5/230-HTML5MultimediaCanvasDrawing`（Canvas 绘制与导出）；
-- 存储：`html5/240-HTML5OfflineStorageWebAPI`（LocalStorage/File API）；
+- 存储：[Web Storage](/html5/245-WebStorage)（LocalStorage）；文件与下载见 [File/Blob 与对象 URL](/html5/248-FileBlobAndObjectURL)；
 - 拖拽：`html5/250-DragAPI`（拖拽排序与上传）；
 - 工程化：`javascript/690-JavaScriptProjectPractice` 中小型项目的组织方式。

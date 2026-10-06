@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 80
 title: 专项：用例设计方法进阶——判定表、正交法、场景法与状态迁移
 module: 'software-testing'
 category: 云与基础设施

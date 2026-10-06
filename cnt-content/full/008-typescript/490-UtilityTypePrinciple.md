@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 520
 title: 工具类型实现原理：手写 Partial 到 Omit
 module: 'typescript'
 category: '前端技术'

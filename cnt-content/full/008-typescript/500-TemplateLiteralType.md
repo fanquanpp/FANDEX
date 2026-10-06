@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 540
 title: 模板字面量类型：把字符串写进类型
 module: 'typescript'
 category: '前端技术'
@@ -178,4 +178,4 @@ type Ok = `${number}px`;  // 合法：'1px' | '12px' | ...
 - [映射类型与键重映射](/typescript/480-MappedTypeKeyRemap)：as 子句与模板类型的最常见组合
 - [infer 专题](/typescript/440-ConditionalTypeInfer)：模式匹配里 infer 的完整规则
 - [类型安全的路由](/typescript/620-TypeSafeRoute)：多段路径参数的完整推导
-- [类型体操深水区](/typescript/540-TypeGymnastics)：递归类型的深度边界
+- [类型体操深水区](/typescript/540-TypeGymnasticsBoundaries)：递归类型的深度边界

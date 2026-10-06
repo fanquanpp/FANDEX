@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 200
 title: 脚本调试与严格模式
 module: 'shell'
 category: 工具链

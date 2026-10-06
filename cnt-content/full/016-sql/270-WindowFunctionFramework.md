@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 290
 title: 窗口函数框架
 module: 'sql'
 category: 数据库

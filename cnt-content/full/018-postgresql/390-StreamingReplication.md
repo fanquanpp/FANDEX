@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 350
 title: 流复制：物理复制的原理与搭建
 module: 'postgresql'
 category: 数据库
@@ -11,7 +11,7 @@ related:
   - 'postgresql/400-PhysicalReplicationSlot'
   - 'postgresql/410-CascadingReplication'
   - 'postgresql/440-LogicalPhysicalReplicationCompare'
-  - 'postgresql/470-ReplicationHA'
+  - 'postgresql/472-HAFailoverPatroni'
 prerequisites:
   - 'postgresql/160-SystemArchitecture'
   - 'postgresql/210-VACUUMMechanism'
@@ -52,6 +52,18 @@ synchronous_standby_names = 'FIRST 1 (standby1)'   # 留空即异步
 - **同步复制**：`synchronous_standby_names` 指定备库后，每个提交要等备库确认收到（`remote_apply` 级别甚至等重放完成）才返回。零丢失，但备库抖动会直接拖慢主库提交。
 
 选择原则：金融账务类核心库用同步（或至少半同步语义），一般业务用异步 + 监控延迟告警。`FIRST 1 (standby1)` 的写法支持多备库"任一确认即可"，兼顾可用性与安全。
+
+开启 `synchronous_standby_names` 之后，`synchronous_commit` 还有五档精细旋钮，按安全度从高到低（主库与会话级都可设）：
+
+```text
+remote_apply  — 等备库回放完成才确认，提交后在备库立即可见（最安全，延迟最高）
+on            — 本地刷盘 + 等同步备库把 WAL 刷盘（默认档）
+remote_write  — 等备库收到 WAL 并写入 OS 缓存（备库尚未刷盘，宕机极端情况可丢）
+local         — 仅本地刷盘即确认，不等同步备库（等于临时退回异步）
+off           — 异步提交，连本地刷盘都不等（性能最高，崩溃可能丢最近提交）
+```
+
+易错点：把 `synchronous_standby_names` 配上了、却在应用会话里遗留了 `synchronous_commit = off` 或 `local`——同步语义整个失效还不报错。审计同步级别用 `SHOW synchronous_commit;` 逐角色核对。
 
 ## 动手：用 pg_basebackup 搭一套主从
 
@@ -100,6 +112,10 @@ SELECT pg_is_in_recovery();   -- t
 SELECT client_addr, state, sync_state,
        pg_wal_lsn_diff(pg_current_wal_lsn(), replay_lsn) AS replay_lag_bytes
 FROM pg_stat_replication;
+
+-- 备库侧：WAL 接收进程的状态与接收位置
+SELECT status, sender_host, sender_port, received_lsn, latest_end_lsn
+FROM pg_stat_wal_receiver;
 ```
 
 ## 常见困惑与故障
@@ -110,7 +126,7 @@ FROM pg_stat_replication;
 
 **"备库能不能写？"**——不能，备库强制只读。需要"备库可写的部分数据"场景（如汇总表）属于逻辑复制的领地。
 
-**"如何做故障切换？"**——手工流程：备库执行 `pg_ctl promote`（删 signal、停止重放、变为可写主库），应用切换连接串。生产环境应交给 Patroni/Repmgr 等工具自动仲裁，见[复制高可用](/postgresql/470-ReplicationHA)。
+**"如何做故障切换？"**——手工流程：备库执行 `pg_ctl promote`（删 signal、停止重放、变为可写主库），应用切换连接串。生产环境应交给 Patroni/Repmgr 等工具自动仲裁，见[高可用与自动故障转移](/postgresql/472-HAFailoverPatroni)。
 
 ## 检验清单
 

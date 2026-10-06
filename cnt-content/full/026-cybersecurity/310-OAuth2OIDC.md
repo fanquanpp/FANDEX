@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 320
 title: OAuth2/OIDC 配置命令
 module: 'cybersecurity'
 category: 云与基础设施

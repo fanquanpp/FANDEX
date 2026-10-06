@@ -1,5 +1,5 @@
 ---
-order: 650
+order: 690
 title: 类型安全的配置系统
 module: 'typescript'
 category: 前端技术

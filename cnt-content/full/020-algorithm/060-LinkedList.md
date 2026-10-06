@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 80
 title: "链表：改两根指针，不搬家"
 module: 'algorithm'
 category: 计算机科学

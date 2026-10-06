@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 100
 title: 信号、await 与协程
 module: 'gdscript'
 category: 游戏开发

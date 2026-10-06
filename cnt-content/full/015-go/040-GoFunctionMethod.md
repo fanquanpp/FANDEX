@@ -4,7 +4,7 @@ title: Go 函数与方法
 module: 'go'
 category: 后端技术
 difficulty: beginner
-description: 函数定义、多返回值、命名返回值、可变参数、init 函数、方法与接收者、接口与隐式实现。
+description: 函数定义、多返回值、命名返回值、可变参数、闭包、init 函数、方法与接收者、函数选项与中间件模式——函数与方法专篇，接口见 060。
 author: fanquanpp
 updated: '2026-09-12'
 related:
@@ -24,8 +24,8 @@ prerequisites: []
 - 掌握「1. 函数定义」的核心机制、典型用法与常见陷阱
 - 掌握「2. init 函数」的核心机制、典型用法与常见陷阱
 - 掌握「3. 方法与接收者」的核心机制、典型用法与常见陷阱
-- 掌握「4. 接口与隐式实现」的核心机制、典型用法与常见陷阱
-- 掌握「5. 函数设计模式」的核心机制、典型用法与常见陷阱
+- 掌握「4. 函数设计模式」（函数选项、中间件）的核心机制与典型用法
+- 接口与隐式实现已迁入 060-GoInterfaceComposition，阅读顺序是本篇的方法 -> 060 的接口
 
 
 ## 1. 函数定义
@@ -341,113 +341,13 @@ areaFn := Rect.Area
 fmt.Println(areaFn(r)) // 12
 ```
 
-## 4. 接口与隐式实现
 
-### 4.1 接口定义
+接口（定义、隐式实现、组合、空接口、断言与开关）已整体迁入
+[060-GoInterfaceComposition](/go/060-GoInterfaceComposition)，本文聚焦函数与方法。
 
-```go
-type Speaker interface {
-    Speak() string
-}
-```
+## 4. 函数设计模式
 
-### 4.2 隐式实现
-
-Go 中类型无需显式声明实现接口，只要实现了接口的所有方法即可：
-
-```go
-type Dog struct{ Name string }
-
-func (d Dog) Speak() string {
-    return d.Name + " says: Woof!"
-}
-
-type Robot struct{ ID int }
-
-func (r Robot) Speak() string {
-    return fmt.Sprintf("Robot #%d says: Beep!", r.ID)
-}
-
-// 两者都隐式实现了 Speaker 接口
-func makeItSpeak(s Speaker) {
-    fmt.Println(s.Speak())
-}
-
-makeItSpeak(Dog{Name: "Rex"})    // Rex says: Woof!
-makeItSpeak(Robot{ID: 42})       // Robot #42 says: Beep!
-```
-
-### 4.3 接口组合
-
-```go
-type Reader interface {
-    Read(p []byte) (n int, err error)
-}
-
-type Writer interface {
-    Write(p []byte) (n int, err error)
-}
-
-// 接口组合
-type ReadWriter interface {
-    Reader
-    Writer
-}
-
-// 结构体也可以组合接口
-type FileReader struct {
-    Reader // 嵌入接口
-}
-```
-
-### 4.4 空接口
-
-`interface{}`（Go 1.18+ 可写为 `any`）不包含任何方法，所有类型都实现了它：
-
-```go
-func printAny(v any) {
-    fmt.Println(v)
-}
-
-printAny(42)
-printAny("hello")
-printAny([]int{1, 2, 3})
-printAny(struct{}{})
-
-// 常见用途：JSON 解析
-var data any
-json.Unmarshal([]byte(`{"key": "value"}`), &data)
-```
-
-### 4.5 类型断言与类型开关
-
-```go
-var s Speaker = Dog{Name: "Rex"}
-
-// 类型断言
-dog, ok := s.(Dog) // ok 为 true 表示断言成功
-if ok {
-    fmt.Println(dog.Name)
-}
-
-// 类型开关
-func classify(v any) string {
-    switch v := v.(type) {
-    case int:
-        return fmt.Sprintf("int: %d", v)
-    case string:
-        return fmt.Sprintf("string: %s", v)
-    case bool:
-        return fmt.Sprintf("bool: %t", v)
-    default:
-        return fmt.Sprintf("unknown: %T", v)
-    }
-}
-```
-
-## 5. 函数设计模式
-
-### 5.1 函数选项模式（Functional Options）
+### 4.1 函数选项模式（Functional Options）
 
 ```go
 type Server struct {
@@ -490,7 +390,7 @@ srv := NewServer(
 )
 ```
 
-### 5.2 中间件模式
+### 4.2 中间件模式
 
 ```go
 type Handler func(msg string)
@@ -740,85 +640,6 @@ fmt.Println(area());
 // 方法表达式需要传入接收者
 areaFn := Rect.Area;
 fmt.Println(areaFn(r));
-```
-
----
-
-## 接口定义与实现
-
-**基本写法：接口定义**
-`type <接口名> interface { ... }`
-```go
-// 定义接口
-type Speaker interface {
-    Speak() string;
-}
-```
-
-**基本写法：隐式实现**
-`func (<接收者> <类型>) <方法名>() <返回值> { ... }`
-```go
-// Dog 隐式实现了 Speaker 接口
-type Dog struct{ Name string };
-
-func (d Dog) Speak() string {
-    return d.Name + " says: Woof!";
-}
-```
-
----
-
-## 接口组合
-
-**基本写法：接口组合**
-`type <接口名> interface { <接口1>; <接口2> }`
-```go
-// 组合 Reader 和 Writer
-type ReadWriter interface {
-    Reader;
-    Writer;
-}
-```
-
----
-
-## 空接口
-
-**基本写法：空接口**
-`any` / `interface{}`
-```go
-// any 接受任意类型
-func printAny(v any) {
-    fmt.Println(v);
-}
-```
-
----
-
-## 类型断言与类型开关
-
-**基本写法：类型断言**
-`<值>.(<类型>)`
-```go
-// 带检查的类型断言
-dog, ok := s.(Dog);
-if ok {
-    fmt.Println(dog.Name);
-}
-```
-
-**基本写法：类型开关**
-`switch <变量> := <值>.(type) { case ... }`
-```go
-// 类型开关判断类型
-switch v := v.(type) {
-case int:
-    return fmt.Sprintf("int: %d", v);
-case string:
-    return fmt.Sprintf("string: %s", v);
-default:
-    return fmt.Sprintf("unknown: %T", v);
-}
 ```
 
 ---

@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 590
 title: gh api 调用命令速查手册
 module: 'github'
 category: 工具链

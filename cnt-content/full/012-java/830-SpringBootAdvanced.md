@@ -1,5 +1,5 @@
 ---
-order: 650
+order: 740
 title: SpringBoot 进阶
 module: 'java'
 category: 后端技术
@@ -9,11 +9,9 @@ author: fanquanpp
 updated: '2026-09-28'
 related:
   - 'java/080-OperatorExpression'
-  - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
   - 'java/840-SpringBootSecurity'
   - 'java/850-SpringBootDataAccess'
 prerequisites:
-  - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
   - 'java/370-JavaAnnotationsTutorial'
   - 'java/390-GenericDetailed'
   - 'java/210-CollectionFrameworkDetailed'
@@ -21,7 +19,7 @@ prerequisites:
 
 ## 前置知识
 
-- [Spring 基础： IoC 容器、 AOP、 Bean 生命周期与企业级开发核心](/java/820-SpringBasicsIoCAOPBeanLifecycle)：建议先完成前一篇的学习
+- [Spring 基础： IoC 容器、 AOP、 Bean 生命周期与企业级开发核心](/java/820-SpringIoCContainerBeansAndDI)：建议先完成前一篇的学习
 
 ## 学习目标
 

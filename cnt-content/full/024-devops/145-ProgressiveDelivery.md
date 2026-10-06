@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 170
 title: 发布策略与渐进式交付
 module: 'devops'
 category: 云与基础设施
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'devops/140-CICDPipeline'
-  - 'devops/180-GitOpsCD'
   - 'devops/130-ServiceMesh'
   - 'devops/310-OnCallPractice'
 prerequisites:
@@ -202,6 +201,109 @@ spec:
 6. **开关与代码版本错配**：开关状态是全局的，新代码依赖「开关开的语义」、旧实例还在
    跑「开关关的语义」，滚动窗口内两种语义并存——设计开关语义时要保证中间状态无害。
 
+## 工具化落地：Argo Rollouts 与 Flagger
+
+手工切 selector 与手调副本数适合理解原理，生产上的渐进交付交给专用控制器。两家 YAML 骨架如下（承接自旧 GitOps 篇拆出的渐进交付配置）：
+
+**Argo Rollouts：声明式发布台阶 + 指标分析**
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: myapp
+spec:
+  replicas: 10
+  strategy:
+    canary:
+      steps:                       # 放量台阶：停够时间才继续
+        - setWeight: 10
+        - pause: { duration: 5m }
+        - setWeight: 30
+        - pause: { duration: 5m }
+        - setWeight: 50
+        - pause: { duration: 5m }
+        - setWeight: 80
+        - pause: { duration: 5m }
+      canaryService: myapp-canary
+      stableService: myapp-stable
+      trafficRouting:              # 流量精确切分交给网格
+        istio:
+          virtualServices:
+            - name: myapp-vsvc
+              routes: [primary]
+      analysis:                    # 每个台阶自动做指标验证
+        templates:
+          - templateName: success-rate
+        args:
+          - name: service-name
+            value: myapp-canary
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate
+spec:
+  args: [{ name: service-name }]
+  metrics:
+    - name: success-rate
+      provider:
+        prometheus:
+          address: http://prometheus:9090
+          query: |
+            sum(rate(http_requests_total{service="{{args.service-name}}",status!~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{service="{{args.service-name}}"}[5m]))
+      successCondition: result[0] >= 0.99   # 成功率跌破 99% 自动中止回滚
+      interval: 30s
+      count: 10
+```
+
+**Flagger：约定优先的金丝雀**（自带负载测试钩子，配置量更小）：
+
+```yaml
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: myapp
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: myapp
+  service:
+    port: 8080
+  analysis:
+    interval: 1m
+    threshold: 5            # 连续失败 5 次才回滚
+    maxWeight: 50           # 金丝雀最多吃到 50% 流量
+    stepWeight: 10          # 每分钟加 10%
+    metrics:
+      - name: request-success-rate
+        thresholdRange: { min: 99 }
+        interval: 1m
+      - name: request-duration
+        thresholdRange: { max: 500 }   # 延迟 500ms 红线
+        interval: 1m
+    webhooks:
+      - name: load-test
+        url: http://flagger-loadtester/
+        timeout: 5s
+        metadata:
+          cmd: 'hey -z 1m -q 10 -c 2 http://myapp:8080/'
+```
+
+选型一句话：要精细控制台阶与自定义分析模板选 Argo Rollouts（与 ArgoCD 同生态）；要"零配置起步、约定优于配置"选 Flagger。
+
+四种发布策略终局对比：
+
+| 策略 | 流量切换 | 回滚速度 | 资源开销 | 风险 |
+| --- | --- | --- | --- | --- |
+| 滚动更新 | 逐步 | 中 | 低 | 中 |
+| 蓝绿部署 | 一次性 | 快 | 高（2 倍） | 低 |
+| 金丝雀 | 渐进 | 快 | 中 | 低 |
+| 影子测试 | 复制流量 | 即时 | 高 | 最低 |
+
 ## 实践
 
 在 kind 或 minikube 上完成，约 40 分钟。目标：亲手做一次「切 selector 的蓝绿」，
@@ -246,6 +348,6 @@ P99 超标自动回滚，配合 expand-contract 保证 schema 兼容；营销页
 ## 下一步
 
 - 金丝雀分析依赖的指标从哪来：[Prometheus](/devops/250-Prometheus) 与
-  [监控告警体系](/devops/300-MonitorAndAlert)；
+  [监控告警体系](/devops/240-MonitorAndObservability)；
 - 把放量清单放进 Git、由 ArgoCD 驱动的完整闭环见 [GitOps 与 ArgoCD](/devops/190-GitOpsArgoCD)；
 - 发布失败后的应急与复盘流程见 [OnCall 实践](/devops/310-OnCallPractice)。

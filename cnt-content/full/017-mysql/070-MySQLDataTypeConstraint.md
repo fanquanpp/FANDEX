@@ -81,82 +81,16 @@ ALTER TABLE charging_piles
 
 厂商上报的扩展信息，A 厂带电池温度、B 厂带固件版本——结构天天变。这类"扩展字段"用 `JSON` 列收容，而不是为每个厂商加列。但记两条边界：JSON 内部字段**默认没有索引、没有约束**（要索引走生成列，见[JSON 类型与 JSON_TABLE](/mysql/810-JSONTypeJSONTable)）；核心业务字段（电价、状态）永远拆成普通列，别塞进 JSON。
 
-## 3. 约束：让坏数据在门口被拦下
+## 3. 约束：一块独立的知识，去专篇学
 
-表建好了，现在往里灌脏数据，亲眼看数据库怎么接。
+上面建表语句里出现的 `NOT NULL`、`DEFAULT 1`、`UNIQUE KEY uk_pile_no`、`CHECK (power_kw > 0)` 与 `PRIMARY KEY` 都是**约束**——类型之后的第二道数据质检闸。它们是独立的一整块知识体系：六大约束的完整机制、列级与表级的声明分界、CHECK 在 8.0.16 前只解析不执行的版本坑（ERROR 3819）、外键 RESTRICT/CASCADE/SET NULL 三态级联实验（vocaloid 三公司场景），全部内容见专篇：
 
-### 3.1 NOT NULL 与 DEFAULT：必填与兜底
+- [约束与完整性](/mysql/075-ConstraintsIntegrityEnforcement)：六大约束 + 联合唯一 + 外键三态实验 + 存量表补约束流程。
 
-```sql
--- station_id 是 NOT NULL：不传就报错，绝不静默
-INSERT INTO charging_piles (pile_no, power_kw, installed_at)
-VALUES ('P010001000001', 120.0, '2026-05-01');
--- ERROR 1048 (23000): Column 'station_id' cannot be null
+本篇只留与**类型选型**直接相关的两句：
 
--- status 没传：DEFAULT 1 兜底
-INSERT INTO charging_piles (pile_no, station_id, power_kw, installed_at)
-VALUES ('P010001000002', 3, 120.0, '2026-05-01');
-SELECT status FROM charging_piles WHERE pile_no = 'P010001000002';  -- 1
-```
-
-语义上想清楚：NOT NULL 表达"必填"，DEFAULT 表达"不填时的合理值"。`last_heartbeat` 允许 NULL 是刻意的——"从未上线"和"心跳时间是 1970-01-01"是两回事，**NULL 表达未知，默认值表达已知**，别互相冒充。
-
-### 3.2 UNIQUE：业务唯一性的最后防线
-
-```sql
-INSERT INTO charging_piles (pile_no, station_id, power_kw, installed_at)
-VALUES ('P010001000002', 3, 60.0, '2026-06-01');
--- ERROR 1062 (23000): Duplicate entry 'P010001000002' for key 'uk_pile_no'
-```
-
-唯一约束从**业务语义**出发（桩编号天然唯一），顺带免费得到一个高效索引。多租户系统里常见组合唯一：
-
-```sql
-UNIQUE KEY uk_tenant_email (tenant_id, email)  -- 同租户内邮箱唯一
-```
-
-### 3.3 CHECK：把取值范围写进表里
-
-```sql
-INSERT INTO charging_piles (pile_no, station_id, power_kw, installed_at)
-VALUES ('P010001000003', 3, 800, '2026-06-01');
--- ERROR 3819 (HY000): Check constraint 'chk_power' is violated.
-
-INSERT INTO charging_piles (pile_no, station_id, power_kw, status, installed_at)
-VALUES ('P010001000004', 3, 120.0, 9, '2026-06-01');
--- ERROR 3819 (HY000): Check constraint 'chk_status' is violated.
-```
-
-一个历史坑要记住：**8.0.16 之前 MySQL 只解析 CHECK 不执行**，很多老教程因此说"MySQL 的 CHECK 没用"——8.0.16 起是真约束了。2026 年写新表，放心用。
-
-另外注意功率列没有写成 `DECIMAL(5,1) UNSIGNED`：MySQL 8.0.17 起 DECIMAL/FLOAT/DOUBLE 的 UNSIGNED 已废弃，"非负"的正确表达就是 `CHECK (power_kw > 0)`。
-
-### 3.4 PRIMARY KEY：主键的三条纪律
-
-主键是行的身份证，纪律三条：
-
-1. **无业务含义**：手机号、身份证号会变会错，变了主键整条链路（外键、索引、缓存）全要跟着改。用自增 BIGINT 或雪花 ID。
-2. **尽量短**：InnoDB 的二级索引每个条目都复制一份主键（[聚簇索引与二级索引](/mysql/220-ClusteredIndexSecondaryIndex)详述），主键胖一圈，所有索引胖十圈。
-3. **一表一主键**，复合主键语法知道即可：`PRIMARY KEY (tenant_id, user_id)`，多见于关联表。
-
-### 3.5 FOREIGN KEY：建不建，是个工程决策
-
-语法本身很简单——先有站点表，再把桩挂上去：
-
-```sql
-CREATE TABLE charging_stations (
-  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  name       VARCHAR(100) NOT NULL
-) ENGINE=InnoDB;
-
-ALTER TABLE charging_piles
-  ADD CONSTRAINT fk_pile_station
-  FOREIGN KEY (station_id) REFERENCES charging_stations (id)
-  ON DELETE RESTRICT    -- 有桩的站点不许删
-  ON UPDATE CASCADE;    -- 站点 id 变了，桩跟着变
-```
-
-外键保证**数据库层面的引用完整性**：插一个不存在的 station_id 直接报 1452。但互联网业务常在应用层维护这条关系，理由有三：高并发写入时外键检查放大锁范围；分库分表后外键跨不了库；批量导数时处处受阻。决策标准一句话：**小团队、单一库、数据质量要兜底，建外键；超大并发、分库分表，应用层管 + 定期对账**。没有标准答案，但要"知道自己在放弃什么"。
+- **NULL 的语义由约束表达**：`last_heartbeat DATETIME NULL` 是刻意设计——"从未上线"（NULL）与"1970-01-01 上线"（默认值）是两回事，NULL 表达未知、默认值表达已知，别互相冒充。
+- **功率列没有写 `DECIMAL(5,1) UNSIGNED`**：8.0.17 起 DECIMAL/FLOAT/DOUBLE 的 UNSIGNED 已废弃，"非负"的正确表达是 `CHECK (power_kw > 0)`——写法演进本身也是类型知识的一部分。
 
 ## 4. 类型选择的通用原则
 
@@ -181,14 +115,14 @@ ALTER TABLE charging_piles
 
 ## 6. 练习
 
-1. 给 charging_piles 增加"二维码令牌"列：值唯一、必填、长度 32 字符定长。写出 ALTER 语句并说明每处选择的理由。
-2. 造三条 INSERT 分别触发 1048、1062、3819 三种报错，贴出报错信息。
-3. 把 status = 5 的 UPDATE 语句执行一次，观察结果，解释 CHECK 在 UPDATE 时是否生效。
-4. 为"站点表"补齐字段设计：站点名（最长 100 字符）、城市编码（定长 4）、开业日期、日均充电量（可能带小数，参与报表）。写出完整 CREATE TABLE。
-5. （思考题）last_heartbeat 用"允许 NULL"和"默认 '1970-01-01'"两种设计，查询"从未上线过的桩"分别怎么写？哪种更不容易出错？
+1. 给 charging_piles 增加"二维码令牌"列：值唯一、必填、长度 32 字符定长。写出 ALTER 语句并说明每处选择的理由（唯一与必填的约束写法见 [约束与完整性](/mysql/075-ConstraintsIntegrityEnforcement)）。
+2. 为"站点表"补齐字段设计：站点名（最长 100 字符）、城市编码（定长 4）、开业日期、日均充电量（可能带小数，参与报表）。写出完整 CREATE TABLE。
+3. （思考题）last_heartbeat 用"允许 NULL"和"默认 '1970-01-01'"两种设计，查询"从未上线过的桩"分别怎么写？哪种更不容易出错？
+4. （延伸练习）造三条 INSERT 分别触发 1048、1062、3819 三种报错，并把 status = 5 的 UPDATE 跑一遍观察 CHECK 是否拦截——完整实验流程在 [约束与完整性](/mysql/075-ConstraintsIntegrityEnforcement) 的动手实践里。
 
 ## 下一步
 
+- [约束与完整性](/mysql/075-ConstraintsIntegrityEnforcement)：六大约束的完整机制与外键三态实验——本篇约束桥接的展开。
 - [SQL 数据定义与高级对象](/mysql/090-SQLDataDefinitionAdvanced)：ALTER/DROP、视图、索引的完整 DDL。
 - [DML 数据操作语言](/mysql/100-DML)：往这张表里插改删，事务护身。
 - [字符集与排序规则](/mysql/170-CharsetCollation)：utf8mb4 背后的完整体系。

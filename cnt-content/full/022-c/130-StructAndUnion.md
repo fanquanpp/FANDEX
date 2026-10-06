@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 160
 title: 结构体与联合：自定义类型打包
 module: 'c'
 category: 计算机科学

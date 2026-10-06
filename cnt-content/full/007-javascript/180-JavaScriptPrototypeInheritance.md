@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 200
 title: 原型与继承：方法只写一次，一百个玩家共享
 module: 'javascript'
 category: 前端技术

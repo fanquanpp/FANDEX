@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 80
 title: 文本与字体基础
 module: 'css'
 category: 前端技术
@@ -8,7 +8,7 @@ description: font 家族属性、文本对齐与间距控制，是正文排版�
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'css/490-TypographyAndGridSystem'
+  - 'css/490-TypeScaleAndSpacingTokens'
   - 'css/510-CSSFontLoading'
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
@@ -17,7 +17,7 @@ prerequisites:
 
 ## 0. 直觉：把文字当成“可以被打扮的内容”
 
-页面里 90% 的内容是文字。CSS 控制文字有两组开关：一组管“字体长什么样”（`font-*`），一组管“文字怎么摆”（`text-*`）。本课把最常用的十几个属性一次讲清，排版进阶（字号阶梯、网格基准线）见 `css/490-TypographyAndGridSystem`。
+页面里 90% 的内容是文字。CSS 控制文字有两组开关：一组管“字体长什么样”（`font-*`），一组管“文字怎么摆”（`text-*`）。本课把最常用的十几个属性一次讲清，排版进阶（字号阶梯、网格基准线）见 `css/490-TypeScaleAndSpacingTokens`。
 
 ## 1. font-family：用哪套字体
 
@@ -173,7 +173,7 @@ a {
 
 ## 11. 扩展学习
 
-- 排版进阶：`css/490-TypographyAndGridSystem`；
+- 排版进阶：`css/490-TypeScaleAndSpacingTokens`；
 - 字体加载与 @font-face：`css/510-CSSFontLoading`；
 - 响应式字号（clamp）：`css/120-CSSFunctions`；
 - 盒模型与间距：`css/050-CSS3BoxModelDetailed`。

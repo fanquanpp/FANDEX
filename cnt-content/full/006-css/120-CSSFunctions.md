@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 130
 title: CSS 函数
 module: 'css'
 category: 前端技术

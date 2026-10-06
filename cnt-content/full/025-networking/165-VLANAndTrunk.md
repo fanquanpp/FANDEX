@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 200
 title: VLAN 与跨 VLAN 互通
 module: 'networking'
 category: 云与基础设施
@@ -10,7 +10,6 @@ updated: '2026-10-05'
 related:
   - 'networking/035-NetworkSimulatorLab'
   - 'networking/160-SwitchingAndRouting'
-  - 'networking/190-NetworkDiagnosis'
   - 'networking/330-NetworkNamespaceVirtualBridge'
 prerequisites:
   - 'networking/035-NetworkSimulatorLab'
@@ -19,6 +18,12 @@ prerequisites:
 前置知识：交换机转发原理与模拟器实验环境（见
 [网络实验环境与模拟器](networking/035-NetworkSimulatorLab)）；本文实验为华为 eNSP
 （VRP 语法），概念与 H3C/Cisco 平台通用，命令差异以各平台文档为准。
+
+## 知识点地图
+
+- **知识类别**：VLAN 与 Trunk——二层网络的广播域隔离与跨交换机扩展。VLAN 是 160 篇交换技术的纵深篇，专注 access/trunk 的心智模型与动手实验。
+- **解决什么问题**：一栋楼的设备全在一个广播域里，广播风暴、安全隐患、地址浪费全来了；跨交换机又要让同 VLAN 设备互通——access 口分 VLAN、trunk 口带标签运输，就是这组问题的完整答案。
+- **什么时候用到**：按部门/楼层切分网络；跨交换机部署同一业务；排障时判断「二层为什么不通」（VLAN 不匹配、trunk 未放行）。
 
 ## 场景：一栋楼的广播域
 

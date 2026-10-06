@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 180
 title: RAII 与资源管理
 module: 'cpp'
 category: 计算机科学
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'cpp/660-Cpp20Module'
-  - 'cpp/740-Cpp23Cpp26NewFeatures'
+  - 'cpp/730-Cpp23NewFeatures'
   - 'cpp/210-OperatorOverloading'
   - 'cpp/200-CppOOPBasics'
 prerequisites:

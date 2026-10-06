@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 100
 title: Bean Validation：把十几行 if 从接口里赶出去
 description: 以「注册接口要校验用户名、手机号、年龄，改一条规则要全局搜索」引入：声明式校验心智模型、常用注解表与三兄弟分野、@Valid 与 @Validated 与分组校验、自定义 @PhoneNumber 校验器、嵌套校验静默失效实验，附 curl 逐条观察 400 报文。
 module: 'spring-boot'

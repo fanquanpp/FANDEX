@@ -1,5 +1,5 @@
 ---
-order: 550
+order: 600
 title: C++数学库
 module: 'cpp'
 category: 计算机科学

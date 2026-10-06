@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 220
 title: git-blame 追问每一行：它给你答案，也经常对你说谎
 module: 'git'
 category: 工具链

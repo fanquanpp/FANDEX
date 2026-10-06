@@ -39,7 +39,7 @@
       "subtitle": "事件驱动、幂等、统一认证与监控告警",
       "nodes": [
         { "id": "spring-cloud-100", "title": "事件驱动与异步消息", "doc": "100-EventDrivenMessaging" },
-        { "id": "spring-cloud-110", "title": "分布式锁与接口幂等", "doc": "110-DistributedLockIdempotency" },
+        { "id": "spring-cloud-110", "title": "分布式锁与接口幂等", "doc": "110-DistributedLockWithRedisson" },
         { "id": "spring-cloud-120", "title": "微服务统一认证授权", "doc": "120-MicroserviceAuth" },
         { "id": "spring-cloud-130", "title": "监控告警体系", "doc": "130-MonitoringAlerting" }
       ]

@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 460
 title: 多线程入门：从单线程 10 秒到四线程 3 秒
 module: 'cpp'
 category: 计算机科学
@@ -8,7 +8,7 @@ description: "以「图片批量缩放单线程约 10 秒、四线程约 3 秒�
 author: fanquanpp
 updated: '2026-09-28'
 related:
-  - 'cpp/440-ConcurrentProgramming'
+  - 'cpp/440-CoordinationAndAsyncPrimitives'
   - 'cpp/160-RAIIResourceManagement'
   - 'cpp/030-CppBasicSyntax'
   - 'cpp/450-CppMemoryModel'
@@ -242,7 +242,7 @@ void run() {
 ## 11. 与之前和之后的知识的关系
 
 - 往前：120 篇的指针告诉你「同一地址多方可达」——线程把这句话变成日常；030 的 UB 概念在数据竞争处升级；160 的 RAII 化身 lock_guard；
-- 往后：[并发工程](/cpp/440-ConcurrentProgramming) 讲线程之间如何协作与排队（条件变量、死锁、future）；450 篇的内存模型解释数据竞争为什么被定义为 UB；
+- 往后：[并发工程](/cpp/440-CoordinationAndAsyncPrimitives) 讲线程之间如何协作与排队（条件变量、死锁、future）；450 篇的内存模型解释数据竞争为什么被定义为 UB；
 - 更远：变参模板（370）正是 `std::thread t(f, a, b, c)` 这类「任意参数启动」的底层机制。
 
 ## 12. 官方文档
@@ -265,4 +265,4 @@ void run() {
 
 ## 下一步
 
-进入 [并发工程](/cpp/440-ConcurrentProgramming)：条件变量实现生产者消费者、亲手造一次死锁、以及 future 与 async 的取舍实验。
+进入 [并发工程](/cpp/440-CoordinationAndAsyncPrimitives)：条件变量实现生产者消费者、亲手造一次死锁、以及 future 与 async 的取舍实验。

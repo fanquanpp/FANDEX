@@ -1,5 +1,5 @@
 ---
-order: 460
+order: 500
 title: 特性查询
 module: 'css'
 category: 前端技术

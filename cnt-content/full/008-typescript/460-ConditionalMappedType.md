@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 490
 title: 条件类型遇上映射类型：值位置的变换
 module: 'typescript'
 category: '前端技术'
@@ -10,10 +10,10 @@ updated: '2026-09-29'
 related:
   - 'typescript/470-MappedTypeAdvanced'
   - 'typescript/430-ConditionalTypeDistribute'
-  - 'typescript/450-InferTypeDeepDive'
+  - 'typescript/450-TypeCompositionPractice'
   - 'typescript/480-MappedTypeKeyRemap'
 prerequisites:
-  - 'typescript/450-InferTypeDeepDive'
+  - 'typescript/450-TypeCompositionPractice'
 ---
 
 ## 0. 真实场景：带 null 的 API 响应怎么清洗
@@ -33,7 +33,7 @@ interface SearchHit {
 
 ## 1. 一句话理解
 
-> 映射类型负责「逐字段循环」，条件类型负责「对每个字段做判断」。冒号左边写 `[K in keyof T]`，冒号右边写 `T[K] extends ... ? ... : ...`——两个原语各站一边，组合就成立了。本篇是[条件类型三部曲](/typescript/450-InferTypeDeepDive)与[映射类型进阶](/typescript/470-MappedTypeAdvanced)之间的桥。
+> 映射类型负责「逐字段循环」，条件类型负责「对每个字段做判断」。冒号左边写 `[K in keyof T]`，冒号右边写 `T[K] extends ... ? ... : ...`——两个原语各站一边，组合就成立了。本篇是[条件类型三部曲](/typescript/450-TypeCompositionPractice)与[映射类型进阶](/typescript/470-MappedTypeAdvanced)之间的桥。
 
 ## 2. 动手：写出字段清洗器
 

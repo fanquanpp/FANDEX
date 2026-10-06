@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 60
 title: 容器与 Docker
 module: 'devops'
 category: 云与基础设施
@@ -10,7 +10,7 @@ updated: '2026-09-28'
 related:
   - 'devops/010-OverviewLinuxBasics'
   - 'devops/040-NetworkSecurity'
-  - 'devops/080-Kubernetes'
+  - 'devops/090-KubernetesCoreDetailed'
   - 'devops/140-CICDPipeline'
 prerequisites: []
 ---

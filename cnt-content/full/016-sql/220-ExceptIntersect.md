@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 240
 title: 差集与交集：EXCEPT 与 INTERSECT
 module: 'sql'
 category: 数据库

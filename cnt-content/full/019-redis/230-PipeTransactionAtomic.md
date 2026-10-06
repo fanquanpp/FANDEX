@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 290
 title: 管道与事务原子性
 module: 'redis'
 category: 数据库
@@ -15,6 +15,14 @@ related:
 prerequisites:
   - 'redis/010-OverviewCoreDataStructure'
 ---
+
+## 知识点地图
+
+- **知识类别**：编程与原子性——Pipeline 管道（省 RTT）、Multi/Exec 事务（批量执行）、WATCH 乐观锁（CAS）三种手段的机制与边界。
+- **解决什么问题**：多条命令的执行要么慢（逐条 RTT）、要么不原子（并发穿插）。本文讲清三件事：Pipeline 只省网络不保证原子；事务保证「一起执行」但不支持回滚；真正要「判断 + 执行」原子语义时用 WATCH 或 Lua。
+- **什么时候用到**：批量写入（Pipeline）、批量原子执行（事务）、检查后再写（WATCH）、复杂原子逻辑（Lua，redis/240）；第 5 节选型表是拿不准时的决策出口。
+
+**适用边界一句话**：Pipeline 是网络层的优化（不保证原子、不保证隔离）；事务是执行层的打包（不保证回滚）——两者都不提供「逻辑原子性」，需要它的去 redis/240。
 
 ## 1. Pipeline 管道
 
@@ -259,142 +267,19 @@ end
 return 0
 ```
 
-### 5.2 方案选择
+### 5.2 方案选择（与 Lua/Functions 的互链选型表）
 
-| 场景                 | 推荐方案       |
-| -------------------- | -------------- |
-| 批量写入，无需原子性 | Pipeline       |
-| 多命令需原子执行     | Multi/Exec     |
-| 条件更新（CAS）      | WATCH + Multi  |
-| 复杂原子操作         | Lua 脚本       |
-| 高并发 CAS           | 分布式锁 + Lua |
-## Pipeline 管道
+| 场景                 | 推荐方案       | 为什么 / 深入阅读 |
+| -------------------- | -------------- | ------------------ |
+| 批量写入，无需原子性 | Pipeline       | 只要省 RTT，本文 §1 |
+| 多命令需原子执行     | Multi/Exec     | 打包执行即可，本文 §2（注意不回滚） |
+| 条件更新（CAS）      | WATCH + Multi  | 检查后写、冲突重试，本文 §3 |
+| 复杂原子操作         | Lua 脚本       | 「判断 + 执行」原子化，见《Lua 脚本原子执行》redis/240 |
+| 高并发 CAS           | 分布式锁 + Lua | 锁的语义与续期，见 redis/250；脚本函数化管理见《Redis Functions》redis/245 |
 
-**基本写法：Python 批量发送命令减少 RTT**
-`pipe = r.pipeline()`
-```python
-# Python redis-py 使用 Pipeline 批量发送命令
-import redis
-r = redis.Redis()
+选型再压缩成一句：**不要求原子选 Pipeline；要求「一起执行」选事务；要求「条件执行」选 WATCH；要求「逻辑原子」选 Lua——Lua 的版本化管理就是 redis/245 的 Functions。**
 
-pipe = r.pipeline()
-for i in range(10000):
-    pipe.set(f'key:{i}', f'value:{i}')
-pipe.execute()
-```
+## 参考与致谢
 
----
-
-## 事务基本用法
-
-**基本写法：开启并提交事务**
-`MULTI ... EXEC`
-```bash
-# 开启事务，命令入队后统一执行
-MULTI
-SET key1 val1
-SET key2 val2
-INCR counter
-EXEC
-```
-
-**基本写法：取消事务**
-`MULTI ... DISCARD`
-```bash
-# 取消事务，所有入队命令不执行
-MULTI
-SET key1 val1
-DISCARD
-```
-
----
-
-## WATCH 乐观锁
-
-**基本写法：CAS 乐观锁**
-`WATCH <key> [key ...] ... MULTI ... EXEC`
-```bash
-# 监视 counter 键，读取后开启事务设置新值
-WATCH counter
-GET counter
-MULTI
-SET counter 6
-EXEC
-```
-
-**基本写法：被监视键被修改时事务失败**
-`WATCH <key> ... MULTI ... EXEC`
-```bash
-# 事务A监视counter，事务B修改counter后事务A的EXEC返回nil
-WATCH counter
-GET counter
-MULTI
-SET counter 6
-EXEC
-```
-
-**基本写法：Python WATCH 秒杀乐观锁重试**
-`r.watch(<key>)`
-```python
-# Python 乐观锁重试秒杀
-import redis
-
-def seckill(user_id, item_id):
-    r = redis.Redis()
-    key = f'stock:{item_id}'
-
-    while True:
-        try:
-            r.watch(key)
-            stock = int(r.get(key) or 0)
-            if stock <= 0:
-                r.unwatch()
-                return False
-
-            pipe = r.pipeline()
-            pipe.multi()
-            pipe.decr(key)
-            pipe.sadd(f'users:{item_id}', user_id)
-            pipe.execute()
-            return True
-        except redis.WatchError:
-            continue
-```
-
----
-
-## Pipeline + 事务
-
-**基本写法：Pipeline 中使用事务**
-`pipe.multi()`
-```python
-# Pipeline 中开启事务，兼顾性能与原子性
-pipe = r.pipeline()
-pipe.multi()
-pipe.set('key1', 'v1')
-pipe.set('key2', 'v2')
-pipe.incr('counter')
-pipe.execute()
-```
-
-**基本写法：Pipeline 事务模式快捷方式**
-`pipe = r.pipeline(True)`
-```python
-# transaction=True 等价于先 pipeline 再 multi
-pipe = r.pipeline(True)
-pipe.set('key1', 'v1')
-pipe.set('key2', 'v2')
-pipe.incr('counter')
-pipe.execute()
-```
-
----
-
-## Lua 脚本替代方案
-
-**基本写法：Lua 原子性秒杀**
-`EVAL <script> <numkeys> <key> [key ...] <arg> [arg ...]`
-```bash
-# 使用 Lua 脚本保证秒杀操作的原子性
-EVAL "local stock = tonumber(redis.call('GET', KEYS[1])) if stock and stock > 0 then redis.call('DECR', KEYS[1]) redis.call('SADD', KEYS[2], ARGV[1]) return 1 end return 0" 2 stock:item1 users:item1 user42
-```
+- Redis 官方文档 Pipelining 与 Transactions：<https://redis.io/docs/latest/develop/use/pipelining/> 与 <https://redis.io/docs/latest/develop/interact/transactions/>（CC-BY-SA 4.0）；
+- 原文末「命令速查」附录五节（Pipeline 管道、事务基本用法、WATCH 乐观锁、Pipeline + 事务、Lua 脚本替代方案）经逐节比对与正文 §1-§5 完全重复，已整体去重删除，命令示例全部保留于正文对应小节（登记于批次 summary）。

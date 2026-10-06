@@ -10,7 +10,7 @@ updated: '2026-09-12'
 related:
   - 'typescript/050-TSBasicsFunctions'
   - 'typescript/070-TSBasicsGenerics'
-  - 'typescript/090-ClassAndDecorators'
+  - 'typescript/090-ClassMembersAndModifiers'
 prerequisites:
   - 'typescript/050-TSBasicsFunctions'
 ---

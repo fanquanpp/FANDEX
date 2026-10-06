@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 60
 title: 所有权与借用
 module: 'rust'
 category: 后端技术
@@ -9,11 +9,21 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'rust/040-RustBasicSyntax'
-  - 'rust/070-RustStructEnumMatch'
+  - 'rust/060-RustBorrowCheckerErrorGuide'
+  - 'rust/070-RustStructAndImpl'
   - 'rust/100-RustGenericTrait'
+  - 'rust/180-RustLifetimesDeepDive'
 prerequisites:
   - 'rust/040-RustBasicSyntax'
 ---
+
+## 知识点地图
+
+- **知识类别**：所有权系统——所有权三规则、移动与复制、借用与引用、切片、生命周期入门。
+- **解决什么问题**：Rust 与其他语言的根本差异「没有 GC 也没有手动释放，内存怎么管」；`use of moved value`、`cannot borrow as mutable` 这些拦路报错的机理。
+- **什么时候用到**：写第一行 Rust 之前建立心智模型；之后每个报错都要回到这里的规则上找答案——本篇是全模块最重要的一篇。
+
+**分界声明**：本篇第 6 节是生命周期的**入门**（为什么需要、编译器怎么想）；标注语法 `'a` 的完整规则、结构体上的生命周期、多参数推断见《生命周期深入》（rust/180-RustLifetimesDeepDive）——看懂报错提示里的 `'a` 迷惑时直接去 180。
 
 ## 前置知识
 
@@ -279,7 +289,64 @@ fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
 | 多个输入需标注 | `fn f<'a>(x: &'a str, y: &'a str) -> &'a str` | 多个引用，需关联 |
 | 结构体含引用 | `struct S<'a> { s: &'a str }` | 结构体持有引用 |
 
-**实用建议**：生命周期标注是"编译器需要帮助时的工具"。90% 的代码用**省略规则**自动推断；只有返回引用且涉及多个输入时，才需要显式标注。不必一开始就掌握全部细节，先理解"生命周期防止悬垂引用"这个核心思想即可。
+**实用建议**：生命周期标注是"编译器需要帮助时的工具"。90% 的代码用**省略规则**自动推断；只有返回引用且涉及多个输入时，才需要显式标注。不必一开始就掌握全部细节，先理解"生命周期防止悬垂引用"这个核心思想即可。标注语法的完整规则（多参数推断、结构体与 impl 上的 `'a`、`'static`）见《生命周期深入》（rust/180-RustLifetimesDeepDive）。
+
+### 6.3 三个工程场景里的借用形态
+
+**场景一：配置读取（只读借用的典型）**。服务启动后配置对象被所有模块共用：
+
+```rust
+struct Config { db_url: String, port: u16 }
+
+fn init_logger(cfg: &Config) { /* 读 cfg.port，只借不拿 */ }
+fn connect_db(cfg: &Config) -> Db { /* 读 cfg.db_url */ }
+
+fn main() {
+    let cfg = load_config();
+    init_logger(&cfg);          // 不可变借用：借用结束 cfg 归位
+    let db = connect_db(&cfg);  // 多个不可变借用可并存
+    // cfg 仍归 main 所有，退出时才释放——共享只读数据的标准形态
+}
+```
+
+为什么全部用 `&Config` 而不是传值：`Config` 移动进函数后 main 就用不了了（move 规则），clone 又白拷一份大字符串——「多处只读」正是不可变借用的主场。
+
+**场景二：日志切片（切片借用的典型）**。从大日志行里截取时间戳做统计，不拷贝原行：
+
+```rust
+fn extract_ts(line: &str) -> &str {
+    &line[..19]                 // "2026-10-07 12:01:33" 的前 19 字符
+}
+
+fn main() {
+    let log_line = read_line(); // 可能几 KB
+    let ts = extract_ts(&log_line);
+    stats.record(ts);           // 切片借的还是 log_line 的内存，零拷贝
+}                               // log_line 在此释放，ts 已先用完——借用检查保证这个顺序
+```
+
+如果 `extract_ts` 返回 `String`（拷贝出来），百万行日志的统计就多一百万次分配——切片的存在意义就是「窗口视图」这份零拷贝。
+
+**场景三：缓存句柄（可变借用独占性的典型）**。热点缓存的单线程刷新：
+
+```rust
+struct Cache { data: Vec<String> }
+
+impl Cache {
+    fn refresh(&mut self) { /* 重算 data */ }
+    fn get(&self, k: &str) -> Option<&String> { self.data.iter().find(|s| s == k) }
+}
+
+fn main() {
+    let mut cache = Cache { data: load() };
+    let hit = cache.get("song:42");   // 不可变借用开始
+    // cache.refresh();               // 编译错误：可变借用与未结束的不可变借用冲突
+    println!("{hit:?}");
+    cache.refresh();                  // hit 已用完，借用结束，刷新合法
+}
+```
+
+「拿着读引用时不能写」编译器在拦什么：refresh 可能重分配 data，hit 会指向被释放的旧内存——第 8 节报错表第二条的机理就藏在每个缓存刷新里。多线程版本的同一问题（多读单写跨线程）交给并发篇的 Mutex/RwLock。
 
 ## 7. 综合示例：统计单词数
 
@@ -364,6 +431,11 @@ fn main() {
 
 所有权三规则（每值一主、主离即释、可转不移）+ 借用两条约束（不可变可并行、可变要独占）+ 切片视图（零拷贝的窗口）+ 生命周期（防止悬垂），构成了 Rust 内存安全的地基。
 
-理解"移动 vs 复制""借用 vs 拥有"两组对立概念，就能读懂编译器的大部分报错——**Rust 编译器不是敌人，而是全天候的导师**。下一步学习结构体、枚举与模式匹配（见《结构体、枚举与模式匹配》），把这些机制组合成真实的数据结构。
+理解"移动 vs 复制""借用 vs 拥有"两组对立概念，就能读懂编译器的大部分报错——**Rust 编译器不是敌人，而是全天候的导师**。下一步学习结构体与枚举模式匹配（见《结构体与方法》与《枚举与模式匹配》），把这些机制组合成真实的数据结构。
 
 > **一句话记忆**：Rust 用"所有权"替代"手动管理/GC"——每个值一个主人、主人离开作用域自动释放、转移所有权后旧主人失效；借用让"只借不拿"（`&T` 可多个，`&mut T` 要独占）成为可能，编译期就消灭了悬垂引用与数据竞争。
+
+## 参考与致谢
+
+- The Rust Book（官方教程）第 4 章 Understanding Ownership：<https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html>（CC-BY-SA 4.0），所有权三规则、借用约束与切片的权威出处；
+- 本篇正文为教学重写；第 6.3 节三个工程场景（配置读取、日志切片、缓存句柄）为本模块自写案例，生命周期深入与 180 号的分界见知识点地图。

@@ -1,20 +1,31 @@
 ---
-order: 240
+order: 290
 title: React 测试
 module: 'react'
 category: 前端技术
 difficulty: intermediate
-description: React 组件测试实战：Vitest + Testing Library 技术栈、按角色查询的行为测试法、异步与网络 mock（MSW）、常见反模式与调试技巧。
+description: React 组件测试与 E2E 专篇：Vitest + Testing Library 技术栈、按角色查询的行为测试法、异步与网络 mock（MSW）、Hook 测试、Playwright 端到端测试、常见反模式与调试技巧。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'react/200-ReactForm'
   - 'react/210-ReactTypeScript'
   - 'react/230-ReactRouteAdvanced'
   - 'react/240-ReactI18n'
+  - 'react/090-LintFormatAndProjectStructure'
+  - 'react/360-ReactStorybook'
+  - 'react/370-ReactCICD'
 prerequisites:
   - 'react/010-OverviewEnvSetup'
 ---
+
+## 知识点地图
+
+- **知识类别**：工程化 / 测试（组件测试、Hook 测试与端到端测试）。
+- **解决什么问题**：重构不敢动手、回归靠手点，是缺测试项目的通病。本篇给出 React 2025-2026 的收敛答案：Vitest + Testing Library 测组件行为，renderHook 测自定义 Hook，MSW 拦截网络，Playwright 守住整站关键路径。
+- **什么时候用到**：写完一个组件/Hook 要验证行为时；重构前补测试网时；CI 里需要分层测试策略（金字塔）时。Storybook 属于组件工作台与视觉回归，见 [React 与 Storybook](/react/360-ReactStorybook)；测试进流水线见 [React 与 CI/CD](/react/370-ReactCICD)。
+
+本文由原「测试与工程化」的组件测试、Hook 测试与 Playwright E2E 三节归并而来，与本篇既有的行为测试法、MSW、测试金字塔内容去重合并。
 
 ## 1. 一句话理解
 
@@ -23,6 +34,44 @@ React 测试的当代共识是一句话：**像用户一样测试，而不是像
 ```bash
 npm i -D vitest @testing-library/react @testing-library/user-event @testing-library/jest-dom jsdom
 ```
+
+### 1.1 安装配置清单
+
+四件套装完还差三份配置，缺一不可：
+
+```ts
+// vitest.config.ts — jsdom 环境是 DOM 测试的前提，默认 node 环境没有 document
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true, // describe/it 免导入；团队偏好显式导入可关掉
+    setupFiles: ['./src/test/setup.ts'],
+    css: true, // 处理 CSS 导入；toBeVisible 这类断言依赖样式计算
+  },
+});
+```
+
+```ts
+// src/test/setup.ts — jest-dom 的匹配器要显式注册，否则 toBeInTheDocument 不存在
+import '@testing-library/jest-dom/vitest';
+```
+
+```json
+// package.json
+{
+  "scripts": {
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
+  }
+}
+```
+
+易错点：`environment: 'jsdom'` 忘配时报 `document is not defined`；`setup.ts` 忘配时报 `toBeInTheDocument is not a function`——两个报错都指向配置而不是测试代码，先查这里。
 
 ## 2. 核心心法：测行为，不测实现
 
@@ -154,6 +203,46 @@ export const handlers = [
 // 在 vitest 的 setupFiles 中：setupServer(...handlers).listen()
 ```
 
+### 5.1 对照组：手写 fetch mock 的问题
+
+理解 MSW 的价值，最快的方式是看它取代了什么。不引入 MSW 时的经典写法——直接替换 `globalThis.fetch`：
+
+```tsx
+describe('UserList', () => {
+  beforeEach(() => {
+    // 手写 fetch mock：必须凭空拼出一个 Response 形状
+    globalThis.fetch = vi.fn(() =>
+      Promise.resolve({
+        json: () =>
+          Promise.resolve([
+            { id: 1, name: '张三' },
+            { id: 2, name: '李四' },
+          ]),
+      } as Response)
+    );
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks(); // 不还原会污染后续所有用例
+  });
+
+  it('显示加载状态', () => {
+    render(<UserList />);
+    expect(screen.getByText('加载中...')).toBeInTheDocument();
+  });
+
+  it('加载完成后显示用户列表', async () => {
+    render(<UserList />);
+    await waitFor(() => {
+      expect(screen.getByText('张三')).toBeInTheDocument();
+      expect(screen.getByText('李四')).toBeInTheDocument();
+    });
+  });
+});
+```
+
+这段代码能跑，但三处代价随项目增长放大：`as Response` 的形状是你想象出来的，真实响应有 `ok`、`status`、headers——组件一旦检查 `res.ok`，假响应直接抛错；mock 的是 fetch 这个**实现细节**，换成 axios 或自定义封装后全部测试重写；每个 describe 都要重复 beforeEach/restoreAllMocks 样板。MSW 在网络层拦截，上述三点全部消失，且 handlers 可按用例覆写（`server.use`）。
+
 ## 6. Mock 与定时器
 
 ```ts
@@ -177,15 +266,161 @@ vi.useRealTimers();
 
 不需要手动 cleanup：Testing Library 会在每个用例后自动卸载组件（Vitest/Jest 均已内置）。
 
-## 7. 测试金字塔怎么落地
+## 7. Hook 测试：renderHook 与 act
 
-- **单测（多数）**：纯函数、自定义 Hook（用 `renderHook`）、组件交互——毫秒级，随提交跑
+自定义 Hook 不能脱离组件调用，`renderHook` 替你把它挂进一个隐形宿主组件：
+
+```tsx
+// src/hooks/useCounter.ts
+import { useState, useCallback } from 'react';
+
+export function useCounter(initialValue = 0) {
+  const [count, setCount] = useState(initialValue);
+  const increment = useCallback(() => setCount((c) => c + 1), []);
+  const decrement = useCallback(() => setCount((c) => c - 1), []);
+  const reset = useCallback(() => setCount(initialValue), [initialValue]);
+
+  return { count, increment, decrement, reset };
+}
+```
+
+```tsx
+// src/hooks/__tests__/useCounter.test.ts
+import { renderHook, act } from '@testing-library/react';
+import { useCounter } from '../useCounter';
+
+describe('useCounter', () => {
+  it('初始值', () => {
+    const { result } = renderHook(() => useCounter(5));
+    expect(result.current.count).toBe(5);
+  });
+
+  it('增加', () => {
+    const { result } = renderHook(() => useCounter());
+    act(() => result.current.increment()); // act：告诉 React「这里发生了状态更新，去处理它」
+    expect(result.current.count).toBe(1);
+  });
+
+  it('重置', () => {
+    const { result } = renderHook(() => useCounter(10));
+    act(() => result.current.increment());
+    act(() => result.current.reset());
+    expect(result.current.count).toBe(10);
+  });
+});
+```
+
+- `result.current` 每次读取都是最新渲染的返回值——Hook 重渲染后它自动更新，不要把 `result.current` 解构成局部变量再断言（解构捕获的是旧对象）。
+- 状态更新必须包在 `act` 里，否则 React 会警告「更新未包裹 act」，且 `result.current` 可能还没刷新。
+- 带 Effect 的 Hook（如 `useDebounce`）配合假定时器测试：`renderHook` 后 `act(() => vi.advanceTimersByTime(300))` 推进时间。
+- 判断标准：Hook 逻辑薄（只是两个 useState 的组合）时，通过消费它的组件测试间接覆盖即可；有独立规则（重置、边界、防抖时序）的 Hook 才值得专属测试文件。
+
+## 8. E2E 测试（Playwright）
+
+组件测试回答「这个组件对不对」，E2E 回答「整站关键路径通不通」——登录、下单、搜索到详情。E2E 跑真实浏览器、真实路由、真实构建产物，慢且脆，所以只保关键路径。
+
+### 8.1 安装与配置
+
+```bash
+npm install -D @playwright/test
+npx playwright install
+```
+
+```ts
+// playwright.config.ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  fullyParallel: true,
+  retries: process.env.CI ? 2 : 0, // 本地不重试（要立刻暴露问题），CI 重试两次抗抖动
+  use: {
+    baseURL: 'http://localhost:5173',
+    trace: 'on-first-retry', // 重试时自动留轨迹，失败排查的救命文件
+  },
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:5173',
+    reuseExistingServer: !process.env.CI, // 本地复用已起的服务，CI 里自动起新的
+  },
+});
+```
+
+`webServer` 是最值得的一项配置：跑 E2E 不再需要「先手动起 dev server」的记忆负担，CI 里也自动就绪。
+
+### 8.2 编写 E2E 测试
+
+```tsx
+// e2e/auth.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('认证流程', () => {
+  test('登录成功后跳转到首页', async ({ page }) => {
+    await page.goto('/login');
+
+    await page.fill('[name="email"]', 'test@example.com');
+    await page.fill('[name="password"]', 'password123');
+    await page.click('button[type="submit"]');
+
+    await expect(page).toHaveURL('/');
+    await expect(page.locator('h1')).toContainText('欢迎');
+  });
+
+  test('登录失败显示错误信息', async ({ page }) => {
+    await page.goto('/login');
+
+    await page.fill('[name="email"]', 'wrong@example.com');
+    await page.fill('[name="password"]', 'wrong');
+    await page.click('button[type="submit"]');
+
+    await expect(page.locator('.error')).toBeVisible();
+  });
+});
+```
+
+```tsx
+// e2e/todo.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('待办事项', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/todos');
+  });
+
+  test('添加待办事项', async ({ page }) => {
+    await page.fill('[name="todo"]', '学习 React 19');
+    await page.click('button[type="submit"]');
+
+    await expect(page.locator('li')).toContainText('学习 React 19');
+  });
+
+  test('完成待办事项', async ({ page }) => {
+    await page.fill('[name="todo"]', '学习 React 19');
+    await page.click('button[type="submit"]');
+
+    const item = page.locator('li').last();
+    await item.click();
+
+    await expect(item).toHaveClass(/completed/);
+  });
+});
+```
+
+选择器建议与组件测试一致：优先 `getByRole`/`getByLabel` 这类面向用户的定位（`page.getByRole('button', { name: '提交' })`），CSS 选择器（`[name="email"]`）是这里的简化写法，真实项目建议统一角色定位——它同时逼你把可访问性做好。测试账号与后端数据用测试环境种子数据，绝不连生产库。
+
+### 8.3 E2E 进 CI 的编排
+
+E2E job 依赖构建产物、失败要留证据，编排细节（`needs: verify`、trace 归档、只装用到的浏览器）见 [React 与 CI/CD](/react/370-ReactCICD)。
+
+## 9. 测试金字塔怎么落地
+
+- **单测（多数）**：纯函数、自定义 Hook（用 `renderHook`，见第 7 节）、组件交互——毫秒级，随提交跑
 - **集成（少量）**：整页 + 路由 + MSW，覆盖关键用户流程（登录、下单）
-- **E2E（极少）**：Playwright 跑冒烟路径，见[React 与 CI/CD](/react/370-ReactCICD)
+- **E2E（极少）**：Playwright 跑冒烟路径，见上文第 8 节；CI 编排见[React 与 CI/CD](/react/370-ReactCICD)
 
 不值得测的东西也要想清楚：第三方库的内部（`<Link>` 怎么渲染）、样式类名、纯展示的静态文本——这些交给类型检查、Lint 与视觉回归工具。
 
-## 8. 常见陷阱
+## 10. 常见陷阱
 
 - **`userEvent.click` 忘了 `await`**：事件处理与状态更新是异步的，漏 await 会读到旧 UI；也不要混用 `fireEvent` 与 `userEvent`（后者是前者的高级封装，含焦点/键盘序列）。
 - **act 警告**：几乎总是"状态更新发生在测试的 await 之外"——用 `findBy*`/`waitFor` 等待，而不是手动包 `act()`。
@@ -195,7 +430,7 @@ vi.useRealTimers();
 - **console.error 被吞**：为了输出干净 mock 掉 `console.error` 却忘了 `mockRestore`，会掩盖真实错误（包括 React 的 key 警告）。
 - **快照滥用**：整组件 snapshot 测试"永远绿"或"永远红"，失去回归价值；只对小而稳定的 DOM 片段使用。
 
-## 9. 小结
+## 11. 小结
 
 初学者要点：
 
@@ -208,6 +443,7 @@ vi.useRealTimers();
 - `userEvent.setup()` 后所有交互都要 `await`；假定时器测试防抖时与 `userEvent` 组合需 `advanceTimersByTime`。
 - MSW 在网络层拦截，测试与生产代码同路径；handlers 可按用例覆写（`server.use`）。
 - 自定义 Hook 用 `renderHook` 测试；组件级无障碍与文案问题顺带由 `getByRole` 与 jest-axe 兜住。
+- E2E 只保关键路径，`webServer` 自动起服务、CI 重试 + trace 留证据；组件测试、Storybook 与 E2E 三者的分工见各专篇。
 
 ## 速查
 

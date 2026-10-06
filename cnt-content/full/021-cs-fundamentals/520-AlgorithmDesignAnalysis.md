@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 550
 title: 算法设计与分析
 module: 'cs-fundamentals'
 category: 计算机科学

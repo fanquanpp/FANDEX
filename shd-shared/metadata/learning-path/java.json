@@ -367,8 +367,8 @@
         },
         {
           "id": "java-055",
-          "title": "JVM 内存模型",
-          "doc": "610-JVMMemoryModel",
+          "title": "JVM 运行时数据区与对象布局",
+          "doc": "610-JVMRuntimeDataAreasAndObjectLayout",
           "desc": "JVM 内存模型深度解析：运行时数据区、JMM 形式化、分代 GC 算法、对象内存布局、现代收集器（G1/ZGC/Shenandoah）、内存调优与生产案例。",
           "difficulty": "advanced"
         },
@@ -458,8 +458,8 @@
         },
         {
           "id": "java-072",
-          "title": "Spring 基础：IoC 容器、AOP、Bean 生命周期与企业级开发核心",
-          "doc": "820-SpringBasicsIoCAOPBeanLifecycle",
+          "title": "Spring IoC 容器：Bean 生命周期与依赖注入",
+          "doc": "820-SpringIoCContainerBeansAndDI",
           "desc": "系统阐述 Spring 框架的 IoC 容器、AOP、Bean 生命周期、依赖注入、事务管理、Spring MVC 与 Spring Boot 核心机制。",
           "difficulty": "intermediate"
         },

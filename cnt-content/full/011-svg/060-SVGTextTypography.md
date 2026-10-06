@@ -21,6 +21,14 @@ prerequisites:
 
 - [SVG 基础语法与文档结构](/svg/020-SVGBasicSyntaxDocStructure)
 
+## 知识点地图
+
+- **知识类别**：SVG 文本与排版（`<text>` / `<tspan>` / `<textPath>` 与字体度量），对应 MDN「Text」指南主题。
+- **解决什么问题**：图表要给数据点配标签、海报要把标题沿弧线排布、大屏要在固定宽度卡片里塞进长度不定的告警文案——这些都是 HTML 文本流管不到、基本形状画不出的排版需求。SVG 把文本当图形排：有基线无行高、有锚点无对齐容器，心智模型与 HTML 完全不同。
+- **什么时候用到**：数据可视化轴标签与数据标签；设计感排版（沿路径文字、竖排）；程序生成的证书/票据/水印；SVG 图标里的文字部分。
+- **本篇主线**：先立住「y 是基线不是顶部」这一个心智转折，再掌握 text-anchor（水平）+ dominant-baseline（垂直）这对定位组合，tspan 解决同段多样式，textPath 解决沿路径排布；字体加载与中文字体子集化（4.7、6.4 与本文「工程场景」节专讲）决定这套排版在真实网络环境下是否按设计呈现。
+- **本篇不讲**：foreignObject 里的 HTML 自动换行排版（见 [image 与 foreignObject](/svg/115-SVGImageAndForeignObject)）、文字作为图标交付的工程化（见 [图标工程化](/svg/170-SVGIconSystemEngineering)）。
+
 ## 1. 历史动机与发展脉络
 
 ### 1.1 文本渲染的演进
@@ -838,6 +846,127 @@ console.log(m); // { width: 90.3, height: 28.5 }
 <!-- 启用选择 -->
 <text style="user-select: text;">Hello</text>
 ```
+
+## 工程场景：把文本排版放进真实交付
+
+### 场景一：大屏告警文案的 textLength 压缩排版
+
+真实背景：运维告警大屏的每行告警是一张固定 260px 宽的卡片，文案由「服务名 + 实例 IP + 摘要」拼接，长度从 10 字到 40 字不等。用 HTML 流式排版需要量宽、截断、加省略号三步；SVG 的 `textLength` 让「压进固定宽度」成为一个属性声明：
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 220">
+  <rect x="10" y="10" width="280" height="60" rx="6" fill="#2d3436" />
+  <text x="20" y="45" font-size="16" fill="#d63031"
+        textLength="260" lengthAdjust="spacingAndGlyphs">
+    payment-service P99 延迟 480ms 超 SLA 阈值 300ms
+  </text>
+
+  <rect x="10" y="80" width="280" height="60" rx="6" fill="#2d3436" />
+  <text x="20" y="115" font-size="16" fill="#fdcb6e"
+        textLength="260" lengthAdjust="spacing">
+    redis 集群脑裂
+  </text>
+</svg>
+```
+
+逐段解释：
+
+- `textLength="260"` 是排版合同：不管内容多少字，排版器都把 advance 总宽压/拉到 260。第一段长文案被压缩、第二段短文案被拉开——**两行文字左右边缘严格对齐**，这是大屏卡片式排版最看重的秩序感；
+- `lengthAdjust` 的两个取值决定压缩发生在哪里：默认 `spacing` 只调字间距，字数远超宽度时间距变负、字符互相叠印成一团黑（最隐蔽的翻车：不报错，只是「糊了」）；`spacingAndGlyphs` 连字形一起水平缩放，文字变窄但完整可读。短文案拉开时 `spacing` 反而更美（只散字距不拉胖字形）；
+- 易错点：textLength 压缩有可读性极限，经验值是不要超过自然宽度的 85%。超长文案的正确姿势是「textLength 保底 + 后端摘要截断」双保险，而不是把 60 字压进 260px；
+- 与 6.1 节呼应：`y=45` 依然是基线不是行顶，卡片内垂直居中还要配 dominant-baseline。
+
+### 场景二：品牌标题的字体加载三态（讲透 4.7）
+
+真实背景：营销页 SVG 海报用了一款品牌字体。网络慢的用户会经历三个阶段：字体没到（回退字体渲染）、字体到了（闪换成品牌字体）、或字体永远不到（一直回退）。三种状态都按设计落地需要三件套：
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 160">
+  <style>
+    @font-face {
+      font-family: "BrandDisplay";
+      src: url("/fonts/brand-display.woff2") format("woff2");
+      font-display: swap;
+    }
+    .hero-title {
+      font-family: "BrandDisplay", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 42px;
+    }
+  </style>
+  <text class="hero-title" x="200" y="90" text-anchor="middle">新品发布会</text>
+</svg>
+```
+
+逐段解释：
+
+- `font-display: swap` 定义「等字体等多久」：回退字体立即渲染（无白屏），品牌字体到了就闪换（FOUT，Flash of Unstyled Text）。换成默认 `auto` 或 `block` 会先隐藏文本约 3 秒——海报主标题白块 3 秒在营销场景不可接受，但在「文字必须用品牌字形」的 logo 场景，`block` 反而能避免「闪换破坏版式」；
+- 回退栈 `"PingFang SC", "Microsoft YaHei"` 的意义不只是兜底：选字面宽度接近品牌字的回退体，闪换瞬间的版式跳动最小。**换任意系统字体**（如 serif）闪换时标题宽度剧变，text-anchor="middle" 下左右同时抖动，观感是「页面跳了一下」；
+- inline 与外链的天壤之别：这段 SVG 内联进页面时，@font-face 与页面共享字体缓存体系一切正常；但同一份文件经 `<img>` 或 CSS background 引用就运行在静态安全模式——外部字体请求被禁止，回退栈生效，品牌字体**永远不会出现**。交付方式决定字体方案（见 [SVG 嵌入与交付方式](/svg/128-SVGEmbeddingMethods)），必要时把 woff2 转 base64 内嵌进 SVG 文件；
+- 性能联动：品牌字体若同时被 HTML 与 SVG 使用，woff2 只下载一次；为 SVG 单独再造一份字体文件是常见浪费（见 [性能优化](/svg/160-SVGPerformanceOptimization)）。
+
+### 场景三：中文告示牌的中文字体子集化（讲透 6.4）
+
+真实背景：景区导览系统要在 SVG 导览图上用一款书法体标注 30 个景点名。完整中文字体 8MB，移动端加载不可接受。解法是子集化：只打包实际用到的字符。
+
+```bash
+# 用 fontmin 从完整字体抽取子集（Node 环境示例）
+npx fontmin ./SourceHanSerif-Bold.ttf ./dist \
+  --text "入口售票处游客中心缆车站观景台湖心亭枫桥夜泊..."
+```
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 120">
+  <style>
+    @font-face {
+      font-family: "GuideCalli";
+      src: url("guide-calli-subset.woff2") format("woff2");
+      font-display: swap;
+    }
+    text { font-family: "GuideCalli", serif; font-size: 20px; }
+  </style>
+  <text x="20" y="40">游客中心</text>
+  <text x="20" y="75">观景台</text>
+</svg>
+```
+
+逐段讲解：
+
+- 子集化的收益量级：30 个景点名去重后约 60 个汉字，woff2 子集通常 20-60KB，是完整字体的千分之一量级——6.4 节「中文字体文件过大」的标准解法；
+- **子集化的最大风险是「漏字」**：景点名是运营配置的，新增一个景点而字体没重新打包，新字回退成 serif，导览图上出现一个风格突兀的字。工程对策是把「文案清单 -> 字体打包」接进构建流程（从 CMS 或 JSON 配置读全部文案再生成子集），让漏字在 CI 阶段暴露而不是用户屏幕上；
+- 动态文案（用户昵称、任意输入）**不能子集化**——字符集不可预知，要么接受系统字体栈，要么用完整字体，要么服务端按需生成子集。判断标准一句话：字符集封闭才子集化；
+- 与 170 的关系：图标工程里「图标字体」正在被 SVG sprite 取代，但「品牌文字」的子集化字体没有替代方案，两者是互补而非竞争（见 [图标工程化](/svg/170-SVGIconSystemEngineering)）。
+
+## 动手实践
+
+任务一（热身）：复现场景一的双卡片效果，但把第二段的 `lengthAdjust` 去掉（用默认值），对比两段文字的字形差异，用一句话写下两种取值各自的适用场景。
+
+任务二（进阶）：给场景二的标题加「字体加载完成前不显示」策略（利用 `font-display: block` 与回退栈的配合），并说明这个策略在什么场景下是错的。
+
+任务三（挑战）：实现「景点名超长自动缩排」：一个 text 元素，JS 量出自然宽度后，若超过 200px 则设 textLength="200" 且 lengthAdjust="spacing"，否则不动。写出量取与设置的关键代码，并指出 `getComputedTextLength()` 必须在什么时机调用才量得到非零值。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+任务一：默认 `spacing` 下短文案「redis 集群脑裂」六个字符间距被拉得很开，字形本身不变，视觉是「散排」；`spacingAndGlyphs` 会把字形水平拉胖，笔画变粗发虚。适用场景：spacing 适合「短文案填充宽度」（大屏卡片、票据对齐），spacingAndGlyphs 适合「长文案压缩进宽度」（告警行、字幕条）。
+
+任务二：`font-display: block` + `visibility` 策略组合：block 让文本在字体加载窗口内不可见（最多约 3 秒），避免闪换破坏海报版式。它在「文字是页面主体信息」时是错的——新闻正文、按钮文字必须第一时间可读，此时 swap 或 optional 才对；block 只属于「版式即品牌」的装饰性大标题。
+
+任务三：
+
+```js
+const text = document.querySelector('.spot-name');
+requestAnimationFrame(() => {
+  const natural = text.getComputedTextLength();
+  if (natural > 200) {
+    text.setAttribute('textLength', '200');
+    text.setAttribute('lengthAdjust', 'spacing');
+  }
+});
+```
+
+`getComputedTextLength()` 要求元素已进入渲染树且字体度量可用：元素 display:none 或在 template 里量出来恒为 0，所以要等一帧（rAF）或监听字体加载完成（`document.fonts.ready`）后再量。自定义字体场景下，字体晚到会改变自然宽度，「加载后再复量一次」才是完整解。
+
+</details>
 
 ## 7. 工程实践
 

@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 100
 title: git-restore 与文件操作
 module: 'git'
 category: 工具链

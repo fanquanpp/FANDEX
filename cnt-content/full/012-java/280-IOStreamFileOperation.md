@@ -1,20 +1,26 @@
 ---
-order: 220
+order: 270
 title: I/O 流与文件操作
 module: 'java'
 category: 后端技术
-difficulty: intermediate
-description: 字节流、字符流、NIO 与文件操作。
+difficulty: beginner
+description: I/O 流分类、字节流、字符流、转换流与 java.io.File 文件操作、实际应用案例与常见陷阱；对象序列化与 NIO 已拆至专篇。
 author: fanquanpp
 updated: '2026-09-27'
 related:
   - 'java/180-ExceptionHandlingMechanism'
-  - 'java/390-GenericDetailed'
-  - 'java/480-MultithreadingBasics'
-  - 'java/610-JVMMemoryModel'
+  - 'java/270-ModernIOQuickstart'
+  - 'java/650-JavaIONIO'
+  - 'java/680-JavaSerialization'
 prerequisites:
   - 'java/020-JavaOverviewDevEnv'
 ---
+
+## 知识点地图
+
+- **知识类别**：经典 I/O 流（java.io）——流分类、字节流、字符流、转换流与 File 文件操作，对应 Oracle Java Tutorials 的 I/O / (Basic I/O) 主题主线。
+- **解决什么问题**：把「读文件、写文件、复制文件」从靠背代码变成理解流的三层分类；分清字节与字符的边界（乱码的根源）。
+- **什么时候用到**：配置文件读写、日志与导出文件生成、文件上传下载的中间处理。NIO/NIO.2 见 [650 篇](/java/650-JavaIONIO)；对象序列化见 [680 篇](/java/680-JavaSerialization)。
 
 ## 前置知识
 
@@ -22,12 +28,11 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
-- 掌握「1. I/O 流分类 (Classification)」的核心机制、典型用法与常见陷阱
-- 掌握「2. 字节流 (Byte Stream)」的核心机制、典型用法与常见陷阱
-- 掌握「3. 字符流 (Character Stream)」的核心机制、典型用法与常见陷阱
-- 掌握「4. 转换流」的核心机制、典型用法与常见陷阱
-
+- 掌握「1. I/O 流分类」：按流向、数据单位、功能三维分类
+- 掌握「2. 字节流」与「3. 字符流」的基本流与缓冲流
+- 掌握「4. 转换流」：字节与字符世界的翻译官
+- 掌握「5. 文件操作（java.io.File）」：文件元数据与目录操作
+- 会写文件复制、文本读写、目录遍历三个实用案例
 
 ## 0. 本节阅读指引（先读这一节）
 
@@ -35,13 +40,14 @@ prerequisites:
 
 零基础第一遍只读：
 
-1. 第 1 节 I/O 流分类、2. 字节流、3. 字符流、6. 文件操作（java.io.File）；
+1. 第 1 节 I/O 流分类、2. 字节流、3. 字符流、文件操作（java.io.File）；
 2. 每段代码亲手敲一遍。
 
-可跳过：4. 转换流、5. 对象序列化、7. NIO 第一遍了解结论；8-10 节第二遍细读。
+可跳过：4. 转换流第一遍了解结论；实际应用案例与最佳实践（第 6-8 节）第二遍细读。
 
 > 记住：字符流处理文本、字节流处理一切；用完后关闭资源（try-with-resources）。
 
+> 本篇原含对象序列化（原第 5 节）与 NIO（原第 7 节）两章，已分别拆分至 [Java 序列化](/java/680-JavaSerialization) 与 [Java IO 与 NIO](/java/650-JavaIONIO) 专篇，此处不再重复。
 
 ## 1. I/O 流分类 (Classification)
 
@@ -257,73 +263,11 @@ flowchart TD
  }
 ```
 
-## 5. 对象序列化 (Serialization)
+## 5. 文件操作 (java.io.File)
 
-### 5.1 序列化的概念
+### 5.1 File 类的常用方法
 
-将对象的状态转换为字节序列，以便存储或传输。
-
-### 5.2 序列化的条件
-
-- 类必须实现 `Serializable` 接口
-- 类的所有非瞬态字段必须可序列化
-
-### 5.3 序列化示例
-
-#### 5.3.1 可序列化的类
-
-```java
- import java.io.Serializable;
- public class Person implements Serializable {
-  private static final long serialVersionUID = 1L;
-  private String name;
-  private int age;
-  private transient String password; // 不参与序列化
-  // 构造器、getter、setter 方法
- }
-```
-
-#### 5.3.2 对象序列化
-
-```java
- // 序列化对象到文件
- try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("person.dat"))) {
-  Person person = new Person("Alice", 25, "123456");
-  oos.writeObject(person);
-  System.out.println("对象序列化成功");
- }
-  e.printStackTrace();
- }
-```
-
-#### 5.3.3 对象反序列化
-
-```java
- // 从文件反序列化对象
- try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("person.dat"))) {
-  Person person = (Person) ois.readObject();
-  System.out.println("姓名: " + person.getName());
-  System.out.println("年龄: " + person.getAge());
-  System.out.println("密码: " + person.getPassword()); // 输出 null，因为 password 是 transient
-  System.out.println("对象反序列化成功");
- }
-  e.printStackTrace();
- }
-```
-
-### 5.4 序列化的注意事项
-
-- **serialVersionUID**: 建议显式声明，确保版本兼容性
-- **transient**: 标记不需要序列化的字段
-- **静态字段**: 静态字段不会被序列化
-- **循环引用**: 序列化会自动处理循环引用
-- **安全性**: 序列化可能导致安全问题，需要注意
-
-## 6. 文件操作 (java.io.File)
-
-### 6.1 File 类的常用方法
-
-#### 6.1.1 文件检查方法
+#### 5.1.1 文件检查方法
 
 - **exists()**: 检查文件或目录是否存在
 - **isFile()**: 检查是否为文件
@@ -332,7 +276,7 @@ flowchart TD
 - **canWrite()**: 检查是否可写
 - **isHidden()**: 检查是否隐藏
 
-#### 6.1.2 文件操作方法
+#### 5.1.2 文件操作方法
 
 - **createNewFile()**: 创建新文件
 - **delete()**: 删除文件或目录
@@ -341,7 +285,7 @@ flowchart TD
 - **mkdirs()**: 创建多级目录
 - **deleteOnExit()**: JVM 退出时删除文件
 
-#### 6.1.3 文件信息方法
+#### 5.1.3 文件信息方法
 
 - **getName()**: 获取文件名
 - **getPath()**: 获取文件路径
@@ -350,15 +294,15 @@ flowchart TD
 - **length()**: 获取文件长度
 - **lastModified()**: 获取最后修改时间
 
-#### 6.1.4 目录操作方法
+#### 5.1.4 目录操作方法
 
 - **list()**: 获取目录下的文件和目录名
 - **listFiles()**: 获取目录下的文件和目录对象
 - **listFiles(FileFilter filter)**: 获取符合过滤条件的文件和目录
 
-### 6.2 File 操作示例
+### 5.2 File 操作示例
 
-#### 6.2.1 创建文件
+#### 5.2.1 创建文件
 
 ```java
  File file = new File("test.txt");
@@ -373,7 +317,7 @@ flowchart TD
  }
 ```
 
-#### 6.2.2 创建目录
+#### 5.2.2 创建目录
 
 ```java
  // 创建单个目录
@@ -392,7 +336,7 @@ flowchart TD
  }
 ```
 
-#### 6.2.3 列出目录内容
+#### 5.2.3 列出目录内容
 
 ```java
  File dir = new File(".");
@@ -409,112 +353,11 @@ flowchart TD
  }
 ```
 
-## 7. NIO (Non-blocking I/O)
+## 6. 实际应用案例
 
-### 7.1 NIO 的核心组件
+### 6.1 文件复制
 
-- **Buffer**: 缓冲区，用于存储数据
-- **Channel**: 通道，用于数据传输
-- **Selector**: 选择器，用于监控多个通道的事件
-
-### 7.2 Buffer
-
-#### 7.2.1 Buffer 的类型
-
-- **ByteBuffer**
-- **CharBuffer**
-- **ShortBuffer**
-- **IntBuffer**
-- **LongBuffer**
-- **FloatBuffer**
-- **DoubleBuffer**
-
-#### 7.2.2 Buffer 的使用
-
-```java
- // 创建缓冲区
- ByteBuffer buffer = ByteBuffer.allocate(1024);
- // 写入数据
- buffer.put("Hello, NIO!".getBytes());
- // 切换到读模式
- buffer.flip();
- // 读取数据
- byte[] data = new byte[buffer.limit()];
- buffer.get(data);
- System.out.println(new String(data));
- // 清空缓冲区
- buffer.clear();
-```
-
-### 7.3 Channel
-
-#### 7.3.1 Channel 的类型
-
-- **FileChannel**: 文件通道
-- **SocketChannel**: 套接字通道
-- **ServerSocketChannel**: 服务器套接字通道
-- **DatagramChannel**: 数据报通道
-
-#### 7.3.2 FileChannel 的使用
-
-```java
- // 读取文件
- try (FileChannel channel = new FileInputStream("input.txt").getChannel()) {
-  ByteBuffer buffer = ByteBuffer.allocate(1024);
-  while (channel.read(buffer) != -1) {
-  buffer.flip();
-  byte[] data = new byte[buffer.limit()];
-  buffer.get(data);
-  System.out.print(new String(data));
-  buffer.clear();
-  }
- }
-  e.printStackTrace();
- }
- // 写入文件
- try (FileChannel channel = new FileOutputStream("output.txt").getChannel()) {
-  ByteBuffer buffer = ByteBuffer.wrap("Hello, FileChannel!".getBytes());
-  channel.write(buffer);
- }
-  e.printStackTrace();
- }
-```
-
-### 7.4 NIO 2.0 (Java 7+)
-
-#### 7.4.1 Path 接口
-
-```java
- // 创建 Path
- Path path = Paths.get("test.txt");
- // 获取路径信息
- System.out.println("文件名: " + path.getFileName());
- System.out.println("父路径: " + path.getParent());
- System.out.println("绝对路径: " + path.toAbsolutePath());
-```
-
-#### 7.4.2 Files 类
-
-```java
- // 读取文件
- List<String> lines = Files.readAllLines(Paths.get("input.txt"), StandardCharsets.UTF_8);
- for (String line : lines) {
-  System.out.println(line);
- }
- // 写入文件
- List<String> content = Arrays.asList("Hello, Files!", "This is a test.");
- Files.write(Paths.get("output.txt"), content, StandardCharsets.UTF_8);
- // 复制文件
- Files.copy(Paths.get("input.txt"), Paths.get("copy.txt"), StandardCopyOption.REPLACE_EXISTING);
- // 删除文件
- Files.deleteIfExists(Paths.get("temp.txt"));
-```
-
-## 8. 实际应用案例
-
-### 8.1 文件复制
-
-#### 8.1.1 使用字节流复制
+#### 6.1.1 使用字节流复制
 
 ```java
  public static void copyFileUsingStream(File source, File dest) throws IOException {
@@ -529,7 +372,7 @@ flowchart TD
  }
 ```
 
-#### 8.1.2 使用缓冲流复制
+#### 6.1.2 使用缓冲流复制
 
 ```java
  public static void copyFileUsingBufferedStream(File source, File dest) throws IOException {
@@ -544,7 +387,7 @@ flowchart TD
  }
 ```
 
-#### 8.1.3 使用 NIO 复制
+#### 6.1.3 使用 NIO 复制
 
 ```java
  public static void copyFileUsingNIO(File source, File dest) throws IOException {
@@ -555,9 +398,9 @@ flowchart TD
  }
 ```
 
-### 8.2 文本文件读写
+### 6.2 文本文件读写
 
-#### 8.2.1 读取文本文件
+#### 6.2.1 读取文本文件
 
 ```java
  public static List<String> readTextFile(String filePath) throws IOException {
@@ -572,7 +415,7 @@ flowchart TD
  }
 ```
 
-#### 8.2.2 写入文本文件
+#### 6.2.2 写入文本文件
 
 ```java
  public static void writeTextFile(String filePath, List<String> lines) throws IOException {
@@ -585,7 +428,7 @@ flowchart TD
  }
 ```
 
-### 8.3 目录遍历
+### 6.3 目录遍历
 
 ```java
  public static void listFilesRecursively(File directory) {
@@ -606,64 +449,52 @@ flowchart TD
  }
 ```
 
-## 9. 最佳实践
+## 7. 最佳实践
 
-### 9.1 资源管理
+### 7.1 资源管理
 
 - **使用 try-with-resources**: 自动关闭资源，避免资源泄漏
 - **显式关闭资源**: 在 try-with-resources 不可用的情况下，使用 finally 块关闭资源
 
-### 9.2 性能优化
+### 7.2 性能优化
 
 - **使用缓冲流**: 提高读写性能
 - **合理设置缓冲区大小**: 根据实际情况调整缓冲区大小
 - **使用 NIO**: 对于大文件操作，考虑使用 NIO 提高性能
 - **批量操作**: 减少 I/O 操作次数
 
-### 9.3 编码处理
+### 7.3 编码处理
 
 - **指定字符编码**: 避免默认编码导致的问题
 - **使用 UTF-8**: 推荐使用 UTF-8 编码
 - **使用转换流**: 在字节流和字符流之间转换时指定编码
 
-### 9.4 文件操作
+### 7.4 文件操作
 
 - **检查文件存在性**: 在操作文件前检查文件是否存在
 - **处理异常**: 妥善处理 I/O 异常
 - **使用 Files 类**: Java 7+ 推荐使用 Files 类进行文件操作
 - **路径处理**: 使用 Path 接口处理路径
 
-### 9.5 序列化
+## 8. 常见陷阱
 
-- **显式声明 serialVersionUID**: 确保版本兼容性
-- **谨慎使用 transient**: 只对不需要序列化的字段使用
-- **注意序列化的安全性**: 避免序列化敏感信息
-
-## 10. 常见陷阱
-
-### 10.1 资源泄漏
+### 8.1 资源泄漏
 
 - **忘记关闭资源**: 导致文件句柄泄漏
 - **在 finally 块中关闭资源时发生异常**: 掩盖原始异常
 
-### 10.2 编码问题
+### 8.2 编码问题
 
 - **使用默认编码**: 可能导致跨平台问题
 - **字节与字符转换错误**: 导致乱码
 
-### 10.3 文件操作陷阱
+### 8.3 文件操作陷阱
 
 - **路径分隔符**: 不同操作系统的路径分隔符不同
 - **文件权限**: 没有足够的权限操作文件
 - **文件名长度**: 超过系统限制
 
-### 10.4 序列化陷阱
-
-- **serialVersionUID 不匹配**: 导致反序列化失败
-- **序列化循环引用**: 可能导致栈溢出
-- **序列化大对象**: 可能导致内存问题
-
-### 10.5 性能陷阱
+### 8.4 性能陷阱
 
 - **频繁的小 I/O 操作**: 降低性能
 - **不使用缓冲流**: 导致频繁的磁盘操作
@@ -976,165 +807,3 @@ File[] files = dir.listFiles();
 ```
 
 ---
-
-## NIO Path
-
-**基本写法：创建 Path**
-`Path <变量> = Paths.get("<路径>");`
-```java
-// 创建 Path 对象
-Path path = Paths.get("test.txt");
-```
-
----
-
-**基本写法：判断文件存在**
-`Files.exists(<path>)`
-```java
-// 判断路径是否存在
-boolean exists = Files.exists(path);
-```
-
----
-
-**基本写法：创建文件**
-`Files.createFile(<path>)`
-```java
-// 创建新文件
-Files.createFile(path);
-```
-
----
-
-**基本写法：创建目录**
-`Files.createDirectory(<path>)`
-```java
-// 创建目录
-Files.createDirectory(path);
-```
-
----
-
-**基本写法：删除文件**
-`Files.delete(<path>)`
-```java
-// 删除文件不存在则抛异常
-Files.delete(path);
-```
-
----
-
-**基本写法：复制文件**
-`Files.copy(<源路径>, <目标路径>)`
-```java
-// 复制文件
-Files.copy(source, target);
-```
-
----
-
-**基本写法：移动文件**
-`Files.move(<源路径>, <目标路径>)`
-```java
-// 移动或重命名文件
-Files.move(source, target);
-```
-
----
-
-## NIO 文件读写
-
-**基本写法：读取所有字节**
-`Files.readAllBytes(<path>)`
-```java
-// 读取文件所有字节
-byte[] data = Files.readAllBytes(path);
-```
-
----
-
-**基本写法：读取所有行**
-`Files.readAllLines(<path>)`
-```java
-// 读取文件所有行
-List<String> lines = Files.readAllLines(path);
-```
-
----
-
-**基本写法：写入字节**
-`Files.write(<path>, <字节数组>)`
-```java
-// 写入字节数组到文件
-Files.write(path, data);
-```
-
----
-
-**基本写法：写入字符串**
-`Files.writeString(<path>, "<字符串>")`
-```java
-// Java 11+ 写入字符串到文件
-Files.writeString(path, "Hello");
-```
-
----
-
-**基本写法：读取字符串**
-`Files.readString(<path>)`
-```java
-// Java 11+ 读取文件为字符串
-String content = Files.readString(path);
-```
-
----
-
-## 对象序列化
-
-**基本写法：实现 Serializable**
-`class <类名> implements Serializable { }`
-```java
-// 类实现序列化接口
-public class User implements Serializable {
-}
-```
-
----
-
-**基本写法：序列化对象**
-`new ObjectOutputStream(new FileOutputStream("<文件>")).writeObject(<对象>)`
-```java
-// 将对象写入文件
-try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("user.dat"))) {
-    oos.writeObject(user);
-}
-```
-
----
-
-**基本写法：反序列化对象**
-`new ObjectInputStream(new FileInputStream("<文件>")).readObject()`
-```java
-// 从文件读取对象
-try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("user.dat"))) {
-    User user = (User) ois.readObject();
-}
-```
-
----
-
-**基本写法：transient 关键字**
-`transient <类型> <字段名>;`
-```java
-// 标记字段不参与序列化
-private transient String password;
-```
-
----
-
-**基本写法：serialVersionUID**
-`private static final long serialVersionUID = <值>L;`
-```java
-// 定义序列化版本号
-private static final long serialVersionUID = 1L;
-```

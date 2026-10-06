@@ -224,7 +224,7 @@ Error: Could not find or load main class Hello.class
 
 ## 9. 实际项目中的使用场景
 
-- 找 Java 项目的入口 = 找 main 方法。Spring Boot 再庞大，起点也是某个类里的 main（见 [Spring 基础](/java/820-SpringBasicsIoCAOPBeanLifecycle)）；
+- 找 Java 项目的入口 = 找 main 方法。Spring Boot 再庞大，起点也是某个类里的 main（见 [Spring 基础](/java/820-SpringIoCContainerBeansAndDI)）；
 - 服务器排障：日志出现 Exception in thread "main" 时，用第 5 节的 at 链读法定位；
 - 命令行工具接参数的最原始方式就是 args——实验二就是所有 CLI 工具的雏形。
 
@@ -275,7 +275,7 @@ Save.java:3: error: ';' expected
 
 - 往前：[Java 是什么](/java/010-WhatIsJava) 的两步流程今天跑通；[Java 概述与开发环境](/java/020-JavaOverviewDevEnv) 装好的 javac 与 java 第一次真正干活；
 - 往后：[程序结构与基本语法](/java/040-ProgramStructureBasicSyntax) 讲透今天所有「混个眼熟」的词（类、public、static、语句、包）；[数组详解](/java/110-ArrayDetailed) 拆透 String[] args；[面向对象](/java/150-OOP) 揭晓 static 为什么是入口的要求；
-- 更远：[Spring 基础](/java/820-SpringBasicsIoCAOPBeanLifecycle) 的启动类就是今天这个 main 的放大版。
+- 更远：[Spring 基础](/java/820-SpringIoCContainerBeansAndDI) 的启动类就是今天这个 main 的放大版。
 
 ## 12. 官方文档
 

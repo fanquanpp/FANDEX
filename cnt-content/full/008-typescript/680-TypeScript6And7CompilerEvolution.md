@@ -1,5 +1,5 @@
 ---
-order: 700
+order: 740
 title: TypeScript 6.0 与 7.0：编译器世代交替
 module: 'typescript'
 category: 前端技术

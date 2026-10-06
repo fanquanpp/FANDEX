@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 430
 title: React 与 Storybook
 module: 'react'
 category: 前端技术
@@ -49,6 +49,10 @@ type Story = StoryObj<typeof Button>;
 
 export const Primary: Story = {
   args: { variant: 'primary', children: '主要操作' },
+};
+
+export const Danger: Story = {
+  args: { variant: 'danger', children: '危险操作' }, // 危险态：确认删除类按钮的视觉分支
 };
 
 export const Disabled: Story = {

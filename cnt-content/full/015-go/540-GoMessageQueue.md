@@ -1,5 +1,5 @@
 ---
-order: 550
+order: 600
 title: Go 与消息队列：邮件服务挂了，注册也不能挂
 module: 'go'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 190
 title: 远程跟踪分支
 module: 'git'
 category: 工具链

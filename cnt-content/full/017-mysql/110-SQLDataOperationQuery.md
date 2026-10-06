@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 110
 title: SQL 数据操作与查询：把一张排行榜表管起来
 module: 'mysql'
 category: 数据库

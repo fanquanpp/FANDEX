@@ -1,5 +1,5 @@
 ---
-order: 450
+order: 460
 title: 平台工程与内部开发者门户
 module: 'devops'
 category: 云与基础设施
@@ -10,7 +10,6 @@ updated: '2026-10-05'
 related:
   - 'devops/010-OverviewLinuxBasics'
   - 'devops/140-CICDPipeline'
-  - 'devops/180-GitOpsCD'
   - 'devops/190-GitOpsArgoCD'
 prerequisites:
   - 'devops/140-CICDPipeline'

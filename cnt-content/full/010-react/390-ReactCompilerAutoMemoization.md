@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 460
 title: React Compiler 自动记忆化
 module: 'react'
 category: 前端技术

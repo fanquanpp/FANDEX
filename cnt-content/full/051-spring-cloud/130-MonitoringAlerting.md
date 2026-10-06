@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 160
 title: 监控告警体系：别等用户在群里告诉你服务挂了
 description: 以「凌晨两点服务挂了，用户在群里 @ 你你才知道」引入：四黄金指标与微服务落点、Micrometer 到 Prometheus 到 Grafana 的采集链路与多服务抓取、RED 加 JVM 加业务的三层大盘、三条实战告警规则与分级降噪纪律，附压测触发 5xx 观察曲线与告警实验。
 module: 'spring-cloud'

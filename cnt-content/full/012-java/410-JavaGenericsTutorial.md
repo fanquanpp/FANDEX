@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 370
 title: 泛型深水区：类型擦除与运行时真相
 module: 'java'
 category: 后端技术

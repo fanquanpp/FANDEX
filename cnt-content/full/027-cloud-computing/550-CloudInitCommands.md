@@ -1,5 +1,5 @@
 ---
-order: 550
+order: 610
 title: cloud-init 云实例初始化
 module: 'cloud-computing'
 category: 云与基础设施

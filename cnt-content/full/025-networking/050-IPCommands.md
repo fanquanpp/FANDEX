@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 80
 title: ip 命令
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/080-PingTraceroute'
   - 'networking/060-ARPRouting'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## ip addr 地址管理

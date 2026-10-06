@@ -1,5 +1,5 @@
 ---
-order: 20
+order: 30
 title: OSI 与 TCP/IP 模型
 module: 'networking'
 category: 云与基础设施
@@ -12,8 +12,7 @@ related:
   - 'networking/030-NetworkWiringAndConstruction'
   - 'networking/160-SwitchingAndRouting'
   - 'networking/220-NetworkSecurityTech'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## 前置知识

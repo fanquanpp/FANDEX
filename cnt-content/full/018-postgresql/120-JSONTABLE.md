@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 60
 title: JSON_TABLE 关系化查询
 module: 'postgresql'
 category: 数据库

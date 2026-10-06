@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 330
 title: 序列化：JSON 往返与 pickle 的边界
 description: 以「把分析结果交给下一个程序」为场景，建立「序列化是类型降维」的心智模型：JSON 的六种类型宇宙、往返不对称实测、default 与 object_hook 双向挂钩、金额与 Decimal 的精度处理、dataclass 与 pydantic 的出口，最后划清 pickle 的适用边界与反序列化任意代码执行的安全红线。
 module: 'python'
@@ -168,11 +168,44 @@ with open("cache.pkl", "rb") as f:
 
 **边界三：对代码演化脆弱。**pickle 记录的是「类在哪个模块、叫什么名字」+ 属性快照。之后你把类改名、挪模块、增删字段，旧 pickle 大概率读不回来或读出半新半旧的对象。它适合**短期缓存、进程间传输**这类「代码与数据同生共死」的场景，不适合长期归档——归档用 JSON（人还能读）加显式版本号。
 
+## CSV：表格数据的读写与 newline 约定
+
+CSV 与 JSON/pickle 不同类：它没有嵌套结构，只有「行 + 列」的平面表格，换来的好处是 Excel、数据库导出、任何语言都认。标准库 `csv` 模块的读写四个入口：
+
+```python
+import csv
+
+def read_rows(path: str) -> None:
+    with open(path, "r", encoding="utf-8", newline="") as f:   # newline="" 是硬约定
+        for row in csv.reader(f):              # 每行是字符串列表
+            print(row)
+
+def read_dicts(path: str) -> None:
+    with open(path, "r", encoding="utf-8", newline="") as f:
+        for row in csv.DictReader(f):          # 首行当表头，每行是字典
+            print(row["name"], row["age"])
+
+def write_rows(path: str, data: list[list]) -> None:
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        csv.writer(f).writerows(data)          # 逐批写入
+
+def write_dicts(path: str, rows: list[dict]) -> None:
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["name", "age"])
+        writer.writeheader()                   # DictWriter 必须先写表头
+        writer.writerows(rows)
+```
+
+逐段解释两条最容易踩的纪律。其一，`newline=""` 是官方文档明确要求的硬约定：csv 模块自己管理换行，若让 `open` 的通用换行翻译介入（默认行为），Windows 上写出的文件会出现 `\r\r\n`、Excel 打开行间多出空行——`newline=""` 把换行控制权完整交给 csv 模块。换成不写 `newline` 的写法：Linux 上看不出来（都是 `\n`），一到 Windows 就双倍换行，是「我这好好的、同事打开全乱了」的典型来源。其二，`DictWriter` 的 `fieldnames` 是**列序契约**：写入按 fieldnames 的顺序取字典字段，字典里多出的字段默认被忽略（不报错）、缺的写成空值——列序对不上的下游导入事故多源于此，要严格校验配 `extrasaction="raise"`。
+
+reader 与 DictReader 的选型：`reader` 快、省内存（无表头解析），适合列位置固定的机器间交换；`DictReader` 按列名取值、列序变化不敏感，适合人维护的表格与字段较多的数据——按名取值 `row["age"]` 也让代码可读。JSON 配置与 CSV 报表的分工：结构化嵌套用 JSON，平面表格给 Excel/下游系统用 CSV。
+
 ## 选型速查
 
 | 方案 | 互通性 | 能装什么 | 典型用途 |
 | --- | --- | --- | --- |
 | `json` | 任何语言 | 六种 JSON 类型 + 你的映射 | API、配置、文件交换 |
+| `csv` | 任何语言 + Excel | 平面表格（行 + 列） | 报表导出、数据库批量交换 |
 | orjson / msgpack | 通用（二进制更快更小） | 同 JSON | 高吞吐服务间传输 |
 | `pickle` | 仅 Python | 几乎任意对象 | 进程间通信、可信缓存 |
 | pydantic | JSON | 带校验的业务模型 | FastAPI 输入输出 |

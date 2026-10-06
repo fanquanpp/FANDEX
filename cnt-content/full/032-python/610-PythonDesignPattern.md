@@ -1,5 +1,5 @@
 ---
-order: 460
+order: 540
 title: Python 与设计模式
 module: 'python'
 category: 后端技术
@@ -14,6 +14,12 @@ related:
   - 'python/920-PythonJupyter'
 prerequisites: []
 ---
+
+## 知识点地图
+
+- **知识类别**：经典设计模式的 Python 落地——单例、工厂、命令、模板方法、责任链与上下文管理器模式。它们是 GoF 模式在动态语言里的**简化形态**：很多 Java 里需要接口与类的模式，Python 用模块、函数、装饰器就能表达。
+- **解决什么问题**：对象该全局唯一（配置、连接池）怎么办；对象创建要按条件选择实现类（渠道、存储后端）怎么办；请求发出方与执行方要解耦（命令）、算法骨架固定步骤可换（模板方法）、处理环节可动态编排（责任链）怎么办。
+- **什么时候用到**：配置管理（单例）、插件与驱动分发（工厂，配合 [抽象基类与协议](/python/482-AbstractBaseClassAndProtocol) 的注册钩子）、操作撤销/任务队列（命令）、框架钩子（模板方法）、中间件管道（责任链，Web 框架的中间件栈就是它，见 [FastAPI](/python/880-PythonFastAPI)）。单例的完整专论（并发与异步场景）见 [单例模式](/python/600-SingletonPattern)。
 
 ## 单例模式
 
@@ -722,3 +728,220 @@ class Transaction:
 with Transaction():
     pass
 ```
+
+## 动手实践
+
+练习一（预测题）：下面单例写法在单线程下的行为是什么？多线程下呢？
+
+```python
+class Config:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+a = Config()
+b = Config()
+print(a is b)
+```
+
+提示：两个线程同时执行到 `if cls._instance is None` 会怎样？
+
+<details>
+<summary>参考实现</summary>
+
+单线程输出 `True`——第二次调用直接返回缓存的实例。多线程下不保证：两个线程可能都读到 `_instance is None`，各自创建一个实例（竞态窗口在「检查」与「赋值」之间）。修法有两条路：其一，加锁——`threading.Lock()` 包住检查与赋值（Double-Checked Locking 还要先判一次锁内状态）；其二，换形态——直接用「模块级实例」（import 缓存天然单例）或 `functools.lru_cache` 包装的工厂函数，把线程安全交给 import 系统或缓存语义。并发安全版与异步安全版（单事件循环里同样有 await 竞态）的完整讨论见 [单例模式](/python/600-SingletonPattern)。
+</details>
+
+练习二（实战题）：给一个日志系统写工厂函数 `create_logger(kind: str)`：kind 为 "console" 返回 `ConsoleLogger`，为 "file" 返回 `FileLogger(path)`；两者实现共同的抽象基类 `Logger`（`log(msg)` 方法）。新增 "syslog" 类型时不允许改动 `create_logger` 的分支——用注册表（字典）替代 if-elif。
+
+提示：注册表 `{kind: cls}` + 子类自注册（类装饰器或 `__init_subclass__`，见 [抽象基类与协议](/python/482-AbstractBaseClassAndProtocol) 例子一）。
+
+<details>
+<summary>参考实现</summary>
+
+```python
+from abc import ABC, abstractmethod
+
+LOGGER_REGISTRY: dict[str, type["Logger"]] = {}
+
+class Logger(ABC):
+    @abstractmethod
+    def log(self, msg: str) -> None: ...
+
+    def __init_subclass__(cls, /, kind: str, **kwargs):
+        super().__init_subclass__(**kwargs)
+        LOGGER_REGISTRY[kind] = cls
+
+class ConsoleLogger(Logger, kind="console"):
+    def log(self, msg: str) -> None:
+        print(f"[console] {msg}")
+
+class FileLogger(Logger, kind="file"):
+    def __init__(self, path: str = "app.log"):
+        self.path = path
+    def log(self, msg: str) -> None:
+        with open(self.path, "a", encoding="utf-8") as f:
+            f.write(msg + "\n")
+
+def create_logger(kind: str, **kwargs) -> Logger:
+    return LOGGER_REGISTRY[kind](**kwargs)     # 分支消失，新类型自动可用
+
+create_logger("console").log("启动")
+```
+
+要点：工厂函数从「分支选择」退化为「查表构造」，`create_logger` 永不再改——新增 syslog 只写一个子类（`kind="syslog"`），这正是「对扩展开放、对修改关闭」在 Python 里的最小实现；构造参数经 `**kwargs` 透传给各实现的 `__init__`。
+</details>
+
+练习三（实战题）：用命令模式实现一个简易文本编辑器的撤销栈：`Command` 抽象类带 `execute()` 与 `undo()`；`InsertCommand` 与 `DeleteCommand` 是两个具体命令；`Editor` 提供 `execute(cmd)`（入栈）与 `undo()`（弹栈并调 undo）。
+
+提示：命令对象要**携带执行所需的状态**（位置、文本），undo 才能精确还原。
+
+<details>
+<summary>参考实现</summary>
+
+```python
+from abc import ABC, abstractmethod
+
+class Command(ABC):
+    @abstractmethod
+    def execute(self) -> None: ...
+    @abstractmethod
+    def undo(self) -> None: ...
+
+class Editor:
+    def __init__(self) -> None:
+        self.text = ""
+        self.history: list[Command] = []
+
+    def execute(self, cmd: Command) -> None:
+        cmd.execute()
+        self.history.append(cmd)
+
+    def undo(self) -> None:
+        if self.history:
+            self.history.pop().undo()
+
+class InsertCommand(Command):
+    def __init__(self, editor: Editor, pos: int, text: str):
+        self.editor, self.pos, self.text = editor, pos, text
+    def execute(self) -> None:
+        t = self.editor.text
+        self.editor.text = t[:self.pos] + self.text + t[self.pos:]
+    def undo(self) -> None:
+        t = self.editor.text
+        self.editor.text = t[:self.pos] + t[self.pos + len(self.text):]
+
+ed = Editor()
+ed.execute(InsertCommand(ed, 0, "世界你好"))
+ed.execute(InsertCommand(ed, 2, ", "))
+print(ed.text)        # 世界, 你好
+ed.undo()
+print(ed.text)        # 世界你好
+```
+
+要点：命令对象把「做什么 + 用什么参数做 + 怎么反悔」封在一个对象里，`Editor` 只认识 execute/undo 两个动作——发出方与执行方解耦，这就是命令模式的全部动机；撤销栈是它最直观的收益。再把 `history` 换成持久化队列，同一套对象就是任务队列（[Celery](/python/860-PythonCeleryDistributedTaskQueue) 的任务对象也是命令模式）。
+</details>
+
+练习四（找错题）：这个模板方法有一处问题，先找再修：
+
+```python
+from abc import ABC, abstractmethod
+
+class ReportGenerator(ABC):
+    def generate(self):
+        data = self.fetch()
+        rendered = self.render(data)
+        self.save(rendered)             # 骨架固定
+
+    @abstractmethod
+    def fetch(self): ...
+
+class CsvReport(ReportGenerator):
+    def fetch(self):
+        return ["a,b,c"]
+
+r = CsvReport()
+r.generate()
+```
+
+提示：render 与 save 是谁的责任？
+
+<details>
+<summary>参考实现</summary>
+
+```python
+class CsvReport(ReportGenerator):
+    def fetch(self):
+        return ["a,b,c"]
+
+    def render(self, data):
+        return "\n".join(data)
+
+    def save(self, rendered):
+        print(f"保存 {len(rendered)} 字节")
+```
+
+问题：`CsvReport` 只实现了 `fetch`，`render` 与 `save` 既没有实现也不是抽象方法——`r.generate()` 运行到 `self.render(data)` 抛 `AttributeError`。模板方法的纪律是：**骨架方法（generate）固定步骤，每个步骤要么是抽象方法（子类必须实现）、要么是基类提供的默认实现**。修法两条路：其一，像上面那样在子类补齐两个方法；其二，若 render/save 有合理默认（如默认存字符串），在基类给出具体实现、子类按需覆盖。判断依据是「子类不实现它还说得通吗」——说不通的就标 `@abstractmethod`，让错误在实例化期爆发而不是运行中途。
+</details>
+
+练习五（实战题）：用责任链实现一个报销审批流：金额 < 500 组长审批、< 5000 经理审批、>= 5000 总监审批。每个审批者只处理自己权限内的请求，处理不了就传给下一个；写出链的组装与一次 3000 元请求的流转。
+
+提示：`Handler` 基类持有 `next` 引用；`handle(request)` 判断权限，不行就 `self.next.handle(request)`。
+
+<details>
+<summary>参考实现</summary>
+
+```python
+from abc import ABC, abstractmethod
+
+class Approver(ABC):
+    def __init__(self, name: str, limit: int):
+        self.name, self.limit = name, limit
+        self.next: Approver | None = None
+
+    def set_next(self, nxt: "Approver") -> "Approver":
+        self.next = nxt
+        return nxt                     # 链式组装
+
+    @abstractmethod
+    def approve(self, amount: int) -> str: ...
+
+    def handle(self, amount: int) -> str:
+        if amount <= self.limit:
+            return self.approve(amount)
+        if self.next is None:
+            raise PermissionError("超出所有审批权限")
+        return self.next.handle(amount)
+
+class TeamLead(Approver):
+    def approve(self, amount: int) -> str:
+        return f"组长{self.name} 批准 {amount} 元"
+
+class Manager(Approver):
+    def approve(self, amount: int) -> str:
+        return f"经理{self.name} 批准 {amount} 元"
+
+class Director(Approver):
+    def approve(self, amount: int) -> str:
+        return f"总监{self.name} 批准 {amount} 元"
+
+lead = TeamLead("小李", 500)
+chain = lead.set_next(Manager("老王", 5000)).set_next(Director("张总", 100_000))
+print(chain.handle(300))        # 组长小李 批准 300 元
+print(chain.handle(3000))       # 经理老王 批准 3000 元
+```
+
+要点：`handle` 是链的通用流转逻辑（放基类），`approve` 是各环节的业务差异——两者分离让新增审批级别只写子类；`set_next` 返回下一环节支持一行组装整条链。Web 框架的中间件栈（请求依次穿过认证、日志、限流）就是同构的结构，FastAPI 的中间件与依赖注入见 [FastAPI](/python/880-PythonFastAPI)。
+</details>
+
+## 自我检查
+
+- 能说出模块级实例为什么天然是单例，以及 `__new__` 单例写法的线程竞态窗口；
+- 能把 if-elif 工厂改造成注册表工厂，并说出「对扩展开放、对修改关闭」在其中的体现；
+- 能写出带 undo 的命令对象并解释命令模式如何解耦发出方与执行方；
+- 能区分模板方法里「骨架方法」「抽象步骤」「默认步骤」三种角色；
+- 能组装一条责任链并说出它与中间件栈的同构关系；
+- 能给一个新需求判断「该用哪种模式」，并识别「不需要模式」的简单场景。

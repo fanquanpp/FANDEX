@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 80
 title: 位图
 module: 'redis'
 category: 数据库
@@ -8,7 +8,6 @@ description: Redis 位图 Bitmap：SETBIT/BITCOUNT/BITFIELD 位级统计、签�
 author: fanquanpp
 updated: '2026-09-28'
 related:
-  - 'redis/110-CacheStrategyAdvancedFeature'
   - 'redis/050-NumberStats'
   - 'redis/120-CachePenetrationBreakdownAvalanche'
 prerequisites:

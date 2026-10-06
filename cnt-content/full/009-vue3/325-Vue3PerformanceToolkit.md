@@ -245,6 +245,40 @@ jobs:
 
 PR 上每条超标指标直接打红，预算线按自己项目的历史数据定（先测出基线，再收紧）。纯体积类的粗预算可以用 size-limit 之类的包体积断言工具做补充——关键不是工具，是「预算数字进了门禁」这件事。
 
+## 6.1 网络传输侧：预加载、压缩细节与资源瘦身
+
+承接原性能篇拆出的网络维度补充，四个工程动作：
+
+**关键资源预加载**——首屏真正需要的资源提前一步：
+
+```html
+<!-- index.html：预加载首屏大图与关键接口（prefetch 则是"下一页可能用"，优先级更低） -->
+<link rel="preload" href="/images/hero.jpg" as="image" />
+<link rel="preload" href="/fonts/main.woff2" as="font" type="font/woff2" crossorigin />
+```
+
+**压缩的收尾细节**——用 terser 时顺手清掉生产日志与调试器（Vite 默认 esbuild 压缩已很快，需要 drop_console 这类语义级裁剪时才换 terser）：
+
+```ts
+build: {
+  minify: 'terser',
+  terserOptions: {
+    compress: { drop_console: true, drop_debugger: true },
+  },
+}
+```
+
+**Tree-shaking 的导入纪律**——命名导入让打包器能安全剪枝，命名空间/默认全量导入会把整个库拖进包：
+
+```ts
+import { debounce } from 'lodash-es'   // 只打包 debounce
+import _ from 'lodash'                  // 反例：全量进包
+```
+
+**静态资源瘦身清单**——图片转 WebP/AVIF（同画质体积减 30% 起）、构建期压缩（vite-plugin-imagemin 或 CI 里的 sqoosh）、静态资源上 CDN 并配长缓存（带内容哈希的文件名配 `Cache-Control: max-age=31536000, immutable`）。
+
+**请求合并**——同屏多个小接口合批（BFF 聚合或网关 batch 端点），把三次往返压成一次；与上文 useCachedFetch 的去重缓存配合使用（去重管"同一接口别发两次"，合批管"多个接口并成一次"）。
+
 ## 7. 小练习
 
 预测题（3 分钟）：手写虚拟列表滚动到第 500 条时，DOM 里实际存在多少个列表项节点？（可视区条数 + 2 条缓冲，与总数据量无关——这正是「虚拟」的含义。）

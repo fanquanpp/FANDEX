@@ -15,6 +15,12 @@ related:
   - 'python/020-PythonOverviewEnvSetup'
 ---
 
+## 知识点地图
+
+- 知识类别：开发环境搭建——编辑器（VS Code）、版本控制（Git）、运行时（Node.js / Python）的安装、验证与排错。
+- 解决什么问题：把一台普通电脑变成"能写代码、能运行代码、能保存历史"的开发机；看懂"命令找不到"类报错。
+- 什么时候用到：编程的第一天；换新电脑、给同学朋友装环境、帮别人排环境问题时。
+
 ## 学习目标
 
 本篇是全教程的"装备关"。完成后你的电脑将具备：
@@ -157,6 +163,41 @@ python3 --version    # macOS
 - **Windows winget**：Windows 11 自带。`winget install Git.Git` 即可无人值守安装。
 
 零基础阶段不强制使用，知道有这条路即可。
+
+## 动手实践
+
+**任务一：走一遍"安装、验证、排错"标准流程。** 安装一个本篇没教的小工具（比如把 VS Code 的 `code` 命令装进终端：命令面板里执行 "Shell Command: Install 'code' command in PATH"），然后用 `code --version` 验证。提示：这个任务的目的是把本篇的四步流程（安装 -> 重启终端 -> 验证命令 -> 报错查 PATH）在陌生工具上复用一遍——流程会了，以后装什么都一样。
+
+**任务二：亲手制造并修复一次"命令找不到"。** 在 PowerShell 里执行一个不存在的命令（比如 `foobar --version`），读一遍报错信息；再临时把一个已知命令的名字敲错（`gti --version`），对比两种报错。提示：前者是"系统根本不认识这个命令"，后者是"认识前缀但找不到完整命令"——修复思路都是"检查命令拼写与 PATH"，区分它们能让你在真实排错时不慌。
+
+**任务三：环境急救演练。** 把 PATH 里的 Git 目录暂时从环境变量中移除（改完要重开终端），执行 `git --version` 观察报错，再按本篇"环境变量与 PATH"一节的方法修回来。提示：演练前先记下当前 PATH 的值（`echo $env:PATH`），改坏了能原样恢复；这个实验做完，"PATH 是命令的通讯录"就不再是比喻。
+
+先自己操作，再对照参考流程：
+
+<details>
+<summary>任务三参考流程（Windows PowerShell）</summary>
+
+```powershell
+# 1. 记录当前 PATH（存一份到文件，保险）
+$env:PATH -split ';' | Out-File Desktop\path-backup.txt
+
+# 2. 找到 Git 所在目录（常见位置如下，以实际安装路径为准）
+#    C:\Program Files\Git\cmd
+
+# 3. 打开"编辑账户的环境变量"（开始菜单搜索），选中 Path -> 编辑 ->
+#    选中含 Git\cmd 的那一行 -> 删除 -> 确定
+
+# 4. 重开一个新终端（旧终端不会感知环境变量变化）
+git --version
+# 预期：git : 无法将"git"项识别为 cmdlet...   <- 报错形态
+
+# 5. 按原步骤把 C:\Program Files\Git\cmd 加回 Path，重开终端再验证
+git --version
+# 预期：git version 2.x.x
+```
+
+要点：a) 第 4 步必须重开终端——环境变量在终端启动时读取，改完不重开是"改了没生效"的第一嫌疑；b) 第 5 步加回后如果还报错，检查是否把 `\cmd` 后缀漏了（可执行文件在 Git\cmd 目录下，而不是 Git 根目录）；c) 恢复后对照 path-backup.txt 确认没有误删其他条目。
+</details>
 
 ## 检验清单
 

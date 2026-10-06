@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 290
 title: KNN 向量索引：pgvector 与 AI 应用的相似度检索
 module: 'postgresql'
 category: 数据库
@@ -14,12 +14,12 @@ related:
   - 'roadmap/050-BackendPythonAIRoute'
 prerequisites:
   - 'postgresql/220-IndexType'
-  - 'postgresql/330-ExtensionModule'
+  - 'postgresql/340-ExtensionModuleDetailed'
 ---
 
 ## 前置知识
 
-- PostgreSQL 扩展安装（[扩展模块](/postgresql/330-ExtensionModule)）；
+- PostgreSQL 扩展安装（[扩展模块详解](/postgresql/340-ExtensionModuleDetailed)）；
 - 有 AI 应用背景更佳（RAG 检索场景见 [Python 与 AI 路线](/roadmap/050-BackendPythonAIRoute)），本篇不假设你懂机器学习。
 
 ## 问题引入："语义相似"为什么难存难查

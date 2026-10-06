@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 350
 title: 隧道技术
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/340-SDN'
   - 'networking/320-VPNConfig'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 前置知识：IP 报文结构与路由转发（见 [网络基础与协议](networking/010-NetworkBasicsAndProtocol)）；

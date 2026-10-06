@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 320
 title: OpenTelemetry
 module: 'devops'
 category: 云与基础设施

@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 280
 title: 高可用 LVS
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/200-LoadBalanceTech'
   - 'networking/210-LoadBalanceAlgorithm'
   - 'networking/250-KeepalivedDualHotStandby'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 前置知识：TCP/IP 封装与 NAT 原理（见 [网络基础与协议](networking/010-NetworkBasicsAndProtocol)）；

@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 560
 title: React 学习总结：核心知识体系回顾
 module: 'react'
 category: 前端技术
@@ -11,7 +11,7 @@ related:
   - 'react/010-OverviewEnvSetup'
   - 'react/040-HooksDeep'
   - 'react/120-FiberArchitecture'
-  - 'react/140-ServerComponents'
+  - 'react/400-ServerClientComponents'
 prerequisites: []
 ---
 
@@ -503,10 +503,10 @@ useEffect(() => {
 
 1. 复习 [Hooks 原理](/react/150-HooksPrinciple)，理解闭包链表与 Hooks 规则背后的实现，很多"灵异 bug"都能在这一篇找到答案。
 2. 深入 [Fiber 架构](/react/120-FiberArchitecture) 与 [并发模式](/react/130-ConcurrentRendering)，补齐可中断渲染的知识闭环，再看 [可中断渲染](/react/430-InterruptibleRendering) 验证理解。
-3. 攻克 [Server Components](/react/140-ServerComponents) 与 [Server 和 Client Components](/react/400-ServerClientComponents)，掌握 RSC 时代的心智模型与组合边界。
+3. 攻克 [Server 和 Client 组件](/react/400-ServerClientComponents)，掌握 RSC 时代的心智模型与组合边界。
 4. 跟进 [React 19 新 API](/react/420-React19NewAPI)，练习 use、useOptimistic、useActionState 的实战写法，为表单类需求换装。
 5. 系统学习 [状态管理方案对比](/react/170-StateManagementSolutionComparison)，结合团队规模与更新频率为项目选定长期方案。
-6. 补齐 [错误边界与 Sentry](/react/440-ErrorBoundarySentry)，让线上问题可观测、可归因，再配合 [测试工程](/react/090-TestEngineering) 建立回归防护。
+6. 补齐 [错误边界与 Sentry](/react/440-ErrorMonitoringSentry)，让线上问题可观测、可归因，再配合 [测试工程](/react/090-LintFormatAndProjectStructure) 建立回归防护。
 7. 进入 [Next.js App Router](/react/410-NextJsAppRouter)，把本模块知识迁移到元框架的全栈场景，衔接 Next.js 模块的学习。
 8. 浏览 [React 19 新特性](/react/060-React19NewFeatures) 与 [编译器自动记忆化](/react/390-ReactCompilerAutoMemoization)，了解 useMemo、useCallback 在编译器时代将如何被自动接管。
 

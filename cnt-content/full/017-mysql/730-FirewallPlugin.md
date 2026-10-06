@@ -1,5 +1,5 @@
 ---
-order: 710
+order: 760
 title: 防火墙插件：SQL 白名单与注入拦截
 module: 'mysql'
 category: 数据库

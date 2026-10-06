@@ -203,7 +203,7 @@ GET http://127.0.0.1:5500/demo.mp4 net::ERR_FILE_NOT_FOUND
 ## 12. 与之前和之后的知识的关系
 
 - 之前：[网页是什么](/html5/010-WhatIsWebpage) 建立了「网页 = 文本文件 + 三件套」的心智模型，本篇回答「HTML5 这个 5 是什么、给了什么」；
-- 本模块之后：[环境准备与第一个页面](/html5/030-HTML5EnvSetupFirstPage) 把双击打开升级成正规工作流；[DOCTYPE 声明](/html5/040-DocTypeDeclaration) 把第 6 节的一句话展开成整篇；[语义化标签](/html5/170-SemanticTag)、[表单校验](/html5/190-HTML5FormValidation)、[音视频](/html5/200-AudioVideo)、[Canvas 绘图](/html5/230-HTML5MultimediaCanvasDrawing) 分别深讲四个变化。
+- 本模块之后：[环境准备与第一个页面](/html5/030-HTML5EnvSetupFirstPage) 把双击打开升级成正规工作流；[DOCTYPE 声明](/html5/040-DocTypeDeclaration) 把第 6 节的一句话展开成整篇；[语义化标签](/html5/170-SemanticTag)、[表单校验](/html5/190-HTML5FormValidation)、[音视频](/html5/200-AudioVideo)、[Canvas 绘图](/html5/235-Canvas2DDrawing) 分别深讲四个变化。
 
 ## 13. 官方文档
 

@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 230
 title: changesets 版本管理与发布
 module: 'vite'
 category: 前端技术

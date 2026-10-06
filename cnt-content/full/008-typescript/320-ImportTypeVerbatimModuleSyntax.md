@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 340
 title: import type 与 verbatimModuleSyntax
 module: 'typescript'
 category: 前端技术
@@ -8,7 +8,7 @@ description: 值导入与类型导入的区别、import type 的写法、verbati
 author: fanquanpp
 updated: '2026-09-28'
 related:
-  - 'typescript/330-ModuleResolutionModernToolchains'
+  - 'typescript/315-PackageExportsEsmInterop'
   - 'typescript/300-DeclarationFileWriting'
   - 'typescript/360-TsconfigStrictMode'
   - 'typescript/290-NamespaceModule'

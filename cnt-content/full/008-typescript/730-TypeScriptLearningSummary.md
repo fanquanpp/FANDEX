@@ -1,5 +1,5 @@
 ---
-order: 750
+order: 800
 title: TypeScript 学习总结：核心知识体系回顾
 module: 'typescript'
 category: 前端技术
@@ -427,17 +427,17 @@ void s;
 
 | 主题 | 先读 | 再读 |
 | --- | --- | --- |
-| 类型体操 | `530-TypeGymnasticsPracticalPatterns`（实用模式） | `540-TypeGymnastics`（通用方法论） |
-| infer 与条件类型 | `450-InferTypeDeepDive`（infer 专精） | `440-ConditionalTypeInfer`（组合运用） |
+| 类型体操 | `530-TypeGymnasticsPracticalPatterns`（实用模式） | `540-TypeGymnasticsBoundaries`（通用方法论） |
+| infer 与条件类型 | `450-TypeCompositionPractice`（infer 专精） | `440-ConditionalTypeInfer`（组合运用） |
 | 映射类型 | `470-MappedTypeAdvanced`（进阶基础） | `480-MappedTypeKeyRemap`（键重映射） |
-| 装饰器 | `090-ClassAndDecorators`（类起步）→ `270-DecoratorDetailed`（详解） | `280-DecoratorStandardImpl`（标准实现） |
-| 模块解析 | `330-ModuleResolutionModernToolchains`（现代工具链） | `310-TypeScriptTypeDeclarationModuleResolution`（声明配套） |
+| 装饰器 | `090-ClassMembersAndModifiers`（类起步）→ `270-DecoratorDetailed`（详解） | `280-DecoratorStandardImpl`（标准实现） |
+| 模块解析 | `315-PackageExportsEsmInterop`（策略与互操作） | `300-DeclarationFileWriting`（声明配套） |
 | 声明文件 | `300-DeclarationFileWriting`（编写） | `340-ModuleDeclarationGlobalAugmentation`（全局增强） |
 
 ## 后续学习路径
 
 1. 精读 [条件类型与 infer](/typescript/440-ConditionalTypeInfer) 与 [模板字面量类型](/typescript/500-TemplateLiteralType)，打通类型体操的两大核心原语。
-2. 按 [类型体操](/typescript/540-TypeGymnastics) 的题目序列刻意练习，用 [类型测试与断言](/typescript/550-TypeTestingAndAssertions) 为类型代码补上"单元测试"。
+2. 按 [类型体操](/typescript/540-TypeGymnasticsBoundaries) 的题目序列刻意练习，用 [类型测试与断言](/typescript/550-TypeTestingAndAssertions) 为类型代码补上"单元测试"。
 3. 学习 [TypeSafe API Client](/typescript/570-TypeSafeAPIClient) 与 [运行时 Schema 校验](/typescript/660-RuntimeSchemaValidation)，把类型安全推进到网络边界。
 4. 按 [TypeScript 迁移实践](/typescript/390-TypeScriptMigrationPractice) 与 [项目引用与 Monorepo](/typescript/420-ProjectReferencesMonorepo) 把存量 JS 仓库分阶段迁入严格模式。
 5. 以 [项目实战：类型安全 API 客户端](/typescript/690-TypeScriptProjectExampleTypeSafeAPIClient) 与 [TS7 编译器指南](/typescript/680-TypeScript6And7CompilerEvolution) 收官，站在工具链演进的视角审视自己的工程配置。

@@ -1,5 +1,5 @@
 ---
-order: 680
+order: 730
 title: 账户与权限管理
 module: 'mysql'
 category: 数据库
@@ -322,3 +322,38 @@ ALTER USER 'app_user'@'%' ACCOUNT LOCK;
 -- 解锁账户
 ALTER USER 'app_user'@'%' ACCOUNT UNLOCK;
 ```
+
+### 认证插件：caching_sha2_password
+
+MySQL 8.0 起默认认证插件从 `mysql_native_password` 换成 `caching_sha2_password`——更安全（挑战-响应 + 全程 SHA-256，密码不以可逆形式传输），但带来两个运维衔接点：
+
+```sql
+-- 盘点各用户的认证插件
+SELECT user, host, plugin FROM mysql.user;
+
+-- 新建用户默认就是 caching_sha2_password
+CREATE USER 'app_user'@'%' IDENTIFIED WITH caching_sha2_password BY 'StrongP@ss123!';
+
+-- 首次连接需要安全通道取公钥（TLS 或 RSA 公钥交换）
+-- JDBC 连接串补：allowPublicKeyRetrieval=true&useSSL=true
+-- 老客户端（5.x 驱动）不认识该插件时的兼容回退（不推荐生产用）：
+ALTER USER 'legacy_user'@'%' IDENTIFIED WITH mysql_native_password BY 'password';
+```
+
+两个衔接点：其一，新插件首次认证要求安全通道（TLS）或 RSA 公钥交换——很多「升级 8.0 后应用连不上」的事故根因是驱动没配 `allowPublicKeyRetrieval` 或没开 TLS，报错是 `Authentication plugin 'caching_sha2_password' cannot be loaded` 或公钥获取失败；其二，`mysql_native_password` 在 8.4 起默认禁用（8.0 里已标记废弃）——靠回退插件苟着的旧客户端要排期升级驱动，升级清单见 [8.4 升级指南](/mysql/840-MySQL84UpgradeGuide)。加密通道的完整配置见 [SSL 加密](/mysql/710-SSLEncryption)。
+
+### 登录失败锁定（8.0+）
+
+```sql
+-- 连续失败 N 次后锁定 M 天（防爆破的数据库侧闸门）
+CREATE USER 'app_user'@'%' IDENTIFIED BY 'P@ss123!'
+  FAILED_LOGIN_ATTEMPTS 3
+  PASSWORD_LOCK_TIME 1;            -- 失败 3 次锁 1 天
+
+-- 永久锁定直到人工解锁（高敏感账号）
+ALTER USER 'app_user'@'%'
+  FAILED_LOGIN_ATTEMPTS 5
+  PASSWORD_LOCK_TIME UNBOUNDED;
+```
+
+与手工 `ACCOUNT LOCK` 的分工：ACCOUNT LOCK 是管理员主动停用（维护期、离职封号），FAILED_LOGIN_ATTEMPTS 是**自动**防爆破——注意阈值别设太低，应用密码轮换窗口期的配置错误会把整个业务账号锁死（计的是「登录失败次数」不是「错误密码」，网络抖动导致的认证中断同样计数）。解锁用 `ALTER USER ... ACCOUNT UNLOCK`。

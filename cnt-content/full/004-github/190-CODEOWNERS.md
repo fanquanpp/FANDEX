@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 200
 title: CODEOWNERS：让每个 PR 自动找到最懂这块代码的人
 module: 'github'
 category: 工具链

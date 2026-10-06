@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 130
 title: Git 分支管理
 module: 'git'
 category: 工具链
@@ -14,6 +14,12 @@ related:
   - 'git/170-DistributedVCSPrinciple'
 prerequisites: []
 ---
+
+## 知识点地图
+
+- **知识类别**：Git 分支管理——分支的创建/切换/合并/删除操作、命名规范与团队分支策略选型。
+- **解决什么问题**：多人（或多任务）并行开发时互不踩脚：功能开发、紧急修复、发布准备各自有独立分支，合并时才有节奏地汇流。分支的「本质是指针」原理见 110 篇；工作流模型（Git Flow/GitHub Flow 的完整展开）见 210 篇；合并冲突的完整解剖见 130 篇。
+- **什么时候用到**：开新任务前建分支；完成后合并回主线；接手仓库先看分支布局；团队制定分支策略时选型。
 
 ## 2. 分支概述
 
@@ -102,7 +108,13 @@ prerequisites: []
  git merge --strategy recursive feature/branch
  # 章鱼策略（适合合并多个分支）
  git merge --strategy octopus feature1 feature2 feature3
+ # 分支多时可用反斜杠换行书写，可读性更好
+ git merge --strategy octopus feature1 \
+                           feature2 \
+                           feature3
 ```
+
+**易错点**：`--strategy-option ours` 与 `merge=ours` 驱动（见 045 篇）名字相像但完全是两回事——前者只在冲突块上偏袒当前分支，非冲突修改照常合并；后者是整文件级别的「以我为准」。想要「冲突时自动选对方」的 `theirs` 同理只作用于冲突处。
 
 <a id="3.6"></a>
 
@@ -369,312 +381,52 @@ GitFlow 是一种详细的分支管理策略，适合大型项目和复杂的发
 - **冲突解决**：掌握解决分支冲突的方法
 - **最佳实践**：遵循分支管理的最佳实践
   通过熟练掌握分支管理，可以更好地组织代码开发流程，提高团队协作效率。
-## 查看分支
 
-**基本写法：查看本地分支**
-`git branch`
+## 动手实践
+
+**练习 1**：模拟一个两分支汇合：从 main 建 feature/login 提交两次，期间 main 也前进一个提交，然后合并——观察这次合并为什么不是 fast-forward；再建一个 main 没有前进的分支验证 fast-forward 的触发条件。
+
+**提示**：`git log --graph --oneline --all` 能直观看到合并拓扑；`git merge` 输出的第一行会写明走的是哪种合并。
+
+**练习 2**：故意制造一次冲突（两个分支改同一行），用 3.6 的流程解决；解决后用 `git log -1 --format=%P` 看合并提交的双亲，理解「合并提交记录了双方」。
+
+**提示**：冲突时 `git status` 列出 both modified 文件；解决一半想重来用 `git merge --abort`。
+
+**练习 3**：审查一个真实仓库的分支：列出本地与远程分支、找出已合并可删的分支（`git branch --merged main`）并删除，体会「及时清理」的实践含义。
+
+<details>
+<summary>参考实现（先自己动手，再看这里）</summary>
+
 ```bash
-# 列出本地所有分支
-git branch;
+# 练习 1
+git init br-lab && cd br-lab
+echo base > f.txt && git add f.txt && git commit -m "base"
+git switch -c feature/login
+echo login1 > login.txt && git add . && git commit -m "login 1"
+git switch main && echo main1 > m.txt && git add . && git commit -m "main 1"
+git switch feature/login && echo login2 >> login.txt && git commit -am "login 2"
+git switch main && git merge feature/login
+# 输出含 "Merge made by the 'ort' strategy"：main 已前进，非 fast-forward
+
+git switch -c quickfix && echo fix > q.txt && git add . && git commit -m "quick"
+git switch main && git merge quickfix
+# 输出含 "Fast-forward"：main 未动，指针直接前移
+
+# 练习 2
+git switch -c conflict-a && echo A > c.txt && git add . && git commit -m "A"
+git switch main && git switch -c conflict-b
+git switch main && echo B > c.txt && git add . && git commit -m "B"
+git merge conflict-a            # 冲突
+git status --short              # UU c.txt
+# 编辑 c.txt 保留想要的内容后
+git add c.txt && git commit --no-edit
+git log -1 --format=%P          # 输出两个哈希：双亲提交
+
+# 练习 3
+git branch -a
+git branch --merged main        # 已并入 main、可安全删除的分支
+git branch -d <分支名>
 ```
 
-**基本写法：查看远程分支**
-`git branch -r`
-```bash
-# 列出所有远程分支
-git branch -r;
-```
+</details>
 
-**基本写法：查看所有分支**
-`git branch -a`
-```bash
-# 列出本地和远程所有分支
-git branch -a;
-```
-
-**基本写法：查看分支详情**
-`git branch -v`
-```bash
-# 显示分支名、哈希、提交消息
-git branch -v;
-```
-
----
-
-## 创建分支
-
-**基本写法：创建新分支**
-`git branch <分支名>`
-```bash
-# 创建 feature/login 分支
-git branch feature/login;
-```
-
----
-
-## 切换分支
-
-**基本写法：切换分支**
-`git checkout <分支名>`
-```bash
-# 切换到 feature/login 分支
-git checkout feature/login;
-```
-
-**基本写法：使用 switch 切换**
-`git switch <分支名>`
-```bash
-# 切换到 develop 分支（Git 2.23+）
-git switch develop;
-```
-
----
-
-## 创建并切换分支
-
-**基本写法：创建并切换**
-`git checkout -b <分支名>`
-```bash
-# 创建并切换到 feature/login 分支
-git checkout -b feature/login;
-```
-
-**基本写法：使用 switch 创建并切换**
-`git switch -c <分支名>`
-```bash
-# 创建并切换到 feature/payment 分支（Git 2.23+）
-git switch -c feature/payment;
-```
-
----
-
-## 合并分支
-
-**基本写法：合并到当前分支**
-`git merge <分支名>`
-```bash
-# 将 feature/login 合并到当前分支
-git merge feature/login;
-```
-
-**基本写法：快速合并（Fast-forward）**
-`git merge <分支名>`
-```bash
-# 切换到 main 后合并 feature/login
-git checkout main;
-git merge feature/login;
-```
-
-**基本写法：三方合并（3-way merge）**
-`git merge <分支名>`
-```bash
-# 切换到 main 后合并 feature/payment
-git checkout main;
-git merge feature/payment;
-```
-
----
-
-## 合并策略
-
-**基本写法：优先对方分支修改**
-`git merge --strategy-option theirs <分支名>`
-```bash
-# 冲突时优先使用对方分支的修改
-git merge --strategy-option theirs feature/branch;
-```
-
-**基本写法：优先当前分支修改**
-`git merge --strategy-option ours <分支名>`
-```bash
-# 冲突时优先使用当前分支的修改
-git merge --strategy-option ours feature/branch;
-```
-
-**基本写法：递归策略**
-`git merge --strategy recursive <分支名>`
-```bash
-# 显式指定递归策略
-git merge --strategy recursive feature/branch;
-```
-
-**单行写法：章鱼策略合并多个分支**
-`git merge --strategy octopus <分支1> <分支2> <分支3>`
-```bash
-# 同时合并多个分支
-git merge --strategy octopus feature1 feature2 feature3;
-```
-
-**换行写法：章鱼策略合并多个分支**
-`git merge --strategy octopus <分支1> <分支2> <分支3>`
-```bash
-# 换行书写多个分支
-git merge --strategy octopus feature1 \
-                          feature2 \
-                          feature3;
-```
-
----
-
-## 删除分支
-
-**基本写法：安全删除**
-`git branch -d <分支名>`
-```bash
-# 删除已合并的 feature/login 分支
-git branch -d feature/login;
-```
-
-**基本写法：强制删除**
-`git branch -D <分支名>`
-```bash
-# 强制删除未合并的 feature/login 分支
-git branch -D feature/login;
-```
-
-**基本写法：删除远程分支**
-`git push <远程仓库名> --delete <分支名>`
-```bash
-# 删除 origin 上的 feature/login 分支
-git push origin --delete feature/login;
-```
-
----
-
-## 重命名分支
-
-**基本写法：重命名分支**
-`git branch -m <旧分支名> <新分支名>`
-```bash
-# 将 feature/old 重命名为 feature/new
-git branch -m feature/old feature/new;
-```
-
----
-
-## 设置上游分支
-
-**基本写法：设置已有分支上游**
-`git branch --set-upstream-to=<远程仓库名>/<远程分支名> <本地分支名>`
-```bash
-# 将本地 feature/login 关联到 origin/feature/login
-git branch --set-upstream-to=origin/feature/login feature/login;
-```
-
-**基本写法：首次推送时设置上游**
-`git push -u <远程仓库名> <本地分支名>`
-```bash
-# 推送 feature/login 并设置上游
-git push -u origin feature/login;
-```
-
----
-
-## 分支命名规范
-
-**基本写法：命名格式约定**
-`<type>/<描述>`
-```text
-# 功能分支：feature/login
-# 修复分支：bugfix/login-error
-# 紧急修复：hotfix/security-patch
-# 发布分支：release/v1.0.0
-# 开发分支：develop
-# 主分支：main
-```
-
----
-
-## GitFlow 工作流
-
-**基本写法：初始化 GitFlow**
-`git flow init`
-```bash
-# 初始化 GitFlow 工作流
-git flow init;
-```
-
-**基本写法：创建功能分支**
-`git flow feature start <功能名>`
-```bash
-# 创建功能分支
-git flow feature start login;
-```
-
-**基本写法：完成功能分支**
-`git flow feature finish <功能名>`
-```bash
-# 完成功能分支
-git flow feature finish login;
-```
-
-**基本写法：创建发布分支**
-`git flow release start <版本号>`
-```bash
-# 创建发布分支
-git flow release start v1.0.0;
-```
-
-**基本写法：完成发布分支**
-`git flow release finish <版本号>`
-```bash
-# 完成发布分支
-git flow release finish v1.0.0;
-```
-
-**基本写法：创建热修复分支**
-`git flow hotfix start <修复名>`
-```bash
-# 创建热修复分支
-git flow hotfix start security-patch;
-```
-
-**基本写法：完成热修复分支**
-`git flow hotfix finish <修复名>`
-```bash
-# 完成热修复分支
-git flow hotfix finish security-patch;
-```
-
----
-
-## 解决分支冲突
-
-**基本写法：查看冲突文件**
-`git diff`
-```bash
-# 查看冲突详情
-git diff;
-```
-
-**基本写法：冲突标记格式**
-`<<<<<<< HEAD ... ======= ... >>>>>>> <分支名>`
-```text
-# 冲突标记格式
-<<<<<<< HEAD
-当前分支的内容
-=======
-要合并的分支的内容
->>>>>>> feature/login
-```
-
-**基本写法：标记冲突已解决**
-`git add .`
-```bash
-# 将解决冲突后的文件加入暂存区
-git add .;
-```
-
-**基本写法：完成合并提交**
-`git commit`
-```bash
-# 提交合并结果
-git commit;
-```
-
-**基本写法：放弃合并**
-`git merge --abort`
-```bash
-# 放弃当前合并操作
-git merge --abort;
-```

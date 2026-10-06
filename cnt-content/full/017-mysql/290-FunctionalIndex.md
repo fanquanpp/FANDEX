@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 310
 title: 函数索引：给表达式建索引
 module: 'mysql'
 category: 数据库
@@ -149,3 +149,26 @@ EXPLAIN SELECT * FROM func_demo WHERE LOWER(TRIM(email)) = 'user123@example.com'
 ## 下一步
 
 表达式救完了列上的函数，但优化器对**数据分布**的误判是另一类问题：进入[索引统计信息与直方图](/mysql/300-IndexStatsHistogram)。
+
+### JSON 场景：生成列当「常驻索引物」
+
+函数索引救「列上套函数」，JSON 查询是它的姊妹场景——JSON 内部字段没有索引，把高频查询的 JSON 路径物化成生成列再建索引：
+
+```sql
+CREATE TABLE events (
+    id INT PRIMARY KEY,
+    payload JSON,
+    event_type VARCHAR(50) AS (JSON_UNQUOTE(payload->'$.type')) STORED,
+    event_time DATETIME AS (payload->>'$.timestamp') STORED
+);
+
+CREATE INDEX idx_event_type ON events (event_type);
+CREATE INDEX idx_event_time ON events (event_time);
+
+-- 原来这样查（全表扫 JSON）：
+SELECT * FROM events WHERE JSON_UNQUOTE(payload->'$.type') = 'login';
+-- 现在这样查（走 idx_event_type）：
+SELECT * FROM events WHERE event_type = 'login';
+```
+
+逐段讲机制与取舍：`->` 取 JSON 原始类型（字符串带引号），`->>` 等价于 `JSON_UNQUOTE(->)`（脱引号）——事件类型比较要用脱引号版否则永远不等；`STORED` 把表达式值落盘（写入时算好），虚拟列（VIRTUAL）则查询时现算——**要建索引的生成列两种都行**（索引都会物化它），但 STORED 在无索引场景下读更快、写入略贵；生成列的表达式有确定性要求（不能用 NOW() 这类非确定函数）。与函数索引的分工：函数索引是「一列上的一种表达式」（内部就是隐藏生成列），生成列是「可被多个索引与查询共享的显式物化列」——同一 JSON 路径被多个查询和多个索引用时，显式生成列比多个函数索引清晰。JSON 体系全景见 [JSON 类型与 JSON_TABLE](/mysql/810-JSONTypeJSONTable)。

@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 550
 title: Azure Functions 命令
 module: 'cloud-computing'
 category: 云与基础设施

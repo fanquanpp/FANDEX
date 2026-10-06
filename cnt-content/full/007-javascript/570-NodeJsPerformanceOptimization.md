@@ -1,13 +1,14 @@
 ---
-order: 570
+order: 640
 title: Node.js 高级特性与性能优化
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
-description: 异步编程模式、流处理、集群与 Worker、性能调优与安全实践。
+description: 异步编程模式、集群与 Worker、性能调优与安全实践（流处理已拆出为 575 专篇）。
 author: fanquanpp
 updated: '2026-10-05'
 related:
+  - 'javascript/575-NodeStreamsAndBackpressure'
   - 'javascript/500-DebugPerformanceOptimization'
   - 'javascript/690-JavaScriptProjectPractice'
   - 'javascript/700-JavaScriptProjectExampleTodoApp'
@@ -97,22 +98,9 @@ $$
 
 每个阶段持有自己的回调队列，仅在当前阶段执行完所有回调后才进入下一阶段。微任务（`process.nextTick` 与 `Promise.then`）在阶段切换间隙执行。
 
-### 2.2 Stream 背压的形式化
+> 本篇 v2 起把流处理相关内容拆出为 [Node.js Stream 流处理与背压](/javascript/575-NodeStreamsAndBackpressure)：原 2.2（背压形式化）、3.3（管线复杂度）、4.3（背压处理示例）、5.3（与 RxJS 对比）、6.4（Stream 错误反模式）、8.4（背压治理案例）、12.1（node:stream/promises 附录）共七处已整体搬入该篇，本篇小节编号已随之重排。
 
-设生产者产生数据速率 $r_p$（字节/秒），消费者处理速率 $r_c$。当 $r_p > r_c$ 时，缓冲区增长速率：
-
-$$
-\frac{dBuffer}{dt} = r_p - r_c > 0
-$$
-
-若无背压，缓冲区在 $t = \frac{Buffer_{max}}{r_p - r_c}$ 时溢出。Node.js Stream 通过 `highWaterMark` 阈值实现背压：
-
-- 当内部缓冲达到 `highWaterMark` 时，`stream.write(chunk)` 返回 `false`。
-- 生产者应监听 `'drain'` 事件后再继续写入。
-
-形式化地，背压将 $r_p$ 限制为 $\min(r_p, r_c)$，使缓冲区保持稳定。
-
-### 2.3 Worker 线程的通信代价
+### 2.2 Worker 线程的通信代价
 
 主线程与 Worker 线程通过 `postMessage` 通信，单次消息开销：
 
@@ -126,7 +114,7 @@ $$
 
 对 1MB 数据，结构化克隆约 5-10ms，而 `Transferable` 转移约 0.1ms。因此大数据应优先使用 `Transferable`。
 
-### 2.4 V8 分代 GC 模型
+### 2.3 V8 分代 GC 模型
 
 V8 堆分为新生代（Young Generation）与老生代（Old Generation）：
 
@@ -176,29 +164,7 @@ $$
 
 收益递减明显。注意此分析忽略了通信开销，实际加速比更低。
 
-### 3.3 Stream 管线的复杂度
-
-设有 $k$ 个 Transform 流串联：
-
-$$
-\text{Pipeline} = Source \to T_1 \to T_2 \to \ldots \to T_k \to Sink
-$$
-
-每个元素的延迟：
-
-$$
-T_{elem} = \sum_{i=1}^{k} T_{T_i}
-$$
-
-吞吐量受最慢阶段约束：
-
-$$
-\text{Throughput} = \frac{1}{\max_i T_{T_i}}
-$$
-
-`stream.pipeline` 自动处理背压，避免任意阶段积压。
-
-### 3.4 内存泄漏的检测复杂度
+### 3.3 内存泄漏的检测复杂度
 
 设对象引用图为 $G = (V, E)$，GC 可达性分析需遍历 $O(|V| + |E|)$。若存在泄漏（无用但可达的对象），则 $|V|$ 单调增长，GC 耗时随之增长。
 
@@ -333,77 +299,7 @@ async function parallelSieve(totalRange, workerCount) {
 parallelSieve(10_000_000, 4);
 ```
 
-### 4.3 Stream 背压处理
-
-```javascript
-// ============================================================
-// 大文件逐行处理：正确处理背压
-// ============================================================
-const { createReadStream, createWriteStream } = require('node:fs');
-const { createInterface } = require('node:readline');
-const { Transform, pipeline } = require('node:stream');
-
-// 错误示范：直接 readline + 处理函数，无背压
-async function badPattern(inputPath, outputPath) {
-  const rl = createInterface({
-    input: createReadStream(inputPath),
-    crlfDelay: Infinity
-  });
-
-  const output = createWriteStream(outputPath);
-  for await (const line of rl) {
-    // 若处理慢于读取速度，readline 内部缓冲会无限增长
-    const processed = await expensiveProcess(line);
-    output.write(processed + '\n'); // 不检查返回值
-  }
-  output.end();
-}
-
-// 正确示范：使用 pipeline + Transform
-function goodPattern(inputPath, outputPath) {
-  const transform = new Transform({
-    // highWaterMark 控制内部缓冲上限
-    highWaterMark: 1024 * 64,
-
-    async transform(chunk, encoding, callback) {
-      const lines = chunk.toString().split('\n');
-      for (const line of lines) {
-        if (!line) continue;
-        try {
-          const processed = await expensiveProcess(line);
-          this.push(processed + '\n');
-        } catch (err) {
-          callback(err);
-          return;
-        }
-      }
-      callback();
-    }
-  });
-
-  // pipeline 自动处理背压与错误传播
-  pipeline(
-    createReadStream(inputPath),
-    transform,
-    createWriteStream(outputPath),
-    (err) => {
-      if (err) console.error('管线失败:', err);
-      else console.log('处理完成');
-    }
-  );
-}
-
-async function expensiveProcess(line) {
-  // 模拟耗时处理
-  return new Promise(resolve => {
-    setTimeout(() => resolve(line.toUpperCase()), 1);
-  });
-}
-
-goodPattern('./input.txt', './output.txt');
-```
-
-### 4.4 AbortController 取消异步任务
+### 4.3 AbortController 取消异步任务
 
 ```javascript
 // ============================================================
@@ -465,7 +361,7 @@ setTimeout(() => controller.abort(), 5000); // 5 秒后取消
 cancellableLongTask(controller.signal).catch(console.error);
 ```
 
-### 4.5 性能分析：CPU 火焰图
+### 4.4 性能分析：CPU 火焰图
 
 ```javascript
 // ============================================================
@@ -511,7 +407,7 @@ global.gc?.(); // 强制 GC（仅调试用）
 // 分析：node --prof-process isolate-*.log > profile.txt
 ```
 
-### 4.6 集群与负载均衡
+### 4.5 集群与负载均衡
 
 ```javascript
 // ============================================================
@@ -561,7 +457,7 @@ if (cluster.isPrimary) {
 }
 ```
 
-### 4.7 内存泄漏检测
+### 4.6 内存泄漏检测
 
 ```javascript
 // ============================================================
@@ -613,7 +509,7 @@ setInterval(() => {
 // 使用 Chrome DevTools 加载 .heapsnapshot 文件对比
 ```
 
-### 4.8 内置 SQLite 使用
+### 4.7 内置 SQLite 使用
 
 ```javascript
 // ============================================================
@@ -697,18 +593,6 @@ db.close();
 | SQLite 写入（QPS） | 45,000 | 52,000 | 110,000 | Bun 内置 C 实现的 SQLite |
 | 包安装（中型项目，s） | 4.2 | 5.8 | 1.1 | Bun 并行下载与硬链接 |
 | TypeScript 执行（ms） | 38（需 tsx） | 15（原生） | 8（原生） | Node.js 22.6+ 原生剥离更快 |
-
-### 5.3 Stream 与 RxJS 对比
-
-| 维度 | Node.js Stream | RxJS Observable |
-| --- | --- | --- |
-| 内置支持 | 是 | 需安装 |
-| 背压处理 | 自动（highWaterMark） | 需手动（bufferSize） |
-| 惰性求值 | pull-based | push-based |
-| 多播 | 不支持 | 支持（share、publish） |
-| 错误传播 | 自动（pipeline） | 自动（catchError） |
-| 学习曲线 | 中等 | 陡峭 |
-| 包体积 | 0 | 280 KB |
 
 ## 6. 常见陷阱与反模式
 
@@ -831,32 +715,7 @@ app.post('/api/async', (req, res) => {
 });
 ```
 
-### 6.4 反模式：Stream 错误未处理
-
-```javascript
-// 反模式：未处理 'error' 事件，导致进程崩溃
-const stream = fs.createReadStream('large.txt');
-stream.pipe(transformStream).pipe(fs.createWriteStream('out.txt'));
-// 任一流抛出 error 事件，整个进程崩溃
-
-// 正确：使用 pipeline 自动处理错误
-const { pipeline } = require('node:stream/promises');
-
-async function copy() {
-  try {
-    await pipeline(
-      fs.createReadStream('large.txt'),
-      transformStream,
-      fs.createWriteStream('out.txt')
-    );
-    console.log('完成');
-  } catch (err) {
-    console.error('管线失败:', err);
-  }
-}
-```
-
-### 6.5 反模式：滥用 process.nextTick
+### 6.4 反模式：滥用 process.nextTick
 
 ```javascript
 // 反模式：递归 nextTick 导致 I/O 饥饿
@@ -875,7 +734,7 @@ function recursiveImmediate(n) {
 }
 ```
 
-### 6.6 反模式：Worker 滥用
+### 6.5 反模式：Worker 滥用
 
 ```javascript
 // 反模式：对每个请求启动 Worker（启动开销远大于计算）
@@ -1369,69 +1228,6 @@ parentPort.on('message', async ({ taskId, data }) => {
 - 并发能力从 8 提升至 32（Worker 池上限）。
 - 内存峰值从 1.2GB 降至 600MB（FFmpeg 核心复用）。
 
-### 8.4 案例 4：日志收集服务的背压治理
-
-**背景**：某日志收集服务在流量高峰时，Kafka 生产者速率远超消费者，导致内存爆炸。
-
-**改造**：
-
-```javascript
-// 反模式：无背压的 Kafka 生产
-const producer = kafka.producer();
-
-app.post('/log', (req, res) => {
-  producer.send({
-    topic: 'logs',
-    messages: [{ value: JSON.stringify(req.body) }]
-  });
-  res.json({ ok: true });
-});
-
-// 改造：基于 Stream 的背压
-const { Transform, pipeline } = require('node:stream');
-
-class KafkaSink extends Transform {
-  constructor(producer, options = {}) {
-    super({ ...options, highWaterMark: 1000 }); // 1000 条缓冲
-    this.producer = producer;
-  }
-
-  async _transform(chunk, encoding, callback) {
-    try {
-      await this.producer.send({
-        topic: 'logs',
-        messages: [{ value: chunk }]
-      });
-      callback();
-    } catch (err) {
-      callback(err);
-    }
-  }
-}
-
-const sink = new KafkaSink(producer);
-
-app.post('/log', (req, res) => {
-  const canWrite = sink.write(JSON.stringify(req.body) + '\n');
-  if (!canWrite) {
-    // 背压：返回 429，让客户端重试
-    return res.status(429).json({ error: '系统繁忙，请稍后重试' });
-  }
-  res.json({ ok: true });
-});
-
-sink.on('error', (err) => {
-  console.error('Kafka Sink 错误:', err);
-  // 触发熔断
-});
-```
-
-**结果**：
-
-- 内存峰值从 8GB 降至 500MB（受 highWaterMark 限制）。
-- 流量高峰时返回 429，下游重试，保护系统稳定。
-- P99 延迟从 1200ms 降至 80ms（背压下减少队列堆积）。
-
 ### 9.1 基础题
 
 **题目 1**：以下代码的输出顺序是什么？
@@ -1700,20 +1496,7 @@ class SimplePool {
 
 ## 12. 附录 A：Node.js 22 关键 API 速查
 
-### 12.1 node:stream/promises
-
-```javascript
-const { pipeline } = require('node:stream/promises');
-
-// Promise 风格的 pipeline
-await pipeline(
-  fs.createReadStream('input.txt'),
-  gzip,
-  fs.createWriteStream('output.txt.gz')
-);
-```
-
-### 12.2 node:util
+### 12.1 node:util
 
 ```javascript
 const { promisify, callbackify, styleText } = require('node:util');
@@ -1726,7 +1509,7 @@ console.log(util.styleText('red', '错误信息'));
 console.log(util.styleText(['green', 'bold'], '成功'));
 ```
 
-### 12.3 node:test
+### 12.2 node:test
 
 ```javascript
 const { test, describe, before, after } = require('node:test');
@@ -1749,7 +1532,7 @@ describe('UserService', () => {
 });
 ```
 
-### 12.4 node:diagnostics_channel
+### 12.3 node:diagnostics_channel
 
 ```javascript
 const diagnostics_channel = require('node:diagnostics_channel');

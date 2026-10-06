@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 240
 title: 树状数组
 module: 'algorithm'
 category: 计算机科学

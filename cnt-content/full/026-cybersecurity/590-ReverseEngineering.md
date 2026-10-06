@@ -1,5 +1,5 @@
 ---
-order: 600
+order: 650
 title: 逆向工程命令（radare2/ghidra CLI）
 module: 'cybersecurity'
 category: 云与基础设施
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'cybersecurity/570-MalwareAnalysis'
-  - 'cybersecurity/580-BinarySecurityAndIncidentResponse'
+  - 'cybersecurity/580-IoTOTSecurity'
   - 'cybersecurity/600-SteganographyTools'
   - 'cybersecurity/370-SecurityToolsPractice'
 prerequisites:

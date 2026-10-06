@@ -1,14 +1,16 @@
 ---
-order: 310
+order: 340
 title: GitHub Copilot
 module: 'github'
 category: 工具链
 difficulty: intermediate
-description: 'GitHub Copilot深度解析：从"AI 补全代码"的体验切入，讲解订阅计划、安装配置、提示词工程、Copilot Chat 与安全最佳实践。'
+description: 'GitHub Copilot 深度解析：补全/Chat/agent mode/coding agent 四种工作形态、订阅计划、提示词工程、copilot-instructions、代码审查衔接与组织策略。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'github/210-IssuesTemplateTagMilestone'
+  - 'github/180-PullRequestCompleteCollaborationFlow'
+  - 'github/195-OrganizationTeamPermissions'
 prerequisites:
   - 'github/010-GitHubOverview'
 ---
@@ -202,7 +204,58 @@ Vue 3 + TypeScript + Pinia，后端 Python FastAPI。
 config/credentials.json
 ```
 
-## 6. 安全与最佳实践
+## 6. 2026 全貌：从补全到 coding agent
+
+前三节讲的是「补全 + 问答」这个经典形态。到 2026 年，Copilot 的完整版图是三种工作形态 + 一条自治工作流：
+
+| 形态 | 交互方式 | 你在做什么 |
+| :--- | :--- | :--- |
+| 补全（completions） | 编辑器灰字，Tab 采纳 | 写代码时被接龙 |
+| Chat / agent mode（IDE 内） | 对话式；agent mode 可跨文件多步修改并执行命令 | 下任务、审 diff、盯循环 |
+| coding agent（平台侧） | 把 Issue 派给 Copilot，它在云端自主开发并提 PR | 完全的委派与审查者角色 |
+
+三种形态的分工直觉：**补全是「你写它接」，agent mode 是「你说它改」（当前工作区内），coding agent 是「你说它做完」**（从分支到 PR 的端到端）。
+
+### 6.1 coding agent：把 Issue 派给 Copilot
+
+完整工作流（据 GitHub 官方文档与发布公告）：
+
+```text
+1. 派活：在 Issue 的 assignee 里选 Copilot
+   （或在对话里说 "Assign this issue to Copilot"）
+2. 云端开工：Copilot 通过 GitHub Actions 拉起一个安全的开发环境，
+   基于仓库代码自主写实现、跑测试
+3. 交付：完成或受阻时，开一个 Draft PR
+   —— PR 描述记录它的决策与验证过程
+4. 迭代：在 PR/Issue 里 @copilot 提修改意见，
+   它会更新同一个 PR（与人类贡献者完全同构的协作形态）
+5. 人类把关：review、跑 CI、按正常流程合并
+```
+
+治理要点（给维护者的四条）：
+
+- **Draft PR 是安全阀**：它不触发完整 CI 门禁也不允许直接合并，人必须看过才能转 Ready——「自治开发、人类合并」是底线结构；
+- **给它立规矩**：仓库的 `copilot-instructions.md`（第 5.2 节）对 coding agent 同样生效，测试要求、提交规范写得越清，它的 PR 越可审；
+- **权限最小化**：agent 在 Actions 沙箱里以受限 token 运行，仓库 secrets 默认不可见——不要为了「让它跑得顺」放宽权限；
+- **任务选型**：适合派给它的是「描述清晰、验收可自动化」的活（修一个小 bug、按模板补测试、依赖升级后的批量适配）；架构级改动与需求澄清阶段不要派。
+
+### 6.2 agent mode 与 Chat 模式的差异
+
+IDE 里的 Copilot Chat 默认「只答不改」；agent mode 则被授权多步操作：规划任务、编辑多个文件、运行终端命令、根据报错自我修正。切换后记住三件事：每一步的 diff 都要点开看（agent 的「自我修正」可能引入你不想要的改动）；敏感操作（删除文件、改配置）保持默认的逐条确认；让 agent 执行的命令范围与你的信任级别匹配。
+
+### 6.3 Copilot code review 与审查流衔接
+
+Copilot 可以作为 PR 的另一位审查者（手动请求或规则自动触发），先于人给出首轮意见（潜在 bug、风格偏差、测试缺口）。它与 [PR 完整协作流程](/github/180-PullRequestCompleteCollaborationFlow) 的衔接姿势：**Copilot review 过滤低级问题，人类 review 聚焦设计与业务正确性**；它的意见与人类审查同权展示，但永远不能「批准」——批准权保留给人。
+
+### 6.4 组织策略与内容排除审计
+
+组织管理员的管理面（Business/Enterprise 计划）：
+
+- **策略开关**：是否允许公共代码补全、是否启用 coding agent、可选模型范围——按团队合规要求配置；
+- **内容排除（content exclusion）**：指定某些仓库/路径不进入 Copilot 的上下文（如含核心算法的目录），配置后这些代码既不用于训练、也不被补全引用；
+- **审计**：审计日志可查成员的 Copilot 使用与策略变更——与 [组织与团队权限](/github/195-OrganizationTeamPermissions) 的治理体系拼在一起。
+
+## 7. 安全与最佳实践
 
 - **不要把密钥喂给 AI**：不要选中含密码、Token 的代码提问或让它生成；
 - **审查每一行建议**：补全不代表正确，尤其涉及安全逻辑（鉴权、SQL、加密）时必须人工核对；
@@ -211,7 +264,7 @@ config/credentials.json
 - **给 Copilot 足够的上下文**：提问时附上相关文件或代码段，而不是问"我有个 Bug 怎么办"；
 - **学而不抄**：把 Copilot 当"快速起草工具"，理解之后再用，避免"代码会跑但讲不出为什么"。
 
-## 7. 常见错误与对策表
+## 8. 常见错误与对策表
 
 | 常见错误 | 现象/报错 | 原因 | 解决办法 |
 | :--- | :--- | :--- | :--- |

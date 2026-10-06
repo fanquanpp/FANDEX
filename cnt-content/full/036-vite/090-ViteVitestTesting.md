@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 110
 title: Vitest 测试集成
 module: 'vite'
 category: 前端技术

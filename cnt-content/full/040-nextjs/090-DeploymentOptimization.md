@@ -1,26 +1,34 @@
 ---
-order: 90
-title: Next.js 部署与性能优化
+order: 150
+title: Next.js 部署与环境配置
 module: 'nextjs'
 category: 前端技术
 difficulty: intermediate
-description: 从 next build 到上线：Turbopack 构建、standalone 与 Docker 部署、环境变量分级、next/image 与 next/font 的 16 时代默认值，以及核心性能指标排查。
+description: 从 next build 到上线：Turbopack 构建产物怎么读、环境变量分级、四种部署方式（Vercel / standalone / Docker / 静态导出）怎么选。
 author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'nextjs/030-DataFetchingCaching'
   - 'nextjs/070-CacheComponentsDeepDive'
+  - 'nextjs/088-AssetsAndPerfOptimization'
   - 'devops/060-DockerfileMultiBuild'
   - 'cloud-computing/070-DockerDeepAnalysis'
 prerequisites:
   - 'nextjs/030-DataFetchingCaching'
 ---
 
+## 知识点地图
+
+- 知识类别：Next.js 应用的构建产物、环境配置与部署上线链路。
+- 解决什么问题：开发环境"能跑"到生产"跑得稳"之间的鸿沟——构建日志怎么读、密钥怎么分级、四种部署方式怎么选。
+- 什么时候用到：首次上线、上线后的稳定性排查、自托管/Docker 化改造。
+- 渲染与缓存策略（决定路由能否静态化）见第 3、6、7 篇；图片、字体与 Web Vitals 等资源优化见《静态资源与性能优化》；本篇专注部署与环境侧。
+
 ## 0. 一句话理解
 
-> 部署 = `next build` 产出按路由分类的优化产物，再交给运行时（Node/Docker/Vercel）执行；优化 = 能静态就静态、图片走 next/image、字体走 next/font、密钥只留在服务端。
+> 部署 = `next build` 产出按路由分类的优化产物，再交给运行时（Node/Docker/Vercel）执行；环境配置 = 密钥只留在服务端、公开配置才加 `NEXT_PUBLIC_` 前缀。
 
-开发时页面"能跑"和上线后"跑得快、跑得稳"是两回事。本篇覆盖从构建到上线的完整链路：构建产物怎么看、环境变量怎么分级、图片字体怎么自动优化、四种部署方式怎么选。
+开发时页面"能跑"和上线后"跑得稳"是两回事。本篇覆盖从构建到上线的完整链路：构建产物怎么看、环境变量怎么分级、四种部署方式怎么选。资源与性能优化（图片、字体、bundle、Web Vitals）见《静态资源与性能优化》。
 
 ## 1. 构建与产物
 
@@ -51,7 +59,7 @@ Route (app)
 1. 构建日志里空心圆标记表示静态（SSG）、实心圆表示 ISR、斜体 f 表示动态（SSR/按请求渲染）。新项目应尽量让更多页面落在静态与 ISR 两类——它们可以被 CDN 直接缓存，成本最低、速度最快。
 2. 16 的构建输出会展示每个阶段的耗时（编译、类型检查、收集页面数据、生成静态页），定位"构建慢在哪一步"不再靠猜。
 3. `next dev` 与 `next build` 在 16 起使用**独立的输出目录**，二者可并发执行；框架还会加锁文件防止同一项目同时跑多个 dev 或 build 实例互相覆盖产物。
-4. 产物默认输出到 `.next/`，是"给服务器读的中间产物"，不要手工改动或直接部署这个目录。自托管/Docker 部署推荐配合 `output: "standalone"`（见第 5 节），它会生成一个只含运行必需文件的精简目录。
+4. 产物默认输出到 `.next/`，是"给服务器读的中间产物"，不要手工改动或直接部署这个目录。自托管/Docker 部署推荐配合 `output: "standalone"`（见第 3 节），它会生成一个只含运行必需文件的精简目录。
 5. 注意区分两个"静态"：`next build` 生成的静态页存放在服务器/CDN；浏览器里"查看源代码"能看到完整 HTML，只说明该页面经历了服务器端渲染，不代表它是静态缓存页。渲染策略的选择见第 6 篇，缓存语义见第 3 篇与第 7 篇。
 
 ## 2. 环境变量：同一个名字，两个世界
@@ -79,61 +87,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
 4. 16 移除了 `serverRuntimeConfig`/`publicRuntimeConfig` 两个配置项，运行时配置统一收敛到环境变量，老项目升级时需迁移。
 5. 排查"密钥泄漏"的最快方法：构建后全局搜索产物中是否出现密钥明文；出现即说明它被加错了前缀或 import 进了客户端组件。
 
-## 3. 图片与字体优化
-
-```tsx
-import Image from "next/image"
-import { Inter } from "next/font/google"
-
-const inter = Inter({ subsets: ["latin"] })
-
-export default function Home() {
-  return (
-    <main className={inter.className}>
-      <Image
-        src="/hero.png"
-        alt="首页横幅"
-        width={1200}
-        height={600}
-        priority // 首屏图片：跳过懒加载、预加载，改善 LCP
-      />
-    </main>
-  )
-}
-```
-
-**讲解：**
-
-1. `next/image` 自动完成四件事：按设备生成多种尺寸（srcset）、转换为 WebP/AVIF、进入视口才懒加载、按 `width/height` 预留空间防止布局偏移。`priority` 只给首屏关键图加。
-2. 远程图片需在 `next.config.ts` 的 `images.remotePatterns` 中声明域名（16 起 `images.domains` 已废弃）；本地图片 URL 带查询串时还需配置 `images.localPatterns`，这是 16 新增的防枚举限制。
-3. Next.js 16 调整了图片的若干默认值，升级后行为变化集中在：
-
-| 配置项 | 15 默认 | 16 默认 | 意图 |
-| --- | --- | --- | --- |
-| `images.qualities` | 1-100 任意值 | 仅 `[75]` | 缩减变体数量，quality 会被吸附到最接近的允许值 |
-| `images.minimumCacheTTL` | 60 秒 | 4 小时 | 减少无 cache-control 图片的重复校验 |
-| `images.imageSizes` | 含 16 | 移除 16 | 绝大多数项目用不到 16px 档 |
-| `images.maximumRedirects` | 不限 | 3 次 | 防止重定向风暴 |
-
-4. `next/font` 在构建期自托管字体文件并预加载，杜绝第三方字体请求阻塞渲染；`className` 挂到容器上即可全局生效。
-5. 中文字体体积大（动辄数 MB），优先级策略：系统字体栈兜底，确需品牌字体时只引入需要的字重，并考虑 unicode-range 子集化。
-
-## 4. 核心性能指标自查
-
-| 指标 | 含义 | 常见优化 |
-| --- | --- | --- |
-| LCP | 最大内容绘制（首屏主内容出现） | 首屏图加 `priority`、减少阻塞脚本、关键内容服务器渲染 |
-| CLS | 累计布局偏移 | 图片/字体预留尺寸、骨架屏模拟真实布局 |
-| INP | 交互到下一次绘制延迟 | 减少客户端 JS、拆分大组件、避免长任务 |
-| TTFB | 首字节时间 | 静态页走 CDN 边缘、慢查询加缓存（ISR / use cache）、数据库优化 |
-
-**讲解：**
-
-1. 排查工具链：Chrome DevTools 的 Lighthouse 跑实验室评分，`Performance` 面板看真实交互；线上数据用 `vercel analytics` 或接入 `web-vitals` 库回传。
-2. Next.js 优化有明确的先后级：先让路由静态化/ISR 化（收益最大），再处理图片字体这类资源优化，最后才考虑手工调 React 渲染。缓存调优见第 3 篇与第 7 篇。
-3. 16 支持 `reactCompiler: true`（稳定但默认关闭）自动做组件记忆化，减少多余重渲染；开启会拉长构建时间，建议在性能问题确认后再启用。
-
-## 5. 部署方式选择
+## 3. 部署方式选择
 
 | 方式 | 适合 | 关键要点 |
 | --- | --- | --- |
@@ -174,15 +128,13 @@ CMD ["node", "server.js"]
 4. 反向代理（Nginx/Caddy）典型职责：终止 HTTPS、gzip/brotli 压缩、把 `/_next/static/` 等不可变资源设置长缓存（带内容哈希的文件名可以放心 `max-age` 一年），其余路径转发给 Node 进程。
 5. 上线前最小检查清单：`next build` 无错误且路由标记符合预期；密钥未出现在客户端产物；安全响应头已配置（见第 8 篇第 5 节）；生产 `next start` 可访问且日志无异常。
 
-## 6. 动手实践
+## 4. 动手实践
 
 **任务一：读懂构建日志。** 把项目部署到 Vercel（`vercel` 命令或 GitHub 导入），对照第 1 节读懂构建日志中每个路由的静态/ISR/动态符号标记，并回答：为什么 `/dashboard` 没有被静态化？（如果你按第 3 篇练过，答案就藏在它的代码里。）提示：动态信号（cookies/headers/no-store fetch）会把整页拉进动态渲染。
 
-**任务二：standalone 镜像对比。** 写出第 5 节的多阶段 Dockerfile，本地 `docker build` 后 `docker run -p 3000:3000` 验证；再用 `docker image ls` 记下镜像体积，与"不分阶段、直接 COPY 整个 node_modules"的土法镜像对比。提示：对比前确认 `next.config.ts` 里有 `output: "standalone"`，否则 `.next/standalone` 目录不存在，构建最后一步会报 COPY 找不到路径。
+**任务二：standalone 镜像对比。** 写出第 3 节的多阶段 Dockerfile，本地 `docker build` 后 `docker run -p 3000:3000` 验证；再用 `docker image ls` 记下镜像体积，与"不分阶段、直接 COPY 整个 node_modules"的土法镜像对比。提示：对比前确认 `next.config.ts` 里有 `output: "standalone"`，否则 `.next/standalone` 目录不存在，构建最后一步会报 COPY 找不到路径。
 
-**任务三：LCP 优化闭环。** 用 Lighthouse 跑一次首页性能报告，挑一项优化（最常见：给首屏图片加 `priority`），复测对比 LCP 数值。提示：Lighthouse 的"Opportunities"区会直接给出建议清单，每次只改一项再复测，否则说不清是哪一项起的作用。
-
-**任务四：亲眼看见密钥泄漏。** 故意把一个假密钥加 `NEXT_PUBLIC_` 前缀构建一次，在浏览器源代码里找到它，再改回来。提示：生产构建后用浏览器"查看源代码"或 DevTools 全局搜索密钥值；这个实验做完，"前缀即公开"就不再是需要记忆的规则。
+**任务三：亲眼看见密钥泄漏。** 故意把一个假密钥加 `NEXT_PUBLIC_` 前缀构建一次，在浏览器源代码里找到它，再改回来。提示：生产构建后用浏览器"查看源代码"或 DevTools 全局搜索密钥值；这个实验做完，"前缀即公开"就不再是需要记忆的规则。
 
 先自己操作，再对照参考流程：
 
@@ -205,7 +157,7 @@ docker image ls my-next-app
 </details>
 
 <details>
-<summary>任务四参考操作流程</summary>
+<summary>任务三参考操作流程</summary>
 
 ```bash
 # 1. .env.local 写入假密钥
@@ -219,11 +171,11 @@ npm run build && npm run start
 4. 复盘：`NEXT_PUBLIC_` 变量是**构建期内联**，这意味着即使你后来删掉它，历史构建产物里仍然带着旧值——真实事故里"改了配置"不等于"堵住了泄漏"，被泄漏的密钥必须轮换。
 </details>
 
+## 5. 一句话记住
 
-## 7. 一句话记住
+> 构建看日志标记：空心圆静态、实心圆 ISR、斜体 f 动态，能静态就静态；密钥只进服务端变量，`NEXT_PUBLIC_` 即公开；部署三选一——Vercel 省心、standalone + Docker 可控、纯静态才考虑 export。
 
-> 构建看日志标记：空心圆静态、实心圆 ISR、斜体 f 动态，能静态就静态；密钥只进服务端变量，`NEXT_PUBLIC_` 即公开；图片字体交给 next/image 与 next/font；部署三选一——Vercel 省心、standalone + Docker 可控、纯静态才考虑 export；性能问题按"静态化 -> 资源优化 -> 渲染调优"的顺序动刀。
-
+- 图片、字体、bundle 与 Web Vitals 等资源与性能工程，见《静态资源与性能优化》。
 - 缓存与渲染策略决定了路由能不能静态化，见第 3 篇《Next.js 数据获取与缓存》、第 6 篇《渲染策略与缓存》与第 7 篇《缓存体系与 Cache Components 深入》。
 - 安全响应头、HTTPS 与 proxy 配置，见第 8 篇《认证、代理与安全》。
 - Docker 多阶段构建的通用写法，见 devops 模块《Dockerfile 多阶段构建》。

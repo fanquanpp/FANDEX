@@ -1,5 +1,5 @@
 ---
-order: 450
+order: 510
 title: 虚拟线程内幕：载体线程、Continuation 与卸载机制
 module: 'java'
 category: 后端技术
@@ -10,7 +10,6 @@ updated: '2026-10-05'
 related:
   - 'java/550-JavaVirtualThread'
   - 'java/530-ThreadLocalMemoryLeak'
-  - 'java/610-JVMMemoryModel'
   - 'java/650-JavaIONIO'
 prerequisites:
   - 'java/550-JavaVirtualThread'
@@ -202,5 +201,5 @@ ScopedValue.where(USER, "u-1001")
 ## 下一步
 
 - [Java 与虚拟线程](/java/550-JavaVirtualThread)：用法主线与 Spring Boot 集成；
-- [JVM 内存模型](/java/610-JVMMemoryModel)：理解 final 字段可见性与 Continuation 搬家的一致性保证；
+- [JVM 内存模型](/java/610-JVMRuntimeDataAreasAndObjectLayout)：理解 final 字段可见性与 Continuation 搬家的一致性保证；
 - [Java IO 与 NIO](/java/650-JavaIONIO)：阻塞/非阻塞 I/O 在虚拟线程时代的分工。

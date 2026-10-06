@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 130
 title: 数组详解
 module: 'java'
 category: 后端技术

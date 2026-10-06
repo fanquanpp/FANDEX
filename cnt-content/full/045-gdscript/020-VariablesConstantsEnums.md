@@ -16,6 +16,12 @@ prerequisites:
 
 变量（var）、常量（const）与枚举（enum）是任何程序的基本 building block。GDScript 在这三者上都有明确而细致的规则：var 有三种声明形态与一套类型推断条件；成员变量的初始化遵循官方定义的七步顺序，顺序不对会产生非常隐蔽的 bug；static var 把状态挂在类而不是实例上；const 只接受编译期常量表达式；enum 本质是 int 的命名集合。本篇把这些规则一次讲清。
 
+## 知识点地图
+
+- 知识类别：GDScript 的变量、常量与枚举——var 声明与类型推断、成员初始化顺序、static var、const、enum。
+- 解决什么问题：数据怎么声明、类型怎么标、什么时候定死（const）什么时候共享（static）；初始化顺序引发的"为什么我的变量是 null"。
+- 什么时候用到：写任何脚本的每一行；排查"成员变量没初始化就用了"的启动期崩溃。
+
 ## 学习目标
 
 - 使用 var 的三种声明形式，理解类型标注与 `:=` 推断的规则与限制；
@@ -203,6 +209,40 @@ var day: WeekDays = WeekDays.MONDAY
 ```
 
 注意：这个标注只告诉解析器"day 应该是一个 WeekDays"，并不保证运行时的值真的属于这个集合——给 day 赋一个 99 这样的整数，并不会被这行声明拦下。想要严格的合法性校验，需要自己在逻辑里用 `day in WeekDays.values()` 之类的判断。
+
+## 动手实践
+
+**任务一：初始化顺序侦破。** 写一个带三个成员变量的类：一个直接赋值、一个用 @onready 引用子节点、一个在 _init 里引用另一个成员。把三者的初始化值 print 出来（分别在 _init 与 _ready 两个时机），按"成员变量初始化的七步顺序"一节解释每个值的来源。提示：_init 里访问 @onready 变量必然是 null——用这个失败案例反推顺序。
+
+**任务二：const 与 static var 的边界实验。** 写一个类同时用 const 与 static var 保存"最大关卡数"，再写代码尝试在运行时给两者赋值，观察哪个报编译错、哪个静默成功；然后讨论：什么数据该用 const，什么该用 static var。提示：判断标准是"这个值会变吗"与"是编译期能算出来的吗"两个问题分开答。
+
+**任务三：枚举的强类型价值。** 定义一个 `enum State { IDLE, RUN, JUMP }`，写 `var state: State = State.IDLE`，尝试给 state 赋一个整数与一个不存在的枚举值，观察编辑器告警与运行时行为；再把枚举显式赋值（`IDLE = 0, RUN = 2`）并验证 `State.RUN == 2`。提示：枚举本质是 int 常量字典，类型标注换来的是编辑器检查与自动补全，不是运行时封锁。
+
+先自己操作，再对照参考实现：
+
+<details>
+<summary>任务一参考实现</summary>
+
+```gdscript
+extends Node
+
+var direct := 42                       # 第 1 类：声明即赋值
+var later: int                         # 无初值：等七步顺序里的对应步骤
+var derived: int
+
+func _init() -> void:
+    derived = direct * 2               # _init 时 direct 已就绪（声明赋值先于 _init）
+    print("init: direct=", direct, " derived=", derived, " onready_ref=", onready_ref)
+    # onready_ref 此时必为 null：@onready 在进树（_ready 前）才赋值
+
+@onready var onready_ref := $Label      # 假设场景里有 Label 子节点
+
+func _ready() -> void:
+    print("ready: onready_ref=", onready_ref)   # 此时有值
+```
+
+要点：a) 七步顺序里"声明赋值 -> _init -> 进树 -> @onready -> _ready"是主干，任务的意义是把书面的顺序变成亲眼所见；b) @onready 变量在 _init 里是 null 是最高频的启动期事故，修复方向是"用到节点引用的逻辑放 _ready 及之后"；c) derived 在 _init 里算数成立，说明声明赋值早于 _init——这正是七步顺序的一部分。
+</details>
 
 ## 小结
 

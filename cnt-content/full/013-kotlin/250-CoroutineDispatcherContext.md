@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 280
 title: 协程调度器与上下文
 module: 'kotlin'
 category: 后端技术
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'kotlin/020-KotlinOverviewEnvSetup'
 ---
+
+## 知识点地图
+
+- **知识类别**：协程的执行环境控制——调度器（线程策略）与上下文（CoroutineContext 元素组合），是协程行为差异的根源。
+- **解决什么问题**：「这段代码跑在哪个线程」「怎么把阻塞操作挪出主线程」「上下文里的 Job/名字/ThreadLocal 如何传递」——调度器选错直接表现为卡顿、线程耗尽或线程安全崩溃。
+- **什么时候用到**：为阻塞 IO/CPU 密集任务选调度器；为状态线程封闭设计单线程调度器；给日志链路透传 trace id；测试中替换 Main 调度器。
 
 ## 前置知识
 
@@ -680,6 +686,49 @@ suspend fun processImage(image: Image): Image = withContext(cpuDispatcher) {
     image.filter(...)
 }
 ```
+
+#### `limitedParallelism` 的语义细节与易错点
+
+- **它是调度器的「视图」不是新线程池**：`Dispatchers.IO.limitedParallelism(4)` 不创建 4 条新线程，而是从 IO 共享池（默认上限 64 线程）里划出 4 个并发名额。这意味着数据库查询堵住时最多占 4 个名额，IO 池其余 60 个名额继续服务其他任务——按资源分池而不再按用途开线程池。
+- **上限是并发度不是线程数**：`limitedParallelism(1)` 不等于单线程调度器。它保证「同一时刻最多 1 个协程在跑」，但两个协程可以先后跑在**不同线程**上。需要「始终同一线程」的线程封闭（对象无同步可安全访问）时，用 `Executors.newSingleThreadExecutor().asCoroutineDispatcher()` 或 `Dispatchers.IO.limitedParallelism(1)` + 显式校验 `Thread.currentThread()`。
+- **视图的 `close()` 不影响原调度器**：对视图调用 `close()`（Kotlin 1.9+）只作废这个视图；反过来，**关闭原始调度器**（如 `newSingleThreadContext` 创建的）会让所有视图失效。生命周期管理挂在创建方。
+- 易错点：`limitedParallelism` 在 `Dispatchers.Main` 上调用会返回**不做限流的 Main 本身**——UI 线程天然串行，限流无意义，这是文档明确说明的行为，别拿它做「UI 操作排队」。
+
+#### `Dispatchers.Main.immediate`：省掉一次不必要的线程切换
+
+`Dispatchers.Main` 默认**总是**把协程调度回 Android 主线程的消息队列队尾；`Dispatchers.Main.immediate` 在「已经处于主线程」时直接执行，不做调度：
+
+```kotlin
+fun updateBanner(viewModel: BannerViewModel) {
+    // Main：即使当前就在主线程，也先入队再执行 —— withContext 前后可见性有一帧延迟
+    viewModelScope.launch(Dispatchers.Main) { showBanner() }
+
+    // Main.immediate：已在主线程则立即执行 —— 状态写入与 UI 刷新同帧生效
+    viewModelScope.launch(Dispatchers.Main.immediate) { showBanner() }
+}
+```
+
+选型规则：
+
+- **事件处理回调里启动协程用 `immediate`**：按钮点击回调本来就在主线程，`immediate` 让第一段代码同步执行，避免「点击后状态晚一帧」的闪烁。
+- **IO 回调后回主线程用普通 `Main`**：从 IO 线程 `withContext(Dispatchers.Main)` 切换时两者行为一致（反正必须调度），此时 `immediate` 没有收益。
+- 易错点：`Main.immediate` 里执行重计算会**同步卡住调用线程**——调用方若在主线程，动画直接掉帧；普通 `Main` 把执行推迟到队列，反而给了调用方喘息。收益与风险同源：同步执行。
+
+**工程场景（trace/MDC 透传的另一种写法）**：除了下文工程实践里的 `MDCContext`，JDK 侧的标准工具是 `ThreadLocal.asContextElement`，它把任意 `ThreadLocal` 变成上下文元素：
+
+```kotlin
+val traceId = ThreadLocal<String>()
+
+suspend fun handle(request: Request) = withContext(traceId.asContextElement(request.traceId)) {
+    // 任意挂起、任意调度器切换后，traceId.get() 都是本请求的值
+    log.info("handling")   // 日志框架读 ThreadLocal 也能拿到
+}
+// withContext 结束时自动恢复外层线程的旧值
+```
+
+易错点：`asContextElement` 捕获的是**创建元素那一刻**的值快照——之后修改 `ThreadLocal.set` 不会同步进协程上下文；需要「活的引用」时包一层 `AtomicReference` 再放进 ThreadLocal。另一个易错点：在 `launch` 的 lambda **内部**调用 `asContextElement` 已经太晚（上下文已确定），必须在构建上下文时传入。
+
+同线程封闭场景的完整对照（单线程调度器 vs limitedParallelism(1) vs Main.immediate）见第 5 节对比分析与附录 A 速查表。
 
 ### 4.5 结构化并发
 

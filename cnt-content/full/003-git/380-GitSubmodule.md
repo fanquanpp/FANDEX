@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 410
 title: git-submodule 子模块管理
 module: 'git'
 category: 工具链

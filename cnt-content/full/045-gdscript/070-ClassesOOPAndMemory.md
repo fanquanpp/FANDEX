@@ -1,22 +1,23 @@
 ---
 order: 70
-title: 类、面向对象与内存管理
+title: 类与面向对象
 module: 'gdscript'
 category: 游戏开发
 difficulty: beginner
-description: 掌握三种类的定义方式继承与多态属性访问器，并理解引用计数与手动释放的内存规则
+description: 掌握三种类的定义方式、构造析构、继承与多态、属性访问器与静态成员，理解如何选对基类
 author: fanquanpp
 updated: '2026-09-22'
 related:
   - 'gdscript/020-VariablesConstantsEnums'
   - 'gdscript/050-FunctionsAndCallable'
+  - 'gdscript/075-MemoryAndObjectLifecycle'
   - 'gdscript/080-AnnotationsAndExportedProperties'
 prerequisites:
   - 'gdscript/020-VariablesConstantsEnums'
   - 'gdscript/050-FunctionsAndCallable'
 ---
 
-GDScript 是一门面向对象语言，而它的第一条"奇怪"规则是：每个 .gd 脚本文件本身就是一个类，你写的所有代码都活在类里。本篇系统讲清 GDScript 的面向对象体系：三种类的定义方式、对象实例化与构造析构、继承与多态、抽象类、属性访问器、静态成员；最后是内存管理——RefCounted 的引用计数与 Node 的手动释放，这是游戏开发中最容易出事故的知识点。
+GDScript 是一门面向对象语言，而它的第一条"奇怪"规则是：每个 .gd 脚本文件本身就是一个类，你写的所有代码都活在类里。本篇系统讲清 GDScript 的面向对象体系：三种类的定义方式、对象实例化与构造析构、继承与多态、抽象类、属性访问器、静态成员与基类选择。对象创建之后的"生死账本"——引用计数、手动释放、循环引用与弱引用——是另一个主题，全量迁入第 75 篇《对象生命周期与内存管理》，本篇结尾给出路线。
 
 ## 学习目标
 
@@ -25,7 +26,7 @@ GDScript 是一门面向对象语言，而它的第一条"奇怪"规则是：每
 - 理解 extends 的四种形式与继承限制，会用 super 与 is；
 - 理解"所有方法默认可重写"的多态规则与 @abstract 抽象类；
 - 会写内联与具名两种属性访问器，避开无限递归陷阱；
-- 理解 RefCounted 与 Node 的内存规则，会用 weakref 与 is_instance_valid。
+- 理解 static var 的类级共享语义，能按场景选对基类。
 
 ## 三种类形式
 
@@ -230,32 +231,7 @@ func _init(name: String) -> void:
     id = class_size      # 自动编号：第一个学生 1，第二个 2
 ```
 
-注意：static var 不能使用 @export 或 @onready；局部变量也不能声明为 static。
-
-## 内存管理
-
-引擎对象的内存分两套规则：
-
-- RefCounted（引用计数类）及其子类（包括 Resource）：引用计数管理，最后一个引用消失时自动释放，不需要手动 free；
-- Node：不会自动释放，必须手动调用 free()（立即删除）或 queue_free()（推迟到帧末删除，并递归删除所有子节点，更安全）。
-
-引用计数有一个著名的漏洞：循环引用。两个 RefCounted 对象互相持有引用时，计数永远无法归零，内存就泄漏了。官方提供的破环工具是 weakref() 弱引用——弱引用不增加引用计数：
-
-```gdscript
-var my_file_ref = weakref(my_file)     # 弱引用：不影响引用计数
-var file_ref = my_file_ref.get_ref()   # 对象还活着则取回引用；已释放则得 null
-if file_ref:
-    file_ref.close()
-```
-
-判断一个对象是否已被释放（比如手里还留着已被 queue_free 的节点引用），用 is_instance_valid()：
-
-```gdscript
-if is_instance_valid(enemy):
-    enemy.queue_free()
-```
-
-实践建议：纯数据对象、逻辑对象继承 RefCounted 或 Resource，把生命周期交给引擎托管；Node 交给场景树管理，删除时优先用 queue_free。
+注意：static var 不能使用 @export 或 @onready；局部变量也不能声明为 static。static var 的另一大类用途是**类级缓存**（缓存推导结果、缓存场景对象索引）——但静态变量活整个进程，缓存对象时需要弱引用防线，完整展开见第 75 篇第 4 节。
 
 ## 选基类建议
 
@@ -263,6 +239,43 @@ if is_instance_valid(enemy):
 - 纯数据与纯逻辑、不进场景树，选 RefCounted；
 - 需要序列化存盘、在检查器中编辑，选 Resource；
 - 要完全自控内存（不走引用计数、手动 free），选 Object——高级用法且危险，慎用。
+
+选完基类，就确定了对象的释放方式（Node 手动杀、RefCounted 自动死）——这正是第 75 篇《对象生命周期与内存管理》的起点：两套释放规则、循环引用破环、is_instance_valid 判活与静态缓存防泄漏都在那篇展开。
+
+## 动手实践
+
+**任务一：三种方式建同一个类。** 分别用无名类（按路径 load）、class_name 全局类、内部类实现一个 `Vec2Helper`（含 `length()` 方法），从第三个脚本里各实例化并调用，体会三种引用方式的差别。提示：无名类需要 `load("res://...").new()` 两步；class_name 类直接 `Vec2Helper.new()`；内部类要 `Outer.Inner.new()`。
+
+**任务二：访问器的信号发射。** 把第"属性访问器"节的 health 例子抄进一个 CharacterBody2D，再写两个障碍：a) 在 setter 里调用一个会再次写 health 的函数制造无限递归，读报错栈；b) 给 health 声明初始值时试着触发信号，验证"初始值不过 setter"。提示：a) 的修复方式是把内部写路径改用 `set("health", v)` 与直接赋值的区分想清楚。
+
+**任务三：抽象类的收益体验。** 用 @abstract 写 `Enemy` 抽象基类（声明 `@abstract func take_hit(dmg: int) -> void`），实现两个子类；再故意漏实现一个方法，观察启动报错信息。提示：抽象类的价值在"漏实现立刻报错"而不是"运行时才发现"，对比不写 @abstract、只靠约定的版本想清楚差异。
+
+先自己操作，再对照参考实现：
+
+<details>
+<summary>任务二参考实现（避坑版 health）</summary>
+
+```gdscript
+signal health_changed(old_value: int, new_value: int)
+
+var max_health := 100
+var health: int = 100:
+    get:
+        return health
+    set(value):
+        var clamped := clampi(value, 0, max_health)
+        if clamped == health:
+            return
+        var old_val := health
+        health = clamped              # 直接赋值成员：不会重入 setter
+        health_changed.emit(old_val, clamped)
+
+func heal(amount: int) -> void:
+    health += amount                  # 走 setter：自动 clamp 并发信号
+```
+
+要点：a) setter 里所有对最终值的处理（clamp、判等）完成后再一次性赋给成员，成员赋值本身不会递归；b) 递归事故的形态是 setter 调用了一个内部又给 health 赋值的函数——链路一长很难从代码上看出，报错栈会在"栈溢出"处中断；c) 初始值 `health = 100` 不触发信号是特性不是 bug：声明期的初始化不该惊动观察者。
+</details>
 
 ## 小结
 
@@ -272,9 +285,8 @@ if is_instance_valid(enemy):
 - extends 四形式：全局类、文件路径、其他文件的内部类、与 class_name 同行；不允许多重继承，默认继承 RefCounted；子类不能声明与父类同名不同参的方法（_init 除外）与同名属性；super(x) 与 super.method() 调父类；is 检查继承关系。
 - 所有方法默认可重写（无 virtual/override）；只应重写下划线开头的内置方法，自定义可重写方法也建议 _ 前缀；@abstract（4.5+）抽象类不能实例化、具体子类必须实现全部抽象方法、可以没有抽象方法、内部类也可抽象。
 - 属性访问器分内联与具名函数两种，不能混用；set/get 总是被调用；初始值不经过 setter；访问器内直接用变量名读写不会无限递归，但经其他函数再访问会。
-- static var 属于类，所有实例共享；不能用 @export/@onready。
-- RefCounted/Resource 引用计数自动释放；Node 必须手动 free()/queue_free()；循环引用会泄漏，用 weakref() 弱引用破环；is_instance_valid 检查对象是否已释放。
-- 选基类：场景树与信号选 Node 系；纯数据逻辑选 RefCounted；需存盘选 Resource；完全自控内存选 Object（危险）。
+- static var 属于类，所有实例共享；不能用 @export/@onready；做类级缓存时需弱引用防线（见第 75 篇）。
+- 选基类：场景树与信号选 Node 系；纯数据逻辑选 RefCounted；需存盘选 Resource；完全自控内存选 Object（危险）。基类决定释放方式，完整对象生命周期见第 75 篇《对象生命周期与内存管理》。
 
 ## 参考链接
 

@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 150
 title: 服务网格
 module: 'devops'
 category: 云与基础设施
@@ -11,7 +11,6 @@ related:
   - 'devops/020-ShellScriptProgramming'
   - 'devops/030-PackageManagementRepository'
   - 'devops/270-LogManagement'
-  - 'devops/230-ConfigManagement'
 prerequisites:
   - 'devops/010-OverviewLinuxBasics'
 ---

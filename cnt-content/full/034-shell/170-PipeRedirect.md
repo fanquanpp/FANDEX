@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 180
 title: 管道与重定向：把命令接成流水线
 module: 'shell'
 category: 工具链

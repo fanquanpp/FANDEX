@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 130
 title: '图算法：表示与遍历'
 module: 'algorithm'
 category: 计算机科学
@@ -30,6 +30,12 @@ prerequisites:
 > 使用方式：本篇是图论主题的参考深水篇（表示与遍历册），适合带着具体问题来查；图论入门请先完成主线篇目（搜索算法 050）。
 
 把地铁线路图、公司汇报关系、代码 import 依赖、社交好友链放在一起看，它们是同一种东西——图：一堆顶点，加上顶点之间的关系。现实世界的关系型数据几乎都是图，而一切图算法的地基只有两件事：怎么存图（邻接矩阵还是邻接表，取决于稠密还是稀疏），以及怎么不重不漏地走完它（BFS 按层扩散、DFS 一条路走到底）。本篇是图算法两册的第一册，读完后你能为一张图选对存储结构、手写 BFS/DFS，并用它们解决连通分量、环检测、二分图判定这类高频问题；最短路与最小生成树在姊妹篇展开。
+
+## 知识点地图
+
+- **知识类别**：图遍历与图结构算法——BFS/DFS 两大遍历及其衍生（拓扑排序、强连通分量、双连通性、进阶遍历）。最短路与最小生成树在 115 篇，本文负责遍历与结构性分析。
+- **解决什么问题**：关系网络怎么系统性走一遍不重不漏；任务依赖怎么排顺序（拓扑）；环、桥、割点怎么识别。
+- **什么时候用到**：依赖解析（构建系统、包管理器）、连通性分析（社交网络、电路）、迷宫/状态空间搜索。
 
 ## 前置知识
 
@@ -1968,3 +1974,65 @@ def friend_recommendation(graph, user, top_k=10):
 - 能按「顶点规模、边规模、查询类型」三问为一张真实数据选对表示与遍历。
 
 ---
+
+
+## 动手实践
+
+**练习 1（BFS 最短步数）**：对无权图（邻接表）实现 BFS 求 s 到 t 的最短跳数并输出路径，用小图验证；再用 DFS 同图找路径，对比「BFS 短、DFS 深浅不定」。
+
+**提示**：BFS 队列里存 (节点, 距离) 或用 prev 数组回溯；访问标记入队时打，防止重复入队。
+
+**练习 2（拓扑排序与环检测）**：给课程依赖表（如 [(A,B),(B,C)] 表示 B 依赖 A），实现 Kahn 算法输出合法修课顺序；故意加一条循环依赖，验证输出的顺序数量小于课程数即为有环。
+
+**提示**：入度为 0 的先出队；最终出队数 < 节点数就是有环。
+
+**练习 3（桥的感知）**：对 5-7 个节点的无向图手工指定一个「桥」，先用肉眼判断删掉哪条边会断开连通，再实现 Tarjan 桥算法验证。
+
+**提示**：桥的判定 low[child] > disc[parent]；小图可手推递归过程。
+
+<details>
+<summary>参考实现（先自己动手，再看这里）</summary>
+
+```python
+from collections import deque
+
+# 练习 1
+def bfs_path(graph, s, t):
+    prev = {s: None}
+    q = deque([s])
+    while q:
+        u = q.popleft()
+        if u == t:
+            path, cur = [], t
+            while cur is not None:
+                path.append(cur); cur = prev[cur]
+            return path[::-1]
+        for v in graph.get(u, []):
+            if v not in prev:
+                prev[v] = u; q.append(v)
+    return None
+
+graph = {'A': ['B','C'], 'B': ['D'], 'C': ['D'], 'D': ['E'], 'E': []}
+assert bfs_path(graph, 'A', 'E') == ['A', 'B', 'D', 'E']
+
+# 练习 2
+def toposort_kahn(nodes, edges):
+    indeg = {u: 0 for u in nodes}
+    adj = {u: [] for u in nodes}
+    for u, v in edges:
+        adj[u].append(v); indeg[v] += 1
+    q = deque([u for u in nodes if indeg[u] == 0])
+    order = []
+    while q:
+        u = q.popleft(); order.append(u)
+        for v in adj[u]:
+            indeg[v] -= 1
+            if indeg[v] == 0: q.append(v)
+    return order          # len(order) < len(nodes) 即有环
+
+order = toposort_kahn('ABC', [('A','B'), ('B','C')])
+assert order == ['A','B','C']
+assert len(toposort_kahn('AB', [('A','B'), ('B','A')])) < 2   # 有环
+```
+
+</details>

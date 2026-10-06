@@ -1,5 +1,5 @@
 ---
-order: 560
+order: 610
 title: CSS 架构方法论
 module: 'css'
 category: 前端技术
@@ -10,7 +10,7 @@ updated: '2026-09-12'
 related:
   - 'css/530-CSSCanvasDrawing'
   - 'css/630-CSSInJS'
-  - 'css/640-CSSTheoryKnowledge'
+  - 'css/640-VisualFormattingModel'
   - 'css/650-CSSNewFeatures'
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'

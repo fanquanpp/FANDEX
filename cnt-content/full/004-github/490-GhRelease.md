@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 550
 title: gh release 发布命令速查手册
 module: 'github'
 category: 工具链

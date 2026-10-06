@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 640
 title: 并行复制
 module: 'mysql'
 category: 数据库

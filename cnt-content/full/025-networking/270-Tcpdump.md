@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 310
 title: tcpdump 抓包
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/280-WiresharkCLI'
   - 'networking/020-OSITCPIPModel'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## 场景：服务器上接口超时，你只有一条 SSH

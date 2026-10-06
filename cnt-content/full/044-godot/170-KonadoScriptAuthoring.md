@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 250
 title: KonadoScript 剧本编写
 module: 'godot'
 category: 游戏开发

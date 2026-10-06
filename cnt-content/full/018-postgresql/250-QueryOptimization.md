@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 210
 title: 查询优化：统计信息、代价与执行计划
 module: 'postgresql'
 category: 数据库
@@ -8,19 +8,19 @@ description: PostgreSQL 查询优化方法论：ANALYZE 与统计信息、代价
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'postgresql/240-IndexQueryOptimization'
+  - 'postgresql/255-MonitoringStatisticsViews'
   - 'postgresql/260-ParallelQuery'
   - 'postgresql/210-VACUUMMechanism'
   - 'postgresql/270-PartitionedTable'
 prerequisites:
   - 'postgresql/220-IndexType'
-  - 'postgresql/240-IndexQueryOptimization'
+  - 'postgresql/230-CoveringIndexPartialIndex'
 ---
 
 ## 前置知识
 
 - 各类索引的适用场景（[索引类型](/postgresql/220-IndexType)）；
-- 会读基础的执行计划节点（[索引与查询优化](/postgresql/240-IndexQueryOptimization)）——本篇在其上补全"优化器为什么这么选"的决策链。
+- 复合索引、覆盖索引、部分索引的建法（[覆盖索引与部分索引](/postgresql/230-CoveringIndexPartialIndex)）——本篇在其上补全"优化器为什么这么选"的决策链。
 
 ## 优化方法论：先诊断，再开药
 
@@ -70,6 +70,22 @@ ANALYZE employees;
 -- 统计目标越大，直方图桶越多，倾斜数据的估算越准（代价是 ANALYZE 更慢）
 ```
 
+**扩展统计信息：单列统计的盲区**。普通统计信息是逐列独立收集的，优化器不知道"city 和 district 高度相关"这类列间关系，多列条件的组合选择率经常估错。`CREATE STATISTICS` 显式补上这层知识：
+
+```sql
+-- 创建多列扩展统计：三种收集对象按需选
+CREATE STATISTICS s_orders_user_date (ndistinct, dependencies, mcv)
+  ON user_id, created_at FROM orders;
+ANALYZE orders;   -- 创建后必须 ANALYZE 才会收集
+
+SELECT * FROM pg_stats_ext WHERE tablename = 'orders';
+-- ndistinct:    多列组合的唯一值数量（纠正"两个高基数列组合也高基数"的误判）
+-- dependencies: 列间函数依赖（A 定了 B 就定了，如省 → 市）
+-- mcv:          多列最常见值列表（"状态=待支付 且 渠道=App"这类高频组合）
+```
+
+易错点：扩展统计只在创建它的表上生效、只服务包含**这些列的组合条件**；忘记 ANALYZE 是最常见的"建了没用"原因。
+
 ## 第二武器：代价参数（优化器的价值观）
 
 同一个查询，优化器在"顺序扫全表"与"走索引随机回表"之间算账。账本的单位成本是可调的：
@@ -94,6 +110,10 @@ SELECT pg_reload_conf();
 ```sql
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT * FROM employees WHERE dept_id = 5 ORDER BY salary;
+
+-- 常用变体：结构化输出（给 explain.depesz.com 等工具分析）、写操作的 WAL 统计
+EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) SELECT * FROM employees WHERE dept_id = 5;
+EXPLAIN (ANALYZE, WAL) UPDATE orders SET status = 'done' WHERE id = 1;
 ```
 
 三段关键信息逐列对读：
@@ -117,12 +137,63 @@ Sort  (cost=...) (actual time=12.3..12.5 rows=50 loops=1)
 | `Buffers: shared read` 巨大 | 索引未命中/回表过多 | 换覆盖索引或收窄查询 |
 | `Seq Scan` 但表巨大且有可用索引 | 代价参数低估索引 | 调 random_page_cost、ANALYZE |
 
+先认识计划里会出现的七类扫描节点，判读时才能对号入座：
+
+| 扫描类型 | 说明 | 适用场景 |
+| --- | --- | --- |
+| Seq Scan | 顺序扫描全表 | 小表、无可用索引 |
+| Index Scan | 索引扫描 + 回表 | 选择性高的查询 |
+| Index Only Scan | 仅索引扫描 | 覆盖索引（可见性映射要新鲜，见[覆盖索引](/postgresql/230-CoveringIndexPartialIndex)） |
+| Bitmap Scan | 位图索引扫描 | 选择性中等，索引与回表之间 |
+| Tid Scan | 按 ctid 直接定位 | WHERE ctid = ... |
+| Subquery Scan | 子查询扫描 | FROM 子查询 |
+| Function Scan | 函数扫描 | FROM generate_series |
+
+**cost 三个数字怎么读**：
+
+```text
+Index Scan using idx_orders_user on orders  (cost=0.42..8.44 rows=1 width=72)
+
+0.42  启动代价——取到第一行之前要花多少（排序/聚合节点这里很大）
+8.44  总代价——取完所有行的累计代价
+rows  估计返回行数（与 EXPLAIN ANALYZE 的 actual rows 对照着看）
+width 估计每行平均字节数（估算 Buffers/内存占用的依据）
+```
+
+代价单位是"任意单位"（`seq_page_cost` 的倍数），只用于**不同计划之间的相对比较**，没有毫秒换算关系。
+
 **work_mem 的单位陷阱**：它是**每个排序/哈希节点**的配额而非整个查询——一条 SQL 有 5 个 Sort 节点就可能用 5 份 work_mem，全局调大有并发内存爆炸风险。正确姿势是给重查询角色单独设：
 
 ```sql
 SET work_mem = '64MB';                          -- 会话级，报表查询前
 ALTER ROLE reporting SET work_mem = '256MB';    -- 角色级持久化
 ```
+
+## 常见改写案例：三个高频症状的对症方
+
+```sql
+-- 案例 1：函数让索引"隐身"
+-- 问题：条件里包了函数，B-tree 找不到匹配的表达式
+SELECT * FROM users WHERE lower(email) = 'test@example.com';
+-- 药方：建表达式索引，表达式两侧必须一字不差
+CREATE INDEX idx_users_email_lower ON users (lower(email));
+
+-- 案例 2：OR 拆散索引
+-- 问题：两列各自有索引，OR 条件让优化器放弃两者
+SELECT * FROM orders WHERE user_id = 100 OR status = 'pending';
+-- 药方：改写成 UNION ALL（注意排重：第二支加 user_id != 100）
+SELECT * FROM orders WHERE user_id = 100
+UNION ALL
+SELECT * FROM orders WHERE status = 'pending' AND user_id != 100;
+
+-- 案例 3：ORDER BY + LIMIT 拖入全表排序
+-- 问题：排完 1000 万行只取 10 行
+SELECT * FROM logs ORDER BY created_at DESC LIMIT 10;
+-- 药方：建降序索引，LIMIT 直接沿索引读前 10 行
+CREATE INDEX idx_logs_created_desc ON logs (created_at DESC);
+```
+
+每改一处都用 `EXPLAIN (ANALYZE, BUFFERS)` 复测——改写不是玄学，是可验证的假设。
 
 ## CTE 物化：一个主动的改写开关
 

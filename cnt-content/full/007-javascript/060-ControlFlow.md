@@ -265,6 +265,44 @@ TypeError: Assignment to constant variable.
 
 **事故三：死循环。** 忘了 `guess = guess + 1` 这一行，程序会打印无数行。Node 终端按 `Ctrl+C` 强制中断，浏览器控制台刷新页面。急救之后回头检查一件事：循环体里**谁负责让条件朝假的方向变化**？
 
+
+**事故四：switch 三个 case 全漏 break。** 真实学生源码（事件委托的按钮分发），点"新建"却把三个分支全执行了：
+
+```javascript
+let action = e.target.dataset.action;
+switch (action) {
+  case "new":
+    console.log("新建文档");     // 少了 break
+  case "search":
+    console.log("聚焦搜索框");   // 少了 break
+  case "export":
+    console.log("导出数据");
+}
+```
+
+运行结果（点击"新建"按钮）：
+
+```text
+新建文档
+聚焦搜索框
+导出数据
+```
+
+switch 的 case 只是"入口标签"，不是"围栏"：命中 `case "new"` 后代码一路往下执行，直到遇到 `break` 或 switch 结束——这叫**穿透（fall-through）**。修法是每个分支末尾补 `break;`（或统一改成 `return`）。第 5 节的 switch 语法里 break 是"可选项"，但那是给"故意共享逻辑"留的口子；分发类 switch 一律逐 case 加 break，事件系统专篇（javascript/415 第 6 节）把这个案例当作标准翻车现场复现。
+
+**事故五：for 的分号写成逗号。** 学生作业自述的真实踩坑：九九乘法表"运行没反应"：
+
+```javascript
+for (i = 1, i <= 9, i++) {     // 逗号：这不是循环三段式
+  for (j = 1; j <= 9; j++) {   // 正确写法对照
+    document.write(i + "*" + j + "=" + i * j + "&nbsp;&nbsp;");
+  }
+  document.write("<br>");      // 换行必须在外层循环内、内层循环后
+}
+```
+
+`for (a, b, c)` 的逗号是**逗号运算符**：整个括号被解析成一个表达式，依次求值后取最后一个——没有"条件"也没有"步进"，`i <= 9` 求完值就被丢弃，循环条件恒为 undefined（假），循环体一次都不执行，所以"运行没反应"且**不报错**。两个教训：其一，`i` 还顺手成了隐式全局（没写 `let`，见 040 篇的声明规则）；其二，`document.write("<br>")` 的位置必须在**外层循环体内、内层循环之后**，放错层会挤成一行——嵌套循环的输出结构由"换行语句在哪一层"决定。
+
 ## 8. 实际项目中的使用场景
 
 - 表单校验：一组 `else if` 从「必填」查到「格式」，第一个不满足就提示并停止；

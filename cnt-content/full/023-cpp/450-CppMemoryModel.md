@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 480
 title: C++内存模型
 module: 'cpp'
 category: 计算机科学
@@ -13,7 +13,7 @@ related:
   - 'cpp/640-CppToolchain'
   - 'cpp/600-CppTestFramework'
   - 'cpp/610-CppPerformance'
-  - 'cpp/440-ConcurrentProgramming'
+  - 'cpp/440-CoordinationAndAsyncPrimitives'
 prerequisites:
   - 'cpp/020-CppOverviewAndModernStandard'
   - 'cpp/130-SmartPointerDeepDive'

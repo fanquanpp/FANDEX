@@ -321,7 +321,51 @@ const strs = mixed.filter((x) => typeof x === 'string');  // 结果仍是 (strin
 2. 给 `DocState` 新增 `{ status: 'archived'; at: string }` 成员，验证第 3 节的 `render` 在不写新 case 时编译报错，再补上 case 修复它。
 3. 把坑 3 的说谎谓词修成诚实的版本，然后用 FANDEX 同款方式在仓库根目录建 `scratch/guard.ts`，写一段「喂它错误数据」的代码，用 `npx tsc --noEmit` 和 `npx tsx scratch/guard.ts` 分别观察编译期与运行时的差异。
 
-## 8. 下一步
+## 8. 承接速查：组合守卫与守卫函数族（自杂糅篇 520）
+
+> 已归并的 520-AdvancedTypeCalculus 也有一章「类型守卫」：其 typeof/instanceof/in 三段示例与本篇第 2 节重复，isString/isNumber/isBoolean 三件套与本篇第 4 节写法重复，均已去重。这里保留它的两个增量：**守卫函数族**与**组合守卫**。
+
+小守卫可以像积木一样拼成大守卫。先写两个通用的底层守卫，再用它们拼一个业务形状守卫：
+
+```typescript
+// 底层守卫函数族
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+function isNumber(value: unknown): value is number {
+  return typeof value === 'number';
+}
+
+// 组合守卫：先确认是对象，再逐字段校验
+interface Person { name: string; age: number }
+function isPerson(value: unknown): value is Person {
+  return isObject(value) && isString(value.name) && isNumber(value.age);
+}
+
+function processValue(value: unknown): void {
+  if (isPerson(value)) {
+    console.log(`Person: ${value.name}, ${value.age}`); // 这里 value 已是 Person
+  } else {
+    console.log('Unknown type');
+  }
+}
+processValue({ name: 'Alice', age: 30 }); // Person: Alice, 30
+processValue(null);                        // Unknown type
+```
+
+逐行看 `isPerson`：`isObject(value)` 把 `unknown` 收窄成 `Record<string, unknown>`，之后 `value.name` 的属性访问才合法；再靠 `isString`/`isNumber` 把两个字段分别收窄。**为什么不用 `(value as Person).name` 一步到位**——断言不会检查字段真的存在，接口返回的脏数据会让「已验证」变成谎言；组合守卫的每一行都是真实的运行时检查。
+
+配套的最佳实践（同样承接自 520）：
+
+- 明确检查：守卫应明确检查类型特征，避免「看起来像就算」的模糊判断；
+- 组合使用：底层守卫拼业务守卫，比一个巨型守卫函数好测试、好复用；
+- 清晰命名：`isXxx` 前缀 + 明确的类型名，让调用点读起来像一句自然语言；
+- 性能考虑：守卫在运行时执行，热路径上避免在守卫里做深比较或正则回溯-heavy 的检查。
+
+## 9. 下一步
 
 - [never 类型完整语义](/typescript/190-NeverTypeSemantics)：穷尽检查背后 never 的完整语义
 - [运行时 Schema 校验](/typescript/660-RuntimeSchemaValidation)：复杂结构交给 zod，schema 即类型

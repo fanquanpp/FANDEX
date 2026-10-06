@@ -1,5 +1,5 @@
 ---
-order: 600
+order: 700
 title: 代码质量：给仓库装上三道闸门
 module: 'python'
 category: 后端技术

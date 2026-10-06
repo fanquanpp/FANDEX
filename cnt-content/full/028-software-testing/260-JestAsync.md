@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 360
 title: Jest 异步测试
 module: 'software-testing'
 category: 云与基础设施

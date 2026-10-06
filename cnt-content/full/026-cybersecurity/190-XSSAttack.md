@@ -8,7 +8,7 @@ description: 跨站脚本攻击原理、分类、利用方式与防御策略详�
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'cybersecurity/580-BinarySecurityAndIncidentResponse'
+  - 'cybersecurity/580-IoTOTSecurity'
   - 'cybersecurity/370-SecurityToolsPractice'
   - 'cybersecurity/020-SecurityModelFramework'
   - 'cybersecurity/210-CSRFAttack'

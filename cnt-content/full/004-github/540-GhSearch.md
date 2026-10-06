@@ -1,5 +1,5 @@
 ---
-order: 550
+order: 600
 title: gh search 搜索命令速查手册
 module: 'github'
 category: 工具链

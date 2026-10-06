@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 180
 title: Provide 与 Inject
 module: 'vue3'
 category: 前端技术
@@ -9,9 +9,9 @@ author: fanquanpp
 updated: '2026-09-28'
 related:
   - 'vue3/110-ComponentSystem'
-  - 'vue3/100-CustomComposableWrapper'
+  - 'vue3/090-CustomHook'
   - 'vue3/210-PiniaStateManagementDetailed'
-  - 'vue3/180-API'
+  - 'vue3/050-ReactiveSystem'
 prerequisites:
   - 'vue3/050-ReactiveSystem'
   - 'vue3/110-ComponentSystem'
@@ -257,5 +257,5 @@ setup() {
 ## 下一步
 
 - [Pinia 状态管理](/vue3/210-PiniaStateManagementDetailed)：跨子树全局状态的正规军
-- [自定义 Composable 封装](/vue3/100-CustomComposableWrapper)：provideTheme / useTheme 这对函数的通用化写法
-- [Composition API](/vue3/180-API)：provide / inject 在整套 API 中的位置
+- [自定义组合式函数](/vue3/090-CustomHook)：provideTheme / useTheme 这对函数的通用化写法
+- [响应式系统](/vue3/050-ReactiveSystem)：provide / inject 在整套 API 中的位置

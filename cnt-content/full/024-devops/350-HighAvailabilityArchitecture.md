@@ -8,7 +8,6 @@ description: 高可用架构：冗余设计、故障转移、负载均衡、灾�
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'devops/230-ConfigManagement'
   - 'devops/340-PerformanceTuning'
   - 'devops/170-AutomationTest'
   - 'devops/330-Troubleshooting'

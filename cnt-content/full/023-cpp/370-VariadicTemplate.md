@@ -1,5 +1,5 @@
 ---
-order: 350
+order: 390
 title: 变参模板：一个函数吃下任意个数、任意类型的参数
 module: 'cpp'
 category: 计算机科学

@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 120
 title: kubectl 基础命令
 module: 'devops'
 category: 云与基础设施

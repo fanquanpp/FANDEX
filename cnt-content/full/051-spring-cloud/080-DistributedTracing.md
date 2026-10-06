@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 100
 title: 分布式链路追踪：一次请求的全旅程与它的档案
 description: 以「下单超时告警响了，请求跨网关、订单、库存、账户四个服务，去哪台机器 grep 哪份日志」引入：Trace 与 Span 的调用树心智模型、traceparent 上下文传播、Sleuth 退役后的 Micrometer Tracing 与 Zipkin 落地、MDC 日志关联与采样成本权衡，附瀑布图下钻实验。
 module: 'spring-cloud'

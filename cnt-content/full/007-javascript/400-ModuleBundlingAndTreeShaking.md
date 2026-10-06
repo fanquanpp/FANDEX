@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 450
 title: 模块打包原理与 Tree Shaking
 module: 'javascript'
 category: 前端技术

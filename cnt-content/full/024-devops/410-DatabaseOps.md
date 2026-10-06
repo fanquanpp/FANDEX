@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 440
 title: 数据库运维
 module: 'devops'
 category: 云与基础设施
@@ -8,7 +8,7 @@ description: 数据库运维：备份恢复、主从复制、读写分离、分�
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'devops/300-MonitorAndAlert'
+  - 'devops/240-MonitorAndObservability'
   - 'devops/420-NetworkSecurityAdvanced'
   - 'devops/060-DockerfileMultiBuild'
   - 'devops/090-KubernetesCoreDetailed'

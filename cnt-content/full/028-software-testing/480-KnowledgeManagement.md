@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 580
 title: 知识管理
 module: 'software-testing'
 category: 云与基础设施

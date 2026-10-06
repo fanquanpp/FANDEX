@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 110
 title: 堆与优先队列
 module: 'algorithm'
 category: 计算机科学
@@ -12,7 +12,6 @@ related:
   - 'algorithm/080-Tree'
   - 'algorithm/020-ArrayAndDynamicArray'
   - 'algorithm/030-SortAlgorithm'
-  - 'algorithm/170-BinarySearchAlgorithms'
   - 'algorithm/040-StackAndQueue'
   - 'algorithm/110-GraphAlgorithms'
   - 'algorithm/100-BalancedTreeAdvanced'
@@ -21,6 +20,12 @@ prerequisites:
   - 'algorithm/080-Tree'
   - 'algorithm/020-ArrayAndDynamicArray'
 ---
+
+## 知识点地图
+
+- **知识类别**：堆与优先队列——完全二叉树形状的偏序结构，支撑「动态取最值」这一高频需求。本文为参考书体纵深篇：实现细节、O(n) 建堆证明、变体与 Top-K 全谱系。
+- **解决什么问题**：无序数据流里反复取最大/最小；Top-K 大规模统计；定时器与任务调度按到期时间出队；Dijkstra/Prim 等图算法的选点依赖。
+- **什么时候用到**：设计排行榜/调度器；手写堆应对面试与嵌入式无库环境；理解 Python heapq/Java PriorityQueue 的行为边界。
 
 ## 前置知识
 
@@ -2217,3 +2222,64 @@ Dijkstra 算法的时间复杂度：
 - [VisuAlgo: Binary Heap](https://visualgo.net/en/heap)：二叉堆插入、抽取与建堆的交互可视化，含堆排序演示（英文，免费）。
 
 > 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。
+
+
+## 动手实践
+
+**练习 1（手写小顶堆）**：不借助 heapq，用数组实现 push/pop 两个操作（sift-up/sift-down），对随机 1000 个数依次 push 后按序 pop，验证输出为升序。
+
+**提示**：节点 i 的孩子在 2i+1 与 2i+2；上浮只需与父比，下沉要选较小的孩子。
+
+**练习 2（Top-K 对比）**：对 100 万随机数取最大 100 个，分别用「全排序」与「容量 100 的小顶堆流式维护」计时对比，理解 heapreplace 的 O(log k) 优势。
+
+**提示**：堆满且新元素大于堆顶时 `heapreplace`（弹出并压入一步完成）。
+
+**练习 3（堆与有序性边界）**：验证「堆只能保证堆顶是极值」：heapify 一个数组后打印全数组，观察非有序；再解释为什么「第 k 次弹出后才保证前 k 小有序」。
+
+<details>
+<summary>参考实现（先自己动手，再看这里）</summary>
+
+```python
+import heapq, random
+
+# 练习 1：手写小顶堆
+class MinHeap:
+    def __init__(self): self.h = []
+    def push(self, x):
+        self.h.append(x); i = len(self.h) - 1
+        while i > 0 and self.h[(i-1)//2] > self.h[i]:
+            self.h[(i-1)//2], self.h[i] = self.h[i], self.h[(i-1)//2]
+            i = (i-1)//2
+    def pop(self):
+        top, last = self.h[0], self.h.pop()
+        if self.h:
+            self.h[0] = last
+            i, n = 0, len(self.h)
+            while True:
+                l, r, m = 2*i+1, 2*i+2, i
+                if l < n and self.h[l] < self.h[m]: m = l
+                if r < n and self.h[r] < self.h[m]: m = r
+                if m == i: break
+                self.h[i], self.h[m] = self.h[m], self.h[i]; i = m
+        return top
+
+h = MinHeap()
+data = [random.randint(0, 9999) for _ in range(1000)]
+for x in data: h.push(x)
+out = [h.pop() for _ in range(1000)]
+assert out == sorted(data)
+
+# 练习 2：Top-K 流式维护
+def top_k_stream(nums, k):
+    heap = nums[:k]                # 小顶堆装当前最大的 k 个
+    heapq.heapify(heap)
+    for x in nums[k:]:
+        if x > heap[0]:
+            heapq.heapreplace(heap, x)
+    return sorted(heap, reverse=True)
+
+nums = [random.randint(0, 10**9) for _ in range(1_000_000)]
+assert top_k_stream(nums, 100) == sorted(nums, reverse=True)[:100]
+```
+
+</details>

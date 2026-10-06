@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 460
 title: 条件类型与分发：类型层的 if 语句
 module: 'typescript'
 category: 前端技术
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-28'
 related:
   - 'typescript/440-ConditionalTypeInfer'
-  - 'typescript/450-InferTypeDeepDive'
+  - 'typescript/450-TypeCompositionPractice'
   - 'typescript/190-NeverTypeSemantics'
   - 'typescript/490-UtilityTypePrinciple'
 prerequisites:
@@ -22,7 +22,7 @@ prerequisites:
 - 已完成 [泛型基础](/typescript/070-TSBasicsGenerics)：会写 `identity<T>` 这类泛型函数；
 - 已完成 [字面量与联合类型](/typescript/110-LiteralUnionTypes)：认识 `"click" | "hover"` 这种联合类型。
 
-条件类型拆成三篇接力：**本篇讲本体与分发；[440 篇](/typescript/440-ConditionalTypeInfer) 专讲 infer 的占位与推导；[450 篇](/typescript/450-InferTypeDeepDive) 把两者组装成真实工具。** 三篇示例互不重复。本文用到 never（不可能出现的类型），完整语义见 [never 类型](/typescript/190-NeverTypeSemantics)。
+条件类型拆成三篇接力：**本篇讲本体与分发；[440 篇](/typescript/440-ConditionalTypeInfer) 专讲 infer 的占位与推导；[450 篇](/typescript/450-TypeCompositionPractice) 把两者组装成真实工具。** 三篇示例互不重复。本文用到 never（不可能出现的类型），完整语义见 [never 类型](/typescript/190-NeverTypeSemantics)。
 
 ## 学习目标
 
@@ -281,9 +281,68 @@ error TS2322: Type '42' is not assignable to type '"click" | "scroll" | "hover"'
 - 知道 `[T]` 包裹解决什么问题，能修复 IsNever 陷阱；
 - 知道 Exclude/Extract/NonNullable 就是条件类型，能徒手重写它们。
 
+## 13. 承接速查：条件类型应用卡（自杂糅篇 520）
+
+> 已归并的 520-AdvancedTypeCalculus 有一章「条件类型」。其基础写法、分发与 `[T]` 阻止分发（本篇第 4 节练习与坑点已覆盖）、`Filter/Exclude` 过滤（本篇第 4~5 节已覆盖）均已去重；infer 提取的完整教学见 [条件类型与 infer](/typescript/440-ConditionalTypeInfer)。下面保留它的两个增量，代码按可编译标准修复过。
+
+### 13.1 修复后的基础卡：条件类型与泛型函数联动
+
+```typescript
+type IsString<T> = T extends string ? true : false;
+type A = IsString<string>;        // true
+type B = IsString<number>;        // false
+type C = IsString<string | number>; // true | false（分发，见第 4 节）
+
+// 返回类型随入参形状变化
+function processValue<T>(value: T): T extends string ? string : number {
+  if (typeof value === 'string') {
+    return value.toUpperCase() as never; // 需要断言：编译器不追函数体内的 if
+  }
+  return 42 as never;
+}
+const result1 = processValue('hello'); // 类型: string
+const result2 = processValue(42);       // 类型: number
+```
+
+易错点：函数签名里的条件类型在**调用点**求值，函数体内部编译器不会替你按分支核对返回值，所以示例里的 `as never` 躲不掉。想免断言就写成重载，或者返回值类型直接用 `string | number` 简单化。
+
+### 13.2 递归类型转换：ToArray 与 DeepArray
+
+```typescript
+// 单层转换：分发让每个联合成员各自变成数组
+type ToArray<T> = T extends unknown ? T[] : never;
+type NumberArray = ToArray<number>;             // number[]
+type UnionArray = ToArray<number | string>;     // number[] | string[]
+
+// 递归剥嵌套数组
+type DeepArray<T> = T extends Array<infer U> ? DeepArray<U>[] : T;
+type Flat = DeepArray<number[][][]>; // number[]（形状仍是「数组套数组」的镜像，
+                                     //  想要完全拍平用 510 篇的 DeepFlatten 思路）
+```
+
+注意 `DeepArray` 的语义是**递归地给最内层元素再包一层**，不是拍平——这正是嵌套推断容易望文生义的地方。真正的「拍平到元素」写法见[递归类型深入](/typescript/510-RecursiveTypeDeepOperation)。
+
+### 13.3 去重去向说明
+
+- `ReturnType/ElementType/First/Last` 等 infer 提取：[条件类型与 infer](/typescript/440-ConditionalTypeInfer)；
+- 分发与 `[T]` 阻止分发：本篇第 4 节与其坑点节；
+- `Exclude/Extract/Filter` 联合过滤：本篇第 4~5 节。
+
 ## 本章总结
 
 `T extends U ? X : Y` 把 if 搬进类型层。裸类型参数遇到联合会分发：每个成员各判一次、结果联合——这正是 Exclude/Extract 的实现原理，也带来两个必记行为：过滤到全空得 never；整体判断用 `[T]` 包裹。下一篇给问句装上 infer，让条件类型学会「从类型里取东西」。
+
+<!-- 恢复自 cnt-content/full/008-typescript/520-AdvancedTypeCalculus.md（实施前 HEAD 62c90663 版本）；拆分时该小节未随迁，2026-10-07 内容保全复核恢复 -->
+
+## 条件类型的最佳实践
+
+
+- **类型推断**: 使用 `infer` 关键字从复杂类型中提取信息。
+- **类型过滤**: 使用条件类型过滤联合类型中的成员。
+- **类型转换**: 使用条件类型将一种类型转换为另一种类型。
+- **递归类型**: 使用条件类型创建递归类型定义。
+- **分发特性**: 利用条件类型的分发特性处理联合类型。
+
 
 ## 下一步
 

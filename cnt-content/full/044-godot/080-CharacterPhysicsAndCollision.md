@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 90
 title: 角色移动与碰撞检测
 module: 'godot'
 category: 游戏开发
@@ -10,11 +10,18 @@ updated: '2026-09-28'
 related:
   - 'godot/060-InputEventsAndActions'
   - 'godot/070-TwoDGameObjects'
+  - 'godot/085-RigidBodyAreaAndCollisionLayers'
   - 'godot/090-TilemapsAndLevelDesign'
 prerequisites:
   - 'godot/060-InputEventsAndActions'
   - 'godot/070-TwoDGameObjects'
 ---
+
+## 知识点地图
+
+- **知识类别**：角色物理（CharacterBody2D）——玩家可控运动的实现层，2D 物理体系的"代码控制"半边。
+- **解决什么问题**：角色怎么移动、跳跃、被墙挡住、站在斜坡上不滑落；以及怎么把"移动"写成引擎能稳定解算的形式（物理帧、velocity、碰撞 API）。
+- **什么时候用到**：任何可控角色——平台跳跃、俯视角 RPG、动作游戏。角色之外的物理体（弹珠、箱子）与触发器见 [085 篇](/godot/085-RigidBodyAreaAndCollisionLayers)。
 
 先看一个真实项目的目录。动作游戏几何构成（speed-rouge）里，玩家角色被拆成了这样几块：
 
@@ -130,7 +137,56 @@ const JUMP_SPEED := -400.0
 
 第二步，输入出走到 player_input.gd。让输入模块只回答"玩家想往哪走、想不想跳"，输出方向向量与布尔值，movement_core 拿结果做物理。这一刀切下去，将来接手柄重映射、录像回放（程序化生成输入，见输入篇）都不用动物理代码。
 
-第三步，特殊表面交给区域。弹跳板、加速带这类"踩上去行为不一样"的机关，在几何构成里由 mechanism_surface.gd 统一处理：机关本体是一个 Area2D，检测到角色进入后直接改写角色的 velocity（比如 `velocity.y = launch_speed`）。角色代码不需要认识每一个机关——这是一个可复用的模式：CharacterBody2D 只负责"常规物理"，一切非常规速度都由外部机关注入。
+第三步，特殊表面交给区域。弹跳板、加速带这类"踩上去行为不一样"的机关，在几何构成里由 mechanism_surface.gd 统一处理：机关本体是一个 Area2D，检测到角色进入后直接改写角色的 velocity（比如 `velocity.y = launch_speed`）。角色代码不需要认识每一个机关——这是一个可复用的模式：CharacterBody2D 只负责"常规物理"，一切非常规速度都由外部机关注入（这个模式的完整实现位与信号时序解释见 [085 篇第 4 节](/godot/085-RigidBodyAreaAndCollisionLayers)）。
+
+## 手感参数化：几何构成的二段式重力
+
+上面三步重构完，你手里有了一个"能跑"的角色；但平台跳跃"好玩"和"能跑"之间的差距，全部藏在运动参数的设计里。几何构成的 movement_core.gd 是一份可以照着学的参数化范本（文件头注释区就是它的参数表），核心思想一句话：**重力不是常数，手感是曲线**。
+
+### 二段式重力：上升飘、下落沉
+
+教科书版跳跃只有一段重力（`velocity += get_gravity() * delta`），起跳和下落对称。真实平台游戏几乎都做两段——上升段轻盈滞空、下落段干脆利落。几何构成按速度区间拆成两半：
+
+```gdscript
+# movement_core.gd（教学化节选，数值出处：scripts/entities/player/movement_core.gd）
+const APEX_THRESHOLD := 60.0     # apex 窗口：|上升速度| 低于此值视作"跳跃顶点附近"
+const APEX_GRAV_MULT := 0.86     # 顶点区重力打折：滞空感的来源
+const FALL_MULT := 1.24          # 下落段重力加重的倍率
+
+func apply_gravity(delta: float) -> void:
+    if velocity.y < 0.0:
+        # 上升段：速度接近 0（顶点窗口内）时重力乘 0.86
+        var mult := APEX_GRAV_MULT if absf(velocity.y) < APEX_THRESHOLD else 1.0
+        velocity += get_gravity() * mult * delta
+    else:
+        # 下落段：按当前速度渐进加重，封顶 max_fall
+        var v_n := clampf(velocity.y / max_fall_speed, 0.0, 1.0)   # 归一化到 0..1
+        var g := get_gravity() * FALL_MULT * (1.0 - v_n * v_n)     # 越接近极速加得越少
+        velocity.y = minf(velocity.y + g * delta, max_fall_speed)
+```
+
+逐行为什么这样写：
+
+- **apex 窗口**：跳跃最高点附近，速度接近 0。这段停留时间越长，玩家越有"在空中悬了一瞬"的操作余地——马里奥的"大师跳"、蔚蓝的可变跳高都利用这个窗口。重力乘 0.86 不是让角色跳更高，而是让顶点停留更久，同样一跳多出约十几毫秒的空中微调时间。
+- **下落段渐进加重**：FALL_MULT=1.24 让下落比重力加速度更狠——快速下落是平台游戏节奏感的一半（升得慢落得快，玩家才不会觉得"角色像气球"）。但加重必须封顶：`(1.0 - v_n * v_n)` 是一个阻尼式递减因子，速度归一值 v_n 越接近 1（越接近极速），额外加重越少，最终由 `minf(..., max_fall_speed)` 硬封顶。没有封顶的渐进加重，长落差会让速度爆到穿地。
+- **换成别的写法会怎样**：只用一段重力——跳跃弧线对称，顶点一晃而过，"手感廉价"；加重但不封顶——从高台坠落直接穿透薄地板（配合 085 篇讲的 CCD 也不够，速度爆表时谁都不保险）。这两个参数（APEX_GRAV_MULT 与 FALL_MULT）都在 movement_tuning.gd 数值表里，调手感改表不改逻辑——这就是第一步"数值出走"的完整回报。
+
+### 空中动量分级与超速带
+
+水平方向同样被参数化了。空中转向不是"松开右键立刻往左"——几何构成按当前水平速度分级转向权重：
+
+```gdscript
+# 教学化节选：空中动量分级（movement_core.gd 的输入混合段）
+var speed_ratio := absf(velocity.x) / max_run_speed          # 当前速度占极速的比例
+var turn_weight := lerpf(TURN_FULL, TURN_MIN, speed_ratio)   # 越接近极速，转向权越低
+velocity.x = lerpf(velocity.x, input_dir.x * max_run_speed, turn_weight * delta * 10.0)
+```
+
+静止时转向权给满（TURN_FULL，起手跟手），全速冲刺时压到下限（TURN_MIN，带惯性）——这正是"手感"二字的量化：跟手与惯性不是对立选项，而是一条可调的曲线。
+
+超速带处理的是边界情况：冲刺技能会把速度推过 max_run_speed。朴素写法（每帧 clamp 到极速）会把冲刺余速瞬间吃掉，冲刺就没了意义。几何构成的写法是**同号超速不回拉**：速度方向与输入方向一致且已超速时，不动它，只让它按地面摩擦自然渗漏衰减——冲刺余速顺滑消散而不是被一刀砍断。反向输入则正常拉回（那是玩家在主动刹车）。
+
+把这一节与前三步连起来看：movement_tuning 存参数、movement_core 存曲线、player_input 存意图——平台跳跃手感是"参数 + 曲线 + 意图"三层各自可调的系统，而不是一个 if 一个数值的事故现场。这也是为什么它能把跳跃手感改到第十几版而不伤逻辑：手感的每次迭代只是表里两个数字。
 
 ## 碰撞形状：CollisionShape2D 与形状家族
 
@@ -174,7 +230,7 @@ CharacterBody2D 自身没有形状，碰撞范围由 CollisionShape2D 子节点�
 
 1. 给跳跃加"土狼时间"（离地后 0.1 秒内仍可起跳）：用 `get_tree().create_timer()` 或一个倒数计时器记录"离地时刻"，放宽 `is_on_floor()` 的判定窗口。改完把数值抽进 movement_tuning.gd。
 2. 做一个弹跳板：Area2D 加矩形碰撞，角色碰到后 velocity.y 被设为 -800，弹起高度明显超过普通跳跃。想一想为什么在 Area2D 的 body_entered 里改 velocity 是安全的，而在 `_process` 里随手改就不行。
-3. 把模板改成俯视角后，加一个"推箱子"：RigidBody2D 箱子加 push 动作，角色接触并按住 push 时给箱子施加冲量。观察 CharacterBody2D 与 RigidBody2D 相互推动时的行为差异。
+3. 把模板改成俯视角后，加一个"推箱子"：RigidBody2D 箱子加 push 动作，角色接触并按住 push 时给箱子施加冲量。观察 CharacterBody2D 与 RigidBody2D 相互推动时的行为差异。标准实现（以及为什么 move_and_slide 碰到刚体不会自动施力）见 [085 篇第 3 节](/godot/085-RigidBodyAreaAndCollisionLayers)。
 
 ## 下一步
 

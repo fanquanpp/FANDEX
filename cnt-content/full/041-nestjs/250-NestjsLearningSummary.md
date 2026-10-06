@@ -1,20 +1,31 @@
 ---
-order: 260
+order: 320
 title: NestJS 学习总结：核心知识体系回顾
 module: 'nestjs'
 category: 后端技术
 difficulty: intermediate
-description: 串联模块十篇文档：从三层结构与依赖注入到守卫、拦截器、配置校验、缓存队列与微服务的完整知识体系回顾。
+description: 串联 NestJS 线十七篇文档：从三层结构与依赖注入到守卫、中间件、认证、文档、缓存队列、微服务、健康检查与网关的完整知识体系回顾。
 author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'nestjs/160-ModuleControllerService'
   - 'nestjs/200-GuardsAndLifecycle'
+  - 'nestjs/205-AuthJwtAndPassport'
   - 'nestjs/230-CachingAndQueues'
+  - 'nestjs/235-BullMQQueuesAndReliability'
+  - 'nestjs/240-MicroservicesAndHealth'
+  - 'nestjs/242-HealthChecksTerminus'
+  - 'nestjs/244-WebSocketGateway'
 prerequisites: []
 ---
 
-本篇是 nestjs 模块的收官总结。我们以一个"虚拟歌手音乐平台"的后端为线索，把前 10 篇文档的核心内容重新串一遍：平台上有 P 主（producer）发布歌曲（song），歌姬（virtual singer）拥有自己的应援色，演唱会（concert）开放抢票，粉丝团（fan club）随时在线。围绕这些实体，你会再次看到模块、守卫、拦截器、队列与微服务各自扮演的角色，并能在自检清单上确认自己真正掌握了多少。回顾不同于初学：初学追求"每一步都跑通"，回顾追求"每一层都说得清"。建议先遮住各节的代码示例，只看小节标题回忆写法，再展开对照；说不上来的条目直接跳回对应原文档重读。整张知识地图里，模块三层结构与请求生命周期是两个枢纽——前者决定代码怎么组织，后者决定请求怎么流动，务必优先巩固。
+## 知识点地图
+
+- **知识类别**：模块总结——NestJS 线 17 篇的知识体系回顾与自检（概述/三层/DI/管道/数据库/测试/守卫/中间件/认证/拦截器/文档/配置/缓存/队列/微服务/健康/网关）。
+- **解决什么问题**：学完散篇后「能不能连起来说清楚」；给出自检清单与后续路径，把知识变成可复述的体系。
+- **什么时候用到**：学完 NestJS 线后的自查；面试或评审前的快速复习；决定下一步深入哪一篇的导航。
+
+本篇是 nestjs 模块的收官总结。我们以一个"虚拟歌手音乐平台"的后端为线索，把 NestJS 线各篇（从 150 概述到 244 WebSocket 网关共 17 篇）的核心内容重新串一遍：平台上有 P 主（producer）发布歌曲（song），歌姬（virtual singer）拥有自己的应援色，演唱会（concert）开放抢票，粉丝团（fan club）随时在线。围绕这些实体，你会再次看到模块、守卫、中间件、认证、拦截器、队列、微服务与健康检查各自扮演的角色，并能在自检清单上确认自己真正掌握了多少。回顾不同于初学：初学追求"每一步都跑通"，回顾追求"每一层都说得清"。建议先遮住各节的代码示例，只看小节标题回忆写法，再展开对照；说不上来的条目直接跳回对应原文档重读。整张知识地图里，模块三层结构与请求生命周期是两个枢纽——前者决定代码怎么组织，后者决定请求怎么流动，务必优先巩固。
 
 ## 前置知识
 
@@ -33,27 +44,37 @@ prerequisites: []
 ```mermaid
 flowchart TD
   subgraph basics["基础架构：从零到第一个接口"]
-    A["概述与快速上手"]
-    B["模块、控制器与服务"]
+    A["概述与快速上手 150"]
+    B["模块、控制器与服务 160"]
+    B2["依赖注入与 Provider 165"]
   end
   subgraph pipeline["请求管线：让接口可靠"]
-    C["管道校验与异常处理"]
-    D["守卫与请求生命周期"]
-    E["拦截器与异常过滤器"]
+    C["管道校验与异常处理 170"]
+    D["守卫与请求生命周期 200"]
+    D2["中间件与横切关注点 202"]
+    E["拦截器与异常过滤器 210"]
+  end
+  subgraph api["接口能力：认证与文档"]
+    E2["认证与授权 Passport/JWT 205"]
+    E3["OpenAPI/Swagger 文档 215"]
   end
   subgraph infra["数据与配置：接住真实业务"]
-    F["接入数据库 Prisma"]
-    G["配置与环境变量校验"]
+    F["接入数据库 Prisma 180"]
+    G["配置与环境变量校验 220"]
   end
   subgraph advance["质量与扩展：走向生产"]
-    H["单元测试与端到端测试"]
-    I["缓存与消息队列"]
-    J["微服务与健康检查"]
+    H["单元测试与端到端测试 190"]
+    I["缓存 230 / 队列 235"]
+    J["微服务 240 / 健康检查 242 / WebSocket 网关 244"]
   end
   A --> B
-  B --> C
+  B --> B2
+  B2 --> C
   C --> D
+  D --> D2
   D --> E
+  D --> E2
+  E2 --> E3
   B --> F
   F --> G
   E --> H
@@ -182,7 +203,7 @@ zod 校验的价值在于 fail fast：应用启动的第一毫秒就把坏配置
 
 ### 6. 缓存与消息队列
 
-单机 CRUD 撑不到生产规模：同一接口每秒被查几十次用响应缓存，导出报表、抢票出票这类慢操作用队列异步化。BullMQ 的任务自带重试与退避策略，消费失败不会拖垮 HTTP 响应（见[缓存与消息队列](/nestjs/230-CachingAndQueues)）：
+单机 CRUD 撑不到生产规模：同一接口每秒被查几十次用响应缓存（[缓存](/nestjs/230-CachingAndQueues)），导出报表、抢票出票这类慢操作用队列异步化（[消息队列与异步任务可靠性](/nestjs/235-BullMQQueuesAndReliability)）。BullMQ 的任务自带重试与退避策略，消费失败不会拖垮 HTTP 响应：
 
 ```typescript
 // src/concerts/tickets.processor.ts —— BullMQ 消费者：演唱会抢票异步出票
@@ -209,11 +230,11 @@ export class TicketsProcessor extends WorkerHost {
 }
 ```
 
-缓存与队列的共同前提是打破"请求-响应同步完成"的假设：缓存把读压力挪到进程外，队列把慢操作挪到时间轴之外。引入前先确认症状真实存在——列表接口确实被高频重复查询、导出确实拖慢了响应；为不存在的规模支付复杂度，是[缓存与消息队列](/nestjs/230-CachingAndQueues)反复强调的反模式。
+缓存与队列的共同前提是打破"请求-响应同步完成"的假设：缓存把读压力挪到进程外，队列把慢操作挪到时间轴之外。引入前先确认症状真实存在——列表接口确实被高频重复查询、导出确实拖慢了响应；为不存在的规模支付复杂度，是[缓存](/nestjs/230-CachingAndQueues)与[队列](/nestjs/235-BullMQQueuesAndReliability)两篇反复强调的反模式。
 
-### 7. 微服务与健康检查
+### 7. 微服务、健康检查与实时通信
 
-当多个应用开始重复实现同一套逻辑时，才轮到微服务。NestJS 的底气是"同一套代码换传输层"：`@MessagePattern` 承接请求-响应调用，`@EventPattern` 承接事件广播，`connectMicroservice` 让 HTTP 与微服务在同一个进程共存；再用 `@nestjs/terminus` 暴露健康检查端点供探针探测（见[微服务与健康检查](/nestjs/240-MicroservicesAndHealth)）：
+当多个应用开始重复实现同一套逻辑时，才轮到微服务。NestJS 的底气是"同一套代码换传输层"：`@MessagePattern` 承接请求-响应调用，`@EventPattern` 承接事件广播，`connectMicroservice` 让 HTTP 与微服务在同一个进程共存（见[微服务与消息模式](/nestjs/240-MicroservicesAndHealth)）；上线前的存活判定交给 [健康检查与就绪探针](/nestjs/242-HealthChecksTerminus)（liveness 管进程、readiness 管依赖的分界在那篇讲透）；需要服务端主动推送时（行情、协作、通知），[WebSocket 网关](/nestjs/244-WebSocketGateway)在握手层鉴权、按房间广播：
 
 ```typescript
 // src/songs/songs.controller.ts —— 消息处理器：HTTP 路由与微服务共用同一份业务
@@ -229,7 +250,11 @@ handleConcertFinished(payload: { concertId: number }) {
 }
 ```
 
-微服务是最后一块拼图：当多个应用开始重复实现同一套逻辑时才拆进程，且先在同一仓库里拆清模块边界、用队列通信，边界稳定后再拆分部署。传输层可插拔让 TCP、Redis、NATS 之间切换只改一行配置；健康检查端点则交给部署平台的探针定时探测，Terminus 已为数据库、内存、磁盘等常见探针提供现成实现。
+微服务是最后一块拼图：当多个应用开始重复实现同一套逻辑时才拆进程，且先在同一仓库里拆清模块边界、用队列通信，边界稳定后再拆分部署。传输层可插拔让 TCP、Redis、NATS 之间切换只改一行配置；健康检查端点交给部署平台的探针定时探测（Terminus 已为数据库、内存、磁盘等常见探针提供现成实现），WebSocket 网关则补上「服务端主动说话」的最后一块能力。
+
+### 版本坐标（NestJS 12）
+
+2026 年的版本事实：NestJS 12 已发布（ESM-ready、原生支持 Standard Schema），11 仍被广泛使用；推荐 Node.js 24 LTS（22 已进入 Maintenance）；核心编程模型（装饰器、三层结构、DI、管线）在 11 与 12 上完全一致，差异集中在模块格式（CJS/ESM）、测试运行器与校验库生态。Standard Schema 的完整讲解见[管道校验与异常处理](/nestjs/170-ValidationPipes)第 6 节；升级策略（CI 先行验证、外围包版本配套、ESM 单独排期）见[微服务与消息模式](/nestjs/240-MicroservicesAndHealth)小结的版本段。
 
 ## 易混淆概念对比
 
@@ -315,16 +340,17 @@ const moduleRef = await Test.createTestingModule({
 
 - [ ] 能用 `nest g` 三条命令生成功能模块，并说出模块、控制器、服务各自负责什么
 - [ ] 能为一个投稿接口写出带 `class-validator` 规则的 DTO，并说明为什么必须是 class 而不是 interface
-- [ ] 能默画请求生命周期管线图，指出守卫与管道的先后顺序
-- [ ] 能用 `@SetMetadata` 加 `Reflector` 实现声明式角色鉴权
+- [ ] 能默画请求生命周期管线图，指出中间件、守卫与管道的先后顺序，并说清中间件与守卫的分界（预处理 vs 裁决）
+- [ ] 能用 `@SetMetadata` 加 `Reflector` 实现声明式角色鉴权，并用 Passport 的 `AuthGuard('jwt')` 接入真实登录态
 - [ ] 能写一个拦截器完成耗时统计，并解释 `map`、`tap`、`catchError` 各自的分工
 - [ ] 能用 zod 让错误的环境变量在启动阶段直接失败，并推导出类型安全的配置
-- [ ] 能判断一个慢接口该用缓存还是队列，并为 BullMQ 任务配置重试退避
-- [ ] 能区分 `@MessagePattern` 与 `@EventPattern`，并说出健康检查端点给谁用
+- [ ] 能判断一个慢接口该用缓存还是队列，并为 BullMQ 任务配置重试退避与幂等键
+- [ ] 能区分 `@MessagePattern` 与 `@EventPattern`，说出 liveness 与 readiness 探针的分界，以及 WebSocket 网关的握手鉴权怎么做
 
 ## 后续学习路径
 
 1. 若三层结构还不够熟练，回到[模块、控制器与服务](/nestjs/160-ModuleControllerService)把待办示例完整重写一遍。
-2. 想吃透管线行为，精读[守卫与请求生命周期](/nestjs/200-GuardsAndLifecycle)与[拦截器与异常过滤器](/nestjs/210-InterceptorsAndFilters)，并用实验验证执行顺序。
-3. 向生产迈进，按[缓存与消息队列](/nestjs/230-CachingAndQueues)、[微服务与健康检查](/nestjs/240-MicroservicesAndHealth)的顺序，先解决读压力再拆服务边界。
-4. 每一步都配合[单元测试与端到端测试](/nestjs/190-Testing)补齐安全网，让重构有据可依。
+2. 想吃透管线行为，精读[守卫与请求生命周期](/nestjs/200-GuardsAndLifecycle)、[中间件与横切关注点](/nestjs/202-MiddlewareCrossCutting)与[拦截器与异常过滤器](/nestjs/210-InterceptorsAndFilters)，并用实验验证执行顺序。
+3. 接口要配登录态与文档，按[认证与授权](/nestjs/205-AuthJwtAndPassport)、[OpenAPI 文档生成](/nestjs/215-OpenApiSwaggerDocs)的顺序落地，两者在 Swagger 的 authorize 按钮处会师。
+4. 向生产迈进，按[缓存](/nestjs/230-CachingAndQueues)、[队列](/nestjs/235-BullMQQueuesAndReliability)、[微服务](/nestjs/240-MicroservicesAndHealth)、[健康检查](/nestjs/242-HealthChecksTerminus)的顺序，先解决读压力再拆服务边界；需要实时推送再上 [WebSocket 网关](/nestjs/244-WebSocketGateway)。
+5. 每一步都配合[单元测试与端到端测试](/nestjs/190-Testing)补齐安全网，让重构有据可依。

@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 140
 title: 闭包与 Fn 特征
 module: 'rust'
 category: 后端技术
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'rust/100-RustGenericTrait'
-  - 'rust/090-RustCollectionsIterators'
+  - 'rust/090-RustCollections'
 prerequisites:
   - 'rust/100-RustGenericTrait'
 ---
@@ -19,7 +19,7 @@ prerequisites:
 ## 前置知识
 
 - [泛型与 Trait](/rust/100-RustGenericTrait)：trait 约束与 trait 对象是闭包参数的两种写法。
-- [集合与迭代器](/rust/090-RustCollectionsIterators)：闭包与迭代器适配器天生一对。
+- [集合类型](/rust/090-RustCollections)：闭包与迭代器适配器天生一对。
 
 ## 学习目标
 

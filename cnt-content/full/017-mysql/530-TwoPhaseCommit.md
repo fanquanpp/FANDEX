@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 560
 title: 两阶段提交
 module: 'mysql'
 category: 数据库

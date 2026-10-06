@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 180
 title: SVG JavaScript 交互
 module: 'svg'
 category: 前端技术
@@ -10,7 +10,6 @@ updated: '2026-09-13'
 related:
   - 'svg/130-SVGCSSStyling'
   - 'svg/140-SVGAnimationBasics'
-  - 'svg/160-SVGResponsivePerformance'
 prerequisites:
   - 'svg/130-SVGCSSStyling'
 ---

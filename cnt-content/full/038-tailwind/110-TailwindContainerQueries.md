@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 190
 title: 容器查询
 module: 'tailwind'
 category: 前端技术
@@ -8,17 +8,17 @@ description: 'Tailwind CSS 容器查询：@container 声明参考系、@sm:/@md:
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'tailwind/040-LayoutFlexGrid'
+  - 'tailwind/041-FlexboxLayout'
   - 'tailwind/060-ResponsiveDark'
 prerequisites:
-  - 'tailwind/040-LayoutFlexGrid'
+  - 'tailwind/041-FlexboxLayout'
 ---
 
 响应式设计的老工具是媒体查询：视口宽度小于某个值就换布局。但它有个盲区——**组件不知道自己被放在多大的盒子里**。同一张歌曲卡片，放在 280px 的侧栏要竖排，放在 900px 的主列表要横排，媒体查询只能"猜视口"，猜不对就出事。容器查询（Tailwind 4 已内置）把响应式的参考系从视口换成组件的父容器，组件从此自带响应式逻辑。
 
 ## 前置知识
 
-- [Tailwind 布局：Flex 与 Grid](/tailwind/040-LayoutFlexGrid)：卡片内部仍用 Flex/Grid 排布，容器查询只决定"何时切换"。
+- [Tailwind Grid 网格布局](/tailwind/043-GridLayout)：卡片内部仍用 Flex/Grid 排布，容器查询只决定"何时切换"。
 - [Tailwind 响应式与暗色模式](/tailwind/060-ResponsiveDark)：md: 媒体查询变体是本篇 @md: 的对照组。
 - [Tailwind 工具类核心机制](/tailwind/030-UtilityCore)：变体语法一脉相承，@ 前缀是容器查询的标志。
 

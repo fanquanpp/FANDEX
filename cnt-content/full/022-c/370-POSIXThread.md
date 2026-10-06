@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 410
 title: POSIX 线程：pthread 从创建到同步
 module: 'c'
 category: 计算机科学
@@ -153,7 +153,7 @@ pthread_detach(tid);      /* 后台任务：不打算等，也不收返回值 */
 
 用属性还能「出生即分离」（attr 设 PTHREAD_CREATE_DETACHED），省掉 create 与 detach 之间的窗口。选哪条路看用途：要结果、要确认跑完（比如并行计算的分块）就 join；纯后台（日志落盘、心跳上报）就 detach。想「创建即分离」又图省事不改 attr，也可以对刚创建的线程立刻 pthread_detach。
 
-还有一个容易踩空的主线程特例：**main 一 return，整个进程终止，所有还在跑的线程被一并处决**——手册把「main 函数的 return 等价于 exit、终结所有线程」写得很明白。所以 detach 的后台线程能不能干完活，取决于主线程等多久；想让其余线程跑完再退出，主线程可以用 `pthread_exit(NULL)` 代替 return 先退自己。至于线程的「遗物」，两种安全写法：小整数按值穿 `(void *)(intptr_t)42`，join 方还原；大对象在线程里 malloc、join 方 free。**绝不要 return 一个指向线程自己栈的指针**——手册原文警告：线程终止后其栈的内容无定义，join 方拿到的是悬空指针，这个坑与 [内存深水区](/c/210-MemoryManagement) 的 use-after-free 同宗同源，只是尸体换成了栈帧。
+还有一个容易踩空的主线程特例：**main 一 return，整个进程终止，所有还在跑的线程被一并处决**——手册把「main 函数的 return 等价于 exit、终结所有线程」写得很明白。所以 detach 的后台线程能不能干完活，取决于主线程等多久；想让其余线程跑完再退出，主线程可以用 `pthread_exit(NULL)` 代替 return 先退自己。至于线程的「遗物」，两种安全写法：小整数按值穿 `(void *)(intptr_t)42`，join 方还原；大对象在线程里 malloc、join 方 free。**绝不要 return 一个指向线程自己栈的指针**——手册原文警告：线程终止后其栈的内容无定义，join 方拿到的是悬空指针，这个坑与 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 的 use-after-free 同宗同源，只是尸体换成了栈帧。
 
 修改实验三：第 1 节的程序里把第二个 pthread_join 删掉再跑。多数时候看不出异常——main 还是会等第一个、第二个线程……但最后一个没被 join 的线程，其资源就不会归还；如果再把 main 的结尾改成「打印后立刻 return」，还会看到打印缺斤少两：没 join 的线程可能还没跑完就被进程退出一锅端。
 
@@ -366,7 +366,7 @@ worker 里 `int *p = (int *)arg; printf("got %d\n", *p);`，期望 0 到 3 各�
 
 ## 与之前和之后的知识的关系
 
-- 往前：竞态、临界区与同步思想全部出自 [线程与并发](/c/360-ThreadConcurrency)，本文是它的实操回声；线程入口的本质是「函数当参数传」，语法根基在 [函数详解](/c/090-FunctionDetailed) 与 [函数指针与回调](/c/170-FunctionPointerCallback)；「返回栈指针」的坑与 [内存深水区](/c/210-MemoryManagement) 的悬空指针同源；
+- 往前：竞态、临界区与同步思想全部出自 [线程与并发](/c/360-ThreadConcurrency)，本文是它的实操回声；线程入口的本质是「函数当参数传」，语法根基在 [函数详解](/c/090-FunctionDetailed) 与 [函数指针与回调](/c/170-FunctionPointerCallback)；「返回栈指针」的坑与 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 的悬空指针同源；
 - 旁支：跨进程共享换一套兵器，见 [共享内存与信号量](/c/350-SharedMemorySemaphore)；线程里等信号、处理信号的特殊纪律在 [信号处理](/c/340-SignalHandling)；忘 join 与僵尸进程的对照在 [进程与管道](/c/330-ProcessAndPipe)；
 - 往后：无锁计数、内存序与伪共享的严格正解在 [原子操作与内存模型](/c/380-AtomicAndMemoryModel)——下一篇回答「counter++ 到底能不能不加锁」。
 

@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 130
 title: Helm Chart 应用打包
 module: 'devops'
 category: 云与基础设施

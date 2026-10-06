@@ -1,5 +1,5 @@
 ---
-order: 550
+order: 570
 title: 离散数学
 module: 'cs-fundamentals'
 category: 计算机科学
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'cs-fundamentals/270-ComputerNetwork'
   - 'cs-fundamentals/050-DigitalLogic'
-  - 'cs-fundamentals/100-ComputerPrinciple'
+  - 'cs-fundamentals/100-ComputerOrganizationRapidReview'
   - 'cs-fundamentals/070-DataRepresentationOperation'
 prerequisites:
   - 'cs-fundamentals/010-ComputerOverview'

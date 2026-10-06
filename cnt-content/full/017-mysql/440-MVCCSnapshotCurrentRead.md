@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 470
 title: MVCC 快照读与当前读：同一规则为何推出两种结果
 module: 'mysql'
 category: 数据库

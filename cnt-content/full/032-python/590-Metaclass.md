@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 520
 title: 元类：class 语句背后发生的事
 module: 'python'
 category: 后端技术
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'python/580-PythonDescriptorProtocol'
-  - 'python/600-MetaclassSingleton'
+  - 'python/600-SingletonPattern'
   - 'python/490-DataTypeObjectModelDeepDive'
 prerequisites:
   - 'python/460-OOP'
@@ -184,7 +184,7 @@ TypeError: price 期望 float，来了 str
 
 ## 元类还能拦什么
 
-**拦实例化：`__call__`。** `Product()` 这行代码其实调用的是元类的 `__call__`。在元类上重写它，就能控制「实例化」这个动作——单例模式最稳的实现就藏在这里，完整展开见 [元类与单例](/python/600-MetaclassSingleton)。
+**拦实例化：`__call__`。** `Product()` 这行代码其实调用的是元类的 `__call__`。在元类上重写它，就能控制「实例化」这个动作——单例模式最稳的实现就藏在这里，完整展开见 [元类与单例](/python/600-SingletonPattern)。
 
 **定制类体命名空间：`__prepare__`。** 类体执行前，解释器向元类要一个空字典来装属性，`__prepare__` 让你能换成别的容器（比如按键排序、访问即计数的字典）。3.7 之后普通 dict 已保序，这个钩子如今极少用，知道存在即可：
 
@@ -287,6 +287,6 @@ print(type(C))
 
 ## 下一步
 
-- 元类 `__call__` 的招牌应用——线程安全单例：[元类与单例](/python/600-MetaclassSingleton)；
+- 元类 `__call__` 的招牌应用——线程安全单例：[元类与单例](/python/600-SingletonPattern)；
 - 描述符协议如何与元类配合完成字段系统：[Python 描述符协议](/python/580-PythonDescriptorProtocol)；
 - 不想手搓 ORM，看成熟方案怎么做：[SQLAlchemy](/python/830-PythonSQLAlchemy)。

@@ -1,5 +1,5 @@
 ---
-order: 560
+order: 580
 title: Kotlin 与 Arrow
 module: 'kotlin'
 category: 后端技术

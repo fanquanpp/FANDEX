@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 640
 title: C++性能优化
 module: 'cpp'
 category: 计算机科学
@@ -22,7 +22,7 @@ prerequisites:
 
 ## 前置知识
 
-- [C++23 与 C++26 新特性](/cpp/740-Cpp23Cpp26NewFeatures)：建议先完成前一篇的学习
+- [C++23 与 C++26 新特性](/cpp/730-Cpp23NewFeatures)：建议先完成前一篇的学习
 
 ## 学习目标
 

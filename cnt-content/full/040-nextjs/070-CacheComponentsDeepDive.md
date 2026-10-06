@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 110
 title: 缓存体系与 Cache Components 深入
 module: 'nextjs'
 category: 前端技术
@@ -14,6 +14,13 @@ related:
 prerequisites:
   - 'nextjs/030-DataFetchingCaching'
 ---
+
+## 知识点地图
+
+- 知识类别：Cache Components 新缓存模型——`'use cache'` 指令、cacheLife 时长档位、cacheTag 失效体系与 PPR 流式渲染。
+- 解决什么问题：传统模型"缓存藏在默认值里"的不可读性；新模型把"什么可缓存、存多久、怎么失效、动态在哪"全部写进代码。
+- 什么时候用到：新项目启用 `cacheComponents: true` 后的每一次取数决策、旧项目迁移评估、排查"静态壳下动态洞为什么不流式补齐"。
+- **与《数据获取与缓存》的分工**：那篇是 15+ 传统模型（fetch 选项语义）与本篇的前置；本篇是新模型的完整展开，第 7 节有两套语义的映射表。
 
 ## 前置知识
 
@@ -397,6 +404,58 @@ CMS 后台发布后走 Webhook：`revalidateTag("post-list", "max")`；全站静
 **场景三：写操作后的即时反馈**
 
 用户提交表单（Server Action）-> 写库 -> `updateTag` 失效对应标签 -> 重渲染读到新数据，全程不需要客户端手动 `router.refresh()`；页面上"与本次写操作无关的未缓存数据"若也要刷新，追加一个 `refresh()` 即可。
+
+## 动手实践
+
+**任务一：同一页面跑两套模型。** 把一个使用了 `fetch` + `next: { revalidate: 60 }` 的页面在 `cacheComponents: false/true` 两种配置下各构建一次，对照构建日志中该路由的静态/动态标记变化，并把传统写法改写为 `'use cache'` + `cacheLife`。提示：新模型下没有 `'use cache'` 的取数默认动态执行——如果改写后页面整体变动态了，检查是否忘了给静态部分加指令或 `<Suspense>`。
+
+**任务二：失效三件套各演一遍。** 写一个商品列表页（`'use cache'` + `cacheTag("products")`）与一个提交新商品的 Server Action，分别用 `updateTag`、`revalidateTag`、`refresh` 三种方式让列表更新，观察三种方式的呈现时序差异。提示：`updateTag` 要求"读-写-失效"同一个请求上下文里；`revalidateTag` 是先返回旧值后台再生；`refresh` 只影响未缓存数据——三者的用户感知不同，记录下来。
+
+**任务三：PPR 静态壳。** 给一个仪表盘页面做"静态壳 + 动态洞"：侧边栏与标题走 `'use cache'`，实时数据卡片包 `<Suspense>`，用 DevTools 网络节流观察首屏 HTML 与流式补齐的时序。提示：把动态卡片故意变慢（取数里 `await new Promise(r => setTimeout(r, 3000))`），流式边界才看得清楚。
+
+先自己操作，再对照参考实现：
+
+<details>
+<summary>任务二参考实现</summary>
+
+```tsx
+// app/products/page.tsx
+export default async function ProductsPage() {
+  const data = await getProducts()   // 函数体内 'use cache' + cacheTag("products")
+  return <ProductList items={data} />
+}
+
+// app/actions.ts
+"use server"
+
+import { revalidateTag, updateTag } from "next/cache"
+
+export async function createProduct(formData: FormData) {
+  const name = String(formData.get("name"))
+  await db.product.create({ data: { name } })
+
+  // 方式 A：写完立即要求下一次读到新值（读-写-失效在同一上下文）
+  updateTag("products")
+
+  // 方式 B：先返回旧值、后台再生（写操作响应更快，但紧随其后的读是旧值）
+  // revalidateTag("products", "max")   // 第二参数为 profile，按项目缓存档位选
+}
+// 易错点：写操作里不要加 'use cache'——缓存指令声明"输出可复用"，
+// 对写数据库的 action 加它会带来静默的重复跳过风险；缓存只属于读路径。
+```
+
+```tsx
+// app/products/refresh-button.tsx —— 方式 C：只刷未缓存数据
+"use client"
+import { refresh } from "next/cache"
+
+export function RefreshButton() {
+  return <button onClick={() => refresh()}>刷新实时数据</button>
+}
+```
+
+要点：a) `updateTag` 适合"我改了它，我要立刻看到"的表单后跳回列表场景；b) `revalidateTag` 适合容忍一次旧值的后台失效；c) `refresh` 不会动 `'use cache'` 的数据——如果列表没更新，先确认它到底缓存了没有；d) 写操作里加了 `'use cache'` 属于概念错位，看到这类代码直接删指令。
+</details>
 
 ## 小结
 

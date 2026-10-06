@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 150
 title: 服务端渲染 SSR
 module: 'vite'
 category: 前端技术
@@ -20,7 +20,7 @@ SPA 把渲染工作全推给浏览器：用户先看到空白页，等 JS 下载
 
 - [Vite 环境变量与模式](/vite/050-ViteEnvModes)：SSR 双端代码依赖环境变量区分场合与安全边界。
 - [Vite 构建与产物拆分](/vite/080-BuildSplit)：理解客户端产物的结构，SSR 要额外多打一个服务端包。
-- [Vite 开发服务器与 HMR](/vite/070-DevServerHMR)：SSR 开发模式就是 dev server 的"中间件化"。
+- [Vite 开发服务器与 HMR](/vite/070-DevServerAndProxy)：SSR 开发模式就是 dev server 的"中间件化"。
 
 ## 学习目标
 

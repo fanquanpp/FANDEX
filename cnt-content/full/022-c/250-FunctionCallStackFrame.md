@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 290
 title: 函数调用栈帧：一次调用的完整旅程
 module: 'c'
 category: 计算机科学
@@ -13,13 +13,13 @@ related:
   - 'c/560-CAssemblyInteraction'
   - 'c/100-VarargsFunction'
 prerequisites:
-  - 'c/210-MemoryManagement'
+  - 'c/210-ProcessMemoryLayoutAndErrors'
   - 'c/090-FunctionDetailed'
 ---
 
 ## 前置知识
 
-- 已完成 [内存深水区](/c/210-MemoryManagement)：亲手打印过五段地址，记得 stack 在最高处、向下长；
+- 已完成 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)：亲手打印过五段地址，记得 stack 在最高处、向下长；
 - 已完成 [函数](/c/090-FunctionDetailed)：会写带参数、带返回值的函数，理解调用与返回的语义。
 
 > 分工说明：210 与 250 合讲内存的「地理」。210 画的是进程整张地图：五段各在哪、堆事故怎么读；本篇把镜头推进 stack 这一段——一次调用如何压入一帧、帧里装了什么、递归如何层层叠叠、栈如何被撑爆、缓冲区溢出如何借栈劫持程序。两篇实验不重复：210 打印的是不同段的名字，本篇打印的是同一个段里相邻帧的位置。
@@ -437,7 +437,7 @@ Aborted (core dumped)
 
 按保护范围从松到紧：-fstack-protector 只保护含较大缓冲区或用了 alloca 的函数；-fstack-protector-strong 扩大到所有带局部数组定义的函数；-fstack-protector-all 保护全部函数。许多发行版的编译器默认已开 strong，所以平时看到的多是「detected」而不是静默劫持——做实验时用 -fno-stack-protector 才能看到裸奔的样子。
 
-canary 不是万能锁：溢出可以只改相邻局部变量或栈上的函数指针，不碰 canary 就无法被它发现。系统级补强各有分工——地址随机化（ASLR，210 篇里地址每次不同就是它）让地址难猜，数据页不可执行让注入的代码跑不起来，新硬件的影子栈（如 Intel CET）把返回地址再存一份独立副本、ret 时核对。防线仍在前移：不给溢出机会——长度检查与更安全的库函数见 [安全函数与边界检查](/c/450-SafeFunctionBoundsCheck)；攻击视角与二进制安全实战见 [二进制安全与应急响应](/cybersecurity/580-BinarySecurityAndIncidentResponse)。
+canary 不是万能锁：溢出可以只改相邻局部变量或栈上的函数指针，不碰 canary 就无法被它发现。系统级补强各有分工——地址随机化（ASLR，210 篇里地址每次不同就是它）让地址难猜，数据页不可执行让注入的代码跑不起来，新硬件的影子栈（如 Intel CET）把返回地址再存一份独立副本、ret 时核对。防线仍在前移：不给溢出机会——长度检查与更安全的库函数见 [安全函数与边界检查](/c/450-SafeFunctionBoundsCheck)；攻击视角与二进制安全实战见 [二进制安全与应急响应](/cybersecurity/580-IoTOTSecurity)。
 
 ## 8. 工具角：gdb 看调用链，-fstack-usage 量帧
 
@@ -487,7 +487,7 @@ frames.c:17:5:int main	16	48	static
 
 - 嵌入式固件：RTOS 的任务栈常以 KB 计（1 到 4 KB），第 6 节在桌面机上要 40 MB 才触发的坑，在板子上一个 4 KB 局部数组就够了——深递归与大局部数组在嵌入式是硬禁区，见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)；
 - 多线程服务：每个线程一条独立栈，glibc 默认大小跟随 ulimit -s；一百个线程乘 8 MB 就是 800 MB 的地址空间承诺，高密度线程服务用 pthread_attr_setstacksize 显式定尺寸，见 [线程与并发](/c/360-ThreadConcurrency)；
-- 解析器与爬虫：递归下降解析嵌套结构时，深度由输入决定——不受限的递归深度是拒绝服务攻击的经典入口，必须设上限或改迭代；上线前用 -Wstack-usage 给帧上预算，工程化接入见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+- 解析器与爬虫：递归下降解析嵌套结构时，深度由输入决定——不受限的递归深度是拒绝服务攻击的经典入口，必须设上限或改迭代；上线前用 -Wstack-usage 给帧上预算，工程化接入见 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)。
 
 ## 小练习
 
@@ -503,9 +503,9 @@ frames.c:17:5:int main	16	48	static
 
 ## 与之前和之后的知识的关系
 
-- 往前：[内存深水区](/c/210-MemoryManagement) 的五段地图给了本篇坐标——stack 那一段的运行时机制本文拆完；[函数](/c/090-FunctionDetailed) 讲的调用语义，本文补上了机器层的进出账；
+- 往前：[内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 的五段地图给了本篇坐标——stack 那一段的运行时机制本文拆完；[函数](/c/090-FunctionDetailed) 讲的调用语义，本文补上了机器层的进出账；
 - 旁支：栈与堆怎么选是 [动态内存](/c/200-DynamicMemoryManagement) 的主题；手写汇编时的栈纪律（16 字节对齐、不许乱动 rbp）在 [C 与汇编交互](/c/560-CAssemblyInteraction)；实参求值顺序的完整规则在 [运算符与表达式](/c/060-OperatorExpression)；
-- 往后：[const 与 volatile 详解](/c/260-CVolatileAndConstDeepDive) 里 volatile 局部变量在 setjmp/longjmp 场景的行为，正取决于「它住在栈上哪一层」——学完本篇，那个规则不再是死记硬背。
+- 往后：[const 与 volatile 详解](/c/260-ConstAndVolatileQualifiers) 里 volatile 局部变量在 setjmp/longjmp 场景的行为，正取决于「它住在栈上哪一层」——学完本篇，那个规则不再是死记硬背。
 
 ## 官方文档
 
@@ -529,4 +529,4 @@ frames.c:17:5:int main	16	48	static
 
 ## 下一步
 
-进入 [const 与 volatile 详解](/c/260-CVolatileAndConstDeepDive)：栈帧的进出账理清了，接下来看两个关键字——为什么信号处理器与 setjmp 场景里的 volatile 局部变量，命运和它住在哪一层栈直接相关。
+进入 [const 与 volatile 详解](/c/260-ConstAndVolatileQualifiers)：栈帧的进出账理清了，接下来看两个关键字——为什么信号处理器与 setjmp 场景里的 volatile 局部变量，命运和它住在哪一层栈直接相关。

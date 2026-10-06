@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 190
 title: 自连接
 module: 'sql'
 category: 数据库

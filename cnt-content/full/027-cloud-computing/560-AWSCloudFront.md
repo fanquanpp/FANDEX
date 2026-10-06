@@ -1,5 +1,5 @@
 ---
-order: 560
+order: 620
 title: AWS CloudFront CDN 命令
 module: 'cloud-computing'
 category: 云与基础设施

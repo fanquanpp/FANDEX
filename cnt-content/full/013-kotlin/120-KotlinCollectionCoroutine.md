@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'kotlin/050-KotlinClassObject'
   - 'kotlin/170-KotlinGenericTypeSystem'
-  - 'kotlin/240-KotlinCoroutineAdvanced'
+  - 'kotlin/310-FlowAdvanced'
   - 'kotlin/460-KotlinMultiplatform'
 prerequisites: []
 ---

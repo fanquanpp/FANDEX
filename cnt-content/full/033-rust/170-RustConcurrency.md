@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 200
 title: 并发编程
 module: 'rust'
 category: 后端技术

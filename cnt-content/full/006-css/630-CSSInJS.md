@@ -1,22 +1,27 @@
 ---
-order: 630
-title: CSS-in-JS 与高级布局技巧
+order: 680
+title: CSS-in-JS
 module: 'css'
 category: 前端技术
 difficulty: advanced
-description: CSS-in-JS方案与Grid高级布局
+description: CSS-in-JS 本体：styled-components/Emotion/JSS 三派写法、零运行时方案对比、RSC 下的取舍与 SSR 样式抽取——组件样式专篇。
 author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'css/480-CSSNativeNesting'
-  - 'css/530-CSSCanvasDrawing'
+  - 'css/620-CSSModules'
   - 'css/560-CSSArchitectureMethodology'
-  - 'css/640-CSSTheoryKnowledge'
+  - 'css/640-VisualFormattingModel'
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
 
 > 前置依赖：需先有 React/Vue 组件开发经验。
+
+> 本文已收敛为 CSS-in-JS 单主题篇。原混入的高级布局内容（§3 Grid、
+> §4 Flex、§5 变量、§6 动画、§7 性能、§8 响应式、§9 工具）经逐节核对
+> 均为 240/250/410/330/540/370-390/670/560 各专篇已覆盖的速写重复，
+> 已按单主题原则移除；布局深读请按上述编号跳转。
 
 ## 1. CSS-in-JS 概述
 
@@ -126,399 +131,18 @@ const { classes } = jss.createStyleSheet(styles).attach();
 document.body.innerHTML = `<button class="${classes.button}">Click me</button>`;
 ```
 
-## 3. 高级 Grid 布局技巧
-
-### 3.1 网格模板区域
-
-```css
-.grid-container {
-  display: grid;
-  grid-template-areas:
-    'header header header'
-    'sidebar main main'
-    'footer footer footer';
-  grid-template-columns: 200px 1fr 1fr;
-  grid-template-rows: auto 1fr auto;
-  gap: 16px;
-  height: 100vh;
-}
-.header {
-  grid-area: header;
-  background: #f0f0f0;
-  padding: 16px;
-}
-.sidebar {
-  grid-area: sidebar;
-  background: #e0e0e0;
-  padding: 16px;
-}
-.main {
-  grid-area: main;
-  background: #ffffff;
-  padding: 16px;
-}
-.footer {
-  grid-area: footer;
-  background: #f0f0f0;
-  padding: 16px;
-}
-```
-
-### 3.2 响应式 Grid
-
-```css
-.responsive-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
-}
-/* 不同屏幕尺寸的调整 */
-@media (max-width: 768px) {
-  .responsive-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  }
-}
-@media (max-width: 480px) {
-  .responsive-grid {
-    grid-template-columns: 1fr;
-  }
-}
-```
-
-### 3.3 网格项定位
-
-```css
-.grid-container {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(5, 100px);
-  gap: 10px;
-}
-.item-1 {
-  grid-column: 1 / 3;
-  grid-row: 1 / 3;
-  background: red;
-}
-.item-2 {
-  grid-column: 3 / 6;
-  grid-row: 1 / 2;
-  background: blue;
-}
-.item-3 {
-  grid-column: 1 / 2;
-  grid-row: 3 / 6;
-  background: green;
-}
-.item-4 {
-  grid-column: 2 / 6;
-  grid-row: 2 / 6;
-  background: yellow;
-}
-```
-
-## 4. Flexbox 高级技巧
-
-### 4.1 复杂 Flex 布局
-
-```css
-.complex-flex {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: space-between;
-  align-items: center;
-}
-.item {
-  flex: 1 1 300px; /* 增长因子 1, 收缩因子 1, 基础宽度 300px */
-  min-width: 200px;
-  background: #f0f0f0;
-  padding: 16px;
-  border-radius: 8px;
-}
-/* 特殊项目 */
-.item.special {
-  flex: 2 1 400px; /* 占据更多空间 */
-  background: #e0e0e0;
-}
-```
-
-### 4.2 Flexbox 居中技巧
-
-```css
-/* 水平居中 */
-.horizontal-center {
-  display: flex;
-  justify-content: center;
-}
-/* 垂直居中 */
-.vertical-center {
-  display: flex;
-  align-items: center;
-  height: 200px;
-}
-/* 水平垂直居中 */
-.center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-}
-/* 多项目居中 */
-.multi-center {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-}
-```
-
-## 5. 自定义属性 (CSS Variables)
-
-### 5.1 基本使用
-
-```css
- :root {
-  --primary-color: #3498db;
-  --secondary-color: #2ecc71;
-  --text-color: #333333;
-  --border-radius: 8px;
-  --spacing: 16px;
- }
- .button {
-  background: var(--primary-color);
-  color: white;
-  padding: var(--spacing);
-  border-radius: var(--border-radius);
-  border: none;
-  cursor: pointer;
- }
- .card {
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: var(--border-radius);
-  padding: var(--spacing);
-  margin-bottom: var(--spacing);
- }
-```
-
-### 5.2 主题切换
-
-```css
- :root {
-  /* 浅色主题 */
-  --bg-color: #ffffff;
-  --text-color: #333333;
-  --card-bg: #f0f0f0;
- }
- .dark-theme {
-  /* 深色主题 */
-  --bg-color: #121212;
-  --text-color: #e0e0e0;
-  --card-bg: #1e1e1e;
- }
- body {
-  background: var(--bg-color);
-  color: var(--text-color);
-  transition: background 0.3s, color 0.3s;
- }
- .card {
-  background: var(--card-bg);
-  transition: background 0.3s;
- }
-```
-
-## 6. 动画与过渡
-
-### 6.1 CSS 动画
-
-```css
-/* 定义动画 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-/* 使用动画 */
-.fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
-}
-/* 复杂动画 */
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-.pulse {
-  animation: pulse 2s infinite;
-}
-```
-
-### 6.2 过渡效果
-
-```css
-.transition-example {
-  background: blue;
-  color: white;
-  padding: 16px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-.transition-example:hover {
-  background: darkblue;
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-/* 多重过渡 */
-.multiple-transitions {
-  background: blue;
-  color: white;
-  padding: 16px;
-  border-radius: 8px;
-  transition:
-    background 0.3s ease,
-    transform 0.5s ease,
-    box-shadow 0.3s ease;
-}
-.multiple-transitions:hover {
-  background: darkblue;
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-```
-
-## 7. 性能优化
-
-### 7.1 CSS 性能优化
-
-1. **减少选择器复杂度**：避免深层嵌套选择器
-2. **使用 CSS 变量**：减少重复代码
-3. **避免使用 @import**：使用 link 标签代替
-4. **压缩 CSS**：减少文件大小
-5. **使用 CSS Modules**：避免样式冲突
-6. **关键 CSS**：将首屏关键样式内联
-
-### 7.2 渲染性能
-
-1. **避免重排**：减少 DOM 操作
-2. **使用 will-change**：提示浏览器优化
-3. **GPU 加速**：使用 transform 和 opacity
-4. **避免布局抖动**：批量 DOM 操作
-
-```css
-/* 提示浏览器优化 */
-.optimized {
-  will-change: transform;
-  transition: transform 0.3s;
-}
-/* GPU 加速 */
-.gpu-accelerated {
-  transform: translateZ(0); /* 触发 GPU 加速 */
-}
-```
-
-## 8. 响应式设计高级技巧
-
-### 8.1 移动优先设计
-
-```css
-/* 移动优先基础样式 */
-.container {
-  width: 100%;
-  padding: 16px;
-}
-/* 平板设备 */
-@media (min-width: 768px) {
-  .container {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 24px;
-  }
-}
-/* 桌面设备 */
-@media (min-width: 1024px) {
-  .container {
-    max-width: 960px;
-    padding: 32px;
-  }
-}
-/* 大屏幕设备 */
-@media (min-width: 1280px) {
-  .container {
-    max-width: 1140px;
-  }
-}
-```
-
-### 8.2 响应式断点策略
-
-| 断点 | 设备类型 | 宽度范围       |
-| :--- | :------- | :------------- |
-| xs   | 超小屏幕 | < 576px        |
-| sm   | 小屏幕   | 576px - 767px  |
-| md   | 中等屏幕 | 768px - 991px  |
-| lg   | 大屏幕   | 992px - 1199px |
-| xl   | 超大屏幕 | ≥ 1200px       |
-
-### 8.3 响应式图片
-
-```html
-<!-- 响应式图片 -->
-<img
-  src="small.jpg"
-  srcset="small.jpg 400w, medium.jpg 800w, large.jpg 1200w"
-  alt="Responsive image"
-/>
-<!-- 不同屏幕尺寸的图片 -->
-<picture>
-  <source media="(max-width: 768px)" srcset="mobile.jpg" />
-  <source media="(min-width: 769px)" srcset="desktop.jpg" />
-  <img src="fallback.jpg" alt="Responsive image" />
-</picture>
-```
-
-## 9. 工具与框架
-
-### 9.1 CSS 预处理器
-
-- **Sass/SCSS**：功能丰富的预处理器
-- **Less**：简洁易用的预处理器
-- **Stylus**：灵活的预处理器
-
-### 9.2 CSS 框架
-
-- **Tailwind CSS**：实用优先的工具类框架
-- **Bootstrap**：全面的 UI 框架
-- **Bulma**：现代 CSS 框架
-- **Foundation**：响应式前端框架
-
-### 9.3 开发工具
-
-- **PostCSS**：CSS 处理工具
-- **Autoprefixer**：自动添加浏览器前缀
-- **PurgeCSS**：移除未使用的 CSS
-- **Stylelint**：CSS 代码检查
-
 ## 10. 最佳实践
 
-1. **组件化**：将样式与组件紧密结合
-2. **命名规范**：使用 BEM 或 SMACSS 等命名规范
-3. **模块化**：将样式按功能模块组织
-4. **可维护性**：编写清晰、可维护的 CSS
-5. **性能**：关注 CSS 性能，避免不必要的样式
-6. **兼容性**：考虑浏览器兼容性
-7. **文档**：为复杂样式添加注释和文档
+通用 CSS 架构（命名规范、模块化、性能）见 [560-CSSArchitectureMethodology](/css/560-CSSArchitectureMethodology)
+与 [540-CSSPerformanceOptimizationDetailed](/css/540-CSSPerformanceOptimizationDetailed)。
+CSS-in-JS 语境下的三条专属纪律：
+
+1. **样式与组件同文件同生命周期**：删除组件时样式一起消失，别把
+   样式抽出去「方便复用」而破坏这个保证；
+2. **动态样式只用于真动态**：随 props 每帧变化的才用插值，静态值
+   留在 CSS（变量或文件）里，减少序列化开销；
+3. **禁止在 render 里定义 styled 组件**：每次渲染生成新组件导致
+   子树重挂载——组件定义必须提到模块顶层。
 
 ## 11. 项目实战
 
@@ -548,41 +172,51 @@ flowchart TD
     T13 --> T15
 ```
 
-### 11.2 高级布局项目
-
-```mermaid
-flowchart TD
-    T0["advanced-layouts/"]
-    T1["css/"]
-    T2["grid-layouts.css"]
-    T3["flexbox-layouts.css"]
-    T4["responsive.css"]
-    T5["animations.css"]
-    T6["components/"]
-    T7["dashboard.html"]
-    T8["gallery.html"]
-    T9["landing.html"]
-    T10["index.html"]
-    T0 --> T1
-    T5 --> T6
-    T9 --> T10
-```
-
 ## 12. 常见问题与解决方案
 
-### 12.1 CSS-in-JS 问题
+### 12.1 2026 年的生态：零运行时与 RSC
 
-**问题**：CSS-in-JS 增加了打包体积
-**解决方案**：使用 Tree Shaking，只导入需要的样式
-**问题**：运行时性能问题
-**解决方案**：使用静态提取，将样式提取到单独的 CSS 文件
+运行时 CSS-in-JS 的两个固有成本——**组件渲染期生成样式的 CPU 开销**
+与 **SSR 首屏样式闪烁**——催生了「零运行时（compile-time）」路线：
+样式在构建期编译成普通 CSS 文件，组件里只留类型安全的类名引用。
 
-### 12.2 布局问题
+```tsx
+// vanilla-extract：styles.css.ts 里定义，构建期产出静态 CSS
+import { style } from "@vanilla-extract/css";
+export const button = style({
+  background: "var(--color-primary)",
+  padding: "8px 16px",
+});
+// 组件里：import { button } from "./styles.css.ts"; <button className={button} />
+```
 
-**问题**：Grid 布局浏览器兼容性
-**解决方案**：提供 Flexbox fallback
-**问题**：响应式设计在某些设备上显示异常
-**解决方案**：使用设备模拟器测试，调整断点
+三派的取舍速查：
+
+| 方案 | 运行时 | 类型安全 | 心智模型 | 适合 |
+| --- | --- | --- | --- | --- |
+| styled-components / Emotion | 有 | 弱（props 插值） | 样式即组件 | 强动态样式的 CSR 应用 |
+| vanilla-extract | 无 | 强（TS 全程） | 样式是独立 ts 模块 | 设计系统、RSC 项目 |
+| Panda CSS | 无 | 强 | 原子类 + 配方 | Tailwind 习惯团队要类型 |
+| CSS Modules | 无 | 弱（类名字符串） | 传统 CSS 文件 | 渐进迁移、非 TS 团队 |
+
+**React Server Components 下的取舍**：RSC 组件没有浏览器运行时，
+`useState`/styled-components 的插值在服务端组件里根本不执行——
+运行时 CSS-in-JS 在 RSC 架构中只剩客户端组件可用，且序列化边界
+（server -> client props）不能传样式函数。2026 年的实践共识：
+RSC 项目默认 vanilla-extract / Panda / CSS Modules + CSS 变量，
+真动态样式（用户实时调色这类）用内联 `style` 属性 + CSS 变量，
+运行时库只留在确有需要的客户端组件。
+
+**SSR 样式抽取**：运行时方案的 SSR 必须把渲染期生成的样式随 HTML
+下发，否则首屏无样式（FOUC）：
+
+- styled-components：`ServerStyleSheet` + `StyleSheetManager`，
+  渲染流里收集样式注入 `<head>`；
+- Emotion：`@emotion/server` 的 `extractCritical` 只内联首屏用到的
+  规则，其余按需加载；
+- 框架托管：Next.js App Router 与 Remix 都内置了样式抽取约定，
+  选库前先确认框架支持矩阵——手写抽取是 2020 年代的方案，
+  2026 年框架内置是默认。
 
 ## 动手试试
 

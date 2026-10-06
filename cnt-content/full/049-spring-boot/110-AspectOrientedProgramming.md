@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 130
 title: 面向切面编程：把 30 个接口的横切逻辑收进一个类
 description: 以「给 30 个接口加耗时统计难道要手插 60 行代码」引入：横切关注点与运行期织入的心智模型、CGLIB 默认代理、五种通知确定执行顺序的打印实验、execution 与 @annotation 切点拆解、耗时监控/注解限流/异常打点三个完整实战，附「@Transactional 就是一个切面」的收束。
 module: 'spring-boot'

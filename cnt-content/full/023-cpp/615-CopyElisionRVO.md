@@ -1,5 +1,5 @@
 ---
-order: 600
+order: 650
 title: 复制消除与 RVO：按值返回为什么是免费的
 description: C++17 强制复制消除的完整心智模型：prvalue 延迟具现、RVO 与 NRVO 的分界、return std::move 的反效果、按值传参与工厂函数设计，附计数实验与面试题思路。
 module: 'cpp'
@@ -11,7 +11,6 @@ related:
   - 'cpp/090-RvalueReferenceMoveSemantics'
   - 'cpp/100-MoveSemanticsDetailed'
   - 'cpp/610-CppPerformance'
-  - 'cpp/620-CppExceptionAndPerformance'
 prerequisites:
   - 'cpp/100-MoveSemanticsDetailed'
 ---

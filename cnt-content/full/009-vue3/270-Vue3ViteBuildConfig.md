@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 260
 title: Vue 3 与 Vite：vite.config.ts 逐行拆解与三条命令
 module: 'vue3'
 category: 前端技术

@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 160
 title: CI/CD 流水线
 module: 'devops'
 category: 云与基础设施

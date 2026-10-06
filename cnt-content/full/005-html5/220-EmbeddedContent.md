@@ -1890,6 +1890,8 @@ window.addEventListener('message', (event) => {
 
 ## video 与 audio 嵌入
 
+> 本节是 iframe 的应用场景：用 iframe 嵌入第三方视频平台的播放器。自托管的音视频文件请用原生 `<video>`/`<audio>` 标签，完整讲解见 `html5/200-AudioVideo`。
+
 **通过 iframe 嵌入视频**
 ```html
 <!-- YouTube 嵌入 -->
@@ -1905,9 +1907,13 @@ window.addEventListener('message', (event) => {
 <iframe src="//player.bilibili.com/player.html?bvid=BVxxxx" width="100%" height="500" allowfullscreen></iframe>
 ```
 
+**讲解：** `allow` 属性白名单式授予嵌入页面的能力（自动播放、画中画等），与 sandbox 策略配合使用；第三方播放器跨域嵌入时务必加 `title` 供读屏软件识别。
+
 ---
 
 ## picture 与 source
+
+> `<picture>` 是响应式图片方案，属于图像主题：`<source>` 的媒体条件、srcset/sizes 与 AVIF/WebP 回退链的完整讲解见 `html5/140-ImagesAndResponsiveImages`。视频的多格式 `<source>` 用法见 `html5/200-AudioVideo`。
 
 **source 元素**
 `<source src="<URL>" [type="<MIME>"] [media="<媒体查询>"] [srcset="<URL>"] />`
@@ -1918,13 +1924,6 @@ window.addEventListener('message', (event) => {
   <source srcset="photo.webp" type="image/webp" />
   <img src="photo.jpg" alt="照片" />
 </picture>
-
-<!-- 视频多格式 -->
-<video controls>
-  <source src="movie.webm" type="video/webm" />
-  <source src="movie.mp4" type="video/mp4" />
-  您的浏览器不支持视频。
-</video>
 ```
 
 ---

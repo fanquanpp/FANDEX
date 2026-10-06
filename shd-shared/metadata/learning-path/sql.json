@@ -69,7 +69,7 @@
           "title": "多表查询入门",
           "desc": "为什么要拆表，JOIN 的第一课",
           "difficulty": "beginner",
-          "doc": "140-MultiTableQuery"
+          "doc": "150-JoinQuery"
         },
         {
           "id": "sql-107",
@@ -335,7 +335,7 @@
           "title": "高级查询专题",
           "desc": "综合运用各类查询特性的专题",
           "difficulty": "advanced",
-          "doc": "320-AdvancedQuery"
+          "doc": "250-RecursiveCTETreeTraversal"
         },
         {
           "id": "sql-506",

@@ -1,14 +1,13 @@
 ---
-order: 50
+order: 70
 title: 网络系统管理
 module: 'networking'
 category: 云与基础设施
 difficulty: intermediate
-description: Windows Server部署、活动目录、DNS/DHCP/IIS/文件/终端服务、组策略、Linux服务器、Shell脚本、数据中心网络、无线网络规划与安全。
+description: Windows Server部署、活动目录、DNS/DHCP/IIS/文件/终端服务、组策略与 Linux 服务器系统管理。
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'networking/010-NetworkBasicsAndProtocol'
   - 'networking/030-NetworkWiringAndConstruction'
   - 'networking/020-OSITCPIPModel'
 prerequisites: []
@@ -16,7 +15,13 @@ prerequisites: []
 
 ## 学习目标
 
-本文是「Networking」模块的第 4 篇，难度定位为进阶。重点内容：Windows Server部署、活动目录、DNS/DHCP/IIS/文件/终端服务、组策略、Linux服务器、Shell脚本、数据中心网络、无线网络规划与安全。
+## 知识点地图
+
+- **知识类别**：网络背后的服务器系统管理——Windows Server 的域环境（AD/DNS/DHCP/组策略）与 Linux 服务器的部署运维。网络设备之外，「提供网络服务的主机」如何管理是本篇主题。
+- **解决什么问题**：公司几十上百台电脑要统一账号、统一策略、统一软件下发（AD + 组策略）；内网要自动发地址与域名解析（DHCP/DNS）；Linux 服务器要部署与写自动化脚本。
+- **什么时候用到**：搭建公司域环境；新服务器上线装服务；批量管理终端；故障排查时判断「是网络问题还是服务器问题」。
+
+本文是「Networking」模块的第 4 篇，难度定位为进阶。重点内容：Windows Server部署、活动目录、DNS/DHCP/IIS/文件/终端服务、组策略与 Linux 服务器系统管理。
 
 主要章节：
 
@@ -365,93 +370,46 @@ find $BACKUP_DIR -name "*.tar.gz" -mtime +$RETAIN_DAYS -delete
 echo "[$DATE] 备份完成，已清理 ${RETAIN_DAYS} 天前的备份"
 ```
 
-## 11. 数据中心网络搭建
+> 本文原 §11 数据中心网络搭建、§12 无线网络规划已按主题归并：三层架构与设备命名规范并入
+> 180-NetworkDesignPlanning，无线规划与 AC 热备并入 170-WirelessNetwork。本文专注服务器
+> 系统管理主线。
 
-### 11.1 网络架构设计
+## 动手实践
 
-```mermaid
-flowchart TD
-    C[核心交换机 冗余部署] --> A1[汇聚交换机A] --> SW1[接入SW1]
-    A1 --> SW2[接入SW2]
-    C --> A2[汇聚交换机B] --> SW3[接入SW3]
-    A2 --> SW4[接入SW4]
+**练习 1（最小域环境）**：在一台 Windows Server 评估版虚机上完成「装系统 -> 提升为域控 -> 建一个 OU -> 建一个用户 -> 客户端加域」全流程，记录每步的图形界面路径与等价 PowerShell 命令。
+
+**提示**：提升域控用 `Install-WindowsFeature AD-Domain-Services` + `Install-ADDSForest`；加域客户端注意 DNS 必须指向域控。
+
+**练习 2（DHCP 排错）**：故意把 DHCP 作用域排除范围覆盖整个地址段，观察客户端拿到 169.254.x.x 的表现；修复后再用 `ipconfig /release` + `/renew` 观察 DORA 四步（可在服务端事件日志看到）。
+
+**提示**：169.254 是 APIPA 自动私有地址，客户端收不到 OFFER 时的自保行为。
+
+**练习 3（组策略实验）**：建一条 GPO：给域内所有用户桌面放一个说明文件、禁用控制面板。用 `gpupdate /force` 下发，客户端用 `gpresult /r` 验证策略命中。
+
+<details>
+<summary>参考实现（先自己动手，再看这里）</summary>
+
+```powershell
+# 练习 1（域控核心命令）
+Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
+Install-ADDSForest -DomainName "lab.local" -DomainNetbiosName "LAB" `
+  -SafeModeAdministratorPassword (Read-Host -AsSecureString "DSRM")
+New-ADOrganizationalUnit -Name "Dev" -Path "DC=lab,DC=local"
+New-ADUser -Name "alice" -Path "OU=Dev,DC=lab,DC=local" `
+  -AccountPassword (Read-Host -AsSecureString "pwd") -Enabled $true
+# 客户端：DNS 指向域控 IP 后，系统属性 -> 加入域 lab.local
+
+# 练习 2
+# 服务端装 DHCP 角色后：
+Add-DhcpServerv4Scope -Name "LAN" -StartRange 192.168.56.100 `
+  -EndRange 192.168.56.200 -SubnetMask 255.255.255.0
+# 客户端：ipconfig /release; ipconfig /renew → 观察 DORA（Discover/Offer/Request/Ack）
+
+# 练习 3
+New-GPO -Name "LabPolicy" | New-GPLink -Target "OU=Dev,DC=lab,DC=local"
+# 组策略管理编辑器里配置桌面文件与限制后，客户端执行：
+gpupdate /force
+gpresult /r    # 输出 Applied GPOs 列表核对
 ```
 
-### 11.2 设备命名规范
-
-| 位置   | 设备类型 | 命名格式             | 示例         |
-| :----- | :------- | :------------------- | :----------- |
-| 核心层 | 交换机   | DC-CORE-01           | DC-CORE-01   |
-| 汇聚层 | 交换机   | DC-AGG-{楼栋}-01     | DC-AGG-A1-01 |
-| 接入层 | 交换机   | DC-ACC-{楼层}-{编号} | DC-ACC-3F-01 |
-| 防火墙 | FW       | DC-FW-01             | DC-FW-01     |
-| 路由器 | RT       | DC-RT-01             | DC-RT-01     |
-
-## 12. 无线网络规划
-
-### 12.1 无线地勘与 AP 点位图设计
-
-地勘流程：
-
-1. **现场勘测**：获取建筑平面图，标注墙体材质、门窗位置
-2. **信号覆盖模拟**：使用 Ekahau/iBwave 进行信号仿真
-3. **AP 点位规划**：根据覆盖面积和用户密度确定 AP 数量
-4. **信道规划**：2.4GHz 使用 1/6/11 信道，5GHz 使用非 DFS 信道
-5. **功率调整**：边缘场强 ≥ -65dBm，重叠区域 ≥ -75dBm
-
-### 12.2 无线认证配置
-
-```bash
-# 华为 AC 配置 WPA2-Enterprise
-[AC] wlan
-[AC-wlan-view] security-profile name sec-enterprise
-[AC-wlan-sec-prof-sec-enterprise] security wpa2 dot1x aes
-
-# 配置 RADIUS 服务器
-[AC] radius-server template radius1
-[AC-radius-radius1] radius-server authentication 192.168.1.100 1812
-[AC-radius-radius1] radius-server accounting 192.168.1.100 1813
-[AC-radius-radius1] radius-server shared-key cipher Radius@123
-
-# 802.1X 认证配置
-[AC] aaa
-[AC-aaa] authentication-scheme auth1
-[AC-aaa-authen-auth1] authentication-mode radius
-[AC-aaa] domain default
-[AC-aaa-domain-default] authentication-scheme auth1
-[AC-aaa-domain-default] radius-server radius1
-```
-
-### 12.3 AP 隔离
-
-```bash
-# 华为 AC 配置用户隔离
-[AC] wlan
-[AC-wlan-view] traffic-profile name isolate
-[AC-wlan-traffic-prof-isolate] user-isolate l2    # 二层隔离
-[AC-wlan-traffic-prof-isolate] user-isolate l3    # 三层隔离
-```
-
-### 12.4 数据加密
-
-| 加密方式 | 算法     | 安全级别 | 说明               |
-| :------- | :------- | :------- | :----------------- |
-| WEP      | RC4      | 极低     | 已淘汰             |
-| WPA-TKIP | TKIP     | 低       | 兼容旧设备         |
-| WPA2-AES | AES-CCMP | 高       | 企业推荐           |
-| WPA3-SAE | SAE      | 最高     | 新标准，抗离线字典 |
-
-### 12.5 AC 热备
-
-```bash
-# 华为 AC 双机热备配置
-[AC1] wlan
-[AC1-wlan-view] ac protect enable
-[AC1-wlan-view] ac protect protect-ac 192.168.1.2 priority 6
-[AC1-wlan-view] ac protect local-ac 192.168.1.1 priority 8
-
-[AC2] wlan
-[AC2-wlan-view] ac protect enable
-[AC2-wlan-view] ac protect protect-ac 192.168.1.1 priority 8
-[AC2-wlan-view] ac protect local-ac 192.168.1.2 priority 6
-```
+</details>

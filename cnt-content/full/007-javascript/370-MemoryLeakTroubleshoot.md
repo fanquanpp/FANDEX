@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 420
 title: 内存泄漏排查
 module: 'javascript'
 category: 前端技术
@@ -10,7 +10,6 @@ updated: '2026-10-05'
 related:
   - 'javascript/110-Regex'
   - 'javascript/480-ErrorBoundaryGlobalErrorCatch'
-  - 'javascript/430-WebAPIBrowserInterface'
   - 'javascript/500-DebugPerformanceOptimization'
 prerequisites: []
 ---

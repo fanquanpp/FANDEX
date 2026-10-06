@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 520
 title: IDS/IPS 命令（Suricata/Snort）
 module: 'cybersecurity'
 category: 云与基础设施

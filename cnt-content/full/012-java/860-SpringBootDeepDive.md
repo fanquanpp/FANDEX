@@ -1,5 +1,5 @@
 ---
-order: 680
+order: 770
 title: Spring Boot 深度指南：自动配置原理与生产工程实践
 module: 'java'
 category: 后端技术
@@ -12,7 +12,6 @@ related:
   - 'java/700-NetworkProgrammingDeepDive'
   - 'java/880-SpringCloudMicroserviceDevelopment'
 prerequisites:
-  - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
   - 'java/850-SpringBootDataAccess'
 ---
 
@@ -677,6 +676,30 @@ public record OrderItemRequest(
 ) {}
 ```
 
+路径参数与查询参数默认不在校验范围内，需要**类级 `@Validated`** 打开后才能对它们标注约束：
+
+```java
+@RestController
+@RequestMapping("/api/v1/users")
+@Validated   // 类级注解：让 @PathVariable / @RequestParam 上的约束生效
+public class UserController {
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> getUser(@PathVariable @Min(1) Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<UserDTO>> listUsers(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(userService.listUsers(page, size));
+    }
+}
+```
+
+缺了 `@Validated`，`@Min(1)` 写了也不生效——`id=-1` 会一路传进 Service。注意类级校验失败抛出的是 `ConstraintViolationException`（与 `@RequestBody` 校验的 `MethodArgumentNotValidException` 不同），全局异常处理器里要分别接。
+
 ### 6.4 静态资源与 SPA
 
 ```java
@@ -747,6 +770,73 @@ public GitHubClient githubClient(WebClient.Builder builder) {
     return factory.createClient(GitHubClient.class);
 }
 ```
+
+### 6.7 DispatcherServlet 请求处理流程
+
+上一节是「怎么写接口」，这一节是「一个请求进来发生了什么」。核心组件分工：
+
+- `DispatcherServlet`：前端控制器，所有请求入口。
+- `HandlerMapping`：映射请求到 Handler（Controller 方法）。
+- `HandlerAdapter`：适配不同类型的 Handler。
+- `ViewResolver`：解析视图名到 View（前后端分离时由 MessageConverter 替代）。
+- `HandlerInterceptor`：拦截器，在 Handler 执行前后插入逻辑。
+
+```mermaid
+flowchart TB
+    REQ[请求] --> DS[DispatcherServlet]
+    DS --> HM[HandlerMapping.resolve<br/>找到 HandlerExecutionChain]
+    HM --> Pre[HandlerInterceptor.preHandle<br/>前置拦截]
+    Pre --> HA[HandlerAdapter.handle<br/>执行 Controller]
+    HA --> CTRL[Controller 方法执行]
+    CTRL --> RET[返回 ModelAndView<br/>或 @ResponseBody 对象]
+    RET --> Post[HandlerInterceptor.postHandle<br/>后置拦截]
+    Post --> VR[ViewResolver / MessageConverter<br/>渲染视图或序列化 JSON]
+    VR --> AC[HandlerInterceptor.afterCompletion<br/>完成回调]
+    AC --> RES[响应]
+```
+
+关键源码（`DispatcherServlet.doDispatch` 简化）：
+
+```java
+protected void doDispatch(HttpServletRequest request, HttpServletResponse response) {
+    HandlerExecutionChain mappedHandler = null;
+    try {
+        // 1. 查找 Handler
+        mappedHandler = getHandler(request);
+        if (mappedHandler == null) {
+            noHandlerFound(request, response);
+            return;
+        }
+
+        // 2. 查找 HandlerAdapter
+        HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
+
+        // 3. 前置拦截
+        if (!mappedHandler.applyPreHandle(request, response)) {
+            return;
+        }
+
+        // 4. 执行 Handler
+        ModelAndView mv = ha.handle(request, response, mappedHandler.getHandler());
+
+        // 5. 后置拦截
+        mappedHandler.applyPostHandle(request, response, mv);
+
+        // 6. 渲染视图
+        processDispatchResult(request, response, mappedHandler, mv, null);
+    } catch (Exception ex) {
+        // 7. 异常处理（@RestControllerAdvice 在此生效）
+        processDispatchResult(request, response, mappedHandler, null, ex);
+    } finally {
+        // 8. 完成回调
+        if (mappedHandler != null) {
+            mappedHandler.triggerAfterCompletion(request, response, null);
+        }
+    }
+}
+```
+
+读这段源码的三个收获：拦截器三方法（preHandle/postHandle/afterCompletion）的调用位置一目了然；`preHandle` 返回 false 会中断整个流程（登录校验拦截器的实现原理）；全局异常处理器是在 doDispatch 的 catch 分支被触发的，与 6.2 节的 `@RestControllerAdvice` 遥相呼应。
 
 ---
 
@@ -1432,6 +1522,16 @@ public class OrderConsumer {
 | MyBatis | 中（SQL Mapping） | 低 | 高 | 高 |
 | jOOQ | 中（类型安全 SQL） | 高 | 高 | 极高 |
 | Spring Data JDBC | 低（轻量） | 低 | 高 | 中 |
+
+### 11.4 Spring Web 框架对比
+
+| 框架 | 编程模型 | 并发模型 | 适用场景 |
+|------|---------|---------|---------|
+| Spring MVC | Servlet（阻塞） | 一请求一线程 | 传统 CRUD 应用 |
+| WebFlux | Reactive（非阻塞） | 少量线程 + EventLoop | 高并发 I/O 密集 |
+| Spring GraphQL | GraphQL | 依赖底层 | 灵活查询、聚合多源 |
+
+选型提示：没有明确的 I/O 密集痛点不要上 WebFlux——调试难度与团队心智成本远高于 MVC 的线程开销；GraphQL 适合「一个页面要聚合多个后端数据源」的中台场景。
 
 ---
 

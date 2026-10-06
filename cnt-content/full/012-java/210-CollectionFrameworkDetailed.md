@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 230
 title: 集合框架详解
 module: 'java'
 category: 后端技术

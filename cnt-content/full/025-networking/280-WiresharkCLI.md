@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 320
 title: Wireshark 命令行
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/270-Tcpdump'
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/020-OSITCPIPModel'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## tshark 基础抓包

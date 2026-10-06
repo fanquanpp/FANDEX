@@ -1,17 +1,17 @@
 ---
-order: 100
+order: 150
 title: 存档、读档与回滚
 module: 'renpy'
 category: 游戏开发
 difficulty: beginner
-description: 理解 Ren'Py 自动保存什么不保存什么，用 File 动作搭建存档界面并掌握 persistent 跨会话数据
+description: 理解 Ren'Py 自动保存什么不保存什么，用 File 动作搭建存档界面；persistent 跨会话数据的完整工程：字段演进、与存档的本质区别、成就与画廊解锁参考实现、MultiPersistent
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-10-07'
 related:
-  - 'renpy/050-VariablesPythonAndStores'
   - 'renpy/080-ScreensAndScreenLanguage'
-prerequisites:
-  - 'renpy/050-VariablesPythonAndStores'
+  - 'renpy/117-ConfigVariablesAndPreferences'
+  - 'renpy/105-DialogueHistory'
+prerequisites: []
 ---
 
 存档（save）、读档（load）与回滚（rollback）是视觉小说玩家最习以为常的功能：随时退出、随时回来、随时反悔。Ren'Py 把这三件事做成了引擎内建能力，你几乎不用写任何代码就能获得完整支持。但"几乎不用写"不等于"完全不用懂"：如果不清楚引擎到底保存了什么、没保存什么，一旦用到对象、循环或跨会话数据，就很容易出现"读档后变量回到旧值""回滚后数据错乱"这类难以排查的问题。
@@ -27,7 +27,9 @@ prerequisites:
 - 了解存档文件结构与 JSON 元数据字段；
 - 会用 FilePage、FileAction 等动作在 screen 中搭建存档与读档界面；
 - 理解回滚如何工作，哪些数据天然不可回滚；
-- 会用 persistent 保存画廊解锁等跨会话数据。
+- 会用 persistent 保存画廊解锁等跨会话数据；
+- 能说清 persistent 与存档数据的本质区别，掌握字段初始化与版本演进的做法；
+- 能用 persistent 实现成就系统与 CG 画廊解锁，了解 MultiPersistent 的适用场景。
 
 ## 引擎自动保存了什么
 
@@ -217,6 +219,135 @@ $ persistent.gallery_unlocked = True
 
 玩家达成某个结局时执行这一句，主菜单的画廊入口就能据此判断是否开放。
 
+### persistent 与存档数据的本质区别
+
+两者都是"把数据存下来"，但生命周期完全不同，用一张表对照：
+
+| 维度 | 存档（save data） | persistent |
+| --- | --- | --- |
+| 谁还原它 | 玩家读档时恢复 | 任何时刻读回来，没有"还原"概念 |
+| 回滚影响 | 回滚会撤销其中的变量变化 | **不随回滚变化** |
+| 读档影响 | 读档把变量恢复到存档时刻 | **不随读档还原** |
+| 典型内容 | 剧情进度、好感度、背包 | 成就、画廊解锁、结局收集、设置类偏好 |
+| 玩家感知 | "我的进度" | "我的履历" |
+
+两条最容易踩的推论：
+
+- **不随回滚**：达成结局时 `$ persistent.cleared = True`，玩家立刻滚轮回 choices 反悔重选——`persistent.cleared` 仍是 True。这可能正是你想要的（"拿到过结局"是履历），也可能不是（把"当前周目选择的分支"存进 persistent 就会跨周目串味）；
+- **不随读档**：玩家读了三小时前的旧档，persistent 依然是读档前的最新状态。所以**游戏逻辑的关键状态绝不能只存 persistent**——它们要能跟着存档走。
+
+对照记忆：跟随进度走的数据用 default 变量（进存档、可回滚）；跨越所有存档位的履历用 persistent；两者的通信是单向的"履历写入"（结局达成时写一笔），而不是双向同步。玩家偏好类设置（文本速度、音量）由 preferences 对象负责，它同样自动持久化，机制细节见 [config 配置变量与玩家偏好](/renpy/117-ConfigVariablesAndPreferences)。
+
+### 字段初始化与版本演进
+
+default persistent 的另一个价值是**版本演进**：游戏的每个版本都声明自己需要的全部 persistent 字段，旧玩家的数据与新声明自然合并——
+
+```renpy
+# 1.0 版本
+default persistent.gallery_unlocked = False
+
+# 1.1 版本新增成就系统：直接追加新字段的 default 即可
+default persistent.achievements = []
+```
+
+旧玩家从 1.0 升到 1.1 时，`persistent.gallery_unlocked` 保持原值，新增的 `persistent.achievements` 拿到初值空列表——default 语句只对"不存在的字段"生效，不会覆盖玩家已有数据。反过来，**不要**在 init python 里写 `persistent.achievements = []`：那会在每次启动时清空玩家数据，是成就"莫名重置"事故的第一大来源。
+
+判别一个字段该不该进 persistent 的两个问题：第一，"读档之后它应该保留吗"（履历类保留，进度类不保留）；第二，"玩家卸载重装后它还在吗"（persistent 与存档同目录，重装保留——用它存"玩家蒙混过关都洗不掉"的数据时要克制，尊重玩家的存档主权）。
+
+### 成就系统的参考实现
+
+成就 = 一张"解锁判定 + 已解锁记录"的表。判定在剧情点触发，记录进 persistent：
+
+```renpy
+default persistent.achievements = []
+
+init python:
+    ACHIEVEMENTS = {
+        "first_clear": _("完成一次通关"),
+        "all_endings": _("集齐全部结局"),
+        "speedrun": _("两小时内通关"),
+    }
+
+    def unlock_achievement(key):
+        if key in ACHIEVEMENTS and key not in persistent.achievements:
+            persistent.achievements.append(key)
+            renpy.notify(_("成就解锁：{}").format(ACHIEVEMENTS[key]))
+
+screen achievements():
+    tag menu
+    use game_menu(_("成就")):
+        vbox:
+            spacing 8
+            for key, title in ACHIEVEMENTS.items():
+                hbox:
+                    text (("[color=#c8a24b]" + title + "[/color]") if key in persistent.achievements
+                          else "[color=#666666]? ? ?[/color]")
+```
+
+```renpy
+# 剧情达成点触发
+label true_ending:
+    "……故事在此画上句号。"
+    $ unlock_achievement("first_clear")
+    if set(persistent.ending_seen) >= set(ENDINGS_ALL):
+        $ unlock_achievement("all_endings")
+    return
+```
+
+实现要点：`unlock_achievement` 先查重再追加，重复触发（玩家在结局前反复读档刷这个点）不会刷出重复条目与重复通知；已解锁用金色、未解锁显示 `? ? ?`——成就界面的悬念感靠"不剧透未解锁条目"维持；列表存的是**稳定的键名**而不是显示文案，改文案不会让老玩家的成就"消失"。
+
+### CG 画廊解锁的参考实现
+
+画廊 = "缩略图网格 + 未解锁占位 + 点击查看大图"，解锁数据同样进 persistent：
+
+```renpy
+default persistent.cg_seen = []
+
+# CG 首次显示时登记（放在 show 之后、同一交互内即可）
+label cg_reveal:
+    show cg sunset with dissolve
+    $ persistent.cg_seen.append("sunset")
+    "夕阳把整个小镇染成金色。"
+```
+
+```renpy
+screen cg_gallery():
+    tag menu
+    use game_menu(_("画廊")):
+        grid 3 2:
+            spacing 12
+            for cg_name in GALLERY_ORDER:          # 顺序列表常量，init python 里定义
+                if cg_name in persistent.cg_seen:
+                    button:
+                        add Image("gallery/" + cg_name + "_thumb.png")
+                        action Show("cg_viewer", cg=cg_name)
+                else:
+                    frame:
+                        add Solid("#222222")
+            # 补齐空位，让网格不缺角
+            for i in range(6 - len(GALLERY_ORDER)):
+                null width 220 height 124
+```
+
+实现要点：`cg_seen` 存"看过哪些"，与"解锁哪些"常有差异——有的项目希望 CG 在**看过**后入册，有的希望达成**条件**后解锁，先定产品语义再写数据；网格里未解锁格位用深色 Solid 占位，数量用 null 补齐，避免 grid 缺角错位；缩略图与原图分文件，画廊不必在打开时加载全部高清 CG。
+
+### MultiPersistent：跨存档位之外的共享
+
+persistent 本身已经跨所有存档位共享（这正是它与存档的区别）。MultiPersistent 是另一件事：**跨"游戏"或跨"设备用户"共享数据**——同一开发商的系列作品共享一个通行证数据，就属于这类：
+
+```renpy
+default mp = renpy.MultiPersistent("fandex_studio")
+
+label check_series_bonus:
+    if mp.played_prequel:
+        "前作玩家徽章已生效。"
+    $ mp.played_this_game = True
+    $ mp.save()
+    return
+```
+
+MultiPersistent 对象要显式调用 `mp.save()` 才落盘（不像 persistent 自动保存），且各字段也需要用 default 声明初值。日常项目几乎用不到它——需要跨游戏共享数据时再回来查。
+
 多台设备或多个存档位之间可能存在同一份 persistent 数据的不同版本，合并（merge）时的默认策略是逐字段取较新的值。如果字段是集合之类需要"并集"语义的数据，可以用 renpy.register_persistent('endings', merge_endings) 注册自定义合并函数。
 
 最后一条纪律：persistent 里只应存放 Python 或 Ren'Py 的原生类型（数字、字符串、list、dict、set 以及 Ren'Py 对象等）。塞进不可序列化的对象，轻则丢数据，重则启动报错。
@@ -231,7 +362,10 @@ $ persistent.gallery_unlocked = True
 - 存档文件是压缩档案，附 JSON 元数据；save_name 随存档保存，异常时自动产生 _tracesave 槽位；
 - 存档界面用 FilePage/FileAction/FileScreenshot/FileTime/FileSaveName 搭建；
 - 回滚内建，依赖可回滚等价类型；内建方法返回值、import 模块对象与 Ren'Py API 返回值需显式转换；
-- persistent 跨会话保存，用 default 设初值，默认逐字段取较新值，可注册自定义合并函数。
+- persistent 跨会话保存且不随回滚、不随读档还原——履历类数据进 persistent，进度类数据进存档；
+- persistent 字段用 default 声明初值，版本演进时追加新字段的 default 即可；禁止在 init 里赋值（会清空玩家数据）；
+- 成就与画廊解锁的固定套路：persistent 存稳定键名 + 前端查重显示；MultiPersistent 用于跨游戏共享数据，需手动 save()；
+- 默认逐字段取较新值合并，可注册自定义合并函数；只存可序列化类型。
 
 ## 参考链接
 
@@ -240,3 +374,5 @@ $ persistent.gallery_unlocked = True
 - [Python 语句与 Ren'Py 集成（官方文档）](https://www.renpy.org/doc/html/python.html)
 - [屏幕与屏幕语言（官方文档）](https://www.renpy.org/doc/html/screens.html)
 - [游戏菜单专用屏幕（官方文档）](https://www.renpy.org/doc/html/screen_special.html)
+
+persistent 一节的工程展开（字段演进、成就与画廊实现）参考官方 Persistent Data 章节的机制口径重写，实现代码为本仓库自己的示例。

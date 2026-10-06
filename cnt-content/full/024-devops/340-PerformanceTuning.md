@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'devops/270-LogManagement'
-  - 'devops/230-ConfigManagement'
   - 'devops/350-HighAvailabilityArchitecture'
   - 'devops/170-AutomationTest'
 prerequisites:

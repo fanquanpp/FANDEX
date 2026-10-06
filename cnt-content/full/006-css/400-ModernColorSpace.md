@@ -1,5 +1,5 @@
 ---
-order: 400
+order: 430
 title: 现代色彩空间：oklch、color-mix 与广色域
 module: 'css'
 category: 前端技术

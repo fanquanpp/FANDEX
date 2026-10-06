@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 290
 title: Keepalived 双机热备
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/200-LoadBalanceTech'
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/230-IptablesFirewall'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 前置知识：VLAN 与网关的作用、LVS 的 VIP 概念（见 [高可用 LVS](networking/240-HighAvailabilityLVS)）。

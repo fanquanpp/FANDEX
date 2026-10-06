@@ -16,6 +16,12 @@ related:
   - 'spring-boot/090-SpringDataJpa'
 ---
 
+## 知识点地图
+
+- 知识类别：持久层的出发点——裸 JDBC 的体力税、全自动 ORM 与半自动框架的路线之争、MyBatis 的心智模型与三层塔。
+- 解决什么问题：为什么国内工程几乎一边倒选 MyBatis；拿到一个新项目时持久层怎么选型。
+- 什么时候用到：模块开篇定调；向别人解释"MyBatis 是什么、MyBatis-Plus 是什么关系"时。
+
 ## 前置知识
 
 - [Java 数据库连接](/java/720-JavaDatabaseConnection)：见过 Connection 与 PreparedStatement 就够——没读过也能跟，第 2 节会把整段样板完整摆出来；
@@ -242,6 +248,61 @@ public interface OrderMapper {
 
 - MyBatis 中文文档（标签与配置的权威来源）：https://mybatis.org/mybatis-3/zh/index.html
 - MyBatis-Plus 官方文档（第三层的增强清单）：https://baomidou.com/
+
+## 动手实践
+
+**任务一：给裸 JDBC 数税。** 把第 2 节的裸 JDBC 样板抄进本地工程跑通，再逐行删掉"非业务行"，数出剩下的业务行数占比；对照第 3 节的体力税清单，给每一项税找到它对应的代码行。提示：数完你会发现业务行不超过两成——这个比例就是"为什么要框架"的最直观论证。
+
+**任务二：最小 MyBatis 闭环。** 用 Spring Boot + mybatis-spring-boot-starter 起 H2 内存库，建一张表、写一条 XML 语句与一条注解语句各跑通一次查询，打开 log-impl 亲眼看 SQL 与参数两行日志。提示：依赖 starter 后零 XML 配置即可跑通（025 篇的默认值兜底），你的第一份配置工作只有 mapper-locations 与 log-impl 两项。
+
+**任务三：三层塔排错演习。** 故意制造三个错误：a) XML 的 namespace 写错类名；b) SQL 里列名写错；c) 把一条本该查库的调用挂到二级缓存上读旧值。分别判断每个错误属于塔的哪一层、报错/异常在什么时机出现。提示：a 在启动期（binding 报错）、b 在执行期（SQL 异常）、c 可能根本不报错——三类错误的"暴露时机"本身就是分层排错的依据。
+
+先自己操作，再对照参考实现：
+
+<details>
+<summary>任务二参考实现</summary>
+
+```yaml
+# application.yml
+spring:
+  datasource:
+    url: jdbc:h2:mem:demo;MODE=MySQL
+    driver-class-name: org.h2.Driver
+mybatis:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+```
+
+```java
+// mapper/UserMapper.java
+@Mapper
+public interface UserMapper {
+    User selectById(Long id);                                   // XML 语句
+    @Select("SELECT count(*) FROM users")                       // 注解语句
+    int countAll();
+}
+```
+
+```xml
+<!-- resources/mapper/UserMapper.xml -->
+<mapper namespace="com.example.demo.mapper.UserMapper">
+  <select id="selectById" resultType="com.example.demo.entity.User">
+    SELECT id, user_name FROM users WHERE id = #{id}
+  </select>
+</mapper>
+```
+
+```text
+预期日志（跑 selectById(1) 时）：
+==>  Preparing: SELECT id, user_name FROM users WHERE id = ?
+==>  Parameters: 1(Long)
+<==      Total: 1
+```
+
+要点：a) H2 的 MODE=MySQL 让 MySQL 语法基本兼容，零安装起步；b) 两行日志（Preparing/Parameters）是后续所有排查的基础工具，第一天就把它跑出来；c) namespace 与接口全限定名一致、语句 id 与方法名一致——"配对"规则的最小验证。
+</details>
 
 ## 自检
 

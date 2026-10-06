@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 580
 title: GCP BigQuery 命令
 module: 'cloud-computing'
 category: 云与基础设施

@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 150
 title: "测试与调试：让编译器之外的第二道防线生效"
 module: 'rust'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 180
 title: 自然连接与 USING
 module: 'sql'
 category: 数据库
@@ -8,7 +8,7 @@ description: NATURAL JOIN 与 USING 子句：同名列等值连接的简写语�
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'sql/140-MultiTableQuery'
+  - 'sql/150-JoinQuery'
   - 'sql/070-GROUPBYGroupingSet'
   - 'sql/150-JoinQuery'
   - 'sql/170-SelfJoin'

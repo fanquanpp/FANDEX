@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 390
 title: 反射与动态代理
 module: 'java'
 category: 后端技术

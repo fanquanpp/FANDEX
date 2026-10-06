@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 530
 title: SELinux/AppArmor 强制访问控制
 module: 'cybersecurity'
 category: 云与基础设施

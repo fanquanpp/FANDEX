@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 490
 title: 数据类与字段默认值
 module: 'python'
 category: 后端技术
@@ -11,7 +11,7 @@ related:
   - 'python/530-TypeAnnotationMypy'
   - 'python/570-Descriptor'
   - 'python/510-DecoratorAdvanced'
-  - 'python/600-MetaclassSingleton'
+  - 'python/600-SingletonPattern'
   - 'python/460-OOP'
 prerequisites:
   - 'python/460-OOP'

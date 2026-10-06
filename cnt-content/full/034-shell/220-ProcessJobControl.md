@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 230
 title: 进程与作业控制
 module: 'shell'
 category: 工具链
@@ -15,6 +15,13 @@ prerequisites:
   - 'shell/150-ShellBasics'
 ---
 
+## 知识点地图
+
+- **知识类别**：进程与作业控制——进程概念、ps/top 查看、kill 信号体系、前后台作业切换、脱离终端运行、限时执行。
+- **解决什么问题**：程序卡死怎么优雅地停；跑一半的任务怎么放到后台；关了终端任务为什么会死、怎么保活；脚本里怎么防止一条命令卡死全局。
+- **什么时候用到**：日常开发中管理本地进程（起服务、杀残留）、服务器上跑长任务（部署、编译）、写健壮脚本（超时保护、优雅重启）。
+
+与《进程管理速查》（shell/230-ProcessManage）的分工：**本篇教学讲解（信号机制、作业控制为什么这样设计），230 是命令速查（翻查用）**——重叠的命令表述以 230 为准，本篇负责讲清背后的机制。
 
 ## 1. 从"工厂车间"说起
 
@@ -162,11 +169,12 @@ disown -a                # 把所有作业从作业表移除（Shell 退出时�
 ```bash
 setsid python app.py &   # 创建新会话，彻底脱离终端
 tmux new -s web          # 开启 tmux 会话（重连不中断）
-screen -S deploy         # 开启 screen 会话
 ```
 
 - `setsid`：让进程成为新会话首领，连控制终端都没有
 - `tmux`/`screen`：运维标配——在会话中跑长任务，断线重连后任务仍在，适合部署、编译等耗时操作
+
+三种手段的完整对比（保活/可回看/可交互）与选型边界（交付给系统的服务用 systemd、交互式长任务用 tmux）见《tmux 终端复用与会话保持》（shell/272-TmuxTerminalMultiplexer）——tmux 是本节三者的「可交互」唯一解，值得单独一篇展开。
 
 ## 6. timeout：限时运行
 
@@ -221,3 +229,31 @@ pgrep -f "$SERVICE" > /dev/null && echo "启动成功" || echo "启动失败"
 **误区三：`kill -9` 是最快最安全的。** → 恰恰相反，`kill -9` 跳过清理会留下脏状态。先 TERM，无效再 KILL。
 
 **误区四：jobs 看不到就说明进程没了。** → jobs 只显示当前 Shell 的作业；别的终端/进程用 `ps` 查看。
+
+## 9. 动手实践
+
+先只读任务与提示，自己操作再展开参考观察。
+
+**任务一：走完一次完整的作业控制循环。** 起一个前台任务（`sleep 100`），Ctrl+Z 暂停后依次执行 `jobs`、`bg %1`、`jobs -l`、`fg %1`，每步记录屏幕输出；最后用 `kill %1` 收尾。回答：作业号与 PID 分别在哪一步出现？
+
+<details>
+<summary>任务一参考观察</summary>
+
+Ctrl+Z 后 jobs 显示 `[1]+ 已停止 sleep 100`（作业号出现）；`bg %1` 后同一作业变「运行中」；`jobs -l` 额外给出 PID；`fg %1` 调回前台（Ctrl+Z 之前它占着终端）；`kill %1` 用作业号终止。这题验证作业号是 shell 层的管理单位、PID 是内核层的单位，两套编号不要混用（kill %n 只在当前 shell 有效）。
+</details>
+
+**任务二：验证 SIGHUP 与 nohup 的差别。** 在终端 A 起两个进程：`sleep 300 &` 和 `nohup sleep 400 > /dev/null 2>&1 &`；关掉终端 A，开终端 B 用 `ps -ef | grep sleep` 查看两个进程谁还活着。
+
+<details>
+<summary>任务二参考观察</summary>
+
+裸 `sleep 300` 随终端关闭死亡（SIGHUP 沿进程树传播，终端退出时 shell 向作业发挂断信号）；nohup 的 `sleep 400` 存活（忽略 SIGHUP）。追问一层：如果把终端 A 的退出换成 `disown -a` 后再退出，裸 sleep 也能活——因为 disown 把作业从表里移除，shell 退出不再发信号。三个手段（nohup/disown/tmux）解决同一个问题，tmux 是唯一保交互的（见第 5.2 节与 272 篇）。
+</details>
+
+**任务三：给一条会卡死的命令装上超时。** 用 `timeout -k 3 5 ssh 随意主机`（或任何会挂起的命令）体验：5 秒后 TERM、再 3 秒后 KILL 的完整流程；然后写一行「用 timeout 包住 curl」的命令放进你的脚本笔记，并验证返回码 124。
+
+<details>
+<summary>任务三参考观察</summary>
+
+`echo $?` 在 timeout 触发后返回 124（第 6 节要点）；`-k 3` 的意义是 TERM 不响应时兜底 KILL——不响应 TERM 的程序并不少见（卡死在不可中断 IO 时连 KILL 都要等 IO 返回）。脚本里 `timeout 30 curl ... || 处理失败` 是网络命令的标准写法：把「卡死」变成「可预期的失败分支」。
+</details>

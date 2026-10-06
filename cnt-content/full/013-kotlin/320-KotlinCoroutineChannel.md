@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 350
 title: Kotlin 与协程 Channel
 module: 'kotlin'
 category: 后端技术
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'kotlin/230-CoroutineBasics'
 ---
+
+## 知识点地图
+
+- **知识类别**：协程间通信原语 Channel——容量语义（四种容量策略）、多生产者多消费者、管道模式与 select 多路复用。
+- **解决什么问题**：协程之间「传数据 + 传完成信号 + 控背压」：Flow 表达数据流变换，Channel 表达有界缓冲的消息传递，两者互转是常见的工程衔接点。
+- **什么时候用到**：生产者-消费者任务队列；多路等待（select）；把回调/推送源转成单投递流；限流缓冲设计。
 
 ## 概述
 
@@ -249,6 +255,53 @@ fun main() = runBlocking {
 
 `select` 还能组合 `onSend`、`onTimeout` 等子句，是多路复用场景（如同时等待消息与超时）的标准工具。
 
+### select 的另外两路子句：onAwait 与 onTimeout
+
+select 不只作用于 Channel——`Deferred.onAwait` 让你「谁先完成取谁」，`onTimeout` 直接给 select 加时钟：
+
+```kotlin
+import kotlinx.coroutines.*
+import kotlinx.coroutines.selects.*
+
+// 双源竞速：主源与备源谁先返回用谁（优先级模式：都就绪时先注册的 onAwait 优先）
+suspend fun fetchWithFallback(
+    primary: Deferred<String>,
+    fallback: Deferred<String>
+): String = select<String> {
+    primary.onAwait { it }
+    fallback.onAwait { it }
+}
+
+// 超时模式：数据没到就走超时分支，不用外层 withTimeout
+suspend fun fetchWithTimeout(timeout: Long): String = coroutineScope {
+    val deferred = async { fetchData() }
+    select<String> {
+        deferred.onAwait { it }
+        onTimeout(timeout) { "Timeout" }
+    }
+}
+```
+
+易错点：多个子句**同时就绪时 select 不保证公平**，只保证「偏向先注册的子句」是常见的实现行为而非规范承诺——需要严格优先级时用 `isDisposed` 检查或改用显式状态机。另外 `onTimeout` 子句需要 `ExperimentalCoroutinesApi`。
+
+### Channel 与 Flow 互转
+
+```kotlin
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.flow.*
+
+// Channel → Flow：多消费者共享同一个 Channel 时用 receiveAsFlow（单投递）
+val channel = Channel<Int>()
+val flow: Flow<Int> = channel.receiveAsFlow()
+
+// Flow → Channel：把冷流「泵」进通道，由 produce 启动的协程驱动
+val flow = flowOf(1, 2, 3)
+val channel2: ReceiveChannel<Int> = flow.produceIn(CoroutineScope(Dispatchers.Default))
+```
+
+互转的取舍：`receiveAsFlow` 保持 Channel 的**单投递**语义——每个值只被一个消费者拿到，适合任务分摊；要广播给所有消费者用 `BroadcastChannel`/`SharedFlow`（见 [Channel 广播语义](/kotlin/330-ChannelBroadcastChannel)）。`produceIn` 的 scope 由调用方管理生命周期，忘记 cancel 会泄漏泵协程。
+
 ## 常见场景
 
 ### 生产者-消费者模式
@@ -456,6 +509,32 @@ fun CoroutineScope.worker(tasks: ReceiveChannel<String>, stop: ReceiveChannel<Un
 有限时间内正常退出、每个输入恰好产生一个输出。写完自查：你关闭中间通道的位置
 在哪里？m 个协程谁负责关闭？（提示：上一级通道关闭后，m 个中间协程各自结束，
 需要用 `Job` 聚合它们再关闭下一级。）
+
+## 速查：select 等待多路
+
+**基本写法：select 多路复用**
+`select<<返回类型>> { <分支> }`
+```kotlin
+// 等待首个就绪结果
+val r = select<String> {
+    deferred1.onAwait { "a" }
+    deferred2.onAwait { "b" }
+}
+```
+
+---
+
+**基本写法：select 接收通道**
+`select { <channel>.onReceive { } }`
+```kotlin
+// 多通道任一就绪即返回
+val msg = select<String> {
+    ch1.onReceive { it }
+    ch2.onReceive { it }
+}
+```
+
+---
 
 ## 小结
 

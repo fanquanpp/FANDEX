@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 80
 title: 生命周期钩子
 module: 'vue3'
 category: 前端技术

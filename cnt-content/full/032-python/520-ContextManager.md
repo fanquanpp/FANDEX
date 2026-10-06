@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 460
 title: 上下文管理器
 module: 'python'
 category: 后端技术
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'python/510-DecoratorAdvanced'
   - 'python/180-GeneratorCoroutine'
-  - 'python/600-MetaclassSingleton'
+  - 'python/600-SingletonPattern'
   - 'python/670-AsyncProgrammingDetailed'
   - 'python/570-Descriptor'
   - 'python/750-PythonTest'

@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 600
 title: Harbor 私有镜像仓库命令
 module: 'cloud-computing'
 category: 云与基础设施

@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 200
 title: workspace 协议与内部依赖
 module: 'vite'
 category: 前端技术

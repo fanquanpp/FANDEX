@@ -42,8 +42,13 @@
         },
         {
           "id": "vite-103",
-          "title": "Vite 开发服务器与 HMR",
-          "doc": "070-DevServerHMR"
+          "title": "Vite 开发服务器与代理",
+          "doc": "070-DevServerAndProxy"
+        },
+        {
+          "id": "vite-104",
+          "title": "HMR 原理与 import.meta.hot API",
+          "doc": "075-HmrMechanismAndHotApi"
         }
       ]
     },

@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 300
 title: 不可见索引：安全删除索引的唯一姿势
 module: 'mysql'
 category: 数据库

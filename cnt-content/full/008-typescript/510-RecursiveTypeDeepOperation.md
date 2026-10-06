@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 550
 title: 递归类型与深度操作
 module: 'typescript'
 category: 前端技术
@@ -9,16 +9,16 @@ author: fanquanpp
 updated: '2026-09-28'
 related:
   - 'typescript/430-ConditionalTypeDistribute'
-  - 'typescript/450-InferTypeDeepDive'
+  - 'typescript/450-TypeCompositionPractice'
   - 'typescript/460-ConditionalMappedType'
-  - 'typescript/310-TypeScriptTypeDeclarationModuleResolution'
+  - 'typescript/315-PackageExportsEsmInterop'
   - 'typescript/500-TemplateLiteralType'
 prerequisites: []
 ---
 
 ## 前置知识
 
-- [类型推断 infer 扩展](/typescript/450-InferTypeDeepDive)：建议先完成前一篇的学习
+- [类型推断 infer 扩展](/typescript/450-TypeCompositionPractice)：建议先完成前一篇的学习
 
 ## 学习目标
 

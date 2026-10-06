@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 140
 title: SVG 符号与复用
 module: 'svg'
 category: 前端技术
@@ -10,7 +10,6 @@ updated: '2026-09-12'
 related:
   - 'svg/020-SVGBasicSyntaxDocStructure'
   - 'svg/130-SVGCSSStyling'
-  - 'svg/170-SVGIconAccessibility'
 prerequisites:
   - 'svg/020-SVGBasicSyntaxDocStructure'
 ---

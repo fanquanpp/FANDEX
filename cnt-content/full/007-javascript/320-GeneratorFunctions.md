@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 370
 title: 生成器函数
 module: 'javascript'
 category: 前端技术

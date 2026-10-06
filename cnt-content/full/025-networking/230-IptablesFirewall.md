@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 270
 title: iptables 防火墙
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/320-VPNConfig'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## iptables 查看规则

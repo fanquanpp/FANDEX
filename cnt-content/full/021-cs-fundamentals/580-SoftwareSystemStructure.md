@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 610
 title: 软件体系结构
 module: 'cs-fundamentals'
 category: 计算机科学

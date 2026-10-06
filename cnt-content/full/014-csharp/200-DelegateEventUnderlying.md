@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 230
 title: 委托与事件底层原理
 module: 'csharp'
 category: 后端技术
@@ -21,6 +21,12 @@ prerequisites:
 - [async/await 状态机](/csharp/100-AsyncAwaitStateMachine)：建议先完成前一篇的学习
 
 ## 学习目标
+
+## 知识点地图
+
+- **知识类别**：委托与事件（语言机制 + 底层实现）。
+- **解决什么问题**：回调、多播、发布订阅三件套的语义与陷阱：委托相等性（退订能否成功）、多播异常短路、事件泄漏（订阅者活得比发布者短）、闭包捕获变量。本文从类型系统到 IL 层讲透，并收编 flower-card 事件总线与原 150 篇的委托事件速查。
+- **什么时候用到**：设计事件总线/消息系统时；排查「退订没生效」「事件把对象钉在内存里」时；理解 LINQ 的函数参数本质时。
 
 - 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
 - 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
@@ -3099,3 +3105,88 @@ var nums = list.ConvertAll(parser);
 // 异步 Lambda 表达式
 Func<string, Task<string>> fetch = async url => await httpClient.GetStringAsync(url);
 ```
+
+## 速查补充：委托与事件（承接自原 150 篇速查段）
+
+## 委托与事件
+
+**基本写法：自定义委托**
+`public delegate <返回类型> <委托名>(<参数>);`
+```csharp
+// 定义自定义委托类型
+public delegate void NotifyHandler(string message);
+```
+
+---
+
+**基本写法：Action 委托**
+`Action <变量> = () => <表达式>;`
+```csharp
+// 使用 Action 委托
+Action action = () => Console.WriteLine("执行");
+```
+
+---
+
+**基本写法：Action 带参数**
+`Action<<类型>> <变量> = <参数> => <表达式>;`
+```csharp
+// 使用带参数的 Action
+Action<string> log = msg => Console.WriteLine(msg);
+```
+
+---
+
+**基本写法：Func 委托**
+`Func<<类型>, <返回类型>> <变量> = <参数> => <表达式>;`
+```csharp
+// 使用 Func 委托
+Func<int, int> square = x => x * x;
+```
+
+---
+
+**基本写法：Predicate 委托**
+`Predicate<<类型>> <变量> = <参数> => <布尔表达式>;`
+```csharp
+// 使用 Predicate 委托
+Predicate<int> isPositive = x => x > 0;
+```
+
+---
+
+**基本写法：事件声明**
+`public event <委托类型>? <事件名>;`
+```csharp
+// 声明事件
+public event NotifyHandler? OnNotify;
+```
+
+---
+
+**基本写法：事件触发**
+`<事件名>?.Invoke(<参数>);`
+```csharp
+// 触发事件
+OnNotify?.Invoke("通知消息");
+```
+
+---
+
+**基本写法：事件订阅**
+`<对象>.<事件> += <处理方法>;`
+```csharp
+// 订阅事件
+publisher.OnNotify += HandleNotify;
+```
+
+---
+
+**基本写法：事件取消订阅**
+`<对象>.<事件> -= <处理方法>;`
+```csharp
+// 取消订阅事件
+publisher.OnNotify -= HandleNotify;
+```
+
+---

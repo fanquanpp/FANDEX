@@ -331,7 +331,7 @@
         {
           "id": "js-041",
           "title": "Web API 与浏览器接口",
-          "doc": "430-WebAPIBrowserInterface",
+          "doc": "430-HostEnvironmentAndWebApiOverview",
           "desc": "浏览器 Web API 详解：Fetch、Storage、IntersectionObserver、Web Workers、Geolocation、Broadcast Channe",
           "difficulty": "intermediate"
         },
@@ -454,7 +454,7 @@
         {
           "id": "js-055",
           "title": "JavaScript 最新特性与运行时",
-          "doc": "600-JavaScriptLatestFeature",
+          "doc": "600-NewFeatureAdoptionStrategy",
           "desc": "ES2024-2026 新特性、V8 引擎原理、Node.js 22+、Deno 2.0、Bun 运行时与 WebAssembly 进阶。",
           "difficulty": "advanced"
         },

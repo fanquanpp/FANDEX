@@ -1,5 +1,5 @@
 ---
-order: 670
+order: 760
 title: SpringBoot 数据访问
 module: 'java'
 category: 后端技术
@@ -15,7 +15,6 @@ related:
   - 'java/580-JavaReactiveProgramming'
   - 'java/490-JucConcurrencyTools'
 prerequisites:
-  - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
   - 'java/830-SpringBootAdvanced'
   - 'java/210-CollectionFrameworkDetailed'
 ---

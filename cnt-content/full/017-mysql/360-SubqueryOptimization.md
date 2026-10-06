@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 390
 title: 子查询优化：半连接与改写艺术
 module: 'mysql'
 category: 数据库

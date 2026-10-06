@@ -24,6 +24,12 @@ prerequisites:
 
 > 0基础速通：读第 0 节直觉、第 1-3 章核心概念速览与第 4 章代码示例即可；第 6 章深入理解（选读）供进阶。
 
+## 知识点地图
+
+- **知识类别**：图像（img 基础与响应式图片体系）。
+- **解决什么问题**：同一张图要在 4K 桌面与千元机上都有好体验：不浪费流量（srcset/sizes 按设备选尺寸）、不变形裁切（picture 按场景换图）、布局不抖动（宽高占位）。本文回答「一张图怎么写才算写对了」。
+- **什么时候用到**：往页面里放第一张图时；排查图片模糊/过大/布局跳动时；做图片懒加载与性能优化时（懒加载手工版见 [Observer 家族与页面生命周期](/html5/284-ObserverAndPageLifecycleAPIs)）。
+
 ## 1. 历史动机与发展脉络
 
 ### 1.1 早期图像时代（1993—2000）
@@ -1593,6 +1599,6 @@ console.log(img.currentSrc); // 当前加载的 URL
 
 - 格式对比：AVIF/WebP/JPEG 的选择见 `javascript/450-FetchApiWebStreams`（JavaScript 模块）；
 - 性能指标：`javascript/510-CoreWebVitalsAndPerformanceMetrics` 中 LCP/CLS 的测量；
-- 懒加载原理：`javascript/430-WebAPIBrowserInterface` 中 IntersectionObserver 实现；
+- 懒加载原理：`javascript/430-HostEnvironmentAndWebApiOverview` 中 IntersectionObserver 实现；
 - 工程化：`html5/380-CriticalRenderingPathAndResourceLoading` 资源加载策略；
 - 组件方案：React 的 `next/image` 或 Vue 的 `v-img` 自动生成多档图。

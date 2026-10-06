@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 490
 title: 常见 SQL 反模式
 module: 'sql'
 category: 数据库

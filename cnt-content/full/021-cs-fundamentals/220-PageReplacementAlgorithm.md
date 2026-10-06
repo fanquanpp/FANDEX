@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 230
 title: 页面置换算法
 module: 'cs-fundamentals'
 category: 计算机科学

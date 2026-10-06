@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 540
 title: AIDE 文件完整性检查
 module: 'cybersecurity'
 category: 云与基础设施

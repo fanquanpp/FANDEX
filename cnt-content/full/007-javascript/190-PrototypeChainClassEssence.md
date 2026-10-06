@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 210
 title: 原型链深水区：三角关系与 class 本质
 module: 'javascript'
 category: 前端技术

@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 510
 title: 映射类型与键重映射（as 子句）
 module: 'typescript'
 category: '前端技术'
