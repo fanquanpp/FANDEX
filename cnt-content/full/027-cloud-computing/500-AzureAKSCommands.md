@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'AKS 学习笔记：从零创建第一个集群并跑起一个应用，再到节点池、伸缩、升级与成本控制的全过程命令。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cloud-computing/110-KubernetesCore'
   - 'cloud-computing/360-AzureCliConfigure'

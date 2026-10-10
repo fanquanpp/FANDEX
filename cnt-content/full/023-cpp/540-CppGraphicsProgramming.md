@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: "从一张像素图想在屏幕上显示的真实需求出发，搭好 GLFW + GLAD 环境、画出第一个三角形、贴上纹理、应用变换矩阵，并把渲染管线逐阶段对应到刚写的代码，附黑屏排查实录与自检清单。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/550-CppGameDev'
   - 'cpp/640-CppToolchain'

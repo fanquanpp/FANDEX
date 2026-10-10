@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 软件测试层级：单元测试、集成测试、系统测试、验收测试详解。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'software-testing/180-SecurityTesting'
   - 'software-testing/020-TestConceptPrinciple'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 主教学之后的机制与工程细节——控制块与 make_shared 缓存友好实验、shared_ptr 线程安全三级边界与 TSan 实录、enable_shared_from_this 的必要场景与误用崩溃、weak_ptr 全套操作与循环引用破环、双向链表/观察者/缓存/树四类典型结构、FILE* 自定义删除器，以及性能敏感路径上连 shared_ptr 都不用的纪律。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/130-SmartPointerDeepDive'
   - 'cpp/160-RAIIResourceManagement'

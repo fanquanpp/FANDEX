@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以「三个服务仓库各抄一份几乎相同的 CI」与「第三方 action 被投毒」两个真实痛点切入，动手抽取可复用工作流（workflow_call）与组合动作（composite action），并给工作流加上权限最小化、SHA 固定与 OIDC 三道保险，讲清复用机制的服务端展开原理与 fork PR 的攻击面。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'github/370-GitHubActionsCICD'
   - 'github/380-ActionsTrigger'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++ 结构化绑定（C++17）速查与教学：数组/pair/tuple/结构体解包、值类别与引用绑定、范围 for 解构、C++20 扩展与常见陷阱。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/300-CppTuplePair'
   - 'cpp/290-Cpp20Range'

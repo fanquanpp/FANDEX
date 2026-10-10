@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 把 360 的计数器事故亲手复现再亲手修复：-pthread 编译纪律、pthread_create 的错误码契约与传参陷阱、join 与 detach 的取舍、互斥锁四件套、条件变量的虚假唤醒与 while 重查，最终写完有界队列版生产者消费者，附 pthread_cancel 争议与同步原语全家福一瞥。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/350-SharedMemorySemaphore'
   - 'c/380-AtomicAndMemoryModel'

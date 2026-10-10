@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: "从「卡片平贴在背景上，一点浮起感都没有」出发，掌握 box-shadow 五段语法与多层叠加的「海拔」语言，分清 box-shadow（贴盒子）与 drop-shadow（贴轮廓）的适用场景，学会用伪元素让悬浮动画不掉帧，并把阴影海拔收进设计令牌。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/260-Gradient'
   - 'css/290-BackgroundEnhancement'

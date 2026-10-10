@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: JPMS模块系统
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/450-JavaRecordClass'
   - 'java/460-JavaTextBlock'

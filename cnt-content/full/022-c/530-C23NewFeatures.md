@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 接着 C23 上手往深处走：#embed、typeof、constexpr、ckd_* 四个编译期深水特性，查编译器支持矩阵的三板斧、C2y 草案现状，以及旧代码库「先开警告再切标准」的升级路线。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/520-C23CoreFeatures'
   - 'c/290-PreprocessorMacro'

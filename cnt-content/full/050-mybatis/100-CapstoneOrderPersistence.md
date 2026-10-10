@@ -9,7 +9,7 @@ prerequisites:
   - 'mybatis/080-MybatisPlusAdvanced'
   - 'spring-boot/100-TransactionManagement'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mybatis/090-PitfallsPerformance'
   - 'spring-boot/170-TestingStrategy'

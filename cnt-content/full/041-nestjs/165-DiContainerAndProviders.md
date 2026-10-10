@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: NestJS 的 IoC 容器心智模型：Provider 四种配方（useClass/useValue/useFactory/useExisting）、注入令牌、三种作用域与传染代价、循环依赖与 forwardRef、生命周期钩子。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'nestjs/150-NestJSOverview'
   - 'nestjs/160-ModuleControllerService'

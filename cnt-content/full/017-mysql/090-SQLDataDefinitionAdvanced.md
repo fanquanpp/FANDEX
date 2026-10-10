@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 库与表的 CREATE/ALTER/DROP 全套命令、六类索引的建法、七种约束落地；区分 DROP/TRUNCATE/DELETE，配动手建库建表练习。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/060-MySQLEnvSetup'
   - 'mysql/070-MySQLDataTypeConstraint'

@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/140-SpringAmqpRabbitmq'
   - 'java/880-SpringCloudMicroserviceDevelopment'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'spring-cloud/090-DistributedTransactionSeata'
   - 'spring-boot/140-SpringAmqpRabbitmq'

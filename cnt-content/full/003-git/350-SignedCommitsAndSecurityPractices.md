@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: '用 GPG 或 SSH 给提交与标签签名，配置本地验证与团队安全基线，防冒名提交。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/250-SHA1IntegrityCheck'
   - 'git/200-TagManagement'

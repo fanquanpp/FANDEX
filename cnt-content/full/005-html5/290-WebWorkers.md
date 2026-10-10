@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 用 Web Worker 把卡死页面的重活搬进后台线程：最小可用示例、结构化克隆与 Transferable、Worker 能用与不能用什么，以及 Comlink 等现代封装。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'html5/250-DragAPI'
   - 'html5/300-ServiceWorkerPWA'

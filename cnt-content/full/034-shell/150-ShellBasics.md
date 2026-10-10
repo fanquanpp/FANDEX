@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Shell 脚本编程基础：命令、变量、管道、展开与分词的时机模型、case 与数组、控制流、严格模式与工程实践
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'shell/140-CrossPlatformCommandLine'
   - 'shell/160-EnvVariablesConfig'

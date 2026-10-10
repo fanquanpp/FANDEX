@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Reactive Streams 规范、Project Reactor、Spring WebFlux 与响应式系统设计的系统性深度剖析
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/950-JavaSecurity'
   - 'java/990-JavaWebAssembly'

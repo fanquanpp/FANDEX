@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git gc 垃圾回收详解：不可达对象、打包压缩、自动维护与 git maintenance 新机制。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/240-ObjectModel'
   - 'git/260-GitReflog'

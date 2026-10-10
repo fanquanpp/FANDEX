@@ -6,7 +6,7 @@ module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'kotlin/210-DelegateProperty'
   - 'kotlin/050-KotlinClassObject'

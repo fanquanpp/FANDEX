@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: NestInterceptor 响应变换与耗时日志、超时拦截器、ExceptionFilter 全局兜底、拦截器常见坑与遮代码自检，验证管线执行顺序。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'nestjs/165-DiContainerAndProviders'
   - 'nestjs/170-ValidationPipes'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: java.util.Scanner 三步法与五种取值方式对照，重点剖析 next 与 nextLine 的换行符残留陷阱、InputMismatchException 类型不匹配异常，用超市优惠卡、登录重试、ATM 密码三个真实场景落地。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/090-ControlFlow'
   - 'java/050-DataTypeConversion'

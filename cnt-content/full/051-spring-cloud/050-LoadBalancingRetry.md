@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-cloud/020-ServiceRegistrationDiscovery'
   - 'spring-cloud/040-OpenfeignDeclarativeCalls'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'spring-cloud/070-ResilienceSentinel'
   - 'spring-cloud/080-DistributedTracing'

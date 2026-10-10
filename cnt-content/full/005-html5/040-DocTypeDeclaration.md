@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: DOCTYPE与HTML Living Standard
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'html5/190-HTML5FormValidation'
   - 'html5/230-HTML5MultimediaCanvasDrawing'

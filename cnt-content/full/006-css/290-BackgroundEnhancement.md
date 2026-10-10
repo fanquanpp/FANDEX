@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 深入解析 CSS Backgrounds Module Level 3/4 多背景、background-size、background-clip、background-origin、background-attachment 的规范、绘制算法与工程实践
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/260-Gradient'
   - 'css/270-Shadow'
@@ -2135,6 +2135,8 @@ Stripe 网站以精致的渐变背景著称：
 
 ### 6.1 历史演进
 
+背景能力从 CSS 1 的单一 background-color/image 起步，CSS 2.1 补齐定位与平铺语义，CSS Backgrounds Level 3 带来多背景、size/clip/origin 与渐变图像，近年又在 background-attachment 上分化出 local 值、并出现 background-clip: text 这类表现性扩展。本节按时间线梳理这条扩容路径，理解每个属性是为了解决什么场景而加入的。
+
 ### 6.1.1 CSS 1（1996）：背景的雏形
 
 CSS 1 由 Håkon Wium Lie 与 Bert Bos 于 1996 年提出，首次定义背景相关属性。当时的背景系统极为简陋：
@@ -2259,6 +2261,8 @@ CSS 2.1 §14 将背景属性扩展为现代熟悉的形态：
 ---
 
 ### 6.2 形式化定义
+
+本节给出规范级定义：background 各子属性的文法、多背景逗号分隔语法的解析与层序规则、clip/origin 的盒模型边界（border-box/padding-box/content-box）如何被规范形式化。掌握条款后，第 1 节的复合写法都能逐层拆解。
 
 ### 6.2.1 规范条款
 
@@ -2448,6 +2452,8 @@ $$
 ---
 
 ### 6.3 理论推导与原理解析
+
+本节从绘制模型出发推导背景行为：多背景的层级栈如何决定遮挡关系、cover/contain 背后的缩放数学、clip 与 origin 在同一盒模型上选取的不同参考面。每个推导都配可在 DevTools 中验证的示例。
 
 ### 6.3.1 多背景的层级模型
 

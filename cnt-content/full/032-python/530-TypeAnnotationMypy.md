@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 以「素材库清单函数在线上吞了错误字段」为事故切入，渐进式学类型注解：现代内建泛型与联合类型、mypy 首跑与 strict、TypedDict/Protocol/TypeVar/overload 的适用现场、3.12 的 type 语句与泛型新语法，附 Any 泄漏与运行时不校验两大误区、工具对比与四类练习。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'python/100-FunctionDetailed'
   - 'python/460-OOP'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C#委托与事件底层原理详解：从ECMA-334类型系统到闭包与多播实现的完整指南。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/130-LINQDeferredImmediate'
   - 'csharp/100-AsyncAwaitStateMachine'
@@ -21,6 +21,12 @@ prerequisites:
 - [async/await 状态机](/csharp/100-AsyncAwaitStateMachine)：建议先完成前一篇的学习
 
 ## 学习目标
+
+- 理解委托的底层结构（MulticastDelegate 与调用链）与委托相等性语义，能解释「退订没生效」的根源在哪个环节。
+- 掌握多播委托的调用顺序与异常短路行为，能写出逐个安全调用、避免中途断链的遍历模式。
+- 能识别并修复事件泄漏：订阅者活得比发布者短时的取消订阅模式、弱事件与 IDisposable 模式的取舍。
+- 理解事件包装器（add/remove 访问器）与编译器生成代码的关系，能从 IL 视角说清「事件」与「委托字段」的差异。
+- 会正确处理闭包捕获变量：避开循环变量捕获与意外共享状态，能对照本篇 flower-card 事件总线案例复现与改进。
 
 ## 知识点地图
 
@@ -3106,9 +3112,7 @@ var nums = list.ConvertAll(parser);
 Func<string, Task<string>> fetch = async url => await httpClient.GetStringAsync(url);
 ```
 
-## 速查补充：委托与事件（承接自原 150 篇速查段）
-
-## 委托与事件
+## 速查补充：委托与事件
 
 **基本写法：自定义委托**
 `public delegate <返回类型> <委托名>(<参数>);`

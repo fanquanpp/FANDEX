@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用「两根轴」的心智模型讲透逻辑属性：block/inline 轴随书写模式与文本书写方向翻转，一套样式同时适配 LTR/RTL 与竖排，附 RTL 卡片实战。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/430-CSSWritingModes'
   - 'css/050-CSS3BoxModelDetailed'

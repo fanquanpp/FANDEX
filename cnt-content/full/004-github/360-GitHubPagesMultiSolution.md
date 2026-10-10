@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub Pages 静态站点部署方案：Jekyll、VitePress、Hugo 构建与发布。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'github/250-CommunityHealthFile'
   - 'github/180-PullRequestCompleteCollaborationFlow'

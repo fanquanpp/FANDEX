@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: C#模式匹配与switch表达式
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/120-LINQDeep'
   - 'csharp/090-AsyncProgrammingDetailed'
@@ -21,6 +21,12 @@ prerequisites:
 - [异步编程详解](/csharp/090-AsyncProgrammingDetailed)：建议先完成前一篇的学习
 
 ## 学习目标
+
+- 能用类型模式、属性模式、位置模式、关系模式与列表模式，把「类型判断 + 拆包 + 条件」写成单一声明式分支，替代手写的 as + null 检查链。
+- 能用 switch 表达式配合判别联合式的 record 设计，把成片的 if-else 重构为一张可读的决策表。
+- 理解模式匹配的求值顺序与编译器的穷尽性检查：什么时候编译器会警告漏分支，怎样写出 exhaustive-safe 的分支结构。
+- 会用元组模式与解构处理多值分支，理解解构（Deconstruct）与位置模式的配套关系（文末速查有对照表）。
+- 熟悉常见陷阱：null 检查与常量模式的先后、when 子句的求值时机、列表模式切片的性能代价。
 
 ## 知识点地图
 
@@ -2345,9 +2351,7 @@ if (rect is ( > 5, > 5))
 }
 ```
 
-## 速查补充：元组与解构（承接自原 150 篇速查段；解构与位置模式配套）
-
-## 元组与解构
+## 速查补充：元组与解构
 
 **基本写法：元组声明**
 `(<类型1>, <类型2>) <变量> = (<值1>, <值2>);`

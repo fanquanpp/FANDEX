@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 以「线上事故回滚选 revert 还是 reset」引入两台机器的心智模型——revert 是反向补丁机（历史向前追加一条撤销提交），reset 是指针搬运机（分支指针后移、历史被甩出）；用三棵树视角逐档拆解 soft/mixed/hard 对 HEAD、暂存区、工作区的不同处置，覆盖 revert merge 提交、revert 的 revert、reflog 救援与「撤销后再合并不生效」经典面试题，附沙盒实验脚本与双人协作事故推演。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/060-ThreeTrees'
   - 'git/300-GitReset'

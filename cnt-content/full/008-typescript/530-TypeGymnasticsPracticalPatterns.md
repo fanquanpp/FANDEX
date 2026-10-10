@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: "以「分页结构到处手写泛型」引入，讲五个消灭重复劳动的类型体操模式：索引访问提取元素、keyof + in 生成映射、模板字面量拼事件名、条件类型过滤联合、手写复刻 Pick/Omit，附 TS2344 与 TS2536 实测调试。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'typescript/540-TypeGymnasticsBoundaries'
   - 'typescript/430-ConditionalTypeDistribute'

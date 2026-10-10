@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 异步编程模式、集群与 Worker、性能调优与安全实践（流处理已拆出为 575 专篇）。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/575-NodeStreamsAndBackpressure'
   - 'javascript/500-DebugPerformanceOptimization'

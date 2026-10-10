@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: LINQ查询语法与方法语法
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/340-CSharpTestEngineering'
   - 'csharp/380-CSharpUnityGameDev'

@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-11'
 related:
   - 'devops/010-OverviewLinuxBasics'
   - 'shell/010-DevEnvSetup'

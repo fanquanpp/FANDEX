@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: '多云与混合云架构的概念篇：选型动因与代价、VPC 互联（Peering/VPN/专线）、Terraform 多 Provider、统一身份与监控、跨云数据层选型；命令实操见跨云数据迁移与备份实操。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cloud-computing/285-CrossCloudDataMigration'
   - 'cloud-computing/170-Observability'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 泛型类型系统、约束、协变逆变、List/Dictionary/HashSet/Queue/Stack/PriorityQueue、不可变集合、Frozen 集合、迭代器(yield)、LINQ to Objects、性能模型与生产实践
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/030-CSharpBasicSyntax'
   - 'csharp/040-CSharpOOP'
@@ -23,6 +23,12 @@ prerequisites:
 - [可空引用类型 NRT](/csharp/060-CSharpNullableReferenceTypes)：建议先完成前一篇的学习
 
 ## 学习目标
+
+- 能按访问模式（随机查、去重、先进先出、优先级弹出）在 List/Dictionary/HashSet/Queue/Stack/PriorityQueue 之间做出有依据的选型，并说清每种选择的时间复杂度依据。
+- 能正确书写泛型类型参数与约束（`where T : class` / `struct` / `new()` / 接口约束），理解协变与逆变的方向性为什么是「输出协变、输入逆变」。
+- 会用容量预分配、避免装箱、值类型集合优化等手段消除常见集合性能坑，能解释「为什么这里用 HashSet 而不是 List.Contains」。
+- 知道不可变集合与 Frozen 集合的适用边界，能在「只读语义」与「构建成本」之间做出取舍。
+- 能在公共 API 设计中选择正确的集合暴露类型与泛型形变（IReadOnlyList 与 List、IEnumerable 与具体类型）。
 
 ## 知识点地图
 

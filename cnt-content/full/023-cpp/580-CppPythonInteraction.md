@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: pybind11与C API
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/520-CppSerialization'
   - 'cpp/530-CppNetworkProgramming'

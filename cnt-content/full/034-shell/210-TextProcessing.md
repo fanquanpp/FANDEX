@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: cat/head/tail/grep/sed/awk/sort/uniq 等文本处理命令速查：用法、预期输出与方言陷阱
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'shell/200-TextProcessingTools'
   - 'shell/170-PipeRedirect'

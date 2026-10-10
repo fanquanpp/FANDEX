@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 把高阶函数与柯里化用到工程里的四个模式：tap/trace 给管道插日志、占位符与右偏函数、React 高阶组件 withXxx、Express 风格中间件引擎亲手实现；附链式调用中间数组开销的测量方法与"何时手写 for"的判断标准。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/150-HigherOrderFunction'
   - 'javascript/170-CurryAndFunctionComposition'

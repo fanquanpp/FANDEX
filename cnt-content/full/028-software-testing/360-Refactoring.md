@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 代码重构原则、常用重构手法与代码坏味道识别。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'software-testing/340-UMLGraphDetailed'
   - 'software-testing/350-DesignPatternDetailed'

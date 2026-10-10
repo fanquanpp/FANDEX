@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 技术债务识别、量化、偿还策略与预防机制。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'software-testing/370-SoftwareMetrics'
   - 'software-testing/360-Refactoring'

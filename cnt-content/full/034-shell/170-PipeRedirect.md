@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以"处置一次构建日志"为主线学管道与重定向：三条流心智模型、合并与分流、tee、xargs、进程替换与 pipefail，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'shell/150-ShellBasics'
   - 'shell/130-CommandLineBasics'

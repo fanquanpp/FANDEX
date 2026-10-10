@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 用户故事、用例图、需求获取与需求管理。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'software-testing/310-SoftwareEngineeringOverview'
   - 'software-testing/320-AgileDevelopment'

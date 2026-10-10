@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 无线网络：WiFi 标准演进（至 WiFi 7）、AC+AP 架构与 CAPWAP、WPA3 安全与 802.1X 认证、信道规划与漫游优化。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/160-SwitchingAndRouting'
   - 'networking/220-NetworkSecurityTech'

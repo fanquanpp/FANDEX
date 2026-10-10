@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 React 的知识体系理解 Angular：组件三件套、Signals 响应式、依赖注入与全家桶生态的对应关系。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'react/170-StateManagementSolutionComparison'
   - 'react/050-ContextGlobalState'

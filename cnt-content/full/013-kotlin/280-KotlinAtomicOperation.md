@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 从竞态条件出发掌握原子变量：kotlinx.atomicfu 与标准库 kotlin.concurrent.atomics 两套 API、CAS 原理、无锁结构与常见陷阱。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'kotlin/270-KotlinConcurrencySafety'
   - 'kotlin/250-CoroutineDispatcherContext'

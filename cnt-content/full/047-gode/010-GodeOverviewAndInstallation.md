@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 认识 Gode 的定位原理与平台支持，完成插件下载启用并排查 TypeScript 语言不出现的常见问题
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'godot/140-ScriptingEcosystemCSharpGDExtension'
   - 'gode/020-FirstTypeScriptScript'

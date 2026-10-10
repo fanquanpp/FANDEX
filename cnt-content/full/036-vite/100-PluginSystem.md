@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Vite 插件系统：插件 API、钩子机制（config/resolveId/load/transform 等）、插件开发入门与常用插件盘点
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'vite/080-BuildSplit'
   - 'vite/120-Vite8Rolldown'

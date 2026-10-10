@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: TCP 拥塞控制全解：慢启动、拥塞避免、快速重传、快速恢复与 BBR 的设计思想。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cs-fundamentals/270-ComputerNetwork'
   - 'cs-fundamentals/290-NetworkProtocolDeep'

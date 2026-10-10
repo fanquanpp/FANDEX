@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: .NET 零分配内存操作全景解析：Span<T>/ReadOnlySpan<T>/Memory<T> 的 ref struct 约束、stackalloc、切片运算、零拷贝、MemoryMarshal、ArrayPool<T>、MemoryManager<T> 的深度原理与工程实践。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/170-CRecordType'
   - 'csharp/190-GenericCovarianceContravariance'
@@ -4031,9 +4031,7 @@ Span<int> s = CollectionsMarshal.AsSpan(list);
 Span<int> ints = MemoryMarshal.Cast<byte, int>(bytes);
 ```
 
-## 速查补充：Span 与 Memory（承接自原 150 篇速查段）
-
-## Span\<T\> 与 Memory\<T\>
+## 速查补充：Span 与 Memory
 
 **基本写法：Span 从数组创建**
 `Span<<类型>> <变量> = <数组>.AsSpan();`
@@ -4128,9 +4126,7 @@ async Task ProcessAsync(Memory<int> memory)
 
 ---
 
-## 速查补充：Span 高级操作（承接自原 150 篇速查段）
-
-## Span 高级操作
+## 速查补充：Span 高级操作
 
 **基本写法：Span 转数组**
 `<类型>[] <变量> = <Span>.ToArray();`
@@ -4172,9 +4168,7 @@ ints[0] = 42;
 
 ---
 
-## 速查补充：BitHelper 与位操作（承接自原 150 篇速查段，与 MemoryMarshal 同族）
-
-## BitHelper 与位操作
+## 速查补充：BitHelper 与位操作
 
 **基本写法：BitConverter 转换**
 `int <变量> = BitConverter.ToInt32(<字节数组>, <偏移>);`

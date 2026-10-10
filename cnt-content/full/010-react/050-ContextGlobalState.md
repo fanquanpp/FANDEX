@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Context API、Provider 模式、useContext 优化与状态机；第三方状态管理库的横向对比与选型见状态管理方案对比篇。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'react/030-StateEvent'
   - 'react/040-HooksDeep'

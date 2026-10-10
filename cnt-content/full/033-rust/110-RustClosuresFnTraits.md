@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Fn/FnMut/FnOnce、捕获方式与 move：闭包的类型系统真相。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'rust/100-RustGenericTrait'
   - 'rust/090-RustCollections'

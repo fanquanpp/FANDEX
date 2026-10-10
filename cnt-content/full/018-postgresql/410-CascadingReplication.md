@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL级联复制：备库作为上游、多层级联架构与配置
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'postgresql/350-FDWForeignDataWrapper'
   - 'postgresql/390-StreamingReplication'

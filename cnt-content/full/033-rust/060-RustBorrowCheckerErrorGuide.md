@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: E0382/E0502/E0597 等高频报错：读懂提示并修复。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'rust/050-RustOwnershipBorrowing'
   - 'rust/080-RustErrorHandling'

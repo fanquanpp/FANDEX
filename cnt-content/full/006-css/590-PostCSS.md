@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: PostCSS 插件化处理管道：autoprefixer 与 browserslist、postcss-preset-env 未来语法、cssnano 压缩、自定义插件开发，以及与 Sass/Less 的协作顺序。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/570-Sass'
   - 'css/580-LessStylus'

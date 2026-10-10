@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Channel底层实现：hchan结构、send/recv状态机、select实现、close语义与CSP模型
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'go/250-SlicePrinciple'
   - 'go/260-MapPrinciple'

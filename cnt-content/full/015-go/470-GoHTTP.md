@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: net/http与路由
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'go/330-GoJSON'
   - 'go/460-GoHTTPClient'

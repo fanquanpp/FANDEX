@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 软件测试基础：测试定义、目的、原则、V模型与测试生命周期详解。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'software-testing/140-PerformanceTestingMethod'
   - 'software-testing/180-SecurityTesting'

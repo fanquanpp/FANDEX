@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL 视图的可写能力全景：自动可更新视图的条件清单、WITH CHECK OPTION 的防漏语义、INSTEAD OF 触发器接管复杂视图的写入。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'postgresql/380-TriggerEventTrigger'
   - 'postgresql/500-RowLevelSecurity'

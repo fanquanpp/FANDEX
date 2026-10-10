@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 用 sizeof 打印实验走进类型系统：整型家族的最小宽度与 limits.h、stdint.h 定宽类型的选型速查、无符号回绕与有符号溢出的 UBSan 实录、IEEE 754 浮点心智模型与 0.1 + 0.2 不等于 0.3 的 epsilon 解法。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/050-VariableConstant'
   - 'c/060-OperatorExpression'

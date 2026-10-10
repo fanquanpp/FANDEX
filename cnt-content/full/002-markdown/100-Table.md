@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GFM 表格语法：分隔行的设计原因、对齐约定与数字右对齐、单元格边界规则、表格与列表的选型决策、遮代码自检与 HTML 兜底。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'markdown/270-SpecDocumentWriting'
   - 'markdown/080-EscapeCharacter'

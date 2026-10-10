@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Next.js 16 缓存模型全景：use cache 指令、cacheLife 七档 profile、cacheTag 与 updateTag 按需失效、PPR 静态壳与动态洞，以及从传统缓存语义到新模型的完整迁移映射。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'nextjs/030-DataFetchingCaching'
   - 'nextjs/060-RenderingStrategies'

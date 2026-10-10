@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Less 与 Stylus 预处理器教学：变量、混合、嵌套与运算的核心用法，与 Sass 的能力对照，以及在原生 CSS（变量/嵌套/@layer）时代的选型建议。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/570-Sass'
   - 'css/590-PostCSS'

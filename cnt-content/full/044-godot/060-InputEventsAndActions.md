@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 掌握 InputEvent 事件族、事件在场景树中的传播顺序，以及用 Input Map 把按键抽象成游戏动作
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related: ['godot/030-FirstScriptAndLifecycle', 'godot/070-TwoDGameObjects']
 prerequisites: ['godot/030-FirstScriptAndLifecycle']
 ---

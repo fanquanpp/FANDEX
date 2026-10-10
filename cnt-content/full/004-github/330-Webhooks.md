@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub Webhooks详解：按事件→Webhook→Payload→响应完整流程讲解订阅、投递、签名验证与服务器实现。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'github/320-RESTGraphQLAPI'
 prerequisites:

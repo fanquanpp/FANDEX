@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从「改一处崩三处」的回归恐惧讲起：用 Vitest 加 Vue Test Utils 给收藏按钮写第一个组件测试，再覆盖组合函数（withSetup 助手）、Pinia store（setActivePinia）、路由与 mock（vi.mock 提升机制），附忘 await trigger、Pinia 未激活、mock 提升三则调试实录与测试金字塔取舍。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'vue3/080-CompositionAPIAdvantageScene'
   - 'vue3/220-PiniaPersistencePlugin'

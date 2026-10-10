@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Helm Chart 应用打包：Chart 结构、模板语法、Values 覆盖与仓库发布。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'devops/090-KubernetesCoreDetailed'
   - 'devops/210-Terraform'

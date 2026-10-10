@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: IPv6 实操：地址与邻居发现命令、SLAAC 配置检查、双栈环境排障常用命令。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/100-DNSDHCP'
   - 'networking/050-IPCommands'

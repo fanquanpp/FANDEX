@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 以智能音箱上报事件为练习场，弄清 jsonb 与 json 的本质差异（解析时机）、练全提取/包含/存在三类操作符与 SQL/JSON 路径，配好表达式索引与 GIN 索引，并避开 ->> 文本比较、GIN 写放大等真实坑。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'postgresql/120-JSONTABLE'
   - 'postgresql/080-AdvancedSQL'

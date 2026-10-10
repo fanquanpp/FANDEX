@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git grep 详解：在跟踪文件与任意历史版本中并行搜索、布尔组合与路径限定技巧。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/180-GitLogDetailed'
   - 'git/070-GitDiffStagingOperation'

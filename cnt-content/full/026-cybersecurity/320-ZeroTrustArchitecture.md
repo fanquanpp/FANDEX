@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 零信任架构：Never trust, always verify 原则、NIST SP 800-207 逻辑组件、BeyondCorp 与分阶段落地路线。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cybersecurity/290-AuthenticationAuthorization'
   - 'cybersecurity/300-IdentityAccessManagement'

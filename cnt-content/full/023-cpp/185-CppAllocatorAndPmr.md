@@ -6,7 +6,7 @@ description: 从 std::allocator 接口讲到 std::pmr 三层 memory_resource 体
 module: 'cpp'
 category: 计算机科学
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related: []
 prerequisites: []
 ---

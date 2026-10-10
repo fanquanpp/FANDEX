@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: SpringBoot高级特性
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/080-OperatorExpression'
   - 'java/840-SpringBootSecurity'

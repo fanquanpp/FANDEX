@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从「循环里绑五个按钮，点谁都是同一个数」讲起：作用域链由内向外查找、同名遮蔽、三层嵌套实验、var 挂载 window 而 let 不挂载、隐式全局陷阱、闭包计数器与私有变量、IIFE 固定循环计数器，附 ReferenceError 与误改全局变量两则调试实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/080-FunctionScopeClosure'
   - 'javascript/100-ThisKeywordDeepDive'

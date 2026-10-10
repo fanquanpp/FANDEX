@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'SQS/SNS 学习笔记：用订单解耦场景走通队列收发、可见性超时、死信队列与 SNS 扇出过滤，末尾对照 Kinesis 与 EventBridge。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cloud-computing/260-ServerlessArchitecture'
   - 'cloud-computing/440-AWSCloudWatch'

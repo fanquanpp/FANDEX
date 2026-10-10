@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 以「函数改不动调用方的变量」引入，讲透取地址与解引用、指针与引用的分工、指针算术与数组退化、空指针与 const 修饰的读法，附 nullptr 与悬垂指针调试实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/080-CppReferenceTypes'
   - 'cpp/130-SmartPointerDeepDive'

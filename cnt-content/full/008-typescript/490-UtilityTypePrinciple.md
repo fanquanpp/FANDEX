@@ -6,7 +6,7 @@ category: '前端技术'
 difficulty: intermediate
 description: 把 Partial、Pick、Omit、Record、ReturnType 逐个徒手复刻，看清映射类型、条件类型与 infer 怎么拼出标准库工具类型，并补上 Omit 的联合类型坑与精确值匹配两个进阶细节。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'typescript/470-MappedTypeAdvanced'
   - 'typescript/480-MappedTypeKeyRemap'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'IAM 命令实战：用户与访问密钥、策略附加、角色与信任策略、组管理及最小权限实践。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cloud-computing/270-AWSCore'
   - 'cloud-computing/300-AWSCliConfigure'

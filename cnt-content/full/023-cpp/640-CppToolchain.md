@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: CMake、vcpkg与包管理
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/220-CppOOPAdvanced'
   - 'cpp/450-CppMemoryModel'

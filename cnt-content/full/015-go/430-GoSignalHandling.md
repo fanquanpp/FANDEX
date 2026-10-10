@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: os/signal 与 syscall：从 POSIX 信号到 Go 优雅关闭的工程实践
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'go/410-GoRegex'
   - 'go/420-GoFileMonitor'

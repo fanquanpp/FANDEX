@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 'K8s 存储体系：emptyDir/hostPath、PV/PVC 绑定、StorageClass 动态供给与 CSI 架构。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cloud-computing/110-KubernetesCore'
   - 'cloud-computing/210-CloudStorageService'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: "以「每个请求 new 一个线程，高峰期直接 OOM」引入，逐个讲透 ThreadPoolExecutor 七参数、四种拒绝策略对照实验、execute 与 submit 吞异常差异的真实事故，并预告虚拟线程，附无界队列堆积实测与 RejectedExecutionException 调试实录。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/480-MultithreadingBasics'
   - 'java/490-JucConcurrencyTools'

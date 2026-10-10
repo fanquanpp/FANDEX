@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 声明与连接自定义信号，用 await 等待信号与计时器，理解协程函数的暂停恢复机制
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'gdscript/050-FunctionsAndCallable'
   - 'godot/040-SignalsObserving'

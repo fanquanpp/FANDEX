@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: "以给一个计数服务选语言的真实决策为线索，把 C++ 与 Rust 在可变性默认值、内存管理、错误处理、字符串、并发、泛型、枚举匹配上逐项对照，附 FFI 互通实测与 2026 年的选型建议。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/730-Cpp23NewFeatures'
   - 'cpp/130-SmartPointerDeepDive'

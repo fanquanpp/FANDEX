@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: Wireshark 抓包分析：显示过滤器与流跟踪、统计面板定位时延重传、tshark 命令行。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/270-Tcpdump'
   - 'networking/290-NetworkTroubleshootTools'

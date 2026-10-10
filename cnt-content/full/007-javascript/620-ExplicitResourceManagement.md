@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Stage 4 定稿的 using/await using 与 Symbol.dispose：确定性资源释放的语法、协议与工程落地。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/250-AsyncProgramming'
   - 'javascript/570-NodeJsPerformanceOptimization'

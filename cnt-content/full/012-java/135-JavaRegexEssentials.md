@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Pattern/Matcher 两步式与 String.matches 全串匹配的差别，字符类、量词、分组与或运算；用邮箱校验、密码强度、18 位身份证三个真实规则落地，并对照 SQL 方言中的同构 regexp。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/130-JavaStringDetailed'
   - 'java/095-ScannerConsoleInput'

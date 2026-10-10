@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: SQL 概述、标准演进、方言差异与数据库选型
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'sql/040-DataQueryBasics'
   - 'sql/150-JoinQuery'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 浏览器端存储机制的形式语义、安全模型、工程实践与生产级应用
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/450-FetchApiWebStreams'
   - 'javascript/470-IndexedDBADatabaseInYourBrowser'

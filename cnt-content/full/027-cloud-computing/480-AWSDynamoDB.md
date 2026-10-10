@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'DynamoDB 学习笔记：从键设计开始建表、增删改查、GSI 索引、事务，再到流/TTL/备份与计费，理解它和关系库的思维差异。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cloud-computing/200-CloudDatabaseService'
   - 'cloud-computing/450-AWSRDSCommands'

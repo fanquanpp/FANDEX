@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 系统梳理 Flow 的中间与末端操作符、冷热流转换（stateIn/sharedIn）、背压策略与组合模式，附完整可运行示例与常见陷阱。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'kotlin/290-FlowReactiveStream'
   - 'kotlin/300-FlowColdSharedState'

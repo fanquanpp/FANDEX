@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: xUnit/NUnit/Moq、集成测试、BenchmarkDotNet、Source Generator、Roslyn Analyzer、CI/CD、代码规范
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/350-CSharpReflection'
   - 'csharp/250-CSharpDotNet'
@@ -20,6 +20,12 @@ prerequisites: []
 - [C# .NET 平台与生态](/csharp/250-CSharpDotNet)：建议先完成前一篇的学习
 
 ## 学习目标
+
+- 能为服务类与纯函数写出结构良好的 xUnit 单元测试：AAA 组织、[Theory] 参数化、测试数据构造与命名约定。
+- 会用 Moq 隔离外部依赖，把握 mock 的适度原则——测行为而非实现，知道什么时候该用真实依赖。
+- 能搭建集成测试（WebApplicationFactory 一类方案），让测试套件与 CI 门禁联动：改坏了立刻被知道。
+- 会用 BenchmarkDotNet 做性能基准，读懂内存分配与吞吐报告，能在 CI 里设置性能回归门禁。
+- 了解 Roslyn 分析器在工程化中的角色，能为团队规范编写基础诊断规则并接入构建失败链路。
 
 ## 知识点地图
 

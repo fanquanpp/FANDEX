@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis 主从复制缓冲区机制：repl_backlog 环形缓冲区、replication buffer 与输出缓冲区三件套、溢出与容量调优。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'redis/188-ReplicationBasicsAndPsync'
   - 'redis/190-DisklessReplication'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: wget 下载：递归抓取与镜像站点、断点续传、限速与重试等常用参数。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/130-CurlHTTPRequest'
   - 'networking/120-HTTPProtocol'

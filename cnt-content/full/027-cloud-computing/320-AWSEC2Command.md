@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'EC2 命令实战：实例生命周期、密钥与安全组、EBS 卷、弹性 IP 与常见陷阱。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cloud-computing/270-AWSCore'
   - 'cloud-computing/250-LoadBalanceAutoScaling'

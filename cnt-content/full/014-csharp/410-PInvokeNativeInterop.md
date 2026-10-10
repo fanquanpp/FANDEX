@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 调用 C/C++ 动态库：DllImport、封送与内存管理。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/050-ValueTypeReferenceType'
   - 'csharp/152-UnsafeCodeAndDynamicProgramming'
@@ -218,9 +218,7 @@ internal static partial class VsAudio
 2. 定义 C 侧结构体 `struct TicketCipher { char serial[16]; int kind; double price; }` 的托管对应版本，编写测试断言 `Marshal.SizeOf` 等于 C 侧 `sizeof`，再故意去掉 `Pack` 观察差异。
 3. 把第四节 `DllImport` 版本的渲染函数改写为 `LibraryImport` 源生成版本，对比编译产物中生成的封送代码（`*.g.cs`），记录两版在字符串与委托处理上的差别。
 
-## 速查补充：LibraryImport / DllImport（承接自原 150 篇速查段）
-
-## Native AOT 与互操作
+## 速查补充：LibraryImport / DllImport
 
 **基本写法：LibraryImport 特性**
 `[LibraryImport("<库>", EntryPoint = "<入口>")] public static partial <类型> <方法>(<参数>);`

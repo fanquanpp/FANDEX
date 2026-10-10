@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/060-SpringMvcRestApi'
   - 'spring-boot/070-UnifiedResponseExceptionHandling'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'spring-boot/070-UnifiedResponseExceptionHandling'
 ---

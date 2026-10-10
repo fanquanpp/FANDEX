@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: '隐写术工具命令：图片与音频隐写及提取（steghide/zsteg/binwalk）、隐写检测思路与 CTF 实战流程'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cybersecurity/590-ReverseEngineering'
   - 'cybersecurity/140-HashTools'

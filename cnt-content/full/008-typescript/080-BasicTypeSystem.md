@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 原始类型、联合类型、字面量类型与类型推断。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'typescript/020-HowToReadThisCourse'
   - 'typescript/030-TypeScriptOverviewEnvSetup'

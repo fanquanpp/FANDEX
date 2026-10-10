@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 搜索框每次按键都发请求、滚动条拖动页面卡顿：手写防抖与节流，理解 leading/trailing、取消与竞态处理。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/440-FetchApiAndAbortController'
   - 'javascript/290-EventLoop'

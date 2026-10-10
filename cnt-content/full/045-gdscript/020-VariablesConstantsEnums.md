@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 掌握 var 的三种声明与类型推断 static var 类成员 const 常量表达式和 enum 枚举的完整用法
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'gdscript/010-GDScriptLanguageOverview'
   - 'gdscript/030-BasicDataTypesConversion'

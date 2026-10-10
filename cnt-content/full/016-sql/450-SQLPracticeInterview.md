@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 经典面试题、业务场景 SQL、数据仓库 SQL 与编码规范
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'sql/440-PerformanceOptimization'
   - 'sql/330-PLSQLStoredProcedure'

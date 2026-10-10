@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: "Redis GEO 深入：GEO 就是 ZSET 加 GeoHash 的底层真相、经纬度顺序与删除命令等高频坑、GEOSEARCH 的 3x3 邻域执行机制，附近门店/附近的人从建索引到查询的完整动手练习。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'redis/060-BitMapRedis'
   - 'redis/050-NumberStats'

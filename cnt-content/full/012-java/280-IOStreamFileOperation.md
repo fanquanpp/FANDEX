@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: I/O 流分类、字节流、字符流、转换流与 java.io.File 文件操作、实际应用案例与常见陷阱；对象序列化与 NIO 已拆至专篇。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/180-ExceptionHandlingMechanism'
   - 'java/270-ModernIOQuickstart'

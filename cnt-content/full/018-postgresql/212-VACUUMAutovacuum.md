@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL autovacuum 实战篇：守护进程架构与调度、触发阈值计算公式、核心参数逐个精讲、按表调参方法与运行状态观察。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'postgresql/210-VACUUMMechanism'
   - 'postgresql/214-VACUUMTuningAndTroubleshoot'

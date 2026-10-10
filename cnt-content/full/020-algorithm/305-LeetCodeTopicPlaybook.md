@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: LeetCode 分类题型手册按"识别信号、解题模板、代表题与预期输出"三段式整理十大高频题型：双指针（对撞/快慢指针）、滑动窗口（valid 计数框架）、二分查找（精确匹配/左边界/右边界/旋转排序数组）、前缀和与差分、栈与单调栈、哈希表、链表操作（迭代反转/Floyd 判圈/虚拟头节点）、二叉树递归（后序框架/层序遍历）、BFS 与 DFS（无权图最短路/Kahn 拓扑排序/沉岛/二叉树右侧视图）、动态规划入门（线性 DP/二维 DP/优化链路：暴力→记忆化→迭代→状态压缩），另附回溯与位运算补充模板、七大常见陷阱与修正（二分边界死循环、滑动窗口收缩条件、DP 初始条件、回溯去重、二分 mid 溢出、visited 标记时机、Python 递归栈溢出）及工业应用案例（LC-146 与 Redis LRU/LFU、并查集与 Kubernetes/Git、单调队列与 Prometheus、Trie 敏感词过滤、LC-215 QuickSelect 与 Top-K）。每题模板附 Python 实现与可复现的预期输出，关键模板另附 C++；刷题路线与面试策略见姊妹篇《LeetCode 刷题指南》。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'algorithm/300-LeetCodeInterviewGuide'
   - 'algorithm/070-HashTable'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 分组聚合利器：downstream 组合出多维统计。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/300-StreamAPI'
   - 'java/330-JavaFunctionalProgramming'

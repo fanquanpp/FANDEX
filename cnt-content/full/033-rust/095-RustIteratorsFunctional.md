@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Iterator trait 与惰性求值、map/filter/zip/chain 适配器、collect/sum/fold 消费器、零成本抽象与闭包捕获
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'rust/090-RustCollections'
   - 'rust/110-RustClosuresFnTraits'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 用 Koin 做 Kotlin 依赖注入：DSL 声明、构造器引用、命名与参数注入、Ktor/Android 集成与运行时校验。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'kotlin/490-KotlinKtor'
   - 'kotlin/520-KotlinExposed'

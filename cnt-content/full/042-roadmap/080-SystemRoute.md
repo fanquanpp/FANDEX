@@ -8,7 +8,7 @@ difficulty: intermediate
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-10-11'
 related:
   - 'c/010-CZeroBasisStart'
   - 'cpp/010-WhatIsCpp'

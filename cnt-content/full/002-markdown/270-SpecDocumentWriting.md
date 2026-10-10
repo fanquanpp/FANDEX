@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 编写规范技术文档的组合技巧：表格进阶、脚注、目录、交叉引用与文档结构约定。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'markdown/100-Table'
   - 'markdown/150-Footnote'

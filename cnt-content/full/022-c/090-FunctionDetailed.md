@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 以「平均分循环抄两遍」的 main 开题：原型如何让编译器替你查调用、C99 起隐式声明按错误处理、C23 起 foo() 即 foo(void)、swap 失败实验引出传值语义与指针版预告、返回局部地址的 -Wreturn-local-addr 实录、fib(30) 的 269 万次调用重复计算实验、调用栈直觉、main 的 argc/argv 与 echo $? 退出码实验；作用域交 055、函数指针交 170、可变参数交 100、inline 交 300。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/055-ScopeStorageLinkage'
   - 'c/100-VarargsFunction'

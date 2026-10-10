@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Terraform 声明式 IaC 入门：HCL 语法、plan/apply 工作流、变量传递、模块复用与许可现状。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cloud-computing/410-IaC'
   - 'cloud-computing/430-TerraformStateModule'

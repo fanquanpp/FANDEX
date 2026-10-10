@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 以「在线商店白天改价、用户随时能看」引入：快照读与锁读的分野、隐藏字段与 undo log 版本链、ReadView 四字段与可见性四条规则的逐步推演，附 Purge 观测与长事务排查实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/440-MVCCSnapshotCurrentRead'
   - 'mysql/420-TransactionIsolationImplementation'

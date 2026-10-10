@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: "兑现 010 篇埋下的种子：实测 list 与 set 查找的千倍差距，打开 hash 的黑盒，手写链地址法迷你哈希表并自动扩容，开放寻址与删除标记的陷阱，负载因子与均摊扩容，Redis 渐进式 rehash 与一致性哈希，布隆过滤器等概率亲戚。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/020-ArrayAndDynamicArray'

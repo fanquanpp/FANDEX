@@ -6,7 +6,7 @@ category: '前端技术'
 difficulty: intermediate
 description: 从「抽一个共享格式化模块」讲起：ES 模块的导出导入姿势、namespace 还会出现在哪、循环依赖为什么会炸、ESM 与 CommonJS 互操作的 default 差异。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'typescript/320-ImportTypeVerbatimModuleSyntax'
   - 'typescript/315-PackageExportsEsmInterop'

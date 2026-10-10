@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: "以「同算 1 加到 100，一个瞬间一个卡三秒」引入，用真实计时实验建立大 O 直觉：时间与空间两本账、五级复杂度阶梯、最好/最坏/平均与 Ω/Θ 记号、给代码判复杂度的读法，本模块以 Python 为教学语言。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'algorithm/020-ArrayAndDynamicArray'
   - 'algorithm/030-SortAlgorithm'

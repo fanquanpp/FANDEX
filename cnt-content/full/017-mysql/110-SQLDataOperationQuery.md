@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 用游戏排行榜的完整生命周期串起 INSERT/SELECT/UPDATE/DELETE：建表脚本、批量插入、带条件更新、事务防误操作、聚合统计，附真实报错调试与梯度练习。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/100-DML'
   - 'mysql/120-DQL'

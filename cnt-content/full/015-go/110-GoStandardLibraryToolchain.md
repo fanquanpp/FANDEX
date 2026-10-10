@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 核心标准包导览：io/bufio/fmt、os/filepath、net/http、encoding/json、time 与常用速查表——标准库入门地图；工具链专篇见 115。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'go/070-GoErrorHandling'
   - 'go/115-GoToolchainAndBuild'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 6.0 桥梁版的默认值翻转与弃用清单、7.0 Go 原生编译器的性能收益与生态限制，附普通用户与 API 消费者两条迁移路线。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'typescript/670-TypeScript5xNewFeatures'
   - 'typescript/360-TsconfigStrictMode'

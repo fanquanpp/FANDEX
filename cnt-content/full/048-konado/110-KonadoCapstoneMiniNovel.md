@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: intermediate
 description: 把全模块串成一件作品：资源表与项目骨架、开场演出、选项分支与好感度、signal/waitsignal 剧本代码协作、成就收集、存档回退验收，以及向本地化与定制扩展的接口位。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'konado/070-KonadoDialogueManagerApi'
   - 'konado/090-KonadoSceneAssetsAndCustomization'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 'Tailwind CSS 容器查询：@container 声明参考系、@sm:/@md: 容器变体与媒体查询断点对照、命名容器消除嵌套歧义，组件级响应式实践'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'tailwind/041-FlexboxLayout'
   - 'tailwind/060-ResponsiveDark'

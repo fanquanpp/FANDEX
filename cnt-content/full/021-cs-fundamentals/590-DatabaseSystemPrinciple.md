@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 数据库系统原理：关系模型、关系代数、函数依赖、范式理论与查询优化；索引与事务机制的展开深读见 595
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cs-fundamentals/420-CompilePrinciple'
   - 'cs-fundamentals/560-SoftwareEngineering'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C#记录类型（record）与不可变性详解：从ECMA-334标准到函数式编程实践的完整指南。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/390-GCGeneration'
   - 'csharp/050-ValueTypeReferenceType'

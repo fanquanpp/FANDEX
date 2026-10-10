@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以「草稿快照被原文连坐修改」为问题主线，讲透值语义与引用语义、赋值/浅拷贝/深拷贝三层区别，亲手用 structuredClone 与 WeakMap 标记法写支持循环引用的深拷贝，附 JSON 静默变形、freeze 只冻一层、原型链丢失等陷阱实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/070-ObjectArray'
   - 'javascript/210-ObjectStaticMethods'

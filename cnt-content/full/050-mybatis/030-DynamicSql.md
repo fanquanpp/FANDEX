@@ -9,7 +9,7 @@ prerequisites:
   - 'mybatis/020-QuickStartCrud'
   - 'mysql/110-SQLDataOperationQuery'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mybatis/040-ResultMapping'
   - 'mybatis/090-PitfallsPerformance'

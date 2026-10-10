@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: GC算法与垃圾回收器
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/500-ThreadPoolExecutorPractice'
   - 'java/590-JVMClassLoadingMechanism'

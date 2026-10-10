@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 以"对接一个 snake_case 的第三方 API"为主线学 System.Text.Json：往返序列化、选项配置、属性标注、自定义转换器、多态、DOM 与源生成，附高频陷阱、自检清单与练习。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/450-FileAndStream'
   - 'csharp/300-CSharpAPI'

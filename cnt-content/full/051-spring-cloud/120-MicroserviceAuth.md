@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-cloud/060-ApiGateway'
   - 'spring-boot/120-SpringSecurityJwt'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'spring-boot/120-SpringSecurityJwt'
   - 'spring-cloud/060-ApiGateway'

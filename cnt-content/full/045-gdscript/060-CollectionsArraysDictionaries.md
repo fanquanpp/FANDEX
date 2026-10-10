@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 掌握数组类型化数组紧缩数组与字典的语义差异，避开引用共享与遍历修改两大陷阱
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'gdscript/030-BasicDataTypesConversion'
   - 'gdscript/110-DesignPatternsInGDScript'

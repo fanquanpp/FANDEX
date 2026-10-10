@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: GDB/LLDB 调试、性能剖析工具与内存泄漏检测。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/460-MemoryOrderLockFree'
   - 'cpp/770-CppProjectPractice'

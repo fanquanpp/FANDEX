@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 串联 Python 模块全部文档，按语法基础、对象模型、类型系统、并发与工程生态五条主线回顾核心知识，并用虚拟歌手平台案例沉淀示例代码。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'python/460-OOP'
   - 'python/590-Metaclass'

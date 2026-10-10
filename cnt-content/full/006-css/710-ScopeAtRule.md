@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从「同一个 .card 在侧边栏要紧凑、主区要宽松」的选择器军备竞赛出发：读懂 @scope 的根与 to 下限边界、用 :scope 指回根元素、用邻近性裁决嵌套作用域，并学会「未知 at 规则整体丢弃」下的降级写法。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/130-CSS3SelectorSystem'
   - 'css/170-PriorityCalculation'

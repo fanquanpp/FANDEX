@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 网络是操作性知识：eNSP 与 HCL 两台模拟器的选型与安装坑、最小互联实验、四种典型组网、抓包入口与「拓扑即文档」的实验方法论。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/270-Tcpdump'
   - 'networking/165-VLANAndTrunk'

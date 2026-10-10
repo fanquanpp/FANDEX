@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'AIDE 文件完整性监控：基线库初始化、规则语法与排除配置、周期检查任务、入侵后取证比对'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cybersecurity/510-AuditdCommands'
   - 'cybersecurity/490-SELinuxAppArmor'

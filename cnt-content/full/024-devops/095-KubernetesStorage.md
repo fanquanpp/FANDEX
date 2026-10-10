@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 为什么容器会丢数据、PV/PVC/StorageClass 三层抽象、动态供应链路、StatefulSet 存储模板与快照恢复，附双副本 Deployment 挂同一盘的经典面试题。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'devops/090-KubernetesCoreDetailed'
   - 'devops/410-DatabaseOps'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Vite 8 单引擎架构：版本演进时间线、Rolldown（Rust 打包器）、Oxc、Lightning CSS、Bundled Dev Mode 与升级迁移指南
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'vite/080-BuildSplit'
   - 'vite/100-PluginSystem'

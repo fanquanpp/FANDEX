@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB隔离级别底层实现：MVCC快照读与锁当前读的分工、Read View可见性、RC/RR/SERIALIZABLE差异与幻读处理
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/430-MVCCPrinciple'
   - 'mysql/440-MVCCSnapshotCurrentRead'

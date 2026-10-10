@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用具名捕获组把正则结果从"第 3 个括号"变成"year"，覆盖三处语法、未参与匹配、替换与常见坑。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/110-Regex'
   - 'javascript/130-UnicodePropertyEscape'

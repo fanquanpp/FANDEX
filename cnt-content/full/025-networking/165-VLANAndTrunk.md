@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 广播域为什么要切、access 与 trunk 的分工、VLANIF 三层网关与互联 VLAN，两个可完整复现的 eNSP 实验：跨楼层单 VLAN 与多部门多 VLAN 路由互通。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/035-NetworkSimulatorLab'
   - 'networking/160-SwitchingAndRouting'

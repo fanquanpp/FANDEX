@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 分支模型设计（GitHub Flow / Git Flow）、保护规则配置与强制策略。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'github/150-CollaborationDevelopmentStandard'
   - 'github/160-READMEFile'

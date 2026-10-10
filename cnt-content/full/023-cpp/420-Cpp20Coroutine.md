@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: "C++20 协程深水参考：三关键字与协程判定、Promise/Awaiter 三步协议、编译器状态机变换与协程帧布局、对称转移与 HALO，附 ASan/编译器真实报错与调试实录、生产级 Task/Generator 实现。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/090-RvalueReferenceMoveSemantics'
   - 'cpp/130-SmartPointerDeepDive'

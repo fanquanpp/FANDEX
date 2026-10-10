@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 以「printf 类型不安全、想要一个能收任意个任意类型参数的日志函数」引入，讲透模板参数包与函数参数包的声明、递归展开加终止函数的两段式写法、sizeof... 的编译期计数，回收完美转发解释 emplace_back 为什么离不开参数包，附「缺终止函数」的真实编译报错调试实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/380-VariadicTemplateFoldExpression'
   - 'cpp/110-PerfectForwardingReferenceCollapse'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: GoF设计模式的C++实现
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/340-ConstexprCompileTime'
   - 'cpp/050-NamespaceLinkage'

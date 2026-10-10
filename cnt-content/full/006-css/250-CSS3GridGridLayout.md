@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 网格容器与项目属性、区域命名与响应式网格。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/270-Shadow'
   - 'css/290-BackgroundEnhancement'

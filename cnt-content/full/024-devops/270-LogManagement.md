@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 结构化日志与采集链路选型：日志级别纪律、JSON 日志、Filebeat/Fluent Bit/Vector 对比、采样与脱敏、logrotate 与单机兜底
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'devops/280-ELKStackLogAnalysis'
   - 'devops/240-MonitorAndObservability'

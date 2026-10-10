@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go包管理详解：go mod replace、vendor。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'go/360-UnitTestBenchmark'
   - 'go/190-RaceDetectionAtomic'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: "在会启动线程与进程之后学习真正的工程化并发：线程池与进程池、竞态条件与锁的实测对照、队列解耦生产者与消费者，以及用 Semaphore 控制 asyncio 的并发上限。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'python/630-MultiprocessingMultithreading'
   - 'python/650-GILAndFreeThreading'

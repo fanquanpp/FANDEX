@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从「hover 时卡片轻轻抬起」出发，讲透 translate/scale/rotate/skew 一族函数与 transform-origin，用 perspective、preserve-3d、backface-visibility 搭出最小 3D 翻转卡，弄清 transform 只动合成层的性能真相，并学会配合 transition 做出丝滑过渡。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/330-CSSAnimationTransition'
   - 'css/220-PositionDetailed'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 页面卡 200ms 怎么查：Performance 面板定位长任务、火焰图读法、内存快照对比找泄漏，以及一组性能坑。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/370-MemoryLeakTroubleshoot'
   - 'javascript/360-ClosureMemoryLeakOptimization'

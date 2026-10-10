@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 'Docker 进阶：BuildKit 构建优化、多阶段构建、网络与存储、Compose 与安全实践。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cloud-computing/060-ContainerOrchestration'
   - 'cloud-computing/050-VirtualizationTech'

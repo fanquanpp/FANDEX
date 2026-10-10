@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: "从「70% 的严重漏洞是内存漏洞」这个数据切入，讲清 Rust 的生态位、所有权思想的直觉版、五个关键词、版本节奏与第一次编译运行，附零基础常见困惑与学习路线。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'rust/020-RustOverview'
   - 'rust/030-RustEnvSetup'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Burp Suite 命令行与自动化：目标范围配置、爬取与主动扫描、API/扩展集成与 CI 中的 DAST 思路'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cybersecurity/150-WebSecurityPenetrationTesting'
   - 'cybersecurity/420-NiktoScan'

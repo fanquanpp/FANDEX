@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用 Valgrind 检测 C 程序内存问题：memcheck 实战走查、泄漏分类解读、各工具选型（cachegrind/callgrind/massif/helgrind）与 ASan 对比。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/210-ProcessMemoryLayoutAndErrors'
   - 'c/200-DynamicMemoryManagement'

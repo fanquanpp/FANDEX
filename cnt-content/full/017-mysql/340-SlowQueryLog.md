@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 慢查询日志从零到一：阈值参数、mysqldumpslow 与 pt-query-digest 分析、EXPLAIN 分析闭环，以及长连接环境下的采样陷阱与生产配置建议。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/320-EXPLAINDetailed'
   - 'mysql/300-IndexStatsHistogram'

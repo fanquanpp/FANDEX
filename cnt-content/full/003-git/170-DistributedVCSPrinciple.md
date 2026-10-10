@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 分布式版本控制核心原理：集中式与分布式对比、快照存储、完整性保证与协作模型。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/100-GitBranchManagement'
   - 'git/150-GitRemoteRepoOperation'

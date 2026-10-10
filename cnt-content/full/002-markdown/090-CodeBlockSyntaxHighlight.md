@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 行内代码、围栏代码块、语言标注与高亮配置。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'markdown/320-ImageCDNAcceleration'
   - 'markdown/330-PRCollaboration'

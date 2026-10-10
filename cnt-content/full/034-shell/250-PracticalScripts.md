@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 实战脚本案例：部署脚本模板、日志分析报表、定时备份、文件批量处理
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'shell/200-TextProcessingTools'
   - 'shell/190-ScriptDebugging'

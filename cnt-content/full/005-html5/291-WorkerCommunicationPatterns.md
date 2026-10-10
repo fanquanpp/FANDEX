@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Web Worker 的进阶通信模式与家族全景：SharedWorker 跨标签页共享、MessageChannel 让两个 Worker 直连、classic 与 module 两种模式、可转移对象全表，以及 Service Worker / Audio Worklet / OffscreenCanvas 的选型对照。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'html5/290-WebWorkers'
   - 'html5/300-ServiceWorkerPWA'

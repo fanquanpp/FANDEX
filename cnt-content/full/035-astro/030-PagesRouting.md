@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 以城市路牌为线索讲解 Astro 文件路由：静态路由、动态路由 [slug]、多级与 Rest 参数、嵌套路由、404、重定向与布局
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'astro/040-ComponentsProps'
   - 'astro/050-ContentCollections'

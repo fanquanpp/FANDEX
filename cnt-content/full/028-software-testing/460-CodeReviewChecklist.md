@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 代码审查清单、审查维度与最佳实践。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'software-testing/450-DesignDocumentStandard'
   - 'devops/310-OnCallPractice'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 'Unity 游戏开发全览：MonoBehaviour 生命周期、协程与 async/await、ScriptableObject 数据驱动、ECS/DOTS 与 Job System、性能优化与工程化实践。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/230-SpanMemory'
   - 'csharp/240-SourceGenerator'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 Vue 的知识体系理解 Svelte：编译时框架、runes 响应式与 Vue 组合式 API 的一一对应。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'vue3/050-ReactiveSystem'
   - 'vue3/280-Vue3CompileOptimization'

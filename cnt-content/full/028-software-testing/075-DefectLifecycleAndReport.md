@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 缺陷报告是测试工程师最重要的交付物：本篇把一条缺陷从「发现」到「关闭」的完整流转讲透——缺陷报告八要素与标题公式、复现步骤的写作规范、偶现缺陷的报告策略、生命周期状态机与 triage 分诊、与开发分歧的处理，以及缺陷度量（逃逸率、重开率）的解读。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'software-testing/020-TestConceptPrinciple'
   - 'software-testing/300-DebugThinking'

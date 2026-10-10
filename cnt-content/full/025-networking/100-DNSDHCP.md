@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: DNS 解析体系与加密演进（DoT/DoH/DoQ）、DNSSEC 信任链、DHCP 租约机制与 DHCPv6/SLAAC。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/180-NetworkDesignPlanning'
   - 'networking/200-LoadBalanceTech'

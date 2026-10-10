@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从「按钮点了没反应——你还没认识 DOM」讲起：DOM 树与节点、querySelector 查询、textContent 与 innerHTML 的取舍（XSS 一句话红线）、classList、addEventListener 与事件对象、事件冒泡初次现身，以「添加待办 + 完成切换」收尾，附 Cannot read properties of null 与 defer 调试实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/420-BOMBrowserObjectModel'
   - 'javascript/440-FetchApiAndAbortController'
