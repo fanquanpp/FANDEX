@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Web 框架选型导览（net/http、Gin、Echo）、项目结构与分层架构、配置与部署骨架——微服务落地地图；REST 设计、gRPC、数据库、中间件均指向专篇。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'go/100-GoGeneric'
   - 'go/110-GoStandardLibraryToolchain'

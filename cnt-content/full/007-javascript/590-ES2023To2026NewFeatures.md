@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以「立刻会用」为标准逐年导览 ES2023 至 ES2026 新特性：非破坏数组方法与 findLast、Object.groupBy 与正则 v 标志、Set 集合运算与迭代器辅助方法、2026 批次前沿，每个特性配最小示例与预期输出。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/600-NewFeatureAdoptionStrategy'
   - 'javascript/310-IteratorHelper'

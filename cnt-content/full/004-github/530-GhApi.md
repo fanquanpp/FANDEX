@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 原理驱动讲解 gh api：先讲清 REST 与 GraphQL API 是什么，再讲 gh api 如何完成认证请求、传参、输出处理、分页与 GraphQL 查询，配以错误对策。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related: []
 prerequisites: []
 ---

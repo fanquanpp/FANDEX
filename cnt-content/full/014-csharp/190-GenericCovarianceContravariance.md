@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 泛型约束与型变
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/160-PatternMatching'
   - 'csharp/170-CRecordType'

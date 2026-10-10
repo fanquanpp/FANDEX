@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从「设计稿的颜色上屏总差一点」出发拆掉 srgb 的历史包袱：动手调 oklch 的亮度/色度/色相三个旋钮、用 color-mix 从一个主色派生 hover 与浅底变体，并用 @supports 建立渐进增强的降级习惯。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/410-CSSVariableCustomAttribute'
   - 'css/460-FeatureQuery'

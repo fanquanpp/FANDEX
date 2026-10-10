@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 以课堂题库与带步骤注释的成套参考代码为底，组织 15 道循环结构实战题，每题按任务-提示-可折叠参考实现三段式展开；找错环节剖析真实学生代码的位或误用与月份边界遗漏。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/090-ControlFlow'
   - 'java/095-ScannerConsoleInput'

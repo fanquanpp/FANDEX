@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 线程、通道与 Send/Sync：无数据竞争的并发模型。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'rust/150-RustSmartPointers'
   - 'rust/130-RustAsyncTokio'

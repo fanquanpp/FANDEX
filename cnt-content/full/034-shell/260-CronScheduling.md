@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 定时任务与调度：crontab 五字段、环境陷阱与日志、at 一次性任务、systemd timer 与 flock 防重叠
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'shell/250-PracticalScripts'
   - 'shell/230-ProcessManage'

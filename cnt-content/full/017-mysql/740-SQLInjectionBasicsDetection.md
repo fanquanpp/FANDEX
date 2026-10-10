@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 注入原理、检测方法与防御策略入门。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/890-MySQLQuickLookup'
   - 'mysql/900-AppLayerDbAccessPatterns'

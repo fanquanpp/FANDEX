@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 进程查看、信号与终止、后台作业、免挂断运行与资源监控命令速查
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'shell/220-ProcessJobControl'
   - 'shell/170-PipeRedirect'

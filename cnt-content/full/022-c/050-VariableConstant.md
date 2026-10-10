@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 用「未初始化变量打印出垃圾值」的实验开题，讲透声明与定义、初始化与赋值、左值右值第一课，四种常量（字面量、宏、const、枚举）怎么选，字符串字面量为什么改不得，三类变量 Bug 的编译期拦截。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/055-ScopeStorageLinkage'
   - 'c/260-ConstAndVolatileQualifiers'

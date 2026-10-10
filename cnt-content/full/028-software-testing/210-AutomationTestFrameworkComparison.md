@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 浏览器自动化框架对比：Selenium、Cypress、Playwright、Puppeteer 的架构差异、能力边界与选型决策，附 Playwright 实战示例。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'software-testing/090-Selenium'
   - 'software-testing/160-StressAndStabilityTest'

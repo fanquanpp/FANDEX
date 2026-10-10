@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以"用户注册接口要不要存明文密码"为主线学 crypto：bcrypt 密码存储、crypto/rand 与 rand.Text 令牌、AES-GCM 认证加密、HMAC 请求签名、PBKDF2/HKDF 密钥派生与算法选型口诀，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'go/390-GoConfigManagement'
   - 'go/460-GoHTTPClient'

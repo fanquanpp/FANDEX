@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C#反射与特性（Attribute）应用详解：从ECMA-335元数据到Source Generator的完整指南。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/100-AsyncAwaitStateMachine'
   - 'csharp/200-DelegateEventUnderlying'
@@ -2204,9 +2204,7 @@ var asm = Assembly.LoadFrom("MyLibrary.dll");
 Type[] types = asm.GetTypes();
 ```
 
-## 速查补充：特性 Attribute（承接自原 150 篇速查段）
-
-## 特性 (Attribute)
+## 速查补充：特性 Attribute
 
 **基本写法：定义特性**
 `[AttributeUsage(AttributeTargets.<目标>)] public class <名称> : Attribute { ... }`

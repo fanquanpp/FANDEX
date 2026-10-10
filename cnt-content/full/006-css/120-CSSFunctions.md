@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: "从「容器要限宽 1200px 还要减掉两侧内边距，媒体查询写了三遍」出发，用 min/max/clamp 三兄弟一行搞定响应式尺寸，吃透 calc 的空格语法与流体排版公式，再用 color-mix 从一个主色派生出整套交互色，让 CSS 自己会算术。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/410-CSSVariableCustomAttribute'
   - 'css/400-ModernColorSpace'

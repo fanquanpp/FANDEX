@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Git Flow、GitHub Flow、GitLab Flow 与 Trunk-Based 分支模型：工作流程、适用场景与选型决策。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/160-RemoteTrackingBranch'
   - 'git/100-GitBranchManagement'

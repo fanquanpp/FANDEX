@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 在 psql 里用播客收听数据做三份报表，掌握 PG 特色高级 SQL：FILTER 条件聚合、DISTINCT ON、LATERAL、CTE 内联与 generate_series 补零日历。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'postgresql/270-PartitionedTable'
   - 'sql/260-WindowFunction'

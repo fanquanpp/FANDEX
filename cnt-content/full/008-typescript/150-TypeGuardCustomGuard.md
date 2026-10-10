@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从 localStorage 里的脏数据出发，讲透 TypeScript 的类型收窄：内置守卫、判别式联合、自定义类型谓词与断言函数，以及七个经典坑点。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'typescript/110-LiteralUnionTypes'
   - 'typescript/190-NeverTypeSemantics'

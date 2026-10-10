@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 在图片上划分可点击区域：map 与 area 的 shape/coords 坐标系统（rect/circle/poly），含坐标计算、hit-testing 原理与可视化示例。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'html5/140-ImagesAndResponsiveImages'
   - 'html5/210-SVG'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL死锁检测与处理：检测算法、日志分析、超时配置与预防策略
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'postgresql/160-SystemArchitecture'
   - 'postgresql/190-LockMechanism'

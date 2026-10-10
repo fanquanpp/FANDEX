@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C# Source Generators
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/190-GenericCovarianceContravariance'
   - 'csharp/230-SpanMemory'
@@ -1492,9 +1492,7 @@ context.RegisterPostInitializationOutput(ctx =>
 
 > "The best code is the code you don't write—but the second best is the code the compiler writes for you." — Anonymous
 
-## 速查补充：源生成器接口速查（承接自原 150 篇速查段）
-
-## 源生成器
+## 速查补充：源生成器接口速查
 
 **基本写法：IIncrementalGenerator 接口**
 `[Generator] public class <生成器名> : IIncrementalGenerator { ... }`

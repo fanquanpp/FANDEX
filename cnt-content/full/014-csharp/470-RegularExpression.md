@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Regex 匹配替换、分组捕获、选项标志、超时防护与 GeneratedRegex 源生成的速查手册，附完整示例与易错点解析。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/030-CSharpBasicSyntax'
   - 'csharp/240-SourceGenerator'

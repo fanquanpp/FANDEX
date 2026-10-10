@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 多路复用：default 分支、超时控制与退出广播。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'go/150-ChannelPrinciple'
   - 'go/140-ContextDetailed'

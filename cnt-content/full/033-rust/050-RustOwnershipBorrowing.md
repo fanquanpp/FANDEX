@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Rust 核心机制：所有权规则、移动与复制、借用与引用、切片、生命周期与内存安全
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'rust/040-RustBasicSyntax'
   - 'rust/060-RustBorrowCheckerErrorGuide'

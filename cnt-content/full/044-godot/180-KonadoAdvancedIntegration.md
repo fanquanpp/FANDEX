@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 打通 KonadoDialogueManager 的变量存档回退能力，自定义对话框与角色背景场景，接入本地化与成就系统
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related: []
 prerequisites:
   - 'godot/170-KonadoScriptAuthoring'

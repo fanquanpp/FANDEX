@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Git 三棵树模型详解：工作区、暂存区、仓库的分工、状态流转与排障方法。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/240-ObjectModel'
   - 'git/070-GitDiffStagingOperation'

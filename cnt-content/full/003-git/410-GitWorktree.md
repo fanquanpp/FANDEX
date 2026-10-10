@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git worktree 详解：多工作目录并行检出、链接原理、锁定与清理管理。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/100-GitBranchManagement'
   - 'git/120-GitStash'

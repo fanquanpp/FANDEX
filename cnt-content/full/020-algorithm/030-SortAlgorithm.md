@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: "以「给 10 万条成绩单排序」引入：先写出能跑的冒泡与插入排序，实测理解为什么插入排序是 $O(n^2)$ 里的实用冠军；再亲手实现归并与快排两个 $O(n \\log n)$ 主力，用决策树论证比较排序下界，讲透稳定性与自定义比较器，最后看 LC-56/179/315 三个真实应用与七个高频坑。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'algorithm/035-AdvancedSortAndLinearSort'
   - 'algorithm/010-AlgorithmAnalysisBasics'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 承接移动语义的收官篇：万能引用 T&& 的两种形态、引用折叠规则表与 static_assert 验证实验、std::forward 与裸 std::move 的事故对照、emplace_back 与 push_back 的真实差异实验，附 forward 漏写的拷贝退化调试实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/100-MoveSemanticsDetailed'
   - 'cpp/090-RvalueReferenceMoveSemantics'

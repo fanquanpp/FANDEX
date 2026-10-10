@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: text、tspan、textPath、文字锚点、字体属性与可访问文本。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'svg/050-SVGPathDetailed'
   - 'svg/070-SVGColorFill'

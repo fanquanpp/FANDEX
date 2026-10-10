@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 生产环境错误监控：Sentry SDK 初始化与采样成本、Source Map 与 Release 让错误可定位、Breadcrumb 与 Replay 让错误可复现、全局兜底、React Router 与 Next.js 集成、告警运维——错误边界机制本身见错误边界篇。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related: []
 prerequisites: []
 ---
@@ -637,6 +637,11 @@ function SLODashboard() {
 
 - Sentry 官方文档（React 集成）：https://docs.sentry.io/platforms/javascript/guides/react/ ，Sentry SDKs, MIT License（SDK 与文档随仓库开源）。
 - 原 440-ErrorBoundarySentry 篇的 Sentry 专属内容（SDK 初始化、Source Map/Release、Breadcrumb、Trace、useErrorHandler、Next.js/Vite 集成、告警规则、方案对比表）已全部搬入本篇并教学化改写；错误边界机制部分已并入 [错误边界](/react/190-ReactErrorBoundary)（分层边界反模式等片段），重复段落移除。
+- 以下 4 条为原 440 篇参考文献（10.2 官方文档与工程博客）的剩余条目，原文引用，未逐条复核时效：
+  - React Team. 2024. Error Boundaries. React Documentation: https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary
+  - Vercel. 2024. Next.js Error Handling: https://nextjs.org/docs/app/building-your-application/routing/error-handling
+  - Abramov, D. 2017. React v16: Error Boundaries. React Blog: https://react.dev/blog/2017/07/26/error-handling-in-react-16
+  - Sentry. 2024. Source Maps Upload: https://docs.sentry.io/platforms/javascript/sourcemaps/
 
 ## 错误处理的历史背景
 

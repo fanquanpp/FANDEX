@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git restore / rm / mv / clean 文件级操作详解：语义、安全边界与恢复手段。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/060-ThreeTrees'
   - 'git/070-GitDiffStagingOperation'

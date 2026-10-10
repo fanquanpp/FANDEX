@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++内存序与无锁编程详解：std::memory_order、std::atomic、fence、ABA 问题与无锁数据结构。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/730-Cpp23NewFeatures'
   - 'cpp/330-CppTemplate'

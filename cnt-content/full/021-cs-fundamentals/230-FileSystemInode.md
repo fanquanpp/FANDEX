@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 文件系统 inode 机制：inode 结构、目录项、超级块与 Ext4 文件系统。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cs-fundamentals/210-MemorySegmentationAndPaging'
   - 'cs-fundamentals/220-PageReplacementAlgorithm'

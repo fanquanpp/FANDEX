@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 单一主题：查询重写（SELECT *、子查询改 JOIN、深分页、EXISTS 替代 IN）、参数化查询与计划缓存、统计信息——先改写、再验证的闭环
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'sql/430-ExecutionPlan'
   - 'sql/435-SQLPartitionedTable'

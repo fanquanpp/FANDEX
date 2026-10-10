@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 四种事务隔离级别的定义、实现机制（MVCC/锁/SSI）、各数据库方言差异与选择策略。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'sql/360-TransactionACIDProperty'
   - 'sql/380-DirtyReadNonRepeatablePhantom'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 负载均衡调度算法详解：轮询/加权轮询、最少连接、源地址哈希与一致性哈希（虚拟节点）、算法选型与 Nginx/IPVS 配置对照。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/200-LoadBalanceTech'
   - 'networking/240-HighAvailabilityLVS'

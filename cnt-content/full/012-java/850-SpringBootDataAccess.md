@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Spring Data JPA、MyBatis、R2DBC、JdbcTemplate 与事务、缓存、连接池的系统性深度剖析
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/830-SpringBootAdvanced'
   - 'java/840-SpringBootSecurity'

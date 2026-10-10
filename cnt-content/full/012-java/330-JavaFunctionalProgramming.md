@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Lambda、Stream、函数式接口与函数式编程范式的系统性深度剖析
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/850-SpringBootDataAccess'
   - 'java/770-JavaDesignPattern'

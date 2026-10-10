@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 串联模块十二篇文档：从原生 ESM 与依赖预构建到配置、HMR、代码分割、插件系统与 Vite 8 Rolldown 单引擎的完整知识体系回顾。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'vite/030-ConfigFile'
   - 'vite/070-DevServerAndProxy'

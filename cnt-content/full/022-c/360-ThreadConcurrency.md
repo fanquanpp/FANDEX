@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 全局计数器被两个执行流同时自增，100000 次 x 2 却少于 200000：从 count++ 的读-加-写三步拆出竞态条件，用 C11 5.1.2.4 说清数据竞争是未定义行为，建立临界区、互斥、条件变量与生产者消费者的思想地基，死锁四条件与锁排序对策，ThreadSanitizer 实地抓出数据竞争。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/370-POSIXThread'
   - 'c/380-AtomicAndMemoryModel'

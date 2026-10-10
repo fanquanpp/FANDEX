@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis Stream 消息日志模型：Entry ID 生成规则、Radix Tree 与 listpack 存储结构、XADD/XREAD/XRANGE 基础命令、写入端实践与消息队列选型对比。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'redis/092-StreamConsumerGroups'
   - 'redis/094-StreamOpsAndMonitoring'
@@ -200,7 +200,9 @@ flowchart TD
 
 #### 1.6.3 适用场景对照
 
-#### 14.3.1 Redis Stream 适用场景
+把 1.6.1 的维度表落到具体业务上：同一类需求在不同消息量级与基础设施约束下，最优选型并不相同。下面按产品逐一列出典型适用场景，作为选型决策树（1.6.2）结论的事后校验。
+
+#### 1.6.3.1 Redis Stream 适用场景
 
 - 已有 Redis 基础设施，不想引入额外中间件
 - 消息量级在十万级以内
@@ -209,7 +211,7 @@ flowchart TD
 - 事件溯源、CQRS 架构
 - 中小型项目快速迭代
 
-#### 14.3.2 Kafka 适用场景
+#### 1.6.3.2 Kafka 适用场景
 
 - 大数据流处理（日志聚合、实时数仓）
 - 百万级以上吞吐量需求
@@ -217,7 +219,7 @@ flowchart TD
 - 长期消息存储与回放
 - 事件驱动微服务架构
 
-#### 14.3.3 RabbitMQ 适用场景
+#### 1.6.3.3 RabbitMQ 适用场景
 
 - 需要复杂路由规则（Topic/Fanout/Header Exchange）
 - 多协议支持（AMQP/MQTT/STOMP）
@@ -225,7 +227,7 @@ flowchart TD
 - 需要原生死信队列
 - 传统企业系统
 
-#### 14.3.4 RocketMQ 适用场景
+#### 1.6.3.4 RocketMQ 适用场景
 
 - 金融级可靠消息
 - 事务消息需求
@@ -233,7 +235,7 @@ flowchart TD
 - 延迟消息需求
 - 国内电商场景（生态成熟）
 
-#### 14.3.5 Pulsar 适用场景
+#### 1.6.3.5 Pulsar 适用场景
 
 - 云原生多租户场景
 - 计算与存储分离架构

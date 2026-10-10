@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: GraphQL API开发
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/910-JavaRedis'
   - 'java/970-JavaDocker'

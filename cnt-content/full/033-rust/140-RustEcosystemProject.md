@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: "以虚拟歌手音乐平台的歌曲 API 为实战目标，用 axum 路由、serde 序列化、clap 命令行、tracing 日志四个 crate 从零搭出可 curl 验证的完整服务，附生产进阶 crate 选型表与部署要点。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'rust/130-RustAsyncTokio'
   - 'rust/120-RustTestingDebugging'

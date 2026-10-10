@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 180 篇搭心智模型，本篇拆机制：prototype、__proto__、constructor 三角关系完整推演，Object.create 与 setPrototypeOf 的用法、纯净字典与性能代价，借用构造函数、组合寄生到 class extends 与 super 的继承演进对照，属性遮蔽与删除的边界情况，手写 instanceof 与三类失效场景，附 super 之前摸 this 的 ReferenceError 调试实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/180-JavaScriptPrototypeInheritance'
   - 'javascript/220-ES6NewFeatures'

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 认识 Konado 框架与多许可证模式，完成插件安装并把对话模板接入 Godot 场景播放第一段剧情
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related: []
 prerequisites:
   - 'godot/020-NodesScenesAndInstancing'

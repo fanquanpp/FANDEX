@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 串联 Rust 模块全部文档，按所有权与借用、类型系统、trait 与泛型、并发与异步、工程化五条主线回顾核心知识，并用虚拟歌手平台案例沉淀示例代码。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'rust/050-RustOwnershipBorrowing'
   - 'rust/100-RustGenericTrait'

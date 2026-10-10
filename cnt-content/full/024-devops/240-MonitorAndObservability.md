@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 从一次"用户先发现故障"的事故出发，本地搭起 Prometheus 与 Grafana 亲手看指标曲线，理解指标、日志、链路三支柱与 SLO 错误预算。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'devops/250-Prometheus'
   - 'devops/260-GrafanaDashboards'

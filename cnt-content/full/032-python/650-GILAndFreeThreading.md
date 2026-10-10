@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: "解释为什么 8 个线程跑纯计算反而比单线程慢：GIL 锁什么、不管什么，IO 等待与 numpy 这类 C 扩展为何不受影响，PEP 703 自由线程从 3.13 实验构建到 3.14 正式支持的现状与迁移建议。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'python/630-MultiprocessingMultithreading'
   - 'python/640-ConcurrentProgramming'

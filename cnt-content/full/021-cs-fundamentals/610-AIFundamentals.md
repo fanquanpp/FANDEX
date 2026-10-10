@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 人工智能基础：搜索算法、知识表示、机器学习、神经网络与深度学习；文末附感知机训练与缩放定律观察实验
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cs-fundamentals/400-NetworkSecurity'
   - 'cs-fundamentals/600-MultimediaTechnology'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 综合运用表单验证、Canvas 与本地存储的交互式应用。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'html5/280-CrossDocumentCommunication'
   - 'html5/360-ViewportConfigMobileFirst'

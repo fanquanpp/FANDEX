@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go并发模式详解：工作池、扇出扇入、管道。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'go/160-GoroutineChannelPrinciple'
   - 'go/170-GMPModel'

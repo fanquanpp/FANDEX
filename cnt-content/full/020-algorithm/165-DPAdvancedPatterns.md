@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 动态规划经典模型进阶参考书（参考层）：背包问题家族（0-1、完全、多重、分组）完整实现与选型对比，区间 DP 通用框架与合并石子、矩阵链乘法、戳气球，树形 DP 与没有上司的舞会、打家劫舍 III、二叉树最大路径和，状态压缩 DP 概念级入门（位运算集合编码与 TSP，深水内容见动态规划状态压缩），数位 DP，滚动数组、单调队列、斜率优化、四边形不等式等优化技术总览，延伸至生物信息学序列比对、Viterbi 解码、期权定价、序列推荐的工程实践与 LLVM、PostgreSQL、BLAST、Git 的案例研究，附 Python/C++/Java 多语言实现与预期输出。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'algorithm/160-DynamicProgramming'
   - 'algorithm/240-BitmaskDynamicProgramming'

@@ -9,7 +9,7 @@ prerequisites:
   - 'mybatis/040-ResultMapping'
   - 'mysql/110-SQLDataOperationQuery'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/340-SlowQueryLog'
   - 'mybatis/060-PluginInterceptor'

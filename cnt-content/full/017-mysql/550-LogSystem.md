@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL日志系统：错误日志、通用查询日志、慢查询日志的配置、查看与运维
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/500-RedoLog'
   - 'mysql/510-UndoLog'

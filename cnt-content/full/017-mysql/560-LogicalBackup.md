@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL逻辑备份：mysqldump选项与一致性备份、MySQL Shell util.dumpInstance并行导出、mysqlpump移除与恢复流程
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/490-Binlog'
   - 'mysql/550-LogSystem'

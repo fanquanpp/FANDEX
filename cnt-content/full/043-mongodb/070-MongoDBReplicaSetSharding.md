@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 副本集高可用与水平分片：oplog、选举、shard key 选型与数据分布。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mongodb/040-MongoDBIndexPerformance'
 prerequisites:

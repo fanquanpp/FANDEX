@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'kubectl 学习笔记：入职第一天连上集群——看状态、部署应用、查日志排障、扩缩容与端口转发，最后是绝不能搞错的上下文管理。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'devops/090-KubernetesCoreDetailed'
   - 'devops/110-HelmChartApplicationPackage'

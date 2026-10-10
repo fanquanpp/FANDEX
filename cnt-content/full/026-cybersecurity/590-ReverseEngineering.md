@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: '逆向工程命令行：radare2 分析与调试、Ghidra headless 反编译、字符串与加壳识别、恶意样本静态分析速览'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cybersecurity/570-MalwareAnalysis'
   - 'cybersecurity/580-IoTOTSecurity'

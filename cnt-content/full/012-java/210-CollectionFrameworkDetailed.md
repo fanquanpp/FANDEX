@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: List、Set、Map 体系及迭代器与比较器。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/110-ArrayDetailed'
   - 'java/620-JVMTuning'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用一句话和三条规则快速掌握 CSS 覆盖规则，是深入学习优先级前的入门速查。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/130-CSS3SelectorSystem'
   - 'css/170-PriorityCalculation'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: "从图片批量压缩从 100 秒提速到 30 秒的真实场景入门并发：threading 与 multiprocessing 的最小可用写法、进程不共享内存的现场演示，以及 IO 密集与 CPU 密集的选型决策表。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'python/640-ConcurrentProgramming'
   - 'python/650-GILAndFreeThreading'

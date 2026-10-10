@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 从全站搜索页「敲字卡 + 切页闪」讲起：useTransition 拆分紧急与非紧急更新、useDeferredValue 与选型规则、Suspense 挂起与防 fallback 闪烁、tearing 与 useSyncExternalStore、自动批处理与 flushSync，附受控输入延迟与 transition 副作用两则调试实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'react/120-FiberArchitecture'
   - 'react/060-React19NewFeatures'

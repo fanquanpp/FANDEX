@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 复制按钮、调起系统分享面板、视频全屏这三件高频交互背后的标准 API：Async Clipboard 的读写与权限模型、Web Share API 及其降级链、Fullscreen API 的手势要求与事件同步，配 execCommand 时代回退与 iOS 差异说明；核心心智模型是「用户激活」——这三个 API 都要求在手势上下文中调用。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'html5/250-DragAPI'
   - 'html5/245-WebStorage'

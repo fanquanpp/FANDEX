@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 'K8s 网络模型四层：CNI 插件、Pod 网络、Service（kube-proxy）与 Ingress/NetworkPolicy。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cloud-computing/120-KubernetesArchitecture'
   - 'cloud-computing/110-KubernetesCore'

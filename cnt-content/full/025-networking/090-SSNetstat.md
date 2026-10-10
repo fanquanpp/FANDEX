@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: ss 与 netstat：套接字状态查看、连接统计与端口监听排查，TIME_WAIT/CLOSE_WAIT 分析。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/020-OSITCPIPModel'

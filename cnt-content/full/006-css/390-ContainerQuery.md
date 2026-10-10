@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 深入解析 CSS Container Queries 容器查询的规范、算法、工程实践与跨浏览器兼容性
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/280-BorderRadius'
   - 'css/360-MediaQuery'
@@ -1858,6 +1858,8 @@ Ant Design v5 部分组件支持容器查询：
 
 ### 6.1 历史演进
 
+容器查询立项的直接动因是媒体查询的局限：组件无法感知自己被放进多大的空间。从 2010 年代的社区提案、ResizeObserver 的 JS 过渡方案，到 2023 年 size 与 inline-size 查询成为基线能力，本节梳理这条「让组件自适应容器」的演进路径。
+
 ### 6.1.1 媒体查询的局限（2010s）
 
 CSS Media Queries 在 2012 年随 CSS3 引入，让 Web 设计进入响应式时代。开发者通过 `@media (min-width: 768px)` 等条件针对视口尺寸适配。然而，组件化时代的到来暴露了媒体查询的根本缺陷：
@@ -1950,6 +1952,8 @@ W3C 长期拒绝将元素查询纳入规范，正是因为此问题。
 
 ### 6.2 形式化定义
 
+本节给出规范级定义：container-type 与 container-name 的文法、@container 规则的查询条件与容器解析算法（从查询元素向上查找最近的合格容器）、cqi/cqb 等容器单位的计算方式，出处为 CSS Containment Module Level 3 的容器查询章节。
+
 ### 6.2.1 规范条款
 
 依据 [CSS Containment Module Level 3 §3](https://www.w3.org/TR/css-contain-3/#container-queries)：
@@ -2034,6 +2038,8 @@ $$
 ---
 
 ### 6.3 理论推导与原理解析
+
+本节从渲染管线推导容器查询的工作原理：尺寸快照与样式重算的循环为何不会造成死循环、inline-size 为何是默认值且能避免高度塌陷、容器单位如何随容器尺寸联动。推导配可在 DevTools 中观察的验证示例。
 
 ### 6.3.1 容器查询的渲染管线
 

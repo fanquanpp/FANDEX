@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 编译器词法分析：记号与词素、正则表达式、NFA 到 DFA 的转换与手写词法分析器。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cs-fundamentals/420-CompilePrinciple'
   - 'cs-fundamentals/440-GrammarAnalysis'

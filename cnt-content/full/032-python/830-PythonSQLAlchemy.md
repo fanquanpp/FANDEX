@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以「设备管理后台的读写层」为场景，用 SQLAlchemy 2.0 风格走通 ORM 全流程：Engine 与连接池、Mapped 声明式模型、Session 增删改查、一对多关系与级联、selectinload 治理 N+1；附 DetachedInstanceError、异步懒加载、default 与 server_default 等十个高频坑点。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'python/880-PythonFastAPI'
   - 'python/800-PythonDatabaseMigration'

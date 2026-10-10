@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从「排行榜要筛选高分、算平均、找第一名，三段 for 循环写三遍」讲起：map/filter/reduce/sort/find/some/every 贯穿同一份玩家数组、回调函数是 080「函数是值」的落地、链式调用的可读性边界、用 reduce 手写 map/filter 的理解实验，附 x.map is not a function 调试实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/080-FunctionScopeClosure'
   - 'javascript/100-ThisKeywordDeepDive'

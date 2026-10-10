@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL 窗口函数框架详解：ROWS BETWEEN 与 RANGE BETWEEN 窗口帧定义、滑动窗口计算、累计聚合与排名函数的底层机制。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'sql/390-LockMechanism'
   - 'sql/250-RecursiveCTETreeTraversal'

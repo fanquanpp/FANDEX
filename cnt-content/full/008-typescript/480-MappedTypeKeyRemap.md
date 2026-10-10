@@ -6,7 +6,7 @@ category: '前端技术'
 difficulty: advanced
 description: 映射类型的 as 子句专篇：改键名（加前缀、生成 getter/事件处理器名）、模板字面量拼键、按条件筛键，以及「键在映射里丢了」等报错的排查。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'typescript/470-MappedTypeAdvanced'
   - 'typescript/500-TemplateLiteralType'

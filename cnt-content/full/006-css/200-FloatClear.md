@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: CSS 浮动与清除的完整原理：float/clear 属性、BFC 与 flow-root、clearfix 演进与现代布局替代方案。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/060-MarginCollapse'
   - 'css/220-PositionDetailed'

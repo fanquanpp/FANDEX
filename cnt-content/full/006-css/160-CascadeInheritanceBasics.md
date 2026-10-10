@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 哪些属性会继承、inherit/initial/unset/revert 的差别，以及层叠决策的入门模型。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/170-PriorityCalculation'
   - 'css/180-CSSPriorityQuickStart'

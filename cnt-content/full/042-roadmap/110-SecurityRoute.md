@@ -8,7 +8,7 @@ difficulty: intermediate
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cybersecurity/010-SecurityBasicsDefense'
   - 'roadmap/090-DevOpsCloudRoute'

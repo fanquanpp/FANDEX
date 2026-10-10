@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript装饰器与元编程
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'typescript/090-ClassMembersAndModifiers'
   - 'typescript/470-MappedTypeAdvanced'

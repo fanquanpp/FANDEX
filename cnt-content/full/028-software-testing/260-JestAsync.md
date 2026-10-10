@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: Jest 异步测试完整教学：async/await 与 resolves/rejects 断言、回调模式 done、Mock fetch/axios、假定时器处理延时与 test.concurrent。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'software-testing/240-JestBasics'
   - 'software-testing/250-JestMock'

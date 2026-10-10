@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 构建端到端类型安全的HTTP客户端
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'typescript/315-PackageExportsEsmInterop'
   - 'typescript/560-TypeSafeEventSystem'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: dig 与 nslookup：DNS 记录查询、+trace 追踪解析链路、指定服务器对比排查。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/100-DNSDHCP'
   - 'networking/290-NetworkTroubleshootTools'

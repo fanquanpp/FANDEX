@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 在两个终端里亲手复现并发扣费翻车，掌握事务与锁的动手层：隔离级别实测、FOR UPDATE 悲观锁、乐观锁、死锁复现与长事务排查。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/420-TransactionIsolationImplementation'
   - 'mysql/430-MVCCPrinciple'

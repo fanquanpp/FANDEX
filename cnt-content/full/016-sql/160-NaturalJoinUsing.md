@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: NATURAL JOIN 与 USING 子句：同名列等值连接的简写语法、与 ON 的语义差异、方言支持与三大陷阱。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'sql/150-JoinQuery'
   - 'sql/070-GROUPBYGroupingSet'

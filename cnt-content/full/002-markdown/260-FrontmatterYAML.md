@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Markdown 文件头部的 YAML frontmatter：两套读者的心智模型、标量/数组/对象字段、类型陷阱、托管字段与工具链协作、遮代码自检实践。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'markdown/270-SpecDocumentWriting'
   - 'markdown/300-LintFormatTooling'

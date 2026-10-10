@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git cherry-pick 详解：选择性移植提交、范围语法、冲突处理与幂等性陷阱。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/130-MergeConflictResolution'
   - 'git/270-GitRebase'

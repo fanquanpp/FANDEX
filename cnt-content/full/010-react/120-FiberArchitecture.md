@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 从命令面板敲字卡顿讲起：用 mini 工作循环亲手感受时间切片，再拆解 Fiber 节点链表、双缓冲、Render 与 Commit 两阶段、Scheduler 调度与 Lanes 优先级，附「渲染期副作用」与「key 不稳定」两则调试实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'react/110-JSXDeepAnalysis'
   - 'react/130-ConcurrentRendering'

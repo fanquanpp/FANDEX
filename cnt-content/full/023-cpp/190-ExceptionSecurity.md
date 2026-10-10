@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 异常机制基础到异常安全保证的一条主线：throw/catch 与标准异常层次、RAII 与栈展开、基本/强/不抛三级保证、copy-and-swap 事务式编程与异常中立性。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/195-CppErrorHandlingStrategies'
   - 'cpp/470-StringProcessing'

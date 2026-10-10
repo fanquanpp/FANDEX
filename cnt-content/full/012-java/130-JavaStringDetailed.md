@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: String 不可变性、字符串常量池、== 与 equals、StringBuilder/StringBuffer、常用 API、字符集编码与乱码排查、StringJoiner 与 format，零基础保姆级讲解。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/050-DataTypeConversion'
   - 'java/100-MethodDetailed'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git bisect 详解：二分定位首坏提交、自动化 bisect run 与实战脚本。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/180-GitLogDetailed'
   - 'git/190-GitBlame'

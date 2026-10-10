@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: '安全测试方法与工具链：SAST/DAST 定位、OWASP Top 10 对照、ZAP、SQLMap、Nuclei 模板化扫描、注入与 XSS 用例固化、模糊测试现状与漏测防范。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'software-testing/130-APITestToolchainAndContract'
   - 'software-testing/160-StressAndStabilityTest'

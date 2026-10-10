@@ -6,7 +6,7 @@ module: 'html5'
 category: 前端技术
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'html5/170-SemanticTag'
   - 'html5/430-HTML5DialogPopoverGuide'

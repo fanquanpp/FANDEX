@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: scikit-learn与ML基础
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'python/840-PythonRedis'
   - 'python/930-PythonGraphQL'

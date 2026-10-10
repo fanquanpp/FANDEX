@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 左右边界、旋转数组、二分答案、插值查找与斐波那契查找——二分家族的纵向深水
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related: []
 prerequisites: []
 ---

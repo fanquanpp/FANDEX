@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL全局事务标识符GTID：格式与生命周期、gtid_mode在线开启、基于GTID的复制与故障切换、8.4 Tagged GTID与运维
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/590-Replication'
   - 'mysql/610-ParallelReplication'

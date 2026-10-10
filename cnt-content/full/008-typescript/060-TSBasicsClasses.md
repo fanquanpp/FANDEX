@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第三课：类成员、继承与 super、public/private/protected、readonly、参数属性、访问器与抽象类，对齐官方 TypeScript Handbook。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'typescript/050-TSBasicsFunctions'
   - 'typescript/070-TSBasicsGenerics'

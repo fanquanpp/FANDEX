@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 'React Monorepo 实战：pnpm workspaces 依赖机制、workspace/catalog 协议、Turborepo 任务编排与缓存、React 单例与共享组件库打包、常见陷阱与选型建议'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'react/360-ReactStorybook'
   - 'react/370-ReactCICD'

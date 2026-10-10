@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 声明宏与过程宏：Rust 元编程的两条路径。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'rust/150-RustSmartPointers'
   - 'rust/100-RustGenericTrait'

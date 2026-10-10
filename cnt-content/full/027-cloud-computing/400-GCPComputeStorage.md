@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'GCP 命令实战：Compute Engine 实例、Cloud Storage 对象操作与 Cloud Run 部署。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cloud-computing/390-GCPCliConfigure'
   - 'cloud-computing/510-GCPGKECommands'

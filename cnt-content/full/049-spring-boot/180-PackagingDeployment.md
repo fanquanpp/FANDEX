@@ -8,7 +8,7 @@ difficulty: intermediate
 prerequisites:
   - 'spring-boot/050-ConfigurationManagement'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'spring-boot/160-ActuatorObservability'
   - 'java/620-JVMTuning'

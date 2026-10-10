@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: '以 FANDEX 仓库 60 多个依赖的真实 catalog 为主线：pnpm-workspace.yaml 集中记账、catalog 协议与具名目录引用、catalogMode 三档策略、overrides 协同、发布时的协议替换，以及改版本不生效等高频问题对策。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'vite/170-WorkspaceSetup'
   - 'vite/180-WorkspaceProtocol'

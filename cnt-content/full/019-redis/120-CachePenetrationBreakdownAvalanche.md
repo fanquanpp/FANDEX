@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 用一次促销事故串起缓存三大问题：穿透（空值缓存与 Redis 8 内置布隆过滤器）、击穿（互斥锁与逻辑过期）、雪崩（随机 TTL 与多级防护），附可直接运行的实验代码。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'redis/060-BitMapRedis'
   - 'redis/125-CachePatternsAndDbConsistency'

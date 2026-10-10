@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript错误边界与全局错误捕获：ErrorBoundary、window.onerror、unhandledrejection。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/180-JavaScriptPrototypeInheritance'
   - 'javascript/110-Regex'

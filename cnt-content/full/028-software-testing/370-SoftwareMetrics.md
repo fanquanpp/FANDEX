@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 代码行度量、功能点分析、圈复杂度与软件质量指标。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'software-testing/360-Refactoring'
   - 'software-testing/380-TechDebtManagement'

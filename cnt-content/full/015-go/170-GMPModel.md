@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 以"服务搬进 2 核容器后延迟反升"为主线学 GMP：G/M/P 各自管什么、调度时机与 work stealing、系统调用 hand-off、GOMAXPROCS 在容器里的正确姿势、trace 与 schedtrace 观测，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'go/160-GoroutineChannelPrinciple'
   - 'go/180-GoroutineSchedule'

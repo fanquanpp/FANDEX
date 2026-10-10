@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'CloudFront 命令实战：分发创建与配置、源站与 OAC、缓存失效刷新、TLS 证书与边缘函数。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related: []
 prerequisites: []
 ---

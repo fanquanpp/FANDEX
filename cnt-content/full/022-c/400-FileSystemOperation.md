@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 从「同一个复制程序的两条路」下到 POSIX 系统调用层：open 的 flags 与 O_CREAT 缺 mode 的编译陷阱、read/write 部分读写契约与循环封装、lseek 与 1GB 空洞文件实验、stat 家族与 S_ISREG 宏族、目录递归遍历、硬链接与符号链接、unlink 的延迟释放与 rename 的原子替换。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/420-CPosixSystemCall'
   - 'c/390-SocketNetworkProgramming'

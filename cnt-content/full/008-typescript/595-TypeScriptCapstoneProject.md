@@ -6,7 +6,7 @@ module: 'typescript'
 category: 前端技术
 difficulty: advanced
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'typescript/070-TSBasicsGenerics'
   - 'typescript/430-ConditionalTypeDistribute'

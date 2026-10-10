@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/080-LearningRouteOverview'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'roadmap/020-FrontendRoute'
   - 'roadmap/130-TwelveMonthPlanTemplate'

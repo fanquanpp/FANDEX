@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/090-SpringDataJpa'
   - 'spring-boot/110-AspectOrientedProgramming'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'redis/120-CachePenetrationBreakdownAvalanche'
 ---

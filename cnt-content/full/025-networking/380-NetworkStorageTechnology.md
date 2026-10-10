@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 网络存储：DAS/NAS/SAN 架构对比、iSCSI/FC 与 NFS/SMB 实操、Ceph 分布式存储、RAID 与数据保护策略。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/180-NetworkDesignPlanning'
   - 'networking/330-NetworkNamespaceVirtualBridge'

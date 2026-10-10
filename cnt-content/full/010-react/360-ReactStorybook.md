@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 组件工作台 Storybook：CSF3 故事格式、args 与控件面板、文档自动生成、play 交互测试、a11y 与 MSW 插件、CI 集成与视觉回归。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'react/340-ReactCanvas'
   - 'react/350-ReactD3'

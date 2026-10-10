@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 优化器靠什么估算成本：统计信息的采样机制、过时统计引发的执行计划抖动、ANALYZE TABLE 的正确用法、8.0 直方图解决数据倾斜的原理与实战。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/270-IndexHintForceIndex'
   - 'mysql/320-EXPLAINDetailed'

@@ -6,7 +6,7 @@ category: '前端技术'
 difficulty: advanced
 description: 条件类型三部曲到映射类型的桥梁篇：把条件类型放进映射的值位置，实现逐字段清洗（去 null 变可选）、按条件筛键与逐元素变换，并给出「先循环还是先判断」的设计顺序。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'typescript/470-MappedTypeAdvanced'
   - 'typescript/430-ConditionalTypeDistribute'

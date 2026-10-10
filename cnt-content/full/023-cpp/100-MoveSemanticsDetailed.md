@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 拆开 090 建立的黑盒：移动构造与移动赋值的完整实现规范、noexcept 如何决定 vector 扩容走移动还是拷贝、moved-from 状态的团队纪律与 std::exchange、STL 容器的移动行为与 SSO，附内存泄漏调试实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/090-RvalueReferenceMoveSemantics'
   - 'cpp/110-PerfectForwardingReferenceCollapse'

@@ -6,7 +6,7 @@ module: 'mysql'
 category: 数据库
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/050-MySQLOverviewDatabaseDesign'
   - 'mysql/070-MySQLDataTypeConstraint'

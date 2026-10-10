@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用「先测量再动手」的流程系统学习 React 性能优化：三层性能模型、重渲染的控制、长列表虚拟化、并发特性与 Web Vitals 守护，附 2026 年 React Compiler 时代的手写 memo 取舍。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'react/390-ReactCompilerAutoMemoization'
   - 'react/185-PortalAndImperativeDom'

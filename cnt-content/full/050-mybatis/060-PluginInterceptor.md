@@ -9,7 +9,7 @@ prerequisites:
   - 'mybatis/010-FromJdbcToMybatis'
   - 'mybatis/020-QuickStartCrud'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mybatis/080-MybatisPlusAdvanced'
   - 'mysql/340-SlowQueryLog'

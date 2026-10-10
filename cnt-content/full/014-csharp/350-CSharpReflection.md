@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 反射与表达式树
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/130-LINQDeferredImmediate'
   - 'csharp/100-AsyncAwaitStateMachine'
@@ -2301,9 +2301,7 @@ foreach (var item in span) { }
 </PropertyGroup>
 ```
 
-## 速查补充：反射（承接自原 150 篇速查段）
-
-## 反射
+## 速查补充：反射
 
 **基本写法：获取 Type 对象**
 `Type <变量> = typeof(<类型>);`
@@ -2381,9 +2379,7 @@ object? result = method?.Invoke(person, null);
 
 ---
 
-## 速查补充：表达式树（承接自原 150 篇速查段）
-
-## 表达式树
+## 速查补充：表达式树
 
 **基本写法：Lambda 表达式树**
 `Expression<Func<<类型>, <返回类型>>> <变量> = <参数> => <表达式>;`

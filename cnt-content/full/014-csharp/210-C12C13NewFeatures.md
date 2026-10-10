@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 最新C#语言特性
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/130-LINQDeferredImmediate'
 prerequisites:
@@ -2480,9 +2480,7 @@ C# 语言持续演进，每个版本都让代码更简洁、更安全、更高�
 
 通过持续学习与实践，你将能够熟练运用 C# 12/13 的新特性，编写出简洁、高效、安全的现代 C# 代码。
 
-## 速查补充：集合表达式（承接自原 150 篇速查段）
-
-## 集合表达式
+## 速查补充：集合表达式
 
 **基本写法：数组集合表达式**
 `<类型>[] <变量> = [<元素>, ...];`

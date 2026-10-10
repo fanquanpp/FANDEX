@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 部署不等于发布：滚动更新参数语义、蓝绿与金丝雀的取舍、指标驱动的自动回滚、特性开关与 expand-contract 数据库变更，附蓝绿切换动手实验。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'devops/140-CICDPipeline'
   - 'devops/130-ServiceMesh'

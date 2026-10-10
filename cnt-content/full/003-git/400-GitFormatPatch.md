@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git format-patch 详解：邮件补丁格式、am 应用工作流、版本迭代与离线协作。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/290-GitCherryPick'
   - 'git/170-DistributedVCSPrinciple'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 软件工程定义、软件危机、工程化方法与软件生命周期。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'software-testing/320-AgileDevelopment'
   - 'software-testing/330-RequirementAnalysisMethod'

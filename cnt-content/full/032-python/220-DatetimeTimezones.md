@@ -6,7 +6,7 @@ module: 'python'
 category: 后端技术
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'python/070-BasicDataType'
   - 'python/430-PythonLog'

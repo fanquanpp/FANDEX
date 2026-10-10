@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 用「刚提交就发现错了」的三个真实场景讲透 commit --amend：改信息、补文件、修敏感内容，讲清 amend 是造新提交而非修改旧提交、哈希为什么变、reflog 怎么救，以及已推送提交的黄金法则。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/050-GitBasicOperation'
   - 'git/260-GitReflog'

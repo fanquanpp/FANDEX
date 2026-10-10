@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 无障碍实战：语义化 HTML 与 ARIA 分工、表单标注与错误播报、键盘导航与焦点管理（弹窗焦点圈禁）、aria-live 动态播报、jsx-a11y 与 jest-axe 工具链。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'react/300-ReactGraphQL'
   - 'react/310-ReactMicroFrontend'

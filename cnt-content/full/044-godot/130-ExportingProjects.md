@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 安装导出模板，把项目导出为 Windows macOS Linux Android iOS 与 Web 版本，理解各平台限制
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'godot/010-GodotOverviewAndSetup'
   - 'godot/140-ScriptingEcosystemCSharpGDExtension'

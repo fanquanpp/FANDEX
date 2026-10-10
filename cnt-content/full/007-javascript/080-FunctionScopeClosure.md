@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从「结算逻辑复制三遍，改一处漏两处」讲起：参数与返回值、函数声明与表达式、函数是值、rest 参数，附 xxx is not a function 与 Cannot access 调试实录。作用域链与闭包拆分至 085 篇专讲。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/085-ScopeChainAndClosure'
   - 'javascript/070-ObjectArray'

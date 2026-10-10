@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用判别联合把错误建模成返回值：Result/Either 模型、异常与返回值两条路线的取舍、catch unknown 收窄收尾与 assert never 穷尽检查，含文件三态、分页错误码表与批量导入聚合三个完整例子。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related: []
 prerequisites: []
 ---

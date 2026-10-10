@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: DOM 操作、事件绑定、属性读写、动态生成与数据驱动可视化。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'svg/130-SVGCSSStyling'
   - 'svg/140-SVGAnimationBasics'

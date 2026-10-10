@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 8 个文件的项目手敲 gcc 到崩溃：从时间戳增量构建的原理学会 Make（四要素、tab 惨案、$@ $< $^、模式规则、.PHONY 失灵实录、-MMD 头文件依赖），再上 CMake（cmake_minimum_required 钉策略、target-based 现代写法、out-of-source 构建），链接顺序为何被 CMake 自动接管的机制回扣。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/320-DynamicStaticLibrary'
   - 'c/485-StaticAnalysisAndSanitizers'

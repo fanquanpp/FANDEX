@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Vue Router 导航守卫详解：全局守卫、路由独享守卫、组件内守卫、触发顺序与鉴权实践。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'vue3/150-AsyncComponentSuspense'
   - 'vue3/220-PiniaPersistencePlugin'

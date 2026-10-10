@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 列表、元组、字典、集合的操作与性能特征。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'python/142-CollectionsSpecializedContainers'
   - 'python/780-PythonCICD'

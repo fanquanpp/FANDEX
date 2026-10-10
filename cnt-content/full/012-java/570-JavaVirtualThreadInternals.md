@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 虚拟线程的 JVM 层实现参考：ForkJoinPool 载体调度、Continuation 挂载/卸载、完整卸载触发点清单、内存与吞吐估算、结构化并发完成策略全表与 JEP 演进时间线。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/550-JavaVirtualThread'
   - 'java/530-ThreadLocalMemoryLeak'

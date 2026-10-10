@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 主题、分区、消费组的核心模型，Docker Compose 起集群，命令行收发消息与分区键。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'devops/370-MessageQueueOverview'
   - 'devops/400-ReliableMessagingPatterns'

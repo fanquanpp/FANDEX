@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从"加载 2GB 日志会爆内存"讲起：惰性序列、yield 的暂停与恢复、双向通信、yield* 与异步生成器。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'javascript/310-IteratorHelper'
   - 'javascript/260-PromiseConstructorDeepDive'

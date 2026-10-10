@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: Redis Key 全生命周期：EXPIRE 的 NX/XX/GT/LT 选项、惰性删除与定期抽样删除、主从与持久化下的过期行为、懒释放（UNLINK/lazyfree）、SCAN 遍历。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'redis/130-MemoryEvictionPolicy'
   - 'redis/010-OverviewCoreDataStructure'

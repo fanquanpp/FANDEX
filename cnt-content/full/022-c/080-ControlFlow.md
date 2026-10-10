@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 以成绩分档的三种写法（if 链、switch 分桶、表驱动）开题：悬空 else 配对规则、= 误作 == 的 -Wparentheses 实录、switch 穿透语义与 C23 [[fallthrough]]、case 整型常量限制与 1023 条下限、GNU 区间 case 扩展、for/while/do-while 心智模型与互化、goto 的两个可辩护用途（多层跳出与错误清理）、分号空语句与浮点累积误差调试实录，switch 状态机收尾。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/090-FunctionDetailed'
   - 'c/055-ScopeStorageLinkage'

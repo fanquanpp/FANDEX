@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 移动端适配完整方案：viewport 与视口单位（vw/vh/dvh）、rem 方案、clamp 流式缩放、安全区域与 1px 边框问题的工程解法。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/360-MediaQuery'
   - 'css/390-ContainerQuery'

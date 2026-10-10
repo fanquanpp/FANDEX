@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: "以「哈希表快但没顺序」引入：亲手建二叉树并跑四种遍历，理解递归结构与栈/队列的迭代化，二叉搜索树的查找插入删除与退化实验，自平衡家族（AVL/红黑/B+ 树/LSM）的取舍地图，Trie 前缀树与自动补全，以及验证 BST 的经典 bug。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'algorithm/070-HashTable'
   - 'algorithm/090-HeapAndPriorityQueue'

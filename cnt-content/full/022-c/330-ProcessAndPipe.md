@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用「ls | grep .c 是怎么跑起来的」引出 fork/exec/wait/pipe 四件套：fork 返回两次与写时复制、printf 缓冲重复输出的事故现场、僵尸进程收尸、EOF 与 SIGPIPE 两种管道死锁，最后亲手实现一个支持单管道的迷你 shell。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/340-SignalHandling'
   - 'c/350-SharedMemorySemaphore'

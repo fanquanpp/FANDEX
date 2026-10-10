@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Vitest 测试集成：与 Vite 共享配置管线、断言与异步测试、vi mock 体系、jsdom 环境、覆盖率门禁与 Jest 迁移对照
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'vite/050-ViteEnvModes'
   - 'vite/030-ConfigFile'

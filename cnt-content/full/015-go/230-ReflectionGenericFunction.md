@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 以"给团队 API 写一个 tag 驱动的参数校验器"为主线学 reflect：Type 与 Kind、读写字段、方法调用、通用 Map/Filter、泛型替代与性能账本，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'go/220-Reflection'
   - 'go/240-GenericDetailed'

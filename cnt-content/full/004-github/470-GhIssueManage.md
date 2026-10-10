@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: '用 gh 命令行管理 Issue 全流程：创建与模板、查询过滤、评论编辑、关闭原因、Issue 转分支、批量操作与治理命令。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'github/210-IssuesTemplateTagMilestone'
   - 'github/450-GhCliAuth'

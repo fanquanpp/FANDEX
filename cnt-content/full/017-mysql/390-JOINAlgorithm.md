@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 从一次联查从 30ms 恶化到 12s 的排查出发，讲透 MySQL 的 Nested Loop 与 Hash Join：执行计划怎么读、驱动表怎么选、join_buffer_size 起什么作用。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/320-EXPLAINDetailed'
   - 'mysql/360-SubqueryOptimization'

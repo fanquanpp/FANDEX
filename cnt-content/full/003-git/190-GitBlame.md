@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 以「这行代码为什么要这么写」引入 blame 的提问模型——对文件的每一行问「你最后一次被有意义地改动是哪次提交」；重点讲它说谎的三种方式（格式化提交、rebase 重放、移动的代码块）与对策（-w、-C/-M、--ignore-rev 与 .git-blame-ignore-revs 文件），并给出 blame、log -L、git show 组成的一套完整考古流程，附生成忽略文件与排查「全员背锅」的动手任务。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/180-GitLogDetailed'
   - 'git/280-InteractiveRebase'

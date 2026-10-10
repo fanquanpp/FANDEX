@@ -6,7 +6,7 @@ module: 'git'
 category: 工具链
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/040-GitignoreDeepDive'
   - 'git/100-GitBranchManagement'

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 CharacterBody2D 实现平台跳跃与俯视角移动，理解 move_and_slide 与碰撞形状的正确用法
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'godot/060-InputEventsAndActions'
   - 'godot/070-TwoDGameObjects'

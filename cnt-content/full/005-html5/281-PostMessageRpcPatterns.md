@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 把 postMessage 从"裸消息"升级为生产级通信：Promise 化 RPC（超时/请求 ID）、跨域 localStorage 代理（MessageChannel + iframe）、多标签页登录同步器（BroadcastChannel + 心跳），附调试技巧。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'html5/280-CrossDocumentCommunication'
   - 'html5/290-WebWorkers'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 隧道封装原理：GRE/IPIP/VXLAN/WireGuard/IPsec 隧道模式对比、TUN 设备、MTU 与防火墙陷阱、双私网互通完整实验。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/340-SDN'

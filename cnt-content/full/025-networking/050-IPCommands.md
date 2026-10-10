@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: ip/ifconfig/route 常用网络命令：接口与地址管理、路由表操作、邻居表查看与持久化配置。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/080-PingTraceroute'

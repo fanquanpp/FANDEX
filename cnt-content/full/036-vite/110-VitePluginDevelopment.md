@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 以歌单数据与自创歌词格式为素材，端到端实现虚拟模块插件、transform 编译器与 dev 期 HMR 联动。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'vite/100-PluginSystem'
   - 'vite/070-DevServerAndProxy'

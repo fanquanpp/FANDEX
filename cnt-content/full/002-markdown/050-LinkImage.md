@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 行内链接、引用链接、自动链接、图片嵌入、替代文本必填与图片套链接的嵌套写法。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'markdown/150-Footnote'
   - 'markdown/220-Mermaid'

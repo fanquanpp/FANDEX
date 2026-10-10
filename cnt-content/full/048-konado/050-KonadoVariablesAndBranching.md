@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用持久与临时变量驱动剧情状态，用 choice branch 与 if 写出多分支互动叙事
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'konado/040-KonadoStageAndCamera'
   - 'konado/070-KonadoDialogueManagerApi'

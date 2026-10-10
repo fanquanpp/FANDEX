@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以"订单服务调用户服务"为主线学 gRPC：proto 定义与代码生成、grpc.NewClient 与超时纪律、四种通信模式、拦截器、状态码错误处理、Protobuf 演进纪律与 grpcurl 调试，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'go/470-GoHTTP'
   - 'go/530-GoGraphQL'

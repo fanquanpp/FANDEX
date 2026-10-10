@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: margin/padding/border/background/font 等简写属性的 1-4 值规则与“重置未写属性”陷阱。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/050-CSS3BoxModelDetailed'
   - 'css/290-BackgroundEnhancement'

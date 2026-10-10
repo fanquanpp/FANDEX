@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 以批量对账与审计场景讲 PL/pgSQL：变量与控制流、异常处理、RETURNING、SECURITY DEFINER 与函数属性易错点
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'postgresql/380-TriggerEventTrigger'
   - 'postgresql/340-ExtensionModuleDetailed'

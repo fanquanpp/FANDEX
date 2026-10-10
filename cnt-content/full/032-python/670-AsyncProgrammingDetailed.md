@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: "拆开 660 建立的黑盒：gather 遇到异常时兄弟任务的生死、return_exceptions 的取舍、wait_for 超时如何变成内层 CancelledError、手动取消与清理纪律、异步上下文管理器收尾资源，附 time.sleep 卡死事件循环与 Task exception was never retrieved 的实测实录。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'python/660-CoroutineAsyncio'
   - 'python/520-ContextManager'

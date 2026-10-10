@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 保证站点质量：Vitest 单元测试与 Playwright 端到端。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'astro/100-AstroFormsActions'
   - 'astro/080-BuildDeploy'

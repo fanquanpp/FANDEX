@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 以「一行异常让清理代码永远执行不到」引入，用异常路径对照实验讲透 unique_ptr 独占所有权与 make_unique 的优势、shared_ptr 引用计数实验、weak_ptr 破解循环引用，附 LeakSanitizer 与 double-free 调试实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/120-CppPointers'
   - 'cpp/140-CppSmartPointer'

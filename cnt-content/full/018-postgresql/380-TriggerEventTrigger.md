@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 以审计日志与冗余字段同步两个场景讲触发器：BEFORE/AFTER 与行级/语句级、WHEN 条件、事件触发器
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'postgresql/370-StoredProcedureAndFunction'
   - 'postgresql/520-AuditLog'

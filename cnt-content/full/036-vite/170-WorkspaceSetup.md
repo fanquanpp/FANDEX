@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: pnpm workspace 配置：pnpm-workspace.yaml、packages 模式与安装命令
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'vite/160-PnpmCore'
   - 'vite/180-WorkspaceProtocol'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 从一个 32 位硬件寄存器出发学位域：语法与 :0 对齐、位序/跨存储单元/int 符号性三大实现定义，GCC 与 MSVC 同一结构体 sizeof 不同的实验，把位域写进文件后读回错位的踩坑现场，volatile 位域的 MMIO 争议，附位域与掩码的工程取舍表。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/220-MemoryAlignmentDeepDive'
   - 'c/230-AlignmentMemoryLayout'

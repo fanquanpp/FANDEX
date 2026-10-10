@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 搜索（Search）算法的通用篇：形式化定义、状态空间图模型、完备性与最优性证明，线性搜索 $O(n)$、二分搜索 $O(\log n)$、哈希查找 $O(1)$、BFS/DFS 图搜索 $O(V+E)$ 的原理、实现与对比分析，附 Python/C++/Java 多语言实现与 CLRS 第 22 章。有信息搜索与博弈搜索已拆分至 055 篇。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/030-SortAlgorithm'

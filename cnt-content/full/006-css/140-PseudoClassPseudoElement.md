@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: "从「列表最后一项的分割线多了一条」这类真实样式需求出发，掌握结构伪类 :nth-child 的 An+B 公式与 :is/:where/:has 现代匹配工具，分清一个冒号的伪类与两个冒号的伪元素，并能在不写一行 JS 的前提下完成悬停、表单校验反馈与内容装饰。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'css/130-CSS3SelectorSystem'
   - 'css/170-PriorityCalculation'

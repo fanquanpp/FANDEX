@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: PyTorch与TensorFlow
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'python/930-PythonGraphQL'
   - 'python/990-PythonMachineLearning'

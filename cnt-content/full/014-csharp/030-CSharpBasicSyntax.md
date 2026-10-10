@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: "用游戏排行榜主线讲透 C# 基础语法：顶级语句与经典 Main 的隐式生成关系、var 编译期类型推断、字符串插值、if/for/foreach、文件范围命名空间与隐式 using，附 CS0103 真实编译报错实录与四道阶梯练习。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/040-CSharpOOP'
   - 'csharp/050-ValueTypeReferenceType'
@@ -291,9 +291,7 @@ Program.cs(3,44): error CS0103: The name 'bestsore' does not exist
 
 进入 [C# 面向对象编程](/csharp/040-CSharpOOP)：顶级语句里隐式生成的类，下一篇由你亲手写——类、对象、属性与方法，把排行榜从脚本升级成真正的程序。
 
-## 速查补充：全局 using（承接自原 150 篇速查段）
-
-## 全局 using 与 Nullable
+## 速查补充：全局 using
 
 **基本写法：全局 using**
 `global using <命名空间>;`
@@ -325,9 +323,7 @@ global using System.Threading.Tasks;
 
 ---
 
-## 速查补充：顶级语句与文件范围命名空间（承接自原 150 篇速查段）
-
-## 顶级语句与文件范围命名空间
+## 速查补充：顶级语句与文件范围命名空间
 
 **基本写法：顶级语句**
 `<语句>;`

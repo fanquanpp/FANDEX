@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Box、Rc、Arc 与内部可变性：堆内存与共享所有权的标准答案。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'rust/100-RustGenericTrait'
   - 'rust/170-RustConcurrency'

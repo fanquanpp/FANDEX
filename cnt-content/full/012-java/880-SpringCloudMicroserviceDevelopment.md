@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Spring Cloud微服务架构与开发
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'java/860-SpringBootDeepDive'
   - 'java/700-NetworkProgrammingDeepDive'

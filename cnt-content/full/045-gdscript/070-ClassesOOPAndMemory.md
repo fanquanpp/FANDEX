@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 掌握三种类的定义方式、构造析构、继承与多态、属性访问器与静态成员，理解如何选对基类
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'gdscript/020-VariablesConstantsEnums'
   - 'gdscript/050-FunctionsAndCallable'

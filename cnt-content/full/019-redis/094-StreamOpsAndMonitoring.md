@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis Stream 运维全链：MAXLEN/MINID 修剪策略、XINFO 流与组观测、内存与阻塞诊断、集群注意事项、ACL 权限与慢查询/大 key 故障排查清单。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'redis/090-Stream'
   - 'redis/092-StreamConsumerGroups'

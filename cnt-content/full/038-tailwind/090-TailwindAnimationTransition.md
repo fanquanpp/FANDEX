@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 'Tailwind CSS 动画与过渡：transition 三件套与 animate-* 内置动画、@theme 动画令牌与关键帧摇树、data-* 条件动画、性能与 motion-safe 无障碍底线'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'tailwind/030-UtilityCore'
   - 'tailwind/050-ThemeCustomization'

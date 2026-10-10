@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL Enterprise Firewall 三模式工作法：录制白名单、保护拦截、检测告警，社区版的能力边界与替代方案，以及它在注入防御纵深中的真实位置。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mysql/740-SQLInjectionBasicsDetection'
   - 'mysql/760-SQLInjectionDefenseStrategy'

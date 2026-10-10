@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 用 heapq 与 bisect 处理有序数据——Top-K 排行、优先队列任务调度、定时重试最小堆、价格阈值定位；讲清 heapify/heappushpop/heapreplace 的语义差异与 bisect_left/bisect_right 的返回约定，并与 Counter.most_common 和全量排序对照给出工程选型。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related: []
 prerequisites: []
 ---

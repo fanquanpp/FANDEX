@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: HEAD 指针机制与分支的本质：符号引用、分离 HEAD、引用解析与底层操作原理。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/100-GitBranchManagement'
   - 'git/240-ObjectModel'

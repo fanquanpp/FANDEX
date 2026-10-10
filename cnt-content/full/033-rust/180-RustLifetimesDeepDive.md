@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 生命周期标注、省略规则与 HRTB：让借用检查器为你工作。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'rust/050-RustOwnershipBorrowing'
   - 'rust/100-RustGenericTrait'

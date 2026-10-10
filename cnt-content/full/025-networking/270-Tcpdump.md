@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: tcpdump 抓包学习笔记：从服务器上一次「连接超时」排查出发，学会读抓包输出、用 BPF 过滤器三步定位问题，掌握 TCP 标志过滤、pcap 保存回放与 DNS/HTTP 实战。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/280-WiresharkCLI'

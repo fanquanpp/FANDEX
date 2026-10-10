@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: unsafe包与指针运算
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'go/220-Reflection'
   - 'go/270-MemoryAlignment'

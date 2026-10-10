@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Windows Server部署、活动目录、DNS/DHCP/IIS/文件/终端服务、组策略与 Linux 服务器系统管理。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/030-NetworkWiringAndConstruction'
   - 'networking/020-OSITCPIPModel'
@@ -14,6 +14,13 @@ prerequisites: []
 ---
 
 ## 学习目标
+
+- 能独立完成 Windows Server 的安装与初始化，知道服务器上线前要处理哪些默认配置（防火墙、远程桌面、更新策略）。
+- 能搭建并维护 AD DS 域环境：建域、客户端加域、OU 与账号规划，理解域、域树、林之间的层级关系。
+- 能配置并维护 DNS 与 DHCP 服务，排查「解析失败」「拿不到地址」「上不了网」等常见内网故障，分得清网络链路问题与服务器配置问题的边界。
+- 会用组策略（GPO）统一下发安全策略、软件与桌面约束，理解 GPO 的链接、继承与应用顺序，能用 gpresult 定位策略不生效的原因。
+- 能在 Linux 服务器上完成服务部署与基础加固（防火墙、SSH 密钥、计划任务），并编写批量管理多台主机的自动化脚本。
+- 建立「链路-地址-解析-端口-服务」的逐层排错框架：终端连不上、服务不可达时，能按层定位问题出在网络还是主机。
 
 ## 知识点地图
 

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从「程序退出后数据去哪了」出发建立流的心智模型：七种 fopen 模式与判 NULL、字符/行/格式化/块四大读写家族、feof 多读一次的调试实录、缓冲与 fclose 的落盘实验，以仿 wc 的统计器把全篇串成一条线。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/060-OperatorExpression'
   - 'c/400-FileSystemOperation'

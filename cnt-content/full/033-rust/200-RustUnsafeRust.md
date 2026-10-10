@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: unsafe 边界：裸指针、unsafe trait 与安全抽象的封装纪律。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'rust/150-RustSmartPointers'
   - 'rust/050-RustOwnershipBorrowing'

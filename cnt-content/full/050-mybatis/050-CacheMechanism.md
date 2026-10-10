@@ -10,7 +10,7 @@ prerequisites:
   - 'mybatis/040-ResultMapping'
   - 'spring-boot/100-TransactionManagement'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mybatis/060-PluginInterceptor'
 ---

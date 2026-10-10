@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: VPN 配置：WireGuard 与 IPsec/OpenVPN 实践、站点互联拓扑与防火墙配合。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'networking/310-Tunneling'
   - 'networking/150-SSHRemote'

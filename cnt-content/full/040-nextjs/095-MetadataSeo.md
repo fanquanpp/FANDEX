@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Metadata 对象与 generateMetadata、title 模板与 metadataBase、Open Graph 与 Twitter 卡片、opengraph-image 动态生成、sitemap 与 robots 文件约定，以及 JSON-LD 结构化数据。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'nextjs/020-AppRouterRouting'
   - 'nextjs/090-DeploymentOptimization'

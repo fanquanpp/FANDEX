@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Metasploit 框架命令：msfconsole 基础、模块搜索与载荷配置、Meterpreter 会话管理与后渗透常用操作'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cybersecurity/150-WebSecurityPenetrationTesting'
   - 'cybersecurity/360-PenetrationTestingMethodology'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 延迟执行的编译器魔法：yield return 与 try/finally 的限制。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'csharp/110-CSharpLINQFunctionalProgramming'
   - 'csharp/130-LINQDeferredImmediate'

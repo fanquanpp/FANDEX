@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用变换语言给图像定位缩放淡入淡出，掌握插值缓动并行随机与事件驱动的动画写法
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'renpy/030-ImagesSceneShowAndTransitions'
   - 'renpy/080-ScreensAndScreenLanguage'

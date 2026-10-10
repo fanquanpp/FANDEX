@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git stash 详解：工作进度暂存栈、未跟踪文件、多任务并行与恢复冲突处理。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'git/060-ThreeTrees'
   - 'git/260-GitReflog'

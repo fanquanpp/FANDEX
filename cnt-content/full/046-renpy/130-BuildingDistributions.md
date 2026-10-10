@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 配置构建规则生成 Windows Mac Linux 安装包，了解移动端与 Web 发布路径及存档兼容要点
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'renpy/010-RenPyOverviewAndSetup'
   - 'renpy/100-SaveLoadAndRollback'

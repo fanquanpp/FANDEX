@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React Router 7 进阶：createBrowserRouter 路由表与嵌套布局、loader/action 数据流、useNavigation 与 useRouteError、useFetcher 局部操作、懒加载与受保护路由。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'react/210-ReactTypeScript'
   - 'react/220-ReactTest'

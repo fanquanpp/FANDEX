@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 内嵌与引用怎么选、读写路径驱动建模的心智模型、常用建模模式与反模式、副本集高可用与事务取舍，从示例项目到生产部署。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'mongodb/010-MongoDBOverviewQuickStart'
   - 'mongodb/040-MongoDBIndexPerformance'

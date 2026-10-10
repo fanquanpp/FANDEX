@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 以 i = i++ 的事故现场开场：整数除法向零截断与 % 的符号、整型提升与寻常算术转换的完整阶梯、短路求值实验、a < b < c 陷阱、函数参数求值顺序实验、优先级速查表与三条记忆法，-Wall 与 UBSan 抓表达式错误的调试实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'c/070-BitwiseOperationAndMask'
   - 'c/430-StdioFileIO'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从 350 篇的手搭链路出发学 Nuxt 3/4：约定式路由替代手动注册、useAsyncData 与 useFetch 替代数据预取注水、server/api 用 Nitro 写后端、渲染模式按路由切换与静态生成、useHead 管 SEO、error.vue 兜底，附水合随机值与 useAsyncData 键名两则实录。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related: []
 prerequisites: []
 ---

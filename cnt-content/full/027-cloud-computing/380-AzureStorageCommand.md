@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Azure 存储命令实战：存储账户、Blob 容器与对象、文件共享与队列，及鉴权方式。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cloud-computing/360-AzureCliConfigure'
   - 'cloud-computing/370-AzureGroupVMCommand'

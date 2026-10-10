@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: LeetCode 刷题指南（方法论与路线篇）系统化阐述刷题总路线（按题型顺序而非题号推进：哈希与双指针、链表、栈与单调栈、二分、滑动窗口与前缀和、二叉树、BFS/DFS、回溯、动态规划、图与贪心）、读题与时间复杂度反推（$n \leq 20 \to O(2^n)$、$n \leq 100 \to O(n^3)$、$n \leq 10^5 \to O(n \log n)$）、三遍刷题法与四步解题法、遗忘曲线与间隔重复应对、错题本与复盘指标、周赛/双周赛训练策略、面试流程与沟通话术、工业级代码风格、在线评测平台演进史（ACM ICPC 1970、Google Code Jam 2003-2023、Codeforces 2009、AtCoder 2012、LeetCode 2015/中国 2018）、LeetCode/LintCode/HackerRank/CodeSignal/牛客网五大面试平台对比、FAANG 与字节跳动/腾讯/阿里巴巴面试风格对比、Hot 100/Top Interview 150/Grind 75/NeetCode 150 刷题清单对比、Python/C++/Java 面试语言选择。题型识别信号、解题模板与代表题（双指针/滑动窗口/二分/前缀和/单调栈/哈希/链表/二叉树/BFS-DFS/DP）见本模块《LeetCode 分类题型手册》。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/305-LeetCodeTopicPlaybook'

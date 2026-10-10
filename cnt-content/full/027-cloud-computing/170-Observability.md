@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 可观测性三支柱：日志、指标、分布式追踪的原理、工具与实践详解。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cloud-computing/100-MicroserviceArchitecture'
   - 'cloud-computing/160-ServiceMesh'

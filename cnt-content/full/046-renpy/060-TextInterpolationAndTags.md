@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 在台词中插入变量值与格式化输出，用文本标签控制排版节奏，用 Monologue 组织长段文本
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'renpy/020-FirstScriptSayAndCharacters'
   - 'renpy/030-ImagesSceneShowAndTransitions'

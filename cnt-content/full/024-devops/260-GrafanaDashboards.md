@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Grafana 仪表盘配置：数据源、面板类型、变量模板与告警集成。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'devops/220-AnsiblePlaybookConfigManagement'
   - 'devops/250-Prometheus'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C++20模块系统(Modules)完整原理：模块接口单元、分区、私有模块、编译模型、ABI影响与迁移策略
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related:
   - 'cpp/390-TemplateMetaprogramming'
   - 'cpp/290-Cpp20Range'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: .NET Minimal API
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-11'
 related: []
 prerequisites:
   - 'csharp/020-CSharpOverviewEnvSetup'
