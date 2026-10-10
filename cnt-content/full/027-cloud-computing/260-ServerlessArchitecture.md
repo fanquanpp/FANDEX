@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 'Serverless：FaaS/BaaS、事件驱动、Lambda 冷启动优化、限制对策与 Serverless Framework 实操。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/020-IaaSPaaSSaaS'
   - 'cloud-computing/270-AWSCore'

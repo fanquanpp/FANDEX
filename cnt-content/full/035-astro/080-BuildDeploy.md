@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 旅程驱动理解从构建到上线：astro build、产物分析、适配器与按需渲染、CI 部署、域名与 HTTPS、路由缓存
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'astro/050-ContentCollections'
   - 'astro/090-Astro7Features'

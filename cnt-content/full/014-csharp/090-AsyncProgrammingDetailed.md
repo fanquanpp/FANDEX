@@ -6,9 +6,9 @@ category: 后端技术
 difficulty: intermediate
 description: C# 异步编程全景解析：APM/EAP/TAP 三代模型、Task/ValueTask、CancellationToken、IAsyncEnumerable、await foreach、Channel、并发协调的深度原理与工程实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
-  - 'csharp/370-CSharpGameDevUnity'
+  - 'csharp/380-CSharpUnityGameDev'
   - 'csharp/120-LINQDeep'
   - 'csharp/160-PatternMatching'
   - 'csharp/170-CRecordType'

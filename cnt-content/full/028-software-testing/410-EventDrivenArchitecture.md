@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 事件驱动架构、事件溯源、CQRS模式与应用。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'software-testing/400-LayeredArchitecture'
   - 'software-testing/420-QualityAttribute'

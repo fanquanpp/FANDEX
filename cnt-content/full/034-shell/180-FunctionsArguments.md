@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 函数与参数处理：函数的三条输出通道、位置参数、$@ 与 $*、命令替换的子 shell 陷阱、shift 与 getopts 参数解析、函数库复用
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'shell/150-ShellBasics'
   - 'shell/190-ScriptDebugging'

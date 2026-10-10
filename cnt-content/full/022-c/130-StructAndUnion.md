@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 从「把学生的姓名/学号/成绩打包」出发掌握结构体与联合：tag 声明与 . -> 成员访问、顺序/指定/嵌套三种初始化、逐成员拷贝的赋值语义（数组成员一起搬走）、== 比较的编译错误与 memcmp 的 padding 陷阱、调换成员顺序 sizeof 变化的实验，以及 union 共享存储、写 A 读 B 的边界与 tag+union 变体记录、匿名 union（C11）。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/140-PointerDeep'
   - 'c/220-MemoryAlignmentDeepDive'

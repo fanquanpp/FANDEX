@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git reflog 详解：引用日志原理、恢复误操作安全网、过期机制与悬空对象救援。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'git/080-GitRestoreFileOperation'
   - 'git/180-GitLogDetailed'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 网络与安全进阶：零信任网络、服务网格安全、证书管理与安全自动化
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'devops/240-MonitorAndObservability'
   - 'devops/410-DatabaseOps'

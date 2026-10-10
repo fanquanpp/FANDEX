@@ -6,7 +6,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: advanced
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'cpp/090-RvalueReferenceMoveSemantics'
   - 'cpp/100-MoveSemanticsDetailed'
@@ -177,7 +177,7 @@ void set_name(std::string&& s) { name_ = std::move(s); }  // 右值：移动
    正解是移动语义与接口重设计，不是 `std::move` 满天飞。
 5. **异常路径同样省略**：`throw MyError{...}` 构造的异常对象直接落在 catch 端——
    「抛异常一定先构造临时再拷贝」的旧直觉可以退休了（见
-   [异常与性能](/cpp/620-CppExceptionAndPerformance)）。
+   [异常与性能](/cpp/190-ExceptionSecurity)）。
 
 ## 7. 面试题思路
 

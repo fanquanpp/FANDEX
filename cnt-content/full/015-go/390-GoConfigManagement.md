@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以"测试环境连了生产数据库"为主线学 Viper：默认值与配置文件、环境变量覆盖、多环境合并、结构体映射与启动期校验、热加载的边界，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'go/380-GoLog'
   - 'go/340-GoDatabase'

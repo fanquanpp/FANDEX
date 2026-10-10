@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: tsconfig 详解、项目引用、增量编译与 monorepo 配置。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'typescript/590-TypeSafeEnvVar'
   - 'typescript/670-TypeScript5xNewFeatures'

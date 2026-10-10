@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: LeetCode 刷题指南（方法论与路线篇）系统化阐述刷题总路线（按题型顺序而非题号推进：哈希与双指针、链表、栈与单调栈、二分、滑动窗口与前缀和、二叉树、BFS/DFS、回溯、动态规划、图与贪心）、读题与时间复杂度反推（$n \leq 20 \to O(2^n)$、$n \leq 100 \to O(n^3)$、$n \leq 10^5 \to O(n \log n)$）、三遍刷题法与四步解题法、遗忘曲线与间隔重复应对、错题本与复盘指标、周赛/双周赛训练策略、面试流程与沟通话术、工业级代码风格、在线评测平台演进史（ACM ICPC 1970、Google Code Jam 2003-2023、Codeforces 2009、AtCoder 2012、LeetCode 2015/中国 2018）、LeetCode/LintCode/HackerRank/CodeSignal/牛客网五大面试平台对比、FAANG 与字节跳动/腾讯/阿里巴巴面试风格对比、Hot 100/Top Interview 150/Grind 75/NeetCode 150 刷题清单对比、Python/C++/Java 面试语言选择。题型识别信号、解题模板与代表题（双指针/滑动窗口/二分/前缀和/单调栈/哈希/链表/二叉树/BFS-DFS/DP）见本模块《LeetCode 分类题型手册》。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/305-LeetCodeTopicPlaybook'
@@ -297,7 +297,7 @@ $$T(n) \leq C \cdot T = 2 \times 10^8$$
 | 1 | 哈希与双指针 | [哈希表](/algorithm/070-HashTable)、[排序算法](/algorithm/030-SortAlgorithm) | 25 | 20 分钟内独立完成 LC-1/167/242 同型题 |
 | 2 | 链表操作 | [链表](/algorithm/060-LinkedList) | 20 | 徒手写出反转、快慢指针判圈 |
 | 3 | 栈与单调栈 | [栈与队列](/algorithm/040-StackAndQueue) | 12 | 能识别"下一个更大元素"信号 |
-| 4 | 二分查找 | [查找算法](/algorithm/050-SearchAlgorithm)、[二分查找体系](/algorithm/170-BinarySearchAlgorithms) | 15 | 三种二分模板不查资料手写正确 |
+| 4 | 二分查找 | [查找算法](/algorithm/050-SearchAlgorithm)、[二分查找体系](/algorithm/172-BinarySearchVariants) | 15 | 三种二分模板不查资料手写正确 |
 | 5 | 滑动窗口与前缀和 | [哈希表](/algorithm/070-HashTable) | 24 | 能区分"定长/变长窗口"与"区间和"信号 |
 | 6 | 二叉树递归 | [树](/algorithm/080-Tree) | 25 | 递归三问（ base case、左右子树语义、合并方式）成反射 |
 | 7 | BFS 与 DFS | [图算法](/algorithm/110-GraphAlgorithms) | 20 | 层序模板、拓扑排序、visited 时机无误 |
@@ -855,13 +855,13 @@ Grind 75 由前 Meta 工程师 ____________ 于 2022 年在 Blind 75 基础上�
 | 题型 / 主题 | 模块文档 | 手册对应章节 |
 | ------------ | -------- | ------------ |
 | 复杂度分析 | [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics) | 每章识别信号的数据范围栏 |
-| 排序与查找 | [排序算法](/algorithm/030-SortAlgorithm)、[搜索算法](/algorithm/050-SearchAlgorithm)、[查找算法](/algorithm/170-BinarySearchAlgorithms) | 第 4 章二分查找 |
+| 排序与查找 | [排序算法](/algorithm/030-SortAlgorithm)、[搜索算法](/algorithm/050-SearchAlgorithm)、[查找算法](/algorithm/172-BinarySearchVariants) | 第 4 章二分查找 |
 | 线性结构 | [数组与动态数组](/algorithm/020-ArrayAndDynamicArray)、[链表](/algorithm/060-LinkedList)、[栈与队列](/algorithm/040-StackAndQueue) | 第 2 章双指针、第 3 章滑动窗口、第 6 章栈与单调栈、第 8 章链表操作 |
 | 哈希与树 | [哈希表](/algorithm/070-HashTable)、[树](/algorithm/080-Tree)、[堆与优先队列](/algorithm/090-HeapAndPriorityQueue) | 第 7 章哈希表、第 9 章二叉树递归 |
 | 图与回溯 | [图算法](/algorithm/110-GraphAlgorithms)、[递归与回溯](/algorithm/140-RecursionAndBacktracking) | 第 10 章 BFS 与 DFS、第 12 章回溯补充 |
 | 动态规划 | [动态规划](/algorithm/160-DynamicProgramming)、[动态规划状态压缩](/algorithm/240-BitmaskDynamicProgramming) | 第 11 章 DP 入门 |
 | 并查集与线段树 | [并查集](/algorithm/180-UnionFind)、[线段树](/algorithm/190-SegmentTree)、[树状数组](/algorithm/200-FenwickTree) | 第 13 章工程案例（并查集与 K8s/Git） |
-| 理论与网络流 | [算法理论知识点](/algorithm/280-AlgorithmTheory)、[网络流](/algorithm/290-NetworkFlow) | -（竞赛级进阶，见第 9.4 节） |
+| 理论与网络流 | [算法理论知识点](/algorithm/280-ComplexityTheory)、[网络流](/algorithm/290-NetworkFlow) | -（竞赛级进阶，见第 9.4 节） |
 
 建议读者按"算法分析基础 → 本篇总路线 → 《分类题型手册》逐类型突破 → 各专题文档深入"的顺序学习，形成从路线到模板再到理论深潜的完整知识闭环。
 

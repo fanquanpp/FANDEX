@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/050-ConfigurationManagement'
   - 'java/880-SpringCloudMicroserviceDevelopment'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'spring-cloud/020-ServiceRegistrationDiscovery'
   - 'spring-cloud/090-DistributedTransactionSeata'

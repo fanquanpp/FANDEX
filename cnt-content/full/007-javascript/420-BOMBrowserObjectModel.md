@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 浏览器对象模型（BOM）原理、API 体系、工程实践与规范演进
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'javascript/080-FunctionScopeClosure'
   - 'javascript/140-CustomErrorTypes'
@@ -1332,7 +1332,7 @@ Google Docs 使用 Operational Transformation（OT）算法，通过 `postMessag
 | `requestAnimationFrame` | 视觉动画 | 下一帧渲染前 | 是 |
 | `requestIdleCallback` | 低优先级任务 | 浏览器空闲时 | 否 |
 
-调度语义的完整展开（嵌套钳制、累积漂移、实时时钟与倒计时实战）见 [定时器与时间调度](/javascript/485-TimersAndScheduling) 专篇。
+调度语义的完整展开（嵌套钳制、累积漂移、实时时钟与倒计时实战）见 [定时器与时间调度](/javascript/255-TimersAndScheduling) 专篇。
 
 ---
 

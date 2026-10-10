@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Kubernetes 核心资源：Pod、Service、Deployment、Ingress、ConfigMap、Secret、HPA、StatefulSet。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'devops/060-DockerfileMultiBuild'
   - 'devops/110-HelmChartApplicationPackage'

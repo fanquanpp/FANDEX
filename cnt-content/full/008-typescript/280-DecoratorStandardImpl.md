@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 用 tsx 跑通第一批标准装饰器（TS 5.0+ 的 value + context 模型）：类、方法、字段、自动访问器四类签名，context 对象与元数据，2026 年生态现状（框架仍在 Legacy、Node 类型剥离不认装饰器），以及 this 绑定与混用等典型坑。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'typescript/270-DecoratorDetailed'
   - 'typescript/670-TypeScript5xNewFeatures'

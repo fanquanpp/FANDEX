@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'RDS 学习笔记：把应用数据库搬到托管实例上——创建、连接、调参、高可用、备份还原与 Aurora 的完整路径。'
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/200-CloudDatabaseService'
   - 'cloud-computing/460-AWSVPCCommands'

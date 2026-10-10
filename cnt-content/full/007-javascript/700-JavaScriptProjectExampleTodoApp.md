@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 综合运用 DOM 操作、事件处理与本地存储的待办事项应用。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'javascript/690-JavaScriptProjectPractice'
   - 'javascript/570-NodeJsPerformanceOptimization'

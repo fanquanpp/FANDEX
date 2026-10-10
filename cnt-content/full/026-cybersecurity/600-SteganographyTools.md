@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: '隐写术工具命令：图片与音频隐写及提取（steghide/zsteg/binwalk）、隐写检测思路与 CTF 实战流程'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'cybersecurity/590-ReverseEngineering'
   - 'cybersecurity/140-HashTools'
@@ -15,6 +15,43 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+## 隐写术分析
+
+<!-- 来源：62c90663 版 cnt-content/full/026-cybersecurity/580-BinarySecurityAndIncidentResponse.md 小节「7. 隐写术分析」 -->
+
+### 常见隐写方式
+
+| 类型       | 方法               | 检测工具            |
+| :--------- | :----------------- | :------------------ |
+| LSB 隐写   | 修改最低有效位     | zsteg、StegSolve    |
+| 文件追加   | 在文件末尾追加数据 | binwalk、hex编辑器  |
+| 元数据隐写 | EXIF/注释字段嵌入  | exiftool            |
+| 调色板隐写 | 修改调色板索引     | Stegsolve           |
+| 音频隐写   | DCT/DWT 域嵌入     | Audacity、SilentEye |
+
+### 隐写分析流程
+
+```bash
+# 1. 文件类型识别
+file mystery_file
+xxd mystery_file | head -20
+
+# 2. 元数据检查
+exiftool mystery_file
+
+# 3. 隐藏数据提取
+binwalk -e mystery_file           # 提取嵌入文件
+zsteg mystery_file.png            # PNG LSB 隐写检测
+steghide extract -sf mystery.jpg  # JPEG 隐写提取
+
+# 4. 字符串搜索
+strings mystery_file | grep -i flag
+strings mystery_file | grep -i password
+
+# 5. 对比分析（如有原始文件）
+compare original.png modified.png diff.png
+```
 
 ## Steghide 隐写工具
 

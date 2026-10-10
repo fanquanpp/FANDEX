@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: OAuth 2.0/OIDC 实战命令：发现文档与端点探测、授权码+PKCE 流程、Token 校验与自省、安全检测与 Keycloak 管理。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'cybersecurity/290-AuthenticationAuthorization'
   - 'cybersecurity/300-IdentityAccessManagement'

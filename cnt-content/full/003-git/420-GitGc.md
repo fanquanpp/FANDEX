@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git gc 垃圾回收详解：不可达对象、打包压缩、自动维护与 git maintenance 新机制。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'git/240-ObjectModel'
   - 'git/260-GitReflog'
@@ -128,7 +128,7 @@ git gc --prune=now --aggressive
 
 ### 5.3 防止再次发生
 
-历史清理是昂贵操作，重点在预防：大二进制走 Git LFS（见 [Git Hook 与 LFS](git/340-GitHookGitLFS)）或制品库；构建产物、日志在 `.gitignore` 中堵死（见 [.gitignore 深入](git/040-GitignoreDeepDive)）。
+历史清理是昂贵操作，重点在预防：大二进制走 Git LFS（见 [Git Hook 与 LFS](/git/345-GitLfs)）或制品库；构建产物、日志在 `.gitignore` 中堵死（见 [.gitignore 深入](git/040-GitignoreDeepDive)）。
 
 ## 6. 陷阱与忠告
 

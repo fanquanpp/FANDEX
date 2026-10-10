@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 理解 tsconfig 自动生成与编译时机，按需开启更严格检查或接入 Node 类型
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'gode/010-GodeOverviewAndInstallation'
   - 'gode/070-NpmWorkflow'

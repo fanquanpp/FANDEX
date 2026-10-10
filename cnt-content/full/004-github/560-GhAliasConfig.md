@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 操作向导式讲解 gh alias 与 config：手把手教读者配置命令别名、常用设置、Shell 补全与账户状态检查，配以原理讲解、错误对策。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related: []
 prerequisites: []
 ---

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 边界值分析方法：边界条件识别、测试值选取、健壮性测试与实战应用详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'software-testing/040-TestType'
   - 'software-testing/050-EquivalenceClassPartition'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: JSX 语法原理与编译过程：标签即函数调用、属性命名差异、表达式插值边界与工具链选项。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'react/090-LintFormatAndProjectStructure'
   - 'react/100-NextJSFullStack'

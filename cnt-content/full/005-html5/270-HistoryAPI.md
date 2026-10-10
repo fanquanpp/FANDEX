@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 pushState 与 popstate 从零写一个迷你 SPA 路由：历史栈与 state 恢复、刷新 404 的服务端配置、hash 与 history 两种模式取舍，以及切换动画的 View Transitions 配合。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'html5/300-ServiceWorkerPWA'
   - 'css/340-CSSViewTransitions'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 合并写入三件套：PostgreSQL/SQLite 的 ON CONFLICT、MySQL 的 ON DUPLICATE KEY UPDATE、标准 MERGE 语句，附方言对照与并发陷阱。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'sql/120-DML'
   - 'sql/100-Constraint'

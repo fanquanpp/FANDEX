@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 开售时间在纽约用户眼里错了两小时：用 Temporal 的类型分离解决时区、夏令时与 Date 的老毛病。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'javascript/600-NewFeatureAdoptionStrategy'
   - 'javascript/650-IntlApi'

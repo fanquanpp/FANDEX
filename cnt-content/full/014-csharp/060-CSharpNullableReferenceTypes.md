@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 把 NullReferenceException 消灭在编译期：可空注解与流分析。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'csharp/030-CSharpBasicSyntax'
   - 'csharp/050-ValueTypeReferenceType'

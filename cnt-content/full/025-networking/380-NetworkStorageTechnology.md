@@ -6,14 +6,14 @@ category: 云与基础设施
 difficulty: intermediate
 description: 网络存储：DAS/NAS/SAN 架构对比、iSCSI/FC 与 NFS/SMB 实操、Ceph 分布式存储、RAID 与数据保护策略。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/180-NetworkDesignPlanning'
   - 'networking/330-NetworkNamespaceVirtualBridge'
 prerequisites: []
 ---
 
-前置知识：IP 网络基础（见 [网络基础与协议](networking/010-NetworkBasicsAndProtocol)）与 Linux
+前置知识：IP 网络基础（见 [网络基础与协议](/networking/020-OSITCPIPModel)）与 Linux
 基本操作；存储网络在企业组网中的位置见 [网络设计规划](networking/180-NetworkDesignPlanning)。
 
 学习目标：

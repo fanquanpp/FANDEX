@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 理解 KonadoScript 编译模型与模板场景结构，认识核心节点类与图层约定
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'konado/010-KonadoOverviewAndInstall'
   - 'konado/030-KonadoScriptDialogue'

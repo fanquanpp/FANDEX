@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用原生 Drag and Drop 从零做出一个文件拖入上传区与可排序列表：七事件的握手协议、dataTransfer 的读写规则、移动端为何失效与 Pointer Events 替代。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'html5/160-ProgressMeter'
   - 'html5/140-ImagesAndResponsiveImages'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从一个 20 个 case、增删命令要改两处的 switch 分发器出发：用枚举做索引、函数指针数组做表体、指定初始化器保证表项对位，完成一个支持 help 列命令的表驱动命令行分发器；对比表驱动与 switch、if-else 链的工程取舍，附字符串命令的哈希查找预告与「漏初始化表项调用 NULL」的段错误调试实录。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/130-StructAndUnion'
   - 'c/120-ArrayDetailed'

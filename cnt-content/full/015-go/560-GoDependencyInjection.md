@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Wire与依赖注入
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'go/390-GoConfigManagement'
   - 'go/570-GoCodeGeneration'

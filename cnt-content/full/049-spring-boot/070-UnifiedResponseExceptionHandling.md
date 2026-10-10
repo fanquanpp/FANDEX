@@ -8,7 +8,7 @@ difficulty: intermediate
 prerequisites:
   - 'spring-boot/060-SpringMvcRestApi'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'spring-boot/080-BeanValidation'
   - 'spring-boot/120-SpringSecurityJwt'

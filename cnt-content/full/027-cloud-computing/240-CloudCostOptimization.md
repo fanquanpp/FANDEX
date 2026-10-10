@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 云成本管理框架、资源优化策略、预留与Spot实例、存储成本优化、网络成本优化、FinOps实践。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/230-CloudSecurityService'
   - 'cloud-computing/150-HelmPackageManagement'

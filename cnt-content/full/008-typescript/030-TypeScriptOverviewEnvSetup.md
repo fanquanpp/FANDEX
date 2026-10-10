@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: TypeScript 发展历程、与 JavaScript 的关系与开发环境搭建。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'typescript/020-HowToReadThisCourse'
   - 'typescript/080-BasicTypeSystem'
@@ -176,6 +176,8 @@ flowchart TD
 4. 2026 年的新项目更推荐 `tsx`（基于 esbuild，更快、零配置）：`npm install --save-dev tsx` 后用 `npx tsx src/index.ts`。ts-node 已进入维护模式，遇到新项目优先选 tsx。另外 Node.js 22.6+ 的原生「类型剥离」也能直接跑部分 TS 文件，详见 `typescript/680-TypeScript6And7CompilerEvolution`。
 
 #### 2.3.3 使用构建工具
+
+脚本直跑（上一节的 ts-node/tsx）适合小项目；进入工程化阶段后，构建工具要同时负责编译、打包与开发服务器（HMR）三件事。下面给出使用最广的两种：Webpack（全功能、配置重）与 Vite（开发期按需编译、启动快）。
 
 #### Webpack
 

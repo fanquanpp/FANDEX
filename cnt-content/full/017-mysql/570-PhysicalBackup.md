@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL物理备份：Percona XtraBackup原理与增量备份、内置Clone插件、MySQL Enterprise Backup对比与选型
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'mysql/500-RedoLog'
   - 'mysql/550-LogSystem'

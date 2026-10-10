@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 总览 Godot 的脚本语言选择，了解 C# 开发工作流与 GDExtension 原生扩展的适用场景
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-10-07'
 related:
   - 'gdscript/010-GDScriptLanguageOverview'
 prerequisites: ['gdscript/010-GDScriptLanguageOverview']

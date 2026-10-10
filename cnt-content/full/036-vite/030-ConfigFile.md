@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 'vite.config.ts 详解：defineConfig、plugins、路径别名、开发服务器代理与构建选项，用"不配 vs 配 vs 配好"三段对比讲透'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'vite/020-QuickStart'
   - 'vite/070-DevServerAndProxy'

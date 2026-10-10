@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: Jest 工程化：jest.config 核心配置项、testEnvironment 选择、路径别名与 setup、快照测试的正确用法与更新纪律、覆盖率阈值。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'software-testing/240-JestBasics'
   - 'software-testing/230-CICDTest'

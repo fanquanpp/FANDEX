@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从「给一个无类型的 npm 包补声明」动手：.d.ts 的 declare 语法、declare module 模块声明、声明合并、types 字段与 @types 生态、三斜线指令的完整工程指南。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related: []
 prerequisites: []
 ---
@@ -1082,6 +1082,8 @@ import MyComponent from './MyComponent.vue';
 ---
 
 ## 附录：声明域速查
+
+以下按声明的作用域从窄到宽分组：模块内、namespace、声明合并、全局、模块扩展与 ambient。每组只给最小语法骨架；完整语义、编译器行为与真实包案例回到正文对应章节查看。
 
 ## 模块声明
 

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Nikto 命令实操：Web 服务器扫描、危险文件与过时组件检测、代理与调优参数、报告输出与误报研判'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cybersecurity/400-VulnerabilityScan'
   - 'cybersecurity/410-VulnerabilityScanTools'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 广播域为什么要切、access 与 trunk 的分工、VLANIF 三层网关与互联 VLAN，两个可完整复现的 eNSP 实验：跨楼层单 VLAN 与多部门多 VLAN 路由互通。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/035-NetworkSimulatorLab'
   - 'networking/160-SwitchingAndRouting'
@@ -224,6 +224,6 @@ vlan40、财务 vlan50、其他 vlan60），各网段 192.168.X.0/24，每 VLAN 
 ## 下一步
 
 - STP 防环与链路聚合是交换机之间的下一课：[交换与路由技术](networking/160-SwitchingAndRouting)；
-- 跨 VLAN 不通的系统排错框架：[网络诊断](networking/190-NetworkDiagnosis)；
+- 跨 VLAN 不通的系统排错框架：[网络诊断](/networking/290-NetworkTroubleshootTools)；
 - 服务器侧 VLAN（子接口、网桥、VLAN 过滤）见
   [网络命名空间与虚拟网桥](networking/330-NetworkNamespaceVirtualBridge)。

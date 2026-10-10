@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从「同一个 sayHi，player 调用正常、摘下来单独调用就崩」讲起：默认/隐式/new/显式四条绑定规则按判定顺序各配预期输出、箭头函数词法 this 是规则外的唯一例外、事件处理器与回调丢 this 的修复，附 Cannot read properties of undefined (reading 'name') 调试实录。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'javascript/090-ArrayHigherOrderMethod'
   - 'javascript/150-HigherOrderFunction'

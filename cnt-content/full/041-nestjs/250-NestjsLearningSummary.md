@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 串联 NestJS 线十七篇文档：从三层结构与依赖注入到守卫、中间件、认证、文档、缓存队列、微服务、健康检查与网关的完整知识体系回顾。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'nestjs/160-ModuleControllerService'
   - 'nestjs/200-GuardsAndLifecycle'

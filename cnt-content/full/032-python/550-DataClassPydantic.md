@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以「接口进来的 JSON 不可信」为场景，先用 dataclass 建模再暴露校验缺口，切到 Pydantic v2 体验类型强制转换与验证器；附 dataclass/attrs/Pydantic/msgspec 选型表、v1 到 v2 API 对照表与高频坑点（可变默认值、继承默认值顺序、Optional 语义变化）。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'python/560-DataClassFieldDefault'
   - 'python/880-PythonFastAPI'

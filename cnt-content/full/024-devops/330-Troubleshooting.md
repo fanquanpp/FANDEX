@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 一次完整故障的排查主线：从告警到定位到恢复——CPU/内存/磁盘/网络逐层命令与判读，标注每条命令的替代写法与误判风险
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'devops/098-KubernetesTroubleshooting'
   - 'devops/320-IncidentRetrospectiveMethodology'

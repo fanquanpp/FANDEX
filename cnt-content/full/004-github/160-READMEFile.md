@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 'GitHub README文件深度解析：用"店铺招牌与产品说明书"的对比讲透README的结构、写作要点与开源项目最佳实践。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'github/040-SSHHTTPS'
   - 'github/150-CollaborationDevelopmentStandard'
@@ -84,7 +84,7 @@ graph TD
 
 下面是一份工程实践中常见的 README 结构，每段都标注了"为什么这么写"。你可以直接复制修改。
 
-```markdown
+````markdown
 # 待办清单 Web 应用
 
 <!-- 1. 徽章区：状态一览，通常用 shields.io 生成 -->
@@ -147,7 +147,7 @@ console.log(store.list()); // 输出所有待办
 ## 许可证
 
 本项目采用 [MIT](LICENSE) 许可证。
-```
+````
 
 ### 3.4 进阶格式技巧：让 README 更好读
 

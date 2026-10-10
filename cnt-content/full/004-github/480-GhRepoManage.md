@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: '用 gh 命令行管理仓库生命周期：创建与本地项目发布、克隆、Fork 与同步、元信息编辑、归档、转移与删除。'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'github/450-GhCliAuth'
   - 'github/030-RepositoryCreateCloneArchiveDelete'

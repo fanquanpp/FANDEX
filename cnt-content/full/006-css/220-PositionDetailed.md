@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: "从「头像右上角的红点角标」「滚到哪都吸住的表头」「贴着屏幕右下角的回到顶部按钮」三个真实需求出发，一次讲透 static/relative/absolute/fixed/sticky 五种参照系、inset 简写与居中套路，并给出 absolute 不听话、sticky 失效、fixed 被 transform 劫持这三类经典事故的排查路径。"
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'css/230-StackingContext'
   - 'css/240-CSS3FlexboxFlexLayout'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以「弹窗 z-index 压不住页头」引入 Teleport 的双树心智模型——组件树管数据流、DOM 树管物理位置，Teleport 只改后者；再用 Suspense 讲清「渲染前等待」的协调机制与 defineAsyncComponent 的分工，覆盖 defer 延迟传送、事件冒泡路径、scoped 样式去向、嵌套 Suspense 等高频坑，附弹窗关闭逻辑与页面骨架两个动手任务。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'vue3/110-ComponentSystem'
   - 'vue3/150-AsyncComponentSuspense'
@@ -363,6 +363,20 @@ onBeforeUnmount(() => mql?.removeEventListener('change', () => {}))
 ```
 
 `disabled=true` 时组件留在原地（抽屉形态吃父容器布局），false 时传送到 body（弹窗形态吃 fixed 定位）——一个组件两种形态，不需要两套实现。
+
+## Teleport 与 React Portal 对比
+
+<!-- 来源：62c90663 版 cnt-content/full/009-vue3/140-TeleportPortalApp.md 小节「5.1 Teleport 与 React Portal 对比」 -->
+
+| 维度 | Vue Teleport | React createPortal |
+| --- | --- | --- |
+| 声明方式 | 模板内置组件 | `ReactDOM.createPortal(children, node)` |
+| 目标指定 | `to` 选择器或元素 | 直接传 DOM 元素 |
+| 禁用切换 | `disabled` prop | 自行条件渲染 |
+| 延迟挂载 | Vue 3.5 的 `defer` | 无内置等效 |
+| 事件系统 | 原生 DOM 事件仍按 DOM 树冒泡 | 合成事件按 React 树冒泡 |
+
+讲解：两者解决同一类问题，但 Vue 把 Teleport 内置进模板系统，声明式更强；React 的 Portal 是命令式函数调用。Vue 的 DOM 事件冒泡遵循真实 DOM 结构（Teleport 后事件从 body 向上冒泡），React 的合成事件则遵循组件树，这是迁移时最容易踩的差异。
 
 ## 6. 常见坑与调试实录
 

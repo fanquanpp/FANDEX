@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 从逻辑设计到物理实现：金额用 DECIMAL、中文用 utf8mb4 与 CHAR_LENGTH、CHAR vs VARCHAR、日期四类型——每个字段的类型决策课
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'sql/100-Constraint'
   - 'sql/110-DDL'

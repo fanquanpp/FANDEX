@@ -1,12 +1,12 @@
 ---
-order: 190
+order: 200
 title: 工作空间配置
 module: 'vite'
 category: 前端技术
 difficulty: beginner
 description: pnpm workspace 配置：pnpm-workspace.yaml、packages 模式与安装命令
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'vite/160-PnpmCore'
   - 'vite/180-WorkspaceProtocol'

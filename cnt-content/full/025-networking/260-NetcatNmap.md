@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: nc 与 nmap：端口探测与服务指纹识别、常用扫描方式与结果解读、基础安全用法。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/150-SSHRemote'

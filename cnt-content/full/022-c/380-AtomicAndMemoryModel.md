@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 从两个线程各加十万次、总和却对不上的丢失更新实验出发：_Atomic 类型与 stdatomic.h 操作族、五种 memory_order 的行为表与发布-订阅实验、compare_exchange_weak 的伪失败、原子与互斥锁的分工表，附 ATOMIC_VAR_INIT 弃用等版本口径与三起事故实录。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/370-POSIXThread'
   - 'c/260-ConstAndVolatileQualifiers'

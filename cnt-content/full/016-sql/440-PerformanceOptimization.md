@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 单一主题：查询重写（SELECT *、子查询改 JOIN、深分页、EXISTS 替代 IN）、参数化查询与计划缓存、统计信息——先改写、再验证的闭环
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'sql/430-ExecutionPlan'
   - 'sql/435-SQLPartitionedTable'
@@ -21,7 +21,7 @@ prerequisites:
 - **知识类别**：SQL 性能 / 查询重写与执行侧配合（本篇只讲这一件事）。
 - **解决什么问题**：同一条业务查询，写法不同性能差十倍——这不是玄学，是"优化器看得懂的形状"不同。本篇给出一套可复制的改写手法，以及验证改写是否生效的方法。
 - **什么时候用到**：慢查询榜单上的语句排队等着改；接手"能跑但慢"的老系统；评审新人 SQL。
-- **边界声明**：本篇是 2016 年旧版"性能优化大杂烩"的收窄重写。原篇中的其他主题已各自归位：执行计划解读见[执行计划](/sql/430-ExecutionPlan)；索引策略与失效场景见[索引](/sql/420-Index)；分区表见[分区表](/sql/435-SQLPartitionedTable)；物化视图见[视图与物化视图](/sql/115-SQLViews)；MySQL 服务端配置（缓冲池/连接数）见 [MySQL 性能调优](/mysql/860-PerformanceTuningSecurity)；PG 服务端参数见[PG 系统架构](/postgresql/160-SystemArchitecture)。
+- **边界声明**：本篇是 2016 年旧版"性能优化大杂烩"的收窄重写。原篇中的其他主题已各自归位：执行计划解读见[执行计划](/sql/430-ExecutionPlan)；索引策略与失效场景见[索引](/sql/420-Index)；分区表见[分区表](/sql/435-SQLPartitionedTable)；物化视图见[视图与物化视图](/sql/115-SQLViews)；MySQL 服务端配置（缓冲池/连接数）见 [MySQL 性能调优](/mysql/850-MySQLConfigOps)；PG 服务端参数见[PG 系统架构](/postgresql/160-SystemArchitecture)。
 
 ## 心智模型：改写的三条原理
 

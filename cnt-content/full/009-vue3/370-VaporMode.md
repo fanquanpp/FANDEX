@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Vue 3.6 Vapor 模式原理与进展：编译期 DOM 操作如何取代虚拟 DOM diff、组件 API 为何不变、渐进式迁移策略与生态兼容性。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'vue3/010-OverviewEnv'
   - 'vue3/280-Vue3CompileOptimization'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++26 草案综述：特性冻结状态、静态反射、契约、std::execution、pack indexing 等已并入草案的特性与编译器支持现状。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'cpp/750-CppModernStandardEvolution'
   - 'cpp/730-Cpp23NewFeatures'

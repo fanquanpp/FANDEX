@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 以 create-vue 生成的 vite.config.ts 逐行拆解为线索，讲清 dev/build/preview 三命令、@ 别名、开发代理与环境变量 VITE_ 前缀约定，附真实报错的调试实录。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'vue3/020-Vue3QuickStartGuide'
   - 'vite/050-ViteEnvModes'
@@ -82,7 +82,7 @@ VITE vX.Y.Z  ready in 312 ms
   Network: use --host to expose
 ```
 
-背后三件事：**按需编译**——请求哪个模块才现编译哪个，启动瞬时；**依赖预构建**——vue 等依赖首次启动被 esbuild（Go 写的高速转译器）整理成浏览器友好的单文件；**改动即时生效**——保存 `.vue` 后局部更新，靠 HMR（热模块替换：只替换改动的模块，不刷新整页），计数器状态不丢。细节见 [Vite 开发服务器与 HMR](/vite/070-DevServerHMR)。
+背后三件事：**按需编译**——请求哪个模块才现编译哪个，启动瞬时；**依赖预构建**——vue 等依赖首次启动被 esbuild（Go 写的高速转译器）整理成浏览器友好的单文件；**改动即时生效**——保存 `.vue` 后局部更新，靠 HMR（热模块替换：只替换改动的模块，不刷新整页），计数器状态不丢。细节见 [Vite 开发服务器与 HMR](/vite/075-HmrMechanismAndHotApi)。
 
 ### npm run build：产出能上线的静态文件
 

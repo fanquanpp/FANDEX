@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 以站内搜索场景讲 PG 全文检索：分词配置、中文扩展 zhparser/pg_jieba、GIN 索引、ts_rank 排序与高亮
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'postgresql/220-IndexType'
   - 'postgresql/080-AdvancedSQL'

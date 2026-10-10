@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java网络编程基础、Socket编程、URL处理、NIO网络编程与HTTP客户端详解。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'java/860-SpringBootDeepDive'
   - 'java/880-SpringCloudMicroserviceDevelopment'

@@ -6,8 +6,9 @@ category: 前端技术
 difficulty: intermediate
 description: 'React 状态管理选型：useState/useReducer/Context 内置方案与 Zustand、Jotai、Redux Toolkit 的机制差异、渲染性能与 2025-2026 选型决策'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
+  - 'react/050-ContextGlobalState'
   - 'react/150-HooksPrinciple'
   - 'react/160-CustomHooksDesignPattern'
   - 'react/180-ReactPerformance'
@@ -365,6 +366,21 @@ const doubleAtom = atom((get) => get(countAtom) * 2);
 function Counter() {
   const [count, setCount] = useAtom(countAtom);
   return <button onClick={() => setCount((c) => c + 1)}>{count}</button>;
+}
+```
+
+**Valtio 代理式状态（第四选项）**
+
+`const <state> = proxy(<对象>);` / `const <快照> = useSnapshot(<state>);`——Proxy 响应式，支持直接改写 `state`，类 Vue 的使用体验；快照自动按访问属性精确追踪。
+
+```tsx
+import { proxy, useSnapshot } from 'valtio';
+
+const state = proxy({ count: 0, text: 'hello' });
+
+function Counter() {
+  const snap = useSnapshot(state); // 不可变快照，按访问追踪
+  return <button onClick={() => state.count++}>{snap.count}</button>;
 }
 ```
 

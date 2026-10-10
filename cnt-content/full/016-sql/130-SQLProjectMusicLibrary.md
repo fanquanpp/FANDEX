@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 用一个完整的"虚拟歌手曲库"项目串起 DDL、DML、DQL：从表设计到 12 道实战查询。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'sql/030-SQLFirstSteps'
   - 'sql/150-JoinQuery'

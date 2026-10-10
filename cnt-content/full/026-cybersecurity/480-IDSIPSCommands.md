@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Suricata 与 Snort 命令：规则语法与自定义签名、IDS/IPS 模式部署（NFQ）、eve.json 与告警日志分析'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cybersecurity/010-SecurityBasicsDefense'
   - 'cybersecurity/470-FirewallConfig'

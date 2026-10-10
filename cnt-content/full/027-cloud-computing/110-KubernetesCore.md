@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Kubernetes核心资源：Pod、Service、Deployment、StatefulSet、ConfigMap 等详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/120-KubernetesArchitecture'
   - 'cloud-computing/200-CloudDatabaseService'

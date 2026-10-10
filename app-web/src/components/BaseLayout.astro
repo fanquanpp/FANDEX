@@ -17,6 +17,13 @@ const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
 <html lang={SITE.lang}>
   <head>
     <meta charset="UTF-8" />
+    <!-- 级联层顺序声明：必须先于任何分块样式表出现。Astro 会把页面私有 chunk
+        （如文档页的 KaTeX + 页面样式）排在全局样式表之前，@layer 的优先级
+        按"首次出现"确立，若不在此处先声明，base 层会排在 components 之后，
+        其 * { margin: 0; padding: 0 } 会压掉全站 components 层的间距。 -->
+    <style is:inline>
+      @layer theme, reset, tokens, base, components, pages, islands, utilities;
+    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#EBEFF3" id="meta-theme-color" />
     <ClientRouter />

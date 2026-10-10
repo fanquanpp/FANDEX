@@ -1,12 +1,12 @@
 ---
-order: 520
+order: 510
 title: dotnet CLI：从克隆到发布的一条命令链
 module: 'csharp'
 category: 后端技术
 difficulty: beginner
 description: 以"新机器上把一个 .NET 项目从零跑到发布"为主线串起 dotnet CLI：环境自检、建骨架、日常开发循环、依赖管理、三种发布形态、测试与工具管理，附坑点、自检清单与练习。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'csharp/020-CSharpOverviewEnvSetup'
   - 'csharp/340-CSharpTestEngineering'

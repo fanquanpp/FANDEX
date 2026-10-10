@@ -9,7 +9,7 @@ prerequisites:
   - 'mybatis/020-QuickStartCrud'
   - 'mybatis/030-DynamicSql'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'mybatis/040-ResultMapping'
   - 'mybatis/080-MybatisPlusAdvanced'

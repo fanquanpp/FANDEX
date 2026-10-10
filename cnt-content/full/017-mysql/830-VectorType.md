@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL 9 VECTOR 类型：声明与存储成本、三个转换函数、社区版与 HeatWave 的能力边界、应用层相似度检索的完整工作流与选型对照。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'mysql/820-MySQL9NewFeatures'
   - 'postgresql/320-KNNVectorIndex'

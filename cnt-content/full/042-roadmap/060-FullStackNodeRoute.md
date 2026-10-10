@@ -82,7 +82,7 @@ flowchart TD
 **第 7 到 8 个月：生产级课题**
 
 - 缓存与性能：Redis 入门（会话/热点缓存/限流）+ Next.js 缓存策略调优 + Lighthouse 性能达标；
-- 网络与安全必修：[networking 模块](/networking/010-NetworkBasicsAndProtocol) HTTP/HTTPS 部分 + [cybersecurity 模块](/cybersecurity/010-SecurityBasicsDefense) 的 Web 安全（OWASP 常见项在自家项目里自查修复）；
+- 网络与安全必修：[networking 模块](/networking/020-OSITCPIPModel) HTTP/HTTPS 部分 + [cybersecurity 模块](/cybersecurity/010-SecurityBasicsDefense) 的 Web 安全（OWASP 常见项在自家项目里自查修复）；
 - 检验项目三：**项目二的生产化改造报告**——安全清单修复、缓存前后压测对比、错误监控接入（Sentry 类工具）。
 
 **第 9 到 10 个月：检验项目四（作品集主项目）**

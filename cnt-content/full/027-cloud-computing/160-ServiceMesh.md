@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: '服务网格原理与选型：Sidecar 与 ambient 两种数据面、Istio 流量管理/安全/可观测、Linkerd 对比。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/130-KubernetesNetwork'
   - 'cloud-computing/100-MicroserviceArchitecture'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Linux auditd 审计命令：审计规则编写（watch/syscall）、ausearch 与 aureport 检索、关键事件监控与 SIEM 对接'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cybersecurity/500-AIDEFileIntegrity'
   - 'cybersecurity/550-SOC'

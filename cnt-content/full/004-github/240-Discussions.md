@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 'GitHub Discussions深度解析：从"Issue 还是 Discussion 怎么选"的困惑切入，讲解论坛式讨论的分类体系、问答、公告、投票与维护者协作。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'github/220-ProjectsBoard'
 prerequisites:

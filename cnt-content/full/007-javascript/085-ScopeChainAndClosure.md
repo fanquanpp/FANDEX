@@ -270,7 +270,7 @@ function createExamTimer(seconds, onTick, onTimeout) {
 }
 ```
 
-`remaining` 与 `timer` 都锁在闭包里：外部能读剩余时间、能强制结束，但**改不了** `remaining`——把 59 改成 59 万这种作弊路径被语言本身堵死。定时器的调度细节（为什么每秒一次的回调其实不准时）留到 [定时器与时间调度](/javascript/485-TimersAndScheduling) 展开。
+`remaining` 与 `timer` 都锁在闭包里：外部能读剩余时间、能强制结束，但**改不了** `remaining`——把 59 改成 59 万这种作弊路径被语言本身堵死。定时器的调度细节（为什么每秒一次的回调其实不准时）留到 [定时器与时间调度](/javascript/255-TimersAndScheduling) 展开。
 
 ## 6. IIFE：立即执行函数固定循环计数器
 
@@ -375,7 +375,7 @@ for (var i = 0; i < slides.length; i++) {
 }
 ```
 
-真实症状：双击任意一张都定位到**最后一张**（`i` 已是 `slides.length`，`slides[3]` 为 undefined 时甚至直接报错）。提示与修法：同第 6 节——套 IIFE 或改用 `let`，让每张图记住自己的序号；更进一步，事件委托（[DOM 事件流与事件委托](/javascript/415-DOMEventFlowAndDelegation)）能从根上避免循环绑定。
+真实症状：双击任意一张都定位到**最后一张**（`i` 已是 `slides.length`，`slides[3]` 为 undefined 时甚至直接报错）。提示与修法：同第 6 节——套 IIFE 或改用 `let`，让每张图记住自己的序号；更进一步，事件委托（[DOM 事件流与事件委托](/javascript/415-DOMEventSystemDeepDive)）能从根上避免循环绑定。
 
 挑战题（半小时，不给代码）：写 `createIdGenerator()`：返回 `next()` 函数，每次调用返回递增编号；再返回 `reset()` 把计数归零。验收断言：
 
@@ -395,7 +395,7 @@ console.assert(gen2.next() === 1, '新实例应独立计数');
 ## 11. 与之前和之后的知识的关系
 
 - 往前：[函数基础](/javascript/080-FunctionScopeClosure) 的「函数是值」让函数能被返回出去，闭包由此成为可能；[变量与数据类型](/javascript/040-VariableDataType) 的「名字绑定」在本篇兑现为查找规则；
-- 往后：[this 深潜](/javascript/100-ThisKeywordDeepDive) 的箭头函数「不绑定自己的 this、沿作用域链往外找」，正是本篇作用域链在 this 上的延伸；[防抖与节流](/javascript/490-DebounceThrottle) 是场景二的完整工程版；[DOM 事件流与事件委托](/javascript/415-DOMEventFlowAndDelegation) 给循环绑定问题提供了第三种解法；内存代价与排查见 [闭包内存泄漏](/javascript/360-ClosureMemoryLeakOptimization)。
+- 往后：[this 深潜](/javascript/100-ThisKeywordDeepDive) 的箭头函数「不绑定自己的 this、沿作用域链往外找」，正是本篇作用域链在 this 上的延伸；[防抖与节流](/javascript/490-DebounceThrottle) 是场景二的完整工程版；[DOM 事件流与事件委托](/javascript/415-DOMEventSystemDeepDive) 给循环绑定问题提供了第三种解法；内存代价与排查见 [闭包内存泄漏](/javascript/360-ClosureMemoryLeakOptimization)。
 
 ## 12. 官方文档
 

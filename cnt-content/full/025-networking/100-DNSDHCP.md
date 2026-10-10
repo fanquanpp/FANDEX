@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: DNS 解析体系与加密演进（DoT/DoH/DoQ）、DNSSEC 信任链、DHCP 租约机制与 DHCPv6/SLAAC。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/180-NetworkDesignPlanning'
   - 'networking/200-LoadBalanceTech'
@@ -18,9 +18,9 @@ prerequisites: []
 
 建议先阅读以下内容再进入本文：
 
-- [网络基础与协议](/networking/010-NetworkBasicsAndProtocol)
+- [网络基础与协议](/networking/020-OSITCPIPModel)
 
-前置知识：TCP/IP 分层模型、UDP/TCP 的区别、子网划分（见 [网络基础与协议](networking/010-NetworkBasicsAndProtocol)）。
+前置知识：TCP/IP 分层模型、UDP/TCP 的区别、子网划分（见 [网络基础与协议](/networking/020-OSITCPIPModel)）。
 
 学习目标：
 
@@ -354,3 +354,37 @@ TLS/QUIC 流量而非 53 端口报文），详见 [Tcpdump 抓包分析](network
 - DNSSEC 提供的是签名验证而非加密，与 DoH/DoT 互补；部署时警惕签名与密钥滚动过期；
 - 排障先分层：浏览器缓存 → 系统缓存 → 本地 DNS → 权威，`dig +trace` 与指定 `@server` 对比是
   最快的定位手段；跨网段 DHCP 失效优先检查中继配置。
+
+## DNS 配置
+
+<!-- 来源: cnt-content/full/025-networking/010-NetworkBasicsAndProtocol.md 的 "DNS 配置" 小节 -->
+
+**基本写法：查看当前 DNS**
+`cat /etc/resolv.conf`
+```bash
+# 查看当前 DNS 配置
+cat /etc/resolv.conf
+```
+
+**基本写法：设置 DNS 服务器**
+`# 编辑 /etc/resolv.conf`
+```bash
+# 设置 DNS 服务器
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+```
+
+**基本写法：设置 DNS 搜索域**
+`# 编辑 /etc/resolv.conf`
+```bash
+# 设置搜索域
+echo "search example.com" >> /etc/resolv.conf
+```
+
+**基本写法：使用 systemd-resolved 配置**
+`# 编辑 /etc/systemd/resolved.conf`
+```bash
+# 配置 systemd-resolved
+echo "DNS=8.8.8.8 8.8.4.4" >> /etc/systemd/resolved.conf
+systemctl restart systemd-resolved
+```

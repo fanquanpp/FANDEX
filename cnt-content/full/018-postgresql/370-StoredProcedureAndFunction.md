@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 以批量对账与审计场景讲 PL/pgSQL：变量与控制流、异常处理、RETURNING、SECURITY DEFINER 与函数属性易错点
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'postgresql/380-TriggerEventTrigger'
   - 'postgresql/340-ExtensionModuleDetailed'
@@ -274,3 +274,49 @@ END $$;
 
 - PostgreSQL 官方文档 Chapter 41 PL/pgSQL、Chapter 38 Extending SQL（PostgreSQL Licence）：<https://www.postgresql.org/docs/current/plpgsql.html>
 - 场景与坑点整理自通用工程实践，SKIP LOCKED 用法已对照官方 SELECT 文档核校。
+
+## 游标与循环
+
+<!-- 来源: cnt-content/full/018-postgresql/370-StoredProcedureAndFunction.md 的 "1.4 游标与循环" 小节 -->
+
+```sql
+CREATE OR REPLACE PROCEDURE process_orders() AS $$
+DECLARE
+    order_record RECORD;
+BEGIN
+    FOR order_record IN
+        SELECT id, amount FROM orders WHERE status = 'pending'
+    LOOP
+        UPDATE orders SET status = 'processing' WHERE id = order_record.id;
+        -- 处理逻辑
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+## PL/Python
+
+<!-- 来源: cnt-content/full/018-postgresql/370-StoredProcedureAndFunction.md 的 "2. PL/Python" 小节 -->
+
+```sql
+CREATE EXTENSION plpython3u;
+
+CREATE OR REPLACE FUNCTION python_hash(p_text TEXT)
+RETURNS TEXT AS $$
+import hashlib
+return hashlib.sha256(p_text.encode()).hexdigest()
+$$ LANGUAGE plpython3u;
+```
+
+## PL/Perl
+
+<!-- 来源: cnt-content/full/018-postgresql/370-StoredProcedureAndFunction.md 的 "3. PL/Perl" 小节 -->
+
+```sql
+CREATE EXTENSION plperl;
+
+CREATE OR REPLACE FUNCTION perl_reverse(p_text TEXT)
+RETURNS TEXT AS $$
+return reverse($_[0]);
+$$ LANGUAGE plperl;
+```

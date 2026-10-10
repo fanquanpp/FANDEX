@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 跨库事务的完整图谱：XA 协议与两阶段提交的角色分工、MySQL XA 语法实操、协调者单点与锁定放大两大死穴、以及本地消息表/Saga/TCC 三条务实替代路线。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'mysql/530-TwoPhaseCommit'
   - 'mysql/680-ShardingMiddleware'

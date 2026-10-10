@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Git 的 SHA-1 内容寻址机制：哈希计算过程、完整性校验链、碰撞风险与 SHA-256 演进。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'git/170-DistributedVCSPrinciple'
   - 'git/240-ObjectModel'

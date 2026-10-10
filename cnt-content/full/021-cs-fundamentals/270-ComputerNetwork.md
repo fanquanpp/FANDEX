@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: "以「打开一个网页」引入：用 Python 亲手发一次裸 HTTP 请求、查一次 DNS、算一次子网，理解分层封装、DNS 解析、TCP 三次握手与挥手、可靠传输与拥塞控制、IP 与 NAT、HTTP 演进与 TLS，以及一套按层排障的调试工具箱。"
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'cs-fundamentals/150-OperatingSystem'
   - 'cs-fundamentals/290-NetworkProtocolDeep'

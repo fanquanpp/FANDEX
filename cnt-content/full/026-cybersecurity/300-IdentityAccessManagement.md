@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 身份与访问管理：SSO 协议对比（SAML/CAS/OIDC）、OAuth 2.0 授权模型、JWT 结构与攻击面、IAM 落地实践。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'cybersecurity/290-AuthenticationAuthorization'
   - 'cybersecurity/320-ZeroTrustArchitecture'

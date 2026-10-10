@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: DSL 设计模式、带接收者的 Lambda、类型安全构建器与实际项目 DSL 设计。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'kotlin/250-CoroutineDispatcherContext'
   - 'kotlin/460-KotlinMultiplatform'

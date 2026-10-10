@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'html5/010-WhatIsWebpage'
   - 'css/010-WhatIsCSS'
@@ -98,7 +98,7 @@ flowchart TD
 
 **第 7 到 8 个月：浏览器原理与性能**
 
-- HTTP 与浏览器：[networking 模块](/networking/010-NetworkBasicsAndProtocol) 的 HTTP/HTTPS/缓存部分 + 浏览器渲染流程（cs-fundamentals 相关篇）；
+- HTTP 与浏览器：[networking 模块](/networking/020-OSITCPIPModel) 的 HTTP/HTTPS/缓存部分 + 浏览器渲染流程（cs-fundamentals 相关篇）；
 - 性能优化实战：用 Lighthouse 对项目三做体检，落实懒加载、代码分割、图片优化，记录优化前后数据；
 - 加分项启动：二选一——[Vue3 模块](/vue3/010-OverviewEnv)（国内市场补充）或 [Next.js 模块](/nextjs/010-NextJS16Overview)（全栈化方向）。
 

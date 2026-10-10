@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 承接 Lambda 入门的深水区：按值与按引用捕获的取值时机实验、悬垂引用的真实事故现场、C++14 初始化捕获与 move 捕获、mutable 与 const 传播、*this 捕获，附 use-after-capture 调试实录。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'cpp/060-LambdaExpression'
   - 'cpp/160-RAIIResourceManagement'

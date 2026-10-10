@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 负载均衡架构总览：四层与七层负载的分工、部署形态（硬件/软件/云）、健康检查与会话保持、DNS 与 GSLB 全局调度。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/180-NetworkDesignPlanning'
   - 'networking/210-LoadBalanceAlgorithm'
@@ -15,7 +15,7 @@ related:
 prerequisites: []
 ---
 
-前置知识：TCP 连接、HTTP 报文结构（见 [网络基础与协议](networking/010-NetworkBasicsAndProtocol)、
+前置知识：TCP 连接、HTTP 报文结构（见 [网络基础与协议](/networking/020-OSITCPIPModel)、
 [HTTP 协议](networking/120-HTTPProtocol)）；调度算法细节见
 [负载均衡算法](networking/210-LoadBalanceAlgorithm)。
 

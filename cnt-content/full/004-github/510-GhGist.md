@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: '以"三个真实使用场景"为主线讲解 gh gist 系列命令：快速分享代码、备份个人笔记、管理与复用片段，涵盖创建、查看、编辑、克隆、重命名与删除，配以原理讲解、错误对策。'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related: []
 prerequisites: []
 ---

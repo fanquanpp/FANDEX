@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 成员内部类、静态内部类、局部内部类与匿名内部类的语法、典型场景与内存泄漏陷阱，零基础保姆级讲解。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'java/150-OOP'
   - 'java/160-AbstractClassInterface'

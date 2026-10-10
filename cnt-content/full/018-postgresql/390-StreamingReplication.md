@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL 流复制从原理到生产：WAL 传递机制、同步与异步模式、pg_basebackup 搭建主从、复制状态监控与常见延迟问题定位。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'postgresql/400-PhysicalReplicationSlot'
   - 'postgresql/410-CascadingReplication'

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 AnimationPlayer 制作属性关键帧动画，用 Tween 在代码里驱动补间，避开循环与复用的常见坑
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related: []
 prerequisites:
   - 'godot/030-FirstScriptAndLifecycle'

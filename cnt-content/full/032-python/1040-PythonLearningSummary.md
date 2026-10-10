@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 串联 Python 模块全部文档，按语法基础、对象模型、类型系统、并发与工程生态五条主线回顾核心知识，并用虚拟歌手平台案例沉淀示例代码。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'python/460-OOP'
   - 'python/590-Metaclass'
@@ -337,7 +337,7 @@ print(f"专辑总时长 {total_duration(album)} 秒")
 
 ### 7. 迭代器、生成器与 asyncio 协程
 
-生成器函数用 `yield` 惰性产出数据，是处理大文件、无限序列的内存友好方案；协程则把"可暂停"推到网络 IO 场景——`async def` 声明可挂起函数，`await` 让出控制权，`asyncio.gather` 并发驱动多个任务。生成器到协程的演化脉络见[推导式与生成器](/python/170-ComprehensionGenerator)与[协程与 asyncio](/python/660-CoroutineAsyncio)。
+生成器函数用 `yield` 惰性产出数据，是处理大文件、无限序列的内存友好方案；协程则把"可暂停"推到网络 IO 场景——`async def` 声明可挂起函数，`await` 让出控制权，`asyncio.gather` 并发驱动多个任务。生成器到协程的演化脉络见[生成器深水区](/python/180-GeneratorCoroutine)与[协程与 asyncio](/python/660-CoroutineAsyncio)。
 
 ```python
 import asyncio

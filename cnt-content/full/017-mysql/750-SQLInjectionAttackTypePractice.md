@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 联合注入、盲注、报错注入与绕过技巧。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'mysql/900-AppLayerDbAccessPatterns'
   - 'mysql/740-SQLInjectionBasicsDetection'

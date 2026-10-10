@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 用 30 行代码写出 TCP echo 服务器并亲手连上它：socket 是文件描述符的网络版、字节序转换实验、TCP 五步流程与 accept 的新 fd 语义、UDP 无连接对比、粘包半包与 recv_n 封装、SIGPIPE 再现与 MSG_NOSIGNAL，附 bind 失败三因与 fd 泄漏的 /proc 自查实录。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/340-SignalHandling'
   - 'c/420-CPosixSystemCall'

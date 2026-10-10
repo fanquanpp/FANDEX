@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 用一个真实接口场景学会 record：一行声明替代 30 行样板，紧凑构造器做校验，List.copyOf 防御可变字段，再看字节码与序列化层面的底层行为。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'java/800-JavaSealedClassesPatternMatching'
   - 'java/200-EqualsHashCodeContract'

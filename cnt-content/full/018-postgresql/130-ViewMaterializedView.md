@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: PostgreSQL 视图的三种身份（存储的查询、权限门、接口层）与物化视图的刷新取舍，为可更新视图打底。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related: []
 prerequisites: []
 ---

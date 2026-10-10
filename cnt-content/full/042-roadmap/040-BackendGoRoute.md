@@ -83,7 +83,7 @@ flowchart TD
 **第 7 到 8 个月：服务治理入门**
 
 - gRPC 与 protobuf（对比 REST 的场景取舍）、服务间通信、配置管理（viper）、结构化日志（slog/zap）；
-- 网络必修：[networking 模块](/networking/010-NetworkBasicsAndProtocol) 的 TCP/HTTP/负载均衡部分（写基础服务的人必须懂下层）；
+- 网络必修：[networking 模块](/networking/020-OSITCPIPModel) 的 TCP/HTTP/负载均衡部分（写基础服务的人必须懂下层）；
 - 检验项目三：**把短链服务拆成两个 gRPC 服务**（生成服务 + 统计服务），含服务发现的最简实现（或引入 Consul/etcd 认知级使用）。
 
 **第 9 个月：Kubernetes 入门**

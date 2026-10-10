@@ -10,7 +10,7 @@ prerequisites:
   - 'mybatis/030-DynamicSql'
   - 'spring-boot/100-TransactionManagement'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'mybatis/050-CacheMechanism'
   - 'mybatis/060-PluginInterceptor'

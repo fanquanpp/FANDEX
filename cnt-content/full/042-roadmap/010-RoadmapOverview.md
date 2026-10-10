@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/080-LearningRouteOverview'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'roadmap/020-FrontendRoute'
   - 'roadmap/130-TwelveMonthPlanTemplate'
@@ -124,7 +124,7 @@ related:
 - [git](/git/010-Git) 与 [github](/github/010-GitHubOverview)：所有路线第 1 个月必修，代码资产的所有权凭证；
 - [sql](/sql/010-WhatIsDatabase)：几乎所有路线的面试必考；
 - [algorithm](/algorithm/010-AlgorithmAnalysisBasics)：面试硬通货，从第 2 个月起保持每周 2 到 3 题；
-- [networking](/networking/010-NetworkBasicsAndProtocol)：写接口、调服务、查问题都靠它，阶段 3 必修；
+- [networking](/networking/020-OSITCPIPModel)：写接口、调服务、查问题都靠它，阶段 3 必修；
 - [cs-fundamentals](/cs-fundamentals/010-ComputerOverview)：长期能力的复利项，按路线安排滚动阅读。
 
 ## 动手验证：把选择变成今天的三个动作

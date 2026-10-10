@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Azure CLI（az）的安装、登录认证、订阅管理、默认配置与 JMESPath 输出控制实战。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/370-AzureGroupVMCommand'
   - 'cloud-computing/380-AzureStorageCommand'

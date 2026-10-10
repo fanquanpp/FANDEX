@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 两个互不相干的进程要共写一个计数器：ftok 造钥匙、shmget/shmat 挂接共享内存并用 ipcs 实地查看，先跑无保护计数器的竞态现场，再上 System V 信号量 P/V 封装，完整写者读者双进程示例，直面「进程退了段还在」的生命周期陷阱与 ipcrm 清理实录。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/360-ThreadConcurrency'
   - 'c/420-CPosixSystemCall'

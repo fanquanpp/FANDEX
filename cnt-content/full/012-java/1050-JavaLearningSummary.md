@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 按主题串联 Java 模块全部文档，回顾语法、面向对象、集合泛型、函数式、并发、JVM 与框架生态的核心概念、易混淆点与高频陷阱。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'java/010-WhatIsJava'
   - 'java/150-OOP'

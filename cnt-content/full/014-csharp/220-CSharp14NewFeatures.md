@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 系统讲解 C# 14（随 .NET 10 LTS，2025.11 发布）的扩展成员、field 关键字、null 条件赋值等八项新特性，附迁移前后对照、可运行示例与采用建议。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'csharp/210-C12C13NewFeatures'
   - 'csharp/152-UnsafeCodeAndDynamicProgramming'

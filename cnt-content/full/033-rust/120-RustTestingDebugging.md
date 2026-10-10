@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: "以虚拟歌手音乐平台的评分与票务函数为例，亲手写出第一个 cargo test，掌握断言宏、should_panic、三类测试组织、clippy 质量检查与 dbg!/RUST_BACKTRACE 调试三板斧，附边界值漏测实录。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'rust/080-RustErrorHandling'
   - 'rust/140-RustEcosystemProject'

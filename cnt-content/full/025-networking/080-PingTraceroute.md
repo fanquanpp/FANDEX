@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: ping 与 traceroute：ICMP 可达性测试、TTL 与路径追踪原理、mtr 持续监测与输出解读。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/050-IPCommands'

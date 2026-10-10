@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以「过渡类名到底什么时候加、什么时候摘」为主线讲透 Transition 的类名时间线：插入前一帧到摘除的逐帧变化、结束信号的三种来源（transitionend、animationend、显式 duration）、mode 互斥切换、TransitionGroup 的 FLIP 移动动画原理，以及 CSS transition 与 animation 的经典失效现场，附逐帧打印实验与列表重排挑战题。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'vue3/120-TeleportSuspense'
   - 'vue3/050-ReactiveSystem'

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 screen 语句构建菜单与 HUD，掌握按钮容器控制语句与 call screen 的交互返回
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-10-07'
 related:
   - 'renpy/040-LabelsControlFlowAndMenus'
   - 'renpy/085-ScreenActionsAndInteraction'

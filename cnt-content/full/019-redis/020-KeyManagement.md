@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: Redis Key 全生命周期：EXPIRE 的 NX/XX/GT/LT 选项、惰性删除与定期抽样删除、主从与持久化下的过期行为、懒释放（UNLINK/lazyfree）、SCAN 遍历。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'redis/130-MemoryEvictionPolicy'
   - 'redis/010-OverviewCoreDataStructure'
@@ -100,6 +100,8 @@ CONFIG SET lazyfree-lazy-user-flush yes  # FLUSHDB/FLUSHALL 异步化
 ---
 
 ## 命令速查
+
+本节按「过期设置 → 过期移除与持久化 → Key 基本操作 → SCAN 遍历 → 通配模式 → 批量操作」的顺序分组给出命令骨架，全部命令都可在 redis-cli 中直接验证。先记住一条生产红线：线上遍历只用 SCAN，绝不用 KEYS（原因见 SCAN 遍历一节）。
 
 ## 过期时间设置
 

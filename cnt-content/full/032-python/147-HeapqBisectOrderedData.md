@@ -15,7 +15,7 @@ prerequisites: []
 
 - **知识类别**：Python 标准库的「有序数据」工具箱——`heapq`（最小堆）与 `bisect`（二分插入与定位）。它们是数据结构课里「堆」和「二分查找」两个主题的**标准库 API 落地**。
 - **解决什么问题**：要从十万条日志里取错误最多的前 10 条，`sorted(...)[:10]` 会把整份数据排完再丢弃 99.99% 的结果；要维护一个「按到期时间排序的定时任务队列」，每次插入后重新 sort 是 O(n log n)，而堆插入只要 O(log n)；要在一个已排序的价格表里找「第一个高于阈值的下标」，手写循环既慢又容易出 off-by-one。`heapq` 与 `bisect` 就是这两个问题的现成答案。
-- **什么时候用到**：Top-K 统计、优先队列（任务调度、定时重试）、合并多个有序流、在有序序列上做「找插入点/找阈值区间」的查询。**分工声明**：堆与二分查找本身的算法原理、复杂度证明、变体题目见算法模块 [堆与优先队列](/algorithm/090-HeapAndPriorityQueue) 与 [二分查找算法](/algorithm/170-BinarySearchAlgorithms)，本篇聚焦标准库 API 的语义、易错点与工程选型；计数的另一条路（Counter 与 `most_common`）见 [collections 专用容器](/python/142-CollectionsSpecializedContainers)。
+- **什么时候用到**：Top-K 统计、优先队列（任务调度、定时重试）、合并多个有序流、在有序序列上做「找插入点/找阈值区间」的查询。**分工声明**：堆与二分查找本身的算法原理、复杂度证明、变体题目见算法模块 [堆与优先队列](/algorithm/090-HeapAndPriorityQueue) 与 [二分查找算法](/algorithm/172-BinarySearchVariants)，本篇聚焦标准库 API 的语义、易错点与工程选型；计数的另一条路（Counter 与 `most_common`）见 [collections 专用容器](/python/142-CollectionsSpecializedContainers)。
 
 ## heapq：最小堆的六个操作
 
@@ -448,7 +448,7 @@ for ts, line in window:
 
 ## 与之前和之后的知识的关系
 
-- 往前：堆与二分的算法原理、复杂度证明见算法模块 [堆与优先队列](/algorithm/090-HeapAndPriorityQueue) 与 [二分查找算法](/algorithm/170-BinarySearchAlgorithms)；`Counter` 排行榜见 [collections 专用容器](/python/142-CollectionsSpecializedContainers)；元组的比较规则见 [内置数据结构](/python/140-BuiltinDataStructure)。
+- 往前：堆与二分的算法原理、复杂度证明见算法模块 [堆与优先队列](/algorithm/090-HeapAndPriorityQueue) 与 [二分查找算法](/algorithm/172-BinarySearchVariants)；`Counter` 排行榜见 [collections 专用容器](/python/142-CollectionsSpecializedContainers)；元组的比较规则见 [内置数据结构](/python/140-BuiltinDataStructure)。
 - 往后：`heapq.merge` 的多源归并与本模块流式处理的关系见 [生成器与协程](/python/180-GeneratorCoroutine)；asyncio 内部的定时器堆与 `loop.call_later` 见 [协程与 asyncio 入门](/python/660-CoroutineAsyncio)；`itertools` 的 `takewhile`/`dropwhile` 见 [迭代器协议与 itertools](/python/170-IteratorProtocolAndItertools)。
 
 ## 官方文档

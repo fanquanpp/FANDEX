@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 音视频、SVG 与 Canvas 三条绘图/媒体路线的总览导引。
 author: fanquanpp
-updated: '2026-10-06'
+updated: '2026-10-07'
 related:
   - 'html5/200-AudioVideo'
   - 'html5/210-SVG'

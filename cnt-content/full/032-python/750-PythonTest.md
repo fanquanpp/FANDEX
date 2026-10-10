@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 以 AA 收款函数的 TDD 三步循环开篇，系统上手 pytest：断言自省与发现规则、fixture 与 conftest、parametrize、monkeypatch 隔离副作用、raises 与异常断言、coverage 覆盖率，进阶 hypothesis 属性测试与测试金字塔选型，附「测试实现细节」反模式与四类练习。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'python/510-DecoratorAdvanced'
   - 'python/530-TypeAnnotationMypy'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 分布式系统：CAP定理、一致性模型、共识算法、分布式事务与容错机制；文末附 Raft 选举可视化与仲裁读写实验
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'cs-fundamentals/130-BusAndInterface'
   - 'cs-fundamentals/140-ParallelComputing'

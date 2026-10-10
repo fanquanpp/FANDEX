@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 类与对象、构造函数、继承、多态、抽象类与接口、属性与索引器、运算符重载、记录类型(record)、SOLID 原则与设计模式
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'csharp/020-CSharpOverviewEnvSetup'
   - 'csharp/030-CSharpBasicSyntax'

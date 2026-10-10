@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: OSI与TCP-IP模型深度：协议层次、数据封装、PDU与协议数据单元分析
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-07'
 related:
   - 'networking/040-NetworkSystemManagement'
   - 'networking/030-NetworkWiringAndConstruction'
@@ -19,7 +19,7 @@ prerequisites: []
 
 建议先阅读以下内容再进入本文：
 
-- [网络基础与协议](/networking/010-NetworkBasicsAndProtocol)
+- 网络基础与协议
 
 ## 1. OSI 七层模型详解
 

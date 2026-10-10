@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 组件设计模式：组合优于继承、受控/非受控、复合组件（Compound Components）、Provider 组合、HOC 与 render props 的历史定位、Context 精确订阅。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'react/250-ReactAnimation'
   - 'react/260-ReactSSR'

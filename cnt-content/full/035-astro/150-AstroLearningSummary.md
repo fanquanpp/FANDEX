@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 串联 Astro 模块全部文档，回顾岛屿架构、内容集合、文件路由、集成体系与构建发布的核心脉络。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'astro/010-AstroOverview'
   - 'astro/050-ContentCollections'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 以「setTimeout(fn, 0) 为什么不是立刻执行」引入事件循环心智模型：单线程与调用栈、宏任务队列与微任务队列、一次打印顺序实验讲透执行规则、微任务清到枯竭、0 毫秒的真实含义、rAF 所在一环只做预告，附微任务饿死宏任务与忙等心跳两则调试实录。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'javascript/300-EventLoopDetailed'
   - 'javascript/280-AsyncConcurrencyControl'

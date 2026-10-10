@@ -1,12 +1,12 @@
 ---
-order: 450
+order: 440
 title: P/Invoke 与原生互操作
 module: 'csharp'
 category: 后端技术
 difficulty: advanced
 description: 调用 C/C++ 动态库：DllImport、封送与内存管理。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'csharp/050-ValueTypeReferenceType'
   - 'csharp/152-UnsafeCodeAndDynamicProgramming'

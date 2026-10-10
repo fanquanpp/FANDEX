@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: filter、feGaussianBlur、feDropShadow、feColorMatrix、滤镜组合与光照。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-07'
 related:
   - 'svg/080-SVGGradientPattern'
   - 'svg/110-SVGClipMask'

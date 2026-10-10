@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 以外卖骑手调度系统的订单表为练习场，理解"InnoDB 表本身就是聚簇索引"这件事：主键怎么选、二级索引为什么只存主键、回表的代价从哪来，并用覆盖索引与延迟关联把慢查询救回来。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'mysql/230-CompositeIndexLeftmostPrefixPrinciple'
   - 'mysql/250-IndexConditionPushdown'

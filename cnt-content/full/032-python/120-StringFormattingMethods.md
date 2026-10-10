@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 以打印一张设备状态报表为场景，一次学会 f-string 格式说明符：小数位、千分位、百分比、对齐补零与调试专用的 {x=}；顺带说清 str.format 与 % 风格如今还活在哪里。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related: []
 prerequisites: []
 ---

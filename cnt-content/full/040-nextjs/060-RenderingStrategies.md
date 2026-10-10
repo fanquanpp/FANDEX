@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: SSG/ISR/SSR/流式渲染：给每个页面选对渲染方式。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'nextjs/030-DataFetchingCaching'
   - 'nextjs/070-CacheComponentsDeepDive'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 430 讲条件与分发，本篇专讲 infer：在 extends 右侧占位，从函数签名、数组、元组、Promise 中推出内部类型；四类经典推导模式与递归条件类型入门 DeepPromise，附 infer 位置错误与同名占位的真实报错调试实录。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'typescript/430-ConditionalTypeDistribute'
   - 'typescript/450-TypeCompositionPractice'

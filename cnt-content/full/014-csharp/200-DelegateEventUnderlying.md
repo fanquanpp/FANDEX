@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C#委托与事件底层原理详解：从ECMA-334类型系统到闭包与多播实现的完整指南。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'csharp/130-LINQDeferredImmediate'
   - 'csharp/100-AsyncAwaitStateMachine'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 无线网络：WiFi 标准演进（至 WiFi 7）、AC+AP 架构与 CAPWAP、WPA3 安全与 802.1X 认证、信道规划与漫游优化。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/160-SwitchingAndRouting'
   - 'networking/220-NetworkSecurityTech'
@@ -275,3 +275,65 @@ AC 可达性与负载（AC 是控制面单点，CAPWAP 断则全部 AP 脱管）
 
 priority 数值小者为主（两台互指对方为主备时注意数值方向）；主 AC 故障时 AP 通过 CAPWAP 断链切换到备 AC，业务 SSID 不变——AP 本地转发模式下已在线用户几乎无感，集中转发模式会瞬断重连。热备解决「AC 单点」，AP 本身由双电源/双上联保障。
 
+
+<!-- 恢复自 cnt-content/full/025-networking/040-NetworkSystemManagement.md（实施前 HEAD 62c90663308c7d6ea5a29bd1c1bb97cd40884710 版本）；拆分时该小节未随迁，2026-10-07 内容保全核对恢复 -->
+
+## 无线地勘与 AP 点位图设计
+
+
+地勘流程：
+
+1. **现场勘测**：获取建筑平面图，标注墙体材质、门窗位置
+2. **信号覆盖模拟**：使用 Ekahau/iBwave 进行信号仿真
+3. **AP 点位规划**：根据覆盖面积和用户密度确定 AP 数量
+4. **信道规划**：2.4GHz 使用 1/6/11 信道，5GHz 使用非 DFS 信道
+5. **功率调整**：边缘场强 ≥ -65dBm，重叠区域 ≥ -75dBm
+
+<!-- 恢复自 cnt-content/full/025-networking/040-NetworkSystemManagement.md（实施前 HEAD 62c90663308c7d6ea5a29bd1c1bb97cd40884710 版本）；拆分时该小节未随迁，2026-10-07 内容保全核对恢复 -->
+
+## 无线认证配置
+
+
+```bash
+# 华为 AC 配置 WPA2-Enterprise
+[AC] wlan
+[AC-wlan-view] security-profile name sec-enterprise
+[AC-wlan-sec-prof-sec-enterprise] security wpa2 dot1x aes
+
+# 配置 RADIUS 服务器
+[AC] radius-server template radius1
+[AC-radius-radius1] radius-server authentication 192.168.1.100 1812
+[AC-radius-radius1] radius-server accounting 192.168.1.100 1813
+[AC-radius-radius1] radius-server shared-key cipher Radius@123
+
+# 802.1X 认证配置
+[AC] aaa
+[AC-aaa] authentication-scheme auth1
+[AC-aaa-authen-auth1] authentication-mode radius
+[AC-aaa] domain default
+[AC-aaa-domain-default] authentication-scheme auth1
+[AC-aaa-domain-default] radius-server radius1
+```
+
+### 12.3 AP 隔离
+
+```bash
+# 华为 AC 配置用户隔离
+[AC] wlan
+[AC-wlan-view] traffic-profile name isolate
+[AC-wlan-traffic-prof-isolate] user-isolate l2    # 二层隔离
+[AC-wlan-traffic-prof-isolate] user-isolate l3    # 三层隔离
+```
+
+<!-- 恢复自 cnt-content/full/025-networking/040-NetworkSystemManagement.md（实施前 HEAD 62c90663308c7d6ea5a29bd1c1bb97cd40884710 版本）；拆分时该小节未随迁，2026-10-07 内容保全核对恢复 -->
+
+## AP 隔离
+
+
+```bash
+# 华为 AC 配置用户隔离
+[AC] wlan
+[AC-wlan-view] traffic-profile name isolate
+[AC-wlan-traffic-prof-isolate] user-isolate l2    # 二层隔离
+[AC-wlan-traffic-prof-isolate] user-isolate l3    # 三层隔离
+```

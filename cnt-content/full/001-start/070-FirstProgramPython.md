@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/060-FirstProgramJavaScript'
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'python/010-WhatIsPython'
   - 'start/080-LearningRouteOverview'

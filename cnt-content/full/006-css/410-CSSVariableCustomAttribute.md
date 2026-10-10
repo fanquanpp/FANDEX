@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: "从「老板要求换个主色，你却要全文替换 30 处色值」出发，用自定义属性把值抽成语义令牌，吃透运行时变量与预处理器变量的本质区别、作用域继承的层叠规则、var() 回退与无效化陷阱，最终搭出 JS 可实时改写的双主题系统。"
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'css/120-CSSFunctions'
   - 'css/360-MediaQuery'

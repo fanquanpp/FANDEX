@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 文件读写的完整主线——open 模式表与 with 自动关闭、读四式与写三式的选择、tell/seek 指针控制、二进制分块复制、编码显式声明与 errors 策略、大文件逐行与分块处理；附文本批处理与日志追加两个实践场景及遮代码自检练习。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related: []
 prerequisites: []
 ---

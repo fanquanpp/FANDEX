@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 网络可编程与自动化：NETCONF/YANG、RESTCONF 与 gNMI 标准接口、Ansible 与 Nornir 自动化实践、幂等与回滚。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/340-SDN'
   - 'networking/360-NetworkAutomation'

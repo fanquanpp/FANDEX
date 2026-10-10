@@ -1,12 +1,12 @@
 ---
-order: 470
+order: 460
 title: C# LINQ 进阶操作
 module: 'csharp'
 category: 后端技术
 difficulty: beginner
 description: SelectMany、Join/GroupJoin、集合运算、ToLookup、Chunk 等进阶算子的速查手册，附完整示例与易错点解析。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'csharp/430-LinqAsync'
   - 'csharp/120-LINQDeep'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 用一次真实提交前的自检流程讲透 git diff：工作区/暂存区/提交三个视角、diff 输出逐行解读、--staged 语义、空白噪声与分支比较（双点三点），附误判「没改动」与「空 diff 提交」两个真实坑。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'git/050-GitBasicOperation'
   - 'git/060-ThreeTrees'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: SSH 与远程操作：密钥免密登录、ssh config 多主机管理、scp/rsync 同步与端口转发
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'shell/260-CronScheduling'
   - 'shell/250-PracticalScripts'

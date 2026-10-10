@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 用 format 属性抓 printf 包装函数的事故开题，讲透 C23 五个标准属性的语法与语义，再进 GCC __attribute__ 实战（packed/aligned/constructor/always_inline），收口于跨编译器迁移表与可移植纪律。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/300-InlineFunctionMacro'
   - 'c/080-ControlFlow'

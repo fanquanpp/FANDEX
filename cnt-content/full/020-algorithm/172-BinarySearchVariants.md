@@ -476,6 +476,236 @@ assert ship_within_days([1,2,3,4,5,6,7,8,9,10], 5) == 15
 
 </details>
 
+## 历史动机与演进
+
+<!-- 来源: cnt-content/full/020-algorithm/170-BinarySearchAlgorithms.md 小节「2. 历史动机与演进」 -->
+
+### 2.1 前查找时代：从纸质索引到内存查找
+
+19 世纪末，图书馆学与统计学已发展出大量"索引"技术：图书目录卡、人口普查穿孔卡片、电话簿。这些物理索引的关键问题是：**给定一个关键字，如何在大量数据中快速定位？**
+
+1928 年*Mechanical World*首次记载了用机器辅助查找穿孔卡片的方法，但仅限于顺序查找。直到 1946 年，二分查找的思想才在计算机科学文献中正式出现。
+
+### 2.2 Mauchly 1946：二分查找的诞生
+
+1946 年，**John Mauchly**（ENIAC 联合设计者）在 Moore School Lectures《Sorting and Collating》中首次公开描述二分查找算法：
+
+> 给定一个有序数组 $A[1..n]$，将目标 $x$ 与中间元素 $A[\lfloor n/2 \rfloor]$ 比较；若相等则返回，若 $x$ 较小则递归在左半查找，否则在右半查找。
+
+但 Mauchly 的描述并不完整，未明确边界处理。1962 年**Hermann Bottenbruch**在*Communications of the ACM*给出首个被广泛认可的完整实现。Knuth 在 TAOCP Vol.3 §6.2.1 考据后写道：
+
+> "Although the basic idea of binary search is comparatively straightforward, the details can be surprisingly tricky, and many programmers have gotten it wrong over the years."
+
+这一预言在 2006 年被 Joshua Bloch 印证。
+
+### 2.3 Joshua Bloch 2006：二分查找的"千年 Bug"
+
+2006 年，Google 研究员 **Joshua Bloch**（前 Sun Microsystems Java 标准库首席工程师）在博客发表《Extra, Extra - Read All About It: Nearly All Binary Searches and Mergesorts are Broken》，公开指出 Java 标准库 `java.util.Arrays.binarySearch` 存在整数溢出 Bug：
+
+```java
+// Bug 版本（Java 标准库至 JDK 5）
+int mid = (low + high) / 2;   // 当 low + high > Integer.MAX_VALUE 时溢出为负数
+```
+
+Bug 追溯到 Jon Bentley 1986 年《Programming Pearls》中的二分查找实现——Bentley 在书中将该实现作为"经过验证的正确代码"展示，但 2006 年 Bloch 的发现证明该代码在 $n > 2^{30}$ 时会崩溃。修复方案：
+
+```java
+int mid = low + (high - low) / 2;       // 加法改为减法避免溢出
+// 或
+int mid = (low + high) >>> 1;           // 无符号右移
+```
+
+这一事件成为软件工程史上的经典案例，证明"简单的算法不一定容易实现正确"。
+
+### 2.4 Luhn 1953：哈希表的诞生
+
+1953 年 1 月，IBM 的 **Hans Peter Luhn** 在内部备忘录中首次提出"哈希函数 + 链地址法"的查找方案。Luhn 当时研究 IBM 701 计算机的快速检索问题，提出：
+
+- 用哈希函数 $h(k)$ 将键 $k$ 映射到数组下标；
+- 冲突时用链表链接（**链地址法**，chaining）。
+
+这是链式线性表首次应用。Luhn 因此获 1956 年 IBM Outstanding Contribution Award。
+
+1968 年，**Bob Morris** 在*Communications of the ACM* 11(1):38-43《Scatter Storage Techniques》系统化哈希理论，引入**开放寻址法**（open addressing）、**线性探查**（linear probing）、**二次探查**（quadratic probing）等冲突解决技术。Knuth TAOCP Vol.3 §6.4（1973）给出权威论述与对比分析。
+
+### 2.5 Bloom 1970：布隆过滤器
+
+1970 年，**Burton Howard Bloom** 在*Communications of the ACM* 13(7):422-426《Space/Time Trade-offs in Hash Coding with Allowable Errors》中提出布隆过滤器。Bloom 当时在 Computer Usage Corporation 研究海量数据的快速去重问题，提出：
+
+- 用 $m$ 位位数组 + $k$ 个独立哈希函数；
+- 插入：将 $k$ 个哈希位置全部置 1；
+- 查询：若 $k$ 个位置全为 1，则元素**可能**存在；若有任何 0，则元素**一定**不存在；
+- 误判率约 $(1 - e^{-kn/m})^k$。
+
+布隆过滤器以 $O(m \text{ bits})$ 空间高效著称，是大数据时代缓存穿透防护、URL 去重、Cassandra HINT、PostgreSQL bloom 索引的核心。
+
+### 2.6 Bayer-McCreight 1972：B 树与磁盘索引
+
+1970 年，Boeing Scientific Research Labs 的 **Rudolf Bayer** 与 **Edward M. McCreight** 在研究大型磁盘文件的索引时，发现二叉树高度过大、磁盘 IO 次数过多。1972 年他们在*Acta Informatica* 1(3):173-189 发表《Organization and Maintenance of Large Ordered Indices》，提出 **B 树**：
+
+- 每节点最多 $2t-1$ 个关键字、$2t$ 个子节点（$t$ 为最小度数）；
+- 根节点到叶节点等长（**完美平衡**）；
+- 查找、插入、删除均 $O(\log_t n)$；
+- 通过增大 $t$（典型 50-500），树高通常 3-4 即可表示数十亿关键字。
+
+B 树是 MySQL InnoDB、PostgreSQL、Oracle、SQL Server、SQLite 等所有关系数据库索引的基石。B+ 树（Bayer 1972 后续工作）将数据仅存叶节点，叶节点用链表连接，使范围查询 $O(\log_t n + k)$。
+
+McCreight 在 2010 年 PODS 大会访谈中曾回忆："B-tree 是 Bayer-B-tree 也是 Boeing-B-tree 也是 Balanced-B-tree 也可能是 Broad-B-tree，但我们从未在论文中明确解释 B 的含义。"
+
+### 2.7 Bayer 1972 / Guibas-Sedgewick 1978：红黑树
+
+1972 年，**Rudolf Bayer** 在*Acta Informatica* 1(4):290-306 发表《Symmetric binary B-trees: Data structure and maintenance algorithms》，提出**对称二叉 B 树**（symmetric binary B-tree, SB-tree）——用颜色标记模拟 B 树的二叉结构。这是红黑树的雏形。
+
+1978 年，**Leonidas J. Guibas** 与 **Robert Sedgewick** 在 FOCS 论文《A Dichromatic Framework for Balanced Trees》中重新形式化 SB-tree，正式命名**红黑树**（red-black tree），并简化插入删除的旋转操作。Sedgewick 在 Xerox PARC 的彩色显示器上选择"红色"作为视觉最易辨识的颜色（PARC 当时是少数有彩色显示器的实验室）。
+
+红黑树的 5 条性质保证高度 $\leq 2\log(n+1)$，使所有操作 $O(\log n)$ 最坏。红黑树被广泛采用：C++ STL `std::map`/`std::set`、Java `TreeMap`/`TreeSet`、Linux kernel CFS 调度器、Linux VMA 内存管理、Nginx timer、epoll 内部。
+
+### 2.8 Knuth-Morris-Pratt 1977 与 Boyer-Moore 1977：字符串查找双星
+
+1977 年是字符串查找算法的"奇迹年"。当年同时发表两篇里程碑论文：
+
+**KMP 算法**（Knuth-Morris-Pratt）：
+- Donald Knuth（斯坦福）、James H. Morris（CMU，研究字符串匹配硬件）、Vaughan Pratt（MIT）三人独立发现；
+- 1977 年联合发表于 *SIAM Journal on Computing* 6(2):323-350《Fast Pattern Matching in Strings》；
+- 核心思想：预处理模式串构造 `next` 数组（部分匹配表），使匹配失败时不回退文本指针；
+- 复杂度：$O(n+m)$ 时间、$O(m)$ 空间，最坏线性。
+
+**Boyer-Moore 算法**：
+- Robert S. Boyer 与 J. Strother Moore 在 SRI International 研究定理证明器时提出；
+- 1977 年发表于 *Communications of the ACM* 20(10):762-772《A Fast String Searching Algorithm》；
+- 核心思想：从模式串右端开始匹配，结合**坏字符规则**与**好后缀规则**使模式串能跳跃式前进；
+- 平均复杂度 $O(n/m)$（亚线性！），最坏 $O(nm)$（启发式无 worst-case 保证）；
+- 实践中 Boyer-Moore 通常是字符串查找最快的算法，被 grep、PostgreSQL、各种文本编辑器 Ctrl+F 采用。
+
+1987 年 **Karp-Rabin** 在 *IBM Journal of Research and Development* 31(2):249-260《Efficient randomized pattern-matching algorithms》提出**Rabin-Karp 算法**，用滚动哈希实现 $O(n+m)$ 平均、$O(nm)$ 最坏的字符串查找，是后续 Rabin-Karp 指纹、二维模式匹配的基础。
+
+### 2.9 Pugh 1990：跳表
+
+1990 年，马里兰大学 **William Pugh** 在 *Communications of the ACM* 33(6):668-676 发表《Skip Lists: A Probabilistic Alternative to Balanced Trees》，提出**跳表**（Skip List）：
+
+- 在有序链表上随机添加多层索引；
+- 第 $i$ 层节点以概率 $p$（通常 0.5 或 0.25）出现在第 $i+1$ 层；
+- 查找：从最高层开始，每层线性前进，遇大则下降一层；
+- 期望查找 $O(\log n)$、期望插入 $O(\log n)$、期望删除 $O(\log n)$；
+- 实现远比红黑树简单（约 100 行 C 代码 vs 红黑树 500+ 行）。
+
+Pugh 在论文中写道："Skip lists are a probabilistic alternative to balanced trees. They are easy to implement and are at least as efficient as balanced trees."
+
+跳表被广泛采用：Redis zset（zskiplist）、LevelDB/RocksDB MemTable、MongoDB WiredTiger、MemSQL、skiplist-based LRU。Redis 作者 antirez 在博客中明确表示："Skip lists are a data structure that I have always found fascinating. They are simple, elegant, and they work."
+
+### 2.10 查找算法演进时间线
+
+```mermaid
+timeline
+    title 查找算法演进时间线
+    1946 : Mauchly 公开描述二分查找
+         : Moore School Lectures《Sorting and Collating》
+    1953 : Luhn 在 IBM 内部备忘录提出哈希表
+         : 链地址法（chaining）
+    1957 : Peterson 发表《Addressing for Random Access Storage》
+         : 插值查找 + 哈希存储系统化
+    1962 : Bottenbruch 在 CACM 给出二分查找首个完整实现
+    1968 : Bob Morris《Scatter Storage Techniques》系统化哈希
+         : 开放寻址、线性探查、二次探查
+    1970 : Bloom 在 CACM 13(7):422-426 提出布隆过滤器
+         : 概率查找结构诞生
+    1972 : Bayer-McCreight 在 Acta Informatica 1(3):173-189 发表 B 树
+         : Bayer 同年发表对称二叉 B 树（红黑树雏形）
+    1973 : Knuth 出版 TAOCP Vol.3《Sorting and Searching》
+         : 查找算法系统化（§6.1-6.4）
+    1977 : KMP 发表于 SIAM J. Comput. 6(2):323-350
+         : Boyer-Moore 发表于 CACM 20(10):762-772
+         : 字符串查找双星诞生
+    1978 : Guibas-Sedgewick《A Dichromatic Framework for Balanced Trees》
+         : 红黑树正式命名与简化
+    1987 : Karp-Rabin《Efficient randomized pattern-matching algorithms》
+         : Rabin-Karp 滚动哈希
+    1990 : Pugh《Skip Lists: A Probabilistic Alternative to Balanced Trees》
+         : CACM 33(6):668-676
+         : 跳表诞生，Redis/LevelDB 后续采用
+    2006 : Joshua Bloch 公开 Java 标准库二分查找整数溢出 Bug
+         : 印证 Knuth "二分查找 60 年仍常错"论断
+    2010s : 布隆过滤器在 Cassandra/PostgreSQL/HBase 大规模应用
+         : 跳表在 Redis/LevelDB/RocksDB/MongoDB 全面采用
+```
+
+### 2.11 关键设计决策
+
+| 年份 | 决策 | 决策者 | 动机 |
+| ---- | ---- | ---- | ---- |
+| 1946 | 用"减半"而非"线性"查找有序数据 | Mauchly | 利用有序性将 $O(n)$ 降为 $O(\log n)$ |
+| 1953 | 用哈希函数直接寻址 | Luhn | 跳过比较，直接定位 |
+| 1970 | 允许误判换取空间效率 | Bloom | 海量数据去重，少量误判可接受 |
+| 1972 | 多路分支降低树高 | Bayer-McCreight | 磁盘 IO 次数 = 树高，需降低树高 |
+| 1972 | 用颜色模拟 B 树的合并分裂 | Bayer | 二叉树结构 + B 树平衡性 |
+| 1977 | 预处理模式串避免文本回退 | KMP | 最坏线性保证 |
+| 1977 | 从右向左匹配 + 启发式跳跃 | Boyer-Moore | 实践中亚线性 $O(n/m)$ |
+| 1978 | 颜色替代 SB-tree 复杂标记 | Guibas-Sedgewick | 简化插入删除 |
+| 1990 | 用概率均衡替代严格均衡 | Pugh | 实现简单 + 性能相当 |
+
+---
+
+## 二分查找的形式化定义与正确性证明
+
+<!-- 来源: cnt-content/full/020-algorithm/170-BinarySearchAlgorithms.md 小节「3.2 二分查找的形式化定义」 -->
+
+**前提条件**：数组 $A[0..n-1]$ 满足**有序性**（monotonicity）：$\forall i < j, A[i] \leq A[j]$（升序）。
+
+**循环不变式**（Loop Invariant）：在二分查找循环的每次迭代开始时，若 $x \in A$，则 $x \in A[\text{left}..\text{right}]$。
+
+**正确性证明**：
+1. **初始化**：$\text{left} = 0, \text{right} = n - 1$，$x \in A[0..n-1]$ 显然成立；
+2. **保持**：每次迭代计算 $\text{mid} = \lfloor (\text{left} + \text{right}) / 2 \rfloor$：
+   - 若 $A[\text{mid}] = x$，返回 $\text{mid}$，循环结束；
+   - 若 $A[\text{mid}] < x$，则 $x \notin A[\text{left}..\text{mid}]$（由有序性），故 $x \in A[\text{mid}+1..\text{right}]$，令 $\text{left} = \text{mid} + 1$；
+   - 若 $A[\text{mid}] > x$，类似地令 $\text{right} = \text{mid} - 1$；
+   不变式保持；
+3. **终止**：当 $\text{left} > \text{right}$ 时循环终止，此时区间为空，故 $x \notin A$。
+
+## 寻找两个正序数组的中位数（LeetCode 4）
+
+<!-- 来源: cnt-content/full/020-algorithm/170-BinarySearchAlgorithms.md 小节「14.7 LeetCode 4：寻找两个正序数组的中位数」 -->
+
+```python
+def find_min(nums: list[int]) -> int:
+    """旋转排序数组找最小值：O(log n)"""
+    left, right = 0, len(nums) - 1
+    while left < right:
+        mid = left + (right - left) // 2
+        if nums[mid] > nums[right]:
+            left = mid + 1  # 最小值在右半
+        else:
+            right = mid  # 最小值在左半（含 mid）
+    return nums[left]
+```
+
+### 14.7 LeetCode 4：寻找两个正序数组的中位数
+
+```python
+def find_median_sorted_arrays(nums1: list[int], nums2: list[int]) -> float:
+    """二分查找：O(log(min(m,n)))"""
+    if len(nums1) > len(nums2):
+        nums1, nums2 = nums2, nums1
+    m, n = len(nums1), len(nums2)
+    left, right = 0, m
+    while left <= right:
+        i = (left + right) // 2  # nums1 的分割点
+        j = (m + n + 1) // 2 - i  # nums2 的分割点
+        nums1_left_max = float('-inf') if i == 0 else nums1[i - 1]
+        nums1_right_min = float('inf') if i == m else nums1[i]
+        nums2_left_max = float('-inf') if j == 0 else nums2[j - 1]
+        nums2_right_min = float('inf') if j == n else nums2[j]
+        if nums1_left_max <= nums2_right_min and nums2_left_max <= nums1_right_min:
+            if (m + n) % 2:
+                return max(nums1_left_max, nums2_left_max)
+            return (max(nums1_left_max, nums2_left_max) + min(nums1_right_min, nums2_right_min)) / 2
+        elif nums1_left_max > nums2_right_min:
+            right = i - 1
+        else:
+            left = i + 1
+    raise ValueError("Invalid input")
+```
+
 ## 参考与致谢
 
 - Knuth, TAOCP Vol.3 §6.2.1「Searching an Ordered Table」（二分与斐波那契查找的原始出处，学术引用）

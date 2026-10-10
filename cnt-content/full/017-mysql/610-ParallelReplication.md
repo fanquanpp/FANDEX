@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL并行复制：从库多线程回放（MTS）、LOGICAL_CLOCK 与 WRITESET 依赖追踪、8.4 命名与配置变化、监控与延迟优化
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'mysql/590-Replication'
   - 'mysql/600-GTID'

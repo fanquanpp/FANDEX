@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 用 Gradle Kotlin DSL 构建 Kotlin 项目：依赖管理、版本目录、多模块、K2 编译器配置与构建提速。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'kotlin/420-KotlinCompilerPlugin'
   - 'kotlin/440-KotlinAndroid'

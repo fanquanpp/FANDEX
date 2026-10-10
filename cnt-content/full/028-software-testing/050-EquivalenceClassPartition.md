@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 等价类划分法：测试用例设计方法、有效/无效等价类、边界值结合应用详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'software-testing/030-TestLevels'
   - 'software-testing/040-TestType'

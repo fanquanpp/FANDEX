@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript 模块动态导入 import() 与代码分割策略深度剖析，涵盖 ES2020 规范、V8 模块图、Webpack/Vite/Rollup 实现细节与企业级性能优化。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'javascript/090-ArrayHigherOrderMethod'
   - 'javascript/340-ProxyReflectPractice'

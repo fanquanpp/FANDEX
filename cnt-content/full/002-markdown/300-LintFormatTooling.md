@@ -6,7 +6,7 @@ module: 'markdown'
 category: 工具链
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'markdown/010-SyntaxGuide'
   - 'markdown/330-PRCollaboration'

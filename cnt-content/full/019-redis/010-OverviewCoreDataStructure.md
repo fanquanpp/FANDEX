@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: Redis 8 上手第一课：从报名工具的真实需求认识五种核心结构（String/Hash/List/Set/ZSet），动手跑通、理解内存键值模型的取舍，并给出全模块学习路径。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'redis/020-KeyManagement'
   - 'redis/030-HashCommand'

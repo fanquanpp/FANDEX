@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++11 到 C++26 的标准演化主线——各版本核心特性、演进脉络与取舍；机制细节（虚函数表/RAII/模板元编程）与工具链（CMake/vcpkg）见各自专篇。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'cpp/020-CppOverviewAndModernStandard'
   - 'cpp/730-Cpp23NewFeatures'

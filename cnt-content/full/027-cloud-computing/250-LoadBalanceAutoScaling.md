@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 'ELB 三种负载均衡器选型、Auto Scaling 伸缩策略、健康检查与容量规划实战。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/010-CloudComputingBasics'
   - 'cloud-computing/270-AWSCore'

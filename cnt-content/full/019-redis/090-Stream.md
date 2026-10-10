@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis Stream 消息日志模型：Entry ID 生成规则、Radix Tree 与 listpack 存储结构、XADD/XREAD/XRANGE 基础命令、写入端实践与消息队列选型对比。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'redis/092-StreamConsumerGroups'
   - 'redis/094-StreamOpsAndMonitoring'
@@ -1861,6 +1861,6 @@ XRANGE mystream 1718334600000-0 1718334700000-0
 - 能解释为什么 XDEL 之后 XLEN 变小、内存却不一定立刻下降（墓碑标记，第 2.3 节）；
 - 能为一个"保留最近 1 小时日志"的需求写出带修剪的 XADD 命令（MINID 还是 MAXLEN，[运维监控篇](/redis/094-StreamOpsAndMonitoring)第 1 章给答案）。
 
-系列另两篇：[消费者组篇](/redis/092-StreamConsumerGroups)与[运维监控篇](/redis/094-StreamOpsAndMonitoring)。Stream 与整体持久化、集群机制的关系，分别见[持久化模块](/redis/140-PersistenceModule)与[集群与高可用](/redis/180-ClusterHA)。
+系列另两篇：[消费者组篇](/redis/092-StreamConsumerGroups)与[运维监控篇](/redis/094-StreamOpsAndMonitoring)。Stream 与整体持久化、集群机制的关系，分别见[持久化模块](/redis/150-RDBSnapshotPersistence)与[集群与高可用](/redis/220-RedisClusterHashSlot)。
 
 官方文档：<https://redis.io/docs/data-types/streams/>；命令参考：<https://redis.io/commands/>。

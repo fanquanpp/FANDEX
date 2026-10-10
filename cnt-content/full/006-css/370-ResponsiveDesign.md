@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS响应式设计与媒体查询实践
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-07'
 related:
   - 'css/570-Sass'
   - 'css/580-LessStylus'

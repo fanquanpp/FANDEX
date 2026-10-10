@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 云原生架构、12-Factor App、服务网格、混沌工程与 On-Call 实践。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'devops/240-MonitorAndObservability'
   - 'devops/200-IaC'

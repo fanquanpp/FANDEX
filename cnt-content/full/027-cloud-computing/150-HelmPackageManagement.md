@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 'Helm：Chart 结构、values 覆盖链、模板语法、依赖管理、回滚与 GitOps 实践。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/110-KubernetesCore'
   - 'cloud-computing/140-KubernetesStorage'

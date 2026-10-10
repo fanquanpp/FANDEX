@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 容器安全：镜像安全、运行时安全、K8s安全、安全策略与合规
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'devops/170-AutomationTest'
   - 'devops/330-Troubleshooting'

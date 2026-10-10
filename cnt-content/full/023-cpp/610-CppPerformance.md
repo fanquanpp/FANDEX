@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++性能优化的理论、方法、工具与工程实践
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'cpp/600-CppTestFramework'
   - 'cpp/580-CppPythonInteraction'

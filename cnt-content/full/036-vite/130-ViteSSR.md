@@ -1,12 +1,12 @@
 ---
-order: 150
+order: 160
 title: 服务端渲染 SSR
 module: 'vite'
 category: 前端技术
 difficulty: advanced
 description: Vite SSR 实战：CSR/SSR 渲染时机对比、双入口构建、中间件模式、水合与数据注水、元框架选型与部署形态
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'vite/050-ViteEnvModes'
   - 'vite/080-BuildSplit'

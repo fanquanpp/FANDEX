@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 联合索引的完整推理：B+ 树多列排序结构、最左前缀匹配规则、范围列截断、ORDER BY 利用与索引列顺序设计法。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'mysql/220-ClusteredIndexSecondaryIndex'
   - 'mysql/240-PrefixIndex'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 为什么重写 equals 必须重写 hashCode，以及 Objects.hash 极简写法。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'java/210-CollectionFrameworkDetailed'
   - 'java/450-JavaRecordClass'

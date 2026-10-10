@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Selenium Web自动化测试：WebDriver、定位策略、框架设计与最佳实践详解。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'software-testing/050-EquivalenceClassPartition'
   - 'software-testing/060-BoundaryValueAnalysis'

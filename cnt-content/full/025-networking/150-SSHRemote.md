@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: SSH 远程管理：密钥登录与免密配置、端口转发与跳板、服务端安全加固要点。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/260-NetcatNmap'
   - 'networking/320-VPNConfig'

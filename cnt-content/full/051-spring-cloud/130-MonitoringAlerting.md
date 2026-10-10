@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/160-ActuatorObservability'
   - 'spring-cloud/080-DistributedTracing'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'spring-boot/160-ActuatorObservability'
   - 'spring-cloud/140-CapstoneEcommerceOrder'

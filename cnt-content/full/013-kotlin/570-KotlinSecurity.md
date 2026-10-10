@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Kotlin安全编程
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'kotlin/270-KotlinConcurrencySafety'
   - 'kotlin/510-KotlinWebSocket'

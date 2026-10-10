@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 可变参数与序列/字典解包：函数签名里的星号完全指南。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'python/100-FunctionDetailed'
 prerequisites:
@@ -21,7 +21,7 @@ prerequisites:
 
 - [函数详解](/python/100-FunctionDetailed)：掌握默认参数、返回值与作用域，本篇在其上补齐"可变参数"这最后一块。
 - [内置数据结构](/python/140-BuiltinDataStructure)：理解序列与映射两类容器，是 `*`/`**` 解包的前提。
-- [推导式与生成器](/python/170-ComprehensionGenerator)：解包常与推导式组合出简洁的装配代码。
+- [列表推导式进阶](/python/160-ListComprehensionAdvanced)：解包常与推导式组合出简洁的装配代码。
 
 ## 学习目标
 

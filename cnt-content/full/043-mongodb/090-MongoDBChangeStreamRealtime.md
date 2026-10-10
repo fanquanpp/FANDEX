@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 监听数据变化的每一跳：Change Streams、resume token 与实时架构。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'mongodb/020-MongoDBCRUDOperations'
 prerequisites:

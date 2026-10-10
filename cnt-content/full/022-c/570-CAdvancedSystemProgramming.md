@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: ldd 看到的 .so 是谁加载的起步：ld.so 加载过程与 LD_DEBUG/LD_PRELOAD 实验，mmap 文件映射与匿名映射、MAP_SHARED 父子共享，getuid/geteuid 与 setuid 权限模型，守护进程化完整可跑版与 syslog，getrlimit 对照 ulimit，CLOCK_MONOTONIC 与 CLOCK_REALTIME 为什么不能混用。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/350-SharedMemorySemaphore'
   - 'c/250-FunctionCallStackFrame'

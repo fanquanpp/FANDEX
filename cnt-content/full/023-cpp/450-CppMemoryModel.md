@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++11 原子操作、内存序、happens-before 关系与无锁编程的工程实践
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'cpp/690-DesignPatternCpp'
   - 'cpp/220-CppOOPAdvanced'

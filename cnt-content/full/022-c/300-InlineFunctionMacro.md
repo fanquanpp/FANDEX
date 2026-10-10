@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用 MAX(i++, j++) 算出两个答案的事故开场：objdump 亲眼看内联前后的机器码、inline 只是建议而优化等级才是开关、C99 inline 三形式的链接语义与 undefined reference 与 multiple definition 两宗实录、static inline 为何是头文件函数的默认答案、宏与内联函数的工程决策对照表与内核编码规范的准则出处、代码膨胀与递归的代价。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/290-PreprocessorMacro'
   - 'c/280-GenericSelection'

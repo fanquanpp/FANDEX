@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: interface 与 type 的定义、扩展、交叉与合并。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'typescript/030-TypeScriptOverviewEnvSetup'
   - 'typescript/080-BasicTypeSystem'

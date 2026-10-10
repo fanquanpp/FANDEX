@@ -9,7 +9,7 @@ prerequisites:
   - 'mybatis/070-MybatisPlusCrud'
   - 'spring-boot/100-TransactionManagement'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'mysql/430-MVCCPrinciple'
   - 'mybatis/090-PitfallsPerformance'

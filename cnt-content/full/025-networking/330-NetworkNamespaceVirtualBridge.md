@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Linux 网络命名空间（netns）与虚拟网桥（bridge）：容器网络基础。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/250-KeepalivedDualHotStandby'
@@ -19,7 +19,7 @@ prerequisites: []
 
 建议先阅读以下内容再进入本文：
 
-- [网络基础与协议](/networking/010-NetworkBasicsAndProtocol)
+- [网络基础与协议](/networking/020-OSITCPIPModel)
 
 ## 1. 网络命名空间
 
@@ -99,7 +99,7 @@ sudo ip addr add 172.18.0.1/16 dev br0
 两个网桥之间如果存在两条链路（为了冗余），广播帧会沿环路无限复制，瞬间打满带宽——这是二层网
 络特有的「广播风暴」。STP（生成树协议）通过在网桥间选举，逻辑上阻塞多余端口，把有环物理拓扑
 剪成无环树。Linux bridge 支持 STP（`stp_state 1`），容器场景下网桥拓扑简单通常不开；数据中心
-级交换网络中 STP/RSTP/MSTP 的角色见 [网络基础与协议](networking/010-NetworkBasicsAndProtocol)。
+级交换网络中 STP/RSTP/MSTP 的角色见 [网络基础与协议](/networking/020-OSITCPIPModel)。
 
 ## 3. 容器网络
 

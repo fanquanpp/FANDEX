@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 从「浏览器为什么被一张样式表卡住」讲起：CSSOM 阻塞渲染的原理、条件加载与异步样式、关键 CSS 内联与字体阻塞，附可复现的阻塞实验。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'css/540-CSSPerformanceOptimizationDetailed'
   - 'css/510-CSSFontLoading'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Vue 3 性能优化详解：shallowRef/markRaw 响应式减负、v-memo/v-once 渲染跳过、虚拟滚动与异步组件，附完整可运行示例与陷阱清单。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'vue3/220-PiniaPersistencePlugin'
   - 'vue3/200-VueRouterNavigationGuard'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 服务器组件直接取数、Next.js 15+ 的 fetch 缓存默认语义、四层缓存地图、按需失效与 ISR 增量静态再生。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'nextjs/020-AppRouterRouting'
   - 'nextjs/090-DeploymentOptimization'

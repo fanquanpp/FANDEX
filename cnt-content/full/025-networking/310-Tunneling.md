@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 隧道封装原理：GRE/IPIP/VXLAN/WireGuard/IPsec 隧道模式对比、TUN 设备、MTU 与防火墙陷阱、双私网互通完整实验。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/340-SDN'
@@ -14,7 +14,7 @@ related:
 prerequisites: []
 ---
 
-前置知识：IP 报文结构与路由转发（见 [网络基础与协议](networking/010-NetworkBasicsAndProtocol)）；
+前置知识：IP 报文结构与路由转发（见 [网络基础与协议](/networking/020-OSITCPIPModel)）；
 VPN 的加密与密钥协商细节见 [VPN 与隧道配置](networking/320-VPNConfig)。
 
 学习目标：

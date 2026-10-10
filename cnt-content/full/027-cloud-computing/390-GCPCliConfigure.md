@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'gcloud CLI 的安装初始化、账号与 ADC 认证、项目/区域默认值、多配置与组件管理。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/400-GCPComputeStorage'
   - 'cloud-computing/510-GCPGKECommands'

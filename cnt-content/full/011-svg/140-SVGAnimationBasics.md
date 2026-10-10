@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 从「给页面加一个加载圈」出发：SMIL/animate/animateMotion、CSS 动画的 transform-box 坑、WAAPI 三条路线选型与性能铁律。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'svg/090-SVGTransform'
   - 'svg/050-SVGPathDetailed'
@@ -507,9 +507,9 @@ CSS 版（内联场景）：同一 path 去掉 animate 子元素，加：
 
 - [SVG JavaScript 交互](/svg/150-SVGJavaScriptInteraction)：本文 JS
   路线的展开，含事件系统与拖拽；
-- [SVG 响应式与性能](/svg/160-SVGResponsivePerformance)：性能铁律
+- [SVG 响应式与性能](/svg/160-SVGPerformanceOptimization)：性能铁律
   的完整背景；
-- [SVG 图标与可访问性](/svg/170-SVGIconAccessibility)：动画之外，
+- [SVG 图标与可访问性](/svg/175-SVGAccessibilityPrinciples)：动画之外，
   图标的语义与 reduced-motion 规范。
 
 ## 本章总结

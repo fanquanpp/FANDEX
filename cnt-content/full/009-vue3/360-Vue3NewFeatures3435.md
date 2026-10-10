@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从一个真实组件库升级场景学会 Vue 3.4 与 3.5 的高频新特性：defineModel、同名简写、响应式 props 解构、useTemplateRef、useId、watch 暂停恢复与 onWatcherCleanup，附 3.6 Vapor 进展。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'vue3/110-ComponentSystem'
   - 'vue3/060-ComputedCacheWatchTiming'

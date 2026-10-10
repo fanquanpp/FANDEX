@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis 8 Vector Set 向量集：VADD/VSIM 全命令实操、HNSW 与量化调参（Q8/BIN/M/EF）、属性 FILTER 过滤与 AI 嵌入检索场景。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'redis/310-RedisNewFeatures8'
   - 'redis/010-OverviewCoreDataStructure'

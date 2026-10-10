@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: objdump 反汇编自己的 add 函数起步：gcc -S 的 -O0/-O2 对照看寄存器分配，手写 .s 与 C 互相调用（System V x64 约定、名字修饰、栈对齐纪律），GCC 基本 asm 与扩展 asm 四段结构逐段讲透，volatile asm 与 "memory" clobber 防住哪类优化，什么时候值得写汇编与三类翻车现场。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/270-VolatileKeyword'
   - 'c/410-CrossPlatformProgramming'

@@ -6,7 +6,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: advanced
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'javascript/380-JavaScriptModular'
   - 'javascript/400-ModuleBundlingAndTreeShaking'

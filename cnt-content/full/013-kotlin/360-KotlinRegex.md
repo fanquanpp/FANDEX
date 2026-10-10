@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Kotlin 正则表达式的形式化语义、JDK 集成、性能优化与工程实践
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'kotlin/070-KotlinScopeFunction'
   - 'kotlin/290-FlowReactiveStream'

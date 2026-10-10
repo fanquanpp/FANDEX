@@ -4,14 +4,15 @@ title: Context 与全局状态
 module: 'react'
 category: 前端技术
 difficulty: intermediate
-description: Context API、Provider 模式、useContext 优化、状态管理方案对比与状态机。
+description: Context API、Provider 模式、useContext 优化与状态机；第三方状态管理库的横向对比与选型见状态管理方案对比篇。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'react/030-StateEvent'
   - 'react/040-HooksDeep'
   - 'react/060-React19NewFeatures'
   - 'react/070-ReactRouterRouting'
+  - 'react/170-StateManagementSolutionComparison'
 prerequisites: []
 ---
 
@@ -24,8 +25,7 @@ prerequisites: []
 - 掌握「1. Context API」的核心机制、典型用法与常见陷阱
 - 掌握「2. Provider 模式」的核心机制、典型用法与常见陷阱
 - 掌握「3. useContext 优化」的核心机制、典型用法与常见陷阱
-- 掌握「4. 状态管理方案对比」的核心机制、典型用法与常见陷阱
-- 掌握「5. 状态机」的核心机制、典型用法与常见陷阱
+- 掌握「4. 状态机」的核心机制、典型用法与常见陷阱
 
 
 ## 1. Context API
@@ -253,182 +253,11 @@ function Header() {
 
 **方案三：使用 Zustand 等外部状态库**（自带 selector）
 
-## 4. 状态管理方案对比
+> 归并说明：第三方状态管理库（Zustand、Jotai、Redux Toolkit、Valtio）的机制差异、渲染性能与选型决策已收归专篇——见[状态管理方案对比](/react/170-StateManagementSolutionComparison)。本篇聚焦 Context 本身：它是依赖注入而非订阅系统，只适合低频全局值；高频共享状态何时该换库、换哪个库，读那一篇。
 
-### 4.1 方案总览
+## 4. 状态机
 
-| 方案                     | 体积   | 学习曲线 | 适用场景   | 核心理念           |
-| :----------------------- | :----- | :------- | :--------- | :----------------- |
-| **Context + useReducer** | 0 KB   | 低       | 小型应用   | React 内置         |
-| **Zustand**              | ~1 KB  | 低       | 中大型应用 | 极简、无 Provider  |
-| **Jotai**                | ~2 KB  | 低       | 原子化状态 | 原子模型、自底向上 |
-| **Valtio**               | ~3 KB  | 低       | 代理式状态 | Proxy 响应式       |
-| **Redux Toolkit**        | ~11 KB | 中       | 大型应用   | 单一 Store、不可变 |
-
-### 4.2 Zustand
-
-```tsx
-import { create } from 'zustand';
-
-interface BearState {
-  bears: number;
-  increase: () => void;
-  reset: () => void;
-}
-
-const useBearStore = create<BearState>((set) => ({
-  bears: 0,
-  increase: () => set((state) => ({ bears: state.bears + 1 })),
-  reset: () => set({ bears: 0 }),
-}));
-
-// 使用 — 无需 Provider
-function BearCounter() {
-  const bears = useBearStore((state) => state.bears); // selector 避免不必要渲染
-  const increase = useBearStore((state) => state.increase);
-
-  return (
-    <div>
-      <p>{bears} 只熊</p>
-      <button onClick={increase}>增加</button>
-    </div>
-  );
-}
-```
-
-Zustand 中间件：
-
-```tsx
-import { create } from 'zustand';
-import { persist, devtools } from 'zustand/middleware';
-
-const useStore = create(
-  devtools(
-    persist(
-      (set) => ({
-        count: 0,
-        increment: () => set((state) => ({ count: state.count + 1 })),
-      }),
-      { name: 'my-storage' }
-    )
-  )
-);
-```
-
-### 4.3 Jotai
-
-```tsx
-import { atom, useAtom } from 'jotai';
-
-// 定义原子状态
-const countAtom = atom(0);
-const doubleCountAtom = atom((get) => get(countAtom) * 2);
-
-// 派生原子（可读可写）
-const incrementAtom = atom(null, (get, set) => {
-  set(countAtom, get(countAtom) + 1);
-});
-
-function Counter() {
-  const [count] = useAtom(countAtom);
-  const [double] = useAtom(doubleCountAtom);
-  const [, increment] = useAtom(incrementAtom);
-
-  return (
-    <div>
-      <p>
-        {count} × 2 = {double}
-      </p>
-      <button onClick={increment}>+1</button>
-    </div>
-  );
-}
-```
-
-### 4.4 Redux Toolkit
-
-```tsx
-import { createSlice, configureStore } from '@reduxjs/toolkit';
-import { Provider, useSelector, useDispatch } from 'react-redux';
-
-// Slice
-const counterSlice = createSlice({
-  name: 'counter',
-  initialState: { value: 0 },
-  reducers: {
-    increment: (state) => {
-      state.value += 1;
-    },
-    decrement: (state) => {
-      state.value -= 1;
-    },
-    incrementByAmount: (state, action) => {
-      state.value += action.payload;
-    },
-  },
-});
-
-const { increment, decrement, incrementByAmount } = counterSlice.actions;
-
-// Store
-const store = configureStore({
-  reducer: { counter: counterSlice.reducer },
-});
-
-type RootState = ReturnType<typeof store.getState>;
-type AppDispatch = typeof store.dispatch;
-
-// 组件
-function Counter() {
-  const count = useSelector((state: RootState) => state.counter.value);
-  const dispatch = useDispatch<AppDispatch>();
-
-  return (
-    <div>
-      <p>{count}</p>
-      <button onClick={() => dispatch(increment())}>+1</button>
-      <button onClick={() => dispatch(decrement())}>-1</button>
-    </div>
-  );
-}
-
-// 应用
-function App() {
-  return (
-    <Provider store={store}>
-      <Counter />
-    </Provider>
-  );
-}
-```
-
-### 4.5 Valtio
-
-```tsx
-import { proxy, useSnapshot } from 'valtio';
-
-// 创建代理状态
-const state = proxy({
-  count: 0,
-  text: 'hello',
-});
-
-function Counter() {
-  // useSnapshot 创建不可变快照，自动追踪访问的属性
-  const snap = useSnapshot(state);
-
-  return (
-    <div>
-      <p>{snap.count}</p>
-      <button onClick={() => state.count++}>+1</button>
-    </div>
-  );
-}
-```
-
-## 5. 状态机
-
-### 5.1 为什么需要状态机
+### 4.1 为什么需要状态机
 
 复杂交互往往涉及多个互斥状态，用布尔值组合容易产生无效状态：
 
@@ -444,7 +273,7 @@ type Status = 'idle' | 'loading' | 'success' | 'error';
 const [status, setStatus] = useState<Status>('idle');
 ```
 
-### 5.2 使用 XState
+### 4.2 使用 XState
 
 ```tsx
 import { setup, assign } from 'xstate';
@@ -488,165 +317,38 @@ function Toggle() {
 }
 ```
 
-## 6. 选型建议
+## 速查
 
-| 项目规模   | 推荐方案           | 理由                          |
-| :--------- | :----------------- | :---------------------------- |
-| 小型项目   | Context + useState | 无额外依赖，够用              |
-| 中型项目   | Zustand            | 轻量、API 简洁、自带 selector |
-| 复杂交互   | Jotai + XState     | 原子化状态 + 状态机           |
-| 大型团队   | Redux Toolkit      | 规范化、中间件生态丰富        |
-| 需要代理式 | Valtio             | 类 Vue 的响应式体验           |
-## createContext 创建上下文
+**Consumer 渲染属性写法**
 
-**createContext**
-`const <Context> = createContext<<T>>(<defaultValue>);`
-```tsx
-import { createContext } from 'react';
+`<Context.Consumer>{(value) => node}</Context.Consumer>`
 
-type Theme = 'light' | 'dark';
-const ThemeContext = createContext<Theme>('light');
-```
-
-**带 undefined 的 Context**
-`const <Context> = createContext<<T> | undefined>(undefined);`
-```tsx
-const UserContext = createContext<User | undefined>(undefined);
-```
-
----
-
-## Provider 提供者
-
-**Provider**
-`<Context.Provider value={<value>}>...</Context.Provider>`
-```tsx
-function App() {
-  const [theme, setTheme] = useState<Theme>('dark');
-  return (
-    <ThemeContext.Provider value={theme}>
-      <Page />
-    </ThemeContext.Provider>
-  );
-}
-```
-
-**嵌套 Provider**
-```tsx
-<ThemeContext.Provider value={theme}>
-  <UserContext.Provider value={user}>
-    <Router>
-      <App />
-    </Router>
-  </UserContext.Provider>
-</ThemeContext.Provider>
-```
-
----
-
-## Consumer 消费者
-
-**Consumer**
-`<Context.Consumer>{(<value>) => <node>}</Context.Consumer>`
 ```tsx
 <ThemeContext.Consumer>
   {(theme) => <div className={theme}>...</div>}
 </ThemeContext.Consumer>
 ```
 
----
+**displayName 调试名**
 
-## useContext 钩子
+`<Context>.displayName = <name>;`
 
-**useContext**
-`const <value> = useContext<<T>>(<Context>);`
 ```tsx
-import { useContext } from 'react';
-
-function Header() {
-  const theme = useContext(ThemeContext);
-  return <header className={theme}>...</header>;
-}
+const ThemeContext = createContext<Theme>('light');
+ThemeContext.displayName = 'ThemeContext';
 ```
 
-**带 undefined 校验**
-`const <value> = useContext(<Context>); if (!value) throw <error>;`
-```tsx
-function useUser() {
-  const user = useContext(UserContext);
-  if (!user) throw new Error('useUser must be used within UserProvider');
-  return user;
-}
-```
+**Context 类型签名**
 
----
+`type <Ctx> = React.Context<T>;` / `React.ProviderProps<T>`
 
-## Context 类型签名
-
-**Context 类型别名**
-`type <Ctx> = React.Context<<T>>;`
 ```tsx
 type ThemeCtx = React.Context<Theme>;
 const ctx: ThemeCtx = ThemeContext;
-```
 
-**ProviderProps**
-`React.ProviderProps<<T>>`
-```tsx
 function Provider({ value, children }: React.ProviderProps<Theme>) {
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 ```
 
----
-
-## useReducer + Context 模式
-
-**Context + Reducer 组合**
-```tsx
-type State = { count: number };
-type Action = { type: 'inc' } | { type: 'dec' };
-
-const CountContext = createContext<{
-  state: State;
-  dispatch: React.Dispatch<Action>;
-} | null>(null);
-
-function CountProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, { count: 0 });
-  return (
-    <CountContext.Provider value={{ state, dispatch }}>
-      {children}
-    </CountContext.Provider>
-  );
-}
-
-function useCount() {
-  const ctx = useContext(CountContext);
-  if (!ctx) throw new Error('useCount must be inside CountProvider');
-  return ctx;
-}
-```
-
----
-
-## Context 默认值
-
-**默认值**
-`createContext(<defaultValue>);`
-```tsx
-const NotificationContext = createContext<{ show: (msg: string) => void }>({
-  show: () => {},
-});
-```
-
----
-
-## displayName 调试名
-
-**displayName**
-`<Context>.displayName = <name>;`
-```tsx
-const ThemeContext = createContext<Theme>('light');
-ThemeContext.displayName = 'ThemeContext';
-```
+> createContext、Provider、useContext、useReducer 与 Context 组合的完整示例见上文第 1-3 节；Zustand、Jotai、Redux Toolkit、Valtio 等外部方案的速查与选型见[状态管理方案对比](/react/170-StateManagementSolutionComparison)。

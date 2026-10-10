@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'cloud-init 学习笔记：让新虚拟机在第一次开机时自动完成全部配置——user-data 语法、执行阶段、调试与三大云平台的接法。'
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/050-VirtualizationTech'
   - 'cloud-computing/410-IaC'

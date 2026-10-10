@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: "以「播放列表频繁插歌删歌」引入：亲手把单链表建出来，用实测看清按位访问的代价，掌握哨兵节点、三指针反转、快慢指针三大技巧，双链表与 LRU 缓存、环形链表与约瑟夫问题，以及链表六大坑。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'algorithm/020-ArrayAndDynamicArray'
   - 'algorithm/040-StackAndQueue'

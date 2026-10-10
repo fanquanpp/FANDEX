@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以 FANDEX 文档站的真实 content.config.ts 为主线，动手配一套内容集合：glob loader 指向仓库外部目录、generateId 自定义条目 id、zod schema 校验 frontmatter、getCollection 查询排序、render 渲染，以及 Live Content Collections 与常见构建报错对策。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'astro/030-PagesRouting'
   - 'astro/060-IslandsClientComponents'

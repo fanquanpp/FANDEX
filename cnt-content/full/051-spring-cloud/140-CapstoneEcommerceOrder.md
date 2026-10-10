@@ -8,7 +8,7 @@ difficulty: advanced
 prerequisites:
   - 'spring-cloud/090-DistributedTransactionSeata'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'spring-cloud/120-MicroserviceAuth'
   - 'spring-cloud/130-MonitoringAlerting'
@@ -26,7 +26,7 @@ related:
 ## 前置知识
 
 - [Seata 与分布式事务](/spring-cloud/090-DistributedTransactionSeata)：知道本地消息表五步设计与「高并发下单首选它」的结论——本篇把它工程化成下单链路的核心；
-- [分布式锁与接口幂等](/spring-cloud/110-DistributedLockIdempotency)：知道幂等三层与去重表——本篇在消费端与入口端各用一次；
+- [分布式锁与接口幂等](/spring-cloud/110-DistributedLockWithRedisson)：知道幂等三层与去重表——本篇在消费端与入口端各用一次；
 - 本模块 010 到 080 篇按需回查：每节都标了「技术点出自哪篇」，忘了就顺着地图回去补——本篇是装配厂，不是新零件厂。
 
 ## 学习目标

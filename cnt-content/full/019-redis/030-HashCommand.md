@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: Redis Hash 命令全解：对象存储与购物车模式、listpack/hashtable 编码转换、7.4 字段级过期与 8.0 HGETDEL/HGETEX/HSETEX、大哈希防御。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'redis/010-OverviewCoreDataStructure'
   - 'redis/020-KeyManagement'
@@ -96,6 +96,8 @@ HTTL cart:u42 FIELDS 1 product:2002
 ---
 
 ## 命令速查
+
+本节按「基本读写 → 字段删除与判断 → 获取字段与值 → 计数操作 → 批量与扫描 → 字段过期（7.4+）」的顺序给出命令骨架。与 Key 级命令速查同理，哈希的大规模遍历同样只认 HSCAN，不认 HGETALL。
 
 ## 基本读写
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 承接递归基础的进阶模式集：互递归、记忆化驯服树形递归、二分查找与快速排序的分治骨架、回溯的"选择-递归-撤销"三拍子、显式栈与队列把超深树迭代化，附 CPS 续延与蹦床的完整实现，每类模式配可运行代码与验收标准。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'javascript/160-RecursionTailCallOptimization'
   - 'javascript/150-HigherOrderFunction'

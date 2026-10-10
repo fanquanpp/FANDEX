@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 串联 Go 模块全部文档，按语法基础、并发编程、接口与泛型、工程与工具链四条主线回顾核心知识，并用虚拟歌手平台案例沉淀示例代码。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'go/120-GoConcurrentProgramming'
   - 'go/060-GoInterfaceComposition'

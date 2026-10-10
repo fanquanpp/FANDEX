@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 堆（Heap）与优先队列（Priority Queue）的完全二叉树数组表示、最大堆/最小堆的堆序性质、上浮与下沉操作、Floyd 建堆 $O(n)$ 证明、堆排序、Top-K 问题、索引堆、二项堆、Fibonacci 堆、配对堆的对比分析，涵盖 Williams 1964 Algorithm 232 Heapsort、Floyd 1964 Algorithm 245 Treesort、Vuillemin 1978 二项堆、Fredman-Tarjan 1984 Fibonacci 堆等历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 6 章。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/080-Tree'
@@ -135,7 +135,7 @@ prerequisites:
 | 大量 decrease-key 操作 | 部分适合 | 二叉堆 $O(\log n)$，Fibonacci 堆 $O(1)$ 均摊更优 |
 | 元素优先级频繁变更 | 不适合 | 应选索引堆或 Fibonacci 堆 |
 
-> **跨模块引用**：堆作为完全二叉树的应用参见 [树](/algorithm/080-Tree)；堆排序与快排、归并的对比参见 [排序算法](/algorithm/030-SortAlgorithm)；Dijkstra/Prim 算法中堆的应用参见 [图算法](/algorithm/110-GraphAlgorithms)；堆在流式数据 Top-K 中的应用参见 [查找算法](/algorithm/170-BinarySearchAlgorithms)；堆作为优先队列与栈/队列的对比参见 [栈与队列](/algorithm/040-StackAndQueue)。
+> **跨模块引用**：堆作为完全二叉树的应用参见 [树](/algorithm/080-Tree)；堆排序与快排、归并的对比参见 [排序算法](/algorithm/030-SortAlgorithm)；Dijkstra/Prim 算法中堆的应用参见 [图算法](/algorithm/110-GraphAlgorithms)；堆在流式数据 Top-K 中的应用参见 [查找算法](/algorithm/172-BinarySearchVariants)；堆作为优先队列与栈/队列的对比参见 [栈与队列](/algorithm/040-StackAndQueue)。
 
 ---
 

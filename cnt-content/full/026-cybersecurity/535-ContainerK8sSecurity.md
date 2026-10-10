@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 容器隔离的本质与逃逸路径、镜像供应链、Pod Security Standards、RBAC 与 NetworkPolicy：一条从镜像到运行时的纵深防御链。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'cybersecurity/530-CloudSecurity'
   - 'cybersecurity/320-ZeroTrustArchitecture'

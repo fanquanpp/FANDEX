@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL 8.0.13 函数索引：为什么对列套函数会废掉索引、函数索引如何救、隐藏列原理、与虚拟生成列方案的对比与选型。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'mysql/240-PrefixIndex'
   - 'mysql/280-InvisibleIndex'

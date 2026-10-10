@@ -1,12 +1,12 @@
 ---
-order: 180
+order: 190
 title: pnpm 核心特性
 module: 'vite'
 category: 前端技术
 difficulty: beginner
 description: pnpm 核心机制：内容寻址存储、符号链接与严格依赖隔离
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'vite/170-WorkspaceSetup'
   - 'vite/180-WorkspaceProtocol'

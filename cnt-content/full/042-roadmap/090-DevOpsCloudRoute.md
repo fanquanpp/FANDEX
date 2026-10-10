@@ -44,7 +44,7 @@ flowchart TD
 **第 1 个月：Linux 与网络**
 
 - [devops 模块](/devops/010-OverviewLinuxBasics) Linux 章节 + [shell 模块](/shell/010-DevEnvSetup) 前半：文件系统、权限、用户、软件包、systemd 服务管理；
-- [networking 模块](/networking/010-NetworkBasicsAndProtocol) 基础部分：IP/路由/端口/DNS/HTTP——排障的底层语言；
+- [networking 模块](/networking/020-OSITCPIPModel) 基础部分：IP/路由/端口/DNS/HTTP——排障的底层语言；
 - 实操环境：一台云服务器（各厂商新用户活动机即可，或本地虚拟机），**从此所有练习都在真机上做**；
 - 动手：从裸机部署一个静态网站（Nginx）+ 配置 SSH 密钥登录 + 防火墙只开必要端口。
 

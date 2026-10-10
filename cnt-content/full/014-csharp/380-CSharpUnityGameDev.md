@@ -1,12 +1,12 @@
 ---
-order: 420
-title: C#与 Unity 游戏开发
+order: 410
+title: Unity 游戏开发
 module: 'csharp'
 category: 后端技术
 difficulty: intermediate
-description: Unity脚本与组件系统
+description: 'Unity 游戏开发全览：MonoBehaviour 生命周期、协程与 async/await、ScriptableObject 数据驱动、ECS/DOTS 与 Job System、性能优化与工程化实践。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'csharp/230-SpanMemory'
   - 'csharp/240-SourceGenerator'
@@ -158,6 +158,73 @@ $$
 
 Awake 与 Start 的核心区别：Awake 在对象实例化后**立即**调用（即使未激活），Start 在对象**首次激活后的下一帧**调用。这意味着同一帧 `Instantiate` 的对象，其 Awake 在当前帧执行，Start 在下一帧执行。
 
+### 3.2.1 生命周期事件函数速查与实战代码
+
+把上面的自动机落回工程视角，常用回调按阶段速查：
+
+| 阶段 | 回调 | 调用时机 |
+| --- | --- | --- |
+| 初始化 | `Awake()` | 脚本实例加载时调用（最早） |
+| 初始化 | `OnEnable()` | 对象启用时调用 |
+| 初始化 | `Start()` | 第一帧更新前调用（仅一次） |
+| 物理 | `FixedUpdate()` | 固定时间间隔调用（物理计算） |
+| 输入 | `Update()` | 每帧调用 |
+| 后期处理 | `LateUpdate()` | 每帧在所有 `Update` 之后调用 |
+| 场景渲染 | `OnPreCull()` / `OnPreRender()` / `OnPostRender()` | 依次在渲染前后调用 |
+| 禁用与销毁 | `OnDisable()` / `OnDestroy()` | 对象禁用 / 销毁时调用 |
+
+对应的事件订阅纪律：`OnEnable` 订阅、`OnDisable` 退订，保证重复启用不重复订阅：
+
+```csharp
+public class PlayerController : MonoBehaviour
+{
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private Rigidbody rb = null!;
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody>(); // 引用获取只做一次
+    }
+
+    private void OnEnable()
+    {
+        GameEvents.OnPlayerHit += HandleHit; // 订阅
+    }
+
+    private void Start()
+    {
+        var spawnPoint = GameObject.Find("SpawnPoint"); // 依赖其他对象时再访问
+        transform.position = spawnPoint!.transform.position;
+    }
+
+    private void FixedUpdate()
+    {
+        var move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+        rb.linearVelocity = move * moveSpeed; // 物理操作固定步长
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space)) Jump(); // 输入采样每帧
+    }
+
+    private void LateUpdate()
+    {
+        Camera.main!.transform.position = transform.position + _cameraOffset; // 相机跟随
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.OnPlayerHit -= HandleHit; // 退订
+    }
+
+    private void OnDestroy()
+    {
+        // 释放非托管资源
+    }
+}
+```
+
 ### 3.3 协程（Coroutine）的形式化
 
 Unity 协程是一个**可挂起的状态机**。形式化：协程 $C$ 是迭代器函数 $f : \text{IEnumerator}$，其执行轨迹由一系列 `yield return` 点分隔：
@@ -178,6 +245,87 @@ $$
 $$
 
 协程的本质是**单线程内的协作式调度**，所有协程在主线程执行，不存在并发安全问题，但任一协程长时间不 yield 会阻塞整个游戏循环。
+
+### 3.3.1 协程的实战 API 与控制
+
+形式化模型对应的工程用法——启动、等待、链式与取消：
+
+```csharp
+public class Spawner : MonoBehaviour
+{
+    [SerializeField] private GameObject enemyPrefab = null!;
+    [SerializeField] private float spawnInterval = 2f;
+
+    private void Start()
+    {
+        StartCoroutine(SpawnEnemies());
+    }
+
+    private IEnumerator SpawnEnemies()
+    {
+        while (true)
+        {
+            Instantiate(enemyPrefab, GetRandomPosition(), Quaternion.identity);
+            yield return new WaitForSeconds(spawnInterval);
+        }
+    }
+
+    // 等待异步加载完成
+    private IEnumerator LoadAssetAsync(string path)
+    {
+        var request = Resources.LoadAsync<GameObject>(path);
+        yield return request;
+        if (request.asset != null)
+        {
+            Instantiate(request.asset);
+        }
+    }
+
+    // 协程链：顺序执行多个阶段
+    private IEnumerator GameSequence()
+    {
+        yield return StartCoroutine(ShowIntro());
+        yield return StartCoroutine(Countdown());
+        yield return StartCoroutine(StartGameplay());
+    }
+}
+```
+
+控制与取消——替换式启动、条件等待与自定义 yield 指令：
+
+```csharp
+public class CoroutineManager : MonoBehaviour
+{
+    private Coroutine? _currentCoroutine;
+
+    public void StartTask()
+    {
+        if (_currentCoroutine != null)
+            StopCoroutine(_currentCoroutine); // 停止旧任务再启动新的
+        _currentCoroutine = StartCoroutine(DoWork());
+    }
+
+    public void CancelAll()
+    {
+        StopAllCoroutines();
+    }
+
+    // 条件等待
+    private IEnumerator WaitForCondition()
+    {
+        yield return new WaitUntil(() => PlayerIsReady);
+        yield return new WaitWhile(() => IsPaused);
+    }
+
+    // 自定义 yield 指令
+    public class WaitForKeyPress : CustomYieldInstruction
+    {
+        private readonly KeyCode _key;
+        public WaitForKeyPress(KeyCode key) => _key = key;
+        public override bool keepWaiting => !Input.GetKeyDown(_key);
+    }
+}
+```
 
 ### 3.4 ScriptableObject 的形式化
 
@@ -228,6 +376,113 @@ T_{\text{OOP}}(n) \approx n \cdot t_{\text{cacheMiss}}
 $$
 
 其中 $t_{\text{cacheMiss}} \gg t_{\text{cacheHit}}$（典型 100:1 比例）。
+
+### 3.5.1 Entities、Job System 与 Burst 代码起步
+
+代数模型对应的代码形态——纯数据组件、批量系统、Baker 转换：
+
+```csharp
+// Component - 纯数据（IComponentData）
+public struct Movement : IComponentData
+{
+    public float3 direction;
+    public float speed;
+}
+
+public struct Health : IComponentData
+{
+    public int current;
+    public int max;
+}
+
+// System - 纯逻辑，批量查询处理
+[UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
+public partial struct MovementSystem : ISystem
+{
+    public void OnUpdate(ref SystemState state)
+    {
+        var dt = SystemAPI.Time.DeltaTime;
+        foreach (var (movement, transform) in
+            SystemAPI.Query<RefRO<Movement>, RefRW<LocalTransform>>())
+        {
+            transform.ValueRW.Position +=
+                movement.ValueRO.direction * movement.ValueRO.speed * dt;
+        }
+    }
+}
+
+// 从 MonoBehaviour 场景生成 Entity（Baker）
+public class SpawnerAuthoring : MonoBehaviour
+{
+    public GameObject prefab;
+    public int count;
+
+    private class Baker : Baker<SpawnerAuthoring>
+    {
+        public override void Bake(SpawnerAuthoring authoring)
+        {
+            var entity = GetEntity(TransformUsageFlags.Dynamic);
+            var prefabEntity = GetEntity(authoring.prefab, TransformUsageFlags.Dynamic);
+            AddComponent(entity, new SpawnerData
+            {
+                Prefab = prefabEntity,
+                Count = authoring.count
+            });
+        }
+    }
+}
+```
+
+Job System 与 Burst——把批量数学运算编译为 SIMD 原生代码：
+
+```csharp
+[BurstCompile(CompileSynchronously = true, FloatMode = FloatMode.Fast,
+              FloatPrecision = FloatPrecision.Standard)]
+public struct PathfindingJob : IJobParallelFor
+{
+    [ReadOnly] public NativeArray<float3> positions;
+    [ReadOnly] public NativeArray<float3> targets;
+    public NativeArray<float> results;
+
+    public void Execute(int index)
+    {
+        var dir = targets[index] - positions[index];
+        results[index] = math.length(dir);
+    }
+}
+
+// IJobParallelFor - 矩阵变换并行作业
+[BurstCompile]
+public struct TransformPositionsJob : IJobParallelFor
+{
+    [ReadOnly] public NativeArray<float3> input;
+    public NativeArray<float3> output;
+
+    public void Execute(int index)
+    {
+        output[index] = input[index] * 2f; // 示意：对每个元素并行计算
+    }
+}
+
+// 并行作业的调度与释放（主线程 MonoBehaviour 内）
+public class JobScheduler : MonoBehaviour
+{
+    private void Update()
+    {
+        var input = new NativeArray<float3>(1000, Allocator.TempJob);
+        var output = new NativeArray<float3>(1000, Allocator.TempJob);
+
+        var job = new TransformPositionsJob { input = input, output = output };
+        var handle = job.Schedule(1000, 64); // 批大小 64 并行调度
+        handle.Complete();
+
+        input.Dispose();  // Native 容器必须手动释放
+        output.Dispose();
+    }
+}
+```
+
+Native 容器与 Allocator 选择：`NativeArray` / `NativeList` / `NativeHashMap` / `NativeQueue` 均绕过 GC；Allocator 三档——`Temp`（单帧，最快）、`TempJob`（最多 4 帧，Job 内使用）、`Persistent`（长期使用）。
 
 ## 四、理论推导与原理解析
 
@@ -1298,6 +1553,16 @@ namespace FandexUnityGameDemo.Core {
    - 原因：`Where`/`Select` 产生迭代器分配；
    - 修复：使用 `for` 循环或 `Span<T>`。
 
+9. **热路径字符串拼接**
+   - 症状：日志与 UI 刷新引发 GC 尖峰；
+   - 原因：`"Score: " + score` 每次生成新字符串；
+   - 修复：使用字符串插值配合 `StringBuilder`，或仅在 Debug 条件下拼日志。
+
+10. **每帧 `GameObject.Find` / `FindWithTag`**
+    - 症状：场景对象越多帧率越低；
+    - 原因：两者是 O(n) 全场景遍历；
+    - 修复：Awake 中缓存引用，或用 `[SerializeField]` 直接拖引用、走管理器注册。
+
 ### 7.2 最佳实践清单
 
 - **缓存组件引用**：Awake/Start 中一次性获取；
@@ -1310,6 +1575,18 @@ namespace FandexUnityGameDemo.Core {
 - **渲染在 Update，跟随在 LateUpdate**；
 - **避免深层 Transform 嵌套**：性能随深度下降；
 - **使用 Profiler 而非猜测**：定位真实瓶颈。
+
+### 7.3 性能优化方向速查
+
+| 优化方向 | 具体措施 | 效果 |
+| :--- | :--- | :--- |
+| **减少 GC** | 对象池、缓存集合、避免装箱 | 减少卡顿 |
+| **批量处理** | DOTS/ECS、Job System | CPU 并行加速 |
+| **数据布局** | struct 替代 class、SOA 替代 AOS | 缓存友好 |
+| **渲染优化** | 合批、LOD、遮挡剔除 | 减少 Draw Call |
+| **资源管理** | Addressables、异步加载 | 减少内存占用 |
+| **物理优化** | 简化碰撞体、分层 | 减少 CPU 开销 |
+| **Burst 编译** | 数学运算、热路径代码 | 2-10x 加速 |
 
 ## 八、工程实践
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: BEM 命名方法论完整教学：Block/Element/Modifier 三层解剖、命名规则与反例、与嵌套/@layer 的配合，以及团队落地清单。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'css/560-CSSArchitectureMethodology'
   - 'css/480-CSSNativeNesting'

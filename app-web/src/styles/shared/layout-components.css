@@ -26,6 +26,9 @@
     --z-toc: 20;
     --z-mobile-nav: 40;
     --z-reading-progress: 50;
+    /* 侧边栏抽屉的遮罩：必须低于抽屉本身（30）且高于页面内容，
+        否则抽屉内的关闭按钮与章节链接会被遮罩拦截点击 */
+    --z-sidebar-backdrop: 25;
     --z-backdrop: 150;
     --z-modal: 200;
     --z-toast: 300;
@@ -678,6 +681,11 @@
     .fndx-sidebar__close {
       display: inline-flex;
     }
+    /* 关闭按钮绝对定位于抽屉右上角（top/right: space-2，尺寸 size-control-sm），
+        会盖住顶栏行末的"返回首页"链接，这里为顶栏预留同等右侧空间 */
+    .fndx-sidebar__top {
+      padding-right: calc(var(--space-2) + var(--size-control-sm));
+    }
   }
 
   .fndx-sidebar__title-group {
@@ -957,7 +965,7 @@
     inset: 0;
     top: var(--nav-height);
     background-color: color-mix(in srgb, var(--color-shadow-black) 40%, transparent);
-    z-index: var(--z-backdrop);
+    z-index: var(--z-sidebar-backdrop);
     opacity: 0;
     visibility: hidden;
     transition: opacity var(--motion-duration-normal) var(--motion-easing-out),

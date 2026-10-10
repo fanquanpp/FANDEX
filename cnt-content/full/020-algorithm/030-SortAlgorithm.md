@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: "以「给 10 万条成绩单排序」引入：先写出能跑的冒泡与插入排序，实测理解为什么插入排序是 $O(n^2)$ 里的实用冠军；再亲手实现归并与快排两个 $O(n \\log n)$ 主力，用决策树论证比较排序下界，讲透稳定性与自定义比较器，最后看 LC-56/179/315 三个真实应用与七个高频坑。"
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'algorithm/035-AdvancedSortAndLinearSort'
   - 'algorithm/010-AlgorithmAnalysisBasics'
@@ -297,7 +297,7 @@ print(merge([[1,3],[2,6],[8,10],[15,18]]))  # [[1, 6], [8, 10], [15, 18]]
 ## 12. 与之前和之后的知识的关系
 
 - 往前：数组的随机访问与搬移代价（020 篇）解释了插入排序移动元素的代价与快排原地分区的可行性；递归（140 篇）是分治的实现载体；
-- 往后：[进阶与线性排序篇](/algorithm/035-AdvancedSortAndLinearSort)接手堆排、希尔与线性时间排序、introsort/Timsort 的混合策略；[二分查找](/algorithm/170-BinarySearchAlgorithms)建立在有序数组上——排序是查找的前置投资；[分治算法](/algorithm/120-DivideAndConquer)把归并/快排当作分治的两个原型案例；[堆与优先队列](/algorithm/090-HeapAndPriorityQueue)给出「只想要前 K 大不必全排序」的更好答案。
+- 往后：[进阶与线性排序篇](/algorithm/035-AdvancedSortAndLinearSort)接手堆排、希尔与线性时间排序、introsort/Timsort 的混合策略；[二分查找](/algorithm/172-BinarySearchVariants)建立在有序数组上——排序是查找的前置投资；[分治算法](/algorithm/120-DivideAndConquer)把归并/快排当作分治的两个原型案例；[堆与优先队列](/algorithm/090-HeapAndPriorityQueue)给出「只想要前 K 大不必全排序」的更好答案。
 
 ## 13. 官方文档与延伸资源
 

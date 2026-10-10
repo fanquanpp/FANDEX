@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 协程间通信原语 Channel 的容量语义、多生产者多消费者、管道模式、select 多路与常见陷阱。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'kotlin/230-CoroutineBasics'
   - 'kotlin/300-FlowColdSharedState'

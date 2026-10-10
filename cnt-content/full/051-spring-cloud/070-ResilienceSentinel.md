@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-cloud/060-ApiGateway'
   - 'spring-boot/160-ActuatorObservability'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'spring-cloud/060-ApiGateway'
   - 'spring-boot/160-ActuatorObservability'

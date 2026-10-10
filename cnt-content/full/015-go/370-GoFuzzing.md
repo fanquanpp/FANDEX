@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go 1.18+ 原生 Fuzzing 框架：覆盖率引导、变异引擎、语料库管理与生产级实战
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'go/620-GoCGO'
   - 'go/580-GoPerformanceAnalysis'

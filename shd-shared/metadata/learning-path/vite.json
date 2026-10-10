@@ -63,6 +63,11 @@
           "doc": "080-BuildSplit"
         },
         {
+          "id": "vite-204",
+          "title": "Vite 库模式",
+          "doc": "085-ViteLibraryMode"
+        },
+        {
           "id": "vite-202",
           "title": "Vite 插件系统",
           "doc": "100-PluginSystem"

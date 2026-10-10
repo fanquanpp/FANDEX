@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 深水区专题：优化器的成本两要素、索引失效六大现场的失效与修复 SQL 对照、force index 的使用边界、EXPLAIN ANALYZE 实测与树状执行计划。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'mysql/320-EXPLAINDetailed'
   - 'mysql/270-IndexHintForceIndex'

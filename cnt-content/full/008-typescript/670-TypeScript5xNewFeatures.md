@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 按 5.0 到 5.9 逐年串讲 TypeScript 的特性演进：const 类型参数、装饰器标准、using、推断类型谓词、import defer 与升级策略。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'typescript/680-TypeScript6And7CompilerEvolution'
   - 'typescript/180-SatisfiesOperator'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 表单控件、输入类型、内建验证与自定义校验。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-07'
 related:
   - 'html5/170-SemanticTag'
   - 'html5/180-Accessibility'

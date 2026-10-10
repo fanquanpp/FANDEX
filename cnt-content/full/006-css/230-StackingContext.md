@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 层叠上下文：z-index 失效的根源，创建条件清单与层叠顺序规则。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'css/220-PositionDetailed'
   - 'css/200-FloatClear'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 用 position-anchor / position-area / anchor() 把弹层声明式地钉在锚点元素旁，替代“JS 测量 + 绝对定位”。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'css/220-PositionDetailed'
   - 'css/250-CSS3GridGridLayout'

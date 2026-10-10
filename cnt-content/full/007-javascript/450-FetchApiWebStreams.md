@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 深入解析 WHATWG Fetch 标准、AbortController 取消语义、Web Streams API、Service Worker 缓存策略、GraphQL 客户端实现等高级主题,涵盖 MIT 6.S081 / Stanford CS107 级别的工程实践
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'javascript/140-CustomErrorTypes'
   - 'javascript/460-StorageForTheWeb'
@@ -2073,11 +2073,228 @@ class ChatMetrics {
 
 ### 24.1 基础题
 
-### 应用题知识点讲解
+以下题目对应第 3 章与第 7 章的基础用法,完成后建议在浏览器控制台或 Node 18+ 环境实际运行验证。
+
+**题目 1**:封装一个 `getJSON(url)` 函数,要求:
+
+- 响应状态不在 2xx 范围时抛出含状态码的 `Error`;
+- 响应体解析为 JSON 返回;
+- 调用方无需再手动检查 `response.ok`。
+
+遮代码自检——先自己写完再看参考:
+
+<details>
+<summary>参考实现(点开前先自己完成)</summary>
+
+```javascript
+async function getJSON(url, init) {
+  const response = await fetch(url, init);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} ${response.statusText}`.trim());
+  }
+  return response.json();
+}
+```
+
+对照要点:`fetch` 只在网络层失败(DNS 解析失败、TLS 握手失败、连接被拒绝)时 reject,HTTP 4xx/5xx 仍会 resolve,因此 `response.ok` 检查不可省略(见 3.4 节)。
+
+</details>
+
+**题目 2**:写一个 `fetchWithTimeout(url, ms)` 函数,要求超时后请求被真正取消(连接中断,而不是只放弃等待结果),并在 `catch` 中区分超时与其他错误。
+
+遮代码自检——先自己写完再看参考:
+
+<details>
+<summary>参考实现(点开前先自己完成)</summary>
+
+```javascript
+async function fetchWithTimeout(url, ms) {
+  try {
+    return await fetch(url, { signal: AbortSignal.timeout(ms) });
+  } catch (error) {
+    if (error.name === 'TimeoutError') {
+      throw new Error(`请求超过 ${ms} ms 未完成`);
+    }
+    throw error; // 网络错误、AbortError 等原样上抛
+  }
+}
+```
+
+对照要点:`AbortSignal.timeout()` 触发的拒绝是 `TimeoutError` 而非 `AbortError`(见 7.4 节);只有手动调用 `controller.abort()` 才产生 `AbortError`。二者混判是高频错误。
+
+</details>
+
+**题目 3**:用 `response.body.getReader()` 手动读取一个二进制文件,把所有 chunk 拼成一个完整的 `Uint8Array` 并统计总字节数。提示:先把 chunk 收集进数组,最后一次性合并,避免每轮循环都复制整个累积缓冲。
+
+### 24.2 应用题知识点讲解
+
+应用题综合考查多个知识点的协同。动笔前先核对下面的知识点地图,每一项都对应正文小节:
+
+| 知识点 | 关键结论 | 正文位置 |
+| :--- | :--- | :--- |
+| 响应体一次性消费 | body 是 ReadableStream,读完即锁定,二次读取抛 TypeError | 3.5、3.6 |
+| clone() 的代价 | 克隆会缓冲未被消费的一侧,两侧消费速度差异过大会推高内存 | 5.5 |
+| 取消语义 | abort 后 fetch 以 AbortError reject,正在读取的流同样以 AbortError 中断 | 7.2、7.8 |
+| 重试安全 | 只有无副作用的请求适合自动重试,直接重试 POST 可能重复下单 | 11.1 |
+| 缓存策略 | 命中判断在 Service Worker 的 fetch 事件内完成,先于网络 | 18.3 |
+
+应用题最常见的三种失败模式:
+
+1. 把 `fetch` 当成 axios 用,漏掉 `response.ok` 检查,结果 404 页面的 HTML 被 `JSON.parse` 解析,报出一个与真实原因相距甚远的语法错误;
+2. 重试逻辑包裹了非幂等请求,超时后服务端实际已执行完毕,重试造成重复写入;
+3. 在信号已 abort 后继续把流 `pipeTo` 下游,中断以未处理的 promise rejection 形式出现在控制台。
+
+**例题**:实现 `fetchJSON(url, { timeout, retries })`,要求带超时、最多重试 `retries` 次、仅对网络错误与 5xx 重试、4xx 直接失败。
+
+遮代码自检——先自己写完再看参考:
+
+<details>
+<summary>参考实现(点开前先自己完成)</summary>
+
+```javascript
+class RetryableError extends Error {}
+
+async function fetchJSON(url, { timeout = 5000, retries = 2 } = {}) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(timeout) });
+      if (response.ok) return response.json();
+      if (response.status < 500) {
+        throw new Error(`请求失败: HTTP ${response.status}`); // 4xx 不重试
+      }
+      throw new RetryableError(`服务端错误: HTTP ${response.status}`);
+    } catch (error) {
+      if (attempt >= retries || !(error instanceof RetryableError)) {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2 ** attempt * 500));
+    }
+  }
+}
+```
+
+对照要点:4xx 属于调用方错误,重试只会放大故障;指数退避(500 ms、1 s、2 s)避免重试风暴;每次尝试都要新建超时信号——复用一个已 abort 的信号会让后续尝试立即失败。
+
+</details>
 
 ### 24.3 分析题
 
+**题目 4**:不运行代码,判断下面函数在三种情况下的返回值或抛出的错误:(a) 服务器返回 404;(b) 网络断开;(c) 响应体是合法文本但 `text()` 被调用了两次。
+
+```javascript
+async function load(url) {
+  const response = await fetch(url);
+  const first = await response.text();
+  const second = await response.text();
+  return { first, second };
+}
+```
+
+遮代码自检——先自己给出结论再看参考:
+
+<details>
+<summary>参考答案(点开前先自己分析)</summary>
+
+- (a) 404 不会让 `fetch` reject,函数正常返回 404 页面的 HTML 文本;这正是 13.1 节「未检查 response.ok」陷阱的变体。
+- (b) DNS/TCP/TLS 层失败使 `fetch` reject 一个 `TypeError`,函数向调用方抛出该错误。
+- (c) 第一次 `text()` 成功;第二次抛 `TypeError: Body has already been consumed`,函数多出一条与网络无关的失败路径。
+
+</details>
+
+**题目 5**:下面的下载进度代码,在开启 gzip 的服务器上为什么进度可能超过 100% 或永远显示 NaN?
+
+```javascript
+const response = await fetch('/video');
+const total = Number(response.headers.get('Content-Length'));
+let received = 0;
+const reader = response.body.getReader();
+for (;;) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  received += value.byteLength;
+  console.log(`${((received / total) * 100).toFixed(1)}%`);
+}
+```
+
+遮代码自检——先自己给出结论再看参考:
+
+<details>
+<summary>参考答案(点开前先自己分析)</summary>
+
+`Content-Length` 报告的是压缩后的传输字节数,而 `reader.read()` 返回的 chunk 已经被浏览器解压,`value.byteLength` 累加的是解压后体积。文本类内容 gzip 后通常只剩原体积三成左右,`received` 会先超过 `total`,进度冲破 100%。若响应走 chunked 传输没有 `Content-Length`,`total` 为 `NaN`,任何参与除法的结果都是 `NaN`,进度永远显示 `NaN%`。稳健做法:按「已接收字节数」展示进度,需要百分比时改用带 `Content-Range` 的 Range 请求,其总长是文件的真实字节数。
+
+</details>
+
+**题目 6**:某订单系统用下面的代码提交订单,弱网环境下用户反馈「偶尔会生成两笔订单」。指出根因,并给出两个不同层次的修复方案。
+
+```javascript
+async function submitOrder(cart) {
+  try {
+    return await fetch('/api/orders', {
+      method: 'POST',
+      body: JSON.stringify(cart),
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    return submitOrder(cart); // 网络失败就重试
+  }
+}
+```
+
+遮代码自检——先自己给出结论再看参考:
+
+<details>
+<summary>参考答案(点开前先自己分析)</summary>
+
+根因:超时或断连发生时,服务端可能已经收到并处理了请求,只是响应没能送回客户端;客户端 catch 后无限递归重试 POST,服务端就会收到多次创建请求(对应 11.1 节「重试安全」)。修复方案两个层次:协议层面,为 POST 引入幂等键(`Idempotency-Key` 请求头),服务端按键去重,使重试变得安全;交互层面,去掉自动重试,失败后提示用户手动重试,或改为「创建草稿单、确认后提交」的两段式流程。保留自动重试的实现还应限制次数并加退避,避免递归无界。
+
+</details>
+
 ### 24.4 创造题
+
+**题目 7**:设计一个支持「暂停/继续」的大文件下载器,要求:
+
+- 使用 `Range` 请求分片下载,断点信息持久化到 IndexedDB;
+- 暂停通过 `AbortController` 实现,继续时从已收到的偏移量发起新请求;
+- 进度百分比不受 `Content-Encoding` 影响;
+- 下载完成后用 Blob 组装文件并触发保存。
+
+给出模块划分与关键伪代码,并说明哪些状态需要持久化、哪些只保存在内存即可。
+
+遮代码自检——先核对设计要点再看参考:
+
+<details>
+<summary>参考设计要点(点开前先自己设计)</summary>
+
+- 模块划分:调度器(维护分片队列与并发数)、分片下载器(单个 Range 请求 + 进度上报)、存储层(分片落盘/入 IndexedDB)、组装器(Blob 合并 + 触发下载)。
+- 需要持久化的状态:文件 URL、文件总长、已完成分片的偏移区间;只需内存的:当前活跃的 AbortController、传输中的分片缓冲。
+- 暂停 = abort 当前请求;继续 = 对未完成区间重新发起 `Range: bytes=offset-` 请求,服务端返回 206 时先校验 `Content-Range` 总长未变(文件被更新则重置)。
+- 进度以「已落盘字节数 / 文件总长」计算,与传输编码无关。
+
+</details>
+
+**题目 8**:为一个弱网可用的阅读类应用设计离线优先的数据层,要求:
+
+- 首次访问后,文章列表与正文可在离线时打开;
+- 写操作(收藏、笔记)离线时先入队,恢复联网后自动同步;
+- 缓存有版本概念,发版后旧缓存被清理;
+- 弱网下优先展示缓存内容,再后台更新(Stale-While-Revalidate)。
+
+请说明 Service Worker、Cache API、Background Sync 各自承担的职责,并画出请求分流逻辑(在线/离线 × 读/写操作)的流程图。
+
+遮代码自检——先核对设计要点再看参考:
+
+<details>
+<summary>参考设计要点(点开前先自己设计)</summary>
+
+- Service Worker:拦截 fetch 事件,按请求类型分流;负责 SW 自身的版本化更新(skipWaiting + 旧缓存清理)。
+- Cache API:承载文章列表与正文的 Stale-While-Revalidate——先 `caches.match` 返回缓存,同时 `fetch` 更新后台副本;静态资源用 Cache-First。
+- Background Sync:写操作队列持久化在 IndexedDB,Sync 事件触发时逐条重放,携带幂等键;失败则重新注册等待下次同步。
+- 分流逻辑:写操作 → 入队(在线时也可直接发送 + 入队兜底);读操作 → 命中缓存且策略为 SWR 时双路(缓存响应 + 后台刷新);未命中 → 网络,失败回退到离线占位页。
+
+</details>
+
+两题都没有唯一正确答案,评估标准是:约束是否都被满足、失败路径(请求失败、配额满、版本冲突)是否被处理、方案复杂度是否与需求匹配。完成一道即可,建议先写设计说明再写代码。
 
 ### 25.1 规范与标准
 

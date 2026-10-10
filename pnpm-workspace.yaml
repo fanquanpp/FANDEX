@@ -104,3 +104,7 @@ overrides:
   'postcss@8': ^8.5.23
   'fast-uri@3': ^3.1.6
   'lodash-es': ^4.18.1
+  # 单一 @lezer/common：NodeProp 按自增 id 索引存储，重复安装会产生两套
+  # id 计数器，CodeMirror 语法高亮按 id 取 prop 时撞号取回错误值，
+  # 触发 playground 编辑器 "tags is not iterable" 崩溃
+  '@lezer/common': 1.5.3

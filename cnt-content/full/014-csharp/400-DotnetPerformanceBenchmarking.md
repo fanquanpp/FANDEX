@@ -1,12 +1,12 @@
 ---
-order: 440
+order: 430
 title: .NET 性能测量与优化
 module: 'csharp'
 category: 后端技术
 difficulty: advanced
 description: 用 BenchmarkDotNet 建立可信基准：从测量到优化的完整方法。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'csharp/230-SpanMemory'
   - 'csharp/390-GCGeneration'

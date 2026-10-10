@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: POSIX 系统调用速查：文件描述符、进程控制（fork/exec/wait）、管道、信号、内存映射与目录遍历，含返回值语义、完整示例与常见陷阱。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/440-CStandardLibrary'
   - 'c/330-ProcessAndPipe'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 分层架构模式、表现层/业务层/持久层设计与实践。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'software-testing/390-SoftwareArchitectureOverview'
   - 'software-testing/410-EventDrivenArchitecture'

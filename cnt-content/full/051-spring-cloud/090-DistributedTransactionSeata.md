@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/100-TransactionManagement'
   - 'mysql/540-DistributedTransaction'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'mysql/540-DistributedTransaction'
   - 'spring-cloud/100-EventDrivenMessaging'

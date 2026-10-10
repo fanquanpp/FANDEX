@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 把 git log 从「浏览工具」升级为「取证显微镜」：先建立可达性遍历的心智模型解释 .. 与 ... 的区别，再按取证任务组织过滤手段——pickaxe（-S/-G）定位一段代码的引入与删除、-L 追踪某几行的完整变迁、--follow 穿越重命名、--author 与 author/committer 之别，附双点三点预测题与「定位 bug 引入提交」的完整推演。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'git/190-GitBlame'
   - 'git/360-GitBisect'

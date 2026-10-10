@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 运算符重载规则与最佳实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cpp/160-RAIIResourceManagement'
   - 'cpp/660-Cpp20Module'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 从一道著名面试题讲透 int 与 Integer：装箱拆箱就是编译器替你调 valueOf、-128 到 127 缓存池的机制与利弊、equals 的正确比较姿势、拆箱 null 的 NPE 真实报错与防御。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'java/050-DataTypeConversion'
   - 'java/070-VariableConstant'

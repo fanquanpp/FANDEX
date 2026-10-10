@@ -85,7 +85,7 @@ flowchart TD
 **第 5 个月：操作系统与网络常识（面试四件的另两件）**
 
 - OS：进程与线程的区别与通信方式、死锁四条件、虚拟内存与页表、用户态内核态、IO 多路复用（select/poll/epoll 的差别能讲一句即可）。素材：[cs-fundamentals 模块](/cs-fundamentals/010-ComputerOverview) 的计算机组成与原理篇目；
-- 网络：[网络基础与协议](/networking/010-NetworkBasicsAndProtocol) + [OSI 与 TCP/IP 模型](/networking/020-OSITCPIPModel)：三次握手四次挥手、TCP 与 UDP 区别、从输入 URL 到页面显示的全链路（面试万年高频）；
+- 网络：[网络基础与协议](/networking/020-OSITCPIPModel) + [OSI 与 TCP/IP 模型](/networking/020-OSITCPIPModel)：三次握手四次挥手、TCP 与 UDP 区别、从输入 URL 到页面显示的全链路（面试万年高频）；
 - 本月刷题降到每周 3 题保持手感，把时间让给八股理解——**八股不是背，是能画出图讲出来**。
 
 **第 6 个月：动态规划入门**

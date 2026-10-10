@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 脚本调试与严格模式：set -euo pipefail 的例外矩阵、bash -x 与 PS4、敏感信息泄露防线、trap 清理、shellcheck 警告码学习法与遮代码自检
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'shell/150-ShellBasics'
   - 'shell/180-FunctionsArguments'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: InnoDB Cluster 三组件架构（MGR 复制、Router 路由、Shell 管理）、从零搭建流程、故障切换的真实行为、ClusterSet 跨机房容灾，以及与自建主从的选型对比。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'mysql/620-GroupReplication'
   - 'mysql/640-ReplicationHA'

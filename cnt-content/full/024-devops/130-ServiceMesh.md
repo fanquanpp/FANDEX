@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 服务网格：Istio架构、流量管理、安全策略、可观测性与Envoy代理
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'devops/020-ShellScriptProgramming'
   - 'devops/030-PackageManagementRepository'

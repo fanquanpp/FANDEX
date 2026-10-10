@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 千万行表加一列为什么能卡住业务四十分钟：INSTANT / INPLACE / COPY 三种算法的成本模型、显式声明让失败提前、gh-ost 与 pt-osc 的影子表思路，以及与主从延迟的联动。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'mysql/090-SQLDataDefinitionAdvanced'
   - 'mysql/650-ReplicationDelayCauseSolution'

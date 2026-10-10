@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 类型安全配置系统的形式语义、深度类型操作、运行时校验与生产级 ConfigManager 工程实践
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'typescript/620-TypeSafeRoute'
   - 'typescript/610-TypeSafeI18n'

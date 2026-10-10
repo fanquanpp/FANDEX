@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 @supports 与 CSS.supports() 检测浏览器能力，配合渐进增强把新特性安全引入生产环境。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'css/650-CSSNewFeatures'
   - 'css/120-CSSFunctions'

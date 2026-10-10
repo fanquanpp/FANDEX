@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: E2E 端到端测试方法论与实战：测试范围设计、Playwright 完整示例、Trace Viewer 与 UI Mode 排查、Page Object 模式与 flaky 治理。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'software-testing/030-TestLevels'
   - 'software-testing/210-AutomationTestFrameworkComparison'

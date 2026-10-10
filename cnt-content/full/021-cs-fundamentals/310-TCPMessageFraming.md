@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: TCP 粘包与拆包问题：Nagle 算法、CORK 选项与解决方案。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'cs-fundamentals/330-HTTPSHandshake'
   - 'cs-fundamentals/300-TCPControl'

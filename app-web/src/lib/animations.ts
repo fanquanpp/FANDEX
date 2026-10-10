@@ -12,14 +12,24 @@ export function initAnimations(): void {
     anchor.dataset.smoothBound = '1';
 
     anchor.addEventListener('click', (e) => {
-      const href = anchor.getAttribute('href');
-      if (!href || href === '#') return;
-      const target = document.querySelector<HTMLElement>(href);
-      if (!target) return;
-
-      // TOC 链接与标题 # 锚点各自有带偏移/复制逻辑的专属处理器
+      // TOC 链接与标题 # 锚点各自有带偏移/复制逻辑的专属处理器，
+      // 放行给它们处理（preventDefault 由各自处理器负责）
       if (anchor.classList.contains('fndx-toc__link')) return;
       if (anchor.classList.contains('heading-anchor')) return;
+
+      const href = anchor.getAttribute('href');
+      if (!href || href === '#') return;
+      // 标题 id 可能以数字开头（如 "#1-问题引入"），这类字符串不是合法的
+      // CSS 选择器，querySelector 会直接抛 TypeError；getElementById
+      // 按字面 id 匹配，无此限制。中文与百分号编码也一并兼容。
+      let id = href.slice(1);
+      try {
+        id = decodeURIComponent(id);
+      } catch {
+        /* 保留原样（编码残缺时按字面匹配） */
+      }
+      const target = document.getElementById(id);
+      if (!target) return;
 
       e.preventDefault();
       // scrollIntoView 会按目标的 scroll-margin-top 计算落点，

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL组复制Group Replication：Paxos多数派与认证冲突检测、单主/多主模式、故障检测自动选主、部署与限制
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'mysql/590-Replication'
   - 'mysql/610-ParallelReplication'

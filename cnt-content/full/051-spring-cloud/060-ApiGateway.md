@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/120-SpringSecurityJwt'
   - 'java/880-SpringCloudMicroserviceDevelopment'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'spring-cloud/070-ResilienceSentinel'
   - 'spring-boot/120-SpringSecurityJwt'

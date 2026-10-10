@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 搜索（Search）算法的通用篇：形式化定义、状态空间图模型、完备性与最优性证明，线性搜索 $O(n)$、二分搜索 $O(\log n)$、哈希查找 $O(1)$、BFS/DFS 图搜索 $O(V+E)$ 的原理、实现与对比分析，附 Python/C++/Java 多语言实现与 CLRS 第 22 章。有信息搜索与博弈搜索已拆分至 055 篇。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/030-SortAlgorithm'
@@ -26,7 +26,7 @@ prerequisites:
 建议先阅读以下内容再进入本文：
 
 - [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
-- [查找算法](/algorithm/170-BinarySearchAlgorithms)
+- 查找算法
 - [递归与回溯](/algorithm/140-RecursionAndBacktracking)
 
 ## 知识点地图
@@ -1280,3 +1280,67 @@ flowchart TD
 - [Hello 算法](https://www.hello-algo.com/)：开源数据结构与算法书，搜索与回溯等主题提供中文图解与多语言可运行实现（中文，免费，适合入门）。
 
 > 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。
+
+## 代码修正题
+
+<!-- 来源: cnt-content/full/020-algorithm/050-SearchAlgorithm.md 的 "17.3 代码修正题" 小节 -->
+
+**1.** 以下 A* 实现存在一个 bug，请找出并修正：
+
+```python
+def astar_buggy(graph, start, end, h):
+    open_set = [(h(start, end), 0, start)]
+    visited = set()
+    while open_set:
+        f, g, node = heapq.heappop(open_set)
+        if node == end:
+            return g
+        if node in visited:
+            continue
+        visited.add(node)
+        for neighbor, cost in graph[node]:
+            heapq.heappush(open_set, (g + cost + h(neighbor, end), g + cost, neighbor))
+    return -1
+```
+
+**问题**：未记录每个节点的最优 $g$ 值，可能将次优路径加入开表。虽不影响正确性（visited 已保证不重扩展），但效率低。
+
+**修正**：维护 `g_score` 字典，仅在 `new_g < g_score[neighbor]` 时入队。
+
+**2.** 以下双向 BFS 实现存在一个 bug，请找出并修正：
+
+```python
+def bidirectional_buggy(graph, start, end):
+    front, back = {start}, {end}
+    steps = 0
+    while front and back:
+        next_front = set()
+        for node in front:
+            for neighbor in graph[node]:
+                if neighbor in back:
+                    return steps + 1
+                next_front.add(neighbor)
+        front = next_front
+        steps += 1
+    return -1
+```
+
+**问题**：未做 visited 标记，可能无限循环。
+
+**修正**：增加 `visited` 集合，入队前检查。
+
+## 开放论述题
+
+<!-- 来源: cnt-content/full/020-algorithm/050-SearchAlgorithm.md 的 "17.4 开放论述题" 小节 -->
+
+**1.** 阐述 A* 算法最优性证明的核心思路，并说明为何可采纳性 $h(n) \leq h^*(n)$ 是关键约束。
+
+**解析讲解**：证明采用反证法。设 A* 返回次优解 $C' > C^*$。在 A* 终止前，最优路径上必存在某节点 $n$ 在开表中，由可采纳性 $f(n) = g(n) + h(n) \leq g^*(n) + h^*(n) = C^*$。但 A* 选 $f$ 最小的节点扩展，必先扩展 $n$ 而非返回 $C'$，矛盾。可采纳性保证 $f(n)$ 不高估真实代价，是 A* "贪心选最优"得以成立的关键。
+
+**2.** 比较 A*、IDA*、双向 BFS 在 15 数码问题上的适用性。
+
+**解析讲解**：15 数码状态空间约 $10^{13}$，分支因子约 2.13，平均解深度约 52.6。A* 因 $O(b^d)$ 内存爆炸不可用；IDA* 空间 $O(d) \approx 53$ 极优，Korf 1985 用 IDA* + Manhattan + Linear Conflict 在 SUN-3 求解平均 50 秒，现代 PDB 优化后毫秒级；双向 BFS 不适用，因为目标状态难以反向生成前驱（15 数码反向搜索同样巨大）。
+
+**3.** 论述 Alpha-Beta 剪枝在工程实践中的关键优化策略。
+
+**解析讲解**：(1) 节点排序：TT move > killer move > history heuristic，逼近 Knuth-Moore 最优排序 $O(b^{d/2})$；(2) Iterative Deepening：上一深度最佳着法作为下一深度 TT move；(3) Quiescence Search：避免水平线效应；(4) Null Move Pruning：跳过一步判断优势；(5) Transposition Table：Zobrist hashing 缓存；(6) Late Move Reduction：靠后着法降深度；(7) 并行搜索：Stockfish 11+ 多线程。

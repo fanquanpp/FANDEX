@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从"一台机器为什么能装多个 Node"讲起：nvm 的仓库与指针心智模型、安装切换四连、每版本独立生态的含义，以及三套 nvm 的门派辨析。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'javascript/520-NodeJsInstall'
   - 'javascript/540-NpmManager'

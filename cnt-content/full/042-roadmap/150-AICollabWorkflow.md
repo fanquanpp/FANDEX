@@ -9,7 +9,7 @@ prerequisites:
   - 'roadmap/010-RoadmapOverview'
   - 'start/050-LearnHowToLearnProgramming'
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'start/060-FirstProgramJavaScript'
   - 'python/990-PythonMachineLearning'

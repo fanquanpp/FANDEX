@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 多文档事务、会话与因果一致性——在文档数据库里获得确定性。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'mongodb/050-MongoDBSchemaDesign'
 prerequisites:
