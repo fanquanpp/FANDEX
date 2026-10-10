@@ -6,10 +6,10 @@ category: 后端技术
 difficulty: intermediate
 description: LINQ查询语法与方法语法
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'csharp/340-CSharpTestEngineering'
-  - 'csharp/370-CSharpGameDevUnity'
+  - 'csharp/380-CSharpUnityGameDev'
   - 'csharp/090-AsyncProgrammingDetailed'
   - 'csharp/160-PatternMatching'
 prerequisites:
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- [C# 游戏开发与 Unity](/csharp/370-CSharpGameDevUnity)：建议先完成前一篇的学习
+- [Unity 游戏开发](/csharp/380-CSharpUnityGameDev)：建议先完成前一篇的学习
 
 ## 学习目标
 

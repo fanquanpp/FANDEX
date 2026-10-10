@@ -6,7 +6,7 @@ module: 'redis'
 category: 数据库
 difficulty: advanced
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'redis/240-LuaScriptAtomicExecution'
   - 'redis/200-ReplicationBuffer'

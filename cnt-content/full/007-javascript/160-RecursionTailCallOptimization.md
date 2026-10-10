@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以「嵌套评论树要统计总数，for 循环写不动」为问题主线，讲透递归三要素与调用栈模型，亲手遍历树形数据、排查 Maximum call stack size exceeded，并给出尾递归改写与"各引擎到底支不支持 TCO"的 2026 年实情。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'javascript/150-HigherOrderFunction'
   - 'javascript/170-CurryAndFunctionComposition'

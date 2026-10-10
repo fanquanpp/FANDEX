@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 用可达性、标记清除、分代回收三个模型讲透 JavaScript 的自动内存管理，并给出写代码时避免内存泄漏的实用清单。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'javascript/360-ClosureMemoryLeakOptimization'
   - 'javascript/370-MemoryLeakTroubleshoot'

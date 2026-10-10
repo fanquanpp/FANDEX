@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 集合框架、序列、集合操作函数与协程基础。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'kotlin/050-KotlinClassObject'
   - 'kotlin/170-KotlinGenericTypeSystem'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL存储过程与自定义函数详解：创建、参数、变量、流程控制、游标与异常处理。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'mysql/335-ObservabilitySystemSchemas'
   - 'mysql/290-FunctionalIndex'

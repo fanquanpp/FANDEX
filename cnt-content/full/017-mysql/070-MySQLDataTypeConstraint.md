@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 从零设计一张充电桩表：每个字段为什么选这个类型、约束怎样在坏数据进门时就把它拦下，亲手触发 1048/1062/3819 真实报错，并带走金额用 DECIMAL、时间看 2038、外键要不要建这三条决策原则。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'mysql/050-MySQLOverviewDatabaseDesign'
   - 'mysql/090-SQLDataDefinitionAdvanced'

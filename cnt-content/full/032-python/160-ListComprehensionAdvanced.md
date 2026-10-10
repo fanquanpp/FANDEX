@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以音游成绩单清洗为线索，从「for + append」机械改写法讲透列表推导式：过滤与变换、字典与集合推导式、嵌套与海象运算符、生成器表达式省内存，附可读性红线与四类练习。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'python/140-BuiltinDataStructure'
   - 'python/150-EnumerateZipBuiltinPairs'
@@ -276,7 +276,7 @@ NameError: name 'flag' is not defined
 ## 11. 与之前和之后的知识的关系
 
 - 往前：本文是 [内置数据结构](/python/140-BuiltinDataStructure) 的「批量加工篇」——容器是原料，推导式是流水线；[enumerate 与 zip](/python/150-EnumerateZipBuiltinPairs) 的搭档在推导式里同样适用；
-- 往后：[推导式与生成器](/python/170-ComprehensionGenerator) 把圆括号那一支展开成完整的迭代器与生成器体系；[函数详解](/python/100-FunctionDetailed) 里的 `map` / `filter` 与推导式互为替代，团队里二选一保持一致；后续数据分析（pandas）与本文的「变换 - 过滤 - 聚合」思维一脉相承。
+- 往后：[迭代器协议与 itertools](/python/170-IteratorProtocolAndItertools) 把圆括号那一支展开成完整的迭代器与生成器体系；[函数详解](/python/100-FunctionDetailed) 里的 `map` / `filter` 与推导式互为替代，团队里二选一保持一致；后续数据分析（pandas）与本文的「变换 - 过滤 - 聚合」思维一脉相承。
 
 ## 12. 官方文档
 
@@ -312,4 +312,4 @@ fc = [print(s["song"]) for s in scores if s["fc"]]
 
 ## 下一步
 
-推导式的圆括号一支远比「省内存」有料，进入 [推导式与生成器](/python/170-ComprehensionGenerator)：认识迭代器协议与 yield，学会写「用到哪个数才算哪个数」的惰性数据流。
+推导式的圆括号一支远比「省内存」有料，进入 [迭代器协议与 itertools](/python/170-IteratorProtocolAndItertools)：认识迭代器协议与 yield，学会写「用到哪个数才算哪个数」的惰性数据流。

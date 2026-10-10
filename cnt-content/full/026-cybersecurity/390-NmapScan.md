@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'nmap 实战命令：主机发现与四类端口扫描、服务版本与系统识别、NSE 脚本引擎、输出格式与时序调优'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cybersecurity/380-InformationGathering'
   - 'cybersecurity/400-VulnerabilityScan'

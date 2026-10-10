@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 模块导入、包结构、虚拟环境与依赖管理。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'python/715-PythonVersionNewFeatures'
   - 'python/510-DecoratorAdvanced'

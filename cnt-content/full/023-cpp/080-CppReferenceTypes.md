@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 以「swap 终于能改到调用方的变量」引入，讲透左值引用、const 引用与临时对象延长、引用与指针的三点分工、悬空引用的成因与防线，附悬空引用调试实录。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'cpp/060-LambdaExpression'
   - 'cpp/070-LambdaCaptureDetailed'

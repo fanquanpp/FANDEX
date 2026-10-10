@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从给前端实验室播放器做状态的真实场景理解 Vue 3 响应式：Proxy 原理、ref 与 reactive 的选择、浅层响应与 markRaw、effectScope 作用域管理，以及解构丢失响应性等经典坑。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'vue3/060-ComputedCacheWatchTiming'
   - 'vue3/080-CompositionAPIAdvantageScene'

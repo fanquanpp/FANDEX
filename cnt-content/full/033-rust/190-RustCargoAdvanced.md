@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: workspace、feature 门控与发布：工程化使用 Cargo。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'rust/030-RustEnvSetup'
   - 'rust/140-RustEcosystemProject'

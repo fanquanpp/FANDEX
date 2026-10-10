@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Lambda 命令实战：函数增删改查、同步/异步调用、版本与别名、层管理与常见报错。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/270-AWSCore'
   - 'cloud-computing/260-ServerlessArchitecture'

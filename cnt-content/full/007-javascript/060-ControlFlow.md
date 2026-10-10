@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用猜数字游戏讲透 if/else、switch 取舍、for/while/for-of 三种循环与 break/continue，附 if 条件里写 = 的事故现场与 ESLint 真实报错、const 循环变量报错、死循环急救，含预测题与修 Bug 练习。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'javascript/050-DataTypeOperator'
   - 'javascript/070-ObjectArray'

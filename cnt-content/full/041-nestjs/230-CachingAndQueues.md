@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: CacheModule 响应缓存与拦截器缓存：TTL、key 设计、缓存三大经典问题（穿透、击穿、雪崩）在 NestJS 中的落地与取舍，附遮代码自检。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'nestjs/165-DiContainerAndProviders'
   - 'nestjs/180-DatabaseIntegration'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: ip/ifconfig/route 常用网络命令：接口与地址管理、路由表操作、邻居表查看与持久化配置。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/080-PingTraceroute'
@@ -344,4 +344,113 @@ ip tunnel show
 ```bash
 # 删除 gre1 隧道
 ip tunnel del gre1
+```
+
+## ifconfig 接口配置
+
+<!-- 来源: cnt-content/full/025-networking/010-NetworkBasicsAndProtocol.md 的 "ifconfig 接口配置" 小节 -->
+
+**基本写法：查看所有接口**
+`ifconfig`
+```bash
+# 查看所有网络接口
+ifconfig
+```
+
+**基本写法：查看指定接口**
+`ifconfig <接口>`
+```bash
+# 查看 eth0 接口信息
+ifconfig eth0
+```
+
+**基本写法：配置 IP 地址**
+`ifconfig <接口> <IP> netmask <掩码>`
+```bash
+# 配置 eth0 的 IP 地址
+ifconfig eth0 192.168.1.100 netmask 255.255.255.0
+```
+
+**基本写法：启用接口**
+`ifconfig <接口> up`
+```bash
+# 启用 eth0 接口
+ifconfig eth0 up
+```
+
+**基本写法：禁用接口**
+`ifconfig <接口> down`
+```bash
+# 禁用 eth0 接口
+ifconfig eth0 down
+```
+
+**基本写法：设置 MTU**
+`ifconfig <接口> mtu <大小>`
+```bash
+# 设置 MTU 为 1500
+ifconfig eth0 mtu 1500
+```
+
+## ethtool 网卡工具
+
+<!-- 来源: cnt-content/full/025-networking/010-NetworkBasicsAndProtocol.md 的 "ethtool 网卡工具" 小节 -->
+
+**基本写法：查看网卡信息**
+`ethtool <接口>`
+```bash
+# 查看 eth0 网卡信息
+ethtool eth0
+```
+
+**基本写法：查看网卡驱动**
+`ethtool -i <接口>`
+```bash
+# 查看网卡驱动信息
+ethtool -i eth0
+```
+
+**基本写法：查看网卡统计**
+`ethtool -S <接口>`
+```bash
+# 查看网卡统计信息
+ethtool -S eth0
+```
+
+**基本写法：设置网卡速率**
+`ethtool -s <接口> speed <速率> duplex <模式>`
+```bash
+# 设置网卡为 1000M 全双工
+ethtool -s eth0 speed 1000 duplex full autoneg off
+```
+
+**基本写法：查看网卡支持的特性**
+`ethtool -k <接口>`
+```bash
+# 查看网卡支持的卸载特性
+ethtool -k eth0
+```
+
+## 网络命名规范
+
+<!-- 来源: cnt-content/full/025-networking/010-NetworkBasicsAndProtocol.md 的 "网络命名规范" 小节 -->
+
+**基本写法：查看接口命名规则**
+`ip link show`
+```bash
+# 查看所有网络接口
+ip link show
+```
+
+**基本写法：重命名网络接口**
+```bash
+`ip link set <接口> down
+ip link set <接口> name <新名称>
+ip link set <新名称> up`
+```
+```bash
+# 重命名 eth0 为 wan0
+ip link set eth0 down
+ip link set eth0 name wan0
+ip link set wan0 up
 ```

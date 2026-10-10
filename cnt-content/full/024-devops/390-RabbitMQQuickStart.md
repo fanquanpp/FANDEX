@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 交换机、队列、绑定与路由键模型，工作队列、手动确认与限流的基本用法。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'devops/370-MessageQueueOverview'
   - 'devops/400-ReliableMessagingPatterns'

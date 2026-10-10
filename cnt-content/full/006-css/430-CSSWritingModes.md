@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: writing-mode 与逻辑属性配合，让布局适配横排、竖排与从右到左的文字方向。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'css/420-LogicalProperty'
   - 'css/070-TextAndFontsBasics'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: JDK 21分代ZGC详解：原理、配置与调优。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'java/430-ReflectionDynamicProxy'
   - 'java/440-AnnotationProcessor'

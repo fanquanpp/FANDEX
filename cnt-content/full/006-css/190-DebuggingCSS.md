@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用浏览器开发者工具定位“样式没生效”的四大原因：匹配、优先级、继承与覆盖。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'css/130-CSS3SelectorSystem'
   - 'css/170-PriorityCalculation'

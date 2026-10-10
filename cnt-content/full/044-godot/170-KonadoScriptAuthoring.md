@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 系统学习 KonadoScript 指令，从对话立绘背景运镜到选项分支变量与自定义信号写出完整剧情
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-10-07'
 related: []
 prerequisites:
   - 'godot/160-KonadoVisualNovelFramework'

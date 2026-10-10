@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: '6R 迁移策略：Rehost/Replatform/Repurchase/Refactor/Retire/Retain 的决策、执行与 TCO 评估。'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/030-PublicCloudPrivateCloudHybridCloud'
   - 'cloud-computing/240-CloudCostOptimization'

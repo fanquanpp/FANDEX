@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Vite 环境变量与模式：.env 文件加载优先级、VITE_ 前缀暴露规则、静态替换原理、staging 自定义模式与密钥安全边界
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'vite/030-ConfigFile'
   - 'vite/070-DevServerAndProxy'

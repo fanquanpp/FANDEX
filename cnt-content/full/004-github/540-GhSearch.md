@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: '问题驱动讲解 gh search：从"怎么快速找到想要的仓库、代码、Issue、PR、提交"等真实问题切入，涵盖 repos/code/issues/prs/commits 五类搜索与常用过滤选项，配以错误对策。'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related: []
 prerequisites: []
 ---

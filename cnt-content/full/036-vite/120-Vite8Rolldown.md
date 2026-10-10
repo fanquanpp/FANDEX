@@ -1,12 +1,12 @@
 ---
-order: 140
+order: 150
 title: Vite 8 与 Rolldown 新特性
 module: 'vite'
 category: 前端技术
 difficulty: intermediate
 description: Vite 8 单引擎架构：版本演进时间线、Rolldown（Rust 打包器）、Oxc、Lightning CSS、Bundled Dev Mode 与升级迁移指南
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'vite/080-BuildSplit'
   - 'vite/100-PluginSystem'

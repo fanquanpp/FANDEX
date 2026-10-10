@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 网络排障方法论：分层定位与二分思路、ping/traceroute/ss/tcpdump 关键用法、「网站打不开」完整案例与抓包分析流程。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/080-PingTraceroute'
   - 'networking/090-SSNetstat'
@@ -333,3 +333,22 @@ ip link show eth0 | grep mtu
 ```
 
 </details>
+
+<!-- 恢复自 cnt-content/full/025-networking/190-NetworkDiagnosis.md（实施前 HEAD 62c90663308c7d6ea5a29bd1c1bb97cd40884710 版本）；拆分时该小节未随迁，2026-10-07 内容保全核对恢复 -->
+
+## 流量镜像
+
+
+```bash
+# 本地镜像
+monitor session 1 source interface Gi0/1 both
+monitor session 1 destination interface Gi0/2
+
+# ERSPAN（远程镜像）
+monitor session 1 type erspan-source
+  source interface Gi0/1 rx
+  destination
+    erspan-id 1
+    ip address 10.0.0.100
+    origin ip address 10.0.0.1
+```

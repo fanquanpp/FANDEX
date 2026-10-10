@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 'GitHub Packages深度解析：从 npm/Docker 包管理原理讲起，把 GitHub Packages 讲成团队私有的"软件包超市"，覆盖认证、发布、安装与 CI/CD 集成。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'github/320-RESTGraphQLAPI'
 prerequisites:

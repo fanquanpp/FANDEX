@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PITR 完整演练：全量备份加 binlog 重放恢复到任意时刻、GTID 与位点两种定位方式、误操作跳过手法，以及"备份从未演练过等于没备份"的纪律。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'mysql/560-LogicalBackup'
   - 'mysql/570-PhysicalBackup'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 讲清 React 脚手架的现在时：create-react-app 已退场，当前主流是 Vite（react 模板）与 Next.js 两条线；以 react-ts 模板拆解 @vitejs/plugin-react 与 Fast Refresh，覆盖 API 代理、VITE_ 前缀环境变量与三条命令的终端输出。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'react/090-LintFormatAndProjectStructure'
   - 'nextjs/010-NextJS16Overview'
@@ -221,7 +221,7 @@ console.log(import.meta.env.VITE_APP_TITLE ?? '缺失')
 
 - 往前：[概述与环境配置](/react/010-OverviewEnvSetup) 给了环境与 JSX 起点，本文接上「项目怎么组织、怎么跑、怎么发」的工程线；
 - 往后：[React 测试](/react/220-ReactTest) 与 CI 门禁见 [React 与 CI/CD](/react/370-ReactCICD)；代码规范与项目结构见 [Lint、格式化与项目结构](/react/090-LintFormatAndProjectStructure)；全栈线直接开 [Next.js 16 概述与快速上手](/nextjs/010-NextJS16Overview)；
-- Vite 深入：[Vite 开发服务器与 HMR](/vite/070-DevServerHMR) 讲透 Fast Refresh 底下的热更新机制，[环境变量与模式](/vite/050-ViteEnvModes) 补全第 4 节。
+- Vite 深入：[Vite 开发服务器与 HMR](/vite/075-HmrMechanismAndHotApi) 讲透 Fast Refresh 底下的热更新机制，[环境变量与模式](/vite/050-ViteEnvModes) 补全第 4 节。
 
 ## 10. 官方文档
 

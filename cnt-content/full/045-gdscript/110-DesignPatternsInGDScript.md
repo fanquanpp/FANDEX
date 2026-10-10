@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 把经典设计原则与常用模式落到 GDScript 惯用法上，知道什么时候该用什么时候不该用
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-10-07'
 related:
   - 'gdscript/070-ClassesOOPAndMemory'
   - 'gdscript/090-SignalsAwaitCoroutines'

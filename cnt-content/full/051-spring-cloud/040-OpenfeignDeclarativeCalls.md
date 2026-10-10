@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-cloud/020-ServiceRegistrationDiscovery'
   - 'spring-boot/060-SpringMvcRestApi'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'spring-cloud/050-LoadBalancingRetry'
   - 'spring-cloud/060-ApiGateway'

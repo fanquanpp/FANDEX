@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C# Source Generators
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'csharp/190-GenericCovarianceContravariance'
   - 'csharp/230-SpanMemory'

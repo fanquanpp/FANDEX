@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用一个可运行的菜单式项目把前 20 篇串起来：动态数组、qsort 回调、二进制持久化与安全输入，并亲手修掉初版代码里的四个经典 bug——比较器里读输入、信任文件里的 count、fread 不查返回值、realloc 直接赋值。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/200-DynamicMemoryManagement'
   - 'c/170-FunctionPointerCallback'

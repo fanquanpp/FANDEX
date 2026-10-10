@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/030-IoCDependencyInjection'
   - 'spring-boot/060-SpringMvcRestApi'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'spring-boot/100-TransactionManagement'
   - 'spring-boot/130-SpringCacheRedis'

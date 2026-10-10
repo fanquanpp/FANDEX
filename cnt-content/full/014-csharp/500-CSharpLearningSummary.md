@@ -1,12 +1,12 @@
 ---
-order: 530
+order: 520
 title: C# 学习总结：核心知识体系回顾
 module: 'csharp'
 category: 后端技术
 difficulty: intermediate
 description: 按主题串联 C# 模块全部文档，回顾语法与 OOP、泛型集合、LINQ、异步、委托事件、运行时与框架生态的核心概念、易混淆点与高频陷阱。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'csharp/010-WhatIsCSharp'
   - 'csharp/040-CSharpOOP'

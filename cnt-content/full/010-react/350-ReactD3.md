@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React 集成 D3：两种所有权模型的取舍（React 管 DOM vs D3 管 DOM）、纯计算模块 + JSX 渲染的完整柱状图、d3-selection 更新模式、过渡动画与常见陷阱。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'react/330-ReactPWA'
   - 'react/340-ReactCanvas'

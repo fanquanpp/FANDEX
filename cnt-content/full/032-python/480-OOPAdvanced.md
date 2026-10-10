@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 会写类之后的设计主线——封装的命名约定三层、组合优于继承的判断口诀、多态与 isinstance 分支的重构、类装饰器、__slots__ 的内存收益与代价；抽象基类/数据类/元类/描述符/枚举五个专题的桥接导引与遮代码自检练习。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related: []
 prerequisites: []
 ---

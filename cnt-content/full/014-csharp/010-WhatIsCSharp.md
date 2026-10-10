@@ -10,7 +10,7 @@ updated: '2026-09-28'
 related:
   - 'csharp/020-CSharpOverviewEnvSetup'
   - 'csharp/250-CSharpDotNet'
-  - 'csharp/370-CSharpGameDevUnity'
+  - 'csharp/380-CSharpUnityGameDev'
   - 'java/010-WhatIsJava'
   - 'cs-fundamentals/020-ProgrammingBasics'
 prerequisites:
@@ -73,7 +73,7 @@ flowchart LR
 | 企业后端 | ASP.NET Core | 与 Java Spring 定位相当，跑在 Linux 服务器与容器里 |
 | 桌面与跨平台客户端 | WPF、WinForms、MAUI | Windows 桌面主力；MAUI 一套代码出 Android/iOS/Windows/macOS |
 
-关键事实：三个战场共享同一套语言地基，差异全在框架层。所以入门阶段只管学语言本体，方向以后再选。游戏方向见 [Unity 游戏开发](/csharp/370-CSharpGameDevUnity)，后端方向见 [Web API](/csharp/300-CSharpAPI)。
+关键事实：三个战场共享同一套语言地基，差异全在框架层。所以入门阶段只管学语言本体，方向以后再选。游戏方向见 [Unity 游戏开发](/csharp/380-CSharpUnityGameDev)，后端方向见 [Web API](/csharp/300-CSharpAPI)。
 
 ## 4. 核心概念三：与 Java 同源对照
 
@@ -144,7 +144,7 @@ C# 的版本号与 .NET 的版本号是两条线，**每年 11 月同步发布�
 
 **「C、C++、C# 是一家吗？」**——名字像，是三门独立语言。C# 语法借鉴了 C++ 与 Java，但与 C/C++ 没有源码层面的兼容关系。井号取自音乐记号「升半音」，寓意比 C++ 更进一步。
 
-**「Unity 里的 C# 和这里学的一样吗？」**——语言层面完全一致；差异在运行时（Unity 用 Mono/IL2CPP，API 是 .NET 的子集）。语法基础全部通用，先在本模块打好地基，再去 [Unity 两章](/csharp/370-CSharpGameDevUnity) 搬进引擎。
+**「Unity 里的 C# 和这里学的一样吗？」**——语言层面完全一致；差异在运行时（Unity 用 Mono/IL2CPP，API 是 .NET 的子集）。语法基础全部通用，先在本模块打好地基，再去 [Unity 游戏开发](/csharp/380-CSharpUnityGameDev) 搬进引擎。
 
 **「C# 只能在 Windows 上用吗？」**——本文开头已经回答：不能这么说了，而且这是全篇最重要的一句话。
 
@@ -183,7 +183,7 @@ Console.WriteLine($"你在 {game} 的第 {level} 关");
 
 - 往前：[编程学习路线总览](/start/080-LearningRouteOverview) 的路线图上，这是语言起点站之一；[Java 后端路线](/roadmap/030-BackendJavaRoute) 的后端地图上，C# 与 Java 是并排的两条同源路线，随时可以互相切换；
 - 往后：下一篇装环境（020），再下一篇写第一段像样的程序（030），然后进入 [面向对象](/csharp/040-CSharpOOP)；
-- 更远：方向三选一之后，游戏线去 [Unity 游戏开发](/csharp/370-CSharpGameDevUnity)，后端线去 [Web API](/csharp/300-CSharpAPI)，平台机制深挖去 [.NET 平台](/csharp/250-CSharpDotNet)。
+- 更远：方向三选一之后，游戏线去 [Unity 游戏开发](/csharp/380-CSharpUnityGameDev)，后端线去 [Web API](/csharp/300-CSharpAPI)，平台机制深挖去 [.NET 平台](/csharp/250-CSharpDotNet)。
 
 ## 12. 官方文档
 

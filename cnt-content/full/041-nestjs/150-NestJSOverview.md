@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 零基础第一课：理解模块/控制器/服务三层结构与依赖注入，用 CLI 五分钟创建第一个 NestJS 应用。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'nestjs/160-ModuleControllerService'
   - 'nestjs/170-ValidationPipes'

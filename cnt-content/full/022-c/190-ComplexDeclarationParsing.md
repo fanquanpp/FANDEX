@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C 语言复杂声明的形式语法、右左法则、函数指针与数组指针的解析方法,涵盖 cdecl 工具、ABI 规范与真实项目案例。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/450-SafeFunctionBoundsCheck'
   - 'c/300-InlineFunctionMacro'
@@ -1385,13 +1385,173 @@ struct redisCommand redisCommandTable[] = {
 
 **结论**:函数指针表是 C 语言实现运行时多态与回调的标准模式,在系统软件中无处不在。掌握复杂声明解析是阅读这些代码的基础。
 
-### 填空题知识点讲解
+## 13. 练习与思考
 
-### 13.3 代码修正题
+### 13.1 填空题知识点讲解
 
-### 13.4 开放性问题
+填空题考查的是声明解析的机械步骤是否可靠。动笔前先核对三个知识点,全部来自前文:
 
-#### 14.2.1 书籍
+| 知识点 | 关键结论 | 正文位置 |
+| :--- | :--- | :--- |
+| 右左法则 | 从标识符出发,先向右看,遇到 `)` 再向左看,每读到一个符号就用「...的」衔接 | 3.1 |
+| 优先级 | `()` 与 `[]` 高于 `*`;数组长度与参数列表绑定在离标识符近的一侧 | 4.1 |
+| typedef 分解 | 从最内层已知类型开始逐层替换,先给最复杂的部分起名字 | 8.4 |
+
+最容易填错的是 `[]`/`()` 与 `*` 的结合顺序:`int *p[3]` 中 `[]` 先结合,`p` 是数组;`int (*p)[3]` 中括号强制 `*` 先结合,`p` 是指针。填空时建议先圈出标识符,写出「p 是...」的主干,再逐层补限定词。
+
+**题目 1**:写出下列声明中标识符的类型。
+
+```c
+int (*fp)(int, int);
+int *arr[3];
+char *(*name)[10];
+```
+
+遮代码自检——先自己填空再看参考:
+
+<details>
+<summary>参考答案(点开前先自己完成)</summary>
+
+1. `fp` 是指针,指向「两个 `int` 参数、返回 `int`」的函数(pointer to function (int, int) returning int)。
+2. `arr` 是含 3 个元素的数组,元素类型是 `int *`(array 3 of pointer to int)。
+3. `name` 是指针,指向含 10 个元素的数组,元素类型是 `char *`(pointer to array 10 of pointer to char)。解析顺序:`name` 向右遇 `)`,向左得「指针」;越过后向右得 `[10]` 得「数组」;再向左 `*` 得「元素是指针」;最外层 `char *` 是元素基类型。
+
+</details>
+
+**题目 2**:按第 3 节的伪代码分步解析 `int (*(*f)(int))[5];`,并填空:`f` 是____,指向的函数接受____,该函数返回____,它指向____。
+
+遮代码自检——先自己填空再看参考:
+
+<details>
+<summary>参考答案(点开前先自己完成)</summary>
+
+`f` 是指针,指向「接受一个 `int` 参数」的函数,该函数返回一个指针,指向含 5 个 `int` 的数组(pointer to function (int) returning pointer to array 5 of int)。解析顺序:`f` → 右遇 `)` → 左 `*`(f 是指针)→ 右 `(int)`(指向函数,参数 int)→ 左 `*`(返回值是指针)→ 右 `[5]`(指向数组 5)→ 左 `int`(元素类型)。它相当于在 7.4 节「返回数组指针的函数」外面再套一层函数指针。
+
+</details>
+
+### 13.2 代码修正题
+
+每段代码都带着一个「看似能写、实则错误」的声明或用法。先指出问题,再给出修正后的写法。
+
+**题目 3**:下面的代码想声明「返回含 5 个 int 的数组的函数」,无法通过编译,为什么?如何修正?
+
+```c
+int f(int x)[5];  /* 意图: f 返回 int[5] */
+```
+
+遮代码自检——先自己修改再看参考:
+
+<details>
+<summary>参考答案(点开前先自己修改)</summary>
+
+C 不允许函数返回数组:函数声明符的 `()` 之后不能再出现 `[]` 后缀,返回类型只能是标量、结构体、联合体或指针。修正为返回数组指针:
+
+```c
+int (*f(int x))[5];   /* f 是函数,返回 int (*)[5],即 7.4 节案例的形态 */
+```
+
+或按第 8 节用 typedef 分解,可读性更好:
+
+```c
+typedef int Arr5[5];
+Arr5 *f(int x);
+```
+
+若确实需要「按值返回一组 int」,可以返回结构体:`struct Int5 { int v[5]; }; struct Int5 f(int x);`(结构体赋值按成员拷贝,包括数组)。
+
+</details>
+
+**题目 4**:下面两行代码各有一处类型层面的错误,指出并修正。
+
+```c
+int *(p)[3];          /* 意图: p 是指向 int[3] 的指针 */
+void (*fp)(int) = qsort;   /* 意图: 保存 qsort 以便做回调实验 */
+```
+
+遮代码自检——先自己修改再看参考:
+
+<details>
+<summary>参考答案(点开前先自己修改)</summary>
+
+第一行:`int *(p)[3]` 里 `*` 与 `int` 结合,等价于 `int *p[3]`,`p` 是「3 个 `int *` 的数组」,与意图正好相反(10.2 节陷阱)。修正:
+
+```c
+int (*p)[3];   /* pointer to array 3 of int */
+```
+
+第二行:`qsort` 是「返回 void、接受 4 个参数」的函数,与 `void (*)(int)` 类型不匹配,编译器会报 incompatible pointer types 警告(10.3 节)。修正:
+
+```c
+void (*fp)(void *, size_t, size_t,
+           int (*)(const void *, const void *)) = qsort;
+```
+
+实践中通常直接把比较函数传给 `qsort`,单独保存其指针意义不大;但只要保存,类型就必须逐项对齐。
+
+</details>
+
+**题目 5**:这段代码的行为与直觉相反,找出声明层面的根因并给出两种修正。
+
+```c
+int x = 0;
+typedef int *INT_PTR;
+const INT_PTR p = &x;
+*p = 10;   /* 编译通过,x 被改写 */
+p = NULL;  /* 反而报错 */
+```
+
+遮代码自检——先自己分析再看参考:
+
+<details>
+<summary>参考答案(点开前先自己分析)</summary>
+
+`const INT_PTR` 中 `const` 作用在 typedef 之后的完整类型上,等价于 `int * const p`:指针本身不可变,指向的 `int` 仍然可变。直觉中的 `const int *`(指向常量的指针)恰好相反,这是 10.9 节「typedef 与 #define 混淆」所属的 typedef 限定陷阱。修正方案两种:想要「指向常量的指针」就直接写 `const int *p = &x;`;想保留抽象就先 typedef 底层标量类型再限定:
+
+```c
+typedef int INT;
+const INT *p = &x;   /* 等价 const int * */
+```
+
+</details>
+
+### 13.3 开放性问题
+
+开放性问题没有唯一答案,重点是自圆其说并落到工程决策上。建议每题先写 200 字左右,再看参考视角。
+
+**题目 6**:C 的声明语法遵循「声明与使用形式一致」(declaration mirrors use),这是 1970 年代的设计选择(见 1.2 节)。Go 与 Rust 放弃了这一原则,类型从左向右读(`x *int`、`let x: *i32`)。你认为哪一种设计在当下更合理?请至少从「学习曲线」「工具友好度」「真实项目中的出现频率」三个维度论证。
+
+遮代码自检——先整理自己的论点再看参考视角:
+
+<details>
+<summary>参考视角(点开前先自己作答)</summary>
+
+可以支持的论点:左侧类型声明消除了螺旋式阅读,声明复杂度不再随嵌套增长,编译器报错也更容易定位;cdecl 这类工具的存在本身,说明「声明与使用一致」的可读性代价已经超过它的收益。可以反对的论点:声明与使用一致让熟练者一眼读出表达式的形态;复杂声明在系统代码中占比很低(第 7 章案例库里真正复杂的只有 signal 一类),为此更换整套语法不划算。高水平的回答应指出这是权衡而非对错:结论取决于目标人群——面向初学者的语言与面向内核维护者的语言会给出不同答案。
+
+</details>
+
+**题目 7**:你要为团队写一份「复杂声明书写规范」。结合第 8 节(typedef 分解)、第 11 节(编译选项与本节练习),列出至少五条可执行规则,并说明每条规则针对的失败案例。
+
+遮代码自检——先自己列规则再看参考:
+
+<details>
+<summary>参考规则(点开前先自己作答)</summary>
+
+1. 嵌套超过两层(`*`、`[]`、`()` 任一维度累计)的声明必须用 typedef 分层命名,每层对应一个领域概念(针对题目 2);
+2. 函数指针类型一律先 typedef(如 `typedef void (*handler_t)(int);`),禁止在参数表里内联书写(针对 7.7 节 file_operations 的可读性问题);
+3. 数组指针与指针数组声明处必须带英文注释说明方向,如 `/* pointer to array 3 of int */`(针对题目 4);
+4. 「指针类型的 typedef」与 `const` 组合视为禁止写法,改用底层标量类型加显式 `const`(针对题目 5);
+5. CI 统一开启 `-Wall -Wextra -Wstrict-prototypes`,任何 incompatible pointer types 警告按错误处理(针对题目 4 第二行);
+6. code review 中遇到读不懂的声明,先用 cdecl 反译成英文贴进 PR 描述再讨论(对应 11.4 节)。
+
+</details>
+
+**题目 8**:第 9 节对比了 C/C++/Rust/Go/Zig 的声明体系。假设你要设计一门新的系统语言,声明语法上你会继承谁?哪些「历史包袱」你明确不想要?请说明理由。
+
+(本题供深入思考,不设参考答案;作答时建议回到 9.5 节的综合对比表逐行取材。)
+
+## 14. 参考资源
+
+### 14.1 书籍
 
 - Kernighan, B. W., & Ritchie, D. M. (1988). *The C Programming Language* (2nd ed.). Prentice Hall. (K&R C,第 5 章对指针与数组的论述是经典)
 - van der Linden, P. (1994). *Expert C Programming: Deep C Secrets*. Prentice Hall. (第 3 章"Unscrambling Declarations in C"是复杂声明的最佳指南)
@@ -1399,13 +1559,13 @@ struct redisCommand redisCommandTable[] = {
 - Prata, S. (2013). *C Primer Plus* (6th ed.). Addison-Wesley. (入门级,第 14 章涵盖结构与其他数据形式)
 - Stroustrup, B. (2013). *The C++ Programming Language* (4th ed.). Addison-Wesley. (C++ 视角的类型系统)
 
-#### 14.2.2 论文
+### 14.2 论文
 
 - Ritchie, D. M. (1993). *The Development of the C Language*. ACM SIGPLAN Notices, 28(3), 201-208.
 - Stroustrup, B. (1994). *The Design and Evolution of C++*. Addison-Wesley. (C++ 设计哲学,对 C 声明语法的反思)
 - Murphy, R. C., & Newman, W. (2018). *Type inference and declaration syntax in modern systems languages*. Proceedings of the ACM SIGPLAN International Conference on Systems Programming, 45-58.
 
-#### 14.2.3 开源项目
+### 14.3 开源项目
 
 - **Linux Kernel**: https://www.kernel.org/ — file_operations 是函数指针表的经典案例
 - **SQLite**: https://www.sqlite.org/ — 回调机制与 VDBE 虚拟机

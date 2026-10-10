@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 用「存全班 40 个成绩」的问题掌握数组：五种初始化写法与剩余元素清零实验、下标从 0 开始的偏移量心智模型、越界访问的 stack-buffer-overflow 现场、sizeof 求元素个数与函数内失效的原因、VLA 的 C11 抉择与栈风险，以及数组不能整体赋值、比较、传值的三个「不能」与替代。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/150-PointerArrayDifference'
   - 'c/200-DynamicMemoryManagement'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL分区裁剪与分区连接：计划时/运行时裁剪、初始裁剪、partitionwise join与聚合
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'postgresql/250-QueryOptimization'
   - 'postgresql/270-PartitionedTable'

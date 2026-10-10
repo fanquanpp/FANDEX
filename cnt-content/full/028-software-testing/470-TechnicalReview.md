@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 技术方案评审流程、评审维度与评审实践。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'devops/310-OnCallPractice'
   - 'devops/320-IncidentRetrospectiveMethodology'

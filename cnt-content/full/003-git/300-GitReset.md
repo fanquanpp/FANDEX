@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: git reset 三种模式详解：soft、mixed、hard 的精确语义、路径限位用法与恢复手段。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'git/080-GitRestoreFileOperation'
   - 'git/260-GitReflog'

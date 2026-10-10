@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Worker、SharedArrayBuffer 与 Atomics：让主线程之外真正并行。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'javascript/300-EventLoopDetailed'
   - 'javascript/250-AsyncProgramming'
@@ -87,6 +87,39 @@ analyzer.postMessage(payload);
 ```
 
 如果 Worker 逻辑较复杂，可以用 `new Worker(url, { type: 'module' })` 创建模块 Worker，在 Worker 内部使用 `import` 引入工具函数，与主工程的 ESM 体系保持一致。
+
+## 内联 Worker
+
+<!-- 来源：62c90663 版 cnt-content/full/007-javascript/430-WebAPIBrowserInterface.md 小节「5.11 内联 Worker」 -->
+
+```javascript
+// 使用 Blob 创建内联 Worker：无需独立 .js 文件
+const workerCode = `
+  self.onmessage = function(event) {
+    const result = heavyComputation(event.data);
+    self.postMessage(result);
+  };
+
+  function heavyComputation(n) {
+    let result = 0;
+    for (let i = 0; i < n; i++) {
+      result += Math.sqrt(i);
+    }
+    return result;
+  }
+`;
+
+const blob = new Blob([workerCode], { type: 'application/javascript' });
+const workerUrl = URL.createObjectURL(blob);
+const worker = new Worker(workerUrl);
+
+worker.postMessage(1000000);
+worker.onmessage = (e) => {
+  console.log('结果:', e.data);
+  // 使用后释放 Blob URL
+  URL.revokeObjectURL(workerUrl);
+};
+```
 
 ## 三、Transferable 与 SharedArrayBuffer
 
@@ -171,6 +204,61 @@ const bpms = (await Promise.all(chunks.map(analyzeChunk))).flat();
 除了批处理，Worker 还有两种常见卸载模式。其一是"常驻服务型"：Worker 长期存活，接收主线程的流式请求（如音频解码、富文本 diff），用任务 id 把响应与请求配对封装成 Promise。其二是"用完即弃型"：一次性重计算结束后调用 `worker.terminate()` 立即销毁，适合低频的超大任务。选择的关键在于任务频率：高频任务养池，低频任务即建即毁。
 
 任务配对是多 Worker 并存的必修课：多个请求的响应可能乱序返回，必须用自增 id 把 `postMessage` 与 `onmessage` 配对，否则会出现"演唱会 A 的波形渲染到了 B 的页面"这类串扰。配对逻辑通常封装在任务分发器内部，对业务代码暴露 Promise 接口即可。
+
+## 案例：Web Worker 加密计算
+
+<!-- 来源：62c90663 版 cnt-content/full/007-javascript/430-WebAPIBrowserInterface.md 小节「9.3 案例：Web Worker 加密计算」 -->
+
+某安全聊天应用使用 Web Worker 在后台执行 AES 加密，避免阻塞主线程 UI：
+
+```javascript
+// 主线程
+class CryptoWorker {
+  constructor() {
+    this.worker = new Worker('crypto-worker.js');
+    this.pending = new Map();
+    this.worker.onmessage = (e) => {
+      const { id, result, error } = e.data;
+      const { resolve, reject } = this.pending.get(id);
+      this.pending.delete(id);
+      if (error) reject(new Error(error));
+      else resolve(result);
+    };
+  }
+
+  encrypt(data, key) {
+    const id = crypto.randomUUID();
+    return new Promise((resolve, reject) => {
+      this.pending.set(id, { resolve, reject });
+      this.worker.postMessage({ id, type: 'encrypt', data, key });
+    });
+  }
+
+  terminate() {
+    this.worker.terminate();
+    this.pending.clear();
+  }
+}
+
+// crypto-worker.js
+// 使用 Web Crypto API（同步调用：importScripts）
+importScripts('https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js');
+
+self.onmessage = async function (event) {
+  const { id, type, data, key } = event.data;
+  try {
+    let result;
+    if (type === 'encrypt') {
+      result = CryptoJS.AES.encrypt(data, key).toString();
+    } else if (type === 'decrypt') {
+      result = CryptoJS.AES.decrypt(data, key).toString(CryptoJS.enc.Utf8);
+    }
+    self.postMessage({ id, result });
+  } catch (e) {
+    self.postMessage({ id, error: e.message });
+  }
+};
+```
 
 ## 六、与主线程通信的调试技巧
 

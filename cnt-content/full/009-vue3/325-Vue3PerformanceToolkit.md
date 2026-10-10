@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 与 320 篇配套的工程件集合：三十行手写虚拟列表核心与 vue-virtual-scroller 完整版、Web Worker 计算卸载（?worker 导入）、请求去重与缓存组合函数、Vite 分包压缩与体积分析、Lighthouse CI 性能预算配置，让优化从手工操作变成可复用资产。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related: []
 prerequisites: []
 ---

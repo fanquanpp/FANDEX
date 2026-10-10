@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: CSS-in-JS 本体：styled-components/Emotion/JSS 三派写法、零运行时方案对比、RSC 下的取舍与 SSR 样式抽取——组件样式专篇。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'css/480-CSSNativeNesting'
   - 'css/620-CSSModules'

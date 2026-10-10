@@ -509,7 +509,7 @@ public static void main(String[] args) {
 ## 7. 下一步
 
 - [Scanner 控制台输入](/java/095-ScannerConsoleInput)：题集输入的陷阱手册；
-- [控制台综合项目：ATM](/java/145-AtmConsoleProject)：把题 1、11、12 的零件组装成完整项目；
+- [控制台综合项目：ATM](/java/117-MethodArrayConsoleProject)：把题 1、11、12 的零件组装成完整项目；
 - [方法详解](/java/100-MethodDetailed)：本篇第 5 节方法化练习的理论基础；
 - [数组详解](/java/110-ArrayDetailed)：题 9、10 的图形与矩阵进阶版。
 

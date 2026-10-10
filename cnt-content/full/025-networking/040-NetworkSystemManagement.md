@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Windows Server部署、活动目录、DNS/DHCP/IIS/文件/终端服务、组策略与 Linux 服务器系统管理。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/030-NetworkWiringAndConstruction'
   - 'networking/020-OSITCPIPModel'

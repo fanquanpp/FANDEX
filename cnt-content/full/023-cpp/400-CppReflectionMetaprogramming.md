@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 没有语言级反射的 C++ 如何模拟反射：RTTI、宏注册、模板技巧、外部代码生成四条路线的原理与取舍，并交代 C++26 静态反射的落地进度。
 author: fanquanpp
-updated: '2026-10-06'
+updated: '2026-10-07'
 related:
   - 'cpp/405-Cpp26StaticReflection'
   - 'cpp/390-TemplateMetaprogramming'

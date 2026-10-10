@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Python实现设计模式
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'python/140-BuiltinDataStructure'
   - 'python/210-Regex'
@@ -15,30 +15,118 @@ related:
 prerequisites: []
 ---
 
-## 知识点地图
-
-- **知识类别**：经典设计模式的 Python 落地——单例、工厂、命令、模板方法、责任链与上下文管理器模式。它们是 GoF 模式在动态语言里的**简化形态**：很多 Java 里需要接口与类的模式，Python 用模块、函数、装饰器就能表达。
-- **解决什么问题**：对象该全局唯一（配置、连接池）怎么办；对象创建要按条件选择实现类（渠道、存储后端）怎么办；请求发出方与执行方要解耦（命令）、算法骨架固定步骤可换（模板方法）、处理环节可动态编排（责任链）怎么办。
-- **什么时候用到**：配置管理（单例）、插件与驱动分发（工厂，配合 [抽象基类与协议](/python/482-AbstractBaseClassAndProtocol) 的注册钩子）、操作撤销/任务队列（命令）、框架钩子（模板方法）、中间件管道（责任链，Web 框架的中间件栈就是它，见 [FastAPI](/python/880-PythonFastAPI)）。单例的完整专论（并发与异步场景）见 [单例模式](/python/600-SingletonPattern)。
-
-## 单例模式
-
-**基本写法：模块级单例**
-`<模块>.py`
-```python
-# 模块本身就是单例
+# Python 与设计模式
 
 ## 前置知识
 
-- [Python 与 CLI](/python/810-PythonCLI)：建议先完成前一篇的学习
+- [抽象基类与协议](/python/482-AbstractBaseClassAndProtocol)：行为型模式的骨架（抽象方法、`__init_subclass__` 注册钩子）都建立在它之上
+- [单例模式](/python/600-SingletonPattern)：建议先完成前一篇的学习，本文只讲惯用形态，并发与异步专论见该文
 
 ## 学习目标
 
-- 掌握「单例模式」的核心机制、典型用法与常见陷阱
-- 掌握「工厂模式」的核心机制、典型用法与常见陷阱
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「基础概念」的核心机制、典型用法与常见陷阱
-- 掌握「快速上手」的核心机制、典型用法与常见陷阱
+- 掌握「创建型模式」的核心机制、典型用法与常见陷阱：单例、工厂、建造者
+- 掌握「结构型模式」的核心机制、典型用法与常见陷阱：装饰器、适配器、组合
+- 掌握「行为型模式」的核心机制、典型用法与常见陷阱：观察者、策略、命令、模板方法、责任链
+- 掌握「上下文管理器模式」的进入/退出协议与资源收口用法
+- 能在工程场景中判断「该用哪种模式」，并识别「不需要模式」的简单情形
+
+## 知识点地图
+
+- **知识类别**：经典设计模式的 Python 落地——创建型（单例、工厂、建造者）、结构型（装饰器、适配器、组合）、行为型（观察者、策略、命令、模板方法、责任链）与上下文管理器模式。它们是 GoF 模式在动态语言里的**简化形态**：很多 Java 里需要接口与类的模式，Python 用模块、函数、装饰器就能表达。
+- **解决什么问题**：对象该全局唯一（配置、连接池）怎么办；对象创建要按条件选择实现类（渠道、存储后端）怎么办；请求发出方与执行方要解耦（命令）、算法骨架固定步骤可换（模板方法）、处理环节可动态编排（责任链）怎么办。
+- **什么时候用到**：配置管理（单例）、插件与驱动分发（工厂，配合 [抽象基类与协议](/python/482-AbstractBaseClassAndProtocol) 的注册钩子）、操作撤销/任务队列（命令）、框架钩子（模板方法）、中间件管道（责任链，Web 框架的中间件栈就是它，见 [FastAPI](/python/880-PythonFastAPI)）。单例的完整专论（并发与异步场景）见 [单例模式](/python/600-SingletonPattern)。
+
+## 概述
+
+设计模式是面向对象编程中经过验证的解决方案模板，用于解决常见的软件设计问题。Python 的动态特性使得许多设计模式的实现比传统静态语言更简洁。本文介绍 Python 中常用的设计模式及其惯用实现方式，重点在于利用 Python 语言特性（如装饰器、元类、描述符等）实现更优雅的方案。
+
+## 基础概念
+
+### 设计模式分类
+
+- 创建型：关注对象的创建机制，如单例、工厂、建造者
+- 结构型：关注对象的组合方式，如适配器、装饰器、代理
+- 行为型：关注对象间的通信，如策略、观察者、命令
+
+### Python 的特殊之处
+
+Python 的动态特性使得一些传统设计模式可以更简洁地实现：
+
+- 不需要接口定义，鸭子类型天然支持多态
+- 装饰器模式可以直接用 Python 装饰器实现
+- 单例模式可以用模块级别变量实现
+- 策略模式可以用函数代替类
+
+## 快速上手
+
+先把「模式」落到手感。下面两个最常见的场景各用十几行代码完成，写完再对照参考，体会「Python 里很多模式只是一行语法」的含义。
+
+**例子一：策略模式——函数就是策略**
+
+策略模式要解决的问题是「同一件事有多种做法，运行时才决定用哪种」。静态语言需要接口加一组策略类；Python 里函数是一等公民，直接把函数当参数传即可：
+
+```python
+def discount_none(price: float) -> float:
+    return price
+
+def discount_vip(price: float) -> float:
+    return round(price * 0.8, 2)
+
+def checkout(price: float, strategy) -> float:
+    return strategy(price)          # 接受任何「价格 -> 价格」的可调用对象
+
+print(checkout(100, discount_none))   # 100.0
+print(checkout(100, discount_vip))    # 80.0
+```
+
+`checkout` 不认识任何具体策略，它只依赖一个约定：可调用、收一个价格、还一个价格。这就是鸭子类型——策略根本不需要类，除非它还要携带状态或多个协作方法。
+
+**例子二：单例——模块就是现成的答案**
+
+需要全局唯一的配置对象或连接池时，先想到的不该是 `__new__` 魔法，而是模块缓存：Python 保证每个模块只被 import 一次，模块里的实例天然全局唯一：
+
+```python
+# settings.py
+class Settings:
+    def __init__(self):
+        self.db_url = "sqlite:///app.db"
+
+settings = Settings()
+```
+
+```python
+# 任何其他文件里
+from settings import settings   # 无论在哪里 import，拿到的都是同一个对象
+```
+
+两个例子合起来看：设计模式在 Python 里常常「退化」成一条语言特性——函数一等公民对应策略，import 缓存对应单例。先想语言特性，再想类图，是 Python 风格的第一原则。
+
+**动手试一试**：不新建类、不修改 `checkout`，给例子一加一种「满 200 减 50」的促销策略，并用一行代码切换验证。
+
+遮代码自检——先自己写完再看参考：
+
+<details>
+<summary>参考实现（点开前先自己完成）</summary>
+
+```python
+def discount_full_reduction(price: float) -> float:
+    return price - (price // 200) * 50
+
+print(checkout(450, discount_full_reduction))   # 400.0
+```
+
+对照要点：新增策略没有改动 `checkout` 的任何一行——「对扩展开放、对修改关闭」在 Python 里就是这么轻。注意 `price // 200` 的整除让 450 元只触发一次满减（减 50 而不是减 100），写业务策略时边界条件要先用极端值验证。
+
+</details>
+
+## 创建型模式
+
+### 单例模式
+
+**基本写法：模块级单例**
+
+```python
+# 模块本身就是单例
 
 # config.py
 class Config:
@@ -51,7 +139,7 @@ config = Config()  # 模块变量
 ```
 
 **基本写法：__new__ 实现**
-`class <类>:\n    _instance = None\n    def __new__(cls):`
+
 ```python
 # 通过 __new__ 控制实例化
 class Singleton:
@@ -67,7 +155,7 @@ print(a is b)  # True
 ```
 
 **基本写法：元类单例**
-`class <元类>(type):\n    def __call__(cls):`
+
 ```python
 # 元类实现单例
 class SingletonMeta(type):
@@ -82,7 +170,7 @@ class DB(metaclass=SingletonMeta):
 ```
 
 **基本写法：装饰器单例**
-`def singleton(cls):`
+
 ```python
 # 装饰器实现单例
 def singleton(cls):
@@ -99,12 +187,10 @@ class Service:
     pass
 ```
 
----
-
-## 工厂模式
+### 工厂模式
 
 **基本写法：简单工厂**
-`def create(<类型>):`
+
 ```python
 # 工厂函数
 class Dog:
@@ -122,7 +208,7 @@ def create_animal(kind):
 ```
 
 **基本写法：工厂方法**
-`class <类>:\n    def create(self):`
+
 ```python
 # 工厂方法模式
 class AnimalFactory:
@@ -139,7 +225,7 @@ class CatFactory(AnimalFactory):
 ```
 
 **基本写法：抽象工厂**
-`class <抽象工厂>(abc.ABCMeta):`
+
 ```python
 # 抽象工厂
 import abc
@@ -155,7 +241,179 @@ class WinFactory(GUIFactory):
     def create_input(self): return WinInput()
 ```
 
----
+### 建造者模式
+
+```python
+class QueryBuilder:
+    """SQL 查询建造者"""
+    def __init__(self):
+        self._table = ""
+        self._columns = []
+        self._conditions = []
+        self._order_by = ""
+        self._limit = None
+
+    def select(self, *columns):
+        self._columns = columns or ["*"]
+        return self
+
+    def from_table(self, table):
+        self._table = table
+        return self
+
+    def where(self, condition):
+        self._conditions.append(condition)
+        return self
+
+    def order_by(self, column):
+        self._order_by = column
+        return self
+
+    def limit(self, n):
+        self._limit = n
+        return self
+
+    def build(self):
+        """构建 SQL 语句"""
+        cols = ", ".join(self._columns)
+        sql = f"SELECT {cols} FROM {self._table}"
+        if self._conditions:
+            sql += " WHERE " + " AND ".join(self._conditions)
+        if self._order_by:
+            sql += f" ORDER BY {self._order_by}"
+        if self._limit:
+            sql += f" LIMIT {self._limit}"
+        return sql
+
+# 使用
+query = QueryBuilder() \
+    .select("name", "age") \
+    .from_table("users") \
+    .where("age > 18") \
+    .where("status = 'active'") \
+    .order_by("name") \
+    .limit(10) \
+    .build()
+# SELECT name, age FROM users WHERE age > 18 AND status = 'active' ORDER BY name LIMIT 10
+```
+
+## 结构型模式
+
+### 装饰器模式
+
+Python 的装饰器语法天然实现了装饰器模式：
+
+```python
+import functools
+import time
+
+def retry(max_attempts=3, delay=1):
+    """重试装饰器"""
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_attempts):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if attempt == max_attempts - 1:
+                        raise
+                    time.sleep(delay)
+        return wrapper
+    return decorator
+
+def timer(func):
+    """计时装饰器"""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        elapsed = time.perf_counter() - start
+        print(f"{func.__name__} 耗时: {elapsed:.3f}s")
+        return result
+    return wrapper
+
+# 组合使用多个装饰器
+@timer
+@retry(max_attempts=3, delay=2)
+def fetch_data(url):
+    """获取数据"""
+    import requests
+    return requests.get(url).json()
+```
+
+### 适配器模式
+
+```python
+class OldAPI:
+    """旧版 API"""
+    def get_user_info(self, user_id):
+        return {"name": "Alice", "age": 30}
+
+class NewAPI:
+    """新版 API"""
+    def fetch_user(self, user_id):
+        return {"full_name": "Alice", "user_age": 30}
+
+class UserAdapter:
+    """适配器：统一新旧 API 的接口"""
+    def __init__(self, api):
+        self.api = api
+
+    def get_name(self, user_id):
+        data = self.api.fetch_user(user_id) if hasattr(self.api, 'fetch_user') \
+            else self.api.get_user_info(user_id)
+        return data.get("full_name") or data.get("name")
+
+    def get_age(self, user_id):
+        data = self.api.fetch_user(user_id) if hasattr(self.api, 'fetch_user') \
+            else self.api.get_user_info(user_id)
+        return data.get("user_age") or data.get("age")
+```
+
+### 组合模式
+
+```python
+class Component:
+    """组件基类"""
+    def render(self, indent=0):
+        raise NotImplementedError
+
+class Leaf(Component):
+    """叶子节点"""
+    def __init__(self, name):
+        self.name = name
+
+    def render(self, indent=0):
+        print(" " * indent + f"- {self.name}")
+
+class Composite(Component):
+    """组合节点"""
+    def __init__(self, name):
+        self.name = name
+        self.children = []
+
+    def add(self, component):
+        self.children.append(component)
+
+    def render(self, indent=0):
+        print(" " * indent + f"+ {self.name}")
+        for child in self.children:
+            child.render(indent + 2)
+
+# 使用：构建树形结构
+root = Composite("项目")
+src = Composite("src")
+src.add(Leaf("main.py"))
+src.add(Leaf("utils.py"))
+tests = Composite("tests")
+tests.add(Leaf("test_main.py"))
+root.add(src)
+root.add(tests)
+root.render()
+```
+
+## 行为型模式
 
 ### 观察者模式
 
@@ -241,241 +499,34 @@ data = [3, 1, 4, 1, 5, 9]
 sorted_data = quick_sort(data)  # 直接选择排序策略
 ```
 
-### 装饰器模式
-
-Python 的装饰器语法天然实现了装饰器模式：
+### 命令模式
 
 ```python
-import functools
-import time
+# 命令模式
+class Command:
+    def execute(self):
+        raise NotImplementedError
 
-def retry(max_attempts=3, delay=1):
-    """重试装饰器"""
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            for attempt in range(max_attempts):
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    if attempt == max_attempts - 1:
-                        raise
-                    time.sleep(delay)
-        return wrapper
-    return decorator
+class LightOnCommand(Command):
+    def __init__(self, light):
+        self.light = light
+    def execute(self):
+        self.light.on()
 
-def timer(func):
-    """计时装饰器"""
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        start = time.perf_counter()
-        result = func(*args, **kwargs)
-        elapsed = time.perf_counter() - start
-        print(f"{func.__name__} 耗时: {elapsed:.3f}s")
-        return result
-    return wrapper
+class Light:
+    def on(self): print("灯亮")
+    def off(self): print("灯灭")
 
-# 组合使用多个装饰器
-@timer
-@retry(max_attempts=3, delay=2)
-def fetch_data(url):
-    """获取数据"""
-    import requests
-    return requests.get(url).json()
-```
-
-### 适配器模式
-
-```python
-class OldAPI:
-    """旧版 API"""
-    def get_user_info(self, user_id):
-        return {"name": "Alice", "age": 30}
-
-class NewAPI:
-    """新版 API"""
-    def fetch_user(self, user_id):
-        return {"full_name": "Alice", "user_age": 30}
-
-class UserAdapter:
-    """适配器：统一新旧 API 的接口"""
-    def __init__(self, api):
-        self.api = api
-
-    def get_name(self, user_id):
-        data = self.api.fetch_user(user_id) if hasattr(self.api, 'fetch_user') \
-            else self.api.get_user_info(user_id)
-        return data.get("full_name") or data.get("name")
-
-    def get_age(self, user_id):
-        data = self.api.fetch_user(user_id) if hasattr(self.api, 'fetch_user') \
-            else self.api.get_user_info(user_id)
-        return data.get("user_age") or data.get("age")
-```
-
-## 概述
-
-设计模式是面向对象编程中经过验证的解决方案模板，用于解决常见的软件设计问题。Python 的动态特性使得许多设计模式的实现比传统静态语言更简洁。本文介绍 Python 中常用的设计模式及其惯用实现方式，重点在于利用 Python 语言特性（如装饰器、元类、描述符等）实现更优雅的方案。
-
-## 基础概念
-
-### 设计模式分类
-
-- 创建型：关注对象的创建机制，如单例、工厂、建造者
-- 结构型：关注对象的组合方式，如适配器、装饰器、代理
-- 行为型：关注对象间的通信，如策略、观察者、命令
-
-### Python 的特殊之处
-
-Python 的动态特性使得一些传统设计模式可以更简洁地实现：
-
-- 不需要接口定义，鸭子类型天然支持多态
-- 装饰器模式可以直接用 Python 装饰器实现
-- 单例模式可以用模块级别变量实现
-- 策略模式可以用函数代替类
-
-## 快速上手
-
-## 详细用法
-
-### 建造者模式
-
-```python
-class QueryBuilder:
-    """SQL 查询建造者"""
+class Remote:
     def __init__(self):
-        self._table = ""
-        self._columns = []
-        self._conditions = []
-        self._order_by = ""
-        self._limit = None
-
-    def select(self, *columns):
-        self._columns = columns or ["*"]
-        return self
-
-    def from_table(self, table):
-        self._table = table
-        return self
-
-    def where(self, condition):
-        self._conditions.append(condition)
-        return self
-
-    def order_by(self, column):
-        self._order_by = column
-        return self
-
-    def limit(self, n):
-        self._limit = n
-        return self
-
-    def build(self):
-        """构建 SQL 语句"""
-        cols = ", ".join(self._columns)
-        sql = f"SELECT {cols} FROM {self._table}"
-        if self._conditions:
-            sql += " WHERE " + " AND ".join(self._conditions)
-        if self._order_by:
-            sql += f" ORDER BY {self._order_by}"
-        if self._limit:
-            sql += f" LIMIT {self._limit}"
-        return sql
-
-# 使用
-query = QueryBuilder() \
-    .select("name", "age") \
-    .from_table("users") \
-    .where("age > 18") \
-    .where("status = 'active'") \
-    .order_by("name") \
-    .limit(10) \
-    .build()
-# SELECT name, age FROM users WHERE age > 18 AND status = 'active' ORDER BY name LIMIT 10
+        self._cmd = None
+    def set_command(self, cmd):
+        self._cmd = cmd
+    def press(self):
+        self._cmd.execute()
 ```
 
-## 常见场景
-
-### 场景一：插件系统
-
-```python
-class PluginRegistry:
-    """插件注册表"""
-    _plugins = {}
-
-    @classmethod
-    def register(cls, name):
-        """注册插件装饰器"""
-        def decorator(plugin_class):
-            cls._plugins[name] = plugin_class
-            return plugin_class
-        return decorator
-
-    @classmethod
-    def get(cls, name):
-        return cls._plugins.get(name)
-
-# 注册插件
-@PluginRegistry.register("mysql")
-class MySQLPlugin:
-    def connect(self):
-        return "MySQL 连接"
-
-@PluginRegistry.register("postgres")
-class PostgresPlugin:
-    def connect(self):
-        return "PostgreSQL 连接"
-
-# 使用
-plugin = PluginRegistry.get("mysql")()
-print(plugin.connect())  # MySQL 连接
-```
-
-### 场景二：责任链模式
-
-```python
-class Handler:
-    """处理器基类"""
-    def __init__(self):
-        self._next = None
-
-    def set_next(self, handler):
-        self._next = handler
-        return handler
-
-    def handle(self, request):
-        if self._next:
-            return self._next.handle(request)
-        return None
-
-class AuthHandler(Handler):
-    def handle(self, request):
-        if not request.get("token"):
-            return "认证失败"
-        return super().handle(request)
-
-class RoleHandler(Handler):
-    def handle(self, request):
-        if request.get("role") != "admin":
-            return "权限不足"
-        return super().handle(request)
-
-class LogHandler(Handler):
-    def handle(self, request):
-        print(f"记录日志: {request}")
-        return super().handle(request)
-
-# 构建责任链
-auth = AuthHandler()
-role = RoleHandler()
-log = LogHandler()
-auth.set_next(role).set_next(log)
-
-# 使用
-result = auth.handle({"token": "abc", "role": "admin"})
-```
-
-### 场景三：模板方法模式
+### 模板方法模式
 
 ```python
 from abc import ABC, abstractmethod
@@ -521,6 +572,108 @@ class JSONProcessor(DataProcessor):
 
     def transform(self, data):
         return {k: v.upper() if isinstance(v, str) else v for k, v in data.items()}
+```
+
+### 责任链模式
+
+```python
+class Handler:
+    """处理器基类"""
+    def __init__(self):
+        self._next = None
+
+    def set_next(self, handler):
+        self._next = handler
+        return handler
+
+    def handle(self, request):
+        if self._next:
+            return self._next.handle(request)
+        return None
+
+class AuthHandler(Handler):
+    def handle(self, request):
+        if not request.get("token"):
+            return "认证失败"
+        return super().handle(request)
+
+class RoleHandler(Handler):
+    def handle(self, request):
+        if request.get("role") != "admin":
+            return "权限不足"
+        return super().handle(request)
+
+class LogHandler(Handler):
+    def handle(self, request):
+        print(f"记录日志: {request}")
+        return super().handle(request)
+
+# 构建责任链
+auth = AuthHandler()
+role = RoleHandler()
+log = LogHandler()
+auth.set_next(role).set_next(log)
+
+# 使用
+result = auth.handle({"token": "abc", "role": "admin"})
+```
+
+## 上下文管理器模式
+
+**基本写法：with 语句模式**
+
+```python
+# 上下文管理器模式
+class Transaction:
+    def __enter__(self):
+        print("开始事务")
+        return self
+    def __exit__(self, *exc):
+        if exc[0] is None:
+            print("提交")
+        else:
+            print("回滚")
+        return False
+
+with Transaction():
+    pass
+```
+
+## 工程应用：插件注册表
+
+插件系统是「注册表 + 装饰器自注册」的典型应用，本质上是用注册表字典替代 if-elif 的工厂模式——本文动手实践的练习二会让你亲手实现一遍：
+
+```python
+class PluginRegistry:
+    """插件注册表"""
+    _plugins = {}
+
+    @classmethod
+    def register(cls, name):
+        """注册插件装饰器"""
+        def decorator(plugin_class):
+            cls._plugins[name] = plugin_class
+            return plugin_class
+        return decorator
+
+    @classmethod
+    def get(cls, name):
+        return cls._plugins.get(name)
+
+# 注册插件
+@PluginRegistry.register("mysql")
+class MySQLPlugin:
+    def connect(self):
+        return "MySQL 连接"
+
+@PluginRegistry.register("postgres")
+class PostgresPlugin:
+    def connect(self):
+        return "PostgreSQL 连接"
+
+# 使用
+plugin = PluginRegistry.get("mysql")()
+print(plugin.connect())  # MySQL 连接
 ```
 
 ## 注意事项
@@ -574,159 +727,6 @@ class TimSorter:
 def process_with_sorter(sorter: Sortable, data: list) -> list:
     """接受任何满足 Sortable 协议的对象"""
     return sorter.sort(data)
-```
-
-### 组合模式
-
-```python
-class Component:
-    """组件基类"""
-    def render(self, indent=0):
-        raise NotImplementedError
-
-class Leaf(Component):
-    """叶子节点"""
-    def __init__(self, name):
-        self.name = name
-
-    def render(self, indent=0):
-        print(" " * indent + f"- {self.name}")
-
-class Composite(Component):
-    """组合节点"""
-    def __init__(self, name):
-        self.name = name
-        self.children = []
-
-    def add(self, component):
-        self.children.append(component)
-
-    def render(self, indent=0):
-        print(" " * indent + f"+ {self.name}")
-        for child in self.children:
-            child.render(indent + 2)
-
-# 使用：构建树形结构
-root = Composite("项目")
-src = Composite("src")
-src.add(Leaf("main.py"))
-src.add(Leaf("utils.py"))
-tests = Composite("tests")
-tests.add(Leaf("test_main.py"))
-root.add(src)
-root.add(tests)
-root.render()
-```
-## 命令模式
-
-**基本写法：命令模式**
-`class <命令>:\n    def execute(self):`
-```python
-# 命令模式
-class Command:
-    def execute(self):
-        raise NotImplementedError
-
-class LightOnCommand(Command):
-    def __init__(self, light):
-        self.light = light
-    def execute(self):
-        self.light.on()
-
-class Light:
-    def on(self): print("灯亮")
-    def off(self): print("灯灭")
-
-class Remote:
-    def __init__(self):
-        self._cmd = None
-    def set_command(self, cmd):
-        self._cmd = cmd
-    def press(self):
-        self._cmd.execute()
-```
-
----
-
-## 模板方法模式
-
-**基本写法：模板方法**
-`class <抽象类>:\n    def template_method(self):`
-```python
-# 模板方法模式
-import abc
-
-class DataProcessor(abc.ABC):
-    def process(self):
-        data = self.read()
-        result = self.transform(data)
-        self.write(result)
-
-    @abc.abstractmethod
-    def read(self): pass
-    @abc.abstractmethod
-    def transform(self, data): pass
-    @abc.abstractmethod
-    def write(self, data): pass
-
-class CSVProcessor(DataProcessor):
-    def read(self): return []
-    def transform(self, data): return data
-    def write(self, data): print(data)
-```
-
----
-
-## 责任链模式
-
-**基本写法：责任链**
-`class <处理器>:\n    def set_next(self, h):`
-```python
-# 责任链模式
-class Handler:
-    def __init__(self):
-        self._next = None
-    def set_next(self, handler):
-        self._next = handler
-        return handler
-    def handle(self, request):
-        if self._next:
-            return self._next.handle(request)
-        return None
-
-class AuthHandler(Handler):
-    def handle(self, request):
-        if not request.get("token"):
-            return "未认证"
-        return super().handle(request)
-
-class LogHandler(Handler):
-    def handle(self, request):
-        print(f"记录请求")
-        return super().handle(request)
-```
-
----
-
-## 上下文管理器模式
-
-**基本写法：with 语句模式**
-`class <类>:\n    def __enter__(self): ...\n    def __exit__(self, *a):`
-```python
-# 上下文管理器模式
-class Transaction:
-    def __enter__(self):
-        print("开始事务")
-        return self
-    def __exit__(self, *exc):
-        if exc[0] is None:
-            print("提交")
-        else:
-            print("回滚")
-        return False
-
-with Transaction():
-    pass
 ```
 
 ## 动手实践

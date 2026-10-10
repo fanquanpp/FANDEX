@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: GitHub Actions矩阵策略原理详解：从一次配置多环境测试的痛点出发，深入 strategy.matrix 语法、include/exclude、fail-fast 与动态矩阵。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'github/380-ActionsTrigger'
   - 'github/570-FAQTroubleshoot'

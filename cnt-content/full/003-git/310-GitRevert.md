@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git revert详解：安全撤销提交、生成反向提交与多人协作场景。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'git/200-TagManagement'
 prerequisites: []

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 编译器语法分析：上下文无关文法、递归下降与 LL(1)、LR 家族原理与手写解析器实战。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'cs-fundamentals/420-CompilePrinciple'
   - 'cs-fundamentals/430-LexicalAnalysis'

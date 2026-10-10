@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL事务ACID特性：原子性、一致性、隔离性、持久性的原理、实现机制与保证
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'sql/420-Index'
   - 'sql/430-ExecutionPlan'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: WebSocket 协议帧格式与心跳机制：帧结构、控制帧、数据帧与 Ping/Pong。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'cs-fundamentals/340-DNSFlow'
   - 'cs-fundamentals/350-CDNPrinciple'

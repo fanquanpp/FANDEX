@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin协程调度器与上下文详解：Dispatchers选择与切换。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'kotlin/510-KotlinWebSocket'
   - 'kotlin/570-KotlinSecurity'

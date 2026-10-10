@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 静态数据加密的两层方案：文件系统与磁盘级加密（LUKS/云盘加密/TDE 现状）、pgcrypto 字段级加密实战、密钥管理原则与"加密了为什么还被脱库"的反思。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'postgresql/480-SSLEncryptionConnection'
   - 'postgresql/490-RoleBasedPermissionManagement'

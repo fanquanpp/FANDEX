@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: Redis 位图 Bitmap：SETBIT/BITCOUNT/BITFIELD 位级统计、签到与活跃用户场景、内存估算与稀疏位图陷阱。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'redis/050-NumberStats'
   - 'redis/120-CachePenetrationBreakdownAvalanche'

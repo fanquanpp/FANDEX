@@ -637,3 +637,133 @@ function SLODashboard() {
 
 - Sentry 官方文档（React 集成）：https://docs.sentry.io/platforms/javascript/guides/react/ ，Sentry SDKs, MIT License（SDK 与文档随仓库开源）。
 - 原 440-ErrorBoundarySentry 篇的 Sentry 专属内容（SDK 初始化、Source Map/Release、Breadcrumb、Trace、useErrorHandler、Next.js/Vite 集成、告警规则、方案对比表）已全部搬入本篇并教学化改写；错误边界机制部分已并入 [错误边界](/react/190-ReactErrorBoundary)（分层边界反模式等片段），重复段落移除。
+
+## 错误处理的历史背景
+
+<!-- 来源: cnt-content/full/010-react/440-ErrorBoundarySentry.md 的 "1.1 错误处理的历史背景" 小节 -->
+
+JavaScript 的错误处理长期是前端的痛点：
+
+1. **2015 之前**：`window.onerror` 是唯一捕获全局错误的入口，但跨域脚本错误只能拿到 `"Script error."`，无堆栈信息。
+2. **2015（ES6）**：Promise 引入，但未捕获的 Promise rejection 静默失败。`window.onerror` 不能捕获 Promise 错误。
+3. **2017（React 16）**：React 引入 Error Boundaries，将组件树错误隔离在边界内。但事件处理器错误、异步错误、SSR 错误仍需开发者自行处理。
+4. **2018**：浏览器原生支持 `window.addEventListener('unhandledrejection', ...)`，Promise 错误终于有统一入口。
+5. **2022（React 18）**：并发模式下，错误传播路径更复杂，部分场景下 Error Boundary 行为变化（如 Suspense 边界交互）。
+6. **2024+（React 19）**：Server Components 错误处理统一到 `error.js` 与 `global-error.js`，SSR 错误与 CSR 错误处理趋于一致。
+
+## Sentry 的演进
+
+<!-- 来源: cnt-content/full/010-react/440-ErrorBoundarySentry.md 的 "1.2 Sentry 的演进" 小节 -->
+
+Sentry 是 Open Source 错误监控的标杆，其演进：
+
+| 阶段 | 时间 | 特性 |
+|------|------|------|
+| 萌芽 | 2008（Django 内部工具） | 仅 Python 后端错误 |
+| 多语言 | 2012 | 支持 JS、Ruby、Node.js 等 |
+| Performance | 2019 | 引入 Tracing |
+| React Native | 2016 | 移动端错误监控 |
+| Session Replay | 2023 | DOM 录屏回放 |
+| Profiling | 2024 | 性能 Profile 上报 |
+
+## 案例研究
+
+<!-- 来源: cnt-content/full/010-react/440-ErrorBoundarySentry.md 的 "8. 案例研究" 小节 -->
+
+### 8.1 Facebook（Meta）：React 16 Error Boundary 发布
+
+2017 年 React 16 发布时，Meta 内部将错误边界用于 News Feed 模块：
+
+- 错误隔离范围：单个 Feed 卡片
+- 错误率下降 40%（错误不再导致整页崩溃）
+- 错误上报到内部 Hydra 系统（Sentry 的内部版）
+
+数据来源：Meta Engineering Blog "React v16: Error Boundaries"（2017）。
+
+### 8.2 Airbnb：Sentry 全链路集成
+
+Airbnb 在 2018 年全面迁移到 Sentry 后：
+
+- 错误发现到修复的中位时间从 6 天降至 4 小时
+- Source Map 自动上传使错误可定位率从 30% 升至 95%
+- Release 关联让"回归错误"识别时间从 1 天降至 5 分钟
+- Session Replay 帮助复现 70% 的难以描述的 UI Bug
+
+### 8.3 Netflix：分层错误边界策略
+
+Netflix 在播放器页面采用 5 层错误边界：
+
+1. Root：整页 fallback
+2. Player：播放器 fallback
+3. Sidebar：侧边栏 fallback
+4. Controls：控件 fallback
+5. Subtitle：字幕 fallback
+
+效果：
+- 单一组件错误不影响整体播放
+- 字幕解析错误时静默降级（无字幕）而非崩溃
+- 错误上报带层级 tag，便于优先级排序
+
+### 8.4 Shopify：Sentry + Performance 联合监控
+
+Shopify 将 Sentry 错误监控与 Performance 追踪结合：
+
+- 错误与性能数据共用同一 transaction
+- 当 INP > 500ms 时自动标记为 "performance error"
+- 当 LCP > 4s 时截图并上报
+- 通过 Sentry Discover 构建自定义 SLO 仪表盘
+
+### 8.5 Vercel：Next.js App Router 错误处理
+
+Vercel 在 Next.js 13+ 中引入 `error.js` 与 `global-error.js`：
+
+- Route 级错误自动隔离，不影响其他 route
+- Server Components 错误自动流式传输到客户端
+- 与 Sentry 集成时自动上报，无需手动 try-catch
+
+## 附录 A：错误处理 Checklist
+
+<!-- 来源: cnt-content/full/010-react/440-ErrorBoundarySentry.md 的 "附录 A：错误处理 Checklist" 小节 -->
+
+| # | 检查项 | 通过 |
+|---|--------|------|
+| 1 | 应用根级 Error Boundary | [ ] |
+| 2 | 关键页面/组件级 Error Boundary | [ ] |
+| 3 | 事件处理器 try-catch | [ ] |
+| 4 | 异步代码 try-catch 或 useAsyncError | [ ] |
+| 5 | `window.onerror` + `unhandledrejection` 兜底 | [ ] |
+| 6 | Sentry 初始化与 Release 配置 | [ ] |
+| 7 | Source Map CI 上传 | [ ] |
+| 8 | 采样率合理设置 | [ ] |
+| 9 | 告警集成 Slack/PagerDuty | [ ] |
+| 10 | SLO 与仪表盘 | [ ] |
+| 11 | 用户反馈组件 | [ ] |
+| 12 | 错误回归 E2E 测试 | [ ] |
+
+## 附录 B：Sentry 集成速查
+
+<!-- 来源: cnt-content/full/010-react/440-ErrorBoundarySentry.md 的 "附录 B：Sentry 集成速查" 小节 -->
+
+| 集成 | 用途 | 配置 |
+|------|------|------|
+| `BrowserTracing` | 性能追踪 | `tracesSampleRate` |
+| `replayIntegration` | 会话录屏 | `replaysSessionSampleRate` |
+| `offlineIntegration` | 离线缓存 | 默认开启 |
+| `captureConsoleIntegration` | 捕获 console | 可选 |
+| `httpClientIntegration` | 捕获 fetch 错误 | 默认开启 |
+| `contextLinesIntegration` | 添加上下文行 | 默认开启 |
+
+## 附录 C：术语表
+
+<!-- 来源: cnt-content/full/010-react/440-ErrorBoundarySentry.md 的 "附录 C：术语表" 小节 -->
+
+| 术语 | 英文 | 定义 |
+|------|------|------|
+| 错误边界 | Error Boundary | React 类组件，捕获子树渲染错误 |
+| Source Map | Source Map | 将压缩代码映射回源码的文件 |
+| Breadcrumb | Breadcrumb | 错误发生前的事件序列 |
+| Release | Release | 代码版本标识 |
+| Session Replay | Session Replay | DOM 录屏回放 |
+| Tearing | Tearing | 并发渲染中的快照不一致 |
+| Digest | Digest | 服务器生成的错误 ID |
+| SLO | Service Level Objective | 服务等级目标 |

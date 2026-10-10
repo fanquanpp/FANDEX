@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: Mockito 实战：mock/when/verify 三件套、注解与扩展、参数匹配器与 ArgumentCaptor、spy 与 doReturn 家族、静态方法模拟的边界。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'software-testing/190-TestDouble'
   - 'software-testing/110-JUnit5'

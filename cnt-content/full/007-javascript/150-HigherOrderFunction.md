@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以「命令面板的过滤逻辑越写越像复制粘贴」为问题主线，讲透"函数是值"：把函数当参数传、当返回值还，亲手写出 find 与 once，附 fn 与 fn() 混淆、map(parseInt) 三参陷阱等调试实录。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'javascript/080-FunctionScopeClosure'
   - 'javascript/090-ArrayHigherOrderMethod'

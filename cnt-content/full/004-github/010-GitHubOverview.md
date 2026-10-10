@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 从「写好的项目只存在自己电脑上」的真实焦虑讲起，用 gh 与网页两条路完成建仓、首次推送与第一次 PR 预览，讲清 Git 与 GitHub 的分工、账户体系与首页导航，并给出新手最常见的六个报错对照表。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'github/020-AccountRegister2FA'
   - 'github/030-RepositoryCreateCloneArchiveDelete'

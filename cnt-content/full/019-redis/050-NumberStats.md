@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: "精确计数与估算计数：INCR 的原子性从哪来、固定窗口限流器的竞态坑与三种修法、HyperLogLog 的伯努利直觉与 0.81% 误差来源、PFCOUNT 单键与多键的性能差异，附内存选型对照与动手练习。"
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'redis/060-BitMapRedis'
   - 'redis/070-GeoSpatial'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Terraform 状态管理：state 命令、导入、工作空间、远程后端与锁，以及模块引用。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/410-IaC'
   - 'cloud-computing/420-TerraformBasic'

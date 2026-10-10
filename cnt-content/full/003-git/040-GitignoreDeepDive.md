@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 用逐条实验讲透 .gitignore：模式语法、只对未跟踪文件生效的第一大坑、check-ignore -v 排障、仓库级与全局忽略的分工，附真实规则失效现场与四类练习。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'git/030-GitEnvConfigInit'
   - 'git/050-GitBasicOperation'

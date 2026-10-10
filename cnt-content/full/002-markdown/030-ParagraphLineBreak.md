@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: '段落与换行：空行分段、三种硬换行写法、软换行的平台差异与行尾空白陷阱。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'markdown/020-HeadingSyntax'
   - 'markdown/040-BasicTextFormat'

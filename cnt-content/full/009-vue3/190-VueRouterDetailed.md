@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 路由配置、导航守卫、懒加载与路由元信息。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'vue3/250-PluginDevelopment'
   - 'vue3/060-ComputedCacheWatchTiming'

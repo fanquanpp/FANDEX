@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 以"键盘敲一个字符到屏幕显示"为主线学 I/O 管理：轮询到中断到 DMA 到通道的控制方式演进、I/O 软件四层结构、单/双缓冲耗时推演、SPOOLing 假脱机，并落到 Linux 的 /dev 与驱动分层，附推演练习与自检。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'cs-fundamentals/190-InterruptAndSystemCall'
   - 'cs-fundamentals/240-DiskScheduling'

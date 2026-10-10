@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从给 FANDEX 前端实验室加「执行计时器、断点感知、搜索防抖」讲起：手写 useInterval 掌握稳定引用模式，总结「第二遍出现才抽、单一职责、稳定返回」的设计四问，再用 useMediaQuery 与 useDebouncedCallback 演练 SSR 安全与 cancel/flush，附 renderHook 测试与 ref 冒充 state 的调试实录。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'react/150-HooksPrinciple'
   - 'react/450-CustomHooksReuseLogic'

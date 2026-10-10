@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React 19 及 19.x 后续新增 API 详解：use、useActionState、useOptimistic、ref 作为 prop、useEffectEvent、Activity 与资源加载。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'react/060-React19NewFeatures'
   - 'react/400-ServerClientComponents'

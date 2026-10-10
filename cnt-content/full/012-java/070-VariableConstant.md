@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 以排行榜分数与登录用户名讲透 Java 变量：声明与初始化、花括号作用域、final 常量与 UPPER_CASE、var 类型推断的使用边界、引用变量与 060 装箱的呼应，附 variable might not have been initialized 调试实录。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'java/060-WrapperCacheTrap'
   - 'java/080-OperatorExpression'

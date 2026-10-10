@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以"SMTP 超时拖垮注册接口"为主线学 NATS 与 Kafka：发布订阅、队列组负载均衡、JetStream 持久化、偏移量与手动提交、幂等消费与优雅关闭、客户端选型（CGO 之坑），附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'go/340-GoDatabase'
   - 'go/550-GoRedis'

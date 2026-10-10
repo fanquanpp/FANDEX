@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostGIS 从零上手：几何类型与坐标系（SRID）心智模型、GiST 空间索引、距离/范围/包含三类空间查询、geography 与 geometry 的取舍与面积计算陷阱。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'postgresql/220-IndexType'
   - 'postgresql/300-FullTextSearch'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: NestJS 微服务：传输层选型与可插拔、@MessagePattern/@EventPattern、ClientProxy 调用与超时降级、NestJS 12 版本要点。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'nestjs/180-DatabaseIntegration'
   - 'nestjs/235-BullMQQueuesAndReliability'

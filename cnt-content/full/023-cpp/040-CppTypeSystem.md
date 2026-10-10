@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 以「排行榜平均分 296.67 打印成 296」引入，用 sizeof 实验建立「类型是承诺」心智模型，覆盖 auto 推导与 CTAD 一句、字面量后缀 1L/3.14f/u8、cstdint 固定宽度整型、隐式转换与花括号抓 narrowing，附 ambiguous conversion 真实报错调试实录。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'cpp/050-NamespaceLinkage'
   - 'cpp/080-CppReferenceTypes'

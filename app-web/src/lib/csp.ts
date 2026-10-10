@@ -19,6 +19,8 @@ export const DESKTOP_CSP = [
   "connect-src 'self'",
 ].join('; ');
 
+// 注意：以下 CSP 均通过 <meta http-equiv> 交付（GitHub Pages 无法自定义响应头）。
+// frame-ancestors 在 meta 形态下会被浏览器忽略并打印 console error，因此不在此声明。
 export const MINIMAL_CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline'",
@@ -26,7 +28,6 @@ export const MINIMAL_CSP = [
   "font-src 'self'",
   "img-src 'self' data:",
   "connect-src 'self'",
-  "frame-ancestors 'none'",
 ].join('; ');
 
 // 仅 AI 设置页（/ai/）使用：在 MINIMAL_CSP 基础上放行用户自选的
@@ -39,5 +40,4 @@ export const AI_SETTINGS_CSP = [
   "font-src 'self'",
   "img-src 'self' data:",
   "connect-src 'self' https://api.orcarouter.ai",
-  "frame-ancestors 'none'",
 ].join('; ');

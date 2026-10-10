@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 并行计算：Flynn分类、多处理器架构、并行算法、GPU计算与性能模型；文末附 Amdahl 定律实测与数据并行实验
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cs-fundamentals/120-StorageSystem'
   - 'cs-fundamentals/130-BusAndInterface'

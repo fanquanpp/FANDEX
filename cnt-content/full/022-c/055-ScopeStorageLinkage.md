@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从「两个同名 total 互不干扰」与「static 局部变量记住值」两个实验开题，一次办齐变量的户口（四种作用域）、寿命（四种存储期）与跨文件身份（链接性），顺带核实 register 的真实现状与 _Thread_local 的用法。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'c/310-MultiFileCompilation'
   - 'c/210-ProcessMemoryLayoutAndErrors'

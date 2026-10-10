@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Vue3组合式函数（Composables/自定义Hook）设计模式、最佳实践与常用Hook实现。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'vue3/320-Vue3PerformancePractice'
   - 'vue3/050-ReactiveSystem'

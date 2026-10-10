@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用官方翻译生成器产出多语言骨架，理解 translate 语句字符串翻译与语言切换的完整机制
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-10-07'
 related:
   - 'renpy/060-TextInterpolationAndTags'
   - 'renpy/130-BuildingDistributions'

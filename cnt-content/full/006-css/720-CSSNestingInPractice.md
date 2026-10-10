@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 原生嵌套的工程化使用：组件样式组织、嵌套深度与权重治理、老浏览器构建回退，以及从 Sass 到原生嵌套的渐进迁移策略与决策清单。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'css/480-CSSNativeNesting'
   - 'css/570-Sass'

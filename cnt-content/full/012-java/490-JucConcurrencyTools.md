@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: "以「一百个线程抢一把锁，计数慢了三倍」引入，讲透 AtomicInteger 的 CAS 直觉、ConcurrentHashMap 对照实验、CopyOnWriteArrayList 适用场景与 BlockingQueue 生产者消费者实现，附 ConcurrentHashMap 拒绝 null 的 NPE 调试实录。"
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'java/480-MultithreadingBasics'
   - 'java/500-ThreadPoolExecutorPractice'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 从「告警响了几个月，依赖却没人升级」这个真实问题切入，动手给 pnpm monorepo 写好 dependabot.yml，讲清 Alerts、Security Updates、Version Updates 三个职责的区别，最后配一条「CI 通过即合并」的自动化流水线。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'github/270-DependencySecurityOptions'
   - 'github/290-SecretScanning'

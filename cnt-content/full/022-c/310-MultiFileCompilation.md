@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 把 200 行单文件拆成 main.c + utils.c + utils.h 后撞上 undefined reference：从链接器报错进入多文件世界。翻译单元互不可见、声明给人看定义给链接器、一条命令与分开 -c 编译的等价实验、nm 读符号表、undefined reference 与 multiple definition 两大报错逐个复现修复、extern 共享变量与 include/src 工程布局，全程裸 gcc 看得见每一步。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/320-DynamicStaticLibrary'
   - 'c/470-BuildSystem'

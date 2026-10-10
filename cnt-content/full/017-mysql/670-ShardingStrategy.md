@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL 分库分表策略详解：垂直拆分、水平拆分、ShardingSphere 与 MyCAT 中间件、分布式主键与跨片查询。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'mysql/470-GapLockNextKeyLockSolutionPhantomRead'
   - 'mysql/650-ReplicationDelayCauseSolution'

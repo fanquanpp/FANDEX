@@ -98,7 +98,7 @@ flowchart LR
 
 ## 6. 与之前和之后的知识的关系
 
-- 往前：[Linux 基础](/devops/linux-basics) 与 [计算机网络](/cs-fundamentals/computer-networks) 类篇目（命令行、TCP/IP、HTTP）是全模块的底子——本模块大量命令默认你会在 Linux 终端里操作；
+- 往前：[Linux 基础](/devops/015-LinuxSystemManagement) 与 [计算机网络](/cs-fundamentals/270-ComputerNetwork) 类篇目（命令行、TCP/IP、HTTP）是全模块的底子——本模块大量命令默认你会在 Linux 终端里操作；
 - 往后：本篇只是地图，每一个知识块都由专篇展开——从第 2 节的表格挑你的入口即可。
 
 ## 7. 自我检查

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 视图是「存了名字的 SELECT」：为什么需要视图、可更新性与 WITH CHECK OPTION、基于视图的分层、物化视图的缓存心智与刷新代价。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'sql/110-DDL'
   - 'sql/230-CTE'

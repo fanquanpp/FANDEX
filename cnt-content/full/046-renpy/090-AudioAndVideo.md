@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 play queue stop 三条语句控制音乐音效与语音，了解音频通道与视频播放
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-10-07'
 related:
   - 'renpy/030-ImagesSceneShowAndTransitions'
   - 'renpy/100-SaveLoadAndRollback'

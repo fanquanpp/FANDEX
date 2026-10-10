@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Git标签管理：轻量标签与附注标签的创建、操作与发布流程。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related: []
 prerequisites: []
 ---

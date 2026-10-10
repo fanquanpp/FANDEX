@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 技术文档体系、Wiki建设、知识分享与组织学习。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'devops/320-IncidentRetrospectiveMethodology'
   - 'software-testing/470-TechnicalReview'

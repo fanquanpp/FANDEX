@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 以读取图片头与解析 WAV 为例，掌握 ArrayBuffer、类型化数组与 DataView，以及它们在 Worker 传输中的角色。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related: []
 prerequisites: []
 ---

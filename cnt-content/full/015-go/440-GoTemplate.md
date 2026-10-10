@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以"歌单页面被 XSS 注入"为主线学 text/template 与 html/template：动作语法与管道、自定义函数、range 上下文与 $、布局复用、HTTP 服务端渲染与上下文感知转义，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'go/470-GoHTTP'
   - 'go/480-GoMiddleware'

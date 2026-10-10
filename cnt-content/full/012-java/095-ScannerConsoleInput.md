@@ -313,7 +313,7 @@ public class TempRegister {
 
 - [控制流](/java/090-ControlFlow)：本文所有「输入 + 判断」组合的语法来源；
 - [分支与循环实战题集](/java/115-LoopsAndBranchingDrills)：15 道循环题全部以 Scanner 起手；
-- [控制台综合项目：ATM](/java/145-AtmConsoleProject)：把本文的输入方法用进完整的方法拆分项目；
+- [控制台综合项目：ATM](/java/117-MethodArrayConsoleProject)：把本文的输入方法用进完整的方法拆分项目；
 - [异常处理机制](/java/180-ExceptionHandlingMechanism)：`InputMismatchException` 的体系位置与 try-catch 写法。
 
 ## 10. 参考与致谢

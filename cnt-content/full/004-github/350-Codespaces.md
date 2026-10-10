@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub Codespaces 详解：云端开发环境原理（远程容器）、devcontainer 配置、预构建与使用。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'github/250-CommunityHealthFile'
 prerequisites:

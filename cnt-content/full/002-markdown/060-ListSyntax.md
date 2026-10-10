@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 无序/有序/任务列表语法、嵌套缩进规则、起始序号控制与列表内嵌块级元素的细节。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'markdown/030-ParagraphLineBreak'
   - 'markdown/170-TaskList'

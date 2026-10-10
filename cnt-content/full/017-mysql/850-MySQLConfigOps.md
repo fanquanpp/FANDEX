@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 参数调优、日志管理、备份恢复与监控。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'mysql/810-JSONTypeJSONTable'
   - 'mysql/460-TransactionLockMechanism'

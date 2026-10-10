@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'AWS CLI v2 的安装、凭证体系（Profile/环境变量/SSO）、常用配置与排错实战。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/270-AWSCore'
   - 'cloud-computing/310-AWSS3Command'

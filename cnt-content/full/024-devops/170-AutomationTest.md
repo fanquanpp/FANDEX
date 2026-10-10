@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 单一主题：CI 流水线的测试门禁——分层策略取舍、失败快速反馈、测试数据与环境管理；测试技术本体归 028 软件测试模块
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'devops/140-CICDPipeline'
   - 'devops/145-ProgressiveDelivery'

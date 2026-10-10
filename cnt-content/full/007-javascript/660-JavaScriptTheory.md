@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 从一段输出顺序诡异的代码出发，把引擎流水线、作用域闭包、原型查找、事件循环与类型转换串成一张地图。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'javascript/080-FunctionScopeClosure'
   - 'javascript/180-JavaScriptPrototypeInheritance'

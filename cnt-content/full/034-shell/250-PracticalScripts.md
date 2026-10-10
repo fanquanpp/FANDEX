@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 实战脚本案例：部署脚本模板、日志分析报表、定时备份、文件批量处理
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'shell/200-TextProcessingTools'
   - 'shell/190-ScriptDebugging'
@@ -264,3 +264,40 @@ echo "批量处理完成"
 **误区三：脚本写完就上 crontab。** → 定时任务没有交互确认，必须先在命令行手工验证。
 
 **误区四：删过期文件不留余地。** → 保留份数（KEEP）设大一点，宁多勿少——删除容易恢复难。
+
+<!-- 恢复自 cnt-content/full/024-devops/020-ShellScriptProgramming.md（实施前 HEAD 62c90663308c7d6ea5a29bd1c1bb97cd40884710 版本）；拆分时该小节未随迁，2026-10-07 内容保全核对恢复 -->
+
+## 系统监控脚本
+
+
+```bash
+#!/bin/bash
+# 系统资源监控
+
+THRESHOLD=80
+
+check_cpu() {
+    local cpu_usage=$(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | cut -d. -f1)
+    if [ "$cpu_usage" -gt "$THRESHOLD" ]; then
+        echo "WARNING: CPU usage ${cpu_usage}%"
+    fi
+}
+
+check_memory() {
+    local mem_usage=$(free | grep Mem | awk '{printf("%.0f", $3/$2*100)}')
+    if [ "$mem_usage" -gt "$THRESHOLD" ]; then
+        echo "WARNING: Memory usage ${mem_usage}%"
+    fi
+}
+
+check_disk() {
+    local disk_usage=$(df -h / | tail -1 | awk '{print $5}' | tr -d '%')
+    if [ "$disk_usage" -gt "$THRESHOLD" ]; then
+        echo "WARNING: Disk usage ${disk_usage}%"
+    fi
+}
+
+check_cpu
+check_memory
+check_disk
+```

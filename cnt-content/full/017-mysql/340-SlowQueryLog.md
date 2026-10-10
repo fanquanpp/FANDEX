@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 慢查询日志从零到一：阈值参数、mysqldumpslow 与 pt-query-digest 分析、EXPLAIN 分析闭环，以及长连接环境下的采样陷阱与生产配置建议。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'mysql/320-EXPLAINDetailed'
   - 'mysql/300-IndexStatsHistogram'
@@ -98,6 +98,36 @@ pt-query-digest /var/log/mysql/slow.log > digest-report.txt
 ```
 
 报告的价值排序：按**总耗时**（Response time 占比）排名的语句指纹 > 每类的次数、平均/最耗时 > 样本执行计划。优化优先级永远看总耗时占比——一条每天跑 10 万次、每次 50ms 的语句，比一条每天一次 3 秒的语句更值得优化。
+
+## SHOW PROFILE
+
+<!-- 来源：62c90663 版 cnt-content/full/017-mysql/860-PerformanceTuningSecurity.md 小节「SHOW PROFILE」 -->
+
+**基本写法：开启 profile**
+`SET profiling = 1;`
+
+```sql
+-- 启用查询性能分析
+SET profiling = 1;
+```
+
+**基本写法：查看 profile 列表**
+`SHOW PROFILES;`
+
+```sql
+-- 查看最近执行的查询及 Query_ID
+SHOW PROFILES;
+```
+
+**基本写法：查看单条查询详情**
+`SHOW PROFILE [CPU|BLOCK IO|ALL] FOR QUERY <Query_ID>;`
+
+```sql
+-- 查看指定查询各阶段耗时
+SHOW PROFILE CPU FOR QUERY 1;
+-- 查看所有资源使用
+SHOW PROFILE ALL FOR QUERY 1;
+```
 
 ## 完整闭环：一次真实的优化演练
 

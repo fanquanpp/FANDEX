@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用集成扩展能力：MDX、站点地图与官方集成生态。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'astro/040-ComponentsProps'
   - 'astro/050-ContentCollections'

@@ -1,12 +1,12 @@
 ---
-order: 430
+order: 420
 title: GC 代机制
 module: 'csharp'
 category: 后端技术
 difficulty: advanced
 description: .NET GC 分代回收机制深度解析：Generation 0/1/2、SOH/LOH/POH、标记清除与压缩、固定对象、GCHandle、Server GC vs Workstation GC、GC 通知与调优的全链路原理。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'csharp/310-AspNetCoreMiddlewarePipeline'
   - 'csharp/270-DILifecycle'

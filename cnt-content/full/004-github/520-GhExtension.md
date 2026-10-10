@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: '以"手机 App 应用商店"为线索讲解 gh extension 系列命令，涵盖搜索、安装、升级、移除、浏览与创建扩展，配以原理讲解、安全提示、错误对策。'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related: []
 prerequisites: []
 ---

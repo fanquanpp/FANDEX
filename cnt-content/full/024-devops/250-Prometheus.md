@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Prometheus 指标采集与 Alertmanager 告警：PromQL、规则配置与通知路由。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'devops/210-Terraform'
   - 'devops/220-AnsiblePlaybookConfigManagement'

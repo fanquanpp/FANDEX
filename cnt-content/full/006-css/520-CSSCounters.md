@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: counter-reset、counter-increment 与 counter()/counters()，用 CSS 实现自动编号。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'css/140-PseudoClassPseudoElement'
   - 'css/080-CSSListStyle'

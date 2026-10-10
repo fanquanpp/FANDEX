@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 性能调优：系统性能分析、CPU/内存/磁盘/网络优化、应用性能与压测
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'devops/270-LogManagement'
   - 'devops/350-HighAvailabilityArchitecture'

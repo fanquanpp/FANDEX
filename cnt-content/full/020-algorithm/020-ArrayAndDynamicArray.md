@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: "以「arr[i] 为什么是 O(1)」引入：连续内存与寻址公式、插入删除的搬家代价、list 扩容的均摊分析实测、缓存局部性的第二重红利，双指针与滑动窗口技巧预告、前缀和完整示例与遮代码自检。"
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/030-SortAlgorithm'
@@ -268,7 +268,7 @@ print(two_sum_sorted([2, 7, 11, 15], 9))   # [0, 1]
 ## 11. 与之前和之后的知识的关系
 
 - 往前：010 的大 O 语言在本文落地成三组实测，空间这本账在链式结构对照里第一次显形；
-- 往后：[链表](/algorithm/060-LinkedList) 是连续内存的反面教材与互补者；[二分查找](/algorithm/170-BinarySearchAlgorithms) 的 O(log n) 建立在数组 O(1) 随机访问之上；[排序参考篇](/algorithm/030-SortAlgorithm) 的每种排序都在跟「搬移代价」搏斗；[堆与优先队列](/algorithm/090-HeapAndPriorityQueue) 与 [线段树](/algorithm/190-SegmentTree) 都在「读多写少」与「读写都多」之间接手前缀和交出的接力棒；
+- 往后：[链表](/algorithm/060-LinkedList) 是连续内存的反面教材与互补者；[二分查找](/algorithm/172-BinarySearchVariants) 的 O(log n) 建立在数组 O(1) 随机访问之上；[排序参考篇](/algorithm/030-SortAlgorithm) 的每种排序都在跟「搬移代价」搏斗；[堆与优先队列](/algorithm/090-HeapAndPriorityQueue) 与 [线段树](/algorithm/190-SegmentTree) 都在「读多写少」与「读写都多」之间接手前缀和交出的接力棒；
 - 更远：Python list、Java ArrayList、C++ vector、Go slice——你未来学的每个语言的「数组」，都是本文动态数组思想的方言。
 
 ## 12. 官方文档

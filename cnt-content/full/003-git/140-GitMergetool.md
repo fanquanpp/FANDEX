@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git mergetool 详解：三方合并视图、主流工具配置、VS Code 集成与冲突收尾。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'git/130-MergeConflictResolution'
   - 'git/270-GitRebase'

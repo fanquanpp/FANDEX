@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 抽象类设计、接口定义、默认方法与函数式接口。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'java/630-GenerationalZGCDetailed'
   - 'java/150-OOP'

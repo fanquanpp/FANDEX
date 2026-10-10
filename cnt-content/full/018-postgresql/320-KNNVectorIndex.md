@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: pgvector 从零到生产：向量与嵌入的心智模型、三种距离算子、IVFFlat 与 HNSW 索引的取舍、召回率调参与"精确但全表扫"的兜底策略。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'postgresql/220-IndexType'
   - 'postgresql/250-QueryOptimization'

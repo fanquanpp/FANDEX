@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 postMessage 打通 iframe、弹窗与多标签页：同源策略为何存在、targetOrigin 的安全语义、四道校验防线、MessageChannel 私有管道与 BroadcastChannel 广播，附真实案例（YouTube/Stripe/OAuth）。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'html5/281-PostMessageRpcPatterns'
   - 'html5/340-CustomDataAttribute'

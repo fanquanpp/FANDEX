@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 存储引擎、事务模型、锁机制与日志体系。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'mysql/760-SQLInjectionDefenseStrategy'
   - 'mysql/870-MySQLProjectExampleDatabaseDesign'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以「把 slide-forge 发上 PyPI」为场景，走完第一次发布全流程：TestPyPI 演练、API token 配置、twine check、正式上传与安装验证；进阶到 tag 触发的 GitHub Actions 自动发布与 Trusted Publisher 免密钥方案，附 PyPI 不可变原则与版本节奏实践。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'python/730-PythonPackagingEvolution'
   - 'python/780-PythonCICD'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 等价类与边界值只解决「单个输入取什么值」，本篇解决剩下两类难题：多条件组合怎么不漏（判定表与正交法）、有流程与状态依赖的行为怎么测（场景法与状态迁移），每种方法配完整实例、适用判断与常见误用，最后给出五方法的选择决策表。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'software-testing/050-EquivalenceClassPartition'
   - 'software-testing/060-BoundaryValueAnalysis'

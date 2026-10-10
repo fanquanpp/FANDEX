@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: GMP调度模型
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'go/160-GoroutineChannelPrinciple'
   - 'go/170-GMPModel'

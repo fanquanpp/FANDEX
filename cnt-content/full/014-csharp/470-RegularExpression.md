@@ -1,12 +1,12 @@
 ---
-order: 510
+order: 500
 title: C# 正则表达式
 module: 'csharp'
 category: 后端技术
 difficulty: beginner
 description: Regex 匹配替换、分组捕获、选项标志、超时防护与 GeneratedRegex 源生成的速查手册，附完整示例与易错点解析。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'csharp/030-CSharpBasicSyntax'
   - 'csharp/240-SourceGenerator'

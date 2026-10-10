@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 综合运用 Flexbox、Grid 与媒体查询的响应式主页。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-07'
 related:
   - 'css/660-HTMLSemanticSEO'
   - 'css/670-ResponsiveImage'

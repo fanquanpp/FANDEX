@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 从 FANDEX 收藏夹页「敲字全页卡、首屏包大、滚动掉帧」三宗罪讲起：用 Profiler 定位无关重渲染，memo 与稳定引用配套修复，lazy 加 Suspense 做代码分割，@tanstack/react-virtual 治长列表，附 memo 失效三连与 useMemo 滥用两则调试实录。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'react/070-ReactRouterRouting'
   - 'react/130-ConcurrentRendering'

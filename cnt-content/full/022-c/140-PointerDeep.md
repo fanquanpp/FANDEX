@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从「swap 为什么救不回来」入门指针：房间号心智模型、& 与 * 互逆、NULL 判空、const 三组合读法口诀、按元素跨步的指针算术、void* 的能与不能，附 SEGV 调试实录与 minmax 双输出小项目。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/150-PointerArrayDifference'
   - 'c/160-DoublePointerPointerArray'

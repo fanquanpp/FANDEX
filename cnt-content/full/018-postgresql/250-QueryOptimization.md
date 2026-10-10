@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL 查询优化方法论：ANALYZE 与统计信息、代价参数如何左右计划、EXPLAIN ANALYZE BUFFERS 精读、work_mem 与 CTE 物化、pg_hint_plan 干预手段。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'postgresql/255-MonitoringStatisticsViews'
   - 'postgresql/260-ParallelQuery'

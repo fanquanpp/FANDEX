@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 Node2D Sprite2D AnimatedSprite2D 与 Camera2D 搭建 2D 画面，理解坐标变换与镜头缩放边界
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-10-07'
 related:
   - 'godot/030-FirstScriptAndLifecycle'
   - 'godot/080-CharacterPhysicsAndCollision'

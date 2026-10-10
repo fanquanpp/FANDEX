@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL 审计的三层方案：log_statement 日志级、pgAudit 扩展标准级、触发器审计表级，含金融级合规配置、日志膨胀治理与审计自身的安全防护。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'postgresql/380-TriggerEventTrigger'
   - 'postgresql/500-RowLevelSecurity'

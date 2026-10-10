@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 从「改一个数字为什么要遍历整棵树」讲起：用 SFC Playground 亲眼看编译产物，学会读静态提升、PatchFlag 枚举、Block 动态节点收集与事件缓存，再搞懂 v-memo、优化失效场景与 SSR 字符串编译，附手写 render 丢优化、v-for 下标 key 破坏复用两则实录。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'vue3/050-ReactiveSystem'
   - 'vue3/320-Vue3PerformancePractice'

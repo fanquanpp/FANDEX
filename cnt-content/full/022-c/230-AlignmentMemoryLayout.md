@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 把 220 的对齐规则用于工程：成员排序前后 sizeof 对照实验、64 位指针与 32 位平台的布局差异、位域为什么不可移植、存档与网络传输为什么必须显式编码而不是 memcpy 结构体。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/220-MemoryAlignmentDeepDive'
   - 'c/240-BitField'
@@ -148,7 +148,7 @@ struct Flags {
 
 1. **padding**：填充字节跟着进文件，是浪费，内容更不可复现；
 2. **成员偏移**：任何平台差异、成员顺序调整，都会让读方与写方错位；
-3. **字节序**：多字节整数的字节排列依平台而定，x86 是小端（低位字节在前），许多网络设备是大端。协议约定见 [网络基础与协议](/networking/010-NetworkBasicsAndProtocol)，Socket 转换函数见 [Socket 网络编程](/c/390-SocketNetworkProgramming)；
+3. **字节序**：多字节整数的字节排列依平台而定，x86 是小端（低位字节在前），许多网络设备是大端。协议约定见 [网络基础与协议](/networking/020-OSITCPIPModel)，Socket 转换函数见 [Socket 网络编程](/c/390-SocketNetworkProgramming)；
 4. **指针**：写进文件的是进程内地址，对任何其他进程都是垃圾。
 
 正解是**显式编码**：逐字段、按定宽类型、按约定字节序写。最小的完整示例——32 位分数按小端拆成 4 个字节：

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: list-style 系列属性控制有序/无序列表的标记样式，是列表排版的必修课。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'css/140-PseudoClassPseudoElement'
   - 'css/130-CSS3SelectorSystem'

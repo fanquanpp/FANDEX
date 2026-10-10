@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: Jest Mock 实战：jest.fn 与 jest.mock 的区别、模块模拟与部分模拟、jest.spyOn、假定时器与清理策略，附测试替身分类视角。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'software-testing/190-TestDouble'
   - 'software-testing/240-JestBasics'

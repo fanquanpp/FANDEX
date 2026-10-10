@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: "以「给编趣 Quaver 画下落音符」引入：跑通第一个跨边界调用，弄清 godot 模块提供什么、三条命名规则、Variant 桥接的两条实践准则，以及最重要的一课——Godot 拥有 Godot 对象，跨帧引用必须先验有效性。"
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'gode/020-FirstTypeScriptScript'
   - 'gode/050-MetadataExportsSignalsRpc'

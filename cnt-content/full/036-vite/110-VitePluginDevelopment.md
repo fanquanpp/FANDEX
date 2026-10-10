@@ -1,12 +1,12 @@
 ---
-order: 130
+order: 140
 title: Vite 插件开发：钩子体系与虚拟模块
 module: 'vite'
 category: 前端技术
 difficulty: advanced
 description: 以歌单数据与自创歌词格式为素材，端到端实现虚拟模块插件、transform 编译器与 dev 期 HMR 联动。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'vite/100-PluginSystem'
   - 'vite/070-DevServerAndProxy'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 按主题整理 TypeScript 学习中的高频疑问：any/unknown、interface/type、as/satisfies、import type、推断与收窄等。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'typescript/020-HowToReadThisCourse'
   - 'typescript/080-BasicTypeSystem'

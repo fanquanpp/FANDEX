@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: XGROUP/XREADGROUP/XACK/XCLAIM/XAUTOCLAIM 全解：PEL 待确认列表与消息找回、多消费者负载均衡实验、at-least-once 语义讨论与生产级消费者实现。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'redis/090-Stream'
   - 'redis/094-StreamOpsAndMonitoring'

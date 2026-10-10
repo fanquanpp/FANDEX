@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 从「一次编写，到处运行」这句口号出发建立 JVM 心智模型：代码先编译成字节码、各平台 JVM 负责执行；认识 Java 的主战场、Spring 生态与 LTS 版本策略，附在线动手实验与练习。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'java/020-JavaOverviewDevEnv'
   - 'java/030-QuickStart'

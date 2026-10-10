@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: "从「导航条 logo 在左、菜单在右、窗口一拉就散架」出发，用 display: flex 加 justify-content 三行代码排稳一行内容，吃透 flex: 1 背后的 grow/shrink/basis 三兄弟与空间分配算术，再收下居中、侧栏、吸底页脚、卡片墙四个高频模式与 min-width: auto 这个头号坑。"
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'css/250-CSS3GridGridLayout'
   - 'css/690-GridQuickStart'

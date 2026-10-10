@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS 原生嵌套语法与 & 规则详解：隐式后代嵌套、& 复合选择器、伪类伪元素、后置反转上下文、嵌套 @media，以及权重计算等关键细节。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'css/720-CSSNestingInPractice'
   - 'css/570-Sass'

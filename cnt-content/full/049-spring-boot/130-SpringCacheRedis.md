@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/090-SpringDataJpa'
   - 'spring-boot/110-AspectOrientedProgramming'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'redis/120-CachePenetrationBreakdownAvalanche'
 ---
@@ -161,7 +161,7 @@ public class BookService {
 
 击穿：一个热点 key 过期的瞬间，成百并发同时未命中，全部打库。注解层防御：@Cacheable(sync = true)——同一 key 的并发未命中只有一个线程真实执行方法，其余阻塞等待、共享它写回的结果。限制记两条：sync 与 @Caching 组合、unless 等高级特性不兼容（以官方文档为准）；单飞只对「同一个 key」有效。
 
-雪崩：大量 key 设了相同 TTL，同一秒集体过期，库被齐射打穿。思想很清楚：**把过期时间点打散**，比如 base + random(0, base / 10)。但注解层要诚实交代：entryTtl 只有 cacheName 粒度的固定值，没有「每次写入随机抖动」的口子——这是抽象的边界。要随机 TTL 就退回 RedisTemplate 手写，或自定义缓存写入器。完整的多级防线（过期分层、多级缓存、熔断降级）见 [缓存策略与高级特性](/redis/110-CacheStrategyAdvancedFeature)。
+雪崩：大量 key 设了相同 TTL，同一秒集体过期，库被齐射打穿。思想很清楚：**把过期时间点打散**，比如 base + random(0, base / 10)。但注解层要诚实交代：entryTtl 只有 cacheName 粒度的固定值，没有「每次写入随机抖动」的口子——这是抽象的边界。要随机 TTL 就退回 RedisTemplate 手写，或自定义缓存写入器。完整的多级防线（过期分层、多级缓存、熔断降级）见 [缓存策略与高级特性](/redis/120-CachePenetrationBreakdownAvalanche)。
 
 ## 6. 注解缓存的边界：何时退回手写
 

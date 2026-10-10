@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: Web 安全综合深入：注入与脚本类漏洞的共性原理、JWT 与 API 攻防、越权与速率限制，附完整攻击链分析。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'cybersecurity/180-SQLInjection'
   - 'cybersecurity/190-XSSAttack'

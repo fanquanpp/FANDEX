@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git submodule 详解：gitlink 指针语义、添加更新协作流程、常见故障与 subtree 替代。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'git/240-ObjectModel'
   - 'git/200-TagManagement'

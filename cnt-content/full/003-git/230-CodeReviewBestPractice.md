@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 从「PR 秒批 LGTM，上线照样出事故」这个真实失效场景切入，动手搭起「CI 前置 + PR 粒度 + CODEOWNERS 强制审查」的完整 Review 制度，给出分级评论规范与常见的五个反模式。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'git/280-InteractiveRebase'
   - 'github/180-PullRequestCompleteCollaborationFlow'

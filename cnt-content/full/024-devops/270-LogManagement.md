@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 结构化日志与采集链路选型：日志级别纪律、JSON 日志、Filebeat/Fluent Bit/Vector 对比、采样与脱敏、logrotate 与单机兜底
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'devops/280-ELKStackLogAnalysis'
   - 'devops/240-MonitorAndObservability'
@@ -89,6 +89,31 @@ prerequisites:
 3. **多后端/重转换**（同一份日志发 ES 与对象存储、要脱敏/富化）：选 Vector 或 Fluent Bit 的 pipeline 转换。
 
 K8s 容器日志的流向值得记牢：容器写 stdout → 运行时落盘为 `/var/log/containers/*.log`（符号链接到 `/var/log/pods/...`）→ 节点上的采集 Agent tail 这些文件。**应用直接写文件（不写 stdout）会绕过这套机制**，要么改应用要么给 Agent 加文件路径——排障时"日志没进 ELK"第一查这里。
+
+## Sidecar 模式
+
+<!-- 来源：62c90663 版 cnt-content/full/024-devops/270-LogManagement.md 小节「5.2 Sidecar 模式」 -->
+
+每个 Pod 运行一个日志采集器 Sidecar：
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-with-logging
+spec:
+  containers:
+    - name: app
+      image: my-app
+    - name: log-collector
+      image: fluent/fluent-bit:3.0
+      volumeMounts:
+        - name: log-volume
+          mountPath: /logs
+  volumes:
+    - name: log-volume
+      emptyDir: {}
+```
 
 ## 第三环：存储、轮转与单机兜底
 

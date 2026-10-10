@@ -245,7 +245,7 @@ while (m.find()) {
 - [字符串详解](/java/130-JavaStringDetailed)：String 主线与 split/replaceAll 的宿主方法；
 - [Scanner 控制台输入](/java/095-ScannerConsoleInput)：正则校验的输入来源与类型不匹配防御；
 - [异常处理机制](/java/180-ExceptionHandlingMechanism)：`PatternSyntaxException`（正则本身写错）的处理；
-- [MySQL 数据类型与约束](/mysql/010-MySQLBasics)：规则三 SQL 侧的归属篇（regexp 约束与 check 约束的取舍）。
+- [MySQL 数据类型与约束](/mysql/070-MySQLDataTypeConstraint)：规则三 SQL 侧的归属篇（regexp 约束与 check 约束的取舍）。
 
 ## 10. 参考与致谢
 

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 用「刚提交就发现错了」的三个真实场景讲透 commit --amend：改信息、补文件、修敏感内容，讲清 amend 是造新提交而非修改旧提交、哈希为什么变、reflog 怎么救，以及已推送提交的黄金法则。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'git/050-GitBasicOperation'
   - 'git/260-GitReflog'
@@ -156,7 +156,7 @@ docs: 更新安装文档
 git commit -m "fix(login): 修正登录超时判断" -m "Closes #42"
 ```
 
-团队项目里通常用 commitlint 加 Git 钩子强制校验格式，规则细节见 [Git Hook 与 Git LFS](/git/340-GitHookGitLFS)。信息写错了、忘了标类型，`--amend` 在推送前都能救。
+团队项目里通常用 commitlint 加 Git 钩子强制校验格式，规则细节见 [Git Hook 与 Git LFS](/git/340-GitHooks)。信息写错了、忘了标类型，`--amend` 在推送前都能救。
 
 ## 5.5 amend 的冷门参数与多行信息
 
@@ -200,7 +200,7 @@ echo "export default { extends: ['@commitlint/config-conventional'] }" > commitl
 echo "fix: 修正登录超时" | pnpm commitlint     # 先手动试一条，无输出即通过
 ```
 
-再配合 husky 的 `commit-msg` 钩子（安装见 [Git Hook 与 Git LFS](/git/340-GitHookGitLFS)），钩子文件里只需一行：
+再配合 husky 的 `commit-msg` 钩子（安装见 [Git Hook 与 Git LFS](/git/340-GitHooks)），钩子文件里只需一行：
 
 ```bash
 pnpm commitlint --edit "$1"

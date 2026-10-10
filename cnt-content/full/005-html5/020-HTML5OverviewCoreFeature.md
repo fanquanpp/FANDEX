@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 以「HTML 从 1991 年的 18 个标签长成今天，HTML5 是分水岭」开场：语义标签、原生音视频、表单增强、Canvas 与本地能力四个用户可感知的变化，DOCTYPE 与标准模式用 document.compatMode 现场验证，并澄清「HTML5 之后没有 HTML6」。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'html5/030-HTML5EnvSetupFirstPage'
   - 'html5/040-DocTypeDeclaration'

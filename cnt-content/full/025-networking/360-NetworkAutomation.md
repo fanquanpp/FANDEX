@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: NetDevOps 实践：配置即代码与 Git 工作流、变更流水线（干跑/Batfish 验证/灰度）、合规巡检与配置漂移治理。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/350-NetworkProgrammability'
   - 'networking/100-DNSDHCP'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: "Java 反射深水参考：Class 对象与 reflect 体系、setAccessible 与模块强封装、Inflation 调用链与性能实测、泛型擦除下的 Type 恢复、动态代理，附九类真实异常的调试实录。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'java/430-ReflectionDynamicProxy'
   - 'java/370-JavaAnnotationsTutorial'

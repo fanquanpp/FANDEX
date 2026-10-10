@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从给 FANDEX 命令面板做弹层的场景学会 createPortal、Portal 的事件冒泡规则与 SSR 注意点，以及用 ref 做测量、滚动、ResizeObserver 等命令式 DOM 操作的正确姿势。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'react/040-HooksDeep'
   - 'react/020-ComponentProps'

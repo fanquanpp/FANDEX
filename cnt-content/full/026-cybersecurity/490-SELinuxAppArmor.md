@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'SELinux 与 AppArmor： enforcing/permissive 模式管理、布尔值与策略查看、自定义规则与审计日志排查'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cybersecurity/520-SecurityBaseline'
   - 'cybersecurity/510-AuditdCommands'

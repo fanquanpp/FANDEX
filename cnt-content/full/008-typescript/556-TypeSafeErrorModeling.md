@@ -271,7 +271,7 @@ function importBatch(rows: ImportRow<string>[]): { summary: string; outcomes: Ro
 
 - **纯粹的程序 bug（数组越界、null 解引用、断言失败）**：抛异常。这些情况没有"失败的答案"可言，Result 包装只会让调用方假装能处理。
 - **同步且不可能失败的简单函数**：`add(a, b)` 不需要 `Result<number, never>`——E 为 never 等于宣告"不可能失败"，写了反而是噪音。
-- **跨进程/事件边界的一次性通知**：`window.onerror`、unhandledrejection 这类全局兜底（见 [全局错误捕获](/typescript/480-ErrorBoundaryGlobalErrorCatch) 的 JS 对应物）先于任何 Result 设计存在，Result 管不到它们，两层是共存关系不是替代关系。
+- **跨进程/事件边界的一次性通知**：`window.onerror`、unhandledrejection 这类全局兜底（见 [全局错误捕获](/javascript/480-ErrorBoundaryGlobalErrorCatch) 的 JS 对应物）先于任何 Result 设计存在，Result 管不到它们，两层是共存关系不是替代关系。
 
 ## 8. 动手实践
 

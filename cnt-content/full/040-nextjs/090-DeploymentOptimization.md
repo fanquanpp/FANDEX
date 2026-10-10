@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从 next build 到上线：Turbopack 构建产物怎么读、环境变量分级、四种部署方式（Vercel / standalone / Docker / 静态导出）怎么选。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'nextjs/030-DataFetchingCaching'
   - 'nextjs/070-CacheComponentsDeepDive'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git grep 详解：在跟踪文件与任意历史版本中并行搜索、布尔组合与路径限定技巧。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'git/180-GitLogDetailed'
   - 'git/070-GitDiffStagingOperation'
@@ -178,7 +178,7 @@ if git grep -n -E "console\.log\(|debugger" -- '*.ts' '*.tsx' -- ':!*.test.ts'; 
 fi
 ```
 
-配合 pre-commit 钩子（见 [Git Hook 与 LFS](git/340-GitHookGitLFS)）只检查暂存内容：`git grep --cached` 让门禁聚焦「这次要提交的东西」而不是全仓历史遗留。
+配合 pre-commit 钩子（见 [Git Hook 与 LFS](/git/340-GitHooks)）只检查暂存内容：`git grep --cached` 让门禁聚焦「这次要提交的东西」而不是全仓历史遗留。
 
 ## 小结
 

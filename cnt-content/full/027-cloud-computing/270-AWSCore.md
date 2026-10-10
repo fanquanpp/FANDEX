@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 'AWS 六大核心服务速览：EC2 选型、Lambda、S3 存储类别、EBS、VPC 安全、RDS 与 IAM。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/250-LoadBalanceAutoScaling'
   - 'cloud-computing/300-AWSCliConfigure'

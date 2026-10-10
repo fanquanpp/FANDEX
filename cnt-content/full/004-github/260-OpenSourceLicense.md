@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 开源许可证对比与选择：MIT、Apache、GPL三大类许可证的权利义务对比表、选择方法与GitHub添加流程。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'github/170-BranchModelBranchRule'
   - 'github/070-GitignoreConfig'

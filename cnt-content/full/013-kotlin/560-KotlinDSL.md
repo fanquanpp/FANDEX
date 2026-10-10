@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: DSL构建
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'kotlin/090-ExtensionFunction'
   - 'kotlin/070-KotlinScopeFunction'

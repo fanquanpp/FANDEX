@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Helm 学习笔记：把一个开源 Chart 装进集群并管好它的一生——搜索、装、升、回滚、卸载，再到自己写 Chart 的调试循环。'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'devops/110-HelmChartApplicationPackage'
   - 'devops/090-KubernetesCoreDetailed'

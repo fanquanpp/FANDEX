@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 表格语义结构、合并单元格、表格使用原则与全局属性大表、details/dialog/popover 速览。
 author: fanquanpp
-updated: '2026-10-06'
+updated: '2026-10-07'
 related:
   - 'html5/090-HTML5CoreGlobalAttributes'
   - 'html5/100-HTML5BasicContentTags'

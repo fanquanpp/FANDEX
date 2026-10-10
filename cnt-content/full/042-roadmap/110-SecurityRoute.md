@@ -8,7 +8,7 @@ difficulty: intermediate
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-10-07'
 related:
   - 'cybersecurity/010-SecurityBasicsDefense'
   - 'roadmap/090-DevOpsCloudRoute'
@@ -41,7 +41,7 @@ flowchart TD
 
 **第 1 个月：网络与系统底座**
 
-- [networking 模块](/networking/010-NetworkBasicsAndProtocol) 全读（安全是网络知识的最大买家）：协议栈、TCP/UDP、HTTP/HTTPS、DNS、抓包分析；
+- [networking 模块](/networking/020-OSITCPIPModel) 全读（安全是网络知识的最大买家）：协议栈、TCP/UDP、HTTP/HTTPS、DNS、抓包分析；
 - [cybersecurity 模块](/cybersecurity/010-SecurityBasicsDefense) 基础部分：安全三要素、常见攻击面、防御理念；
 - Linux 基础（参考 [云与运维路线](/roadmap/090-DevOpsCloudRoute) 阶段 1）；
 - 动手：搭自己的靶场——虚拟机装 OWASP Juice Shop 与 DVWA，配好快照习惯。
@@ -117,4 +117,4 @@ flowchart TD
 
 ## 下一步
 
-从 [网络安全概述](/cybersecurity/010-SecurityBasicsDefense) 与 [网络概述](/networking/010-NetworkBasicsAndProtocol) 双线开始。基础设施功底想更厚，并行 [云与运维路线](/roadmap/090-DevOpsCloudRoute) 阶段 1。
+从 [网络安全概述](/cybersecurity/010-SecurityBasicsDefense) 与 [网络概述](/networking/020-OSITCPIPModel) 双线开始。基础设施功底想更厚，并行 [云与运维路线](/roadmap/090-DevOpsCloudRoute) 阶段 1。

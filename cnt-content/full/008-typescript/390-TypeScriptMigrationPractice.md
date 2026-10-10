@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 渐进式迁移策略、类型覆盖提升、常见迁移陷阱与生产级最佳实践，涵盖 tsconfig 演进、JSDoc 桥接、ts-migrate 自动化与大型项目案例研究。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'typescript/350-TypeScriptEngineeringConfig'
   - 'typescript/180-SatisfiesOperator'

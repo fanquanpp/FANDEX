@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 用充电桩运营数据掌握 MySQL 多表联查：内连接、外连接与 LEFT JOIN 找孤儿行、同城配对的自连接、三表联查与行数膨胀的根源。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'mysql/150-AdvancedQueryMultiTableOperation'
   - 'mysql/390-JOINAlgorithm'

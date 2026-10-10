@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: "以「同算 1 加到 100，一个瞬间一个卡三秒」引入，用真实计时实验建立大 O 直觉：时间与空间两本账、五级复杂度阶梯、最好/最坏/平均与 Ω/Θ 记号、给代码判复杂度的读法，本模块以 Python 为教学语言。"
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'algorithm/020-ArrayAndDynamicArray'
   - 'algorithm/030-SortAlgorithm'
@@ -259,7 +259,7 @@ print(sum_iter(10000))    # 50005000；没有栈帧堆积，深度不再是问�
 ## 12. 与之前和之后的知识的关系
 
 - 往前：python 050/060 的循环与函数是本文的实验材料；
-- 往后：[数组与动态数组](/algorithm/020-ArrayAndDynamicArray) 用本文的语言解释「随机访问为什么 O(1)」，并把「均摊分析」引入视野；[排序参考篇](/algorithm/030-SortAlgorithm) 把 O(n log n) 落到每一种排序；[回溯](/algorithm/140-RecursionAndBacktracking) 是 O(2ⁿ)/O(n!) 阶梯的正面战场；[二分查找](/algorithm/170-BinarySearchAlgorithms) 是 O(log n) 的完整专题；
+- 往后：[数组与动态数组](/algorithm/020-ArrayAndDynamicArray) 用本文的语言解释「随机访问为什么 O(1)」，并把「均摊分析」引入视野；[排序参考篇](/algorithm/030-SortAlgorithm) 把 O(n log n) 落到每一种排序；[回溯](/algorithm/140-RecursionAndBacktracking) 是 O(2ⁿ)/O(n!) 阶梯的正面战场；[二分查找](/algorithm/172-BinarySearchVariants) 是 O(log n) 的完整专题；
 - 更远：面试与工程评审里，大 O 是把「感觉慢」翻译成「可讨论」的通用语言；code review 时先问空间账再问时间账，是资深工程师的习惯。
 
 ## 13. 官方文档

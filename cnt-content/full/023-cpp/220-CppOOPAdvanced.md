@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 构造与析构、多重继承与虚继承、CRTP 静态多态、对象生命周期、拷贝与移动控制、接口设计——OOP 进阶本位；操作符重载/模板/STL/虚函数表见各自专篇。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cpp/200-CppOOPBasics'
   - 'cpp/210-OperatorOverloading'

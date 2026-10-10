@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 以「不爆内存地分析几 GB 日志」为任务，讲生成器的双向通信（send/throw/close）、yield from 委托与返回值、多级惰性流水线，最后说清生成器协程与 async/await 的血缘，附生成器耗尽陷阱实录与四类练习。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'python/660-CoroutineAsyncio'
   - 'python/670-AsyncProgrammingDetailed'
@@ -16,7 +16,7 @@ prerequisites: []
 
 ## 前置知识
 
-- [推导式与生成器](/python/170-ComprehensionGenerator)：知道生成器表达式、会写带 yield 的生成器函数、见过 next() 与 StopIteration；
+- [迭代器协议与 itertools](/python/170-IteratorProtocolAndItertools)：知道生成器表达式、会写带 yield 的生成器函数、见过 next() 与 StopIteration；
 - [文件与上下文管理器](/python/300-FileIOContextManager)：本文的实战段要按行读文件（没读也不影响前半部分，示例可换成一个长列表）。
 
 > 分工说明：生成器的入门语法（yield 基本形态、itertools、无限序列）在上一篇讲过；本文只讲三件更深的事——**双向通信、委托链、惰性流水线**，并在结尾交代生成器与 async/await 的血缘。async/await 本身的系统学习在 [协程与 asyncio](/python/660-CoroutineAsyncio)。
@@ -248,7 +248,7 @@ def worker():
 
 ## 9. 与之前和之后的知识的关系
 
-- 往前：[推导式与生成器](/python/170-ComprehensionGenerator) 给了 yield 的基本形态与生成器表达式，本文把「暂停 - 恢复」推到双向通信与委托链；[文件与上下文管理器](/python/300-FileIOContextManager) 的文件对象天然是迭代器，是流水线的标准源头；
+- 往前：[迭代器协议与 itertools](/python/170-IteratorProtocolAndItertools) 给了 yield 的基本形态与生成器表达式，本文把「暂停 - 恢复」推到双向通信与委托链；[文件与上下文管理器](/python/300-FileIOContextManager) 的文件对象天然是迭代器，是流水线的标准源头；
 - 往后：[上下文管理器](/python/520-ContextManager) 的 with 协议与本文的 finally 清理思想同源；[协程与 asyncio](/python/660-CoroutineAsyncio) 在「可暂停函数」这条线上换乘 async/await，把本文的历史讲成现实；[异步深水区](/python/670-AsyncProgrammingDetailed) 的异步生成器（`async for`）是 yield 与 await 的正式合体。
 
 ## 10. 官方文档

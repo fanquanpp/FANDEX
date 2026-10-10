@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 跨平台命令行概览：Shell 与终端、文件系统、权限、进程、管道重定向与脚本入门的跨平台对照
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'shell/050-IDEEditorSelection'
   - 'shell/070-PluginEcosystem'

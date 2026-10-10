@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Tailwind CSS 4 主题定制实战：@theme 令牌声明、primitive/semantic/component 三层令牌、@theme inline 桥接 CSS 变量、data-theme 运行时换肤，以 FANDEX 仓库的真实令牌管线为案例
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'tailwind/020-InstallConfig'
   - 'tailwind/060-ResponsiveDark'

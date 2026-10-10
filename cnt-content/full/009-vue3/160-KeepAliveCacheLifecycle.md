@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Vue 3 KeepAlive 组件缓存机制完整解析：include/exclude/max、activated/deactivated 生命周期、缓存刷新与内存管理。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'vue3/090-CustomHook'
   - 'vue3/120-TeleportSuspense'

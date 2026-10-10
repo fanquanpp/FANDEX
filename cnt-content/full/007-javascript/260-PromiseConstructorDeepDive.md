@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从一个"外部可控的 Promise"说起：状态机、then 的微任务时序、值穿透、thenable 与 ES2024 的 withResolvers。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'javascript/250-AsyncProgramming'
   - 'javascript/270-PromiseStaticMethod'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'S3 桶与对象操作命令实战：cp/sync/rm 高层命令、s3api 精细控制、预签名 URL 与数据安全陷阱。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/300-AWSCliConfigure'
   - 'cloud-computing/210-CloudStorageService'

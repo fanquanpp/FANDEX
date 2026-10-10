@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 以声浪播客平台的三条慢查询为线，讲清 B-tree 的三项精修术：复合索引列顺序、INCLUDE 覆盖索引、部分索引与表达式索引，配套 EXPLAIN 验证练习。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'postgresql/220-IndexType'
   - 'postgresql/250-QueryOptimization'

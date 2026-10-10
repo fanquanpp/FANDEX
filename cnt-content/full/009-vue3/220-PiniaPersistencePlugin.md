@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 从阅读偏好刷新即丢讲起：先手写 $subscribe 加 localStorage 版理解原理，再接入 pinia-plugin-persistedstate v4（pick/omit、sessionStorage、serializer、beforeHydrate/afterHydrate），附 v3 paths 静默失效、SSR 无 window、setup store 的 $reset 三则调试实录。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'vue3/210-PiniaStateManagementDetailed'
   - 'vue3/250-PluginDevelopment'

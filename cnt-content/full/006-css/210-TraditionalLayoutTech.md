@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 读懂并迁移传统布局：float 与高度塌陷的四种修法、position 五种参照系、BFC 的规则与应用、圣杯/双飞翼布局原理，以及每一项在 Flex/Grid 时代的现代等价写法。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'css/050-CSS3BoxModelDetailed'
   - 'css/200-FloatClear'

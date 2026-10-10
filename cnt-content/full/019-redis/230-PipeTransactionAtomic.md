@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: Redis Pipeline 管道与 Multi/Exec 事务：批量命令优化、事务原子性、WATCH 乐观锁与 CAS 模式。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'redis/210-SentinelElection'
   - 'redis/220-RedisClusterHashSlot'

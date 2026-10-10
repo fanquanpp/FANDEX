@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 离线优先：Service Worker 生命周期、缓存策略与 PWA 安装体验。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'javascript/460-StorageForTheWeb'
   - 'javascript/440-FetchApiAndAbortController'
@@ -448,6 +448,8 @@ self.addEventListener('push', (event) => {
 > 本节整体承接自 [Web 存储](/javascript/460-StorageForTheWeb) 原第 15 节：项目的四大支柱（SW 拦截、IndexedDB 存储、localStorage 偏好、后台同步）正是本篇前六节的综合演练；IndexedDB 数据层的原理细节见 [IndexedDB](/javascript/470-IndexedDBADatabaseInYourBrowser) 第 14 节的同型项目。
 
 ### 项目目标与完整实现
+
+先看目标再读代码：15.1 定义项目的四大支柱，15.2 给出完整实现，15.3 复盘要点。实现代码较长，建议对照 15.1 的清单逐项确认它落在实现的哪个部分，读完后合上文档尝试复述数据流。
 
 ### 15.1 项目目标
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 用 ClientRouter 实现跨页面共享元素动画、持久化音乐播放器岛屿与导航生命周期脚本。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'astro/030-PagesRouting'
   - 'astro/060-IslandsClientComponents'

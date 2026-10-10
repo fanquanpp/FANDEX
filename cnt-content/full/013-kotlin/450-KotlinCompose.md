@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以一个桌面小应用学会声明式 UI：状态驱动重组、remember 与状态提升、LaunchedEffect 副作用、Modifier 顺序陷阱，附 2026 年 Compose Multiplatform 各平台稳定后的选型现状。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'kotlin/440-KotlinAndroid'
   - 'kotlin/460-KotlinMultiplatform'

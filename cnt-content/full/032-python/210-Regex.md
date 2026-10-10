@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以「清洗语音助手日历导出的乱文本」为任务实战 re 模块：字符与量词、锚点、分组捕获、findall/sub/split、常用标志与 VERBOSE 写法，讲贪婪与懒惰、原始字符串报错实录，附「别用正则做的事」判断清单与四类练习。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'python/215-RegexAdvancedMechanics'
   - 'python/140-BuiltinDataStructure'

@@ -477,7 +477,7 @@ int main() {
 ## 9. 与之前和之后的知识的关系
 
 - 往前：[内存管理](/cpp/180-CppMemoryManagement) 讲 `new/delete` 与 `operator new` 的层次——pmr 资源就是这层次上再抽象出的「可插拔策略」；[核心指南资源管理](/cpp/170-RAIIResourceManagementInPractice) 7.6/7.7 节是本篇的引子，那里 20 行的 StackAllocator 在这里补全了传播与等价契约。
-- 往后：[并发原语](/cpp/445-Cpp20ConcurrencyPrimitives) 的线程池任务队列若需要分配内存，应绑 `synchronized_pool_resource`；[性能优化](/cpp/610-CppPerformance) 的测量纪律同样适用——先用 CountingResource 证明分配是热点，再换资源，不要反向。
+- 往后：[并发原语](/cpp/440-CoordinationAndAsyncPrimitives) 的线程池任务队列若需要分配内存，应绑 `synchronized_pool_resource`；[性能优化](/cpp/610-CppPerformance) 的测量纪律同样适用——先用 CountingResource 证明分配是热点，再换资源，不要反向。
 
 ## 10. 官方文档
 

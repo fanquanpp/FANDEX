@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/020-ComputerBasicsForBeginners'
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'start/040-TerminalAndShellBasics'
   - 'git/010-Git'

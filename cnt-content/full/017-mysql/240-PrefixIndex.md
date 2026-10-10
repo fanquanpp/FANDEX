@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 理解前缀索引为什么能省空间、如何用选择性科学地挑选前缀长度、它牺牲了什么能力，以及在邮箱与 URL 列上的完整实战。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'mysql/220-ClusteredIndexSecondaryIndex'
   - 'mysql/230-CompositeIndexLeftmostPrefixPrinciple'

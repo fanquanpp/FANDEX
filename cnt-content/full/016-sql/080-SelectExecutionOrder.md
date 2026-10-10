@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 从一个别名报错出发，逐段验证 SELECT 的逻辑执行顺序 FROM 到 LIMIT，并解释它带来的别名作用域、HAVING 与 LEFT JOIN 三类经典坑。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'sql/050-FilterCondition'
   - 'sql/060-AggregateFunction'

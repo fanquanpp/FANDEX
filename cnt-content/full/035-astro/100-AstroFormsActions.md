@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 接收用户输入：Astro 表单、API 路由与 Action 服务端校验。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'astro/030-PagesRouting'
   - 'astro/080-BuildDeploy'

@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/090-SpringDataJpa'
   - 'spring-boot/030-IoCDependencyInjection'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'spring-boot/110-AspectOrientedProgramming'
   - 'mysql/430-MVCCPrinciple'

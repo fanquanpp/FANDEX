@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: logging模块与日志配置
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'python/100-FunctionDetailed'
   - 'python/750-PythonTest'

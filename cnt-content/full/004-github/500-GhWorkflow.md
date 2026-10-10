@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: '以"运行一个 workflow 的完整生命周期"为主线，讲解 gh workflow 系列命令，涵盖查看、手动触发、参数传递、启用与禁用，配以原理讲解、错误对策。'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related: []
 prerequisites: []
 ---

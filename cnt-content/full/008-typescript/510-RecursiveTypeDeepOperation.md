@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 递归条件类型与深度类型操作的形式化定义、尾递归优化机制、DeepReadonly/DeepPartial/DeepRequired 实现原理、JSON 类型推导、循环引用处理与编译性能优化
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'typescript/430-ConditionalTypeDistribute'
   - 'typescript/450-TypeCompositionPractice'

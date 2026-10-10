@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 错误边界（ErrorBoundary）完整指南：getDerivedStateFromError 与 componentDidCatch 的捕获范围、React 19 错误处理变化、react-error-boundary 生产用法与常见陷阱。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'react/170-StateManagementSolutionComparison'
   - 'react/180-ReactPerformance'
@@ -296,3 +296,40 @@ createRoot(el, {
   onUncaughtError: (error, errorInfo) => {}, // 未捕获的渲染错误
 }).render(<App />);
 ```
+
+## 设计哲学
+
+<!-- 来源: cnt-content/full/010-react/440-ErrorBoundarySentry.md 的 "1.3 设计哲学" 小节 -->
+
+React 错误处理的设计哲学：
+
+- **快速失败（Fail Fast）**：未捕获的错误导致整个组件树卸载，强制开发者正视错误（v16 前 React 会保留错误状态，导致 UI 不可预测）。
+- **局部隔离（Local Isolation）**：Error Boundary 让错误只影响其子树，不扩散到全应用。
+- **声明式优于命令式**：通过 JSX 嵌套声明边界，而非 try-catch 包裹每个组件。
+- **不可恢复错误显式化**：错误一旦发生，必须由开发者决定 fallback UI 或重试策略。
+
+## 错误边界的代数语义
+
+<!-- 来源: cnt-content/full/010-react/440-ErrorBoundarySentry.md 的 "2.1 错误边界的代数语义" 小节 -->
+
+错误边界是一个特殊的 React 类组件，提供两个静态/实例方法：
+
+$$
+\text{ErrorBoundary} : \text{Component} \times \text{Error} \rightarrow \text{State Update} \times \text{SideEffect}
+$$
+
+形式化地：
+
+$$
+\text{getDerivedStateFromError}(e) : \text{Error} \rightarrow \text{Partial<State>}
+$$
+
+$$
+\text{componentDidCatch}(e, \text{info}) : \text{Error} \times \text{React.ErrorInfo} \rightarrow \text{SideEffect}
+$$
+
+执行时序：
+
+$$
+\text{Render throws } e \xrightarrow{\text{React 内部}} \text{getDerivedStateFromError}(e) \xrightarrow{\text{re-render}} \text{componentDidCatch}(e, \text{info})
+$$

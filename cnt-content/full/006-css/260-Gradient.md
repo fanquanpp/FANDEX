@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: "从「头图想从紫过渡到蓝，不想切一张大图」出发，掌握 linear/radial/conic 三种渐变的几何模型与色标写法，用硬停做出条纹与饼图，用 background-clip: text 做渐变文字，理解插值色彩空间（oklch）与色带成因，最终把渐变收进设计令牌。"
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'css/270-Shadow'
   - 'css/290-BackgroundEnhancement'

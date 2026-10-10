@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/060-SpringMvcRestApi'
   - 'java/920-JavaMessageQueue'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'java/920-JavaMessageQueue'
   - 'redis/250-RedlockDistributedLock'

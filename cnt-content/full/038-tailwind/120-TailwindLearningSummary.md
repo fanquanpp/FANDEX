@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 串联模块十一篇文档：从 utility-first 理念与工具类家族到 @theme 设计令牌、响应式暗色与组件复用的完整知识体系回顾。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'tailwind/030-UtilityCore'
   - 'tailwind/050-ThemeCustomization'

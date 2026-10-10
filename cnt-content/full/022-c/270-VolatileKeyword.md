@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 同一个忙等循环 -O0 能退出、-O2 死循环：从 as-if 规则拆解编译器凭什么省略读写，完整跑通 MMIO 模拟寄存器与信号处理实战，用丢更新与假锁两起事故验证 volatile 不提供原子性与内存序，给出 volatile、_Atomic、互斥锁的职责边界表。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/380-AtomicAndMemoryModel'
   - 'c/360-ThreadConcurrency'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 以「给 FANDEX 仓库提交一个真实 PR」为主线走完 PR 全生命周期：建分支、推送、创建（含 Draft 与自动合并）、三种审查结论、三种合并策略、清理关闭，附 Fork 场景的 upstream 同步与四个专属坑，以及审查者安全清单。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'github/060-GitCommitPush'
   - 'github/190-CODEOWNERS'

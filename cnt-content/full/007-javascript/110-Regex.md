@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以「给文档站写死链检查脚本，要提取全部 Markdown 链接」为主线，一次讲透字符类、量词、贪婪与懒惰、锚点、分组捕获，配六个方法入口与 lastIndex 陷阱，并给出灾难性回溯（ReDoS）的成因与三条防身规则。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'javascript/120-ES2018RegExpNamedCaptureGroups'
   - 'javascript/130-UnicodePropertyEscape'

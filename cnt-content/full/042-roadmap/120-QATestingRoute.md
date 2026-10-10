@@ -43,7 +43,7 @@ flowchart TD
 **第 1 个月：测试理论与被测对象理解**
 
 - [软件测试模块](/software-testing/010-TestBasicsMethod) 前半：测试分类、测试级别、用例设计方法（等价类、边界值、场景法、判定表）、缺陷生命周期；
-- 同步理解被测对象：[HTML5](/html5/010-WhatIsWebpage) 与 [HTTP/网络基础](/networking/010-NetworkBasicsAndProtocol)（不懂 Web 结构的人测 Web 是盲测）；
+- 同步理解被测对象：[HTML5](/html5/010-WhatIsWebpage) 与 [HTTP/网络基础](/networking/020-OSITCPIPModel)（不懂 Web 结构的人测 Web 是盲测）；
 - 动手：给一个开源应用（如待办类 Web 应用）写 50 条用例并执行，输出规范缺陷报告 10 份（缺陷报告写作是被低估的硬技能）。
 
 **第 2 个月：接口测试**

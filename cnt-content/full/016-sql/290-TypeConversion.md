@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: CAST/CONVERT 显式转换、各数据库隐式转换规则差异、安全转换与索引失效陷阱，附方言对照表。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'sql/090-DataType'
   - 'sql/050-FilterCondition'

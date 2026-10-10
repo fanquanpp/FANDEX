@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以"打包交付项目产物"与"压缩服务器旧日志"两个真实任务学 tar/gzip/zip/7z：打包与压缩之分、排除与安全解压、跨平台乱码、校验与分割，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'shell/130-CommandLineBasics'
   - 'shell/210-TextProcessing'

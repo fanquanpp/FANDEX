@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 以「一个 40 秒的巡检脚本」为现场，走完性能优化的标准流程：perf_counter 计时、cProfile 找热点、读懂 tottime 与 cumtime，再按 CPU 密集、IO 密集、内存三类瓶颈对症下药；附 lru_cache 使用边界与十个高频反模式。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'python/630-MultiprocessingMultithreading'
   - 'python/650-GILAndFreeThreading'
@@ -16,7 +16,7 @@ prerequisites: []
 
 ## 前置知识
 
-- [迭代器与 itertools](/python/170-ComprehensionGenerator)：知道生成器表达式的惰性求值；
+- [迭代器与 itertools](/python/170-IteratorProtocolAndItertools)：知道生成器表达式的惰性求值；
 - [多进程与多线程](/python/630-MultiprocessingMultithreading)：知道线程与进程的区别（细节可后补）。
 
 ## 你现在要解决什么问题

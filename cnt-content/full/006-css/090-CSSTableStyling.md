@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: border-collapse、border-spacing、caption-side、empty-cells 与 table-layout，系统掌握表格美化。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'css/140-PseudoClassPseudoElement'
   - 'css/170-PriorityCalculation'

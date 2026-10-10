@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: LVS/IPVS 四层负载均衡：NAT、DR、TUN 三种转发模式原理与配置、调度算法落地、与 Keepalived 组合实现高可用。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/200-LoadBalanceTech'
   - 'networking/210-LoadBalanceAlgorithm'
@@ -14,7 +14,7 @@ related:
 prerequisites: []
 ---
 
-前置知识：TCP/IP 封装与 NAT 原理（见 [网络基础与协议](networking/010-NetworkBasicsAndProtocol)）；
+前置知识：TCP/IP 封装与 NAT 原理（见 [网络基础与协议](/networking/020-OSITCPIPModel)）；
 算法细节见 [负载均衡算法](networking/210-LoadBalanceAlgorithm)。
 
 学习目标：

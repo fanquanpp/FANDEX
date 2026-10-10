@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Keepalived 双机热备：VRRP 协议机制、主备配置与健康检查联动、脑裂成因与防护、与 LVS/Nginx 组合的高可用实践。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'networking/200-LoadBalanceTech'
   - 'networking/240-HighAvailabilityLVS'

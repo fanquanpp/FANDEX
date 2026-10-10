@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/030-IoCDependencyInjection'
   - 'java/890-JavaUnitTest'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-07'
 related:
   - 'spring-boot/070-UnifiedResponseExceptionHandling'
   - 'spring-boot/090-SpringDataJpa'

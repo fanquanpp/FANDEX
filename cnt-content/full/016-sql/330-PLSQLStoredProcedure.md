@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 存储过程与函数、触发器、游标、异常处理、动态 SQL 与方言对比
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'sql/250-RecursiveCTETreeTraversal'
   - 'sql/440-PerformanceOptimization'

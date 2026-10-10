@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 从闪烁 LED 的裸机 main 出发串起嵌入式 C 主线：寄存器就是固定地址的内存、上电到 main 之间启动代码搬 .data 清 .bss、ISR 纪律与关中断临界区、看门狗与栈核算、交叉编译与 QEMU 仿真 mps2-an385，附 printf 重定向串口与三起调试实录。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'c/240-BitField'
   - 'c/070-BitwiseOperationAndMask'

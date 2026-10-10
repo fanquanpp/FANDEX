@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 从「Rendered fewer hooks than expected」崩溃实录讲起：用 30 行 mini useState 亲手验证「按顺序认人」，再对照真实结构——Fiber 上的 hook 链表、环形更新队列、effect 环链与 Object.is 比较，附闭包陷阱四种修法与 useEffectEvent。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-07'
 related:
   - 'react/120-FiberArchitecture'
   - 'react/130-ConcurrentRendering'

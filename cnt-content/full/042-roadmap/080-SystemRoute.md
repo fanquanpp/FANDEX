@@ -65,7 +65,7 @@ flowchart TD
 
 - cs-fundamentals 的 [操作系统](/cs-fundamentals/150-OperatingSystem)、[进程线程](/cs-fundamentals/170-PCBThreadTCB)、[IPC](/cs-fundamentals/260-IPC) 精读；
 - C++ 线程（std::thread/mutex/atomic/条件变量）；系统调用、文件描述符、IO 多路复用（select/poll/epoll 概念与用法）；
-- [networking 模块](/networking/010-NetworkBasicsAndProtocol) TCP 部分精读。
+- [networking 模块](/networking/020-OSITCPIPModel) TCP 部分精读。
 
 **第 6 个月：检验项目二**
 

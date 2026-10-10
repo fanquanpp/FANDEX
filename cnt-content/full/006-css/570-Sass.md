@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Sass 预处理器教学：变量、嵌套、混合、占位符继承、函数与 @use 模块系统，以及与原生 CSS（变量/嵌套/@layer）的分工与选型。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'css/580-LessStylus'
   - 'css/480-CSSNativeNesting'

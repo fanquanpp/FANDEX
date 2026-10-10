@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 栈与堆、RAII、智能指针、内存池与自定义分配器。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cpp/550-CppGameDev'
   - 'cpp/560-CppEmbedded'

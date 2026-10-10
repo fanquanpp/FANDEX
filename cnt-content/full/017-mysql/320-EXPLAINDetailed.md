@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 以「测试库 5 毫秒、生产 5 秒」引入：逐列读懂 EXPLAIN 的 type 优劣阶梯、key/rows/filtered 读法与 Extra 关键信号，附全表扫描三步定位与误读清单。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-07'
 related:
   - 'mysql/330-MySQLIndexExecutionPlan'
   - 'mysql/230-CompositeIndexLeftmostPrefixPrinciple'

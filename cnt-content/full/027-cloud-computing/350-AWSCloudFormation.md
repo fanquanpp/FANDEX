@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'CloudFormation：模板结构、栈生命周期、变更集安全发布、Drift 检测与排错。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cloud-computing/410-IaC'
   - 'cloud-computing/420-TerraformBasic'

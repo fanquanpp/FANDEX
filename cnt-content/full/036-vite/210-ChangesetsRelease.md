@@ -1,12 +1,12 @@
 ---
-order: 230
+order: 240
 title: changesets 版本管理与发布
 module: 'vite'
 category: 前端技术
 difficulty: intermediate
 description: changesets 版本管理：变更记录、版本 bump、CHANGELOG 生成与 npm 发布流程
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'vite/180-WorkspaceProtocol'
   - 'vite/190-CatalogManagement'

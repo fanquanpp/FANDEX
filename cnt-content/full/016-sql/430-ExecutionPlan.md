@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: EXPLAIN 与 EXPLAIN ANALYZE：PostgreSQL/MySQL 计划输出解读、扫描与连接节点、估算偏差诊断与慢查询定位工作流。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'sql/440-PerformanceOptimization'
   - 'sql/420-Index'

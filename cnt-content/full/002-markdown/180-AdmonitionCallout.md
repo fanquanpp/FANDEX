@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: GitHub 警报块、Obsidian Callout、MkDocs 与 Docusaurus 提示框语法及跨平台兼容方案。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'markdown/110-GitHubFlavoredMarkdown'
   - 'markdown/230-HtmlEmbed'

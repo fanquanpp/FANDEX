@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 讲透 system/global/仓库级三级配置的作用域与就近覆盖（--show-origin 排查）、core.autocrlf 按系统正确取值、git init 到底做了什么与误 init 后删 .git 的安全边界；远程认证只做一句预告。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-07'
 related:
   - 'git/010-Git'
   - 'git/020-GitInstallConfig'
