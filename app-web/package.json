@@ -85,7 +85,7 @@
     "glob": "catalog:",
     "globals": "catalog:",
     "gray-matter": "catalog:",
-    "mermaid": "^12.0.0",
+    "mermaid": "^12.1.0",
     "pagefind": "^1.5.2",
     "playwright": "1.63.0",
     "rollup-plugin-visualizer": "catalog:",
