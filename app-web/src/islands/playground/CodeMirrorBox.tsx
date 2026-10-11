@@ -49,7 +49,9 @@ const fandexEditorTheme = EditorView.theme(
     },
     '.cm-content': {
       padding: '10px 0',
-      // 插入符保持浏览器原生渲染（不指定粗细与色彩）
+      // CM 基础主题在 light 作用域写死 caretColor: black，暗色编辑器底色上不可见，
+      // 必须在此覆盖为主题强调色才能保证亮暗两种主题下插入符可视
+      caretColor: 'var(--color-accent-base)',
     },
     '.cm-line': {
       padding: '0 12px',
