@@ -1,7 +1,7 @@
 ---
 import '@/styles/site.css';
 import '@/styles/pages/error.css';
-import GeoBgDecor from '@/components/GeoBgDecor.astro';
+import SceneBackdrop from '@/components/SceneBackdrop.astro';
 import ThemeLangBootstrap from '@/components/ThemeLangBootstrap.astro';
 import { SITE } from '@/lib/constants';
 import { MINIMAL_CSP } from '@/lib/csp';
@@ -39,7 +39,7 @@ const base = import.meta.env.BASE_URL;
   </head>
   <body>
     <div class="error-page">
-      <GeoBgDecor variant="error" ambient="grid" />
+      <SceneBackdrop decor="error" />
       <main class="error-container">
         <div class="error-code-frame" aria-hidden="true">
           <div class="error-code" data-fx-split="pop" data-fx-split-stagger="90">404</div>

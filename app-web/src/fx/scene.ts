@@ -23,7 +23,7 @@ function styleProbe(): CanvasRenderingContext2D | null {
   return probe;
 }
 
-export function parseCssColor(raw: string, fallback: Rgb): Rgb {
+function parseCssColor(raw: string, fallback: Rgb): Rgb {
   const value = raw.trim();
   if (!value) return fallback;
   if (/^#[0-9a-fA-F]{6}$/.test(value)) {
@@ -50,9 +50,14 @@ export function readSceneColor(name: string, fallback: Rgb): Rgb {
   return parseCssColor(raw, fallback);
 }
 
-export function readSceneNumber(name: string, fallback: number): number {
-  const value = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
-  return Number.isFinite(value) ? value : fallback;
+/**
+ * 读取空格分隔的多色令牌（如 --fx-ambient-accents: #00E5FF #00D6C7），
+ * 逐色归一；令牌缺失时返回空数组，由调用方决定兜底色板。
+ */
+export function readSceneColorList(name: string, fallback: Rgb): Rgb[] {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  if (!raw) return [];
+  return raw.split(/\s+/).map((entry) => parseCssColor(entry, fallback));
 }
 
 const themeListeners = new Set<() => void>();
@@ -75,40 +80,4 @@ export function onThemeChange(listener: () => void): () => void {
   bindThemeChannel();
   themeListeners.add(listener);
   return () => themeListeners.delete(listener);
-}
-
-/** 页面级 rAF 循环：自动跟随 document.hidden 暂停，返回停止函数。 */
-export function createRenderLoop(tick: (dt: number, now: number) => void): () => void {
-  let raf = 0;
-  let last = 0;
-  let running = true;
-  const frame = (now: number) => {
-    raf = 0;
-    if (!running) return;
-    const dt = last ? Math.min(0.1, (now - last) / 1000) : 1 / 60;
-    last = now;
-    tick(dt, now);
-    if (running) raf = requestAnimationFrame(frame);
-  };
-  const start = () => {
-    if (!raf && running && !document.hidden) {
-      last = 0;
-      raf = requestAnimationFrame(frame);
-    }
-  };
-  const onVisibility = () => {
-    if (document.hidden) {
-      if (raf) cancelAnimationFrame(raf);
-      raf = 0;
-    } else {
-      start();
-    }
-  };
-  document.addEventListener('visibilitychange', onVisibility);
-  start();
-  return () => {
-    running = false;
-    if (raf) cancelAnimationFrame(raf);
-    document.removeEventListener('visibilitychange', onVisibility);
-  };
 }

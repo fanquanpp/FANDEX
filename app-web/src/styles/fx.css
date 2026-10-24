@@ -2,8 +2,8 @@
  * fx 动效特效体系样式。
  *
  * 三类选择器：
- *   .fx-backdrop*  全站场景背景层（CSS mesh 兜底 + WebGL 画布宿主）
- *   .fx-ambient*   环境画布层（cursor-grid / letter-field 宿主）
+ *   .fx-backdrop*  全站唯一背景特效层（底色 + 暗角 + 律动装饰 + 字符场宿主，负层级垫底）
+ *   .fx-ambient*   环境画布层（letter-glitch 宿主）
  *   .fx-reveal / .fx-split / .fx-decrypt  DOM 特效
  *
  * 防闪烁约定：BaseLayout 头部内联脚本先于首帧写入 html[data-fx-ready]，
@@ -13,11 +13,14 @@
 @layer components {
   /* ===== 场景背景层（约束：不使用光斑与色散类装饰，一律线与几何） ===== */
 
-  /* 与 .decor-bg 同配方：fixed、z-index 0、DOM 靠前，自然垫在页面内容之下 */
+  /* 与 .decor-bg 同为负层级：背景层必须垫在全部内容之下。
+     曾用 z-index 0 + "DOM 靠前垫底"的写法——按 CSS 绘制顺序，
+     定位的 z-index:0 层会盖住一切静态内容（侧边目录栏因此被
+     不透明底色遮住），只有自带 transform/定位的内容幸免。 */
   .fx-backdrop {
     position: fixed;
     inset: 0;
-    z-index: 0;
+    z-index: -1;
     pointer-events: none;
     overflow: hidden;
     background: var(--fx-scene-base);
@@ -31,19 +34,6 @@
     height: 100%;
   }
 
-  /* 极淡的技术网格，遮罩向中心，避免页面读作纯底色 */
-  .fx-backdrop__grid {
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(var(--fx-scene-grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--fx-scene-grid) 1px, transparent 1px);
-    background-size: 64px 64px;
-    mask-image: radial-gradient(ellipse 78% 66% at 50% 30%, #000 12%, transparent 78%);
-    -webkit-mask-image: radial-gradient(ellipse 78% 66% at 50% 30%, #000 12%, transparent 78%);
-    opacity: 0.75;
-  }
-
   /* 暗角：边缘后退（压暗而非发光），正文对比度优先 */
   .fx-backdrop::after {
     content: '';
@@ -53,13 +43,20 @@
     pointer-events: none;
   }
 
-  /* ===== 环境画布层（cursor-grid / letter-field 宿主） ===== */
+  /* ===== 环境画布层（letter-glitch 宿主） ===== */
 
   .fx-ambient {
     position: absolute;
     inset: 0;
     overflow: hidden;
     pointer-events: none;
+  }
+
+  /* data-fx 宿主必须撑满所在背景层：裸 div 高度为 0，画布会被压成扁条 */
+  .fx-ambient > [data-fx],
+  .fx-backdrop > [data-fx] {
+    position: absolute;
+    inset: 0;
   }
 
   .fx-ambient__canvas {

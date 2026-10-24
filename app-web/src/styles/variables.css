@@ -21,23 +21,20 @@
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
 
-  --decor-grid: rgba(22, 126, 118, 0.07);
   --decor-line: rgba(22, 126, 118, 0.16);
   --decor-strong: rgba(22, 126, 118, 0.32);
-  --decor-soft: rgba(57, 197, 187, 0.12);
   --decor-note: rgba(57, 197, 187, 0.42);
-  --decor-accent: rgba(102, 204, 255, 0.34);
   --color-border-light: var(--color-border-subtle);
 
-  /* fx 场景层令牌（声纹线场背景与环境层共用，fx/scene.ts 读取）
+  /* fx 背景层令牌（唯一背景层与环境层共用，fx/scene.ts 读取）
      约束：不使用光斑与色散类装饰——背景只走单墨色线与几何。
      亮色：冷雾灰板 + 深青墨线 */
   --fx-scene-base: #EBEFF3;
-  --fx-scene-ink: #14716A;
-  --fx-scene-amount: 0.34;
-  --fx-scene-grid: rgba(20, 113, 106, 0.05);
   --fx-scene-vignette: rgba(147, 166, 180, 0.2);
   --fx-ambient-ink: #14716A;
+  /* 故障字符场高亮色板（空格分隔，fx/layers/letter-glitch 读取）：
+     深青墨同族两档，亮色下故障闪烁为全不透明墨色 */
+  --fx-ambient-accents: #14716A #0E8A80 #000000 #0000FF #EE0000 #9900FF #FF8800 #007A66;
 
   --color-bg-card: var(--color-bg-elevated);
 
@@ -50,20 +47,16 @@
 }
 
   [data-theme='dark'] {
-    --decor-grid: rgba(57, 197, 187, 0.06);
     --decor-line: rgba(57, 197, 187, 0.18);
     --decor-strong: rgba(57, 197, 187, 0.4);
-    --decor-soft: rgba(0, 255, 237, 0.09);
     --decor-note: rgba(57, 197, 187, 0.52);
-    --decor-accent: rgba(102, 204, 255, 0.42);
 
     /* 暗色场景：纯黑灰板（#0A0A0A 系）+ 青系不可动（色彩裁定基线），
-       背景为单墨色声纹线场，无光斑无色散 */
+       背景为单墨色线与几何，无光斑无色散无网格 */
     --fx-scene-base: #0A0E14;
-    --fx-scene-ink: #00E5FF;
-    --fx-scene-amount: 0.5;
-    --fx-scene-grid: rgba(57, 197, 187, 0.05);
     --fx-scene-vignette: rgba(2, 6, 10, 0.55);
     --fx-ambient-ink: #39C5BB;
+    /* 故障字符场高亮色板：色彩裁定基线内的青系三色，不可动 */
+    --fx-ambient-accents: #00E5FF #39C5BB #66CCFF #00FFCC #EE0000 #9900FF #FF8800 #101820;
   }
 }

@@ -8,14 +8,14 @@ import HeaderFeatureLinks from '@/components/HeaderFeatureLinks.astro';
 import { getFeatureSheetEntries } from '@/lib/feature-entries';
 import { SITE } from '@/lib/constants';
 
-const { title } = Astro.props;
+const { title, fxDecor, fxNum } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const sheetEntries = getFeatureSheetEntries(base);
 const hasSidebar = Astro.slots.has('sidebar');
 const hasToc = Astro.slots.has('toc');
 ---
 
-<BaseLayout title={title}>
+<BaseLayout title={title} fxDecor={fxDecor} fxNum={fxNum}>
   <slot name="head" slot="head" />
 
   <style is:inline>

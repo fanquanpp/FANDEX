@@ -2,7 +2,6 @@
 import { Code } from 'astro:components';
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
-import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import Footer from '@/components/Footer.astro'
 import { getDocsByModule, docSlug } from '@/services'
 import {
@@ -58,7 +57,7 @@ const category = ALGO_CATEGORIES.find((cat) => cat.id === problem.category)
 const statementParas = problem.statement.split('\n\n').filter(Boolean)
 ---
 
-<HomeLayout title={`${problem.title} · 算法题图鉴`}>
+<HomeLayout title={`${problem.title} · 算法题图鉴`} fxDecor="minimal">
   <SEO
     slot="head"
     title={`${problem.title}（${problem.lc ? `LeetCode ${problem.lc}` : '经典题'}）· 算法题图鉴 - FANDEX`}
@@ -68,7 +67,6 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
   />
 
   <div class="home-page home-page--sub" style={`--ap-color:var(--color-${DIFF_COLOR[problem.difficulty]}-base)`}>
-    <GeoBgDecor variant="minimal" />
 
     <article class="apd">
       <nav class="apd-crumb" aria-label="面包屑" data-i18n-aria="apd.crumbAria">

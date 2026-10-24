@@ -152,16 +152,6 @@ export const marqueeScroll: Transition = {
   repeat: Infinity,
 };
 
-export const hoverGlow: Variants = {
-  rest: {
-    boxShadow: '0 0 0 0 color-mix(in srgb, var(--color-accent-base) 0%, transparent)',
-  },
-  hover: {
-    boxShadow: '0 0 0 4px color-mix(in srgb, var(--color-accent-base) 18%, transparent)',
-    transition: tFast,
-  },
-};
-
 export const tapRipple: Variants = {
   rest: { scale: 1 },
   tap: { scale: 0.96, transition: tFast },

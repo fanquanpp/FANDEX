@@ -3,7 +3,6 @@ import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import ModuleCard from '@/components/ModuleCard.astro'
-import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import Footer from '@/components/Footer.astro'
 import { getDocStats, getAllModules, getCategories, getModulesByCategory } from '@/services'
 import { getFeatureEntries } from '@/lib/feature-entries'
@@ -24,11 +23,10 @@ const grouped = getCategories()
   .filter(g => g.modules.length > 0)
 ---
 
-<HomeLayout title="首页">
+<HomeLayout title="首页" fxDecor="home">
   <SEO slot="head" title="FANDEX" description="循序渐进的自学之旅，从第一行代码到理解整个世界。覆盖工具链、开发语言、数据库、计算机科学、工程基础设施与数据技术六大领域" type="website" />
 
   <div class="home-page">
-    <GeoBgDecor variant="home" ambient="full" />
     <section class="hero">
       <h1 class="hero-title" data-text="FANDEX">
         <span class="hero-title-fan" data-fx-split="pop" data-fx-split-stagger="55" data-fx-split-delay="140">FAN</span><span class="hero-title-dex" data-fx-split="pop" data-fx-split-stagger="55" data-fx-split-delay="380">DEX</span>
@@ -60,14 +58,6 @@ const grouped = getCategories()
             </a>
           ))}
         </nav>
-      </div>
-
-      <div class="hero-terminal" aria-hidden="true">
-        <div class="hero-terminal__bar">
-          <span class="hero-terminal__title">fandex://init</span>
-          <span class="hero-terminal__rec">[REC]</span>
-        </div>
-        <div class="hero-terminal__body" data-terminal><code data-terminal-log></code><input class="hero-terminal__input" data-terminal-input type="text" readonly tabindex="-1" autocomplete="off" autocapitalize="off" spellcheck="false" /></div>
       </div>
     </section>
 
@@ -113,5 +103,4 @@ const grouped = getCategories()
 <script>
   import '@/lib/home-interactions';
   import '@/fx';
-  import '@/lib/home-terminal';
 </script>
