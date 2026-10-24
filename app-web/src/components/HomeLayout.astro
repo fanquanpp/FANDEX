@@ -9,7 +9,7 @@ const { title } = Astro.props;
 const base = import.meta.env.BASE_URL;
 ---
 
-<BaseLayout title={title}>
+<BaseLayout title={title} fxScene="full">
   <slot name="head" slot="head" />
 
   <style is:inline>

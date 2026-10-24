@@ -3,6 +3,7 @@ import '@/styles/site.css';
 import { SITE, IS_DESKTOP_BUILD } from '@/lib/constants';
 import { MAIN_CSP, DESKTOP_CSP } from '@/lib/csp';
 import { ClientRouter } from 'astro:transitions';
+import SceneBackdrop from '@/components/SceneBackdrop.astro';
 import ThemeLangBootstrap from '@/components/ThemeLangBootstrap.astro';
 import WebVitalsTracker from '@/islands/WebVitalsTracker';
 import faviconMeta from '@fandex/shared-assets/icons/favicon.svg';
@@ -12,6 +13,15 @@ const appleTouchIconUrl: string = (appleTouchIconMeta as unknown as { src: strin
 
 const base = import.meta.env.BASE_URL;
 const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
+
+interface Props {
+  /** 页面标题（转发语义，实际 title 由各页 SEO/meta 负责） */
+  title?: string;
+  /** fx 场景浓度预设：full 舞台页 / calm 阅读页（默认） */
+  fxScene?: 'full' | 'calm';
+}
+
+const { fxScene = 'calm' } = Astro.props;
 ---
 
 <html lang={SITE.lang}>
@@ -24,6 +34,11 @@ const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
     <style is:inline>
       @layer theme, reset, tokens, base, components, pages, islands, utilities;
     </style>
+    <!-- fx 就绪标记：先于首帧写入，隐藏态样式只在 [data-fx-ready] 下生效，
+        无 JS（爬虫 / 禁脚本）时 reveal/split 等内容始终完整可见 -->
+    <script is:inline>
+      document.documentElement.dataset.fxReady = '1';
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#EBEFF3" id="meta-theme-color" />
     <ClientRouter />
@@ -71,6 +86,7 @@ const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
   </head>
   <body>
     <a class="skip-link" href="#app-main" data-i18n="a11y.skipToContent">跳转到主要内容</a>
+    <SceneBackdrop scene={fxScene} />
     <slot />
     <WebVitalsTracker client:idle />
   </body>
@@ -125,4 +141,9 @@ const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
 
 <script>
   import '@/lib/sw-update';
+</script>
+
+<script>
+  // fx 动效特效体系单一入口：注册表 + 生命周期 + 全部画布层与 DOM 特效
+  import '@/fx';
 </script>

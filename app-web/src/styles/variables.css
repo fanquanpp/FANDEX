@@ -29,6 +29,16 @@
   --decor-accent: rgba(102, 204, 255, 0.34);
   --color-border-light: var(--color-border-subtle);
 
+  /* fx 场景层令牌（声纹线场背景与环境层共用，fx/scene.ts 读取）
+     约束：不使用光斑与色散类装饰——背景只走单墨色线与几何。
+     亮色：冷雾灰板 + 深青墨线 */
+  --fx-scene-base: #EBEFF3;
+  --fx-scene-ink: #14716A;
+  --fx-scene-amount: 0.34;
+  --fx-scene-grid: rgba(20, 113, 106, 0.05);
+  --fx-scene-vignette: rgba(147, 166, 180, 0.2);
+  --fx-ambient-ink: #14716A;
+
   --color-bg-card: var(--color-bg-elevated);
 
   --color-bg-code: var(--color-bg-sunken);
@@ -46,5 +56,14 @@
     --decor-soft: rgba(0, 255, 237, 0.09);
     --decor-note: rgba(57, 197, 187, 0.52);
     --decor-accent: rgba(102, 204, 255, 0.42);
+
+    /* 暗色场景：纯黑灰板（#0A0A0A 系）+ 青系不可动（色彩裁定基线），
+       背景为单墨色声纹线场，无光斑无色散 */
+    --fx-scene-base: #0A0E14;
+    --fx-scene-ink: #00E5FF;
+    --fx-scene-amount: 0.5;
+    --fx-scene-grid: rgba(57, 197, 187, 0.05);
+    --fx-scene-vignette: rgba(2, 6, 10, 0.55);
+    --fx-ambient-ink: #39C5BB;
   }
 }

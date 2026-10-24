@@ -1,0 +1,24 @@
+---
+/**
+ * SceneBackdrop — 全站常驻场景背景宿主。
+ *
+ * SSR 渲染底色 + 技术网格 + 暗角（首帧即成形，无光斑类装饰），
+ * WebGL 声纹线场由 fx 体系的 scene-backdrop 挂载器把单例画布搬入
+ * （capabilities 门控，自动化环境与 WebGL 不可用时只保留本组件的 CSS 层）。
+ *
+ * scene 预设：
+ *   full — 首页 / 演示页等舞台页，线场完整浓度；
+ *   calm — 文档阅读页，浓度收敛（--fx-scene-amount 同步调低）。
+ * 布局组件通过 fxScene prop 选择，默认 calm（阅读优先）。
+ */
+export interface Props {
+  scene?: 'full' | 'calm';
+}
+
+const { scene = 'calm' } = Astro.props;
+---
+
+<div class="fx-backdrop" data-fx="scene-backdrop" data-fx-scene={scene} aria-hidden="true">
+  <div class="fx-backdrop__grid">
+  </div>
+</div>

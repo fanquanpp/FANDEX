@@ -1,0 +1,179 @@
+/**
+ * fx 动效特效体系样式。
+ *
+ * 三类选择器：
+ *   .fx-backdrop*  全站场景背景层（CSS mesh 兜底 + WebGL 画布宿主）
+ *   .fx-ambient*   环境画布层（cursor-grid / letter-field 宿主）
+ *   .fx-reveal / .fx-split / .fx-decrypt  DOM 特效
+ *
+ * 防闪烁约定：BaseLayout 头部内联脚本先于首帧写入 html[data-fx-ready]，
+ * 隐藏态一律挂在 [data-fx-ready] 之下——无 JS 环境内容始终完整可见。
+ */
+
+@layer components {
+  /* ===== 场景背景层（约束：不使用光斑与色散类装饰，一律线与几何） ===== */
+
+  /* 与 .decor-bg 同配方：fixed、z-index 0、DOM 靠前，自然垫在页面内容之下 */
+  .fx-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background: var(--fx-scene-base);
+  }
+
+  .fx-backdrop__canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* 极淡的技术网格，遮罩向中心，避免页面读作纯底色 */
+  .fx-backdrop__grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--fx-scene-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--fx-scene-grid) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 78% 66% at 50% 30%, #000 12%, transparent 78%);
+    -webkit-mask-image: radial-gradient(ellipse 78% 66% at 50% 30%, #000 12%, transparent 78%);
+    opacity: 0.75;
+  }
+
+  /* 暗角：边缘后退（压暗而非发光），正文对比度优先 */
+  .fx-backdrop::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 92% 78% at 50% 42%, transparent 38%, var(--fx-scene-vignette) 100%);
+    pointer-events: none;
+  }
+
+  /* ===== 环境画布层（cursor-grid / letter-field 宿主） ===== */
+
+  .fx-ambient {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .fx-ambient__canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* ===== reveal 滚动显现 ===== */
+
+  .fx-reveal[data-fx-reveal] {
+    transition:
+      opacity 0.55s var(--motion-easing-out, cubic-bezier(0, 0, 0.2, 1)),
+      transform 0.55s var(--motion-easing-out, cubic-bezier(0, 0, 0.2, 1));
+  }
+
+  [data-fx-ready] .fx-reveal[data-fx-reveal]:not([data-shown]) {
+    opacity: 0;
+    transform: translateY(var(--fx-reveal-distance, 16px));
+  }
+
+  [data-fx-ready] .fx-reveal[data-fx-reveal][data-shown] {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ===== split 拆字入场 ===== */
+
+  .fx-split__char {
+    display: inline-block;
+    will-change: transform;
+  }
+
+  @keyframes fx-char-rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.55em);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fx-char-pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+    70% {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes fx-char-flip {
+    from {
+      opacity: 0;
+      transform: rotateX(90deg);
+    }
+    to {
+      opacity: 1;
+      transform: rotateX(0);
+    }
+  }
+
+  [data-fx-ready] .fx-split--rise .fx-split__char {
+    animation: fx-char-rise 0.55s var(--motion-easing-out, cubic-bezier(0, 0, 0.2, 1)) both;
+  }
+
+  [data-fx-ready] .fx-split--pop .fx-split__char {
+    animation: fx-char-pop 0.6s var(--motion-easing-out, cubic-bezier(0, 0, 0.2, 1)) both;
+  }
+
+  [data-fx-ready] .fx-split--flip .fx-split__char {
+    animation: fx-char-flip 0.5s var(--motion-easing-out, cubic-bezier(0, 0, 0.2, 1)) both;
+  }
+
+  /* ===== decrypt 解密显形 ===== */
+
+  .fx-decrypt:not(.fx-decrypt--done)::after {
+    content: '_';
+    margin-inline-start: 1px;
+    color: var(--color-accent-base);
+    animation: fndx-pulse 0.9s ease-in-out infinite;
+  }
+
+  /* ===== 减少动效 ===== */
+
+  @media (prefers-reduced-motion: reduce) {
+    .fx-reveal[data-fx-reveal] {
+      transition: none;
+    }
+
+    [data-fx-ready] .fx-reveal[data-fx-reveal]:not([data-shown]) {
+      opacity: 1;
+      transform: none;
+    }
+
+    .fx-split__char {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    .fx-decrypt:not(.fx-decrypt--done)::after {
+      animation: none;
+    }
+  }
+}

@@ -28,12 +28,12 @@ const grouped = getCategories()
   <SEO slot="head" title="FANDEX" description="循序渐进的自学之旅，从第一行代码到理解整个世界。覆盖工具链、开发语言、数据库、计算机科学、工程基础设施与数据技术六大领域" type="website" />
 
   <div class="home-page">
-    <GeoBgDecor variant="home" />
+    <GeoBgDecor variant="home" ambient="full" />
     <section class="hero">
       <h1 class="hero-title" data-text="FANDEX">
-        <span class="hero-title-fan">FAN</span><span class="hero-title-dex">DEX</span>
+        <span class="hero-title-fan" data-fx-split="pop" data-fx-split-stagger="55" data-fx-split-delay="140">FAN</span><span class="hero-title-dex" data-fx-split="pop" data-fx-split-stagger="55" data-fx-split-delay="380">DEX</span>
       </h1>
-      <div class="hero-stats-row">
+      <div class="hero-stats-row fx-reveal" data-fx-reveal>
         <div class="hero-stats">
           <div class="stat-item">
             <span class="stat-num" data-countup={allModules.length} style={`min-width:${String(allModules.length).length}ch`}>{allModules.length}</span>
@@ -112,6 +112,6 @@ const grouped = getCategories()
 
 <script>
   import '@/lib/home-interactions';
-  import '@/lib/stat-count-up';
+  import '@/fx';
   import '@/lib/home-terminal';
 </script>
