@@ -21,11 +21,9 @@ interface Props {
   fxDecor?: import('@/fx/decor-config').GeoBgVariant;
   /** fx 页面轨道号覆盖（如算法页 04），缺省用变体默认 */
   fxNum?: string;
-  /** fx 字符故障场：仅首页舞台开启 */
-  fxAmbient?: boolean;
 }
 
-const { fxDecor, fxNum, fxAmbient = false } = Astro.props;
+const { fxDecor, fxNum } = Astro.props;
 ---
 
 <html lang={SITE.lang}>
@@ -90,7 +88,7 @@ const { fxDecor, fxNum, fxAmbient = false } = Astro.props;
   </head>
   <body>
     <a class="skip-link" href="#app-main" data-i18n="a11y.skipToContent">跳转到主要内容</a>
-    <SceneBackdrop decor={fxDecor} num={fxNum} ambient={fxAmbient} />
+    <SceneBackdrop decor={fxDecor} num={fxNum} />
     <slot />
     <WebVitalsTracker client:idle />
   </body>

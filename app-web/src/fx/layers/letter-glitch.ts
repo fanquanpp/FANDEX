@@ -1,5 +1,5 @@
 /**
- * letter-glitch — 二进制字符故障场（WebGL2）。
+ * letter-glitch — 代码字符海（WebGL2）。
  *
  * 技术致谢：字形图集 + 单元格状态纹理 + 单 pass 着色器的架构来自
  * react-bits 的 LetterGlitch（MIT + Commons Clause），此处为 FANDEX
@@ -74,7 +74,7 @@ interface GlitchProgram {
 const FONT_STACK = "'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace";
 
 /* 默认二元字符集：数字花园的 0/1 母题，全部 ASCII（AGENTS 约束） */
-const DEFAULT_CHARACTERS = '01';
+const DEFAULT_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 const MAX_COLORS = 8;
 const INTRO_SECONDS = 1.4;
@@ -248,8 +248,8 @@ function readOptions(host: HTMLElement): GlitchOptions {
     fontFamily: FONT_STACK,
     fontSize: clamp(num('letterGlitchFontSize', 8), 6, 96),
     spacing: clamp(num('letterGlitchSpacing', 0.8), 0, 2),
-    density: clamp(num('letterGlitchDensity', 1), 0, 1),
-    baseOpacity: clamp(num('letterGlitchBaseOpacity', 0.2), 0, 1),
+    density: clamp(num('letterGlitchDensity', 0.55), 0, 1),
+    baseOpacity: clamp(num('letterGlitchBaseOpacity', 0.16), 0, 1),
     glitchAmount: clamp(num('letterGlitchGlitchAmount', 0.5), 0, 1),
     speed: Math.max(0, num('letterGlitchSpeed', 1)),
     flow: clamp(num('letterGlitchFlow', 0.5), 0, 1),
