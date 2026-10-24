@@ -1,0 +1,118 @@
+{
+  "version": "1.0.0",
+  "module": "postgresql",
+  "summary": "从安装配置与高级 SQL 出发，覆盖锁、索引、复制备份与权限管理。",
+  "stages": [
+    {
+      "id": "basics",
+      "title": "基础入门",
+      "subtitle": "安装配置与 SQL 进阶",
+      "nodes": [
+        {
+          "id": "postgresql-001",
+          "title": "概述与安装配置",
+          "doc": "010-OverviewInstallConfig"
+        },
+        {
+          "id": "postgresql-002",
+          "title": "高级SQL与扩展",
+          "doc": "080-AdvancedSQL"
+        },
+        {
+          "id": "postgresql-003",
+          "title": "锁机制",
+          "doc": "190-LockMechanism"
+        },
+        {
+          "id": "postgresql-004",
+          "title": "事务ID回卷预防",
+          "doc": "180-TransactionIDWraparoundPrevention"
+        },
+        {
+          "id": "postgresql-005",
+          "title": "KNN向量索引",
+          "doc": "320-KNNVectorIndex"
+        },
+        {
+          "id": "postgresql-006",
+          "title": "分区裁剪与分区连接",
+          "doc": "280-PartitionPruningPartitionJoin"
+        }
+      ]
+    },
+    {
+      "id": "advanced",
+      "title": "高级特性",
+      "subtitle": "复制、备份与权限管理",
+      "nodes": [
+        {
+          "id": "postgresql-101",
+          "title": "MERGE语句增强",
+          "doc": "290-MERGEStatementEnhancement"
+        },
+        {
+          "id": "postgresql-102",
+          "title": "地理空间对象",
+          "doc": "310-GeoSpatialObject"
+        },
+        {
+          "id": "postgresql-103",
+          "title": "扩展模块",
+          "doc": "340-ExtensionModuleDetailed"
+        },
+        {
+          "id": "postgresql-104",
+          "title": "级联复制",
+          "doc": "410-CascadingReplication"
+        },
+        {
+          "id": "postgresql-105",
+          "title": "增量备份",
+          "doc": "450-IncrementalBackup"
+        },
+        {
+          "id": "postgresql-106",
+          "title": "基于角色的权限管理",
+          "doc": "490-RoleBasedPermissionManagement"
+        }
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "实战速查",
+      "subtitle": "审计、JSONB 与 CLI 命令",
+      "nodes": [
+        {
+          "id": "postgresql-201",
+          "title": "审计日志",
+          "doc": "520-AuditLog"
+        },
+        {
+          "id": "postgresql-202",
+          "title": "可更新视图",
+          "doc": "140-UpdatableView"
+        },
+        {
+          "id": "postgresql-203",
+          "title": "JSONB与JSON差异",
+          "doc": "110-JSONBJSONDifference"
+        },
+        {
+          "id": "postgresql-210",
+          "title": "VACUUM 机制",
+          "doc": "210-VACUUMMechanism"
+        },
+        {
+          "id": "postgresql-212",
+          "title": "Autovacuum 实战",
+          "doc": "212-VACUUMAutovacuum"
+        },
+        {
+          "id": "postgresql-214",
+          "title": "VACUUM 调优与排障",
+          "doc": "214-VACUUMTuningAndTroubleshoot"
+        }
+      ]
+    }
+  ]
+}

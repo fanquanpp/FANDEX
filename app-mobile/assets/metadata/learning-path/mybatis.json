@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "module": "mybatis",
+  "summary": "从 JDBC 的痛点出发，掌握 MyBatis 动态 SQL 与结果映射，吃透缓存与插件机制，再用 MyBatis-Plus 落到真实订单系统。",
+  "stages": [
+    {
+      "id": "core",
+      "title": "MyBatis 核心",
+      "subtitle": "痛点引入、快速上手、动态 SQL 与结果映射",
+      "nodes": [
+        { "id": "mybatis-010", "title": "从 JDBC 到 MyBatis", "doc": "010-FromJdbcToMybatis" },
+        { "id": "mybatis-020", "title": "快速上手与第一个 CRUD", "doc": "020-QuickStartCrud" },
+        { "id": "mybatis-030", "title": "动态 SQL", "doc": "030-DynamicSql" },
+        { "id": "mybatis-040", "title": "结果映射与关联查询", "doc": "040-ResultMapping" }
+      ]
+    },
+    {
+      "id": "internals",
+      "title": "机制深水区",
+      "subtitle": "缓存与插件拦截器",
+      "nodes": [
+        { "id": "mybatis-050", "title": "一级与二级缓存", "doc": "050-CacheMechanism" },
+        { "id": "mybatis-060", "title": "插件与拦截器原理", "doc": "060-PluginInterceptor" }
+      ]
+    },
+    {
+      "id": "plus",
+      "title": "MyBatis-Plus",
+      "subtitle": "条件构造器、分页乐观锁与代码生成",
+      "nodes": [
+        { "id": "mybatis-070", "title": "MyBatis-Plus 入门", "doc": "070-MybatisPlusCrud" },
+        { "id": "mybatis-080", "title": "MyBatis-Plus 进阶", "doc": "080-MybatisPlusAdvanced" }
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "工程实践与实战",
+      "subtitle": "性能陷阱治理与订单系统落地",
+      "nodes": [
+        { "id": "mybatis-090", "title": "常见坑与性能调优", "doc": "090-PitfallsPerformance" },
+        { "id": "mybatis-100", "title": "实战：订单系统持久层", "doc": "100-CapstoneOrderPersistence" }
+      ]
+    }
+  ]
+}

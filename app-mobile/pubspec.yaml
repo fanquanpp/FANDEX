@@ -1,0 +1,38 @@
+name: app_mobile
+description: FANDEX mobile client - Flutter rewrite for iOS and Android (GEOCON design language).
+publish_to: 'none'
+version: 5.0.0+1
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^3.0.0
+  go_router: ^16.0.0
+  markdown: ^7.3.0
+  flutter_math_fork: ^0.7.3
+  webview_flutter: ^4.13.0
+  highlight: ^0.7.0
+  shared_preferences: ^2.5.3
+  flutter_animate: ^4.5.2
+  http: ^1.4.0
+  intl: ^0.20.2
+  path_provider: ^2.1.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/docs/
+    - assets/metadata/
+    - assets/metadata/learning-path/
+    - assets/syntax-data/
+    - assets/mermaid/
+    - assets/shaders/
+    - assets/version.json

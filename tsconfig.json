@@ -28,7 +28,6 @@
     "dist",
     ".astro",
     "build",
-    "target",
-    "app-Android-new/node_modules"
+    "target"
   ]
 }

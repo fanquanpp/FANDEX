@@ -133,8 +133,7 @@ FANDEX/
   app-web/               # Web 应用（Astro + React）
   app-desktop/           # 桌面应用（Tauri 2，内嵌 Web 构建产物）
   app-desktop-portable/  # 桌面便携版（与 app-desktop 共用构建）
-  app-Android-new/       # Android 应用（Kotlin + Jetpack Compose）
-  app-Android-old/       # Android 旧栈归档线（已冻结）
+  app-mobile/            # 移动端应用（Flutter，iOS + Android 双端）
   cnt-content/           # 内容单一来源（教学文档与语法速览）
   shd-shared/            # 共享层（tokens、metadata、utils、assets）
   scripts/               # 仓库级自动化脚本

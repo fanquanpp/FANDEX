@@ -94,23 +94,24 @@ function bumpCargoVersion() {
 }
 bumpCargoVersion();
 
-function bumpGradle() {
-  const relPath = 'app-Android-new/app/build.gradle.kts';
+function bumpPubspec() {
+  const relPath = 'app-mobile/pubspec.yaml';
   const full = join(ROOT, relPath);
   const raw = readFileSync(full, 'utf-8');
-  const codeMatch = raw.match(/versionCode\s*=\s*(\d+)/);
-  if (!codeMatch) {
-    console.error('[error] build.gradle.kts 中未找到 versionCode');
+  const match = raw.match(/^version:\s*(\d+)\.(\d+)\.(\d+)\+(\d+)\s*$/m);
+  if (!match) {
+    console.error('[error] app-mobile/pubspec.yaml 中未找到 version: x.y.z+N 行');
     process.exit(1);
   }
-  const nextCode = Number(codeMatch[1]) + 1;
-  const next = raw
-    .replace(/versionCode\s*=\s*\d+/, `versionCode = ${nextCode}`)
-    .replace(/versionName\s*=\s*"[^"]+"/, `versionName = "${nextVersion}"`);
+  const nextCode = Number(match[4]) + 1;
+  const next = raw.replace(
+    /^version:\s*\d+\.\d+\.\d+\+\d+\s*$/m,
+    `version: ${nextVersion}+${nextCode}`,
+  );
   writeFileSync(full, next, 'utf-8');
-  console.log(`versionCode: ${codeMatch[1]} -> ${nextCode}`);
+  console.log(`pubspec versionCode: ${match[4]} -> ${nextCode}`);
 }
-bumpGradle();
+bumpPubspec();
 
 console.log(`版本号七处同步完成: ${currentVersion} -> ${nextVersion}`);
 

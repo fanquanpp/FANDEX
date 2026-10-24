@@ -1,0 +1,262 @@
+{
+  "version": "1.2.0",
+  "module": "git",
+  "summary": "从第一次 commit 到团队协作与底层原理：把 Git 变成每天都在用的工具。",
+  "stages": [
+    {
+      "id": "start",
+      "title": "起步与安装",
+      "subtitle": "Git 是什么、装好它、全局配置与忽略规则",
+      "nodes": [
+        {
+          "id": "git-010",
+          "title": "Git 基础概念与核心特点",
+          "doc": "010-Git"
+        },
+        {
+          "id": "git-020",
+          "title": "Git 安装配置",
+          "doc": "020-GitInstallConfig"
+        },
+        {
+          "id": "git-030",
+          "title": "Git 环境配置与初始化",
+          "doc": "030-GitEnvConfigInit"
+        },
+        {
+          "id": "git-040",
+          "title": "忽略规则 .gitignore 深入",
+          "doc": "040-GitignoreDeepDive"
+        }
+      ]
+    },
+    {
+      "id": "basics",
+      "title": "本地基础",
+      "subtitle": "add/commit/diff/restore 与三棵树",
+      "nodes": [
+        {
+          "id": "git-050",
+          "title": "Git 基本操作",
+          "doc": "050-GitBasicOperation"
+        },
+        {
+          "id": "git-060",
+          "title": "三棵树",
+          "doc": "060-ThreeTrees"
+        },
+        {
+          "id": "git-070",
+          "title": "git-diff 与暂存区操作",
+          "doc": "070-GitDiffStagingOperation"
+        },
+        {
+          "id": "git-080",
+          "title": "git-restore 与文件操作",
+          "doc": "080-GitRestoreFileOperation"
+        },
+        {
+          "id": "git-090",
+          "title": "git-commit-amend 修补最近提交",
+          "doc": "090-GitCommitAmend"
+        }
+      ]
+    },
+    {
+      "id": "branch",
+      "title": "分支与远程协作",
+      "subtitle": "分支本质、合并冲突、远程与跟踪分支",
+      "nodes": [
+        {
+          "id": "git-100",
+          "title": "Git 分支管理",
+          "doc": "100-GitBranchManagement"
+        },
+        {
+          "id": "git-110",
+          "title": "HEAD 指针与分支本质",
+          "doc": "110-HEADPointerBranchEssence"
+        },
+        {
+          "id": "git-120",
+          "title": "git-stash 暂存工作进度",
+          "doc": "120-GitStash"
+        },
+        {
+          "id": "git-130",
+          "title": "合并冲突解决",
+          "doc": "130-MergeConflictResolution"
+        },
+        {
+          "id": "git-140",
+          "title": "git-mergetool 合并冲突工具",
+          "doc": "140-GitMergetool"
+        },
+        {
+          "id": "git-150",
+          "title": "Git 远程仓库操作",
+          "doc": "150-GitRemoteRepoOperation"
+        },
+        {
+          "id": "git-160",
+          "title": "远程跟踪分支",
+          "doc": "160-RemoteTrackingBranch"
+        },
+        {
+          "id": "git-170",
+          "title": "分布式版本控制原理",
+          "doc": "170-DistributedVCSPrinciple"
+        }
+      ]
+    },
+    {
+      "id": "history",
+      "title": "历史与协作规范",
+      "subtitle": "log/blame/tag、工作流与代码评审",
+      "nodes": [
+        {
+          "id": "git-180",
+          "title": "git-log 详解",
+          "doc": "180-GitLogDetailed"
+        },
+        {
+          "id": "git-190",
+          "title": "git-blame 逐行追溯历史",
+          "doc": "190-GitBlame"
+        },
+        {
+          "id": "git-200",
+          "title": "标签管理",
+          "doc": "200-TagManagement"
+        },
+        {
+          "id": "git-210",
+          "title": "Git Flow 与 GitHub Flow",
+          "doc": "210-GitFlowGitHubFlow"
+        },
+        {
+          "id": "git-220",
+          "title": "Git Flow 与 GitHub Flow",
+          "doc": "210-GitFlowGitHubFlow"
+        },
+        {
+          "id": "git-230",
+          "title": "Code Review 流程与最佳实践",
+          "doc": "230-CodeReviewBestPractice"
+        }
+      ]
+    },
+    {
+      "id": "advanced",
+      "title": "原理与进阶",
+      "subtitle": "对象模型、rebase/reset、钩子、子模块与维护",
+      "nodes": [
+        {
+          "id": "git-240",
+          "title": "对象模型",
+          "doc": "240-ObjectModel"
+        },
+        {
+          "id": "git-250",
+          "title": "SHA-1 哈希完整性校验",
+          "doc": "250-SHA1IntegrityCheck"
+        },
+        {
+          "id": "git-260",
+          "title": "git-reflog 引用日志与误操作救援",
+          "doc": "260-GitReflog"
+        },
+        {
+          "id": "git-270",
+          "title": "git-rebase 变基与改写历史",
+          "doc": "270-GitRebase"
+        },
+        {
+          "id": "git-280",
+          "title": "交互式 rebase",
+          "doc": "280-InteractiveRebase"
+        },
+        {
+          "id": "git-290",
+          "title": "git-cherry-pick 选择性移植提交",
+          "doc": "290-GitCherryPick"
+        },
+        {
+          "id": "git-300",
+          "title": "git-reset 三种重置模式",
+          "doc": "300-GitReset"
+        },
+        {
+          "id": "git-310",
+          "title": "git-revert 安全撤销提交",
+          "doc": "310-GitRevert"
+        },
+        {
+          "id": "git-320",
+          "title": "git-revert 与 reset 对比",
+          "doc": "320-GitRevertResetComparison"
+        },
+        {
+          "id": "git-330",
+          "title": "Git 引用与传输协议",
+          "doc": "332-GitRefsAndTransferProtocol"
+        },
+        {
+          "id": "git-340",
+          "title": "Git 钩子",
+          "doc": "340-GitHooks"
+        },
+        {
+          "id": "git-345",
+          "title": "Git LFS 大文件管理",
+          "doc": "345-GitLfs"
+        },
+        {
+          "id": "git-350",
+          "title": "签名提交与安全实践",
+          "doc": "350-SignedCommitsAndSecurityPractices"
+        },
+        {
+          "id": "git-360",
+          "title": "git-bisect 二分定位缺陷提交",
+          "doc": "360-GitBisect"
+        },
+        {
+          "id": "git-370",
+          "title": "git-grep 历史版本搜索",
+          "doc": "370-GitGrep"
+        },
+        {
+          "id": "git-380",
+          "title": "git-submodule 子模块管理",
+          "doc": "380-GitSubmodule"
+        },
+        {
+          "id": "git-390",
+          "title": "sparse-checkout 稀疏检出",
+          "doc": "390-SparseCheckout"
+        },
+        {
+          "id": "git-400",
+          "title": "git-format-patch 补丁协作",
+          "doc": "400-GitFormatPatch"
+        },
+        {
+          "id": "git-410",
+          "title": "git-worktree 多工作树并行",
+          "doc": "410-GitWorktree"
+        },
+        {
+          "id": "git-420",
+          "title": "git-gc 仓库垃圾回收",
+          "doc": "420-GitGc"
+        },
+        {
+          "id": "git-430",
+          "title": "Git 毕业项目：像团队一样管理一个真实仓库",
+          "doc": "430-GitCapstoneProject"
+        }
+      ]
+    }
+  ]
+}

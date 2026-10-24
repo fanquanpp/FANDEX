@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+  html, body { margin: 0; padding: 0; background: transparent; }
+  #viewport { width: 100%; overflow: hidden; touch-action: pan-y; }
+  #stage { transform-origin: 0 0; width: max-content; will-change: transform; }
+  #stage svg { display: block; }
+  .error { color: #DC2626; font: 12px/1.5 monospace; padding: 8px; word-break: break-all; }
+</style>
+<script src="mermaid.min.js"></script>
+</head>
+<body>
+<div id="viewport"><div id="stage"></div></div>
+<script>
+  // Flutter WebView 离线渲染宿主 — 手势内核与 Android 版一致：
+  // 初始适配宽度；单指横向平移；双指捏合缩放 + 二维拖动；双击切换适配与 1:1。
+  // 手势期间锁定高度回报，切断每帧回环抖动；渲染完成/双击/手势结束各回报一次。
+  var viewport = document.getElementById('viewport');
+  var stage = document.getElementById('stage');
+  var natural = { w: 0, h: 0 };
+  var scale = 1;
+  var offset = { x: 0, y: 0 };
+  var currentTheme = 'dark';
+  var gestureActive = false;
+
+  function post(payload) {
+    if (window.GeoMermaid && GeoMermaid.postMessage) {
+      GeoMermaid.postMessage(JSON.stringify(payload));
+    }
+  }
+
+  function reportHeight() {
+    post({ type: 'height', value: Math.ceil(natural.h * scale) });
+  }
+
+  function applyTransform() {
+    stage.style.transform = 'translate(' + offset.x + 'px,' + offset.y + 'px) scale(' + scale + ')';
+  }
+
+  function fitWidth() {
+    if (natural.w <= 0) return;
+    var vw = viewport.clientWidth;
+    scale = Math.min(1.6, vw / natural.w);
+    offset = { x: 0, y: 0 };
+    applyTransform();
+    reportHeight();
+  }
+
+  function setTheme(theme) {
+    currentTheme = theme;
+    if (window.mermaid) {
+      mermaid.initialize({ startOnLoad: false, theme: theme, securityLevel: 'loose' });
+    }
+  }
+
+  function renderCode(code) {
+    if (!window.mermaid) {
+      post({ type: 'error', value: 'mermaid runtime missing' });
+      return;
+    }
+    mermaid.initialize({ startOnLoad: false, theme: currentTheme, securityLevel: 'loose' });
+    var id = 'm' + Date.now();
+    mermaid.render(id, code).then(function (result) {
+      stage.innerHTML = result.svg;
+      var svg = stage.querySelector('svg');
+      if (!svg) {
+        post({ type: 'error', value: 'empty svg' });
+        return;
+      }
+      var box = svg.getBBox();
+      var wAttr = parseFloat(svg.getAttribute('width')) || 0;
+      var hAttr = parseFloat(svg.getAttribute('height')) || 0;
+      natural.w = wAttr > 0 ? wAttr : Math.ceil(box.width);
+      natural.h = hAttr > 0 ? hAttr : Math.ceil(box.height);
+      svg.style.maxWidth = 'none';
+      fitWidth();
+    }).catch(function (e) {
+      post({ type: 'error', value: String(e && e.message ? e.message : e) });
+    });
+  }
+
+  // 手势内核
+  var pointers = new Map();
+  var pinchStart = null;
+
+  viewport.addEventListener('pointerdown', function (e) {
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.size === 2) {
+      var pts = Array.from(pointers.values());
+      pinchStart = {
+        dist: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y),
+        scale: scale,
+        midX: (pts[0].x + pts[1].x) / 2,
+        midY: (pts[0].y + pts[1].y) / 2
+      };
+      gestureActive = true;
+    } else if (pointers.size === 1) {
+      gestureActive = true;
+    }
+  });
+
+  viewport.addEventListener('pointermove', function (e) {
+    if (!pointers.has(e.pointerId)) return;
+    var prev = pointers.get(e.pointerId);
+    var dx = e.clientX - prev.x;
+    var dy = e.clientY - prev.y;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pointers.size >= 2 && pinchStart) {
+      var pts = Array.from(pointers.values());
+      var dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      var next = Math.max(0.4, Math.min(4, pinchStart.scale * dist / Math.max(1, pinchStart.dist)));
+      var cx = pinchStart.midX, cy = pinchStart.midY;
+      // 以捏合中心为焦点缩放
+      offset.x = cx - (cx - offset.x) * (next / scale);
+      offset.y = cy - (cy - offset.y) * (next / scale);
+      scale = next;
+      applyTransform();
+    } else if (pointers.size === 1) {
+      var maxOffX = Math.max(0, natural.w * scale - viewport.clientWidth);
+      offset.x = Math.max(-maxOffX, Math.min(0, offset.x + dx));
+      offset.y += dy;
+      applyTransform();
+    }
+  });
+
+  function endPointer(e) {
+    var had = pointers.has(e.pointerId);
+    pointers.delete(e.pointerId);
+    if (pointers.size === 0) {
+      if (had && gestureActive) {
+        gestureActive = false;
+        pinchStart = null;
+        reportHeight();
+      }
+    }
+  }
+  viewport.addEventListener('pointerup', endPointer);
+  viewport.addEventListener('pointercancel', endPointer);
+
+  viewport.addEventListener('dblclick', function () {
+    if (Math.abs(scale - Math.min(1.6, viewport.clientWidth / Math.max(1, natural.w))) < 0.02) {
+      scale = 1;
+    } else {
+      fitWidth();
+      return;
+    }
+    offset = { x: 0, y: 0 };
+    applyTransform();
+    reportHeight();
+  });
+
+  window.addEventListener('resize', function () {
+    if (natural.w > 0 && !gestureActive) fitWidth();
+  });
+</script>
+</body>
+</html>

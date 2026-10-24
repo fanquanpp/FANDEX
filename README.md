@@ -7,8 +7,8 @@
 **FANDEX 是一套面向零基础学习者的编程自学笔记库，也是学成之后的随身语法速查伴侣。**
 
 43 个技术模块、1700+ 篇中文教学笔记，从"计算机是如何工作的"一路讲到数据库、后端、
-云原生与游戏开发。网页、Windows 桌面端、Android 双端共享同一内容体系，全部内容
-离线可用。写作风格是"带实战、讲解、知识点、理论的学习笔记"：先动手做出来，再讲
+云原生与游戏开发。网页、Windows 桌面端、移动端（iOS + Android）共享同一内容体系，
+全部内容离线可用。写作风格是"带实战、讲解、知识点、理论的学习笔记"：先动手做出来，再讲
 为什么，最后给坑点与自检——不是教材，也没有概念堆砌。
 
 整个体系是单一 Git 仓库（monorepo）：内容唯一来源 `cnt-content/full`，模块元数据
@@ -23,8 +23,7 @@ FANDEX/
 ├── app-web/              # 网页端（Astro 7 + React 19 + Tailwind 4），GitHub Pages 部署
 ├── app-desktop/          # Windows 桌面端（Tauri 2，内嵌 web 产物，完全离线）
 ├── app-desktop-portable/ # 桌面便携版（免安装解压即用，与 app-desktop 共用构建）
-├── app-Android-new/      # Android 主线（Kotlin + Jetpack Compose）
-├── app-Android-old/      # Android 旧线（已冻结，仅修阻断缺陷）
+├── app-mobile/           # 移动端（Flutter，iOS + Android 双端）
 ├── cnt-content/          # 内容层：full/ 教学笔记、syntax/ 语法速查素材
 ├── shd-shared/           # 共享层：设计令牌、模块元数据、图标资产
 ├── docs/                 # 课程地图与历史审计记录
@@ -33,11 +32,11 @@ FANDEX/
 
 ## 三端一览
 
-| | app-web | app-desktop | app-Android-new | app-Android-old |
-| --- | --- | --- | --- | --- |
-| 平台 | 网页 | Windows | Android | Android |
-| 技术栈 | Astro 7 + React 19 | Tauri 2 | Compose + Material 3 | Compose + Material 3 |
-| 状态 | 主线 | 主线 | 主线 | 已冻结 |
+| | app-web | app-desktop | app-mobile |
+| --- | --- | --- | --- |
+| 平台 | 网页 | Windows | iOS + Android |
+| 技术栈 | Astro 7 + React 19 | Tauri 2 | Flutter（Dart + Kotlin/Swift + GLSL） |
+| 状态 | 主线 | 主线 | 主线 |
 
 三端共享同一内容管线，任何一端都不维护独立内容副本。桌面端与移动端装好即完全
 离线；网页端是 PWA，可安装到桌面/主屏离线回访。
@@ -66,7 +65,7 @@ Android 与 Windows 桌面端的构建命令见 `CONTRIBUTING.md`「环境准备
 flowchart LR
     A["cnt-content/full<br/>43 模块 · 1700+ 篇"] --> B["content-sync<br/>元数据自动补全"]
     B --> C["app-web<br/>Content Collections"]
-    B --> D["app-Android-new<br/>generate-content.mjs"]
+    B --> D["app-mobile<br/>generate-content.mjs"]
     C --> E["GitHub Pages<br/>+ app-desktop 内嵌"]
     A --> F["render-mermaid<br/>图表预渲染缓存"] --> C
 ```
