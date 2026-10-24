@@ -68,8 +68,3 @@ export function getFxTier(): FxTier {
   if (prefersReducedMotion() || saveDataRequested() || coarse || narrow) return 'lite';
   return 'full';
 }
-
-/** 惰性特效（动态 import）是否值得加载：仅 full 档加载重实现。 */
-export function wantsCanvasLayers(): boolean {
-  return getFxTier() === 'full' && !isAutomation();
-}

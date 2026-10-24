@@ -8,7 +8,7 @@
  *
  * ambient prop 组合 fx 环境画布层（AmbientLayers）：
  *   'none'（默认）— 仅 CSS 律动装饰，文档页保持阅读优先；
- *   'full' / 'grid' — 挂指针网格（与字符场），full 档浏览器生效。
+ *   'full' — 挂字符故障场，full 档浏览器生效。
  */
 import AmbientLayers from '@/components/AmbientLayers.astro';
 import { GEO_DECOR_CONFIG, NUM_DEFAULTS } from '@/fx/decor-config';
@@ -16,7 +16,7 @@ import { GEO_DECOR_CONFIG, NUM_DEFAULTS } from '@/fx/decor-config';
 interface Props {
   variant?: keyof typeof GEO_DECOR_CONFIG;
   num?: string;
-  ambient?: 'none' | 'full' | 'grid';
+  ambient?: 'none' | 'full';
 }
 
 const { variant = 'minimal', num, ambient = 'none' } = Astro.props;

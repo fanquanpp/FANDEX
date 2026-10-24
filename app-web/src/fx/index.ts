@@ -6,7 +6,7 @@
  *   fx/registry.ts       注册表：data-fx 命名挂载 + 选择器挂载，幂等
  *   fx/lifecycle.ts      astro:page-load / before-swap 生命周期对齐
  *   fx/scene.ts          场景令牌读取、主题订阅、共享 rAF 循环
- *   fx/layers/           画布层：scene-backdrop、cursor-grid、letter-field
+ *   fx/layers/           画布层：scene-backdrop、letter-glitch
  *   fx/effects/          DOM 特效：reveal、split/decrypt、count-up
  *   fx/decor-config.ts   GeoBgDecor 律动装饰配置（SSR 渲染的单一来源）
  *
@@ -24,8 +24,7 @@ import { mountCountUp } from './effects/count-up';
 import { mountReveal, mountRevealGroup } from './effects/reveal';
 import { mountDecrypt, mountSplit } from './effects/text';
 import { ensureBackdrop } from './layers/backdrop';
-import { mountCursorGrid } from './layers/cursor-grid';
-import { mountLetterField } from './layers/letter-field';
+import { mountLetterGlitch } from './layers/letter-glitch';
 
 /* 画布层仅在 full 档挂载（桌面、无减少动效、非自动化环境） */
 registerFx('scene-backdrop', (host) => {
@@ -33,14 +32,9 @@ registerFx('scene-backdrop', (host) => {
   return ensureBackdrop(host);
 });
 
-registerFx('cursor-grid', (host) => {
-  if (getFxTier() !== 'full' || isAutomation()) return undefined;
-  return mountCursorGrid(host);
-});
-
-registerFx('letter-field', (host) => {
-  if (getFxTier() !== 'full' || isAutomation()) return undefined;
-  return mountLetterField(host);
+registerFx('letter-glitch', (host) => {
+  if (getFxTier() !== 'full' || !hasWebgl2() || isAutomation()) return undefined;
+  return mountLetterGlitch(host);
 });
 
 /* DOM 特效：lite 档内部自行降级为静态显形 */
@@ -59,9 +53,8 @@ export {
   hasWebgl2,
   isAutomation,
   mountCountUp,
-  mountCursorGrid,
   mountDecrypt,
-  mountLetterField,
+  mountLetterGlitch,
   mountReveal,
   mountRevealGroup,
   mountSplit,

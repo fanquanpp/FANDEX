@@ -4,16 +4,18 @@
  * 律动装饰系统 — 以「声音的可视化 + 歌姬舞台」为唯一母题
  *
  * 元素族谱（全部围绕虚拟歌姬意象，色彩取自分类歌姬主题色，不再堆砌无关几何）：
- *   grid   底纹网格（缓慢漂移的乐谱纸）
  *   wave   音波（正弦线滚动，对应声轨）
  *   eq     均衡条（三根错峰跳动的电平柱）
  *   orbit  轨道星系（三重轨道各一种歌姬色，异速异向旋转 + 绕行音符点）
  *   note   漂浮音符（八分音符上浮消散）
  *   trio   三色音符组（洛天依蓝 / 乐正绫红 / 言和薄荷绿错峰升起）
  *   star   星尘（歌姬彩四角星微粒漂移闪烁，星尘 Singer 典故）
- *   glow   舞台光晕（底部呼吸柔光斑，演唱会地灯意象）
  *   num    编号铭牌（页面轨道号 00 起，配页面拉丁名，404 页显示 404）
- *   scan   扫描线 / caret 光标 / brackets 括号 / terminal（代码变奏）
+ *   scan   caret 光标 / brackets 括号 / terminal（代码变奏）
+ *
+ * 已删除族（用户 2026-10-25 裁定，勿再加回）：grid 底纹网格、
+ * glow 舞台光晕、scanline 柔光扫描带——背景只允许线与几何，
+ * 禁止网格底纹与一切泛光光晕。
  *
  * 动画纪律（web.dev 合成器动画实践）：
  *   - 只动 transform 与 opacity，禁止 background-position / 尺寸动画
@@ -27,29 +29,7 @@
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  z-index: 0;
-}
-
-/* 底纹网格：超尺寸层做整周期位移，替代旧的 background-position 绘制动画 */
-.decor-grid {
-  position: absolute;
-  inset: -96px;
-  background-image:
-    linear-gradient(to right, var(--decor-grid) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--decor-grid) 1px, transparent 1px);
-  background-size: 64px 64px;
-  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 0%, transparent 82%);
-  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 0%, transparent 82%);
-  animation: decor-grid-drift 90s linear infinite;
-}
-
-@keyframes decor-grid-drift {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(-64px, 64px, 0);
-  }
+  z-index: -1;
 }
 
 /* 音波：周期 320px 的双正弦线做 mask 平铺，整周期横移无缝循环 */
@@ -245,11 +225,6 @@
   user-select: none;
 }
 
-.decor-num--accent {
-  -webkit-text-stroke-color: var(--decor-accent);
-  animation-delay: -6.5s;
-}
-
 @supports not (-webkit-text-stroke: 1px black) {
   .decor-num {
     color: var(--decor-line);
@@ -368,49 +343,6 @@
   }
 }
 
-/* 舞台光晕：底部呼吸的柔光斑，演唱会的地灯意象 */
-.decor-glow {
-  position: absolute;
-  width: 520px;
-  height: 300px;
-  background: radial-gradient(closest-side, var(--decor-soft), transparent 72%);
-  animation: decor-glow-breathe 15s ease-in-out infinite;
-}
-
-@keyframes decor-glow-breathe {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(0.94);
-  }
-  50% {
-    opacity: 0.9;
-    transform: scale(1.04);
-  }
-}
-
-/* 扫描线：一条柔光带周期性掠过（error、playground） */
-.decor-scanline {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 72px;
-  background: linear-gradient(to bottom, transparent, var(--decor-soft), transparent);
-  animation: decor-scan 10s linear infinite;
-}
-
-@keyframes decor-scan {
-  from {
-    transform: translate3d(0, -100%, 0);
-  }
-  to {
-    /* keyframe 内无法做 vh->dvh 双行回退（同名 keyframe 选择器后者覆盖前者），
-       直接用 dvh：移动端动态视口下扫描终点与可见高度一致，桌面端两者等值 */
-    transform: translate3d(0, 100dvh, 0);
-  }
-}
-
 /* 代码光标：终端质感 */
 .decor-caret {
   position: absolute;
@@ -512,17 +444,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .decor-grid,
   .decor-wave,
   .decor-eq i,
   .decor-orbit__ring,
   .decor-note,
   .decor-trio span,
   .decor-star,
-  .decor-glow,
   .decor-num,
-  .decor-num--accent,
-  .decor-scanline,
   .decor-caret,
   .decor-brackets,
   .decor-terminal {

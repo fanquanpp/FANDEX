@@ -80,21 +80,19 @@ const stats = {
     </div>
 
     <div class="fx-showcase__stage-wrap">
-      <p class="text-xs text-text-tertiary uppercase tracking-wider">ambient 舞台：cursor-grid + letter-field（移动指针与点击试试）</p>
+      <p class="text-xs text-text-tertiary uppercase tracking-wider">ambient 舞台：letter-glitch（移动指针与点击试试）</p>
       <div class="fx-showcase__stage">
         <div class="fx-ambient" aria-hidden="true">
           <div
-            data-fx="cursor-grid"
-            data-cursor-grid-cell-size="34"
-            data-cursor-grid-radius="120"
-            data-cursor-grid-grid-opacity="0.09"
-            data-cursor-grid-fill-opacity="0.1"
-            data-cursor-grid-max-opacity="0.6"
-            data-cursor-grid-spotlight="0.5"
-            data-cursor-grid-ambient="0.2"
-          >
-          </div>
-          <div data-fx="letter-field" data-letter-field-cell-size="42" data-letter-field-opacity="0.6"></div>
+            data-fx="letter-glitch"
+            data-letter-glitch-characters="01"
+            data-letter-glitch-font-size="10"
+            data-letter-glitch-spacing="0.8"
+            data-letter-glitch-density="1"
+            data-letter-glitch-base-opacity="0.3"
+            data-letter-glitch-flow="0.5"
+            data-letter-glitch-click-effect="tear"
+          ></div>
         </div>
       </div>
     </div>
@@ -108,9 +106,8 @@ const stats = {
         </tr>
       </thead>
       <tbody>
-        <tr><td>data-fx="scene-backdrop"</td><td>SceneBackdrop.astro</td><td>WebGL 色彩场 + CSS mesh 兜底，单例画布跨页搬迁</td></tr>
-        <tr><td>data-fx="cursor-grid"</td><td>AmbientLayers.astro</td><td>指针点亮网格，点击扩散波纹，data-cursor-grid-* 调参</td></tr>
-        <tr><td>data-fx="letter-field"</td><td>AmbientLayers.astro</td><td>代码字符场，指针注能 + 整行扫描，data-letter-field-* 调参</td></tr>
+        <tr><td>data-fx="scene-backdrop"</td><td>SceneBackdrop.astro</td><td>声纹线场背景（底色 + 暗角 + WebGL 线场），负层级垫底，单例画布跨页搬迁</td></tr>
+        <tr><td>data-fx="letter-glitch"</td><td>AmbientLayers.astro</td><td>二进制字符故障场（WebGL2），入场闪烁 + 光浪 + 指针撕裂点击，data-letter-glitch-* 调参</td></tr>
         <tr><td>data-fx-reveal</td><td>.fx-reveal</td><td>滚动显现；data-fx-reveal-group 容器内子元素自动错峰</td></tr>
         <tr><td>data-fx-split</td><td>任意文本元素</td><td>rise / pop / flip 三种拆字入场，stagger / delay 可调</td></tr>
         <tr><td>data-fx-decrypt</td><td>任意文本元素</td><td>乱码滚动逐位落定，speed / delay 可调</td></tr>

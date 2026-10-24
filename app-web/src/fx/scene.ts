@@ -23,7 +23,7 @@ function styleProbe(): CanvasRenderingContext2D | null {
   return probe;
 }
 
-export function parseCssColor(raw: string, fallback: Rgb): Rgb {
+function parseCssColor(raw: string, fallback: Rgb): Rgb {
   const value = raw.trim();
   if (!value) return fallback;
   if (/^#[0-9a-fA-F]{6}$/.test(value)) {
@@ -48,6 +48,16 @@ export function parseCssColor(raw: string, fallback: Rgb): Rgb {
 export function readSceneColor(name: string, fallback: Rgb): Rgb {
   const raw = getComputedStyle(document.documentElement).getPropertyValue(name);
   return parseCssColor(raw, fallback);
+}
+
+/**
+ * 读取空格分隔的多色令牌（如 --fx-ambient-accents: #00E5FF #00D6C7），
+ * 逐色归一；令牌缺失时返回空数组，由调用方决定兜底色板。
+ */
+export function readSceneColorList(name: string, fallback: Rgb): Rgb[] {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  if (!raw) return [];
+  return raw.split(/\s+/).map((entry) => parseCssColor(entry, fallback));
 }
 
 export function readSceneNumber(name: string, fallback: number): number {

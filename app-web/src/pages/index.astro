@@ -61,14 +61,6 @@ const grouped = getCategories()
           ))}
         </nav>
       </div>
-
-      <div class="hero-terminal" aria-hidden="true">
-        <div class="hero-terminal__bar">
-          <span class="hero-terminal__title">fandex://init</span>
-          <span class="hero-terminal__rec">[REC]</span>
-        </div>
-        <div class="hero-terminal__body" data-terminal><code data-terminal-log></code><input class="hero-terminal__input" data-terminal-input type="text" readonly tabindex="-1" autocomplete="off" autocapitalize="off" spellcheck="false" /></div>
-      </div>
     </section>
 
     {grouped.map(group => (
@@ -113,5 +105,4 @@ const grouped = getCategories()
 <script>
   import '@/lib/home-interactions';
   import '@/fx';
-  import '@/lib/home-terminal';
 </script>

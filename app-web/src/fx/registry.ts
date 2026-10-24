@@ -2,7 +2,7 @@
  * fx 注册表 — 动效组件化的核心。
  *
  * 两种挂载方式：
- * - 命名挂载：元素标 `data-fx="cursor-grid letter-field"`（空格分隔多值），
+ * - 命名挂载：元素标 `data-fx="letter-glitch"`（空格分隔多值），
  *   注册表按名分发。
  * - 选择器挂载：registerFx 提供 selector（如计数器 `.stat-num[data-countup]`），
  *   mountFxTree 全树扫描，适合历史属性兼容。
@@ -29,10 +29,6 @@ const liveDisposers = new Set<FxDispose>();
 
 export function registerFx(name: string, mount: FxMount, selector?: string): void {
   registry.set(name, selector ? { mount, selector } : { mount });
-}
-
-export function getFxEntry(name: string): FxEntry | undefined {
-  return registry.get(name);
 }
 
 function isMounted(host: HTMLElement, name: string): boolean {

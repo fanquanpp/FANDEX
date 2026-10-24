@@ -15,8 +15,7 @@ fx/
   scene.ts          场景令牌读取、主题订阅（fandex:themechange）、共享 rAF
   layers/
     backdrop.ts     scene-backdrop：声纹线场背景，单例画布跨页搬迁
-    cursor-grid.ts  指针点亮网格（点击波纹、环境闪烁、hold-then-fade 包络）
-    letter-field.ts 代码字符场（指针注能、整行扫描）
+    letter-glitch.ts 二进制字符故障场（WebGL2：入场闪烁、光浪、指针撕裂点击）
   effects/
     reveal.ts       滚动显现（data-fx-reveal / data-fx-reveal-group）
     text.ts         拆字（data-fx-split）与解密（data-fx-decrypt）
@@ -31,8 +30,8 @@ fx/
 - `components/AmbientLayers.astro` — 环境画布层组合（可由 GeoBgDecor 的
   ambient prop 组合，也可单独使用）；
 - `styles/fx.css` — 全部 fx 样式；场景颜色令牌在 `styles/variables.css`
-  的 `--fx-scene-*` / `--fx-ambient-ink`（随主题切换，WebGL uniform 经
-  fx/scene.ts 解析读取）。
+  的 `--fx-scene-*` / `--fx-ambient-ink` / `--fx-ambient-accents`
+  （随主题切换，WebGL uniform 经 fx/scene.ts 解析读取）。
 
 ## 使用
 
@@ -46,7 +45,7 @@ fx/
 <span data-fx-split="pop" data-fx-split-stagger="55">FANDEX</span>
 <span data-fx-decrypt data-fx-decrypt-speed="34">FX_REGISTRY</span>
 <span data-fx-count="42">42</span>
-<div data-fx="cursor-grid letter-field"></div>
+<div data-fx="letter-glitch" data-letter-glitch-font-size="8" data-letter-glitch-density="1"></div>
 ```
 
 新增一个特效：实现 `(host: HTMLElement) => void | (() => void)` 挂载函数，
@@ -64,8 +63,13 @@ fx/
   prefers-reduced-motion / 省流 / 触屏 / 窄屏归入 lite 档：零画布，
   文本与数字特效直接呈现终值。
 - 设计约束：不使用光斑与色散类装饰——背景一律单墨色线与几何
-  （声纹线场、技术网格、暗角为压暗而非发光），禁止径向辉光、
-  彩虹混色与 iridescent 场。
+  （声纹线场、字符场、暗角为压暗而非发光），禁止径向辉光、
+  彩虹混色与 iridescent 场。2026-10-25 追加裁定：底纹网格
+  （decor-grid / fx-backdrop__grid）与指针网格、舞台光晕、柔光
+  扫描带已全部删除，勿再加回。
+- 背景层一律负层级垫底（.fx-backdrop / .decor-bg 均 z-index: -1）：
+  定位的 z-index:0 层按绘制顺序会盖住一切静态内容（曾把侧边目录栏
+  整列遮黑），靠"DOM 靠前"垫底是错误假设。
 - `navigator.webdriver`（Lighthouse / Playwright）下画布层全部跳过：
   SwiftShader 软渲染拖慢 CI 性能分，且冒烟测试只要求零未捕获异常。
 - 暗色场景令牌遵守色彩裁定基线：纯黑灰板（#0A0A0A 系）+ 青系
@@ -73,7 +77,7 @@ fx/
 
 ## 致谢
 
-cursor-grid 的单元格状态纹理 + 单 pass 着色器架构来自 react-bits 的
-CursorGrid（MIT + Commons Clause），经 typelex 间接引用后按 FANDEX
-约束重写为无框架版本；backdrop 的虹彩迭代场着色器源自 typelex 的
-Backdrop（three.js 实现改写为原生 WebGL2）。
+letter-glitch 的字形图集 + 状态纹理 + 单 pass 着色器架构来自 react-bits
+的 LetterGlitch（MIT + Commons Clause），按 FANDEX 令牌化配色重写为
+无框架版本；backdrop 的虹彩迭代场着色器源自 typelex 的 Backdrop
+（three.js 实现改写为原生 WebGL2）。
