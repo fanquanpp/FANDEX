@@ -1,0 +1,46 @@
+---
+/**
+ * AmbientLayers — 环境画布层组合（fx 体系的指针网格与字符场）。
+ *
+ * 纯声明式：以 data-fx 标记宿主，fx 注册表在 full 档挂载实际实现，
+ * lite 档 / 无 JS 时整层为空壳零成本。
+ *
+ * preset：
+ *   full — 指针网格 + 代码字符场（首页舞台）
+ *   grid — 仅指针网格（404 等轻环境页）
+ */
+export interface Props {
+  preset?: 'full' | 'grid';
+}
+
+const { preset = 'full' } = Astro.props;
+---
+
+<div class="fx-ambient" aria-hidden="true">
+  <div
+    data-fx="cursor-grid"
+    data-cursor-grid-cell-size="64"
+    data-cursor-grid-radius="180"
+    data-cursor-grid-style="lines"
+    data-cursor-grid-grid-opacity="0.05"
+    data-cursor-grid-fill-opacity="0.07"
+    data-cursor-grid-max-opacity="0.45"
+    data-cursor-grid-spotlight="0.4"
+    data-cursor-grid-ambient="0.12"
+    data-cursor-grid-hold-time="260"
+    data-cursor-grid-fade-duration="1100"
+  >
+  </div>
+  {
+    preset === 'full' && (
+      <div
+        data-fx="letter-field"
+        data-letter-field-cell-size="56"
+        data-letter-field-density="0.75"
+        data-letter-field-opacity="0.5"
+        data-letter-field-font-size="13"
+        data-letter-field-speed="1"
+      />
+    )
+  }
+</div>

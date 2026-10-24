@@ -16,6 +16,9 @@ const base = import.meta.env.BASE_URL;
     <meta http-equiv="Content-Security-Policy" content={MINIMAL_CSP} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>404 - 页面未找到 | {SITE.title}</title>
+    <script is:inline>
+      document.documentElement.dataset.fxReady = '1';
+    </script>
 
     <link rel="stylesheet" href={`${base}fonts/fonts.css`} />
     <link
@@ -36,10 +39,10 @@ const base = import.meta.env.BASE_URL;
   </head>
   <body>
     <div class="error-page">
-      <GeoBgDecor variant="error" />
+      <GeoBgDecor variant="error" ambient="grid" />
       <main class="error-container">
         <div class="error-code-frame" aria-hidden="true">
-          <div class="error-code">404</div>
+          <div class="error-code" data-fx-split="pop" data-fx-split-stagger="90">404</div>
         </div>
         <h1 class="error-title" data-i18n="error404.title">页面未找到</h1>
         <p class="error-desc" data-i18n="error404.desc">地址不存在或内容已被移动。</p>
@@ -62,6 +65,10 @@ const base = import.meta.env.BASE_URL;
 
     <script>
       import '@/lib/i18n-dom';
+    </script>
+
+    <script>
+      import '@/fx';
     </script>
 
     <script is:inline>

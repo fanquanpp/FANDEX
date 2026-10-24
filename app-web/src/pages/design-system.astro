@@ -25,4 +25,203 @@ const stats = {
   <meta slot="head" name="robots" content="noindex, nofollow" />
 
   <DesignSystemDemo client:load stats={stats} />
+
+  <section class="fx-showcase" aria-labelledby="fx-showcase-title">
+    <header class="fx-showcase__head">
+      <h2 id="fx-showcase-title" class="text-2xl font-semibold text-text-primary border-l-4 border-primary-600 pl-3">
+        fx 动效特效体系
+      </h2>
+      <p class="text-sm text-text-secondary">
+        组件化注册表（src/fx）+ data-fx 声明式挂载：画布层受 full / lite / off
+        三档能力门控，prefers-reduced-motion 与无 JS 环境始终完整呈现内容。
+        本页场景为 full，背景即声纹线场实况。设计约束：不使用光斑与
+        色散类装饰，动效一律线与几何。
+      </p>
+    </header>
+
+    <div class="fx-showcase__grid">
+      <article class="fx-showcase__card">
+        <h3>split 拆字入场</h3>
+        <p class="fx-showcase__demo-text">
+          <span data-fx-split="flip" data-fx-split-stagger="40">FLIP-IN</span>
+          <span data-fx-split="rise" data-fx-split-stagger="40" data-fx-split-delay="320">RISE-UP</span>
+        </p>
+      </article>
+
+      <article class="fx-showcase__card">
+        <h3>decrypt 解密显形</h3>
+        <p class="fx-showcase__demo-text fx-showcase__demo-text--mono">
+          <span data-fx-decrypt data-fx-decrypt-speed="34" data-fx-decrypt-delay="600">FX_REGISTRY_V1</span>
+        </p>
+      </article>
+
+      <article class="fx-showcase__card">
+        <h3>count-up 数字滚动</h3>
+        <p class="fx-showcase__demo-text fx-showcase__demo-text--mono">
+          <span class="fx-showcase__num" data-fx-count={String(allModules.length)}>{allModules.length}</span>
+          模块
+          <span class="fx-showcase__num" data-fx-count={String(stats.totalDocs)}>{stats.totalDocs}</span>
+          篇文档
+        </p>
+      </article>
+
+      <article class="fx-showcase__card fx-reveal" data-fx-reveal>
+        <h3>reveal 滚动显现</h3>
+        <p>本卡片带 data-fx-reveal，进入视口 12% 后显形（继续滚动可观察与下一张卡片的错峰入场）。</p>
+      </article>
+
+      <article class="fx-showcase__card fx-reveal" data-fx-reveal>
+        <h3>scene 分层合成</h3>
+        <p>
+          scene-backdrop（全站色场）+ GeoBgDecor（CSS 律动装饰）+
+          AmbientLayers（画布环境层）三层叠加，配置集中于 fx/decor-config.ts。
+        </p>
+      </article>
+    </div>
+
+    <div class="fx-showcase__stage-wrap">
+      <p class="text-xs text-text-tertiary uppercase tracking-wider">ambient 舞台：cursor-grid + letter-field（移动指针与点击试试）</p>
+      <div class="fx-showcase__stage">
+        <div class="fx-ambient" aria-hidden="true">
+          <div
+            data-fx="cursor-grid"
+            data-cursor-grid-cell-size="34"
+            data-cursor-grid-radius="120"
+            data-cursor-grid-grid-opacity="0.09"
+            data-cursor-grid-fill-opacity="0.1"
+            data-cursor-grid-max-opacity="0.6"
+            data-cursor-grid-spotlight="0.5"
+            data-cursor-grid-ambient="0.2"
+          >
+          </div>
+          <div data-fx="letter-field" data-letter-field-cell-size="42" data-letter-field-opacity="0.6"></div>
+        </div>
+      </div>
+    </div>
+
+    <table class="fx-showcase__ref">
+      <thead>
+        <tr>
+          <th scope="col">属性</th>
+          <th scope="col">挂载</th>
+          <th scope="col">说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>data-fx="scene-backdrop"</td><td>SceneBackdrop.astro</td><td>WebGL 色彩场 + CSS mesh 兜底，单例画布跨页搬迁</td></tr>
+        <tr><td>data-fx="cursor-grid"</td><td>AmbientLayers.astro</td><td>指针点亮网格，点击扩散波纹，data-cursor-grid-* 调参</td></tr>
+        <tr><td>data-fx="letter-field"</td><td>AmbientLayers.astro</td><td>代码字符场，指针注能 + 整行扫描，data-letter-field-* 调参</td></tr>
+        <tr><td>data-fx-reveal</td><td>.fx-reveal</td><td>滚动显现；data-fx-reveal-group 容器内子元素自动错峰</td></tr>
+        <tr><td>data-fx-split</td><td>任意文本元素</td><td>rise / pop / flip 三种拆字入场，stagger / delay 可调</td></tr>
+        <tr><td>data-fx-decrypt</td><td>任意文本元素</td><td>乱码滚动逐位落定，speed / delay 可调</td></tr>
+        <tr><td>data-fx-count</td><td>数字元素</td><td>滚动出终值；兼容历史 .stat-num[data-countup]</td></tr>
+      </tbody>
+    </table>
+  </section>
 </HomeLayout>
+
+<style>
+  .fx-showcase {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 2rem 2rem 4rem;
+  }
+
+  .fx-showcase__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  .fx-showcase__card {
+    padding: 1.25rem;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 0.75rem;
+    background: var(--color-bg-elevated);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow: hidden;
+  }
+
+  .fx-showcase__card h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-fg-primary);
+  }
+
+  .fx-showcase__card p {
+    font-size: 0.85rem;
+    color: var(--color-fg-secondary);
+    line-height: 1.6;
+  }
+
+  .fx-showcase__demo-text {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-fg-primary);
+  }
+
+  .fx-showcase__demo-text--mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0.06em;
+  }
+
+  .fx-showcase__num {
+    color: var(--color-accent-base);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fx-showcase__stage {
+    position: relative;
+    height: 220px;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: var(--color-bg-primary);
+  }
+
+  .fx-showcase__stage-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .fx-showcase__ref {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  .fx-showcase__ref th,
+  .fx-showcase__ref td {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-border-subtle);
+    vertical-align: top;
+  }
+
+  .fx-showcase__ref th {
+    color: var(--color-fg-tertiary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+  }
+
+  .fx-showcase__ref td:first-child {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    white-space: nowrap;
+    color: var(--color-fg-primary);
+  }
+
+  .fx-showcase__ref td:last-child {
+    color: var(--color-fg-secondary);
+  }
+</style>
