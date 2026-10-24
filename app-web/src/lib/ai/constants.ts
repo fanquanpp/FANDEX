@@ -6,12 +6,15 @@ export const AI_CHANNEL_ACTIVE = false;
 
 // 本机存储键：遵循全站 fandex-<域> 命名约定。设置与密钥分键存放，
 // 便于"只清密钥"与"清全部 AI 数据"两类操作。
-export const AI_STORAGE_KEYS = {
-  settings: 'fandex-ai-settings',
-  apiKey: 'fandex-ai-key',
-} as const;
-
 export const AI_STORAGE_PREFIX = 'fandex-ai-';
+
+// 本机存储键：遵循全站 fandex-<域> 命名约定。设置与密钥分键存放，
+// 便于"只清密钥"与"清全部 AI 数据"两类操作。键名由统一前缀派生，
+// 运行时字符串与历史版本完全一致。
+export const AI_STORAGE_KEYS = {
+  settings: `${AI_STORAGE_PREFIX}settings`,
+  apiKey: `${AI_STORAGE_PREFIX}key`,
+} as const;
 
 export const AI_DEFAULT_MODEL = 'orcarouter/free';
 
