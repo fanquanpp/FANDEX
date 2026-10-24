@@ -34,7 +34,7 @@ const stats = {
       <p class="text-sm text-text-secondary">
         组件化注册表（src/fx）+ data-fx 声明式挂载：画布层受 full / lite / off
         三档能力门控，prefers-reduced-motion 与无 JS 环境始终完整呈现内容。
-        本页场景为 full，背景即声纹线场实况。设计约束：不使用光斑与
+        唯一背景层承载全部背景装饰。设计约束：不使用光斑与
         色散类装饰，动效一律线与几何。
       </p>
     </header>
@@ -73,8 +73,8 @@ const stats = {
       <article class="fx-showcase__card fx-reveal" data-fx-reveal>
         <h3>scene 分层合成</h3>
         <p>
-          scene-backdrop（全站色场）+ GeoBgDecor（CSS 律动装饰）+
-          AmbientLayers（画布环境层）三层叠加，配置集中于 fx/decor-config.ts。
+          唯一背景层（SceneBackdrop，z-index -1 垫底）：底色 + 暗角 +
+          律动装饰 + 字符故障场，配置集中于 fx/decor-config.ts。
         </p>
       </article>
     </div>
@@ -106,8 +106,7 @@ const stats = {
         </tr>
       </thead>
       <tbody>
-        <tr><td>data-fx="scene-backdrop"</td><td>SceneBackdrop.astro</td><td>声纹线场背景（底色 + 暗角 + WebGL 线场），负层级垫底，单例画布跨页搬迁</td></tr>
-        <tr><td>data-fx="letter-glitch"</td><td>AmbientLayers.astro</td><td>二进制字符故障场（WebGL2），入场闪烁 + 光浪 + 指针撕裂点击，data-letter-glitch-* 调参</td></tr>
+        <tr><td>data-fx="letter-glitch"</td><td>SceneBackdrop.astro</td><td>二进制字符故障场（WebGL2），入场闪烁 + 光浪 + 指针撕裂点击，data-letter-glitch-* 调参</td></tr>
         <tr><td>data-fx-reveal</td><td>.fx-reveal</td><td>滚动显现；data-fx-reveal-group 容器内子元素自动错峰</td></tr>
         <tr><td>data-fx-split</td><td>任意文本元素</td><td>rise / pop / flip 三种拆字入场，stagger / delay 可调</td></tr>
         <tr><td>data-fx-decrypt</td><td>任意文本元素</td><td>乱码滚动逐位落定，speed / delay 可调</td></tr>

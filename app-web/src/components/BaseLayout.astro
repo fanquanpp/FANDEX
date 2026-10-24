@@ -17,11 +17,15 @@ const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
 interface Props {
   /** 页面标题（转发语义，实际 title 由各页 SEO/meta 负责） */
   title?: string;
-  /** fx 场景浓度预设：full 舞台页 / calm 阅读页（默认） */
-  fxScene?: 'full' | 'calm';
+  /** fx 律动装饰变奏（fx/decor-config.ts），在唯一背景层内渲染 */
+  fxDecor?: import('@/fx/decor-config').GeoBgVariant;
+  /** fx 页面轨道号覆盖（如算法页 04），缺省用变体默认 */
+  fxNum?: string;
+  /** fx 字符故障场：仅首页舞台开启 */
+  fxAmbient?: boolean;
 }
 
-const { fxScene = 'calm' } = Astro.props;
+const { fxDecor, fxNum, fxAmbient = false } = Astro.props;
 ---
 
 <html lang={SITE.lang}>
@@ -86,7 +90,7 @@ const { fxScene = 'calm' } = Astro.props;
   </head>
   <body>
     <a class="skip-link" href="#app-main" data-i18n="a11y.skipToContent">跳转到主要内容</a>
-    <SceneBackdrop scene={fxScene} />
+    <SceneBackdrop decor={fxDecor} num={fxNum} ambient={fxAmbient} />
     <slot />
     <WebVitalsTracker client:idle />
   </body>

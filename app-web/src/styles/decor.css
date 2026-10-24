@@ -4,7 +4,6 @@
  * 律动装饰系统 — 以「声音的可视化 + 歌姬舞台」为唯一母题
  *
  * 元素族谱（全部围绕虚拟歌姬意象，色彩取自分类歌姬主题色，不再堆砌无关几何）：
- *   wave   音波（正弦线滚动，对应声轨）
  *   eq     均衡条（三根错峰跳动的电平柱）
  *   orbit  轨道星系（三重轨道各一种歌姬色，异速异向旋转 + 绕行音符点）
  *   note   漂浮音符（八分音符上浮消散）
@@ -24,50 +23,8 @@
  *   - prefers-reduced-motion 下全部静止
  */
 
-.decor-bg {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* 音波：周期 320px 的双正弦线做 mask 平铺，整周期横移无缝循环 */
-.decor-wave {
-  position: absolute;
-  left: -10%;
-  width: 120%;
-  height: 120px;
-  background-color: var(--decor-line);
-  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 120'><path d='M0,60 Q40,10 80,60 T160,60 T240,60 T320,60' fill='none' stroke='black' stroke-width='2'/><path d='M0,84 Q40,52 80,84 T160,84 T240,84 T320,84' fill='none' stroke='black' stroke-width='1.4' opacity='0.55'/></svg>");
-  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 120'><path d='M0,60 Q40,10 80,60 T160,60 T240,60 T320,60' fill='none' stroke='black' stroke-width='2'/><path d='M0,84 Q40,52 80,84 T160,84 T240,84 T320,84' fill='none' stroke='black' stroke-width='1.4' opacity='0.55'/></svg>");
-  -webkit-mask-size: 320px 120px;
-  mask-size: 320px 120px;
-  -webkit-mask-repeat: repeat-x;
-  mask-repeat: repeat-x;
-  animation:
-    decor-wave-slide 16s linear infinite,
-    decor-breathe 16s ease-in-out infinite;
-}
-
-@keyframes decor-wave-slide {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(-320px, 0, 0);
-  }
-}
-
-@keyframes decor-breathe {
-  0%,
-  100% {
-    opacity: 0.65;
-  }
-  50% {
-    opacity: 1;
-  }
-}
+/* 律动装饰元素族全部 render 在 SceneBackdrop 的唯一背景层
+   （.fx-backdrop，fixed + z-index -1）内，无独立图层、永不遮挡内容。 */
 
 /* 均衡条：三根电平柱错峰律动 */
 .decor-eq {
@@ -434,17 +391,12 @@
     letter-spacing: 0.22em;
   }
 
-  .decor-wave {
-    height: 90px;
-  }
-
   .decor-trio {
     transform: scale(0.8);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .decor-wave,
   .decor-eq i,
   .decor-orbit__ring,
   .decor-note,

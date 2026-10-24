@@ -1,7 +1,6 @@
 ---
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
-import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import FrontendLab from '@/islands/playground/FrontendLab'
 import { IS_DESKTOP_BUILD } from '@/lib/constants'
 import { categoryColors } from '@/lib/modules'
@@ -9,7 +8,7 @@ import '@/styles/islands/playground.css'
 
 ---
 
-<HomeLayout title="在线前端">
+<HomeLayout title="在线前端" fxDecor="playground">
   <SEO
     slot="head"
     title="在线前端工作台 · FANDEX"
@@ -29,7 +28,6 @@ import '@/styles/islands/playground.css'
   )}
 
   <div class="pg-page" style={`--pg-color:${categoryColors.frontend}`}>
-    <GeoBgDecor variant="playground" />
     <FrontendLab client:load />
   </div>
 </HomeLayout>

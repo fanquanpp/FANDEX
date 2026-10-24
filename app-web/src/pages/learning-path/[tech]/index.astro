@@ -1,7 +1,6 @@
 ---
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
-import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import FeatureNav from '@/components/FeatureNav.astro'
 import LearningPathMap from '@/islands/learning-path/LearningPathMap'
 import {
@@ -37,7 +36,7 @@ const chipModules = getLearningPathModules()
   .filter((item): item is NonNullable<typeof item> => item !== null)
 ---
 
-<HomeLayout title={`${techVM.title}学习路线`}>
+<HomeLayout title={`${techVM.title}学习路线`} fxDecor="learning-path">
   <SEO
     slot="head"
     title={`${techVM.title} 学习路线 · FANDEX`}
@@ -52,7 +51,6 @@ const chipModules = getLearningPathModules()
     data-lp-tech={techVM.module}
     data-lp-tech-title={techVM.title}
   >
-    <GeoBgDecor variant="learning-path" />
 
     <section class="hero">
       <h1 class="hero-title" data-text={techVM.title}>

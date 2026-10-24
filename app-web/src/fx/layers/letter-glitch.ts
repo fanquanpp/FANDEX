@@ -6,7 +6,7 @@
  * 重写的无框架版本。颜色不来自组件 props 而来自场景令牌：静息墨色读
  * --fx-ambient-ink，故障高亮读 --fx-ambient-accents（空格分隔多色，
  * 暗色为色彩裁定基线内的青系三色、亮色为深青墨同族两档），随
- * data-theme 自动切换，与全站声纹线场同一个视觉语系。
+ * data-theme 自动切换，与全站律动装饰同一个视觉语系。
  *
  * 二进制字符故障场：以 0/1 母题铺满宿主的低透明度字符原野，随主题
  * 令牌切换青系（暗）或深青墨（亮），支持入场闪烁、光浪、指针注能与
@@ -96,7 +96,7 @@ void main() {
 }`;
 
 /* 与 react-bits 原版的差异：去掉 uBackground（画布必须保持透明，
-   让底下的声纹线场与技术网格透出来）。 */
+   保持透明让底色与暗角透出来）。 */
 const FRAGMENT = `#version 300 es
 precision highp float;
 precision highp int;

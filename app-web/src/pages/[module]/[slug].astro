@@ -7,7 +7,6 @@ import Sidebar from '@/components/Sidebar.astro';
 import TableOfContents from '@/components/TableOfContents.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 import DocNav from '@/components/DocNav.astro';
-import GeoBgDecor from '@/components/GeoBgDecor.astro';
 import { render } from 'astro:content';
 import { getModule, modulePrerequisites, categoryColors, getPrimaryCategory } from '@/lib/modules';
 import {
@@ -56,7 +55,7 @@ const moduleColor = categoryColors[meta ? getPrimaryCategory(meta) : 'tools'];
 const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefined;
 ---
 
-<Layout title={doc.data.title}>
+<Layout title={doc.data.title} fxDecor="docs">
   <SEO
     slot="head"
     title={doc.data.title}
@@ -75,7 +74,6 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
   {showToc && <TableOfContents slot="toc" headings={headings} style={moduleColorStyle} />}
 
   <div class="doc-page" style={moduleColorStyle} id="doc-root" data-module={module} data-slug={slug}>
-    <GeoBgDecor variant="docs" />
     <Breadcrumb items={breadcrumb} hasSidebar />
     {
       (() => {

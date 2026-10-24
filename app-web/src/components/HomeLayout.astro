@@ -5,11 +5,11 @@ import LangToggle from '@/components/LangToggle.astro';
 import { SITE } from '@/lib/constants';
 import '@/styles/components/home-layout.css';
 
-const { title } = Astro.props;
+const { title, fxDecor, fxNum, fxAmbient } = Astro.props;
 const base = import.meta.env.BASE_URL;
 ---
 
-<BaseLayout title={title} fxScene="full">
+<BaseLayout title={title} fxDecor={fxDecor} fxNum={fxNum} fxAmbient={fxAmbient}>
   <slot name="head" slot="head" />
 
   <style is:inline>

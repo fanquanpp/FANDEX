@@ -26,12 +26,10 @@
   --decor-note: rgba(57, 197, 187, 0.42);
   --color-border-light: var(--color-border-subtle);
 
-  /* fx 场景层令牌（声纹线场背景与环境层共用，fx/scene.ts 读取）
+  /* fx 背景层令牌（唯一背景层与环境层共用，fx/scene.ts 读取）
      约束：不使用光斑与色散类装饰——背景只走单墨色线与几何。
      亮色：冷雾灰板 + 深青墨线 */
   --fx-scene-base: #EBEFF3;
-  --fx-scene-ink: #14716A;
-  --fx-scene-amount: 0.34;
   --fx-scene-vignette: rgba(147, 166, 180, 0.2);
   --fx-ambient-ink: #14716A;
   /* 故障字符场高亮色板（空格分隔，fx/layers/letter-glitch 读取）：
@@ -54,10 +52,8 @@
     --decor-note: rgba(57, 197, 187, 0.52);
 
     /* 暗色场景：纯黑灰板（#0A0A0A 系）+ 青系不可动（色彩裁定基线），
-       背景为单墨色声纹线场，无光斑无色散 */
+       背景为单墨色线与几何，无光斑无色散无网格 */
     --fx-scene-base: #0A0E14;
-    --fx-scene-ink: #00E5FF;
-    --fx-scene-amount: 0.5;
     --fx-scene-vignette: rgba(2, 6, 10, 0.55);
     --fx-ambient-ink: #39C5BB;
     /* 故障字符场高亮色板：色彩裁定基线内的青系三色，不可动 */

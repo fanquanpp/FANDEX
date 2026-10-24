@@ -1,7 +1,6 @@
 ---
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
-import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import FeatureNav from '@/components/FeatureNav.astro'
 import Footer from '@/components/Footer.astro'
 import { t } from '@/lib/i18n'
@@ -128,7 +127,7 @@ const careers = [
 
 ---
 
-<HomeLayout title="学习路线">
+<HomeLayout title="学习路线" fxDecor="learning-path">
   <SEO
     slot="head"
     title="学习路线 · FANDEX"
@@ -143,7 +142,6 @@ const careers = [
     data-lp-base={base}
     data-lp-colors={JSON.stringify(Object.fromEntries(techCards.map((card) => [card.module, categoryColors[card.category]])))}
   >
-    <GeoBgDecor variant="learning-path" />
 
     <section class="hero">
       <h1 class="hero-title" data-text="学习路线">

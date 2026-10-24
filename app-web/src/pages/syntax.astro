@@ -1,7 +1,6 @@
 ---
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
-import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import FeatureNav from '@/components/FeatureNav.astro'
 import SyntaxExplorer from '@/islands/SyntaxExplorer'
 import { getSyntaxIndex, getSyntaxStats } from '@/services'
@@ -16,7 +15,7 @@ const quickLangs = [...syntaxIndex.languages]
   .slice(0, 8)
 ---
 
-<HomeLayout title="语法速览">
+<HomeLayout title="语法速览" fxDecor="list">
   <SEO
     slot="head"
     title="语法速览 · FANDEX"
@@ -26,7 +25,6 @@ const quickLangs = [...syntaxIndex.languages]
   />
 
   <div class="home-page home-page--sub">
-    <GeoBgDecor variant="list" />
 
     <section class="hero">
       <h1 class="hero-title" data-text="语法速览">

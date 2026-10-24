@@ -1,7 +1,6 @@
 ---
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
-import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import FeatureNav from '@/components/FeatureNav.astro'
 import Footer from '@/components/Footer.astro'
 import { t } from '@/lib/i18n'
@@ -352,7 +351,7 @@ const EXTERNAL_GROUPS = [
 ] as const
 ---
 
-<HomeLayout title="算法教学">
+<HomeLayout title="算法教学" fxDecor="learning-path" fxNum="04">
   <SEO
     slot="head"
     title="算法教学 · FANDEX"
@@ -362,7 +361,6 @@ const EXTERNAL_GROUPS = [
   />
 
   <div class="home-page home-page--sub" data-algo-page style={`--page-color:${pageColor}`}>
-    <GeoBgDecor variant="learning-path" num="04" />
 
     <section class="hero">
       <h1 class="hero-title" data-text="算法教学">

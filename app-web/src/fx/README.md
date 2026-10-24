@@ -12,23 +12,22 @@ fx/
   capabilities.ts   能力门控：full / lite / off 三档 + WebGL2 探测 + 自动化检测
   registry.ts       注册表：data-fx 命名挂载 + 选择器挂载，幂等，统一回收
   lifecycle.ts      astro:page-load 挂载 / astro:before-swap 回收
-  scene.ts          场景令牌读取、主题订阅（fandex:themechange）、共享 rAF
+  scene.ts          场景令牌读取、主题订阅（fandex:themechange）
   layers/
-    backdrop.ts     scene-backdrop：声纹线场背景，单例画布跨页搬迁
     letter-glitch.ts 二进制字符故障场（WebGL2：入场闪烁、光浪、指针撕裂点击）
   effects/
     reveal.ts       滚动显现（data-fx-reveal / data-fx-reveal-group）
     text.ts         拆字（data-fx-split）与解密（data-fx-decrypt）
     count-up.ts     数字滚动（data-fx-count，兼容 .stat-num[data-countup]）
-  decor-config.ts   GeoBgDecor 律动装饰配置的单一数据源
+  decor-config.ts   律动装饰配置（背景单图层 SceneBackdrop 渲染的单一数据源）
 ```
 
 配套：
 
-- `components/SceneBackdrop.astro` — 背景宿主（底色 + 技术网格 + 暗角 +
-  画布挂载点），BaseLayout 通过 fxScene prop 选择 full / calm 浓度；
-- `components/AmbientLayers.astro` — 环境画布层组合（可由 GeoBgDecor 的
-  ambient prop 组合，也可单独使用）；
+- `components/SceneBackdrop.astro` — 全站唯一背景特效层：底色 + 暗角 +
+  律动装饰 + 字符故障场全部 render 在同一个 fixed 容器（z-index -1 垫底，
+  不存在第二个背景图层）；BaseLayout 经 fxDecor / fxNum / fxAmbient
+  prop 配置，页面经布局组件透传；
 - `styles/fx.css` — 全部 fx 样式；场景颜色令牌在 `styles/variables.css`
   的 `--fx-scene-*` / `--fx-ambient-ink` / `--fx-ambient-accents`
   （随主题切换，WebGL uniform 经 fx/scene.ts 解析读取）。
@@ -63,11 +62,11 @@ fx/
   prefers-reduced-motion / 省流 / 触屏 / 窄屏归入 lite 档：零画布，
   文本与数字特效直接呈现终值。
 - 设计约束：不使用光斑与色散类装饰——背景一律单墨色线与几何
-  （声纹线场、字符场、暗角为压暗而非发光），禁止径向辉光、
-  彩虹混色与 iridescent 场。2026-10-25 追加裁定：底纹网格
-  （decor-grid / fx-backdrop__grid）与指针网格、舞台光晕、柔光
-  扫描带已全部删除，勿再加回。
-- 背景层一律负层级垫底（.fx-backdrop / .decor-bg 均 z-index: -1）：
+  （字符场、暗角为压暗而非发光），禁止径向辉光、彩虹混色与
+  iridescent 场。2026-10-25 追加裁定：底纹网格（decor-grid /
+  fx-backdrop__grid）与指针网格、舞台光晕、柔光扫描带、波浪线场
+  （scene-backdrop 声纹线场与 decor-wave 音波条）已全部删除，勿再加回。
+- 背景层一律负层级垫底且全局只允许一个（.fx-backdrop，z-index: -1）：
   定位的 z-index:0 层按绘制顺序会盖住一切静态内容（曾把侧边目录栏
   整列遮黑），靠"DOM 靠前"垫底是错误假设。
 - `navigator.webdriver`（Lighthouse / Playwright）下画布层全部跳过：
@@ -79,5 +78,4 @@ fx/
 
 letter-glitch 的字形图集 + 状态纹理 + 单 pass 着色器架构来自 react-bits
 的 LetterGlitch（MIT + Commons Clause），按 FANDEX 令牌化配色重写为
-无框架版本；backdrop 的虹彩迭代场着色器源自 typelex 的 Backdrop
-（three.js 实现改写为原生 WebGL2）。
+无框架版本。

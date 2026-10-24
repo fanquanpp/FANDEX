@@ -1,22 +1,97 @@
 ---
 /**
- * SceneBackdrop — 全站常驻场景背景宿主。
+ * SceneBackdrop — 全站唯一背景特效层（单图层铁律）。
  *
- * SSR 渲染底色 + 暗角（首帧即成形，无网格、无光斑类装饰），
- * WebGL 声纹线场由 fx 体系的 scene-backdrop 挂载器把单例画布搬入
- * （capabilities 门控，自动化环境与 WebGL 不可用时只保留本组件的 CSS 层）。
- * 整层 z-index: -1 强制垫在全部内容之下。
+ * 底色 + 暗角 + CSS 律动装饰（均衡条/轨道星系/音符/星尘/编号铭牌）+
+ * 字符故障场，全部 render 在这一个 fixed 容器里，整层 z-index -1 垫底：
+ * 背景装饰在结构上不可能遮挡内容，也不存在第二个背景图层
+ * （GeoBgDecor / AmbientLayers 已并入本组件后删除，波浪线场已删除）。
  *
- * scene 预设：
- *   full — 首页 / 演示页等舞台页，线场完整浓度；
- *   calm — 文档阅读页，浓度收敛（--fx-scene-amount 同步调低）。
- * 布局组件通过 fxScene prop 选择，默认 calm（阅读优先）。
+ * Props：
+ *   decor   — 律动装饰变奏（fx/decor-config.ts 的 GeoBgVariant），缺省无线
+ *   num     — 页面轨道号覆盖（如算法页 04），缺省用变体默认
+ *   ambient — 是否挂字符故障场（仅首页舞台）
  */
+import { GEO_DECOR_CONFIG, NUM_DEFAULTS, type GeoBgVariant } from '@/fx/decor-config';
+
 export interface Props {
-  scene?: 'full' | 'calm';
+  decor?: GeoBgVariant | undefined;
+  num?: string | undefined;
+  ambient?: boolean;
 }
 
-const { scene = 'calm' } = Astro.props;
+const { decor, num, ambient = false } = Astro.props;
+const items = decor ? GEO_DECOR_CONFIG[decor] : [];
+const numInfo = decor
+  ? num
+    ? { num, label: NUM_DEFAULTS[decor]?.label ?? 'FANDEX' }
+    : NUM_DEFAULTS[decor]
+  : null;
 ---
 
-<div class="fx-backdrop" data-fx="scene-backdrop" data-fx-scene={scene} aria-hidden="true"></div>
+<div class="fx-backdrop" aria-hidden="true">
+  {
+    items.map((item) => {
+      if (item.children === 'rings') {
+        return (
+          <div class="decor-orbit" style={item.style}>
+            <span class="decor-orbit__ring decor-orbit__ring--a">
+              <i />
+            </span>
+            <span class="decor-orbit__ring decor-orbit__ring--b">
+              <i />
+            </span>
+            <span class="decor-orbit__ring decor-orbit__ring--c">
+              <i />
+            </span>
+          </div>
+        );
+      }
+      if (item.className === 'decor-trio') {
+        return (
+          <div class="decor-trio" style={item.style}>
+            <span />
+            <span />
+            <span />
+          </div>
+        );
+      }
+      if (item.className === 'decor-num' && numInfo) {
+        return (
+          <div class={item.className} style={item.style} data-label={numInfo.label}>
+            {numInfo.num}
+          </div>
+        );
+      }
+      return <div class={item.className} style={item.style} />;
+    })
+  }
+  {
+    numInfo && !items.some((item) => item.className === 'decor-num') && (
+      <div
+        class="decor-num"
+        style="left:2%;bottom:4%;font-size:clamp(110px,16vw,220px)"
+        data-label={numInfo.label}
+      >
+        {numInfo.num}
+      </div>
+    )
+  }
+  {
+    ambient && (
+      <div
+        data-fx="letter-glitch"
+        data-letter-glitch-characters="01"
+        data-letter-glitch-font-size="8"
+        data-letter-glitch-spacing="0.8"
+        data-letter-glitch-density="1"
+        data-letter-glitch-base-opacity="0.2"
+        data-letter-glitch-glitch-amount="0.5"
+        data-letter-glitch-speed="1"
+        data-letter-glitch-flow="0.5"
+        data-letter-glitch-cursor-radius="140"
+        data-letter-glitch-click-effect="tear"
+      />
+    )
+  }
+</div>
