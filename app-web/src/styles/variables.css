@@ -34,7 +34,7 @@
   --fx-ambient-ink: #14716A;
   /* 故障字符场高亮色板（空格分隔，fx/layers/letter-glitch 读取）：
      深青墨同族两档，亮色下故障闪烁为全不透明墨色 */
-  --fx-ambient-accents: #14716A #0E8A80;
+  --fx-ambient-accents: #14716A #0E8A80 #000000 #0000FF #EE0000 #9900FF #FF8800 #007A66;
 
   --color-bg-card: var(--color-bg-elevated);
 
@@ -57,6 +57,6 @@
     --fx-scene-vignette: rgba(2, 6, 10, 0.55);
     --fx-ambient-ink: #39C5BB;
     /* 故障字符场高亮色板：色彩裁定基线内的青系三色，不可动 */
-    --fx-ambient-accents: #00E5FF #00D6C7 #39C5BB;
+    --fx-ambient-accents: #00E5FF #39C5BB #66CCFF #00FFCC #EE0000 #9900FF #FF8800 #101820;
   }
 }

@@ -17,7 +17,7 @@
  * 注册即生效：本模块被 BaseLayout 的脚本引入一次，全站初始化。
  */
 
-import { FX_MODE_STORAGE_KEY, getFxTier, hasWebgl2, isAutomation, prefersReducedMotion } from './capabilities';
+import { getFxTier, hasWebgl2, isAutomation } from './capabilities';
 import { initFxLifecycle } from './lifecycle';
 import { registerFx } from './registry';
 import { mountCountUp } from './effects/count-up';
