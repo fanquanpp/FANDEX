@@ -33,7 +33,8 @@ function saveDataRequested(): boolean {
  * 自动化环境（Lighthouse / Playwright）下跳过全部 canvas 层：
  * SwiftShader 软渲染会拖慢 CI 节流下的性能分，且冒烟测试只要求无报错。
  * Playwright 置 navigator.webdriver；LHCI 的 chrome-launcher 不置它，
- * 但无头 UA 必带 HeadlessChrome 标记——两个信号都查。
+ * 且新版无头 UA 不带 HeadlessChrome 标记——所以软渲染判定放在
+ * hasWebgl2 里读真实 renderer，LHCI 与一切无 GPU 环境一律跳过。
  */
 export function isAutomation(): boolean {
   if (typeof navigator === 'undefined') return false;
@@ -43,7 +44,11 @@ export function isAutomation(): boolean {
 
 let webgl2Cache: boolean | null = null;
 
-/** WebGL2 可用性探测（含 context lost 防御），结果缓存。 */
+/**
+ * WebGL2 可用性探测（含 context lost 防御），结果缓存。
+ * 软渲染（SwiftShader / llvmpipe 等，LHCI 与无 GPU 环境的真实 renderer）
+ * 一律视为不可用：逐帧动画在软渲染上是性能分杀手。
+ */
 export function hasWebgl2(): boolean {
   if (webgl2Cache !== null) return webgl2Cache;
   webgl2Cache = false;
@@ -51,7 +56,14 @@ export function hasWebgl2(): boolean {
     const canvas = document.createElement('canvas');
     const gl = canvas.getContext('webgl2', { depth: false, stencil: false });
     if (gl) {
-      webgl2Cache = true;
+      const debug = gl.getExtension('WEBGL_debug_renderer_info');
+      const renderer = String(
+        (debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : null) ??
+          gl.getParameter(gl.RENDERER) ??
+          '',
+      );
+      const software = /swiftshader|llvmpipe|softpipe|software/i.test(renderer);
+      webgl2Cache = !software;
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     }
   } catch {
