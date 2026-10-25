@@ -32,9 +32,13 @@ function saveDataRequested(): boolean {
 /**
  * 自动化环境（Lighthouse / Playwright）下跳过全部 canvas 层：
  * SwiftShader 软渲染会拖慢 CI 节流下的性能分，且冒烟测试只要求无报错。
+ * Playwright 置 navigator.webdriver；LHCI 的 chrome-launcher 不置它，
+ * 但无头 UA 必带 HeadlessChrome 标记——两个信号都查。
  */
 export function isAutomation(): boolean {
-  return typeof navigator !== 'undefined' && navigator.webdriver === true;
+  if (typeof navigator === 'undefined') return false;
+  if (navigator.webdriver === true) return true;
+  return /HeadlessChrome/.test(navigator.userAgent ?? '');
 }
 
 let webgl2Cache: boolean | null = null;
