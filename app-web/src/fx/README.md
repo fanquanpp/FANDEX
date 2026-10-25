@@ -14,7 +14,7 @@ fx/
   lifecycle.ts      astro:page-load 挂载 / astro:before-swap 回收
   scene.ts          场景令牌读取、主题订阅（fandex:themechange）
   layers/
-    letter-glitch.ts 二进制字符故障场（WebGL2：入场闪烁、光浪、指针撕裂点击）
+    letter-glitch.ts 代码字符海（WebGL2：大小写字母+数字，入场闪烁、光浪、指针撕裂点击）
   effects/
     reveal.ts       滚动显现（data-fx-reveal / data-fx-reveal-group）
     text.ts         拆字（data-fx-split）与解密（data-fx-decrypt）
@@ -25,7 +25,7 @@ fx/
 配套：
 
 - `components/SceneBackdrop.astro` — 全站唯一背景特效层：底色 + 暗角 +
-  律动装饰 + 字符故障场全部 render 在同一个 fixed 容器（z-index -1 垫底，
+  律动装饰 + 代码字符海全部 render 在同一个 fixed 容器（z-index -1 垫底，
   不存在第二个背景图层）；BaseLayout 经 fxDecor / fxNum / fxAmbient
   prop 配置，页面经布局组件透传；
 - `styles/fx.css` — 全部 fx 样式；场景颜色令牌在 `styles/variables.css`
@@ -44,7 +44,7 @@ fx/
 <span data-fx-split="pop" data-fx-split-stagger="55">FANDEX</span>
 <span data-fx-decrypt data-fx-decrypt-speed="34">FX_REGISTRY</span>
 <span data-fx-count="42">42</span>
-<div data-fx="letter-glitch" data-letter-glitch-font-size="8" data-letter-glitch-density="1"></div>
+<div data-fx="letter-glitch" data-letter-glitch-font-size="16" data-letter-glitch-density="0.55"></div>
 ```
 
 新增一个特效：实现 `(host: HTMLElement) => void | (() => void)` 挂载函数，
