@@ -1,0 +1,123 @@
+{
+  "version": "1.0.0",
+  "module": "redis",
+  "summary": "从核心数据结构与持久化出发，覆盖集群高可用、Lua 脚本与运维命令。",
+  "stages": [
+    {
+      "id": "basics",
+      "title": "核心数据结构",
+      "subtitle": "String、Hash 与 List",
+      "nodes": [
+        {
+          "id": "redis-001",
+          "title": "概述与核心数据结构",
+          "doc": "010-OverviewCoreDataStructure"
+        },
+        {
+          "id": "redis-002",
+          "title": "集群代理接入",
+          "doc": "185-ClusterProxyAccess"
+        },
+        {
+          "id": "redis-007",
+          "title": "Redis Flex 分层存储",
+          "doc": "186-RedisFlexTieredStorage"
+        },
+        {
+          "id": "redis-008",
+          "title": "Redis for AI 套件",
+          "doc": "187-RedisForAISuite"
+        },
+        {
+          "id": "redis-003",
+          "title": "位图",
+          "doc": "060-BitMapRedis"
+        },
+        {
+          "id": "redis-004",
+          "title": "地理空间",
+          "doc": "070-GeoSpatial"
+        },
+        {
+          "id": "redis-005",
+          "title": "向量集",
+          "doc": "100-VectorSet"
+        },
+        {
+          "id": "redis-006",
+          "title": "AOF日志持久化",
+          "doc": "160-AOFLogPersistence"
+        }
+      ]
+    },
+    {
+      "id": "cluster",
+      "title": "集群高可用",
+      "subtitle": "复制、分片与 Cluster",
+      "nodes": [
+        {
+          "id": "redis-101",
+          "title": "无盘复制",
+          "doc": "190-DisklessReplication"
+        },
+        {
+          "id": "redis-102",
+          "title": "字符串SDS结构",
+          "doc": "260-StringSDSStructure"
+        },
+        {
+          "id": "redis-103",
+          "title": "主从复制缓冲区",
+          "doc": "200-ReplicationBuffer"
+        },
+        {
+          "id": "redis-104",
+          "title": "Redis-Cluster哈希槽",
+          "doc": "220-RedisClusterHashSlot"
+        },
+        {
+          "id": "redis-105",
+          "title": "Lua脚本原子执行",
+          "doc": "240-LuaScriptAtomicExecution"
+        }
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "运维实战",
+      "subtitle": "淘汰策略、ACL 与命令速查",
+      "nodes": [
+        {
+          "id": "redis-201",
+          "title": "内存淘汰策略",
+          "doc": "130-MemoryEvictionPolicy"
+        },
+        {
+          "id": "redis-202",
+          "title": "Redis Hash 命令速查",
+          "doc": "030-HashCommand"
+        },
+        {
+          "id": "redis-205",
+          "title": "Redis Key 管理与过期命令速查手册",
+          "doc": "020-KeyManagement"
+        },
+        {
+          "id": "redis-090",
+          "title": "Stream 核心篇",
+          "doc": "090-Stream"
+        },
+        {
+          "id": "redis-092",
+          "title": "Stream 消费者组",
+          "doc": "092-StreamConsumerGroups"
+        },
+        {
+          "id": "redis-094",
+          "title": "Stream 运维与监控",
+          "doc": "094-StreamOpsAndMonitoring"
+        }
+      ]
+    }
+  ]
+}

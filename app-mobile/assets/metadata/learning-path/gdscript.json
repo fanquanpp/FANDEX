@@ -1,0 +1,90 @@
+{
+  "version": "1.0.0",
+  "module": "gdscript",
+  "summary": "系统学习 Godot 内置脚本语言：从变量类型到面向对象、信号协程，再到官方风格指南与设计模式。",
+  "stages": [
+    {
+      "id": "basics",
+      "title": "语言基础",
+      "subtitle": "语法、变量类型与流程控制",
+      "nodes": [
+        {
+          "id": "gdscript-000",
+          "title": "GDScript 语言概述",
+          "doc": "010-GDScriptLanguageOverview"
+        },
+        {
+          "id": "gdscript-001",
+          "title": "变量、常量与枚举",
+          "doc": "020-VariablesConstantsEnums"
+        },
+        {
+          "id": "gdscript-002",
+          "title": "基本数据类型与类型转换",
+          "doc": "030-BasicDataTypesConversion"
+        },
+        {
+          "id": "gdscript-003",
+          "title": "运算符与流程控制",
+          "doc": "040-OperatorsAndControlFlow"
+        }
+      ]
+    },
+    {
+      "id": "funcs",
+      "title": "函数与集合",
+      "subtitle": "Callable、lambda、数组与字典",
+      "nodes": [
+        {
+          "id": "gdscript-004",
+          "title": "函数与 Callable",
+          "doc": "050-FunctionsAndCallable"
+        },
+        {
+          "id": "gdscript-005",
+          "title": "集合：数组与字典",
+          "doc": "060-CollectionsArraysDictionaries"
+        }
+      ]
+    },
+    {
+      "id": "oop",
+      "title": "面向对象与工程化",
+      "subtitle": "类继承、注解导出与信号协程",
+      "nodes": [
+        {
+          "id": "gdscript-006",
+          "title": "类、面向对象与内存管理",
+          "doc": "070-ClassesOOPAndMemory"
+        },
+        {
+          "id": "gdscript-007",
+          "title": "注解与导出属性",
+          "doc": "080-AnnotationsAndExportedProperties"
+        },
+        {
+          "id": "gdscript-008",
+          "title": "信号、await 与协程",
+          "doc": "090-SignalsAwaitCoroutines"
+        }
+      ]
+    },
+    {
+      "id": "craft",
+      "title": "风格与模式",
+      "subtitle": "官方风格指南、静态类型与设计模式",
+      "nodes": [
+        {
+          "id": "gdscript-009",
+          "title": "风格指南与静态类型实践",
+          "doc": "100-StyleGuideAndStaticTyping"
+        },
+        {
+          "id": "gdscript-010",
+          "title": "GDScript 设计模式",
+          "doc": "110-DesignPatternsInGDScript"
+        }
+      ]
+    }
+  ]
+}

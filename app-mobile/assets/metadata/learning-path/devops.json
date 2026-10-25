@@ -1,0 +1,118 @@
+{
+  "version": "1.0.0",
+  "module": "devops",
+  "summary": "从 Linux 与容器基础出发，覆盖 CI/CD、IaC、云原生与平台工程实践。",
+  "stages": [
+    {
+      "id": "tools",
+      "title": "基础工具",
+      "subtitle": "Shell、Git 与 CI/CD",
+      "nodes": [
+        {
+          "id": "devops-001",
+          "title": "概述与 Linux 基础",
+          "doc": "010-OverviewLinuxBasics"
+        },
+        {
+          "id": "devops-002",
+          "title": "容器与 Docker",
+          "doc": "050-ContainerDocker"
+        },
+        {
+          "id": "devops-003",
+          "title": "CI/CD 流水线",
+          "doc": "140-CICDPipeline"
+        },
+        {
+          "id": "devops-004",
+          "title": "基础设施即代码",
+          "doc": "200-IaC"
+        },
+        {
+          "id": "devops-005",
+          "title": "Shell脚本编程",
+          "doc": "020-ShellScriptProgramming"
+        },
+        {
+          "id": "devops-006",
+          "title": "服务网格",
+          "doc": "130-ServiceMesh"
+        }
+      ]
+    },
+    {
+      "id": "cloud-native",
+      "title": "云原生",
+      "subtitle": "Docker、Kubernetes 与 IaC",
+      "nodes": [
+        {
+          "id": "devops-101",
+          "title": "配置管理",
+          "doc": "235-SecretsAndConfigCenter"
+        },
+        {
+          "id": "devops-102",
+          "title": "高可用架构",
+          "doc": "350-HighAvailabilityArchitecture"
+        },
+        {
+          "id": "devops-103",
+          "title": "故障排查",
+          "doc": "330-Troubleshooting"
+        },
+        {
+          "id": "devops-104",
+          "title": "GitOps与持续交付",
+          "doc": "185-FluxAndMultiEnvGitOps"
+        },
+        {
+          "id": "devops-105",
+          "title": "网络与安全进阶",
+          "doc": "420-NetworkSecurityAdvanced"
+        },
+        {
+          "id": "devops-106",
+          "title": "Dockerfile多阶段构建",
+          "doc": "060-DockerfileMultiBuild"
+        }
+      ]
+    },
+    {
+      "id": "platform",
+      "title": "平台工程",
+      "subtitle": "观测、编排与配置管理",
+      "nodes": [
+        {
+          "id": "devops-201",
+          "title": "Helm-Chart应用打包",
+          "doc": "110-HelmChartApplicationPackage"
+        },
+        {
+          "id": "devops-202",
+          "title": "Ansible-Playbook配置管理",
+          "doc": "220-AnsiblePlaybookConfigManagement"
+        },
+        {
+          "id": "devops-203",
+          "title": "Grafana仪表盘配置",
+          "doc": "260-GrafanaDashboards"
+        },
+        {
+          "id": "devops-204",
+          "title": "OpenTelemetry",
+          "doc": "290-OpenTelemetry"
+        },
+        {
+          "id": "devops-205",
+          "title": "DevOps kubectl 基础命令",
+          "doc": "100-KubectlBasics"
+        },
+        {
+          "id": "devops-206",
+          "title": "DevOps Jenkins Pipeline",
+          "doc": "150-JenkinsPipeline"
+        }
+      ]
+    }
+  ]
+}

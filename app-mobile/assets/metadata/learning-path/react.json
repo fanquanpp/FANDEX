@@ -1,0 +1,217 @@
+{
+  "version": "1.0.0",
+  "module": "react",
+  "summary": "从组件与状态入门，理解 Hooks 与渲染机制，再进入并发、服务端组件与现代 React 生态。",
+  "stages": [
+    {
+      "id": "basics",
+      "title": "入门",
+      "subtitle": "组件、状态与事件",
+      "nodes": [
+        {
+          "id": "react-001",
+          "title": "概述与环境配置",
+          "desc": "React 的定位与项目脚手架",
+          "difficulty": "beginner",
+          "doc": "010-OverviewEnvSetup"
+        },
+        {
+          "id": "react-002",
+          "title": "组件与 Props",
+          "desc": "函数组件、Props 与单向数据流",
+          "difficulty": "beginner",
+          "doc": "020-ComponentProps"
+        },
+        {
+          "id": "react-003",
+          "title": "状态与事件",
+          "desc": "useState 与事件处理",
+          "difficulty": "beginner",
+          "doc": "030-StateEvent"
+        },
+        {
+          "id": "react-026",
+          "title": "状态结构与摆放",
+          "desc": "状态提升、派生状态与 key 重置",
+          "difficulty": "beginner",
+          "doc": "035-StateStructureAndLifting"
+        },
+        {
+          "id": "react-004",
+          "title": "JSX 深度解析",
+          "desc": "JSX 编译规则与表达式",
+          "difficulty": "intermediate",
+          "doc": "110-JSXDeepAnalysis"
+        },
+        {
+          "id": "react-005",
+          "title": "表单处理",
+          "desc": "受控组件、非受控组件与表单库",
+          "difficulty": "intermediate",
+          "doc": "200-ReactForm"
+        }
+      ]
+    },
+    {
+      "id": "core",
+      "title": "核心机制",
+      "subtitle": "Hooks 与状态管理",
+      "nodes": [
+        {
+          "id": "react-006",
+          "title": "Hooks 深入",
+          "desc": "常用 Hooks 的完整语义与规则",
+          "difficulty": "intermediate",
+          "doc": "040-HooksDeep"
+        },
+        {
+          "id": "react-007",
+          "title": "Hooks 原理",
+          "desc": "链表结构、更新调度与依赖数组",
+          "difficulty": "advanced",
+          "doc": "150-HooksPrinciple"
+        },
+        {
+          "id": "react-008",
+          "title": "自定义 Hooks 设计模式",
+          "desc": "逻辑复用、参数设计与组合",
+          "difficulty": "intermediate",
+          "doc": "160-CustomHooksDesignPattern"
+        },
+        {
+          "id": "react-009",
+          "title": "Context 与全局状态",
+          "desc": "跨层数据共享与消费性能",
+          "difficulty": "intermediate",
+          "doc": "050-ContextGlobalState"
+        },
+        {
+          "id": "react-010",
+          "title": "状态管理方案对比",
+          "desc": "Redux/Zustand/Jotai 的取舍",
+          "difficulty": "intermediate",
+          "doc": "170-StateManagementSolutionComparison"
+        },
+        {
+          "id": "react-011",
+          "title": "错误边界",
+          "desc": "渲染错误兜底与恢复",
+          "difficulty": "intermediate",
+          "doc": "190-ReactErrorBoundary"
+        },
+        {
+          "id": "react-012",
+          "title": "性能优化",
+          "desc": "memo/useMemo/useCallback 与渲染分析",
+          "difficulty": "advanced",
+          "doc": "180-ReactPerformance"
+        }
+      ]
+    },
+    {
+      "id": "advanced",
+      "title": "进阶",
+      "subtitle": "渲染引擎与并发模型",
+      "nodes": [
+        {
+          "id": "react-013",
+          "title": "Fiber 架构",
+          "desc": "可中断渲染的底层机制",
+          "difficulty": "advanced",
+          "doc": "120-FiberArchitecture"
+        },
+        {
+          "id": "react-014",
+          "title": "并发模式",
+          "desc": "并发特性与 useTransition",
+          "difficulty": "advanced",
+          "doc": "130-ConcurrentRendering"
+        },
+        {
+          "id": "react-015",
+          "title": "Server 与 Client 组件",
+          "desc": "服务端组件模型与数据流",
+          "difficulty": "advanced",
+          "doc": "400-ServerClientComponents"
+        },
+        {
+          "id": "react-016",
+          "title": "React 19 新特性",
+          "desc": "Actions、use 等新能力",
+          "difficulty": "intermediate",
+          "doc": "060-React19NewFeatures"
+        },
+        {
+          "id": "react-017",
+          "title": "React Compiler",
+          "desc": "自动记忆化与优化边界",
+          "difficulty": "advanced",
+          "doc": "390-ReactCompilerAutoMemoization"
+        },
+        {
+          "id": "react-018",
+          "title": "渲染优先级与调度",
+          "desc": "更新调度、优先级与中断恢复",
+          "difficulty": "advanced",
+          "doc": "470-RenderingPriorityAndScheduling"
+        }
+      ]
+    },
+    {
+      "id": "ecosystem",
+      "title": "生态工程",
+      "subtitle": "路由、测试与全栈",
+      "nodes": [
+        {
+          "id": "react-019",
+          "title": "路由与数据获取",
+          "desc": "React Router 与数据请求方案",
+          "difficulty": "intermediate",
+          "doc": "070-ReactRouterRouting"
+        },
+        {
+          "id": "react-020",
+          "title": "Lint 与项目结构",
+          "desc": "代码规范、格式化与项目结构约定",
+          "difficulty": "intermediate",
+          "doc": "090-LintFormatAndProjectStructure"
+        },
+        {
+          "id": "react-021",
+          "title": "React 与 TypeScript",
+          "desc": "类型安全组件开发",
+          "difficulty": "intermediate",
+          "doc": "210-ReactTypeScript"
+        },
+        {
+          "id": "react-022",
+          "title": "服务端渲染",
+          "desc": "SSR、流式渲染与 hydration",
+          "difficulty": "advanced",
+          "doc": "260-ReactSSR"
+        },
+        {
+          "id": "react-023",
+          "title": "Next.js 全栈",
+          "desc": "App Router 与全栈能力",
+          "difficulty": "advanced",
+          "doc": "100-NextJSFullStack"
+        },
+        {
+          "id": "react-024",
+          "title": "React 设计模式",
+          "desc": "组合、渲染 Props 与高阶组件",
+          "difficulty": "advanced",
+          "doc": "270-ReactDesignPattern"
+        },
+        {
+          "id": "react-025",
+          "title": "国际化",
+          "desc": "i18n 方案与内容外置",
+          "difficulty": "intermediate",
+          "doc": "240-ReactI18n"
+        }
+      ]
+    }
+  ]
+}

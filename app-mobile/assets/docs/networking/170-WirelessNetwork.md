@@ -1,0 +1,339 @@
+---
+order: 210
+title: 无线网络
+module: 'networking'
+category: 云与基础设施
+difficulty: intermediate
+description: 无线网络：WiFi 标准演进（至 WiFi 7）、AC+AP 架构与 CAPWAP、WPA3 安全与 802.1X 认证、信道规划与漫游优化。
+author: fanquanpp
+updated: '2026-10-11'
+related:
+  - 'networking/160-SwitchingAndRouting'
+  - 'networking/220-NetworkSecurityTech'
+  - 'networking/180-NetworkDesignPlanning'
+prerequisites: []
+---
+
+前置知识：以太网与交换基础（见 [交换与路由](networking/160-SwitchingAndRouting)）；802.1X 认证
+依赖的安全概念见 [网络安全技术](networking/220-NetworkSecurityTech)。
+
+学习目标：
+
+- 说清 WiFi 各代标准解决的核心问题（速率、频段、多用户并发），不把「最大速率」当真实速率；
+- 理解 AC+AP 架构中 CAPWAP 双隧道的分工与两种转发模式的取舍；
+- 掌握 WPA2/WPA3 的差异，知道为什么 WPA3 的 SAE 能防离线字典攻击；
+- 会做基础的信道规划（2.4GHz 1/6/11）与漫游优化（802.11k/v/r）。
+
+## 1. WiFi 标准演进
+
+| 标准   | IEEE     | 频段        | 最大速率  | 年份 | 一句话定位                  |
+| ------ | -------- | ----------- | --------- | ---- | --------------------------- |
+| WiFi 1 | 802.11b  | 2.4GHz      | 11 Mbps   | 1999 | 第一个大规模商用的无线局域网 |
+| WiFi 2 | 802.11a  | 5GHz        | 54 Mbps   | 1999 | 率先用 5GHz，成本高未普及   |
+| WiFi 3 | 802.11g  | 2.4GHz      | 54 Mbps   | 2003 | 兼容 11b，普及              |
+| WiFi 4 | 802.11n  | 2.4/5GHz    | 600 Mbps  | 2009 | 引入 MIMO 与双频            |
+| WiFi 5 | 802.11ac | 5GHz        | 6.93 Gbps | 2014 | 波束成形、更宽信道、MU-MIMO |
+| WiFi 6 | 802.11ax | 2.4/5GHz    | 9.6 Gbps  | 2019 | 主攻**多用户并发**而非速率；标准 2021 年定稿 |
+| WiFi 6E | 802.11ax | + 6GHz     | 同上      | 2021 | 把 WiFi 6 扩展到 6GHz 新频段 |
+| WiFi 7 | 802.11be | 2.4/5/6GHz  | 46 Gbps   | 2024 | 320MHz 信道与多链路操作     |
+
+读这张表的正确姿势：**代际差主要不在「峰值速率」，而在「高密度场景下的总吞吐」**。峰值速率
+是理论值（最高调制、最宽信道、最多空间流叠加），实际部署通常只有其零头。
+
+WiFi 6（802.11ax）的关键技术针对的就是「会议室里 200 人抢一个 AP」：
+
+| 技术         | 说明                                       |
+| ------------ | ------------------------------------------ |
+| OFDMA        | 把信道切成小资源单元（RU），多用户**同时**传输（类比：一辆大巴按座位载多人，而不是一人包一辆） |
+| MU-MIMO      | 多用户多入多出，空间维度上同时服务多台设备 |
+| BSS Coloring | 给相邻同频网络「涂色」，降低重叠区干扰误判   |
+| TWT          | 目标唤醒时间，IoT 设备按约定时间醒，大幅省电 |
+| 1024-QAM     | 更高调制阶数，近距高速率                   |
+
+WiFi 7（802.11be，2024 年定稿并开始认证）在 WiFi 6 之上再增强：
+
+- **320MHz 信道**与 4096-QAM：继续拉高单流速率；
+- **MLO（Multi-Link Operation）多链路操作**：一台设备同时聚合 2.4/5/6GHz 的多条链路传输，
+  既提速又降低时延抖动——这是对确定性时延敏感场景（AR/VR、工业无线）的关键改进；
+- 多 RU 分配：单个用户一次可占用多个资源单元。
+
+> 频段辨析：2.4GHz 穿墙好但信道少、干扰多；5GHz 信道多但衰减快；6GHz（WiFi 6E/7）是干净
+> 的新频谱，可开大带宽，但绕障能力最弱。三者的取舍是物理规律，换任何标准都不会改变。
+
+## 2. WLAN 架构
+
+### 2.1 架构类型
+
+| 架构     | 说明     | 适用场景                     |
+| -------- | -------- | ---------------------------- |
+| 自治 AP  | 独立配置管理 | 小型网络（几台 AP 以内）  |
+| AC+AP    | 无线控制器集中管理 | 企业网络（主流）  |
+| 云管理 AP | 云端控制面 | 分支机构、多站点连锁        |
+
+### 2.2 AC+AP 架构与 CAPWAP
+
+```mermaid
+flowchart LR
+    AP["瘦 AP"] <-.->|"CAPWAP 控制隧道 UDP 5246（配置/管理）"| AC["AC 无线控制器"]
+    AP <-.->|"CAPWAP 数据隧道 UDP 5247"| AC
+    AC --- CORE["核心交换机"]
+    STA["无线终端"] --- AP
+```
+
+AP 上电后通过 DHCP Option 43 或 DNS 发现 AC，建立 CAPWAP 隧道后被「下发配置」成为瘦 AP——
+上百台 AP 的网络只需在 AC 上改一次配置。
+
+### 2.3 转发模式
+
+| 模式     | 数据路径    | 优点           | 代价                     |
+| -------- | ----------- | -------------- | ------------------------ |
+| 集中转发 | AP→AC→网络  | 策略统一、漫游可控 | 所有流量过 AC，AC 是带宽瓶颈 |
+| 本地转发 | AP→本地网络 | 转发性能高     | 策略分散，需 AP 侧配置   |
+
+经验法则：普通办公流量用本地转发释放 AC；访客、安全审计要求高的 SSID 用集中转发收进 AC。
+
+## 3. 无线安全
+
+### 3.1 安全协议演进
+
+| 协议 | 加密     | 认证       | 现状                           |
+| ---- | -------- | ---------- | ------------------------------ |
+| WEP  | RC4      | 共享密钥   | 已破解，绝不使用               |
+| WPA  | TKIP     | PSK/802.1X | 过渡方案，已淘汰               |
+| WPA2 | AES-CCMP | PSK/802.1X | 当前主流基线                   |
+| WPA3 | AES-GCMP | SAE/802.1X | 新部署首选                     |
+
+### 3.2 WPA3 的关键改进
+
+- **SAE（Dragonfly 握手）替代 PSK**：个人版密码认证改为「每次交互带随机数、服务器侧不落可
+  离线爆破的哈希」，抓包者无法离线跑字典——这是对 WPA2-PSK 最致命攻击面的修补；
+- **192 位安全套件**：面向企业/政府的高保证模式；
+- **OWE（增强开放）**：开放式网络（无密码）也自动加密单播流量；
+- 部署注意：WPA2/WPA3 **混合模式**（transition mode）允许老设备接入，但也让降级攻击重新成
+  为可能；安全要求高的 SSID 应纯 WPA3 并明确告知老设备边界。
+
+### 3.3 802.1X 企业认证
+
+```text
+客户端（请求者）--EAPOL--> AP（认证者）--RADIUS--> 认证服务器（如 FreeRADIUS/ISE）
+```
+
+| 方法          | 说明                       | 典型场景               |
+| ------------- | -------------------------- | ---------------------- |
+| EAP-TLS       | 双向证书认证，安全性最高   | 有 PKI 体系的企业      |
+| PEAP-MSCHAPv2 | 服务器证书 + 用户名密码    | AD 域环境最常见        |
+| EAP-TTLS      | 隧道内做密码认证           | 兼容老旧账号体系       |
+
+## 4. 无线规划
+
+### 4.1 信道规划
+
+- **2.4GHz 只有 1、6、11 三个不重叠 20MHz 信道**，同层 AP 交替使用：
+  `AP1=信道1  AP2=信道6  AP3=信道11  AP4=信道1 ...`（蜂窝式复用）；
+- 5GHz 可用不重叠信道多（36~165 及 6GHz 更多），可开 40/80/160MHz 大信道，规划自由度大。
+
+### 4.2 功率与链路预算
+
+$$FSPL = 20\log_{10}(d_{km}) + 20\log_{10}(f_{MHz}) + 32.44$$
+
+接收功率 = 发射功率 + 天线增益 - 路径损耗（+ 接收增益）。工程含义：**距离翻一倍，衰减加
+6dB**；2.4GHz 比 5GHz 同距离衰减少——这就是「5GHz 信号差」的物理根源。规划原则是「宁小勿大」：
+功率过大导致终端粘在远端 AP 上（roaming sticky client），漫游体验反而更差。
+
+### 4.3 容量规划
+
+$$\text{AP 数量} = \max(\text{覆盖驱动}, \text{容量驱动})$$
+
+覆盖驱动看信号强度（如 -67dBm 边缘门限），容量驱动看并发用户与带宽需求：
+
+| 场景 | 每 AP 并发 | 带宽/用户  |
+| ---- | ---------- | ---------- |
+| 办公 | 20~30      | 2~5 Mbps   |
+| 会议 | 40~60      | 1~2 Mbps   |
+| 密集 | 80~100     | 0.5~1 Mbps |
+
+高密度场馆（报告厅、体育馆）几乎总是容量驱动：AP 越密，单 AP 功率要越低，宁密勿远。
+
+## 5. 无线优化与排障
+
+### 5.1 射频与漫游优化
+
+- 射频资源管理（RRM）：自动信道与功率调整，但重大活动前要人工固定；
+- 频段引导（Band Steering）：把双频终端推到负载更轻的 5GHz；
+- 漫游：普通_assoc 漫游 100~500ms 且需完整认证；**802.11k/v/r 三件套**是现代方案——k（邻区
+  报告，告诉终端该去哪）、v（BSS 过渡协商）、r（快速 BSS 切换，密钥预派生，20~50ms 完成）。
+  语音/扫码枪等实时终端必须启用。
+
+### 5.2 常见问题排查
+
+| 现象               | 高频原因                       | 处理                            |
+| ------------------ | ------------------------------ | ------------------------------- |
+| 信号满格但速度慢    | 同频干扰（邻居 WiFi）          | 换信道、收紧功率、引导 5GHz      |
+| 特定区域掉线        | 覆盖空洞 / 漫游粘滞            | 补 AP、开 802.11k/v/r、调功率   |
+| 全员无法认证        | RADIUS 服务器/证书过期         | 查认证服务器日志（见 3.3 链路） |
+| 高峰期整体变慢      | 单 AP 过载                     | 容量规划补点、限速策略          |
+| 仅老设备掉线        | WPA3 纯模式 / 6GHz 不兼容      | 过渡模式或分开 SSID             |
+
+## 6. 实验：AC+AP 组网的最小验证
+
+企业级无线不是「买个带天线的路由器」，而是 AC 集中管理一批瘦 AP。用模拟器复现一条最小
+链路，把第 2 节的架构图变成亲眼可见的设备状态（华为 eNSP 提供 AC 与 AP 设备模型；HCL
+无无线设备，本实验需 eNSP 或真机）。
+
+拓扑与需求（还原自真实考核题）：1 台 AC + 3 台 AP + 1 台接入交换机组网；两台无线终端
+STA1、STA2 关联到 AP 并获取地址；STA1 ping 通 STA2；浏览器能打开 AC 的 HTTP 管理页面。
+
+```text
+拓扑：AC ── 接入交换机 ── AP1 / AP2 / AP3（AP2 下挂 STA1、STA3 下挂 STA2）
+```
+
+配置动作按依赖顺序分四层（每层完成即验收，方法见
+[网络实验环境与模拟器](networking/035-NetworkSimulatorLab) 的分层验收）：
+
+```text
+1. 二层连通：交换机与 AC、AP 互联口划入管理 VLAN，AC 上建 VLANIF 作管理网关；
+2. 地址下发：开 DHCP（AC 或交换机做服务器），AP 与 STA 的地址、Option 43（AC 的 IP
+   告知 AP）都从这里来——AP 上电后正是靠 DHCP Option 43 或 DNS 找到 AC；
+3. CAPWAP 隧道：AP 上线（display ap all 能看到三台 AP 从 idle/下载状态转为 normal），
+   在 AC 上把 AP 加入 AP 组、下发 WLAN 配置；
+4. 业务验证：建 SSID 并绑定到 VAP（VLAN+射频模板），STA 关联 SSID、DHCP 取到业务网段
+   地址，STA1 ping STA2 验证无线互通，浏览器访问 AC 管理 IP 验证 HTTP 页面。
+```
+
+观察点（对应正文概念）：`display ap all` 里 AP 的状态迁移就是第 2.2 节「上电发现 AC、
+建 CAPWAP 隧道、被下发配置成瘦 AP」的可视化；STA 关联后在 AC 上查 STA 表（`display
+station all`）能看到关联到了哪台 AP、什么速率、什么加密方式——第 3 节 WPA 的选择在此
+落地为配置项。三层验收里若 STA 拿不到地址，先查 DHCP 与业务 VLAN 是否在 AP 所在口放行，
+这是本实验最高频的故障。
+
+## 7. 练习
+
+标准演进题（5 分钟）：同事说「新采购的 WiFi 7 AP 一定比 WiFi 6 快」，给出两个反例条件
+（什么情况下 WiFi 7 不会更快）。验收：反例能对应到表里的具体技术（频段、终端侧能力）。
+
+提示（思路方向）：速率上限由「两端中较弱一方」决定——老终端只支持 2.4GHz/旧调制时，
+AP 再新也没用；6GHz 频段绕障弱，隔墙场景 5GHz 的 WiFi 6 可能实测更快。参考答案：终端
+不支持对应能力（MLO/4096-QAM 需要终端配合）时，WiFi 7 只提供兼容速率；遮挡或多墙环境
+用 6GHz 大带宽反而衰减快。
+
+规划题（15 分钟）：为一层 60 米 x 20 米的开放式办公区（约 80 人，笔记本+手机）规划
+AP：给出演算过程（覆盖驱动还是容量驱动、需要几台、2.4GHz 信道怎么排）。验收：数字能
+从第 4 节的表里推出来，信道方案不出现相邻同频。
+
+提示：80 人 x 每用户 2-5Mbps 办公档，总需求远超单 AP 承载，这是容量驱动场景——按每 AP
+20-30 并发算需要 3-4 台，再覆盖驱动补盲区。2.4GHz 只有 1/6/11 三个不重叠信道，3 台可
+以 1/6/11 蜂窝排布，第 4 台与第 1 台之间用 5GHz 承载并收紧功率。参考结论：容量驱动定
+台数（约 4 台），蜂窝复用 1/6/11，功率「宁小勿大」保证终端快漫游。
+
+排障题（10 分钟）：现象「全楼无线断线重连风暴，有线正常」。给出按概率排序的三条排查
+方向与验证手段。验收：能说出「先查 AC 还是先查 AP」的理由。
+
+提示（思路方向）：有线正常说明承载网没问题，故障集中在无线控制面或射频层。参考排查序：
+AC 可达性与负载（AC 是控制面单点，CAPWAP 断则全部 AP 脱管）→ AC 上 AP 在线状态与
+`display station all`（区分「AP 掉线」还是「仅 STA 重连」）→ 射频干扰与大功率粘滞
+（第 5 节 RRM 与功率策略）。
+
+设计题（15 分钟）：会议室场景要求「访客 SSID 与员工 SSID 物理隔离，访客限速 5Mbps、
+只能访问互联网」。写出需要配置的要点清单（不用具体命令）。验收：清单覆盖 SSID-VLAN
+绑定、访客限速、ACL/隔离三层控制。
+
+提示（思路方向）：两个 SSID 各自映射不同 VLAN（VLAN 隔离见
+[VLAN 与跨 VLAN 互通](networking/165-VLANAndTrunk)）；限速在 AC/AC 控制器侧按 SSID 或
+用户配 CAR；「只能访问互联网」靠 ACL 拦截到办公网段的流量。转发模式选择是隐藏考点：
+访客流量用集中转发收进 AC 统一管控（第 2.3 节）。
+
+## 8. 小结
+
+**初学者要点**
+
+- WiFi 代际演进的实质是「高密度下总吞吐 + 时延」：WiFi 6 的 OFDMA 与 WiFi 7 的 MLO 是两个
+  里程碑；峰值速率数字看看就好；
+- 企业主流架构是 AC+瘦 AP，CAPWAP 控制隧道 5246 / 数据隧道 5247；转发模式按「策略收拢 vs 性
+  能释放」取舍；
+- 安全新部署直接 WPA3（SAE），混合模式是兼容妥协不是长期态；2.4GHz 信道只有 1/6/11 可用。
+
+**进阶注意**
+
+- 漫游问题用 802.11k/v/r 组合解决，功率「宁小勿大」是漫游流畅的前提；
+- 容量规划在高密度场景几乎总是瓶颈，规划顺序：先容量定 AP 数，再覆盖定位置，最后功率收边；
+- 6GHz 频段（WiFi 6E/7）带来干净频谱与 320MHz 信道，但穿障更弱，规划时按「同房间可用」设计。
+
+## 附：AC 双机热备（自原系统管理篇并入）
+
+```bash
+# 华为 AC 双机热备配置（华为 VRP 语法）
+[AC1] wlan
+[AC1-wlan-view] ac protect enable
+[AC1-wlan-view] ac protect protect-ac 192.168.1.2 priority 6
+[AC1-wlan-view] ac protect local-ac 192.168.1.1 priority 8
+
+[AC2] wlan
+[AC2-wlan-view] ac protect enable
+[AC2-wlan-view] ac protect protect-ac 192.168.1.1 priority 8
+[AC2-wlan-view] ac protect local-ac 192.168.1.2 priority 6
+```
+
+priority 数值小者为主（两台互指对方为主备时注意数值方向）；主 AC 故障时 AP 通过 CAPWAP 断链切换到备 AC，业务 SSID 不变——AP 本地转发模式下已在线用户几乎无感，集中转发模式会瞬断重连。热备解决「AC 单点」，AP 本身由双电源/双上联保障。
+
+
+<!-- 恢复自 cnt-content/full/025-networking/040-NetworkSystemManagement.md（实施前 HEAD 62c90663308c7d6ea5a29bd1c1bb97cd40884710 版本）；拆分时该小节未随迁，2026-10-07 内容保全核对恢复 -->
+
+## 无线地勘与 AP 点位图设计
+
+
+地勘流程：
+
+1. **现场勘测**：获取建筑平面图，标注墙体材质、门窗位置
+2. **信号覆盖模拟**：使用 Ekahau/iBwave 进行信号仿真
+3. **AP 点位规划**：根据覆盖面积和用户密度确定 AP 数量
+4. **信道规划**：2.4GHz 使用 1/6/11 信道，5GHz 使用非 DFS 信道
+5. **功率调整**：边缘场强 ≥ -65dBm，重叠区域 ≥ -75dBm
+
+<!-- 恢复自 cnt-content/full/025-networking/040-NetworkSystemManagement.md（实施前 HEAD 62c90663308c7d6ea5a29bd1c1bb97cd40884710 版本）；拆分时该小节未随迁，2026-10-07 内容保全核对恢复 -->
+
+## 无线认证配置
+
+
+```bash
+# 华为 AC 配置 WPA2-Enterprise
+[AC] wlan
+[AC-wlan-view] security-profile name sec-enterprise
+[AC-wlan-sec-prof-sec-enterprise] security wpa2 dot1x aes
+
+# 配置 RADIUS 服务器
+[AC] radius-server template radius1
+[AC-radius-radius1] radius-server authentication 192.168.1.100 1812
+[AC-radius-radius1] radius-server accounting 192.168.1.100 1813
+[AC-radius-radius1] radius-server shared-key cipher Radius@123
+
+# 802.1X 认证配置
+[AC] aaa
+[AC-aaa] authentication-scheme auth1
+[AC-aaa-authen-auth1] authentication-mode radius
+[AC-aaa] domain default
+[AC-aaa-domain-default] authentication-scheme auth1
+[AC-aaa-domain-default] radius-server radius1
+```
+
+### 12.3 AP 隔离
+
+```bash
+# 华为 AC 配置用户隔离
+[AC] wlan
+[AC-wlan-view] traffic-profile name isolate
+[AC-wlan-traffic-prof-isolate] user-isolate l2    # 二层隔离
+[AC-wlan-traffic-prof-isolate] user-isolate l3    # 三层隔离
+```
+
+<!-- 恢复自 cnt-content/full/025-networking/040-NetworkSystemManagement.md（实施前 HEAD 62c90663308c7d6ea5a29bd1c1bb97cd40884710 版本）；拆分时该小节未随迁，2026-10-07 内容保全核对恢复 -->
+
+## AP 隔离
+
+
+```bash
+# 华为 AC 配置用户隔离
+[AC] wlan
+[AC-wlan-view] traffic-profile name isolate
+[AC-wlan-traffic-prof-isolate] user-isolate l2    # 二层隔离
+[AC-wlan-traffic-prof-isolate] user-isolate l3    # 三层隔离
+```

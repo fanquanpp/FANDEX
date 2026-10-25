@@ -1,0 +1,68 @@
+{
+  "version": "1.0.0",
+  "module": "spring-boot",
+  "summary": "从 IoC 与自动配置的原理出发，走完 Web 开发、数据访问、安全缓存、测试部署到完整实战的企业级 Spring Boot 主线。",
+  "stages": [
+    {
+      "id": "foundations",
+      "title": "入门与核心机制",
+      "subtitle": "框架心智模型：IoC、自动配置与配置管理",
+      "nodes": [
+        { "id": "spring-boot-010", "title": "为什么是 Spring Boot", "doc": "010-WhySpringBoot" },
+        { "id": "spring-boot-020", "title": "第一个应用", "doc": "020-FirstApplication" },
+        { "id": "spring-boot-030", "title": "IoC 容器与依赖注入", "doc": "030-IoCDependencyInjection" },
+        { "id": "spring-boot-040", "title": "自动配置原理", "doc": "040-AutoConfigurationInternals" },
+        { "id": "spring-boot-050", "title": "配置管理", "doc": "050-ConfigurationManagement" }
+      ]
+    },
+    {
+      "id": "web",
+      "title": "Web 层开发",
+      "subtitle": "REST 接口、统一响应、异常与参数校验",
+      "nodes": [
+        { "id": "spring-boot-060", "title": "Spring MVC 与 RESTful 接口", "doc": "060-SpringMvcRestApi" },
+        { "id": "spring-boot-070", "title": "统一响应与全局异常处理", "doc": "070-UnifiedResponseExceptionHandling" },
+        { "id": "spring-boot-080", "title": "参数校验：Bean Validation", "doc": "080-BeanValidation" }
+      ]
+    },
+    {
+      "id": "data",
+      "title": "数据访问与横切关注点",
+      "subtitle": "JPA、事务、AOP",
+      "nodes": [
+        { "id": "spring-boot-090", "title": "Spring Data JPA 与实体映射", "doc": "090-SpringDataJpa" },
+        { "id": "spring-boot-100", "title": "事务管理与传播机制", "doc": "100-TransactionManagement" },
+        { "id": "spring-boot-110", "title": "AOP 面向切面", "doc": "110-AspectOrientedProgramming" }
+      ]
+    },
+    {
+      "id": "infra",
+      "title": "安全、缓存、消息与异步",
+      "subtitle": "企业应用的四大基础设施集成",
+      "nodes": [
+        { "id": "spring-boot-120", "title": "Spring Security 认证授权与 JWT", "doc": "120-SpringSecurityJwt" },
+        { "id": "spring-boot-130", "title": "Spring Cache 与 Redis 缓存", "doc": "130-SpringCacheRedis" },
+        { "id": "spring-boot-140", "title": "Spring AMQP 集成 RabbitMQ", "doc": "140-SpringAmqpRabbitmq" },
+        { "id": "spring-boot-150", "title": "异步与定时任务", "doc": "150-AsyncScheduling" }
+      ]
+    },
+    {
+      "id": "ops",
+      "title": "可观测、测试与部署",
+      "subtitle": "上线前的三道工序",
+      "nodes": [
+        { "id": "spring-boot-160", "title": "Actuator 与可观测性", "doc": "160-ActuatorObservability" },
+        { "id": "spring-boot-170", "title": "测试策略", "doc": "170-TestingStrategy" },
+        { "id": "spring-boot-180", "title": "打包部署与优雅停机", "doc": "180-PackagingDeployment" }
+      ]
+    },
+    {
+      "id": "capstone",
+      "title": "综合实战",
+      "subtitle": "把全部技术点串成一个完整服务",
+      "nodes": [
+        { "id": "spring-boot-190", "title": "实战：博客系统 REST API", "doc": "190-CapstoneBlogApi" }
+      ]
+    }
+  ]
+}

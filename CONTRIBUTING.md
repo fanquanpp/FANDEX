@@ -86,8 +86,8 @@ git switch -c content/docker-networking
 **删除模块/文档**：直接删除文件或文件夹，派生数据会在下一次 sync 时自动回收。
 
 **修改应用代码**：进入对应 `app-*` 目录开发。网站 `pnpm dev:web`；
-Android 双端先在仓库根执行内容生成脚本再 `./gradlew` 构建（命令见根
-README「快速开始」）。
+移动端先在仓库根执行内容生成脚本再 `flutter build apk` 构建（命令见
+app-mobile/README）。
 
 ### 4. 本地校验
 
@@ -126,10 +126,9 @@ frontmatter 均可解析。web 完整构建（`pnpm build:web`）不再作为推
 | deploy.yml | push main 与指向 main 的 PR（带路径过滤） | 构建 + 类型检查 + frontmatter 校验 + QA 门禁；仅 push 到 main 时发布 GitHub Pages |
 | lighthouse.yml | push main 与指向 main 的 PR（带路径过滤）/ 手动 | Lighthouse 性能基线巡检 |
 
-Android 与桌面端的 CI 构建工作流（android-build / desktop-build /
-android-release）已退役：安装包由维护者本地构建并随 GitHub Release
-分发，提交涉及 `app-Android-new` / `app-desktop` 的改动时请在本地
-完成构建自测（Gradle / Tauri）。
+移动端与桌面端的 CI 构建工作流已退役：安装包由维护者本地构建并随
+GitHub Release 分发，提交涉及 `app-mobile` / `app-desktop` 的改动时请在
+本地完成构建自测（flutter build / Tauri）。
 
 所有构建前会自动运行 `content-sync.mjs`；deploy 工作流中的
 `content-audit.mjs` 只校验 frontmatter 可解析（解析失败会阻断构建）。
@@ -184,8 +183,8 @@ pnpm release --no-push  # 只改文件与提交，不推送（用于演练）
 
 脚本自动完成：七处版本文件同步（根 / app-web / app-desktop /
 app-desktop-portable 的 package.json、tauri.conf.json、Cargo.toml 与
-Cargo.lock）、Android versionCode +1 与 versionName 同步、CHANGELOG
-「未发布」段迁移、commit + tag + push；安装包由维护者本地构建并随
+Cargo.lock）、移动端 pubspec versionCode +1 与 versionName 同步、
+CHANGELOG「未发布」段迁移、commit + tag + push；安装包由维护者本地构建并随
 GitHub Release 分发（CI 构建工作流已退役），Release 说明按 CHANGELOG
 对应版本段落整理。
 

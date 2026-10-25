@@ -1,0 +1,139 @@
+{
+  "version": "2.0.0",
+  "module": "kotlin",
+  "summary": "从 Kotlin 语法与协程出发，覆盖面向对象、函数式特性与 Android 生态。",
+  "stages": [
+    {
+      "id": "basics",
+      "title": "基础语法",
+      "subtitle": "类、协程与测试",
+      "nodes": [
+        {
+          "id": "kotlin-001",
+          "title": "Kotlin 概述与环境配置",
+          "doc": "020-KotlinOverviewEnvSetup"
+        },
+        {
+          "id": "kotlin-002",
+          "title": "Kotlin 类与对象",
+          "doc": "050-KotlinClassObject"
+        },
+        {
+          "id": "kotlin-003",
+          "title": "Kotlin 协程取消与超时",
+          "doc": "235-KotlinCoroutineCancellationTimeout"
+        },
+        {
+          "id": "kotlin-004",
+          "title": "Kotlin 测试与最佳实践",
+          "doc": "380-KotlinTestBestPractice"
+        },
+        {
+          "id": "kotlin-005",
+          "title": "密封类与代数数据类型",
+          "doc": "150-SealedClassAlgebraicDataType"
+        },
+        {
+          "id": "kotlin-006",
+          "title": "协程基础",
+          "doc": "230-CoroutineBasics"
+        }
+      ]
+    },
+    {
+      "id": "advanced",
+      "title": "生态集成",
+      "subtitle": "作用域函数、Compose 与 Android",
+      "nodes": [
+        {
+          "id": "kotlin-101",
+          "title": "Kotlin作用域函数",
+          "doc": "070-KotlinScopeFunction"
+        },
+        {
+          "id": "kotlin-102",
+          "title": "Kotlin 契约（Contracts）",
+          "doc": "140-KotlinContractContracts"
+        },
+        {
+          "id": "kotlin-103",
+          "title": "Kotlin与Android",
+          "doc": "440-KotlinAndroid"
+        },
+        {
+          "id": "kotlin-104",
+          "title": "Kotlin与Compose",
+          "doc": "450-KotlinCompose"
+        },
+        {
+          "id": "kotlin-105",
+          "title": "Kotlin与Exposed",
+          "doc": "520-KotlinExposed"
+        },
+        {
+          "id": "kotlin-106",
+          "title": "Kotlin与测试",
+          "doc": "390-KotlinTest"
+        }
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "实战进阶",
+      "subtitle": "Flow、原子操作与协程异常",
+      "nodes": [
+        {
+          "id": "kotlin-201",
+          "title": "Kotlin与原子操作",
+          "doc": "280-KotlinAtomicOperation"
+        },
+        {
+          "id": "kotlin-202",
+          "title": "Kotlin 与正则表达式",
+          "doc": "360-KotlinRegex"
+        },
+        {
+          "id": "kotlin-203",
+          "title": "Kotlin与WebSocket",
+          "doc": "510-KotlinWebSocket"
+        },
+        {
+          "id": "kotlin-204",
+          "title": "Flow冷流与SharedFlow和StateFlow",
+          "doc": "300-FlowColdSharedState"
+        },
+        {
+          "id": "kotlin-205",
+          "title": "内联类",
+          "doc": "200-InlineClass"
+        },
+        {
+          "id": "kotlin-206",
+          "title": "协程异常处理",
+          "doc": "260-CoroutineExceptionHandling"
+        }
+      ]
+    },
+    {
+      "id": "specialized",
+      "title": "专项进阶",
+      "subtitle": "占位补全：待展开的专项主题",
+      "nodes": [
+        {
+          "id": "kt-901",
+          "title": "Kotlin 与 Java 互操作",
+          "desc": "双向调用与 @Jvm 注解",
+          "difficulty": "intermediate",
+          "doc": "430-KotlinJavaInterop"
+        },
+        {
+          "id": "kt-902",
+          "title": "data class 详解",
+          "desc": "数据载体最佳实践",
+          "difficulty": "beginner",
+          "doc": "060-KotlinDataClassDeepDive"
+        }
+      ]
+    }
+  ]
+}

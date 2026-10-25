@@ -19,10 +19,10 @@ flowchart LR
     A["作者写 Markdown<br/>cnt-content/full"] --> B["content-sync.mjs<br/>（本地构建与 CI 构建前自动运行）"]
     B --> C["modules.json<br/>模块注册与回收"]
     B --> D["app-web<br/>Astro 构建期加载"]
-    B --> E["app-Android-new<br/>generate-content.mjs"]
+    B --> E["app-mobile<br/>generate-content.mjs"]
     D --> F["网页 GitHub Pages"]
     D --> G["Windows 桌面端<br/>（内嵌 web 产物）"]
-    E --> H["Android assets/docs"]
+    E --> H["移动端 assets/docs"]
 ```
 
 三端消费方式对照：
@@ -31,8 +31,7 @@ flowchart LR
 | --- | --- | --- |
 | app-web | `cnt-content/full` | Astro Content Collections 构建期加载 |
 | app-desktop | 内嵌 web 构建产物 | `build-desktop.mjs` 先跑 `pnpm build:web`，再由 Tauri 打包 |
-| app-Android-new | `cnt-content/full` | `generate-content.mjs` 生成 `assets/docs` 与元数据 |
-| app-Android-old（已冻结） | `cnt-content/full` | `generate-legacy-content.mjs` 生成 `assets/dist-mobile` |
+| app-mobile | `cnt-content/full` | `generate-content.mjs` 生成 `assets/docs` 与元数据 |
 
 **不要直接修改三端应用内的生成产物（`assets/`、`dist/` 目录）**，
 它们是管线的输出，下次构建会被覆盖。
