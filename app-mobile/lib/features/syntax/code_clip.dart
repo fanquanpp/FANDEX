@@ -10,7 +10,8 @@ class GeoMiniCode extends StatelessWidget {
   final String lang;
   final Color color;
 
-  const GeoMiniCode({super.key, required this.code, required this.lang, required this.color});
+  const GeoMiniCode(
+      {super.key, required this.code, required this.lang, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +68,8 @@ class GeoMiniCode extends StatelessWidget {
         return const TextStyle(color: Color(0xFF22C55E));
       case 'comment':
       case 'quote':
-        return TextStyle(color: palette.fgTertiary, fontStyle: FontStyle.italic);
+        return TextStyle(
+            color: palette.fgTertiary, fontStyle: FontStyle.italic);
       case 'number':
       case 'meta':
         return const TextStyle(color: Color(0xFFF97316));

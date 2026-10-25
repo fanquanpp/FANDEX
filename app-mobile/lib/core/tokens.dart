@@ -258,9 +258,22 @@ ThemeData geoTheme(GeoPalette p, Brightness brightness) {
       surfaceTintColor: Colors.transparent,
     ),
     textTheme: base.textTheme.copyWith(
-      displaySmall: TextStyle(color: p.fgPrimary, fontWeight: FontWeight.w800, fontSize: 30, height: 1.2, letterSpacing: -0.5),
-      titleLarge: TextStyle(color: p.fgPrimary, fontWeight: FontWeight.w800, fontSize: 20, height: 1.3),
-      titleMedium: TextStyle(color: p.fgPrimary, fontWeight: FontWeight.w700, fontSize: 16, height: 1.35),
+      displaySmall: TextStyle(
+          color: p.fgPrimary,
+          fontWeight: FontWeight.w800,
+          fontSize: 30,
+          height: 1.2,
+          letterSpacing: -0.5),
+      titleLarge: TextStyle(
+          color: p.fgPrimary,
+          fontWeight: FontWeight.w800,
+          fontSize: 20,
+          height: 1.3),
+      titleMedium: TextStyle(
+          color: p.fgPrimary,
+          fontWeight: FontWeight.w700,
+          fontSize: 16,
+          height: 1.35),
       bodyLarge: TextStyle(color: p.fgPrimary, fontSize: 16, height: 1.625),
       bodyMedium: TextStyle(color: p.fgPrimary, fontSize: 14, height: 1.55),
       bodySmall: TextStyle(color: p.fgSecondary, fontSize: 12, height: 1.45),

@@ -153,7 +153,7 @@ class _PathCard extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GeoPress(
-        onTap: () => context.go('/paths/$moduleId'),
+        onTap: () => context.push('/paths/$moduleId'),
         bracketColor: accent,
         child: Container(
           decoration: ShapeDecoration(

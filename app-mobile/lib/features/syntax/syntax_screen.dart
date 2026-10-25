@@ -36,7 +36,10 @@ class SyntaxScreen extends ConsumerWidget {
                   onPressed: () => context.pop(),
                 ),
                 segment: [
-                  DockSegmentAction(icon: Icons.home_outlined, tooltip: '首页', onTap: () => context.go('/')),
+                  DockSegmentAction(
+                      icon: Icons.home_outlined,
+                      tooltip: '首页',
+                      onTap: () => context.go('/')),
                   DockSegmentAction(
                     icon: Icons.contrast,
                     tooltip: '主题快切',
@@ -50,7 +53,9 @@ class SyntaxScreen extends ConsumerWidget {
               Expanded(
                 child: langs.when(
                   loading: () => const GeoLoading(),
-                  error: (e, _) => GeoErrorView(message: '语法数据加载失败', onRetry: () => ref.invalidate(syntaxLanguagesProvider)),
+                  error: (e, _) => GeoErrorView(
+                      message: '语法数据加载失败',
+                      onRetry: () => ref.invalidate(syntaxLanguagesProvider)),
                   data: (languages) => _SyntaxIndexBody(languages: languages),
                 ),
               ),
@@ -99,7 +104,10 @@ class _SyntaxIndexBody extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 '语法速览',
-                style: TextStyle(color: palette.fgPrimary, fontSize: 26, fontWeight: FontWeight.w900),
+                style: TextStyle(
+                    color: palette.fgPrimary,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900),
               ),
             ],
           ),
@@ -126,13 +134,14 @@ class _LangCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GeoPress(
-        onTap: () => context.go('/syntax/${lang.id}'),
+        onTap: () => context.push('/syntax/${lang.id}'),
         bracketColor: color,
         child: Container(
           decoration: ShapeDecoration(
             color: palette.bgSurface,
             shape: BeveledRectangleBorder(
-              borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevel)),
+              borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(GeoRadius.bevel)),
               side: BorderSide(color: palette.border),
             ),
           ),
@@ -144,24 +153,32 @@ class _LangCard extends StatelessWidget {
                 color: color.withValues(alpha: 0.13),
                 alignment: Alignment.center,
                 child: Text(
-                  lang.icon.isEmpty ? lang.id.substring(0, 1).toUpperCase() : lang.icon,
-                  style: TextStyle(color: color, fontSize: 17, fontWeight: FontWeight.w900),
+                  lang.icon.isEmpty
+                      ? lang.id.substring(0, 1).toUpperCase()
+                      : lang.icon,
+                  style: TextStyle(
+                      color: color, fontSize: 17, fontWeight: FontWeight.w900),
                 ),
               ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         lang.title,
-                        style: TextStyle(color: palette.fgPrimary, fontSize: 15, fontWeight: FontWeight.w800),
+                        style: TextStyle(
+                            color: palette.fgPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: 3),
                       Text(
                         '${lang.count} 语法点 · ${lang.docCount} 文档',
-                        style: TextStyle(color: palette.fgTertiary, fontSize: 11.5),
+                        style: TextStyle(
+                            color: palette.fgTertiary, fontSize: 11.5),
                       ),
                     ],
                   ),
@@ -169,7 +186,8 @@ class _LangCard extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(right: 12),
-                child: Icon(Icons.chevron_right, size: 18, color: palette.fgTertiary),
+                child: Icon(Icons.chevron_right,
+                    size: 18, color: palette.fgTertiary),
               ),
             ],
           ),

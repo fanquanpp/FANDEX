@@ -103,34 +103,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final done = ref.watch(progressProvider
         .select((p) => p.containsKey('${widget.moduleId}/${widget.slug}')));
 
-    // 数据就绪后登记目录锚点与阅读历史。
+    // 数据就绪后登记目录锚点。
     ref.listen(docProvider(DocRef(widget.moduleId, widget.slug)), (prev, next) {
       final doc = next.value;
       if (doc == null) return;
       if (!_historyRecorded) {
         _historyRecorded = true;
-        var moduleTitle = widget.moduleId;
-        final mods = ref.read(modulesProvider).value?.modules;
-        if (mods != null) {
-          for (final m in mods) {
-            if (m.id == widget.moduleId) {
-              moduleTitle = m.title;
-              break;
-            }
-          }
-        }
         final result = parseMarkdown(doc.body);
         _headings.clear();
         _headings.addAll(result.headings);
-        ref.read(historyProvider.notifier).record(
-              HistoryEntry(
-                module: widget.moduleId,
-                slug: widget.slug,
-                title: doc.entry.title,
-                moduleTitle: moduleTitle,
-                timestamp: DateTime.now().millisecondsSinceEpoch,
-              ),
-            );
       }
     });
 
@@ -336,7 +317,7 @@ class _ReaderBody extends ConsumerWidget {
     // 引用格式：'模块/文件名'。
     final parts = target.split('/');
     if (parts.length == 2) {
-      context.go('/doc/${parts[0]}/${parts[1]}');
+      context.push('/doc/${parts[0]}/${parts[1]}');
     }
   }
 }
@@ -454,7 +435,7 @@ class _NavCard extends StatelessWidget {
     final palette = geoOf(context);
     if (entry == null) return const SizedBox.shrink();
     return GeoPress(
-      onTap: () => context.go('/doc/${entry!.module}/${entry!.slug}'),
+      onTap: () => context.push('/doc/${entry!.module}/${entry!.slug}'),
       bracketColor: accent,
       bevel: GeoRadius.bevelSmall,
       child: Container(

@@ -11,7 +11,8 @@ class MintPlain extends MdInline {
   final bool bold;
   final bool italic;
   final bool strike;
-  const MintPlain(this.text, {this.bold = false, this.italic = false, this.strike = false});
+  const MintPlain(this.text,
+      {this.bold = false, this.italic = false, this.strike = false});
 }
 
 class MintCode extends MdInline {
@@ -132,7 +133,9 @@ MdBlock? _walkBlock(md.Node node, List<(int, String)> headings) {
     case 'p':
       final rawText = inlinePlain(_walkInlines(node.children));
       final trimmed = rawText.trim();
-      if (trimmed.startsWith(r'$$') && trimmed.endsWith(r'$$') && trimmed.length > 4) {
+      if (trimmed.startsWith(r'$$') &&
+          trimmed.endsWith(r'$$') &&
+          trimmed.length > 4) {
         return BMath(trimmed.substring(2, trimmed.length - 2).trim());
       }
       final inlines = _splitInlineMath(_walkInlines(node.children));
@@ -140,10 +143,13 @@ MdBlock? _walkBlock(md.Node node, List<(int, String)> headings) {
     case 'pre':
       final codeEl = _findCodeElement(node);
       if (codeEl == null) return null;
-      final langClass = (codeEl.attributes['class'] ?? '').replaceFirst('language-', '').trim();
+      final langClass = (codeEl.attributes['class'] ?? '')
+          .replaceFirst('language-', '')
+          .trim();
       final code = _textOf(codeEl.children);
       final lang = langClass.isEmpty ? 'text' : langClass;
-      return BCode(lang, code.endsWith('\n') ? code.substring(0, code.length - 1) : code);
+      return BCode(lang,
+          code.endsWith('\n') ? code.substring(0, code.length - 1) : code);
     case 'ul':
     case 'ol':
       return _walkList(node);
@@ -203,7 +209,9 @@ BList _walkList(md.Element node) {
       }
 
       final blocks = <MdBlock>[];
-      if (contentNodes.isNotEmpty && contentNodes.every((n) => n is md.Text || (n is md.Element && _isInlineTag(n.tag)))) {
+      if (contentNodes.isNotEmpty &&
+          contentNodes.every((n) =>
+              n is md.Text || (n is md.Element && _isInlineTag(n.tag)))) {
         final inlines = _splitInlineMath(_walkInlines(contentNodes));
         if (inlines.isNotEmpty) blocks.add(BParagraph(inlines));
       } else {
@@ -236,7 +244,8 @@ BQuote _walkQuote(md.Element node, List<(int, String)> headings) {
       if (match != null) {
         admonition = match.group(1)!.toUpperCase();
         final rest = match.group(2) ?? '';
-        final restInlines = _splitInlineMath(_walkInlines(c.children).skip(1).toList());
+        final restInlines =
+            _splitInlineMath(_walkInlines(c.children).skip(1).toList());
         if (rest.isNotEmpty && blocks.isEmpty) {
           blocks.add(BParagraph(restInlines));
         }
@@ -290,24 +299,34 @@ List<MdInline> _walkInlines(List<md.Node>? nodes) {
       switch (node.tag) {
         case 'strong':
           for (final i in _walkInlines(node.children)) {
-            if (i is MintPlain) out.add(MintPlain(i.text, bold: true, italic: i.italic, strike: i.strike));
+            if (i is MintPlain) {
+              out.add(MintPlain(i.text,
+                  bold: true, italic: i.italic, strike: i.strike));
+            }
           }
           break;
         case 'em':
           for (final i in _walkInlines(node.children)) {
-            if (i is MintPlain) out.add(MintPlain(i.text, bold: i.bold, italic: true, strike: i.strike));
+            if (i is MintPlain) {
+              out.add(MintPlain(i.text,
+                  bold: i.bold, italic: true, strike: i.strike));
+            }
           }
           break;
         case 'del':
           for (final i in _walkInlines(node.children)) {
-            if (i is MintPlain) out.add(MintPlain(i.text, bold: i.bold, italic: i.italic, strike: true));
+            if (i is MintPlain) {
+              out.add(MintPlain(i.text,
+                  bold: i.bold, italic: i.italic, strike: true));
+            }
           }
           break;
         case 'code':
           out.add(MintCode(_textOf(node.children)));
           break;
         case 'a':
-          out.add(MintLink(_textOf(node.children), node.attributes['href'] ?? ''));
+          out.add(
+              MintLink(_textOf(node.children), node.attributes['href'] ?? ''));
           break;
         case 'img':
           out.add(MintImg(node.attributes['alt'] ?? ''));
@@ -357,7 +376,8 @@ List<MdInline> _splitInlineMath(List<MdInline> inlines) {
 
 MintPlain _copyPlain(MintPlain source, String text) {
   if (text.isEmpty) return source;
-  return MintPlain(text, bold: source.bold, italic: source.italic, strike: source.strike);
+  return MintPlain(text,
+      bold: source.bold, italic: source.italic, strike: source.strike);
 }
 
 String inlinePlain(List<MdInline> inlines) {

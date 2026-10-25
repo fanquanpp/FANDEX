@@ -34,7 +34,9 @@ class PathDetailScreen extends ConsumerWidget {
       }
     }
     final accent = module != null && module.categories.isNotEmpty
-        ? Color(modules?.categoryColors[module.categories.first]?.toUnsigned(32) ?? 0xFF39C5BB)
+        ? Color(
+            modules?.categoryColors[module.categories.first]?.toUnsigned(32) ??
+                0xFF39C5BB)
         : palette.accent;
 
     return Scaffold(
@@ -52,7 +54,10 @@ class PathDetailScreen extends ConsumerWidget {
                   onPressed: () => context.pop(),
                 ),
                 segment: [
-                  DockSegmentAction(icon: Icons.home_outlined, tooltip: '首页', onTap: () => context.go('/')),
+                  DockSegmentAction(
+                      icon: Icons.home_outlined,
+                      tooltip: '首页',
+                      onTap: () => context.go('/')),
                   DockSegmentAction(
                     icon: Icons.contrast,
                     tooltip: '主题快切',
@@ -70,7 +75,11 @@ class PathDetailScreen extends ConsumerWidget {
                     message: '路线加载失败',
                     onRetry: () => ref.invalidate(modulePathProvider(moduleId)),
                   ),
-                  data: (path) => _PathDetailBody(path: path, accent: accent, progress: progress, moduleTitle: module?.title),
+                  data: (path) => _PathDetailBody(
+                      path: path,
+                      accent: accent,
+                      progress: progress,
+                      moduleTitle: module?.title),
                 ),
               ),
             ],
@@ -87,7 +96,11 @@ class _PathDetailBody extends ConsumerWidget {
   final Map<String, int> progress;
   final String? moduleTitle;
 
-  const _PathDetailBody({required this.path, required this.accent, required this.progress, required this.moduleTitle});
+  const _PathDetailBody(
+      {required this.path,
+      required this.accent,
+      required this.progress,
+      required this.moduleTitle});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -104,17 +117,23 @@ class _PathDetailBody extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GeoMicroLabel(text: 'PATH // ${path.module.toUpperCase()}', color: accent),
+                GeoMicroLabel(
+                    text: 'PATH // ${path.module.toUpperCase()}',
+                    color: accent),
                 const SizedBox(height: 8),
                 Text(
                   '${path.stages.length} 阶段学习路线',
-                  style: TextStyle(color: palette.fgPrimary, fontSize: 24, fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                      color: palette.fgPrimary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900),
                 ),
                 if (path.summary.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Text(
                     path.summary,
-                    style: TextStyle(color: palette.fgSecondary, fontSize: 13, height: 1.5),
+                    style: TextStyle(
+                        color: palette.fgSecondary, fontSize: 13, height: 1.5),
                   ),
                 ],
               ],
@@ -186,10 +205,15 @@ class _StageBlock extends StatelessWidget {
                   children: [
                     Text(
                       stage.title,
-                      style: TextStyle(color: palette.fgPrimary, fontSize: 16, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                          color: palette.fgPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800),
                     ),
                     if (stage.subtitle.isNotEmpty)
-                      Text(stage.subtitle, style: TextStyle(color: palette.fgTertiary, fontSize: 11.5)),
+                      Text(stage.subtitle,
+                          style: TextStyle(
+                              color: palette.fgTertiary, fontSize: 11.5)),
                   ],
                 ),
               ),
@@ -229,7 +253,9 @@ class _NodeRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8, left: 8),
       child: GeoPress(
-        onTap: node.doc.isEmpty ? null : () => context.go('/doc/$moduleId/${node.doc}'),
+        onTap: node.doc.isEmpty
+            ? null
+            : () => context.push('/doc/$moduleId/${node.doc}'),
         bracketColor: accent,
         bevel: GeoRadius.bevelSmall,
         child: Container(
@@ -237,7 +263,8 @@ class _NodeRow extends StatelessWidget {
           decoration: ShapeDecoration(
             color: palette.bgSurface,
             shape: BeveledRectangleBorder(
-              borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevelSmall)),
+              borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(GeoRadius.bevelSmall)),
               side: BorderSide(color: palette.border),
             ),
           ),
@@ -247,7 +274,8 @@ class _NodeRow extends StatelessWidget {
                 scale: done ? 1 : 0,
                 duration: GeoMotion.normal,
                 curve: Curves.elasticOut,
-                child: Icon(Icons.check_circle_outline, size: 16, color: accent),
+                child:
+                    Icon(Icons.check_circle_outline, size: 16, color: accent),
               ),
               if (done) const SizedBox(width: 10),
               Expanded(
@@ -267,7 +295,8 @@ class _NodeRow extends StatelessWidget {
                         node.desc,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: palette.fgTertiary, fontSize: 11),
+                        style:
+                            TextStyle(color: palette.fgTertiary, fontSize: 11),
                       ),
                   ],
                 ),

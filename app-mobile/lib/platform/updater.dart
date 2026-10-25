@@ -16,12 +16,14 @@ class UpdateInfo {
   final String notes;
   final String apkUrl;
 
-  const UpdateInfo({required this.version, required this.notes, required this.apkUrl});
+  const UpdateInfo(
+      {required this.version, required this.notes, required this.apkUrl});
 }
 
 class GeoUpdater {
   static const MethodChannel _channel = MethodChannel('fandex/updater');
-  static const _apiUrl = 'https://api.github.com/repos/fanquanpp/FANDEX/releases/latest';
+  static const _apiUrl =
+      'https://api.github.com/repos/fanquanpp/FANDEX/releases/latest';
 
   int _versionCode(String v) {
     final parts = v.replaceFirst(RegExp(r'^v'), '').split('.');
@@ -34,14 +36,18 @@ class GeoUpdater {
 
   Future<UpdateInfo?> check({required LibraryStore store}) async {
     try {
-      final resp = await http
-          .get(Uri.parse(_apiUrl), headers: const {'Accept': 'application/vnd.github+json'})
-          .timeout(const Duration(seconds: 15));
+      final resp = await http.get(Uri.parse(_apiUrl), headers: const {
+        'Accept': 'application/vnd.github+json'
+      }).timeout(const Duration(seconds: 15));
       if (resp.statusCode != 200) return null;
-      final json = jsonDecode(utf8.decode(resp.bodyBytes)) as Map<String, dynamic>;
+      final json =
+          jsonDecode(utf8.decode(resp.bodyBytes)) as Map<String, dynamic>;
       final tag = json['tag_name'] as String? ?? '';
       final version = tag.replaceFirst(RegExp(r'^v'), '');
-      if (_versionCode(version) <= _versionCode(store.ignoredVersion() ?? '0.0.0')) return null;
+      if (_versionCode(version) <=
+          _versionCode(store.ignoredVersion() ?? '0.0.0')) {
+        return null;
+      }
 
       String? apkUrl;
       final assets = json['assets'] as List<dynamic>? ?? [];
@@ -63,7 +69,8 @@ class GeoUpdater {
   }
 
   Stream<double> downloadApk(String url, {String? toPath}) async* {
-    final dir = toPath != null ? File(toPath).parent : await getTemporaryDirectory();
+    final dir =
+        toPath != null ? File(toPath).parent : await getTemporaryDirectory();
     final file = File(toPath ?? '${dir.path}/fandex-update.apk');
     final client = http.Client();
     try {

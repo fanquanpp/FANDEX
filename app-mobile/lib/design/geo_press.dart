@@ -26,7 +26,8 @@ class GeoPress extends StatefulWidget {
   State<GeoPress> createState() => _GeoPressState();
 }
 
-class _GeoPressState extends State<GeoPress> with SingleTickerProviderStateMixin {
+class _GeoPressState extends State<GeoPress>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   bool _down = false;
 
@@ -106,13 +107,15 @@ class GeoSelectionPulse extends StatefulWidget {
   final bool selected;
   final Widget child;
 
-  const GeoSelectionPulse({super.key, required this.selected, required this.child});
+  const GeoSelectionPulse(
+      {super.key, required this.selected, required this.child});
 
   @override
   State<GeoSelectionPulse> createState() => _GeoSelectionPulseState();
 }
 
-class _GeoSelectionPulseState extends State<GeoSelectionPulse> with SingleTickerProviderStateMixin {
+class _GeoSelectionPulseState extends State<GeoSelectionPulse>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
@@ -141,8 +144,11 @@ class _GeoSelectionPulseState extends State<GeoSelectionPulse> with SingleTicker
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final t = CurvedAnimation(parent: _controller, curve: Curves.easeOut).value;
-        final scale = widget.selected ? 0.96 + 0.04 * Curves.elasticOut.transform(t) : 1.0;
+        final t =
+            CurvedAnimation(parent: _controller, curve: Curves.easeOut).value;
+        final scale = widget.selected
+            ? 0.96 + 0.04 * Curves.elasticOut.transform(t)
+            : 1.0;
         return Transform.scale(scale: scale, child: child);
       },
       child: widget.child,

@@ -11,7 +11,11 @@ class DockSegmentAction {
   final VoidCallback onTap;
   final bool active;
 
-  const DockSegmentAction({required this.icon, required this.tooltip, required this.onTap, this.active = false});
+  const DockSegmentAction(
+      {required this.icon,
+      required this.tooltip,
+      required this.onTap,
+      this.active = false});
 }
 
 class GeoDock extends StatelessWidget implements PreferredSizeWidget {
@@ -71,7 +75,9 @@ class GeoDock extends StatelessWidget implements PreferredSizeWidget {
                     switchOutCurve: Curves.easeIn,
                     transitionBuilder: (child, anim) => FadeTransition(
                       opacity: anim,
-                      child: ScaleTransition(scale: Tween(begin: 0.96, end: 1.0).animate(anim), child: child),
+                      child: ScaleTransition(
+                          scale: Tween(begin: 0.96, end: 1.0).animate(anim),
+                          child: child),
                     ),
                     child: Text(
                       key: ValueKey(title),
@@ -100,8 +106,13 @@ class GeoDock extends StatelessWidget implements PreferredSizeWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         for (var i = 0; i < segment.length; i++) ...[
-                          if (i > 0) Container(width: 1, height: 36, color: palette.border),
-                          _SegmentButton(action: segment[i], palette: palette, accent: accent),
+                          if (i > 0)
+                            Container(
+                                width: 1, height: 36, color: palette.border),
+                          _SegmentButton(
+                              action: segment[i],
+                              palette: palette,
+                              accent: accent),
                         ],
                       ],
                     ),
@@ -116,7 +127,8 @@ class GeoDock extends StatelessWidget implements PreferredSizeWidget {
             builder: (context, value, _) {
               return CustomPaint(
                 size: const Size(double.infinity, 2.5),
-                painter: TickRulerPainter(color: accent, filledRatio: value, segments: 24),
+                painter: TickRulerPainter(
+                    color: accent, filledRatio: value, segments: 24),
               );
             },
           ),
@@ -131,7 +143,8 @@ class _SegmentButton extends StatelessWidget {
   final GeoPalette palette;
   final Color accent;
 
-  const _SegmentButton({required this.action, required this.palette, required this.accent});
+  const _SegmentButton(
+      {required this.action, required this.palette, required this.accent});
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +156,9 @@ class _SegmentButton extends StatelessWidget {
           width: 38,
           height: 34,
           alignment: Alignment.center,
-          color: action.active ? accent.withValues(alpha: 0.16) : Colors.transparent,
+          color: action.active
+              ? accent.withValues(alpha: 0.16)
+              : Colors.transparent,
           child: AnimatedScale(
             scale: action.active ? 1.1 : 1.0,
             duration: GeoMotion.fast,

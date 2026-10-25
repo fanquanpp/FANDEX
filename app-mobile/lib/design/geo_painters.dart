@@ -81,7 +81,8 @@ class WireframePolygonPainter extends CustomPainter {
     final path = Path();
     for (var i = 0; i <= sides; i++) {
       final angle = phase + i * 2 * math.pi / sides - math.pi / 2;
-      final p = center + Offset(radius * math.cos(angle), radius * math.sin(angle));
+      final p =
+          center + Offset(radius * math.cos(angle), radius * math.sin(angle));
       if (i == 0) {
         path.moveTo(p.dx, p.dy);
       } else {
@@ -100,7 +101,8 @@ class WireframePolygonPainter extends CustomPainter {
       final dot = Paint()..color = color;
       for (var i = 0; i < sides; i++) {
         final angle = phase + i * 2 * math.pi / sides - math.pi / 2;
-        final p = center + Offset(radius * math.cos(angle), radius * math.sin(angle));
+        final p =
+            center + Offset(radius * math.cos(angle), radius * math.sin(angle));
         canvas.drawCircle(p, stroke + 0.6, dot);
       }
     }
@@ -132,7 +134,8 @@ class TickRulerPainter extends CustomPainter {
     final emptyPaint = Paint()..color = color.withValues(alpha: 0.22);
 
     for (var i = 0; i < segments; i++) {
-      final rect = Rect.fromLTWH(i * seg, 0, math.max(1.0, seg - gap), size.height);
+      final rect =
+          Rect.fromLTWH(i * seg, 0, math.max(1.0, seg - gap), size.height);
       canvas.drawRect(rect, i < filled ? filledPaint : emptyPaint);
     }
   }
@@ -160,7 +163,8 @@ class SpeedLinesPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (progress <= 0 || progress >= 1) return;
-    final fade = (progress < 0.5 ? progress * 2 : (1 - progress) * 2).clamp(0.0, 1.0);
+    final fade =
+        (progress < 0.5 ? progress * 2 : (1 - progress) * 2).clamp(0.0, 1.0);
     if (fade <= 0) return;
 
     final rng = math.Random(seed);

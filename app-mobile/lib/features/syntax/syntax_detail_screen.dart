@@ -28,7 +28,8 @@ class _SyntaxDetailScreenState extends ConsumerState<SyntaxDetailScreen> {
   Widget build(BuildContext context) {
     final palette = geoOf(context);
     final cardsAsync = ref.watch(syntaxCardsProvider(widget.langId));
-    final langs = ref.watch(syntaxLanguagesProvider).value ?? const <SyntaxLanguage>[];
+    final langs =
+        ref.watch(syntaxLanguagesProvider).value ?? const <SyntaxLanguage>[];
 
     SyntaxLanguage? lang;
     for (final l in langs) {
@@ -55,7 +56,8 @@ class _SyntaxDetailScreenState extends ConsumerState<SyntaxDetailScreen> {
                 ),
                 actions: [
                   IconButton(
-                    icon: Icon(Icons.home_outlined, size: 19, color: palette.fgSecondary),
+                    icon: Icon(Icons.home_outlined,
+                        size: 19, color: palette.fgSecondary),
                     onPressed: () => context.go('/'),
                   ),
                 ],
@@ -67,18 +69,22 @@ class _SyntaxDetailScreenState extends ConsumerState<SyntaxDetailScreen> {
                   style: TextStyle(color: palette.fgPrimary, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: '搜索语法点 / 代码 / 章节',
-                    hintStyle: TextStyle(color: palette.fgTertiary, fontSize: 13),
-                    prefixIcon: Icon(Icons.search, size: 19, color: palette.fgTertiary),
+                    hintStyle:
+                        TextStyle(color: palette.fgTertiary, fontSize: 13),
+                    prefixIcon:
+                        Icon(Icons.search, size: 19, color: palette.fgTertiary),
                     filled: true,
                     fillColor: palette.bgSurface,
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevelSmall)),
+                      borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(GeoRadius.bevelSmall)),
                       borderSide: BorderSide(color: palette.border),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevelSmall)),
+                      borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(GeoRadius.bevelSmall)),
                       borderSide: BorderSide(color: color),
                     ),
                   ),
@@ -87,8 +93,12 @@ class _SyntaxDetailScreenState extends ConsumerState<SyntaxDetailScreen> {
               Expanded(
                 child: cardsAsync.when(
                   loading: () => const GeoLoading(),
-                  error: (e, _) => GeoErrorView(message: '加载失败', onRetry: () => ref.invalidate(syntaxCardsProvider(widget.langId))),
-                  data: (cards) => _CardsBody(cards: cards, query: _query, color: color),
+                  error: (e, _) => GeoErrorView(
+                      message: '加载失败',
+                      onRetry: () =>
+                          ref.invalidate(syntaxCardsProvider(widget.langId))),
+                  data: (cards) =>
+                      _CardsBody(cards: cards, query: _query, color: color),
                 ),
               ),
             ],
@@ -110,7 +120,8 @@ class _CardsBody extends ConsumerWidget {
   final String query;
   final Color color;
 
-  const _CardsBody({required this.cards, required this.query, required this.color});
+  const _CardsBody(
+      {required this.cards, required this.query, required this.color});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -147,7 +158,10 @@ class _CardsBody extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 48),
       children: [
         for (final entry in groups.entries) ...[
-          SectionHeader(label: entry.key, color: color, trailing: '${entry.value.length}'),
+          SectionHeader(
+              label: entry.key,
+              color: color,
+              trailing: '${entry.value.length}'),
           ...entry.value.map((c) {
             final doc = findByTitle(c.docTitle);
             return GeoEntrance(
@@ -155,7 +169,9 @@ class _CardsBody extends ConsumerWidget {
               child: _SyntaxCardView(
                 card: c,
                 color: color,
-                onOpen: doc == null ? null : () => context.go('/doc/${doc.module}/${doc.slug}'),
+                onOpen: doc == null
+                    ? null
+                    : () => context.push('/doc/${doc.module}/${doc.slug}'),
               ),
             );
           }),
@@ -167,10 +183,12 @@ class _CardsBody extends ConsumerWidget {
               children: [
                 CustomPaint(
                   size: const Size(48, 48),
-                  painter: WireframePolygonPainter(color: palette.border, sides: 3, vertexDots: false),
+                  painter: WireframePolygonPainter(
+                      color: palette.border, sides: 3, vertexDots: false),
                 ),
                 const SizedBox(height: 14),
-                Text('无匹配语法点', style: TextStyle(color: palette.fgTertiary, fontSize: 13)),
+                Text('无匹配语法点',
+                    style: TextStyle(color: palette.fgTertiary, fontSize: 13)),
               ],
             ),
           ),
@@ -195,7 +213,8 @@ class _SyntaxCardView extends StatelessWidget {
         decoration: ShapeDecoration(
           color: palette.bgSurface,
           shape: BeveledRectangleBorder(
-            borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevel)),
+            borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(GeoRadius.bevel)),
             side: BorderSide(color: palette.border),
           ),
         ),
@@ -209,7 +228,10 @@ class _SyntaxCardView extends StatelessWidget {
                   Expanded(
                     child: Text(
                       card.name,
-                      style: TextStyle(color: palette.fgPrimary, fontSize: 14, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                          color: palette.fgPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700),
                     ),
                   ),
                   if (onOpen != null)
@@ -233,12 +255,14 @@ class _SyntaxCardView extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(12, 4, 12, 6),
                 child: Text(
                   card.formula,
-                  style: TextStyle(color: palette.fgSecondary, fontSize: 12.5, height: 1.45),
+                  style: TextStyle(
+                      color: palette.fgSecondary, fontSize: 12.5, height: 1.45),
                 ),
               ),
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 4, 8, 10),
-              child: GeoMiniCode(code: card.code, lang: card.lang, color: color),
+              child:
+                  GeoMiniCode(code: card.code, lang: card.lang, color: color),
             ),
           ],
         ),

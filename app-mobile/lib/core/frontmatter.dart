@@ -67,7 +67,8 @@ FrontmatterResult splitFrontmatter(String content) {
     }
   }
 
-  return FrontmatterResult(meta: DocFrontmatter(fields: fields, lists: lists), body: body);
+  return FrontmatterResult(
+      meta: DocFrontmatter(fields: fields, lists: lists), body: body);
 }
 
 String _stripQuotes(String v) {
@@ -83,7 +84,9 @@ String _stripQuotes(String v) {
 
 // 阅读时长：去代码块与行内代码后按字数 / 300 分钟，至少 1 分钟。
 int readingMinutes(String body) {
-  var text = body.replaceAll(RegExp(r'```[\s\S]*?```'), ' ').replaceAll(RegExp(r'`[^`]*`'), ' ');
+  var text = body
+      .replaceAll(RegExp(r'```[\s\S]*?```'), ' ')
+      .replaceAll(RegExp(r'`[^`]*`'), ' ');
   text = text.replaceAll(RegExp(r'\$\$[\s\S]*?\$\$'), ' ');
   final visible = text.replaceAll(RegExp(r'\s'), '');
   if (visible.isEmpty) return 1;

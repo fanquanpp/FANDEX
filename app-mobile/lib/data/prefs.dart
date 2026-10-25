@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../core/models.dart';
-
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('main 中通过 ProviderScope overrides 注入');
 });
@@ -60,37 +58,16 @@ class SettingsController extends Notifier<SettingsState> {
   }
 }
 
-final settingsProvider = NotifierProvider<SettingsController, SettingsState>(SettingsController.new);
+final settingsProvider =
+    NotifierProvider<SettingsController, SettingsState>(SettingsController.new);
 
 class LibraryStore {
-  static const _kHistory = 'geo_doc_history';
   static const _kProgress = 'geo_doc_progress';
   static const _kAutoUpdate = 'geo_auto_update';
   static const _kIgnoredVersion = 'geo_ignored_version';
 
   LibraryStore(this._prefs);
   final SharedPreferences _prefs;
-
-  List<HistoryEntry> history() {
-    final raw = _prefs.getString(_kHistory);
-    if (raw == null || raw.isEmpty) return const [];
-    try {
-      final list = (jsonDecode(raw) as List<dynamic>).map((e) => HistoryEntry.fromJson(e as Map<String, dynamic>)).toList();
-      return list;
-    } catch (_) {
-      return const [];
-    }
-  }
-
-  Future<void> addHistory(HistoryEntry entry) async {
-    final items = history().toList();
-    items.removeWhere((e) => e.module == entry.module && e.slug == entry.slug);
-    items.insert(0, entry);
-    while (items.length > 12) {
-      items.removeLast();
-    }
-    await _prefs.setString(_kHistory, jsonEncode(items.map((e) => e.toJson()).toList()));
-  }
 
   Map<String, int> progress() {
     final raw = _prefs.getString(_kProgress);
@@ -103,7 +80,8 @@ class LibraryStore {
     }
   }
 
-  bool isDone(String module, String slug) => progress().containsKey('$module/$slug');
+  bool isDone(String module, String slug) =>
+      progress().containsKey('$module/$slug');
 
   Future<void> setDone(String module, String slug, bool done) async {
     final map = Map<String, int>.from(progress());
@@ -133,19 +111,8 @@ class LibraryStore {
   }
 }
 
-final libraryStoreProvider = Provider<LibraryStore>((ref) => LibraryStore(ref.watch(sharedPreferencesProvider)));
-
-class HistoryNotifier extends Notifier<List<HistoryEntry>> {
-  @override
-  List<HistoryEntry> build() => ref.watch(libraryStoreProvider).history();
-
-  Future<void> record(HistoryEntry entry) async {
-    await ref.read(libraryStoreProvider).addHistory(entry);
-    ref.notifyListeners();
-  }
-}
-
-final historyProvider = NotifierProvider<HistoryNotifier, List<HistoryEntry>>(HistoryNotifier.new);
+final libraryStoreProvider = Provider<LibraryStore>(
+    (ref) => LibraryStore(ref.watch(sharedPreferencesProvider)));
 
 class ProgressNotifier extends Notifier<Map<String, int>> {
   @override
@@ -157,4 +124,5 @@ class ProgressNotifier extends Notifier<Map<String, int>> {
   }
 }
 
-final progressProvider = NotifierProvider<ProgressNotifier, Map<String, int>>(ProgressNotifier.new);
+final progressProvider =
+    NotifierProvider<ProgressNotifier, Map<String, int>>(ProgressNotifier.new);

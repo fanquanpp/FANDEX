@@ -28,7 +28,8 @@ class GeoBackdrop extends ConsumerStatefulWidget {
   ConsumerState<GeoBackdrop> createState() => _GeoBackdropState();
 }
 
-class _GeoBackdropState extends ConsumerState<GeoBackdrop> with SingleTickerProviderStateMixin {
+class _GeoBackdropState extends ConsumerState<GeoBackdrop>
+    with SingleTickerProviderStateMixin {
   late final Ticker _ticker;
   final ValueNotifier<double> _time = ValueNotifier<double>(0);
 
@@ -69,7 +70,8 @@ class _GeoBackdropState extends ConsumerState<GeoBackdrop> with SingleTickerProv
           )
         else
           CustomPaint(
-            painter: _TimedGridPainter(lineColor: palette.gridLine, timeNotifier: _time),
+            painter: _TimedGridPainter(
+                lineColor: palette.gridLine, timeNotifier: _time),
           ),
         if (widget.child != null) widget.child!,
       ],
@@ -81,7 +83,8 @@ class _TimedGridPainter extends CustomPainter {
   final Color lineColor;
   final ValueNotifier<double> timeNotifier;
 
-  _TimedGridPainter({required this.lineColor, required this.timeNotifier}) : super(repaint: timeNotifier);
+  _TimedGridPainter({required this.lineColor, required this.timeNotifier})
+      : super(repaint: timeNotifier);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -124,7 +127,8 @@ class _ShaderGridPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_ShaderGridPainter oldDelegate) => oldDelegate.tint != tint;
+  bool shouldRepaint(_ShaderGridPainter oldDelegate) =>
+      oldDelegate.tint != tint;
 }
 
 // 线框多边形加载态。
@@ -138,13 +142,16 @@ class GeoLoading extends StatefulWidget {
   State<GeoLoading> createState() => _GeoLoadingState();
 }
 
-class _GeoLoadingState extends State<GeoLoading> with SingleTickerProviderStateMixin {
+class _GeoLoadingState extends State<GeoLoading>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 2400))..repeat();
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 2400))
+      ..repeat();
   }
 
   @override
@@ -200,13 +207,16 @@ class GeoErrorView extends StatefulWidget {
   State<GeoErrorView> createState() => _GeoErrorViewState();
 }
 
-class _GeoErrorViewState extends State<GeoErrorView> with SingleTickerProviderStateMixin {
+class _GeoErrorViewState extends State<GeoErrorView>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _shake;
 
   @override
   void initState() {
     super.initState();
-    _shake = AnimationController(vsync: this, duration: const Duration(milliseconds: 420))..forward();
+    _shake = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 420))
+      ..forward();
   }
 
   @override
@@ -231,16 +241,20 @@ class _GeoErrorViewState extends State<GeoErrorView> with SingleTickerProviderSt
             },
             child: CustomPaint(
               size: const Size(56, 56),
-              painter: const WireframePolygonPainter(color: Color(0xFFEF4444), sides: 3, vertexDots: false),
+              painter: const WireframePolygonPainter(
+                  color: Color(0xFFEF4444), sides: 3, vertexDots: false),
             ),
           ),
           const SizedBox(height: 16),
-          Text(widget.message, style: TextStyle(color: palette.fgSecondary, fontSize: 13)),
+          Text(widget.message,
+              style: TextStyle(color: palette.fgSecondary, fontSize: 13)),
           if (widget.onRetry != null) ...[
             const SizedBox(height: 12),
             TextButton(
               onPressed: widget.onRetry,
-              child: Text('RETRY', style: TextStyle(color: palette.accent, letterSpacing: 3, fontSize: 12)),
+              child: Text('RETRY',
+                  style: TextStyle(
+                      color: palette.accent, letterSpacing: 3, fontSize: 12)),
             ),
           ],
         ],

@@ -28,7 +28,9 @@ class DocsRepository {
     final cached = _indexCache;
     if (cached != null) return cached;
     final raw = await rootBundle.loadString('assets/metadata/doc-index.json');
-    final list = (jsonDecode(raw) as List<dynamic>).map((e) => DocEntry.fromJson(e as Map<String, dynamic>)).toList();
+    final list = (jsonDecode(raw) as List<dynamic>)
+        .map((e) => DocEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
     _indexCache = list;
     return list;
   }
@@ -78,19 +80,23 @@ class DocsRepository {
     final entries = await index();
     final results = <DocEntry>[];
     for (final e in entries) {
-      final moduleTitle = modules?.modules.firstWhere((m) => m.id == e.module, orElse: () => ModuleInfo(
-            id: e.module,
-            title: e.module,
-            icon: '',
-            description: '',
-            categories: const [],
-            folderOrder: 0,
-            updatePriority: '',
-            updateNote: '',
-            officialDocs: const [],
-          )).title;
+      final moduleTitle = modules?.modules
+          .firstWhere((m) => m.id == e.module,
+              orElse: () => ModuleInfo(
+                    id: e.module,
+                    title: e.module,
+                    icon: '',
+                    description: '',
+                    categories: const [],
+                    folderOrder: 0,
+                    updatePriority: '',
+                    updateNote: '',
+                    officialDocs: const [],
+                  ))
+          .title;
       final haystack =
-          '${e.title} ${e.description} ${e.module} $moduleTitle ${e.category}'.toLowerCase();
+          '${e.title} ${e.description} ${e.module} $moduleTitle ${e.category}'
+              .toLowerCase();
       if (haystack.contains(q)) results.add(e);
       if (results.length >= 60) break;
     }
@@ -105,7 +111,8 @@ class PathsRepository {
   Future<List<String>> order() async {
     final cached = _orderCache;
     if (cached != null) return cached;
-    final raw = await rootBundle.loadString('assets/metadata/learning-path/index.json');
+    final raw =
+        await rootBundle.loadString('assets/metadata/learning-path/index.json');
     final json = jsonDecode(raw) as Map<String, dynamic>;
     final order = (json['order'] as List<dynamic>? ?? []).cast<String>();
     _orderCache = order;
@@ -115,7 +122,8 @@ class PathsRepository {
   Future<ModulePath> load(String moduleId) async {
     final cached = _cache[moduleId];
     if (cached != null) return cached;
-    final raw = await rootBundle.loadString('assets/metadata/learning-path/$moduleId.json');
+    final raw = await rootBundle
+        .loadString('assets/metadata/learning-path/$moduleId.json');
     final path = ModulePath.fromJson(jsonDecode(raw) as Map<String, dynamic>);
     _cache[moduleId] = path;
     return path;
@@ -129,7 +137,8 @@ class SyntaxRepository {
   Future<List<SyntaxLanguage>> languages() async {
     final cached = _langCache;
     if (cached != null) return cached;
-    final raw = await rootBundle.loadString('assets/metadata/syntax-index.json');
+    final raw =
+        await rootBundle.loadString('assets/metadata/syntax-index.json');
     final json = jsonDecode(raw) as Map<String, dynamic>;
     final langs = (json['languages'] as List<dynamic>? ?? [])
         .map((e) => SyntaxLanguage.fromJson(e as Map<String, dynamic>))
@@ -151,18 +160,26 @@ class SyntaxRepository {
   }
 }
 
-final modulesRepositoryProvider = Provider<ModulesRepository>((ref) => ModulesRepository());
-final docsRepositoryProvider = Provider<DocsRepository>((ref) => DocsRepository());
-final pathsRepositoryProvider = Provider<PathsRepository>((ref) => PathsRepository());
-final syntaxRepositoryProvider = Provider<SyntaxRepository>((ref) => SyntaxRepository());
+final modulesRepositoryProvider =
+    Provider<ModulesRepository>((ref) => ModulesRepository());
+final docsRepositoryProvider =
+    Provider<DocsRepository>((ref) => DocsRepository());
+final pathsRepositoryProvider =
+    Provider<PathsRepository>((ref) => PathsRepository());
+final syntaxRepositoryProvider =
+    Provider<SyntaxRepository>((ref) => SyntaxRepository());
 
-final modulesProvider = FutureProvider<ModulesData>((ref) => ref.watch(modulesRepositoryProvider).load());
+final modulesProvider = FutureProvider<ModulesData>(
+    (ref) => ref.watch(modulesRepositoryProvider).load());
 
-final docIndexProvider = FutureProvider<List<DocEntry>>((ref) => ref.watch(docsRepositoryProvider).index());
+final docIndexProvider = FutureProvider<List<DocEntry>>(
+    (ref) => ref.watch(docsRepositoryProvider).index());
 
-final pathOrderProvider = FutureProvider<List<String>>((ref) => ref.watch(pathsRepositoryProvider).order());
+final pathOrderProvider = FutureProvider<List<String>>(
+    (ref) => ref.watch(pathsRepositoryProvider).order());
 
-final syntaxLanguagesProvider = FutureProvider<List<SyntaxLanguage>>((ref) => ref.watch(syntaxRepositoryProvider).languages());
+final syntaxLanguagesProvider = FutureProvider<List<SyntaxLanguage>>(
+    (ref) => ref.watch(syntaxRepositoryProvider).languages());
 
 class DocRef {
   final String module;
@@ -170,7 +187,8 @@ class DocRef {
   const DocRef(this.module, this.slug);
 
   @override
-  bool operator ==(Object other) => other is DocRef && other.module == module && other.slug == slug;
+  bool operator ==(Object other) =>
+      other is DocRef && other.module == module && other.slug == slug;
 
   @override
   int get hashCode => Object.hash(module, slug);

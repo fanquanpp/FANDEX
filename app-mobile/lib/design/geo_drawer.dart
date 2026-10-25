@@ -83,25 +83,37 @@ class _GeoDrawerState extends ConsumerState<GeoDrawer> {
                   icon: Icons.home_outlined,
                   label: '首页',
                   active: widget.location == '/',
-                  onTap: () => context.go('/'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    context.go('/');
+                  },
                 ),
                 _NavItem(
                   icon: Icons.code,
                   label: '语法速览',
                   active: widget.location.startsWith('/syntax'),
-                  onTap: () => context.go('/syntax'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    context.go('/syntax');
+                  },
                 ),
                 _NavItem(
                   icon: Icons.explore_outlined,
                   label: '学习路线',
                   active: widget.location.startsWith('/paths'),
-                  onTap: () => context.go('/paths'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    context.go('/paths');
+                  },
                 ),
                 _NavItem(
                   icon: Icons.search,
                   label: '搜索',
                   active: widget.location.startsWith('/search'),
-                  onTap: () => context.go('/search'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    context.go('/search');
+                  },
                 ),
                 _sectionLabel(context, '外观'),
                 _ThemeSegment(
@@ -164,7 +176,10 @@ class _GeoDrawerState extends ConsumerState<GeoDrawer> {
             title: m.title,
             color: color,
             active: widget.location.startsWith('/module/${m.id}'),
-            onTap: () => context.go('/module/${m.id}'),
+            onTap: () {
+              Navigator.of(context).pop();
+              context.push('/module/${m.id}');
+            },
           ),
         );
       }

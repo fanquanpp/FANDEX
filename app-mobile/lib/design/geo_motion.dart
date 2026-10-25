@@ -24,7 +24,8 @@ class GeoEntrance extends StatelessWidget {
       child: child,
       builder: (context, t, child) {
         // 阶梯延迟用倒放近似：t < 阈值前保持初始态。
-        final threshold = delay.inMilliseconds / GeoMotion.normal.inMilliseconds * 0.5;
+        final threshold =
+            delay.inMilliseconds / GeoMotion.normal.inMilliseconds * 0.5;
         final p = ((t - threshold) / (1 - threshold)).clamp(0.0, 1.0);
         final eased = Curves.easeOut.transform(p);
         return Opacity(
@@ -69,7 +70,8 @@ class GeoWipePage<T> extends CustomTransitionPage<T> {
                   Positioned.fill(
                     child: IgnorePointer(
                       child: CustomPaint(
-                        painter: SpeedLinesPainter(color: lineColor, progress: lineT),
+                        painter: SpeedLinesPainter(
+                            color: lineColor, progress: lineT),
                       ),
                     ),
                   ),

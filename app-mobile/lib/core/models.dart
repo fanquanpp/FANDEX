@@ -21,12 +21,15 @@ class ModulesData {
     }
 
     final labels = <String, String>{};
-    (json['categoryLabels'] as Map<String, dynamic>? ?? {}).forEach((k, v) => labels[k] = v as String);
+    (json['categoryLabels'] as Map<String, dynamic>? ?? {})
+        .forEach((k, v) => labels[k] = v as String);
 
     final colors = <String, ColorValue>{};
-    (json['categoryColors'] as Map<String, dynamic>? ?? {}).forEach((k, v) => colors[k] = parseColor(v as String));
+    (json['categoryColors'] as Map<String, dynamic>? ?? {})
+        .forEach((k, v) => colors[k] = parseColor(v as String));
 
-    final order = (json['categoryOrder'] as List<dynamic>? ?? []).cast<String>();
+    final order =
+        (json['categoryOrder'] as List<dynamic>? ?? []).cast<String>();
 
     final modules = (json['modules'] as List<dynamic>? ?? [])
         .map((e) => ModuleInfo.fromJson(e as Map<String, dynamic>))
@@ -47,7 +50,8 @@ class OfficialDoc {
   final String label;
   final String url;
   final String type;
-  const OfficialDoc({required this.label, required this.url, required this.type});
+  const OfficialDoc(
+      {required this.label, required this.url, required this.type});
 
   factory OfficialDoc.fromJson(Map<String, dynamic> json) => OfficialDoc(
         label: json['label'] as String? ?? '',
@@ -156,7 +160,12 @@ class PathNode {
   final String doc;
   final String desc;
   final String difficulty;
-  const PathNode({required this.id, required this.title, required this.doc, required this.desc, required this.difficulty});
+  const PathNode(
+      {required this.id,
+      required this.title,
+      required this.doc,
+      required this.desc,
+      required this.difficulty});
 
   factory PathNode.fromJson(Map<String, dynamic> json) => PathNode(
         id: json['id'] as String? ?? '',
@@ -172,7 +181,11 @@ class PathStage {
   final String title;
   final String subtitle;
   final List<PathNode> nodes;
-  const PathStage({required this.id, required this.title, required this.subtitle, required this.nodes});
+  const PathStage(
+      {required this.id,
+      required this.title,
+      required this.subtitle,
+      required this.nodes});
 
   factory PathStage.fromJson(Map<String, dynamic> json) => PathStage(
         id: json['id'] as String? ?? '',
@@ -189,7 +202,11 @@ class ModulePath {
   final String module;
   final String summary;
   final List<PathStage> stages;
-  const ModulePath({required this.version, required this.module, required this.summary, required this.stages});
+  const ModulePath(
+      {required this.version,
+      required this.module,
+      required this.summary,
+      required this.stages});
 
   factory ModulePath.fromJson(Map<String, dynamic> json) => ModulePath(
         version: json['version'] as String? ?? '',
@@ -257,37 +274,5 @@ class SyntaxCard {
         code: json['code'] as String? ?? '',
         lang: json['lang'] as String? ?? '',
         truncated: json['truncated'] as bool? ?? false,
-      );
-}
-
-class HistoryEntry {
-  final String module;
-  final String slug;
-  final String title;
-  final String moduleTitle;
-  final int timestamp;
-
-  const HistoryEntry({
-    required this.module,
-    required this.slug,
-    required this.title,
-    required this.moduleTitle,
-    required this.timestamp,
-  });
-
-  Map<String, dynamic> toJson() => {
-        'module': module,
-        'slug': slug,
-        'title': title,
-        'moduleTitle': moduleTitle,
-        'timestamp': timestamp,
-      };
-
-  factory HistoryEntry.fromJson(Map<String, dynamic> json) => HistoryEntry(
-        module: json['module'] as String? ?? '',
-        slug: json['slug'] as String? ?? '',
-        title: json['title'] as String? ?? '',
-        moduleTitle: json['moduleTitle'] as String? ?? '',
-        timestamp: json['timestamp'] as int? ?? 0,
       );
 }

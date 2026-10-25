@@ -29,7 +29,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final palette = geoOf(context);
     final modules = ref.watch(modulesProvider);
     final docs = ref.watch(docIndexProvider);
-    final history = ref.watch(historyProvider);
 
     return Scaffold(
       backgroundColor: palette.bgBase,
@@ -62,7 +61,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     return _HomeBody(
                       modulesData: modulesData,
                       docIndex: docIndex,
-                      history: history,
                       filter: _filter,
                       onFilter: (f) =>
                           setState(() => _filter = _filter == f ? null : f),
@@ -111,21 +109,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 class _HomeBody extends ConsumerWidget {
   final ModulesData modulesData;
   final List<DocEntry> docIndex;
-  final List<HistoryEntry> history;
   final String? filter;
   final ValueChanged<String> onFilter;
 
   const _HomeBody({
     required this.modulesData,
     required this.docIndex,
-    required this.history,
     required this.filter,
     required this.onFilter,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final palette = geoOf(context);
     final counts = <String, int>{};
     for (final d in docIndex) {
       counts[d.module] = (counts[d.module] ?? 0) + 1;
@@ -159,27 +154,6 @@ class _HomeBody extends ConsumerWidget {
             onFilter: onFilter,
           ),
         ),
-        if (history.isNotEmpty) ...[
-          GeoEntrance(
-            index: entranceIndex++,
-            child: SectionHeader(
-                label: '最近浏览',
-                color: palette.accent,
-                trailing: '${history.length}/12'),
-          ),
-          GeoEntrance(
-            index: entranceIndex++,
-            child: SizedBox(
-              height: 108,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: history.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
-                itemBuilder: (context, i) => _RecentCard(entry: history[i]),
-              ),
-            ),
-          ),
-        ],
         for (final cat in order)
           if (grouped[cat] != null && grouped[cat]!.isNotEmpty) ...[
             SectionHeader(
@@ -285,12 +259,16 @@ class _CategoryChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = geoOf(context);
+    // 对齐 web 端：无模块归属的分类（如数学）不显示筛选入口。
+    final catsWithModules = modulesData.categoryOrder
+        .where((c) => modulesData.modules.any((m) => m.categories.contains(c)))
+        .toList();
     return SizedBox(
       height: 40,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          for (final cat in modulesData.categoryOrder)
+          for (final cat in catsWithModules)
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: GeoSelectionPulse(
@@ -347,58 +325,6 @@ class _CategoryChips extends StatelessWidget {
   }
 }
 
-class _RecentCard extends StatelessWidget {
-  final HistoryEntry entry;
-
-  const _RecentCard({required this.entry});
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = geoOf(context);
-    return GeoPress(
-      onTap: () => context.go('/doc/${entry.module}/${entry.slug}'),
-      bevel: GeoRadius.bevelSmall,
-      child: Container(
-        width: 176,
-        padding: const EdgeInsets.all(12),
-        decoration: ShapeDecoration(
-          color: palette.bgSurface,
-          shape: BeveledRectangleBorder(
-            borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(GeoRadius.bevelSmall)),
-            side: BorderSide(color: palette.border),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              entry.moduleTitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  color: palette.fgTertiary, fontSize: 10, letterSpacing: 1),
-            ),
-            const SizedBox(height: 6),
-            Expanded(
-              child: Text(
-                entry.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    color: palette.fgPrimary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    height: 1.35),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _ModuleCard extends ConsumerWidget {
   final ModuleInfo module;
   final Color color;
@@ -417,7 +343,7 @@ class _ModuleCard extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GeoPress(
-        onTap: () => context.go('/module/${module.id}'),
+        onTap: () => context.push('/module/${module.id}'),
         bracketColor: color,
         child: Container(
           decoration: ShapeDecoration(

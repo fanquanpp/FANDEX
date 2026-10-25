@@ -232,7 +232,7 @@ class _DocRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: GeoPress(
-        onTap: () => context.go('/doc/${doc.module}/${doc.slug}'),
+        onTap: () => context.push('/doc/${doc.module}/${doc.slug}'),
         bracketColor: accent,
         bevel: GeoRadius.bevelSmall,
         child: Container(

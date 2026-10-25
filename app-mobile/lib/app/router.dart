@@ -19,7 +19,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/',
-        pageBuilder: (context, state) => _wipe(context, state, const HomeScreen()),
+        pageBuilder: (context, state) =>
+            _wipe(context, state, const HomeScreen()),
       ),
       GoRoute(
         path: '/module/:moduleId',
@@ -38,7 +39,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/syntax',
-        pageBuilder: (context, state) => _wipe(context, state, const SyntaxScreen()),
+        pageBuilder: (context, state) =>
+            _wipe(context, state, const SyntaxScreen()),
       ),
       GoRoute(
         path: '/syntax/:langId',
@@ -49,7 +51,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/paths',
-        pageBuilder: (context, state) => _wipe(context, state, const PathsScreen()),
+        pageBuilder: (context, state) =>
+            _wipe(context, state, const PathsScreen()),
       ),
       GoRoute(
         path: '/paths/:moduleId',
@@ -60,13 +63,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/search',
-        pageBuilder: (context, state) => _wipe(context, state, const SearchScreen()),
+        pageBuilder: (context, state) =>
+            _wipe(context, state, const SearchScreen()),
       ),
     ],
   );
 });
 
-GeoWipePage<void> _wipe(BuildContext context, GoRouterState state, Widget child) {
+GeoWipePage<void> _wipe(
+    BuildContext context, GoRouterState state, Widget child) {
   final palette = geoOf(context);
   return GeoWipePage<void>(
     key: state.pageKey,

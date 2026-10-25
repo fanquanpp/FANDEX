@@ -8,7 +8,8 @@ class DifficultyBadge extends StatelessWidget {
   final String difficulty;
   final GeoPalette palette;
 
-  const DifficultyBadge({super.key, required this.difficulty, required this.palette});
+  const DifficultyBadge(
+      {super.key, required this.difficulty, required this.palette});
 
   static const Map<String, (String, Color)> _map = {
     'beginner': ('入门', Color(0xFF22C55E)),
@@ -24,13 +25,18 @@ class DifficultyBadge extends StatelessWidget {
       decoration: ShapeDecoration(
         color: color.withValues(alpha: 0.14),
         shape: BeveledRectangleBorder(
-          borderRadius: BorderRadius.only(topRight: Radius.circular(GeoRadius.bevelTiny)),
+          borderRadius:
+              BorderRadius.only(topRight: Radius.circular(GeoRadius.bevelTiny)),
           side: BorderSide(color: color.withValues(alpha: 0.5)),
         ),
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1),
+        style: TextStyle(
+            color: color,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1),
       ),
     );
   }
@@ -41,7 +47,8 @@ class SectionHeader extends StatelessWidget {
   final Color color;
   final String? trailing;
 
-  const SectionHeader({super.key, required this.label, required this.color, this.trailing});
+  const SectionHeader(
+      {super.key, required this.label, required this.color, this.trailing});
 
   @override
   Widget build(BuildContext context) {

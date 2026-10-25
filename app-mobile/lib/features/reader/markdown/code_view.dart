@@ -12,7 +12,11 @@ class GeoCodeView extends StatefulWidget {
   final String lang;
   final Color accent;
 
-  const GeoCodeView({super.key, required this.code, required this.lang, required this.accent});
+  const GeoCodeView(
+      {super.key,
+      required this.code,
+      required this.lang,
+      required this.accent});
 
   @override
   State<GeoCodeView> createState() => _GeoCodeViewState();
@@ -21,7 +25,8 @@ class GeoCodeView extends StatefulWidget {
 class _GeoCodeViewState extends State<GeoCodeView> {
   bool _copied = false;
 
-  TextSpan _buildSpan(BuildContext context, List<Node> nodes, GeoPalette palette) {
+  TextSpan _buildSpan(
+      BuildContext context, List<Node> nodes, GeoPalette palette) {
     final children = <InlineSpan>[];
     for (final node in nodes) {
       children.add(_nodeToSpan(context, node, palette, null));
@@ -29,7 +34,8 @@ class _GeoCodeViewState extends State<GeoCodeView> {
     return TextSpan(children: children);
   }
 
-  InlineSpan _nodeToSpan(BuildContext context, Node node, GeoPalette palette, TextStyle? base) {
+  InlineSpan _nodeToSpan(
+      BuildContext context, Node node, GeoPalette palette, TextStyle? base) {
     final style = _styleFor(node.className, palette) ?? base;
     if (node.children == null || node.children!.isEmpty) {
       return TextSpan(text: node.value, style: style);
@@ -57,7 +63,8 @@ class _GeoCodeViewState extends State<GeoCodeView> {
         return const TextStyle(color: Color(0xFF22C55E));
       case 'comment':
       case 'quote':
-        return TextStyle(color: palette.fgTertiary, fontStyle: FontStyle.italic);
+        return TextStyle(
+            color: palette.fgTertiary, fontStyle: FontStyle.italic);
       case 'number':
       case 'meta':
         return const TextStyle(color: Color(0xFFF97316));
@@ -76,7 +83,8 @@ class _GeoCodeViewState extends State<GeoCodeView> {
       case 'built_in':
       case 'symbol':
       case 'builtin-name':
-        return TextStyle(color: palette.fgSecondary, fontWeight: FontWeight.w600);
+        return TextStyle(
+            color: palette.fgSecondary, fontWeight: FontWeight.w600);
       case 'deletion':
         return const TextStyle(color: Color(0xFFEF4444));
       case 'section':
@@ -107,8 +115,10 @@ class _GeoCodeViewState extends State<GeoCodeView> {
 
     final result = highlight.parse(widget.code, language: widget.lang);
     final autoDetected = result.language != null;
-    final nodes = (autoDetected ? result.nodes : null) ?? [Node(value: widget.code)];
-    final label = widget.lang == 'text' ? (result.language ?? 'text') : widget.lang;
+    final nodes =
+        (autoDetected ? result.nodes : null) ?? [Node(value: widget.code)];
+    final label =
+        widget.lang == 'text' ? (result.language ?? 'text') : widget.lang;
 
     return ClipPath(
       clipper: const TopBevel(),
@@ -143,10 +153,17 @@ class _GeoCodeViewState extends State<GeoCodeView> {
                     behavior: HitTestBehavior.opaque,
                     child: AnimatedSwitcher(
                       duration: GeoMotion.fast,
-                      transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+                      transitionBuilder: (child, anim) =>
+                          ScaleTransition(scale: anim, child: child),
                       child: _copied
-                          ? Icon(Icons.check, key: const ValueKey('ok'), size: 15, color: palette.success)
-                          : Icon(Icons.copy_outlined, key: const ValueKey('copy'), size: 14, color: palette.fgTertiary),
+                          ? Icon(Icons.check,
+                              key: const ValueKey('ok'),
+                              size: 15,
+                              color: palette.success)
+                          : Icon(Icons.copy_outlined,
+                              key: const ValueKey('copy'),
+                              size: 14,
+                              color: palette.fgTertiary),
                     ),
                   ),
                 ],

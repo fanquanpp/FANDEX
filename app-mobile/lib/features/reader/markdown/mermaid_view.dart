@@ -33,7 +33,8 @@ class _MermaidViewState extends State<MermaidView> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onNavigationRequest: (request) {
-            if (request.url.startsWith('data:') || request.url.contains('host.html')) {
+            if (request.url.startsWith('data:') ||
+                request.url.contains('host.html')) {
               return NavigationDecision.navigate;
             }
             return NavigationDecision.prevent;
@@ -52,7 +53,8 @@ class _MermaidViewState extends State<MermaidView> {
           try {
             final data = jsonDecode(msg.message) as Map<String, dynamic>;
             if (data['type'] == 'height') {
-              setState(() => _height = ((data['value'] as num?) ?? 220).toDouble().clamp(120, 2400));
+              setState(() => _height =
+                  ((data['value'] as num?) ?? 220).toDouble().clamp(120, 2400));
             } else if (data['type'] == 'error') {
               setState(() => _error = (data['value'] as String?) ?? '渲染失败');
             }
@@ -92,7 +94,8 @@ class _MermaidViewState extends State<MermaidView> {
           decoration: ShapeDecoration(
             color: palette.bgSurface,
             shape: BeveledRectangleBorder(
-              borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevel)),
+              borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(GeoRadius.bevel)),
               side: BorderSide(color: palette.border),
             ),
           ),
@@ -105,13 +108,20 @@ class _MermaidViewState extends State<MermaidView> {
                     children: [
                       Text(
                         'MERMAID 渲染失败',
-                        style: TextStyle(color: palette.danger, fontSize: 10, letterSpacing: 2, fontWeight: FontWeight.w800),
+                        style: TextStyle(
+                            color: palette.danger,
+                            fontSize: 10,
+                            letterSpacing: 2,
+                            fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: 6),
                       Expanded(
                         child: Text(
                           _error!,
-                          style: TextStyle(color: palette.fgTertiary, fontSize: 11, fontFamilyFallback: const ['monospace']),
+                          style: TextStyle(
+                              color: palette.fgTertiary,
+                              fontSize: 11,
+                              fontFamilyFallback: const ['monospace']),
                         ),
                       ),
                     ],
@@ -123,7 +133,8 @@ class _MermaidViewState extends State<MermaidView> {
         Text(
           'MERMAID 图表 · 双指缩放 / 双击适配',
           textAlign: TextAlign.center,
-          style: TextStyle(color: palette.fgTertiary, fontSize: 10, letterSpacing: 1.5),
+          style: TextStyle(
+              color: palette.fgTertiary, fontSize: 10, letterSpacing: 1.5),
         ),
       ],
     );

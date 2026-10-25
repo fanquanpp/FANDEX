@@ -8,7 +8,8 @@ class BevelClipper extends CustomClipper<Path> {
   final double bevel;
   final Corner corner;
 
-  const BevelClipper({this.bevel = GeoRadiusDefaults.bevel, this.corner = Corner.topRight});
+  const BevelClipper(
+      {this.bevel = GeoRadiusDefaults.bevel, this.corner = Corner.topRight});
 
   @override
   Path getClip(Size size) {
@@ -97,5 +98,6 @@ class DiagonalWipeClipper extends CustomClipper<Path> {
   }
 
   @override
-  bool shouldReclip(DiagonalWipeClipper oldClipper) => oldClipper.progress != progress;
+  bool shouldReclip(DiagonalWipeClipper oldClipper) =>
+      oldClipper.progress != progress;
 }
