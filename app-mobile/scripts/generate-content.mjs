@@ -191,6 +191,26 @@ function copyDocs() {
     }
 
     console.log(`  [done] ${count} docs`);
+    rewritePubspecAssetBlock([...validIds].sort());
+}
+
+// Flutter 目录资产只展开一层：docs 顶层全是模块子目录，必须逐目录显式登记。
+// pubspec 中以 BEGIN/END content-assets 标记块维护，由本脚本自动重写。
+function rewritePubspecAssetBlock(moduleIds) {
+    const pubspecPath = join(__dirname, '..', 'pubspec.yaml');
+    const raw = readFileSync(pubspecPath, 'utf-8');
+    const begin = raw.indexOf('    # BEGIN content-assets');
+    const end = raw.indexOf('    # END content-assets');
+    if (begin < 0 || end < 0) {
+        console.log('  [warn] pubspec.yaml 缺少 content-assets 标记块，跳过资产登记');
+        return;
+    }
+    const lines = moduleIds.map(id => `    - assets/docs/${id}/`);
+    const next = raw.slice(0, begin) + '    # BEGIN content-assets (generate-content.mjs 维护，勿手改)\n' +
+        (lines.length ? lines.join('\n') + '\n' : '') +
+        raw.slice(end);
+    writeFileSync(pubspecPath, next, 'utf-8');
+    console.log(`  [gen] pubspec content-assets 登记 ${moduleIds.length} 个模块目录`);
 }
 
 function main() {

@@ -39,10 +39,14 @@ class ModuleScreen extends ConsumerWidget {
     final module = moduleAsync;
     final modulesData = modules.value;
     final accent = module != null && module.categories.isNotEmpty
-        ? Color(modulesData?.categoryColors[module.categories.first]?.toUnsigned(32) ?? 0xFF39C5BB)
+        ? Color(modulesData?.categoryColors[module.categories.first]
+                ?.toUnsigned(32) ??
+            0xFF39C5BB)
         : palette.accent;
 
-    final moduleDocs = docs.value?.where((d) => d.module == moduleId).toList() ?? const <DocEntry>[];
+    final moduleDocs =
+        docs.value?.where((d) => d.module == moduleId).toList() ??
+            const <DocEntry>[];
 
     return Scaffold(
       backgroundColor: palette.bgBase,
@@ -60,11 +64,15 @@ class ModuleScreen extends ConsumerWidget {
                   onPressed: () => context.pop(),
                 ),
                 segment: [
-                  DockSegmentAction(icon: Icons.home_outlined, tooltip: '首页', onTap: () => context.go('/')),
+                  DockSegmentAction(
+                      icon: Icons.home_outlined,
+                      tooltip: '首页',
+                      onTap: () => context.go('/')),
                   DockSegmentAction(
                     icon: Icons.open_in_new,
                     tooltip: '源仓库',
-                    onTap: () => GeoExternal.open('https://github.com/fanquanpp/FANDEX'),
+                    onTap: () =>
+                        GeoExternal.open('https://github.com/fanquanpp/FANDEX'),
                   ),
                   DockSegmentAction(
                     icon: Icons.contrast,
@@ -79,7 +87,11 @@ class ModuleScreen extends ConsumerWidget {
               Expanded(
                 child: module == null
                     ? const GeoLoading()
-                    : _ModuleBody(module: module, docs: moduleDocs, progress: progress, accent: accent),
+                    : _ModuleBody(
+                        module: module,
+                        docs: moduleDocs,
+                        progress: progress,
+                        accent: accent),
               ),
             ],
           ),
@@ -95,12 +107,17 @@ class _ModuleBody extends ConsumerWidget {
   final Map<String, int> progress;
   final Color accent;
 
-  const _ModuleBody({required this.module, required this.docs, required this.progress, required this.accent});
+  const _ModuleBody(
+      {required this.module,
+      required this.docs,
+      required this.progress,
+      required this.accent});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = geoOf(context);
-    final doneCount = docs.where((d) => progress.containsKey('${d.module}/${d.slug}')).length;
+    final doneCount =
+        docs.where((d) => progress.containsKey('${d.module}/${d.slug}')).length;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 48),
@@ -108,20 +125,26 @@ class _ModuleBody extends ConsumerWidget {
         GeoEntrance(
           index: 0,
           child: Padding(
-            padding: const EdgeInsets.only(top: 22),
+            padding: const EdgeInsets.only(top: 30),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GeoMicroLabel(text: '${module.id.toUpperCase()} // MODULE', color: accent),
+                GeoMicroLabel(
+                    text: '${module.id.toUpperCase()} // MODULE',
+                    color: accent),
                 const SizedBox(height: 8),
                 Text(
                   module.title,
-                  style: TextStyle(color: palette.fgPrimary, fontSize: 26, fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                      color: palette.fgPrimary,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   module.description,
-                  style: TextStyle(color: palette.fgSecondary, fontSize: 13, height: 1.5),
+                  style: TextStyle(
+                      color: palette.fgSecondary, fontSize: 13, height: 1.5),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -144,11 +167,14 @@ class _ModuleBody extends ConsumerWidget {
                           bracketColor: accent,
                           bevel: GeoRadius.bevelTiny,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
                             decoration: ShapeDecoration(
                               color: palette.bgSurface,
                               shape: BeveledRectangleBorder(
-                                borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevelTiny)),
+                                borderRadius: const BorderRadius.only(
+                                    topRight:
+                                        Radius.circular(GeoRadius.bevelTiny)),
                                 side: BorderSide(color: palette.border),
                               ),
                             ),
@@ -157,7 +183,10 @@ class _ModuleBody extends ConsumerWidget {
                               children: [
                                 Icon(Icons.link, size: 12, color: accent),
                                 const SizedBox(width: 5),
-                                Text(od.label, style: TextStyle(color: palette.fgSecondary, fontSize: 11)),
+                                Text(od.label,
+                                    style: TextStyle(
+                                        color: palette.fgSecondary,
+                                        fontSize: 11)),
                               ],
                             ),
                           ),
@@ -169,7 +198,8 @@ class _ModuleBody extends ConsumerWidget {
             ),
           ),
         ),
-        SectionHeader(label: '文档列表', color: accent, trailing: '${docs.length} 篇'),
+        SectionHeader(
+            label: '文档列表', color: accent, trailing: '${docs.length} 篇'),
         ...docs.asMap().entries.map((e) {
           final i = e.key;
           final d = e.value;
@@ -190,7 +220,11 @@ class _DocRow extends StatelessWidget {
   final bool done;
   final int order;
 
-  const _DocRow({required this.doc, required this.accent, required this.done, required this.order});
+  const _DocRow(
+      {required this.doc,
+      required this.accent,
+      required this.done,
+      required this.order});
 
   @override
   Widget build(BuildContext context) {
@@ -206,13 +240,18 @@ class _DocRow extends StatelessWidget {
           decoration: ShapeDecoration(
             color: palette.bgSurface,
             shape: BeveledRectangleBorder(
-              borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevelSmall)),
+              borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(GeoRadius.bevelSmall)),
               side: BorderSide(color: palette.border),
             ),
           ),
           child: Row(
             children: [
-              Container(width: 3, height: 26, color: accent, transform: Matrix4.skewY(-0.3)),
+              Container(
+                  width: 3,
+                  height: 26,
+                  color: accent,
+                  transform: Matrix4.skewY(-0.3)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -222,7 +261,10 @@ class _DocRow extends StatelessWidget {
                       doc.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: palette.fgPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                          color: palette.fgPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600),
                     ),
                     if (doc.description.isNotEmpty) ...[
                       const SizedBox(height: 2),
@@ -230,7 +272,8 @@ class _DocRow extends StatelessWidget {
                         doc.description,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: palette.fgTertiary, fontSize: 11),
+                        style:
+                            TextStyle(color: palette.fgTertiary, fontSize: 11),
                       ),
                     ],
                   ],

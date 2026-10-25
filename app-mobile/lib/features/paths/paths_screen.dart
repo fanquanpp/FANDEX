@@ -35,7 +35,10 @@ class PathsScreen extends ConsumerWidget {
                   onPressed: () => context.pop(),
                 ),
                 segment: [
-                  DockSegmentAction(icon: Icons.home_outlined, tooltip: '首页', onTap: () => context.go('/')),
+                  DockSegmentAction(
+                      icon: Icons.home_outlined,
+                      tooltip: '首页',
+                      onTap: () => context.go('/')),
                   DockSegmentAction(
                     icon: Icons.contrast,
                     tooltip: '主题快切',
@@ -49,10 +52,13 @@ class PathsScreen extends ConsumerWidget {
               Expanded(
                 child: order.when(
                   loading: () => const GeoLoading(),
-                  error: (e, _) => GeoErrorView(message: '路线数据加载失败', onRetry: () => ref.invalidate(pathOrderProvider)),
+                  error: (e, _) => GeoErrorView(
+                      message: '路线数据加载失败',
+                      onRetry: () => ref.invalidate(pathOrderProvider)),
                   data: (orderList) {
                     final modulesData = modules.value;
-                    return _PathsBody(orderList: orderList, modulesData: modulesData);
+                    return _PathsBody(
+                        orderList: orderList, modulesData: modulesData);
                   },
                 ),
               ),
@@ -89,7 +95,8 @@ class _PathsBody extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(top: 80),
             child: Center(
-              child: Text('暂无学习路线', style: TextStyle(color: palette.fgTertiary)),
+              child:
+                  Text('暂无学习路线', style: TextStyle(color: palette.fgTertiary)),
             ),
           ),
       ],
@@ -126,7 +133,9 @@ class _PathCard extends ConsumerWidget {
     }
 
     final accent = module != null && module.categories.isNotEmpty
-        ? Color(modulesData?.categoryColors[module.categories.first]?.toUnsigned(32) ?? 0xFF39C5BB)
+        ? Color(modulesData?.categoryColors[module.categories.first]
+                ?.toUnsigned(32) ??
+            0xFF39C5BB)
         : palette.accent;
 
     final path = pathAsync.value;
@@ -150,51 +159,62 @@ class _PathCard extends ConsumerWidget {
           decoration: ShapeDecoration(
             color: palette.bgSurface,
             shape: BeveledRectangleBorder(
-              borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevel)),
+              borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(GeoRadius.bevel)),
               side: BorderSide(color: palette.border),
             ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    width: 52,
-                    color: accent.withValues(alpha: 0.12),
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    child: Text(
-                      number.toString().padLeft(2, '0'),
-                      style: TextStyle(
-                        color: accent,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        fontFeatures: const [FontFeature.tabularFigures()],
+              // IntrinsicHeight：无界高度列表内 stretch 行需要先解析固有高度。
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      width: 52,
+                      color: accent.withValues(alpha: 0.12),
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      child: Text(
+                        number.toString().padLeft(2, '0'),
+                        style: TextStyle(
+                          color: accent,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            module?.title ?? moduleId,
-                            style: TextStyle(color: palette.fgPrimary, fontSize: 15, fontWeight: FontWeight.w800),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            path == null ? '...' : '${path.stages.length} 阶段 · $nodeCount 节点 · 已完成 $doneCount',
-                            style: TextStyle(color: palette.fgTertiary, fontSize: 11.5),
-                          ),
-                        ],
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              module?.title ?? moduleId,
+                              style: TextStyle(
+                                  color: palette.fgPrimary,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              path == null
+                                  ? '...'
+                                  : '${path.stages.length} 阶段 · $nodeCount 节点 · 已完成 $doneCount',
+                              style: TextStyle(
+                                  color: palette.fgTertiary, fontSize: 11.5),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),

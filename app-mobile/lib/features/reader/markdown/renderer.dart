@@ -30,7 +30,8 @@ List<Widget> renderBlocks(
   return widgets;
 }
 
-Widget _renderBlock(BuildContext context, MdBlock block, Color accent, Key? headingKey) {
+Widget _renderBlock(
+    BuildContext context, MdBlock block, Color accent, Key? headingKey) {
   final palette = geoOf(context);
 
   if (block is BHeading) {
@@ -51,7 +52,8 @@ Widget _renderBlock(BuildContext context, MdBlock block, Color accent, Key? head
           const SizedBox(width: 10),
           Expanded(
             child: Text.rich(
-              buildInline(context, block.inlines, accent, baseSize: fontSize, bold: true),
+              buildInline(context, block.inlines, accent,
+                  baseSize: fontSize, bold: true),
               style: TextStyle(
                 color: palette.fgPrimary,
                 fontSize: fontSize,
@@ -69,7 +71,8 @@ Widget _renderBlock(BuildContext context, MdBlock block, Color accent, Key? head
       padding: const EdgeInsets.only(bottom: 12),
       child: Text.rich(
         buildInline(context, block.inlines, accent),
-        style: TextStyle(color: palette.fgPrimary, fontSize: 15.5, height: 1.625),
+        style:
+            TextStyle(color: palette.fgPrimary, fontSize: 15.5, height: 1.625),
       ),
     );
   }
@@ -78,7 +81,9 @@ Widget _renderBlock(BuildContext context, MdBlock block, Color accent, Key? head
     if (block.lang == 'mermaid') {
       return Padding(
         padding: const EdgeInsets.only(bottom: 14),
-        child: MermaidView(code: block.code, isDark: palette.bgBase == const Color(0xFF0A0A0A)),
+        child: MermaidView(
+            code: block.code,
+            isDark: palette.bgBase == const Color(0xFF0A0A0A)),
       );
     }
     return Padding(
@@ -173,7 +178,11 @@ class _ListItem extends StatelessWidget {
   final MdListItem item;
   final Color accent;
 
-  const _ListItem({required this.index, required this.ordered, required this.item, required this.accent});
+  const _ListItem(
+      {required this.index,
+      required this.ordered,
+      required this.item,
+      required this.accent});
 
   @override
   Widget build(BuildContext context) {
@@ -194,8 +203,10 @@ class _ListItem extends StatelessWidget {
                 height: 15,
                 margin: const EdgeInsets.only(top: 3),
                 decoration: BoxDecoration(
-                  border: Border.all(color: task ? accent : palette.borderStrong, width: 1.5),
-                  color: task ? accent.withValues(alpha: 0.2) : Colors.transparent,
+                  border: Border.all(
+                      color: task ? accent : palette.borderStrong, width: 1.5),
+                  color:
+                      task ? accent.withValues(alpha: 0.2) : Colors.transparent,
                 ),
                 child: task ? Icon(Icons.check, size: 11, color: accent) : null,
               ),
@@ -223,7 +234,8 @@ class _ListItem extends StatelessWidget {
                   if (b is BParagraph)
                     Text.rich(
                       buildInline(context, b.inlines, accent),
-                      style: TextStyle(color: palette.fgPrimary, fontSize: 15, height: 1.55),
+                      style: TextStyle(
+                          color: palette.fgPrimary, fontSize: 15, height: 1.55),
                     )
                   else if (b is BCode)
                     GeoCodeView(code: b.code, lang: b.lang, accent: accent)
@@ -233,7 +245,11 @@ class _ListItem extends StatelessWidget {
                       child: Column(
                         children: [
                           for (var i = 0; i < b.items.length; i++)
-                            _ListItem(index: i, ordered: b.ordered, item: b.items[i], accent: accent),
+                            _ListItem(
+                                index: i,
+                                ordered: b.ordered,
+                                item: b.items[i],
+                                accent: accent),
                         ],
                       ),
                     ),
@@ -273,7 +289,8 @@ class _QuoteView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = geoOf(context);
-    final meta = quote.admonition != null ? _admonition[quote.admonition] : null;
+    final meta =
+        quote.admonition != null ? _admonition[quote.admonition] : null;
     final faceColor = meta?.$2 ?? accent;
     final label = meta?.$1 ?? '';
 
@@ -284,41 +301,48 @@ class _QuoteView extends StatelessWidget {
           color: palette.bgSurface,
           border: Border.all(color: palette.border),
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(width: 4, color: faceColor),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (label.isNotEmpty) ...[
-                      Text(
-                        '$label // ${quote.admonition}',
-                        style: TextStyle(
-                          color: faceColor,
-                          fontSize: 10,
-                          letterSpacing: 2,
-                          fontWeight: FontWeight.w800,
+        // IntrinsicHeight：无界高度列表内 stretch 行需要先解析固有高度。
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(width: 4, color: faceColor),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (label.isNotEmpty) ...[
+                        Text(
+                          '$label // ${quote.admonition}',
+                          style: TextStyle(
+                            color: faceColor,
+                            fontSize: 10,
+                            letterSpacing: 2,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
+                        const SizedBox(height: 6),
+                      ],
+                      for (final b in quote.blocks)
+                        if (b is BParagraph)
+                          Text.rich(
+                            buildInline(context, b.inlines, accent),
+                            style: TextStyle(
+                                color: palette.fgSecondary,
+                                fontSize: 13.5,
+                                height: 1.55),
+                          )
+                        else if (b is BCode)
+                          GeoCodeView(
+                              code: b.code, lang: b.lang, accent: accent),
                     ],
-                    for (final b in quote.blocks)
-                      if (b is BParagraph)
-                        Text.rich(
-                          buildInline(context, b.inlines, accent),
-                          style: TextStyle(color: palette.fgSecondary, fontSize: 13.5, height: 1.55),
-                        )
-                      else if (b is BCode)
-                        GeoCodeView(code: b.code, lang: b.lang, accent: accent),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -394,7 +418,10 @@ class _TableView extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       child: Text(
                         cell,
-                        style: TextStyle(color: palette.fgSecondary, fontSize: 12.5, height: 1.45),
+                        style: TextStyle(
+                            color: palette.fgSecondary,
+                            fontSize: 12.5,
+                            height: 1.45),
                       ),
                     ),
                 ],
@@ -420,7 +447,8 @@ class _ImagePlaceholder extends StatelessWidget {
       decoration: ShapeDecoration(
         color: palette.bgSurface,
         shape: BeveledRectangleBorder(
-          borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevel)),
+          borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(GeoRadius.bevel)),
           side: BorderSide(color: palette.border),
         ),
       ),
@@ -431,7 +459,8 @@ class _ImagePlaceholder extends StatelessWidget {
             width: 12,
             height: 12,
             transform: Matrix4.rotationZ(0.79),
-            decoration: BoxDecoration(border: Border.all(color: accent, width: 1.5)),
+            decoration:
+                BoxDecoration(border: Border.all(color: accent, width: 1.5)),
           ),
           const SizedBox(width: 10),
           Text(
@@ -463,9 +492,12 @@ InlineSpan buildInline(
           style: TextStyle(
             color: palette.fgPrimary,
             fontSize: baseSize,
-            fontWeight: (bold || inline.bold) ? FontWeight.w700 : FontWeight.w400,
+            fontWeight:
+                (bold || inline.bold) ? FontWeight.w700 : FontWeight.w400,
             fontStyle: inline.italic ? FontStyle.italic : FontStyle.normal,
-            decoration: inline.strike ? TextDecoration.lineThrough : TextDecoration.none,
+            decoration: inline.strike
+                ? TextDecoration.lineThrough
+                : TextDecoration.none,
             height: 1.625,
           ),
         ),
@@ -480,7 +512,8 @@ InlineSpan buildInline(
             decoration: ShapeDecoration(
               color: palette.codeBg,
               shape: BeveledRectangleBorder(
-                borderRadius: const BorderRadius.only(topRight: Radius.circular(4)),
+                borderRadius:
+                    const BorderRadius.only(topRight: Radius.circular(4)),
                 side: BorderSide(color: palette.border),
               ),
             ),
@@ -508,7 +541,8 @@ InlineSpan buildInline(
             height: 1.625,
             fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
           ),
-          recognizer: TapGestureRecognizer()..onTap = () => GeoExternal.open(inline.href),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () => GeoExternal.open(inline.href),
         ),
       );
     } else if (inline is MintMath) {
@@ -524,7 +558,8 @@ InlineSpan buildInline(
           alignment: PlaceholderAlignment.middle,
           child: Text(
             inline.alt.isEmpty ? '[图]' : '[图] ${inline.alt}',
-            style: TextStyle(color: palette.fgTertiary, fontSize: baseSize * 0.85),
+            style:
+                TextStyle(color: palette.fgTertiary, fontSize: baseSize * 0.85),
           ),
         ),
       );
@@ -540,12 +575,17 @@ class GeoMathView extends StatelessWidget {
   final bool block;
   final Color accent;
 
-  const GeoMathView({super.key, required this.expr, required this.block, required this.accent});
+  const GeoMathView(
+      {super.key,
+      required this.expr,
+      required this.block,
+      required this.accent});
 
   @override
   Widget build(BuildContext context) {
     final palette = geoOf(context);
-    final style = TextStyle(color: palette.fgPrimary, fontSize: block ? 17 : 15);
+    final style =
+        TextStyle(color: palette.fgPrimary, fontSize: block ? 17 : 15);
 
     final math = Math.tex(
       expr,
@@ -567,11 +607,14 @@ class GeoMathView extends StatelessWidget {
         decoration: ShapeDecoration(
           color: palette.bgSurface,
           shape: BeveledRectangleBorder(
-            borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevel)),
+            borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(GeoRadius.bevel)),
             side: BorderSide(color: palette.border),
           ),
         ),
-        child: Center(child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: math)),
+        child: Center(
+            child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal, child: math)),
       );
     }
     return math;

@@ -64,7 +64,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       docIndex: docIndex,
                       history: history,
                       filter: _filter,
-                      onFilter: (f) => setState(() => _filter = _filter == f ? null : f),
+                      onFilter: (f) =>
+                          setState(() => _filter = _filter == f ? null : f),
                     );
                   },
                 ),
@@ -78,9 +79,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   List<DockSegmentAction> _segments(BuildContext context, GeoPalette palette) {
     return [
-      DockSegmentAction(icon: Icons.code, tooltip: '语法速览', onTap: () => context.go('/syntax')),
-      DockSegmentAction(icon: Icons.explore_outlined, tooltip: '学习路线', onTap: () => context.go('/paths')),
-      DockSegmentAction(icon: Icons.search, tooltip: '搜索', onTap: () => context.go('/search')),
+      DockSegmentAction(
+          icon: Icons.code,
+          tooltip: '语法速览',
+          onTap: () => context.go('/syntax')),
+      DockSegmentAction(
+          icon: Icons.explore_outlined,
+          tooltip: '学习路线',
+          onTap: () => context.go('/paths')),
+      DockSegmentAction(
+          icon: Icons.search,
+          tooltip: '搜索',
+          onTap: () => context.go('/search')),
       DockSegmentAction(
         icon: Icons.open_in_new,
         tooltip: '源仓库',
@@ -127,7 +137,9 @@ class _HomeBody extends ConsumerWidget {
       final cat = m.categories.isNotEmpty ? m.categories.first : 'tools';
       grouped.putIfAbsent(cat, () => []).add(m);
     }
-    final order = modulesData.categoryOrder.isEmpty ? grouped.keys.toList() : modulesData.categoryOrder;
+    final order = modulesData.categoryOrder.isEmpty
+        ? grouped.keys.toList()
+        : modulesData.categoryOrder;
 
     var entranceIndex = 0;
 
@@ -136,7 +148,8 @@ class _HomeBody extends ConsumerWidget {
       children: [
         GeoEntrance(
           index: entranceIndex++,
-          child: _HeroHeader(modulesData: modulesData, docCount: docIndex.length),
+          child:
+              _HeroHeader(modulesData: modulesData, docCount: docIndex.length),
         ),
         GeoEntrance(
           index: entranceIndex++,
@@ -149,7 +162,10 @@ class _HomeBody extends ConsumerWidget {
         if (history.isNotEmpty) ...[
           GeoEntrance(
             index: entranceIndex++,
-            child: SectionHeader(label: '最近浏览', color: palette.accent, trailing: '${history.length}/12'),
+            child: SectionHeader(
+                label: '最近浏览',
+                color: palette.accent,
+                trailing: '${history.length}/12'),
           ),
           GeoEntrance(
             index: entranceIndex++,
@@ -168,7 +184,8 @@ class _HomeBody extends ConsumerWidget {
           if (grouped[cat] != null && grouped[cat]!.isNotEmpty) ...[
             SectionHeader(
               label: modulesData.categoryLabels[cat] ?? cat,
-              color: Color(modulesData.categoryColors[cat]?.toUnsigned(32) ?? 0xFF39C5BB),
+              color: Color(modulesData.categoryColors[cat]?.toUnsigned(32) ??
+                  0xFF39C5BB),
               trailing: '${grouped[cat]!.length} 模块',
             ),
             ...grouped[cat]!.map((m) {
@@ -176,7 +193,9 @@ class _HomeBody extends ConsumerWidget {
                 index: entranceIndex++,
                 child: _ModuleCard(
                   module: m,
-                  color: Color(modulesData.categoryColors[cat]?.toUnsigned(32) ?? 0xFF39C5BB),
+                  color: Color(
+                      modulesData.categoryColors[cat]?.toUnsigned(32) ??
+                          0xFF39C5BB),
                   number: modulesData.modules.indexOf(m) + 1,
                   docCount: counts[m.id] ?? 0,
                 ),
@@ -208,8 +227,13 @@ class _HeroHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '全栈知识速查',
-                style: TextStyle(color: palette.fgPrimary, fontSize: 30, fontWeight: FontWeight.w900, height: 1.1),
+                'FANDEX',
+                style: TextStyle(
+                    color: palette.fgPrimary,
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    height: 1.1,
+                    letterSpacing: 3),
               ),
               const SizedBox(width: 10),
               Padding(
@@ -218,7 +242,8 @@ class _HeroHeader extends StatelessWidget {
                   width: 14,
                   height: 14,
                   transform: Matrix4.rotationZ(0.79),
-                  decoration: BoxDecoration(border: Border.all(color: palette.accent, width: 2)),
+                  decoration: BoxDecoration(
+                      border: Border.all(color: palette.accent, width: 2)),
                 ),
               ),
             ],
@@ -252,7 +277,10 @@ class _CategoryChips extends StatelessWidget {
   final String? filter;
   final ValueChanged<String> onFilter;
 
-  const _CategoryChips({required this.modulesData, required this.filter, required this.onFilter});
+  const _CategoryChips(
+      {required this.modulesData,
+      required this.filter,
+      required this.onFilter});
 
   @override
   Widget build(BuildContext context) {
@@ -269,20 +297,29 @@ class _CategoryChips extends StatelessWidget {
                 selected: filter == cat,
                 child: GeoPress(
                   onTap: () => onFilter(cat),
-                  bracketColor: Color(modulesData.categoryColors[cat]?.toUnsigned(32) ?? 0xFF39C5BB),
+                  bracketColor: Color(
+                      modulesData.categoryColors[cat]?.toUnsigned(32) ??
+                          0xFF39C5BB),
                   bevel: GeoRadius.bevelSmall,
                   child: AnimatedContainer(
                     duration: GeoMotion.fast,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: ShapeDecoration(
                       color: filter == cat
-                          ? Color(modulesData.categoryColors[cat]?.toUnsigned(32) ?? 0xFF39C5BB).withValues(alpha: 0.16)
+                          ? Color(modulesData.categoryColors[cat]
+                                      ?.toUnsigned(32) ??
+                                  0xFF39C5BB)
+                              .withValues(alpha: 0.16)
                           : palette.bgSurface,
                       shape: BeveledRectangleBorder(
-                        borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevelSmall)),
+                        borderRadius: const BorderRadius.only(
+                            topRight: Radius.circular(GeoRadius.bevelSmall)),
                         side: BorderSide(
                           color: filter == cat
-                              ? Color(modulesData.categoryColors[cat]?.toUnsigned(32) ?? 0xFF39C5BB)
+                              ? Color(modulesData.categoryColors[cat]
+                                      ?.toUnsigned(32) ??
+                                  0xFF39C5BB)
                               : palette.border,
                         ),
                       ),
@@ -291,10 +328,13 @@ class _CategoryChips extends StatelessWidget {
                       modulesData.categoryLabels[cat] ?? cat,
                       style: TextStyle(
                         color: filter == cat
-                            ? Color(modulesData.categoryColors[cat]?.toUnsigned(32) ?? 0xFF39C5BB)
+                            ? Color(modulesData.categoryColors[cat]
+                                    ?.toUnsigned(32) ??
+                                0xFF39C5BB)
                             : palette.fgSecondary,
                         fontSize: 12,
-                        fontWeight: filter == cat ? FontWeight.w800 : FontWeight.w400,
+                        fontWeight:
+                            filter == cat ? FontWeight.w800 : FontWeight.w400,
                       ),
                     ),
                   ),
@@ -324,7 +364,8 @@ class _RecentCard extends StatelessWidget {
         decoration: ShapeDecoration(
           color: palette.bgSurface,
           shape: BeveledRectangleBorder(
-            borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevelSmall)),
+            borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(GeoRadius.bevelSmall)),
             side: BorderSide(color: palette.border),
           ),
         ),
@@ -335,7 +376,8 @@ class _RecentCard extends StatelessWidget {
               entry.moduleTitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: palette.fgTertiary, fontSize: 10, letterSpacing: 1),
+              style: TextStyle(
+                  color: palette.fgTertiary, fontSize: 10, letterSpacing: 1),
             ),
             const SizedBox(height: 6),
             Expanded(
@@ -343,7 +385,11 @@ class _RecentCard extends StatelessWidget {
                 entry.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: palette.fgPrimary, fontSize: 13, fontWeight: FontWeight.w600, height: 1.35),
+                style: TextStyle(
+                    color: palette.fgPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35),
               ),
             ),
           ],
@@ -359,7 +405,11 @@ class _ModuleCard extends ConsumerWidget {
   final int number;
   final int docCount;
 
-  const _ModuleCard({required this.module, required this.color, required this.number, required this.docCount});
+  const _ModuleCard(
+      {required this.module,
+      required this.color,
+      required this.number,
+      required this.docCount});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -373,58 +423,67 @@ class _ModuleCard extends ConsumerWidget {
           decoration: ShapeDecoration(
             color: palette.bgSurface,
             shape: BeveledRectangleBorder(
-              borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevel)),
+              borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(GeoRadius.bevel)),
               side: BorderSide(color: palette.border),
             ),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                width: 52,
-                color: color.withValues(alpha: 0.12),
-                alignment: Alignment.center,
-                child: Text(
-                  number.toString().padLeft(2, '0'),
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        module.title,
-                        style: TextStyle(color: palette.fgPrimary, fontSize: 15, fontWeight: FontWeight.w800),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        module.description,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: palette.fgTertiary, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 14),
-                child: Center(
+          // IntrinsicHeight：ListView 内无界高度下 stretch 行需要先解析固有高度。
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  width: 52,
+                  color: color.withValues(alpha: 0.12),
+                  alignment: Alignment.center,
                   child: Text(
-                    '$docCount 篇',
-                    style: TextStyle(color: palette.fgTertiary, fontSize: 11),
+                    number.toString().padLeft(2, '0'),
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
                   ),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          module.title,
+                          style: TextStyle(
+                              color: palette.fgPrimary,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          module.description,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              color: palette.fgTertiary, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 14),
+                  child: Center(
+                    child: Text(
+                      '$docCount 篇',
+                      style: TextStyle(color: palette.fgTertiary, fontSize: 11),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

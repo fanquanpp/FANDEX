@@ -29,10 +29,57 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/docs/
     - assets/metadata/
     - assets/metadata/learning-path/
     - assets/syntax-data/
     - assets/mermaid/
     - assets/shaders/
     - assets/version.json
+    # BEGIN content-assets (generate-content.mjs 维护，勿手改)
+    - assets/docs/algorithm/
+    - assets/docs/astro/
+    - assets/docs/c/
+    - assets/docs/cloud-computing/
+    - assets/docs/cpp/
+    - assets/docs/cs-fundamentals/
+    - assets/docs/csharp/
+    - assets/docs/css/
+    - assets/docs/cybersecurity/
+    - assets/docs/devops/
+    - assets/docs/gdscript/
+    - assets/docs/git/
+    - assets/docs/github/
+    - assets/docs/go/
+    - assets/docs/gode/
+    - assets/docs/godot/
+    - assets/docs/html5/
+    - assets/docs/java/
+    - assets/docs/javascript/
+    - assets/docs/konado/
+    - assets/docs/kotlin/
+    - assets/docs/markdown/
+    - assets/docs/mongodb/
+    - assets/docs/mybatis/
+    - assets/docs/mysql/
+    - assets/docs/nestjs/
+    - assets/docs/networking/
+    - assets/docs/nextjs/
+    - assets/docs/postgresql/
+    - assets/docs/python/
+    - assets/docs/react/
+    - assets/docs/redis/
+    - assets/docs/renpy/
+    - assets/docs/roadmap/
+    - assets/docs/rust/
+    - assets/docs/shell/
+    - assets/docs/software-testing/
+    - assets/docs/spring-boot/
+    - assets/docs/spring-cloud/
+    - assets/docs/sql/
+    - assets/docs/start/
+    - assets/docs/svg/
+    - assets/docs/tailwind/
+    - assets/docs/typescript/
+    - assets/docs/vite/
+    - assets/docs/vue3/
+    # END content-assets

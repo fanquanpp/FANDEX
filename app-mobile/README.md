@@ -36,7 +36,9 @@
 node app-mobile/scripts/generate-content.mjs
 ```
 
-产出 `app-mobile/assets/`（docs 全量 / metadata / syntax-data / mermaid / version.json），数据契约与 Kotlin 版一致。
+产出 `app-mobile/assets/`（docs 全量 / metadata / syntax-data / version.json），数据契约与 Kotlin 版一致。
+注意：Flutter 目录资产只展开一层，脚本会把每个模块目录以 `# BEGIN/END content-assets`
+标记块形式登记进 pubspec.yaml，勿手改该块；mermaid.min.js 为随仓库提交的 vendored 文件。
 
 ## 构建（Android / Windows 本机）
 

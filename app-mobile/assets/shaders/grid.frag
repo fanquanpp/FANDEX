@@ -3,10 +3,14 @@
 
 // GEOCON 蓝图网格背景 — 漂移细网格 + 220px 大网格 + 对角扫描线。
 // 设计约束：仅线场，无光斑、无色散。
+// 全部使用 float uniform，避免 vec2/vec3 在 uniform 缓冲里的对齐歧义。
 
 uniform float uTime;
-uniform vec2 uSize;
-uniform vec3 uTint;
+uniform float uSizeX;
+uniform float uSizeY;
+uniform float uTintR;
+uniform float uTintG;
+uniform float uTintB;
 
 out vec4 fragColor;
 
@@ -19,6 +23,8 @@ float gridLine(vec2 p, float spacing, float thickness) {
 
 void main() {
   vec2 p = FlutterFragCoord().xy;
+  vec2 uSize = vec2(uSizeX, uSizeY);
+  vec3 uTint = vec3(uTintR, uTintG, uTintB);
 
   vec2 moved = p + vec2(uTime * 6.0, -uTime * 4.0);
   float fine = gridLine(moved, 44.0, 0.6);

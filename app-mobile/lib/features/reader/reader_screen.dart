@@ -74,7 +74,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       shape: const BeveledRectangleBorder(),
-      builder: (context) => _TocSheet(headings: _headings, palette: geoOf(context), onPick: _jumpTo),
+      builder: (context) => _TocSheet(
+          headings: _headings, palette: geoOf(context), onPick: _jumpTo),
     );
   }
 
@@ -95,10 +96,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   @override
   Widget build(BuildContext context) {
     final palette = geoOf(context);
-    final docAsync = ref.watch(docProvider(DocRef(widget.moduleId, widget.slug)));
+    final docAsync =
+        ref.watch(docProvider(DocRef(widget.moduleId, widget.slug)));
     final settingsCtrl = ref.read(settingsProvider.notifier);
     final settings = ref.watch(settingsProvider);
-    final done = ref.watch(progressProvider.select((p) => p.containsKey('${widget.moduleId}/${widget.slug}')));
+    final done = ref.watch(progressProvider
+        .select((p) => p.containsKey('${widget.moduleId}/${widget.slug}')));
 
     // 数据就绪后登记目录锚点与阅读历史。
     ref.listen(docProvider(DocRef(widget.moduleId, widget.slug)), (prev, next) {
@@ -152,31 +155,41 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 actions: [
                   IconButton(
                     tooltip: '缩小字号',
-                    icon: Icon(Icons.remove, size: 18, color: palette.fgSecondary),
-                    onPressed: () => settingsCtrl.setFontScale(settings.fontScale - 0.1),
+                    icon: Icon(Icons.remove,
+                        size: 18, color: palette.fgSecondary),
+                    onPressed: () =>
+                        settingsCtrl.setFontScale(settings.fontScale - 0.1),
                   ),
                   IconButton(
                     tooltip: '放大字号',
                     icon: Icon(Icons.add, size: 18, color: palette.fgSecondary),
-                    onPressed: () => settingsCtrl.setFontScale(settings.fontScale + 0.1),
+                    onPressed: () =>
+                        settingsCtrl.setFontScale(settings.fontScale + 0.1),
                   ),
                   IconButton(
                     tooltip: '目录',
-                    icon: Icon(Icons.format_list_bulleted, size: 19, color: palette.fgSecondary),
+                    icon: Icon(Icons.format_list_bulleted,
+                        size: 19, color: palette.fgSecondary),
                     onPressed: _showToc,
                   ),
                 ],
                 segment: [
                   DockSegmentAction(
-                    icon: done ? Icons.check_box : Icons.check_box_outline_blank,
+                    icon:
+                        done ? Icons.check_box : Icons.check_box_outline_blank,
                     tooltip: done ? '取消完成' : '标记完成',
                     onTap: () {
                       GeoHaptics.play(GeoHapticPattern.success);
-                      ref.read(progressProvider.notifier).setDone(widget.moduleId, widget.slug, !done);
+                      ref
+                          .read(progressProvider.notifier)
+                          .setDone(widget.moduleId, widget.slug, !done);
                     },
                     active: done,
                   ),
-                  DockSegmentAction(icon: Icons.home_outlined, tooltip: '首页', onTap: () => context.go('/')),
+                  DockSegmentAction(
+                      icon: Icons.home_outlined,
+                      tooltip: '首页',
+                      onTap: () => context.go('/')),
                   DockSegmentAction(
                     icon: Icons.contrast,
                     tooltip: '主题快切',
@@ -192,7 +205,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   loading: () => const GeoLoading(),
                   error: (e, _) => GeoErrorView(
                     message: '文档加载失败',
-                    onRetry: () => ref.invalidate(docProvider(DocRef(widget.moduleId, widget.slug))),
+                    onRetry: () => ref.invalidate(
+                        docProvider(DocRef(widget.moduleId, widget.slug))),
                   ),
                   data: (doc) => _ReaderBody(
                     doc: doc,
@@ -211,7 +225,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
   Color _accentOf(GeoPalette palette) {
     final modules = ref.read(modulesProvider).value;
-    final entry = ref.read(docProvider(DocRef(widget.moduleId, widget.slug))).value?.entry;
+    final entry = ref
+        .read(docProvider(DocRef(widget.moduleId, widget.slug)))
+        .value
+        ?.entry;
     final category = entry?.category;
     if (category != null && category.isNotEmpty && modules != null) {
       final hex = modules.categoryColors[category];
@@ -227,14 +244,23 @@ class _ReaderBody extends ConsumerWidget {
   final Map<int, GlobalKey> headingKeys;
   final ScrollController scroll;
 
-  const _ReaderBody({required this.doc, required this.accent, required this.headingKeys, required this.scroll});
+  const _ReaderBody(
+      {required this.doc,
+      required this.accent,
+      required this.headingKeys,
+      required this.scroll});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = geoOf(context);
     final result = parseMarkdown(doc.body);
+    // 为每个标题预建锚点，目录跳转经 ensureVisible 定位。
+    for (var i = 0; i < result.headings.length; i++) {
+      headingKeys.putIfAbsent(i, GlobalKey.new);
+    }
     final entries = ref.watch(docIndexProvider).value ?? const <DocEntry>[];
-    final moduleDocs = entries.where((d) => d.module == doc.entry.module).toList();
+    final moduleDocs =
+        entries.where((d) => d.module == doc.entry.module).toList();
 
     DocEntry? prev;
     DocEntry? next;
@@ -246,7 +272,8 @@ class _ReaderBody extends ConsumerWidget {
       }
     }
 
-    final widgets = renderBlocks(context, result.blocks, accent: accent, headingKeys: headingKeys);
+    final widgets = renderBlocks(context, result.blocks,
+        accent: accent, headingKeys: headingKeys);
     var entranceIdx = 0;
 
     return ListView(
@@ -260,7 +287,8 @@ class _ReaderBody extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 18),
             child: Row(
               children: [
-                DifficultyBadge(difficulty: doc.entry.difficulty, palette: palette),
+                DifficultyBadge(
+                    difficulty: doc.entry.difficulty, palette: palette),
                 const SizedBox(width: 10),
                 Text(
                   '更新于 ${doc.entry.updated.isEmpty ? '-' : doc.entry.updated}',
@@ -319,7 +347,11 @@ class _LinkStrip extends StatelessWidget {
   final List<String> items;
   final ValueChanged<String> onTap;
 
-  const _LinkStrip({required this.label, required this.color, required this.items, required this.onTap});
+  const _LinkStrip(
+      {required this.label,
+      required this.color,
+      required this.items,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -331,7 +363,11 @@ class _LinkStrip extends StatelessWidget {
         children: [
           Text(
             label,
-            style: TextStyle(color: color, fontSize: 10, letterSpacing: 2.4, fontWeight: FontWeight.w800),
+            style: TextStyle(
+                color: color,
+                fontSize: 10,
+                letterSpacing: 2.4,
+                fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -344,15 +380,19 @@ class _LinkStrip extends StatelessWidget {
                   bracketColor: color,
                   bevel: GeoRadius.bevelTiny,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: ShapeDecoration(
                       color: palette.bgSurface,
                       shape: BeveledRectangleBorder(
-                        borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevelTiny)),
+                        borderRadius: const BorderRadius.only(
+                            topRight: Radius.circular(GeoRadius.bevelTiny)),
                         side: BorderSide(color: palette.border),
                       ),
                     ),
-                    child: Text(item, style: TextStyle(color: palette.fgSecondary, fontSize: 11.5)),
+                    child: Text(item,
+                        style: TextStyle(
+                            color: palette.fgSecondary, fontSize: 11.5)),
                   ),
                 ),
             ],
@@ -368,7 +408,8 @@ class _PersistentDocNav extends StatelessWidget {
   final DocEntry? next;
   final Color accent;
 
-  const _PersistentDocNav({required this.prev, required this.next, required this.accent});
+  const _PersistentDocNav(
+      {required this.prev, required this.next, required this.accent});
 
   @override
   Widget build(BuildContext context) {
@@ -402,7 +443,11 @@ class _NavCard extends StatelessWidget {
   final IconData icon;
   final Color accent;
 
-  const _NavCard({required this.entry, required this.label, required this.icon, required this.accent});
+  const _NavCard(
+      {required this.entry,
+      required this.label,
+      required this.icon,
+      required this.accent});
 
   @override
   Widget build(BuildContext context) {
@@ -417,7 +462,8 @@ class _NavCard extends StatelessWidget {
         decoration: ShapeDecoration(
           color: palette.bgSurface,
           shape: BeveledRectangleBorder(
-            borderRadius: const BorderRadius.only(topRight: Radius.circular(GeoRadius.bevelSmall)),
+            borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(GeoRadius.bevelSmall)),
             side: BorderSide(color: palette.border),
           ),
         ),
@@ -430,7 +476,10 @@ class _NavCard extends StatelessWidget {
                 entry!.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: palette.fgPrimary, fontSize: 12.5, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: palette.fgPrimary,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -445,16 +494,19 @@ class _TocSheet extends StatelessWidget {
   final GeoPalette palette;
   final ValueChanged<int> onPick;
 
-  const _TocSheet({required this.headings, required this.palette, required this.onPick});
+  const _TocSheet(
+      {required this.headings, required this.palette, required this.onPick});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.62),
+      constraints:
+          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.62),
       decoration: ShapeDecoration(
         color: palette.bgElevated,
         shape: BeveledRectangleBorder(
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(GeoRadius.bevel)),
+          borderRadius:
+              BorderRadius.only(topLeft: Radius.circular(GeoRadius.bevel)),
           side: BorderSide(color: palette.border),
         ),
       ),
@@ -497,7 +549,8 @@ class _TocSheet extends StatelessWidget {
                               width: 3,
                               height: 12,
                               margin: const EdgeInsets.only(right: 10),
-                              color: palette.accent.withValues(alpha: level == 1 ? 0.9 : 0.45),
+                              color: palette.accent
+                                  .withValues(alpha: level == 1 ? 0.9 : 0.45),
                             ),
                           Expanded(
                             child: Text(
@@ -505,9 +558,13 @@ class _TocSheet extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                color: level <= 2 ? palette.fgPrimary : palette.fgSecondary,
+                                color: level <= 2
+                                    ? palette.fgPrimary
+                                    : palette.fgSecondary,
                                 fontSize: level <= 2 ? 13.5 : 12.5,
-                                fontWeight: level == 1 ? FontWeight.w700 : FontWeight.w400,
+                                fontWeight: level == 1
+                                    ? FontWeight.w700
+                                    : FontWeight.w400,
                               ),
                             ),
                           ),

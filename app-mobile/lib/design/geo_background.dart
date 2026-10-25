@@ -30,14 +30,13 @@ class GeoBackdrop extends ConsumerStatefulWidget {
 
 class _GeoBackdropState extends ConsumerState<GeoBackdrop> with SingleTickerProviderStateMixin {
   late final Ticker _ticker;
-  double _time = 0;
+  final ValueNotifier<double> _time = ValueNotifier<double>(0);
 
   @override
   void initState() {
     super.initState();
     _ticker = createTicker((elapsed) {
-      if (!mounted) return;
-      setState(() => _time = elapsed.inMicroseconds / 1e6);
+      _time.value = elapsed.inMicroseconds / 1e6;
     });
     _ticker.start();
   }
@@ -45,6 +44,7 @@ class _GeoBackdropState extends ConsumerState<GeoBackdrop> with SingleTickerProv
   @override
   void dispose() {
     _ticker.dispose();
+    _time.dispose();
     super.dispose();
   }
 
@@ -56,21 +56,20 @@ class _GeoBackdropState extends ConsumerState<GeoBackdrop> with SingleTickerProv
     return Stack(
       fit: StackFit.expand,
       children: [
+        // 背景动效经 repaint 通道重绘，禁止 setState 重建整棵子树——
+        // 否则每帧重建会让入场动画（TweenAnimationBuilder）被反复重置。
         if (program != null)
           CustomPaint(
             painter: _ShaderGridPainter(
               program: program,
-              time: _time,
+              timeNotifier: _time,
               tint: palette.fgPrimary,
               base: palette.bgBase,
             ),
           )
         else
           CustomPaint(
-            painter: GridPainter(
-              lineColor: palette.gridLine,
-              drift: Offset(_time * 6 % 44, -_time * 4 % 44),
-            ),
+            painter: _TimedGridPainter(lineColor: palette.gridLine, timeNotifier: _time),
           ),
         if (widget.child != null) widget.child!,
       ],
@@ -78,29 +77,54 @@ class _GeoBackdropState extends ConsumerState<GeoBackdrop> with SingleTickerProv
   }
 }
 
+class _TimedGridPainter extends CustomPainter {
+  final Color lineColor;
+  final ValueNotifier<double> timeNotifier;
+
+  _TimedGridPainter({required this.lineColor, required this.timeNotifier}) : super(repaint: timeNotifier);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final t = timeNotifier.value;
+    GridPainter(
+      lineColor: lineColor,
+      drift: Offset(t * 6 % 44, -t * 4 % 44),
+    ).paint(canvas, size);
+  }
+
+  @override
+  bool shouldRepaint(_TimedGridPainter oldDelegate) => true;
+}
+
 class _ShaderGridPainter extends CustomPainter {
   final ui.FragmentProgram program;
-  final double time;
+  final ValueNotifier<double> timeNotifier;
   final Color tint;
   final Color base;
 
-  _ShaderGridPainter({required this.program, required this.time, required this.tint, required this.base});
+  _ShaderGridPainter({
+    required this.program,
+    required this.timeNotifier,
+    required this.tint,
+    required this.base,
+  }) : super(repaint: timeNotifier);
 
   @override
   void paint(Canvas canvas, Size size) {
     final shader = program.fragmentShader();
-    shader.setFloat(0, time);
+    shader.setFloat(0, timeNotifier.value);
     shader.setFloat(1, size.width);
     shader.setFloat(2, size.height);
     shader.setFloat(3, tint.r);
     shader.setFloat(4, tint.g);
     shader.setFloat(5, tint.b);
+    shader.setFloat(6, 0);
+    // 第 7 槽补齐 std140 对齐余量。
     canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
   }
 
   @override
-  bool shouldRepaint(_ShaderGridPainter oldDelegate) =>
-      oldDelegate.time != time || oldDelegate.tint != tint;
+  bool shouldRepaint(_ShaderGridPainter oldDelegate) => oldDelegate.tint != tint;
 }
 
 // 线框多边形加载态。

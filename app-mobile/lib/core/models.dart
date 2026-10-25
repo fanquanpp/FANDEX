@@ -79,15 +79,22 @@ class ModuleInfo {
     required this.officialDocs,
   });
 
+  // 数据源里 updatePriority 可能是布尔、updateNote 可能缺失，统一宽松转字符串。
+  static String _asText(dynamic v) {
+    if (v is String) return v;
+    if (v is bool) return v ? 'true' : 'false';
+    return '';
+  }
+
   factory ModuleInfo.fromJson(Map<String, dynamic> json) => ModuleInfo(
-        id: json['id'] as String? ?? '',
-        title: json['title'] as String? ?? '',
-        icon: json['icon'] as String? ?? '',
-        description: json['description'] as String? ?? '',
+        id: _asText(json['id']),
+        title: _asText(json['title']),
+        icon: _asText(json['icon']),
+        description: _asText(json['description']),
         categories: (json['categories'] as List<dynamic>? ?? []).cast<String>(),
         folderOrder: json['folder_order'] as int? ?? 0,
-        updatePriority: json['updatePriority'] as String? ?? '',
-        updateNote: json['updateNote'] as String? ?? '',
+        updatePriority: _asText(json['updatePriority']),
+        updateNote: _asText(json['updateNote']),
         officialDocs: (json['officialDocs'] as List<dynamic>? ?? [])
             .map((e) => OfficialDoc.fromJson(e as Map<String, dynamic>))
             .toList(),

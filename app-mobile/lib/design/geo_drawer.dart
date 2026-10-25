@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../core/models.dart';
 import '../core/tokens.dart';
 import '../data/prefs.dart';
 import '../data/repositories.dart';
+import '../platform/updater.dart';
+import 'geo_painters.dart';
 import 'geo_press.dart';
 
 // 抽屉 — 品牌区 / 统计 / 快捷导航 / 主题 / 字号刻度 / 模块索引 / 免责声明。
@@ -72,13 +75,7 @@ class _GeoDrawerState extends ConsumerState<GeoDrawer> {
                     ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                  child: Text(
-                    '全栈知识速查体系',
-                    style: TextStyle(color: palette.fgTertiary, fontSize: 12, letterSpacing: 1),
-                  ),
-                ),
+                const SizedBox(height: 12),
                 _StatsRow(modules: modules, docs: docs),
                 const SizedBox(height: 8),
                 _sectionLabel(context, '快捷导航'),
@@ -116,6 +113,8 @@ class _GeoDrawerState extends ConsumerState<GeoDrawer> {
                   scale: settings.fontScale,
                   onChange: settingsCtrl.setFontScale,
                 ),
+                _sectionLabel(context, '应用更新'),
+                const _UpdateSection(),
                 _sectionLabel(context, '模块索引'),
                 if (modules != null)
                   ..._buildModuleIndex(context, modules)
@@ -146,12 +145,15 @@ class _GeoDrawerState extends ConsumerState<GeoDrawer> {
       final cat = m.categories.isNotEmpty ? m.categories.first : 'tools';
       byCategory.putIfAbsent(cat, () => []).add(m);
     }
-    final order = modules.categoryOrder.isEmpty ? byCategory.keys.toList() : modules.categoryOrder;
+    final order = modules.categoryOrder.isEmpty
+        ? byCategory.keys.toList()
+        : modules.categoryOrder;
 
     for (final cat in order) {
       final list = byCategory[cat];
       if (list == null || list.isEmpty) continue;
-      final color = Color(modules.categoryColors[cat]?.toUnsigned(32) ?? 0xFF39C5BB);
+      final color =
+          Color(modules.categoryColors[cat]?.toUnsigned(32) ?? 0xFF39C5BB);
       final label = modules.categoryLabels[cat] ?? cat;
       widgets.add(_CategoryHeader(label: label, color: color));
       for (final m in list) {
@@ -244,7 +246,11 @@ class _StatsRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(value, style: TextStyle(color: palette.accent, fontWeight: FontWeight.w800, fontSize: 16)),
+        Text(value,
+            style: TextStyle(
+                color: palette.accent,
+                fontWeight: FontWeight.w800,
+                fontSize: 16)),
         Text(label, style: TextStyle(color: palette.fgTertiary, fontSize: 10)),
       ],
     );
@@ -257,7 +263,11 @@ class _NavItem extends StatelessWidget {
   final bool active;
   final VoidCallback onTap;
 
-  const _NavItem({required this.icon, required this.label, required this.active, required this.onTap});
+  const _NavItem(
+      {required this.icon,
+      required this.label,
+      required this.active,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -269,10 +279,13 @@ class _NavItem extends StatelessWidget {
       child: AnimatedContainer(
         duration: GeoMotion.fast,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
-        color: active ? palette.accent.withValues(alpha: 0.12) : Colors.transparent,
+        color: active
+            ? palette.accent.withValues(alpha: 0.12)
+            : Colors.transparent,
         child: Row(
           children: [
-            Icon(icon, size: 18, color: active ? palette.accent : palette.fgSecondary),
+            Icon(icon,
+                size: 18, color: active ? palette.accent : palette.fgSecondary),
             const SizedBox(width: 12),
             Text(
               label,
@@ -322,22 +335,30 @@ class _ThemeSegment extends StatelessWidget {
                     duration: GeoMotion.fast,
                     height: 34,
                     alignment: Alignment.center,
-                    color: current == items[i].$1 ? palette.accent.withValues(alpha: 0.16) : Colors.transparent,
+                    color: current == items[i].$1
+                        ? palette.accent.withValues(alpha: 0.16)
+                        : Colors.transparent,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           items[i].$3,
                           size: 14,
-                          color: current == items[i].$1 ? palette.accent : palette.fgTertiary,
+                          color: current == items[i].$1
+                              ? palette.accent
+                              : palette.fgTertiary,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           items[i].$2,
                           style: TextStyle(
                             fontSize: 12,
-                            color: current == items[i].$1 ? palette.accent : palette.fgSecondary,
-                            fontWeight: current == items[i].$1 ? FontWeight.w700 : FontWeight.w400,
+                            color: current == items[i].$1
+                                ? palette.accent
+                                : palette.fgSecondary,
+                            fontWeight: current == items[i].$1
+                                ? FontWeight.w700
+                                : FontWeight.w400,
                           ),
                         ),
                       ],
@@ -385,7 +406,8 @@ class _FontScaleRow extends StatelessWidget {
                         duration: GeoMotion.fast,
                         height: activeIndex == i ? 14 : 8,
                         margin: const EdgeInsets.symmetric(horizontal: 2),
-                        color: i <= activeIndex ? palette.accent : palette.border,
+                        color:
+                            i <= activeIndex ? palette.accent : palette.border,
                       ),
                     ),
                   ),
@@ -398,6 +420,196 @@ class _FontScaleRow extends StatelessWidget {
             '${(scale * 100).round()}%',
             style: TextStyle(color: palette.fgTertiary, fontSize: 11),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UpdateSection extends ConsumerStatefulWidget {
+  const _UpdateSection();
+
+  @override
+  ConsumerState<_UpdateSection> createState() => _UpdateSectionState();
+}
+
+class _UpdateSectionState extends ConsumerState<_UpdateSection> {
+  bool _checking = false;
+  bool _downloading = false;
+  double _progress = 0;
+  String? _message;
+  UpdateInfo? _info;
+
+  Future<void> _check() async {
+    setState(() {
+      _checking = true;
+      _message = null;
+      _info = null;
+    });
+    final store = ref.read(libraryStoreProvider);
+    final info = await ref.read(geoUpdaterProvider).check(store: store);
+    if (!mounted) return;
+    setState(() {
+      _checking = false;
+      _info = info;
+      _message = info == null ? '已是最新版本' : null;
+    });
+  }
+
+  Future<void> _downloadAndInstall() async {
+    final info = _info;
+    if (info == null || info.apkUrl.isEmpty) return;
+    setState(() {
+      _downloading = true;
+      _progress = 0;
+    });
+    try {
+      final dir = await getTemporaryDirectory();
+      final path = '${dir.path}/fandex-update.apk';
+      await for (final p in ref
+          .read(geoUpdaterProvider)
+          .downloadApk(info.apkUrl, toPath: path)) {
+        if (!mounted) return;
+        setState(() => _progress = p);
+      }
+      await ref.read(geoUpdaterProvider).installApk(path);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _message = '下载失败，请稍后重试');
+    } finally {
+      if (mounted) setState(() => _downloading = false);
+    }
+  }
+
+  Future<void> _ignore() async {
+    final info = _info;
+    if (info == null) return;
+    await ref.read(libraryStoreProvider).setIgnoredVersion(info.version);
+    if (!mounted) return;
+    setState(() {
+      _info = null;
+      _message = '已忽略 v${info.version}';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = geoOf(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          GeoPress(
+            onTap: _checking || _downloading ? null : _check,
+            bracketColor: palette.accent,
+            bevel: GeoRadius.bevelTiny,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: ShapeDecoration(
+                color: palette.bgElevated,
+                shape: BeveledRectangleBorder(
+                  borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(GeoRadius.bevelTiny)),
+                  side: BorderSide(color: palette.border),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.system_update_alt,
+                      size: 16, color: palette.accent),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      _checking ? '正在检查...' : '检查更新',
+                      style: TextStyle(
+                        color: _checking || _downloading
+                            ? palette.fgTertiary
+                            : palette.fgPrimary,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_message != null) ...[
+            const SizedBox(height: 6),
+            Text(_message!,
+                style: TextStyle(color: palette.fgTertiary, fontSize: 11)),
+          ],
+          if (_info != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              '发现新版本 v${_info!.version}',
+              style: TextStyle(
+                  color: palette.accent,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            if (_downloading)
+              CustomPaint(
+                size: const Size(double.infinity, 4),
+                painter: TickRulerPainter(
+                    color: palette.accent,
+                    filledRatio: _progress,
+                    segments: 16),
+              )
+            else
+              Row(
+                children: [
+                  Expanded(
+                    child: GeoPress(
+                      onTap: _downloadAndInstall,
+                      bracketColor: palette.accent,
+                      bevel: GeoRadius.bevelTiny,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        alignment: Alignment.center,
+                        decoration: ShapeDecoration(
+                          color: palette.accent.withValues(alpha: 0.16),
+                          shape: BeveledRectangleBorder(
+                            borderRadius: const BorderRadius.only(
+                                topRight: Radius.circular(GeoRadius.bevelTiny)),
+                            side: BorderSide(color: palette.accent),
+                          ),
+                        ),
+                        child: Text(
+                          '下载并安装',
+                          style: TextStyle(
+                              color: palette.accent,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GeoPress(
+                    onTap: _ignore,
+                    bracketColor: palette.fgTertiary,
+                    bevel: GeoRadius.bevelTiny,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: ShapeDecoration(
+                        color: palette.bgElevated,
+                        shape: BeveledRectangleBorder(
+                          borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(GeoRadius.bevelTiny)),
+                          side: BorderSide(color: palette.border),
+                        ),
+                      ),
+                      child: Text('忽略',
+                          style: TextStyle(
+                              color: palette.fgSecondary, fontSize: 12)),
+                    ),
+                  ),
+                ],
+              ),
+          ],
         ],
       ),
     );
