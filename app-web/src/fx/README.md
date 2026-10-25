@@ -44,7 +44,7 @@ fx/
 <span data-fx-split="pop" data-fx-split-stagger="55">FANDEX</span>
 <span data-fx-decrypt data-fx-decrypt-speed="34">FX_REGISTRY</span>
 <span data-fx-count="42">42</span>
-<div data-fx="letter-glitch" data-letter-glitch-font-size="16" data-letter-glitch-density="0.55"></div>
+<div data-fx="letter-glitch" data-letter-glitch-font-size="18" data-letter-glitch-density="0.4" data-letter-glitch-flow="0.75"></div>
 ```
 
 新增一个特效：实现 `(host: HTMLElement) => void | (() => void)` 挂载函数，

@@ -246,9 +246,9 @@ function readOptions(host: HTMLElement): GlitchOptions {
   return {
     characters: host.dataset.letterGlitchCharacters?.trim() || DEFAULT_CHARACTERS,
     fontFamily: FONT_STACK,
-    fontSize: clamp(num('letterGlitchFontSize', 16), 6, 96),
+    fontSize: clamp(num('letterGlitchFontSize', 18), 6, 96),
     spacing: clamp(num('letterGlitchSpacing', 0.8), 0, 2),
-    density: clamp(num('letterGlitchDensity', 0.55), 0, 1),
+    density: clamp(num('letterGlitchDensity', 0.4), 0, 1),
     baseOpacity: clamp(num('letterGlitchBaseOpacity', 0.16), 0, 1),
     glitchAmount: clamp(num('letterGlitchGlitchAmount', 0.5), 0, 1),
     speed: Math.max(0, num('letterGlitchSpeed', 1)),
@@ -681,9 +681,9 @@ export function mountLetterGlitch(host: HTMLElement): FxDispose {
       const holdTime = (0.04 + Math.random() * 0.26) / tempo;
       const fadeTime = (0.45 + Math.random() * 0.6) / tempo;
       const roll = Math.random();
-      if (roll < 0.24) {
+      if (roll < 0.12) {
         const c = i % grid.cols;
-        const long = roll < 0.015;
+        const long = roll < 0.008;
         const length = Math.min(
           grid.cols - c,
           long ? 10 + ((Math.random() * 24) | 0) : 2 + ((Math.random() * 7) | 0),
