@@ -8,13 +8,13 @@
     text-decoration: none;
     background: var(--color-bg-card);
     border: 1px solid var(--color-border-light);
-    border-radius: var(--radius-md, 4px);
-    box-shadow: var(--shadow-xs);
+    /* 圆角归档（规格 3.1）：卡片统一消费 --radius-card */
+    border-radius: var(--radius-card);
+    /* 细线代阴影（规格 1.4 要素 4）：卡片非浮层，一律 1px 边框，不用阴影 */
     transition:
       transform var(--motion-duration-instant) var(--motion-easing-out),
       background-color var(--motion-duration-instant) var(--motion-easing-out),
-      border-color var(--motion-duration-instant) var(--motion-easing-out),
-      box-shadow var(--motion-duration-instant) var(--motion-easing-out);
+      border-color var(--motion-duration-instant) var(--motion-easing-out);
     min-width: 0;
     overflow: hidden;
     position: relative;
@@ -35,10 +35,14 @@
     z-index: 1;
   }
 
+  /*
+   * hover 白名单（规格 5.2.2 / 验收 8.2）：仅允许顶线 scaleX、边框 tint、
+   * 图标提亮（加中性的底色变化）。禁止在此叠加第二种 hover 光效——
+   * 不加 box-shadow、不加光晕/描边发光；新效果先过规格评审再入册。
+   */
   .module-card:hover {
     background: var(--color-bg-hover);
     border-color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 50%, transparent);
-    box-shadow: var(--shadow-md);
   }
 
   .module-card:hover::before {
@@ -47,7 +51,6 @@
 
   .module-card:active {
     transform: translateY(-2px) scale(0.99);
-    box-shadow: var(--shadow-sm);
   }
 
   .module-card:focus-visible {
@@ -68,7 +71,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 3px;
+    border-radius: 2px;
     background: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 8%, transparent);
     border: 1px solid color-mix(in srgb, var(--module-color, var(--color-accent-base)) 38%, transparent);
     color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 75%, var(--color-fg-primary));
@@ -96,7 +99,7 @@
     height: 4px;
     border-top: 1px solid var(--module-color, var(--color-accent-base));
     border-left: 1px solid var(--module-color, var(--color-accent-base));
-    border-top-left-radius: 3px;
+    border-top-left-radius: 2px;
     opacity: 0.7;
     pointer-events: none;
   }
@@ -124,6 +127,43 @@
 
   .module-card:hover .card-title {
     color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 75%, var(--color-fg-primary));
+  }
+
+  /* 卡片标题双层下划线（规格 3.5）：底层 1px 常驻线（currentColor 30%），
+   * hover 时上层 1px 线自基线上移 2px 交叉。纯 CSS，reduced-motion 由
+   * global.css 全局兜底降级，此处不重复写 @media。 */
+  .card-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.3;
+  }
+
+  .card-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: currentColor;
+    opacity: 0;
+    transform: translateY(0);
+    transition:
+      opacity var(--motion-duration-fast) var(--motion-easing-out),
+      transform var(--motion-duration-fast) var(--motion-easing-out);
+    pointer-events: none;
+  }
+
+  @media (hover: hover) {
+    .module-card:hover .card-title::before {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
   }
 
   .card-desc {

@@ -44,19 +44,26 @@ const grouped = getCategories()
           </div>
         </div>
         <nav class="hero-entries" aria-label="功能入口" data-i18n-aria="home.entriesAria">
-          {heroEntries.map((entry, i) => (
-            <a
-              href={entry.href}
-              class="entry-btn"
-              style={`--entry-i:${i}`}
-              data-tooltip={entry.tooltip}
-              data-i18n-tooltip={entry.tooltipKey}
-              data-tooltip-pos="bottom"
-            >
-              <EntryWaveBorder />
-              <span class="entry-name" data-i18n={entry.nameKey}>{entry.name}</span>
-            </a>
-          ))}
+          {heroEntries.map((entry, i) => {
+            // 主 CTA（规格 3.6/5.2.1）：学习路线是本站核心动线，取为 primary，
+            // 全视图仅此一枚启用双层文字滑动，其余 entry-btn 保持 ghost 语义
+            const isPrimaryCta = entry.path === 'learning-path/';
+            return (
+              <a
+                href={entry.href}
+                class:list={['entry-btn', { 'entry-btn--cta': isPrimaryCta }]}
+                style={`--entry-i:${i}`}
+                data-tooltip={entry.tooltip}
+                data-i18n-tooltip={entry.tooltipKey}
+                data-tooltip-pos="bottom"
+              >
+                <EntryWaveBorder />
+                {isPrimaryCta && <span class="entry-cta-tick" aria-hidden="true" />}
+                <span class="entry-name" data-i18n={entry.nameKey}>{entry.name}</span>
+                {isPrimaryCta && <span class="entry-cta-arrow" aria-hidden="true">→</span>}
+              </a>
+            );
+          })}
         </nav>
       </div>
     </section>

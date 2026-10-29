@@ -2,6 +2,11 @@ export function initAnimations(): void {
   document.querySelectorAll<HTMLElement>('.module-card').forEach((card) => {
     if (card.dataset.bound === '1') return;
     card.dataset.bound = '1';
+    // data-hover-fx="css" 的卡片（首页 ModuleCard）hover 全由 CSS 驱动
+    // （module-card.css 顶线/边框 tint/图标提亮白名单），不再挂 JS
+    // card-hovered 阴影，避免 hover 出现第二种光效（规格 5.2.2/8.2）。
+    // 其余 .module-card（如语法速览岛内卡片）保持原绑定，行为不变。
+    if (card.dataset.hoverFx === 'css') return;
     card.addEventListener('mouseenter', () => card.classList.add('card-hovered'));
     card.addEventListener('mouseleave', () => card.classList.remove('card-hovered'));
   });

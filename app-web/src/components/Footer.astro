@@ -183,6 +183,47 @@ const yearRange =
     letter-spacing: 0.08em;
   }
 
+  /* 链接组双层下划线（规格 3.5/4.7）：底层 1px 常驻线（currentColor 30%），
+   * hover 时上层 1px 线自基线上移 2px 交叉。纯 CSS，reduced-motion 由
+   * global.css 全局兜底降级。仅加装饰，不改基类布局（向后兼容）。 */
+  .fndx-footer__link {
+    position: relative;
+  }
+
+  .fndx-footer__link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 2px;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.3;
+  }
+
+  .fndx-footer__link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 2px;
+    height: 1px;
+    background: currentColor;
+    opacity: 0;
+    transform: translateY(0);
+    transition:
+      opacity var(--motion-duration-fast) var(--motion-easing-out),
+      transform var(--motion-duration-fast) var(--motion-easing-out);
+    pointer-events: none;
+  }
+
+  @media (hover: hover) {
+    .fndx-footer__link:hover::before {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+  }
+
   @media (max-width: 767px) {
     .footer-build-note {
       display: none;
