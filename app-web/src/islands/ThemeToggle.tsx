@@ -1,11 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getSavedTheme, prefersDarkMode, setTheme as persistTheme, type Theme } from '@/lib/theme';
+import {
+  getSavedThemePreference,
+  getResolvedTheme,
+  setThemePreference,
+  type ThemePreference,
+} from '@/lib/theme';
 import { useLang } from '@/lib/use-lang';
 import { t } from '@/lib/i18n';
 import '@/styles/islands/ThemeToggle.css';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- 岛屿约定保留空接口：Record<string, never> 会拒绝 Astro 的 client:* 属性传递
 interface ThemeToggleProps {}
+
+/** 三态循环顺序（规格 5.1.5）：light → dark → system → light */
+const THEME_CYCLE: ThemePreference[] = ['light', 'dark', 'system'];
+
+function nextThemePreference(current: ThemePreference): ThemePreference {
+  const index = THEME_CYCLE.indexOf(current);
+  // ?? 'system'：防御未知名值（环始终闭合，正常不可达）
+  return THEME_CYCLE[(index + 1) % THEME_CYCLE.length] ?? 'system';
+}
 
 function SunIcon({ visible }: { visible: boolean }) {
   return (
@@ -49,20 +63,41 @@ function MoonIcon({ visible }: { visible: boolean }) {
   );
 }
 
+/** 跟随系统：半填充圆（右半墨水 = 取当前系统明暗），与太阳/月亮同线宽 */
+function SystemIcon({ visible }: { visible: boolean }) {
+  return (
+    <svg
+      className={`fndx-theme-icon fndx-theme-icon--system${visible ? ' is-visible' : ''}`}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export function ThemeToggle(_props: ThemeToggleProps) {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  // SSR 首帧按"未保存偏好 = system"渲染，hydration 后与已存偏好对齐
+  const [preference, setPreference] = useState<ThemePreference>('system');
 
   const lang = useLang();
 
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const saved = getSavedTheme();
-    const initial: Theme = saved ?? (prefersDarkMode() ? 'dark' : 'light');
+    const initial = getSavedThemePreference() ?? 'system';
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTheme(initial);
-    document.documentElement.setAttribute('data-theme', initial);
-    document.documentElement.style.colorScheme = initial;
+    setPreference(initial);
+    // 兜底：bootstrap 内联脚本已写 data-theme，这里把 island 状态与其对齐
+    const resolved = getResolvedTheme();
+    document.documentElement.setAttribute('data-theme', resolved);
+    document.documentElement.style.colorScheme = resolved;
     const rafId = requestAnimationFrame(() => {
       setMounted(true);
     });
@@ -71,27 +106,36 @@ export function ThemeToggle(_props: ThemeToggleProps) {
     };
   }, []);
 
-  const toggle = useCallback(() => {
-    const next: Theme = theme === 'dark' ? 'light' : 'dark';
-    persistTheme(next);
-    setTheme(next);
-  }, [theme]);
+  const cycle = useCallback(() => {
+    const next = nextThemePreference(preference);
+    setThemePreference(next);
+    setPreference(next);
+  }, [preference]);
+
+  // tooltip/aria 描述点击后的去向：light → dark → system → light
+  const target = nextThemePreference(preference);
+  const targetTooltipKey =
+    target === 'dark' ? 'theme.tooltipDark' : target === 'system' ? 'theme.tooltipSystem' : 'theme.tooltipLight';
+  const targetAriaKey =
+    target === 'dark' ? 'theme.switchDark' : target === 'system' ? 'theme.switchSystem' : 'theme.switchLight';
 
   return (
     <button
       type="button"
       className={`fndx-theme-toggle fndx-icon-btn${mounted ? ' fndx-theme-toggle--ready' : ''}`}
-      onClick={mounted ? toggle : undefined}
-      data-tooltip={theme === 'dark' ? t('theme.tooltipLight', undefined, lang) : t('theme.tooltipDark', undefined, lang)}
+      onClick={mounted ? cycle : undefined}
+      data-tooltip={t(targetTooltipKey, undefined, lang)}
       data-tooltip-pos="bottom"
-      aria-label={theme === 'dark' ? t('theme.switchLight', undefined, lang) : t('theme.switchDark', undefined, lang)}
+      aria-label={t(targetAriaKey, undefined, lang)}
       tabIndex={mounted ? 0 : -1}
       aria-hidden={!mounted}
     >
       {/* 暗色模式下显示太阳图标（提示用户可切换到亮色） */}
-      <SunIcon visible={mounted && theme === 'dark'} />
+      <SunIcon visible={mounted && preference === 'dark'} />
       {/* 亮色模式下显示月亮图标（提示用户可切换到暗色） */}
-      <MoonIcon visible={mounted && theme === 'light'} />
+      <MoonIcon visible={mounted && preference === 'light'} />
+      {/* 跟随系统模式显示半填充圆 */}
+      <SystemIcon visible={mounted && preference === 'system'} />
     </button>
   );
 }

@@ -1,0 +1,3708 @@
+{
+	"type": "npm",
+	"name": "claygl",
+	"version": "1.3.0",
+	"default": "/dist/claygl.min.js",
+	"files": [
+		{
+			"type": "directory",
+			"name": "asset",
+			"files": [
+				{
+					"type": "file",
+					"name": "logo.svg",
+					"hash": "iQD0yY4OPPEoJ4pa7CFeqq/JHn0nCuGoKE0ewKU25W4=",
+					"size": 2724
+				}
+			]
+		},
+		{
+			"type": "directory",
+			"name": "coverage",
+			"files": [
+				{
+					"type": "directory",
+					"name": "html-report",
+					"files": [
+						{
+							"type": "directory",
+							"name": "src",
+							"files": [
+								{
+									"type": "directory",
+									"name": "animation",
+									"files": [
+										{
+											"type": "file",
+											"name": "Animator.js.html",
+											"hash": "7kPoiypZL3SIxd729APhDSFHJNMLhw/fr1GR5HQvpV8=",
+											"size": 57188
+										},
+										{
+											"type": "file",
+											"name": "Blend1DClip.js.html",
+											"hash": "SFyR8oT3ak07lVl19bE1wGCc76fiFshhD5+j7De8tjA=",
+											"size": 23007
+										},
+										{
+											"type": "file",
+											"name": "Blend2DClip.js.html",
+											"hash": "z3gzO2UVt+hGoFWa7apUDC9GEs1kUetMdw9XJZckXlM=",
+											"size": 20085
+										},
+										{
+											"type": "file",
+											"name": "Clip.js.html",
+											"hash": "g4LrN99sIN5lKpyb2HCPT6BDbu6+JlpgbW0/D+3qKUE=",
+											"size": 25096
+										},
+										{
+											"type": "file",
+											"name": "easing.js.html",
+											"hash": "1CHsE6OnWMoy4T2WxcRiy6YJEG2rtqBBFsu0bL8+wRY=",
+											"size": 37069
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "Lhwl75vFLKHBm/s3ZbAsZGCZxVmx3sGb3II3QUCK+F4=",
+											"size": 8299
+										},
+										{
+											"type": "file",
+											"name": "SamplerTrack.js.html",
+											"hash": "S1ZNEkr1vGwBuSrzI5TbGsjG0CUUP77HbKVBzbXvUTY=",
+											"size": 47342
+										},
+										{
+											"type": "file",
+											"name": "Timeline.js.html",
+											"hash": "aMd8kzWpCWJWa5ARmZV+ZA8eaFc+PMCWrv/UMph+teY=",
+											"size": 2401
+										},
+										{
+											"type": "file",
+											"name": "TrackClip.js.html",
+											"hash": "W5Cyr42HbrdKpUj/G/VEDW9vDqrb4pAxDIjIbyRpFlM=",
+											"size": 25360
+										},
+										{
+											"type": "file",
+											"name": "TransformTrack.js.html",
+											"hash": "qcll63VWPZD2M2UykPv+qtCY1lBrHwhVxOuB25O5ylA=",
+											"size": 25921
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "async",
+									"files": [
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "EmIrw3UDmXWNOLlwYjYCeIEZiW9chyg0cmbMck2tpYA=",
+											"size": 4220
+										},
+										{
+											"type": "file",
+											"name": "Task.js.html",
+											"hash": "xA91+pkLl+veB7ggHgF6nxcwGso7xin6ilH1qlhKpMQ=",
+											"size": 14125
+										},
+										{
+											"type": "file",
+											"name": "TaskGroup.js.html",
+											"hash": "ya1gVwTYCGSMajLdA83tyGB/X/HwNdjTJ5wyoBzwpW8=",
+											"size": 27652
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "camera",
+									"files": [
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "CN/tLxQaS/dMjcuAJndW/8arqNHG19tDUztsvdrQZAg=",
+											"size": 4272
+										},
+										{
+											"type": "file",
+											"name": "Orthographic.js.html",
+											"hash": "Lb5PfUu8XTuZk5af10SHZSf/a9LRyE5owLxf1SFgmsg=",
+											"size": 7209
+										},
+										{
+											"type": "file",
+											"name": "Perspective.js.html",
+											"hash": "PkOze8mukKuPa4SknvlrYvSXY8QUd/ajzA1AJLTrL4Y=",
+											"size": 6854
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "canvas",
+									"files": [
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "ZzOWHi7/btPhkcznJsGYR+TE19i1o//4ZxYkHQsSu0s=",
+											"size": 4245
+										},
+										{
+											"type": "file",
+											"name": "Material.js.html",
+											"hash": "mn0OqrVjVYiKi/tqD2l4qF+F7+VpGX6LNJZbyg8tpjs=",
+											"size": 3211
+										},
+										{
+											"type": "file",
+											"name": "Renderer.js.html",
+											"hash": "Bx5DoaTaHFdbNq3GsKO+I4tlVkTEBrr8jGUWkxQPc6Q=",
+											"size": 58234
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "compositor",
+									"files": [
+										{
+											"type": "file",
+											"name": "Compositor.js.html",
+											"hash": "2B9BkQoiDMDQHTcWirA0UHvTSlVwfaaEvH/tmlDkM4Q=",
+											"size": 10811
+										},
+										{
+											"type": "file",
+											"name": "CompositorNode.js.html",
+											"hash": "LRr89W+OfsygmqHP6Fa6r4veEiCKwAoQL6htW0M+X7Y=",
+											"size": 28132
+										},
+										{
+											"type": "file",
+											"name": "createCompositor.js.html",
+											"hash": "rwgE1CrskgIn8DDeUKgJ08TetNN7ypwfprTpDvGLgxE=",
+											"size": 2443
+										},
+										{
+											"type": "file",
+											"name": "FilterNode.js.html",
+											"hash": "IkxU2bUoxSKzP0Y4vGJwhFJbbhMCquwtzG8xRswdHgA=",
+											"size": 32809
+										},
+										{
+											"type": "file",
+											"name": "Graph.js.html",
+											"hash": "IQABgu8cbY7SIerGsvxvmW9N7GG4NVLb1TFvpWVnDYM=",
+											"size": 17010
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "YupbA9IwIGqATF9KPemfu3pcp7TF2tOfj+xX5blPNJc=",
+											"size": 8909
+										},
+										{
+											"type": "file",
+											"name": "Node.js.html",
+											"hash": "QjxJuHEMvuU4hPLXXrLeSgzAP/FDorvyGZo1BcvjsFw=",
+											"size": 28062
+										},
+										{
+											"type": "file",
+											"name": "Pass.js.html",
+											"hash": "5COp/fll4sz4XeVGR76SLZl68k0I9tSPTHG1qDPP0U4=",
+											"size": 20794
+										},
+										{
+											"type": "file",
+											"name": "SceneNode.js.html",
+											"hash": "EHyYyBX4Z6nnm9/VBNV/Nuoe0R8LI3lYs5IcL+Mslz4=",
+											"size": 12269
+										},
+										{
+											"type": "file",
+											"name": "TextureNode.js.html",
+											"hash": "0rnKIkglPJe0PzYmRzxXjA4eiwfdsY5JwY1yO69vk/U=",
+											"size": 5041
+										},
+										{
+											"type": "file",
+											"name": "TexturePool.js.html",
+											"hash": "PBoE3jUnI56R2RgNcnI+wVPh1ZZQNJM0OzB0O8vJrw4=",
+											"size": 13622
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "core",
+									"files": [
+										{
+											"type": "directory",
+											"name": "mixin",
+											"files": [
+												{
+													"type": "file",
+													"name": "extend.js.html",
+													"hash": "v0G8YY4jjAsTamsWAW1vA9hsdyzE4vgFpowtVSYpNPE=",
+													"size": 11199
+												},
+												{
+													"type": "file",
+													"name": "index.html",
+													"hash": "TizQGz2zi/mFxmlzxhIBkReMnO3Oi/eybSwONBzy7AA=",
+													"size": 4317
+												},
+												{
+													"type": "file",
+													"name": "notifier.js.html",
+													"hash": "HF935g/eYG2oKCiuhVIKi35d1LbkLquy423i55t7UnI=",
+													"size": 21246
+												}
+											]
+										},
+										{
+											"type": "file",
+											"name": "Base.js.html",
+											"hash": "42Iy5v5zAGd2YCk1aNEzfMWYRGynaPO3vHbhw9ctMdk=",
+											"size": 4195
+										},
+										{
+											"type": "file",
+											"name": "Cache.js.html",
+											"hash": "EtncbG6WK6Q5AHm4MaGAxFXJPZFXZKXTWtp83lHbT2g=",
+											"size": 11809
+										},
+										{
+											"type": "file",
+											"name": "color.js.html",
+											"hash": "KLLntbD5WyIwLeZADkjsH0lg5QnDU4ftbNC4FiBubWs=",
+											"size": 62867
+										},
+										{
+											"type": "file",
+											"name": "glenum.js.html",
+											"hash": "DFxXYyEq28niVSuudSVZmwtD1MsNipcKMeh/P6cQTkU=",
+											"size": 41336
+										},
+										{
+											"type": "file",
+											"name": "GLInfo.js.html",
+											"hash": "HyrGUZzJLsqGAyEopAo/aQPEexwPIaLl1liK/U1Pwb0=",
+											"size": 7105
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "dZEGUTBZi4czSHwmd2F5W7A8shS8CNtQU2GKMJ9wAeA=",
+											"size": 9641
+										},
+										{
+											"type": "file",
+											"name": "LinkedList.js.html",
+											"hash": "Hctal6vhMrd8JJRNMLDRkB3ERJeu27FiXLSzAthm2vY=",
+											"size": 25857
+										},
+										{
+											"type": "file",
+											"name": "LRU.js.html",
+											"hash": "aMMxaNZ+umPeYvqnX+ZuRqqqT6keq/UydlNRrLl30hI=",
+											"size": 9327
+										},
+										{
+											"type": "file",
+											"name": "request.js.html",
+											"hash": "CazI4r1dVxaWjX8XbGZyJ1vRB2Qu0eKCk82rm0IUWPA=",
+											"size": 6291
+										},
+										{
+											"type": "file",
+											"name": "util.js.html",
+											"hash": "BWGYFyTA3j3LPxCOYvCJmtneBKicKnZYAlla/XJlyes=",
+											"size": 21499
+										},
+										{
+											"type": "file",
+											"name": "vendor.js.html",
+											"hash": "IohcfalBfZ21a2PGhPIE5z/Y7R9R7cezN8pzGqdDoiY=",
+											"size": 6024
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "deferred",
+									"files": [
+										{
+											"type": "file",
+											"name": "GBuffer.js.html",
+											"hash": "xXjUA+LNB+SV7Q5dLafj0Sbtp0Lq9g4Elt+8bq2/2jw=",
+											"size": 60952
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "JBzi0+0kTXvSslytDgwVWlt9GQjkRVAoxx+2kRPJk+w=",
+											"size": 4227
+										},
+										{
+											"type": "file",
+											"name": "Renderer.js.html",
+											"hash": "sVaNrqioSv0UViI09iTIvllKqdXnptInsGjj1Hd8XuE=",
+											"size": 79624
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "dep",
+									"files": [
+										{
+											"type": "file",
+											"name": "glmatrix.js.html",
+											"hash": "owAGG+IIswkwvJWBR3mgX5MQoORGhm2uG2a+hk4LMvc=",
+											"size": 437232
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "5eeVAvIlKbCm8dlr+i/g6vuvimReUY3W3CgtQ784QA0=",
+											"size": 3605
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "geometry",
+									"files": [
+										{
+											"type": "file",
+											"name": "Cone.js.html",
+											"hash": "Kdh6htaqAA4rIvJYeUXL8uFvtcyfugzXUQbn9+KiLZI=",
+											"size": 13622
+										},
+										{
+											"type": "file",
+											"name": "Cube.js.html",
+											"hash": "m9OMe6V9S+/FuM626l8vXNeTIwhrnU/wdf2bvOYVJLg=",
+											"size": 14382
+										},
+										{
+											"type": "file",
+											"name": "Cylinder.js.html",
+											"hash": "V32+IRIFtM95eCPhSjlrGQT4dh8KbHNGSD7wSURBwso=",
+											"size": 6990
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "Gi2CVur9ep8vVS6VkjQ9OOMW59MimNHjxHEK+j784GM=",
+											"size": 6922
+										},
+										{
+											"type": "file",
+											"name": "ParametricSurface.js.html",
+											"hash": "RVvzUl/ONLRTJzbDRMEq/TmtwWLYt12ljKjyRH/qexo=",
+											"size": 13733
+										},
+										{
+											"type": "file",
+											"name": "Plane.js.html",
+											"hash": "ncdXhDLCvypd7oKFJiXGMjv1L/lU4FT7nV6Ddw5DXv8=",
+											"size": 8206
+										},
+										{
+											"type": "file",
+											"name": "Sphere.js.html",
+											"hash": "7o7Fx/8quHzKI3cXp+FzYlwN8NCjdRc467UaQJ2JDL0=",
+											"size": 13572
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "gpu",
+									"files": [
+										{
+											"type": "file",
+											"name": "GLProgram.js.html",
+											"hash": "/fQ1k7hS3NZS7JziovB70dVv3xKF+NzmLZ/v4D6gQIY=",
+											"size": 34479
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "3G7Evg6HbOi2fM51+43O6pZYIZjjSawiH4E5xyAuQIE=",
+											"size": 4319
+										},
+										{
+											"type": "file",
+											"name": "ProgramManager.js.html",
+											"hash": "c0ML4Zdf+8rFBnvZcG5NuLa3pJxFPJh1NQWlNGRK4zg=",
+											"size": 16952
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "light",
+									"files": [
+										{
+											"type": "file",
+											"name": "Ambient.js.html",
+											"hash": "YHKCtdgSzCiSLLy8GX0fzI7nqLSiUqVYD56ZUnr8C2w=",
+											"size": 4720
+										},
+										{
+											"type": "file",
+											"name": "AmbientCubemap.js.html",
+											"hash": "JCh42bJ12Kh2dgOD4nig3UMPDq0rzrl8276yqTdo3vk=",
+											"size": 9878
+										},
+										{
+											"type": "file",
+											"name": "AmbientSH.js.html",
+											"hash": "fhGcR5xlscC1k4IA52Irua52y5OfBQV5OAiKAR7Bwy8=",
+											"size": 7328
+										},
+										{
+											"type": "file",
+											"name": "Directional.js.html",
+											"hash": "jWtAV45goBe7gLw3kht9h5GR8G4oYQ9wUrpEDwqQ4Fs=",
+											"size": 8563
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "mRB/xtSMXk5w3s66xQ18Kjt3cg63dxWKY/MXxNYmp3s=",
+											"size": 8220
+										},
+										{
+											"type": "file",
+											"name": "Point.js.html",
+											"hash": "5e89lFg+/YyTOyPL6pf4a54nau3Cji0SEWP8N8horhA=",
+											"size": 6636
+										},
+										{
+											"type": "file",
+											"name": "Sphere.js.html",
+											"hash": "TUAibo7xWFHhANhBktS8VRHRbz1EAef4FPz8zyPnX4E=",
+											"size": 6882
+										},
+										{
+											"type": "file",
+											"name": "Spot.js.html",
+											"hash": "Zcx1CXyEamy/vUWCGnkoWsbtL28FBOSW9xdMxOnXx7A=",
+											"size": 12026
+										},
+										{
+											"type": "file",
+											"name": "Tube.js.html",
+											"hash": "tO+ztT9zRxniTG7q9QbdszeehV4MqPV0QLeBYIYbubQ=",
+											"size": 7633
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "loader",
+									"files": [
+										{
+											"type": "file",
+											"name": "FX.js.html",
+											"hash": "DFuPaj4Uiif96J1J+q/MWNF2EU9pIxeJvFw/piGu8Eg=",
+											"size": 7872
+										},
+										{
+											"type": "file",
+											"name": "GLTF.js.html",
+											"hash": "AOeJMLHP7/wyD0Gh+JZ3Q7YAemjEEQIc0jx2MjZuRkU=",
+											"size": 141802
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "S5yU33DrzLW1UtGtzaVJ/kuUzjfQg92tJ+AZEO46uoo=",
+											"size": 4173
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "math",
+									"files": [
+										{
+											"type": "file",
+											"name": "BoundingBox.js.html",
+											"hash": "bWuA6ghpPQM/yypR6IHuWmgeLur6E5Ctb02qoolx24I=",
+											"size": 31145
+										},
+										{
+											"type": "file",
+											"name": "Frustum.js.html",
+											"hash": "BWt5Yq9R+Qp1aV5k/B7B1hzZBtSyYoZgTBJLLT1NcNo=",
+											"size": 18077
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "0DoVqShcR3Vw0L+is2Q+sGNa1GcgoyGbOcUZ2l/HIaU=",
+											"size": 12332
+										},
+										{
+											"type": "file",
+											"name": "Matrix2.js.html",
+											"hash": "ATFYJUqnpvOhEoVMFVEbdPIEVIryUP9S9Bgk5NeXbcU=",
+											"size": 29498
+										},
+										{
+											"type": "file",
+											"name": "Matrix2d.js.html",
+											"hash": "6do6MqU5RW0+SNL/Wxi4GClrpPxQ37FFHExdEkiMgxU=",
+											"size": 27797
+										},
+										{
+											"type": "file",
+											"name": "Matrix3.js.html",
+											"hash": "07bMsFA753hfU6O3kM7HPVuq4KvuMghAG4hNeUix0BY=",
+											"size": 40310
+										},
+										{
+											"type": "file",
+											"name": "Matrix4.js.html",
+											"hash": "fOe4+VJyy4PPeF3fVkP+0UQD5KML4xZrwm1nRMvE254=",
+											"size": 66786
+										},
+										{
+											"type": "file",
+											"name": "Plane.js.html",
+											"hash": "FhTS+XxwIjGBL128+QNmZySqV2T5CtDsa99VqKLKEyw=",
+											"size": 19378
+										},
+										{
+											"type": "file",
+											"name": "Quaternion.js.html",
+											"hash": "bS1Ym3ArFCzIPExziB68+t+tcZZcvGR/NJG3PJ81IiI=",
+											"size": 77637
+										},
+										{
+											"type": "file",
+											"name": "Ray.js.html",
+											"hash": "t6ix5S8++A4nr6I6522jw15PQypBHricl9QsbS6MmO8=",
+											"size": 36989
+										},
+										{
+											"type": "file",
+											"name": "util.js.html",
+											"hash": "iMwiZsn13QLQ1T2FDbFHNqDZT9IVh7/TJrKV9NpuhAM=",
+											"size": 4606
+										},
+										{
+											"type": "file",
+											"name": "Value.js.html",
+											"hash": "qsKJgCtvh//3qFDga3A2p8oDfmvdAFFqdQsM79/0yBo=",
+											"size": 15913
+										},
+										{
+											"type": "file",
+											"name": "Vector2.js.html",
+											"hash": "Dp5/z/CcODSYe+dY1e6NBZ8k9rSlOJ8iiGimxjBg0O4=",
+											"size": 71009
+										},
+										{
+											"type": "file",
+											"name": "Vector3.js.html",
+											"hash": "E4ce5hHRSGLs4UHddHhQefGBHSc1Vbv4LSu3JzDUAIE=",
+											"size": 92458
+										},
+										{
+											"type": "file",
+											"name": "Vector4.js.html",
+											"hash": "vfo24IyOpWW5gkRY8Dud7iZexANK0JTTad1EzIDYibs=",
+											"size": 69576
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "particle",
+									"files": [
+										{
+											"type": "file",
+											"name": "Emitter.js.html",
+											"hash": "L3iYgRsSz9htHri5vo4WFXsXWw67mZ3rlbNRibd4ntw=",
+											"size": 17253
+										},
+										{
+											"type": "file",
+											"name": "Field.js.html",
+											"hash": "aPUO2F8+yJ9Ydtn8UzWW3/HxknmHSRg6bRjJpa5PHH8=",
+											"size": 3762
+										},
+										{
+											"type": "file",
+											"name": "ForceField.js.html",
+											"hash": "27riv7bQ8AMxRAJG1hfogXKPmpxZGTUq2iXFCA7lRs8=",
+											"size": 4267
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "AhiYq+oT1hsn7rCjmJT1Q1StDFZTNvqZN4LcDeBabEo=",
+											"size": 6869
+										},
+										{
+											"type": "file",
+											"name": "particle.glsl.js.html",
+											"hash": "9ZVOzXfp78DLChNiCpt6pAkphELfPALcKcQepdYiP0Y=",
+											"size": 3684
+										},
+										{
+											"type": "file",
+											"name": "Particle.js.html",
+											"hash": "LJ4BsxLoWomKzGCI02tfgSUvf/3ultks8jiFZaRNrSs=",
+											"size": 8262
+										},
+										{
+											"type": "file",
+											"name": "ParticleRenderable.js.html",
+											"hash": "13BFtYDmnMeuQARDwtWu0t649RbylclDFfVlbC4q0c8=",
+											"size": 34268
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "picking",
+									"files": [
+										{
+											"type": "file",
+											"name": "color.glsl.js.html",
+											"hash": "3Oad40TgXUIWW01xFsCYx3XMieZNtiZ2UJOWmU0krGI=",
+											"size": 2869
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "b3hZ805AgxBbPMXJRhff+7Yqs9zrk86CE73N2JyBO+E=",
+											"size": 4906
+										},
+										{
+											"type": "file",
+											"name": "PixelPicking.js.html",
+											"hash": "YDcgTibX31ko/n6gOTqdJyjbq+bYlhomx8RFYSWyQYc=",
+											"size": 22049
+										},
+										{
+											"type": "file",
+											"name": "RayPicking.js.html",
+											"hash": "HjaE2ldIgsaozAR5QNWnapNMfXjFpsYlEwHVVDINvHE=",
+											"size": 31840
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "plugin",
+									"files": [
+										{
+											"type": "file",
+											"name": "FreeControl.js.html",
+											"hash": "lQ03+K1oxeNQFRqkVtX/ElPuNjNf2iEp5fmhjBH7/Ro=",
+											"size": 29222
+										},
+										{
+											"type": "file",
+											"name": "GestureMgr.js.html",
+											"hash": "eImBLRhiXjKdKZxdJgHTWkpoBWlVT9Cuj3yRqwcK1JY=",
+											"size": 13039
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "oV68QKcUEpPmjFyVkdUMGQlG+nahYS70TDSablO/omY=",
+											"size": 6926
+										},
+										{
+											"type": "file",
+											"name": "InfinitePlane.js.html",
+											"hash": "PJdjFAc7CoUGrjx14Xt9NKDRRbjsyvseFS6kd4qjvdQ=",
+											"size": 17843
+										},
+										{
+											"type": "file",
+											"name": "OrbitControl.js.html",
+											"hash": "EKwzHMgDlUgrjTfgA133smK+bF5bBPG9lXDhRduyyuE=",
+											"size": 77994
+										},
+										{
+											"type": "file",
+											"name": "Skybox.js.html",
+											"hash": "aJbCUMqnXkANRU0yWxznnz5mRnpDliEh5FepndyEJIU=",
+											"size": 13184
+										},
+										{
+											"type": "file",
+											"name": "Skydome.js.html",
+											"hash": "/uSofirqWKU0cZs0YQa3ctwgxb6hgLjTBHm+bnm7Lwk=",
+											"size": 11185
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "prePass",
+									"files": [
+										{
+											"type": "file",
+											"name": "EnvironmentMap.js.html",
+											"hash": "8R9aZRFLRA2CYaYieB+8drajcUvXX+KaRucJNDFqiSs=",
+											"size": 14968
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "R2w15QNAFbm6DWeZcfPh0SBKaARw99YykEKRtcSO0A8=",
+											"size": 4329
+										},
+										{
+											"type": "file",
+											"name": "ShadowMap.js.html",
+											"hash": "7uaGHrV57dn/En9FQGfXR5mET+R+H1QWSDMMBkykGk8=",
+											"size": 91036
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "shader",
+									"files": [
+										{
+											"type": "directory",
+											"name": "source",
+											"files": [
+												{
+													"type": "directory",
+													"name": "compositor",
+													"files": [
+														{
+															"type": "file",
+															"name": "blend.glsl.js.html",
+															"hash": "+UbjnX+axJbf+ujtJLlagY7DjX1HFhkvSeTmlSK0DMs=",
+															"size": 3706
+														},
+														{
+															"type": "file",
+															"name": "blur.glsl.js.html",
+															"hash": "QPvzQnZBkMyvhtUEY2oJ5qtOVOVtP6AXQd3V+5KkMJ0=",
+															"size": 3896
+														},
+														{
+															"type": "file",
+															"name": "bright.glsl.js.html",
+															"hash": "yuTiTHrGhiJiL//MrBoQ/AVSFHFPSgKH98aj3wdxUo8=",
+															"size": 3503
+														},
+														{
+															"type": "file",
+															"name": "coloradjust.glsl.js.html",
+															"hash": "O6OhF5lZy8J8fqBO3uDkjVlIKOIUqmT0R1gfbFGX8wc=",
+															"size": 4650
+														},
+														{
+															"type": "file",
+															"name": "dof.glsl.js.html",
+															"hash": "LV/saIMlz3fgg+p6ZqZc0vlxuYtHVOUoeKteq3rQ19c=",
+															"size": 13365
+														},
+														{
+															"type": "file",
+															"name": "downsample.glsl.js.html",
+															"hash": "8fz3Shr8gcJKPzfkAVgAoJY+O+xAy19s7g66NzrbYSs=",
+															"size": 3720
+														},
+														{
+															"type": "file",
+															"name": "fxaa.glsl.js.html",
+															"hash": "7eg942O7lbv2cDDY2xVfp3v4Nrl7y+eh8adkeTb8vpM=",
+															"size": 4878
+														},
+														{
+															"type": "file",
+															"name": "fxaa3.glsl.js.html",
+															"hash": "pkQk1TbSRCucH7i7jfFPvD0F3sGyuAmwAAg2Tae2usM=",
+															"size": 10637
+														},
+														{
+															"type": "file",
+															"name": "hdr.glsl.js.html",
+															"hash": "dZLvIlUvy3fGo8yrODmVEiP6Htp9m1ifFetdkiyqa0I=",
+															"size": 6420
+														},
+														{
+															"type": "file",
+															"name": "index.html",
+															"hash": "DTER2QWB7a5XeTYErGjHrUXXaev3J1COC2yQcvDik6A=",
+															"size": 13829
+														},
+														{
+															"type": "file",
+															"name": "lensflare.glsl.js.html",
+															"hash": "pZMVr847fLDp5kA4ocz/kDYF2x366GlzRJPIGlbD/BE=",
+															"size": 4107
+														},
+														{
+															"type": "file",
+															"name": "lum.glsl.js.html",
+															"hash": "YHt/ZkTxLywexCNr+RASq72HVwlRGPeOmf0A01Fsfc8=",
+															"size": 3556
+														},
+														{
+															"type": "file",
+															"name": "lut.glsl.js.html",
+															"hash": "TYnH811YhDLN1DBuZvK/E6m5pGT1NPC1DJsfrWt2f3E=",
+															"size": 3379
+														},
+														{
+															"type": "file",
+															"name": "output.glsl.js.html",
+															"hash": "uUmjCoWNMPQhlJQtL+3yikS6maelX0xHbI7K/niR6k8=",
+															"size": 2827
+														},
+														{
+															"type": "file",
+															"name": "upsample.glsl.js.html",
+															"hash": "CrQXkgz/GoPQE3pksyZfk/e8Ha3VavjM5Rxt++LGOTY=",
+															"size": 3752
+														},
+														{
+															"type": "file",
+															"name": "vertex.glsl.js.html",
+															"hash": "ulJmdFiIaip6A2BDhOSYCJIzJp2696SE5Ma20w4bDK0=",
+															"size": 2674
+														},
+														{
+															"type": "file",
+															"name": "vignette.glsl.js.html",
+															"hash": "2yCQVwVZ3IR8vhxqR8Zy7/k7+8G0gtcUNFO2QJ0UlP0=",
+															"size": 2832
+														}
+													]
+												},
+												{
+													"type": "directory",
+													"name": "deferred",
+													"files": [
+														{
+															"type": "file",
+															"name": "ambient.glsl.js.html",
+															"hash": "uzbHgEqhsJsFOdbk2gm3+c8fanB7bZtYfuP+Ggiet0Y=",
+															"size": 2857
+														},
+														{
+															"type": "file",
+															"name": "ambientcubemap.glsl.js.html",
+															"hash": "yPNyGHUtVHoixUsNKcOPq0b3XvYqlRKg8nug1qWGeQI=",
+															"size": 3184
+														},
+														{
+															"type": "file",
+															"name": "ambientsh.glsl.js.html",
+															"hash": "8qhfyMgmuvJ/gz+bdgJM9FJn/G8Ymu5+ex4W8BKuPws=",
+															"size": 3396
+														},
+														{
+															"type": "file",
+															"name": "chunk.glsl.js.html",
+															"hash": "KAJ/klxjfZ9gdDKBf3Cyiw8vqu53AEsx42VW1YBgUqA=",
+															"size": 4195
+														},
+														{
+															"type": "file",
+															"name": "directional.glsl.js.html",
+															"hash": "zsVeNIRHJ9vda3F4MUFlGF5MnyqVFz9sTj3HQKBQot4=",
+															"size": 3960
+														},
+														{
+															"type": "file",
+															"name": "gbuffer.glsl.js.html",
+															"hash": "ffO2eaOQAPkuVutqW08tjoPRMv3/xFhDia7rdTscl6s=",
+															"size": 6830
+														},
+														{
+															"type": "file",
+															"name": "index.html",
+															"hash": "a9Pjy/oG9mRNcHu+HO5vLsqIp/WjvlcUiYwLh1vF2ho=",
+															"size": 10487
+														},
+														{
+															"type": "file",
+															"name": "lightvolume.glsl.js.html",
+															"hash": "ml6vIq9o3AUWFqqkvf0p6yG5C9xrAM/QjfO3Aah0d4k=",
+															"size": 2650
+														},
+														{
+															"type": "file",
+															"name": "point.glsl.js.html",
+															"hash": "mk6gycIMo62uTTN5TGL0EJ0MQ4hG5mFdqRkQMoePH4w=",
+															"size": 3596
+														},
+														{
+															"type": "file",
+															"name": "sphere.glsl.js.html",
+															"hash": "1oWsHkk7TALm8C1b/rzlnGcUNQ7M9KeVDQjNhoPy9c4=",
+															"size": 3590
+														},
+														{
+															"type": "file",
+															"name": "spot.glsl.js.html",
+															"hash": "cuZCoMJvfYVXjpc9NyJksrt1gayAVj0ywxh2tialJdg=",
+															"size": 3940
+														},
+														{
+															"type": "file",
+															"name": "tube.glsl.js.html",
+															"hash": "5Vy18cxLIOSIh4kK5b3iDq0ULC1cPetJCLo8XDUa+LE=",
+															"size": 3752
+														}
+													]
+												},
+												{
+													"type": "directory",
+													"name": "header",
+													"files": [
+														{
+															"type": "file",
+															"name": "calcAmbientSHLight.glsl.js.html",
+															"hash": "ueDndt3m/wBVoVSuOFM6FHzZ+afUt72cnAbA/tW8LHw=",
+															"size": 2933
+														},
+														{
+															"type": "file",
+															"name": "index.html",
+															"hash": "zeSNgs0ODjLAzfQnl29UazERYLHsnChKwv/yn0dl4sQ=",
+															"size": 4335
+														},
+														{
+															"type": "file",
+															"name": "light.js.html",
+															"hash": "aQMVz/WZcnEwOKGNhraktdnJTZjqYQt+uF+C9tm0Y4I=",
+															"size": 7003
+														}
+													]
+												},
+												{
+													"type": "file",
+													"name": "basic.glsl.js.html",
+													"hash": "nHRhzYgP3DKark/TnYKzpj3KtRDLRbEO76bbD2bwJ6M=",
+													"size": 4649
+												},
+												{
+													"type": "file",
+													"name": "index.html",
+													"hash": "3E2U0OiYKGRFJdvgfhga2+wQhZ5JnaAS49GAaf/xzzQ=",
+													"size": 8371
+												},
+												{
+													"type": "file",
+													"name": "lambert.glsl.js.html",
+													"hash": "nigSVLRrAVpJIJ6EkZ6Fy8jULSGweeIqti6ShFWc1c8=",
+													"size": 9358
+												},
+												{
+													"type": "file",
+													"name": "prez.glsl.js.html",
+													"hash": "1HMxKzzrZPRMGvWN0iWKMao/tUbjywXIAJtKKrTmK3w=",
+													"size": 2835
+												},
+												{
+													"type": "file",
+													"name": "shadowmap.glsl.js.html",
+													"hash": "WiPflIllEoznNDgJ/WH3oksdjiY7e6kBiswk6n5FfUs=",
+													"size": 13074
+												},
+												{
+													"type": "file",
+													"name": "skybox.glsl.js.html",
+													"hash": "Z4LfqEeH00XUrZfCLrg40v0R50U04/S5NbOLX2+eVMU=",
+													"size": 3450
+												},
+												{
+													"type": "file",
+													"name": "standard.glsl.js.html",
+													"hash": "YLcZtrSb2YsVVJuDvw61BCkN6tNYCPdNEY/tvhCmmKA=",
+													"size": 17671
+												},
+												{
+													"type": "file",
+													"name": "util.glsl.js.html",
+													"hash": "krwaAVtU+YwT8q91nbMjh1bzGZJzAu4wTvWioakpmvI=",
+													"size": 6917
+												},
+												{
+													"type": "file",
+													"name": "wireframe.glsl.js.html",
+													"hash": "/H8l5Xsbi2c74tw2IosGkz/m+y7WlS7DXoO7pZxdDVo=",
+													"size": 3180
+												}
+											]
+										},
+										{
+											"type": "file",
+											"name": "builtin.js.html",
+											"hash": "T/2oyuLx0t5JW3bVm6Qd3qnIpYDcHbUx5/eBw34cP+4=",
+											"size": 8722
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "oNkjBtTJ8wJQfKbmgSkFnXJ5Y1Bih2h87W8fJApmhho=",
+											"size": 4269
+										},
+										{
+											"type": "file",
+											"name": "library.js.html",
+											"hash": "KKfu3nbJhkf7Yg3XpEx5tHR5OpPlZrlqp77McWKbMXE=",
+											"size": 8606
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "util",
+									"files": [
+										{
+											"type": "directory",
+											"name": "shader",
+											"files": [
+												{
+													"type": "file",
+													"name": "index.html",
+													"hash": "qFhd6YkF6nC0l8ORWiseLsGZE7exhQBkAzBgNYv979Y=",
+													"size": 4311
+												},
+												{
+													"type": "file",
+													"name": "integrateBRDF.glsl.js.html",
+													"hash": "SAaoPqQi5hNDmx9D+cIttq1Gjc9iW9ajDw24s8TzWPo=",
+													"size": 4016
+												},
+												{
+													"type": "file",
+													"name": "prefilter.glsl.js.html",
+													"hash": "xaW7TJh+RPo24XraSyd52N8SeM3tBgEe5yFfNyPLQ+4=",
+													"size": 3706
+												}
+											]
+										},
+										{
+											"type": "file",
+											"name": "cubemap.js.html",
+											"hash": "BMsQ+MZO1Me/z/A4Q9bpdUGhkJHhB69CEhp/0WcxlNE=",
+											"size": 28684
+										},
+										{
+											"type": "file",
+											"name": "dds.js.html",
+											"hash": "j41Ds+YNeW+9mVzLfeNdaiv/TXFVatiDoTg8EayH/fk=",
+											"size": 18266
+										},
+										{
+											"type": "file",
+											"name": "delaunay.js.html",
+											"hash": "PEh1i77h7t+QwiShmzW9BiN0ulQm+6QsSaKn4k9tgI0=",
+											"size": 31032
+										},
+										{
+											"type": "file",
+											"name": "hdr.js.html",
+											"hash": "PV4o1fDK7/b5uudIiQq2WWCW6XMd7Z3/VuhWI8f59xo=",
+											"size": 19140
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "1oV6umNbu9r9iP9gYefXdwbIdzUEeOfn9+EePLtYrn4=",
+											"size": 8234
+										},
+										{
+											"type": "file",
+											"name": "mesh.js.html",
+											"hash": "hMzsO0v0SQ4LHdQiwOuqfQpTJOJ38dILSBqgFpYB8xE=",
+											"size": 44352
+										},
+										{
+											"type": "file",
+											"name": "sh.js.html",
+											"hash": "OcSjNE4WY3gQ9eRmsP/XyTEh0+w7cpcnwY2RbYUUJQc=",
+											"size": 25918
+										},
+										{
+											"type": "file",
+											"name": "texture.js.html",
+											"hash": "30aDBqL7tGiBkabeGyKPzwmiJmsLAdL1bLzWOm+9hks=",
+											"size": 36089
+										},
+										{
+											"type": "file",
+											"name": "transferable.js.html",
+											"hash": "haHIxZt9MCJAmlTqsWLkBSVeqOPTzuCKS/1FfoMrq/U=",
+											"size": 13743
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "vr",
+									"files": [
+										{
+											"type": "file",
+											"name": "CardboardDistorter.js.html",
+											"hash": "y1eMc2uwEJzuSO2KPzofKxjGAY0Fb11QqWOZRABdHDk=",
+											"size": 24948
+										},
+										{
+											"type": "file",
+											"name": "index.html",
+											"hash": "9Xr8w/WT4zvoTqhhJT+skTK10/ejm9/gIZGAObu7Pmc=",
+											"size": 4911
+										},
+										{
+											"type": "file",
+											"name": "output.glsl.js.html",
+											"hash": "22Yu5mXZ1aSrHQG1ilDMh1Mn2Rygw2wp16XBw/swiDU=",
+											"size": 2700
+										},
+										{
+											"type": "file",
+											"name": "StereoCamera.js.html",
+											"hash": "AiN00poP2Ysvj3TjcuRT8Kn32mcYj/aWgHCxLQ8QW14=",
+											"size": 16479
+										}
+									]
+								},
+								{
+									"type": "file",
+									"name": "application.js.html",
+									"hash": "foqBWho8SKwghWbs3IYFwHyMkbFQzHEsN4nTFRDJ+7U=",
+									"size": 148236
+								},
+								{
+									"type": "file",
+									"name": "Camera.js.html",
+									"hash": "nyPQi7eaxcw2fAqT9kekxHYDtdF/smv4D2BGqrBjDVs=",
+									"size": 12393
+								},
+								{
+									"type": "file",
+									"name": "claygl.js.html",
+									"hash": "Ye0/RuE1lDvy6LKi9GhRvZb1qSP7GSw9LvwptCMW2YE=",
+									"size": 32395
+								},
+								{
+									"type": "file",
+									"name": "createCompositor.js.html",
+									"hash": "v5IDoXFPE79xAMq7Qkj7UJzq1nwn5fZUuwioQArZ1V8=",
+									"size": 34947
+								},
+								{
+									"type": "file",
+									"name": "FrameBuffer.js.html",
+									"hash": "xro9JrWJo789kOC6fvRvH8dF0F6hlfRouneDZfsadGg=",
+									"size": 39879
+								},
+								{
+									"type": "file",
+									"name": "Geometry.js.html",
+									"hash": "XJb+KRl+yvoQrkkd1azhUJWEjWdnQHwew5VFTlxCglQ=",
+									"size": 112596
+								},
+								{
+									"type": "file",
+									"name": "index.html",
+									"hash": "OqyZ7khMxR5uIrIlO8E9N6F0YmPd6oRF5dndXvvsslo=",
+									"size": 18716
+								},
+								{
+									"type": "file",
+									"name": "Joint.js.html",
+									"hash": "lgIzTcJ8g/cSEIGrW/LUla4jKaWIDU/yF0aJ7fJGpWo=",
+									"size": 4284
+								},
+								{
+									"type": "file",
+									"name": "Light.js.html",
+									"hash": "1eGy49ezAyt+F+PnOFyjMU3sRZGhS6I102thZ9fRDKw=",
+									"size": 7670
+								},
+								{
+									"type": "file",
+									"name": "Material.js.html",
+									"hash": "8YYVxC2QtcHuxWM1Wcy08TMvYFRdvua9ksBkqjzYct8=",
+									"size": 47905
+								},
+								{
+									"type": "file",
+									"name": "Mesh.js.html",
+									"hash": "hMbI61Ll2Jr9JChbrYjPV7WrAViITibTllJ28JwVk6k=",
+									"size": 8534
+								},
+								{
+									"type": "file",
+									"name": "Node.js.html",
+									"hash": "8a1vfnaLgXlDFezcQMFkJYbBqOUBZdcv9zRVqozNZnQ=",
+									"size": 63979
+								},
+								{
+									"type": "file",
+									"name": "Renderable.js.html",
+									"hash": "MCP2bmw+xgYLG8s79C3tkqs6oli01SvFw/poeYCXBXQ=",
+									"size": 18472
+								},
+								{
+									"type": "file",
+									"name": "Renderer.js.html",
+									"hash": "c+O5QGiRNg83de+aYElOMVjRz8tKyEY2zV3GlPKVA0g=",
+									"size": 122041
+								},
+								{
+									"type": "file",
+									"name": "Scene.js.html",
+									"hash": "prvHODn7FFvlJ6kh8epbDjgoQoevZqfXZeq+oXZGF9g=",
+									"size": 54432
+								},
+								{
+									"type": "file",
+									"name": "Shader.js.html",
+									"hash": "UrtyFzLjV0jmyu6o2N2OMxaL/j7xYqR3eVFSF7K8HBE=",
+									"size": 62396
+								},
+								{
+									"type": "file",
+									"name": "Skeleton.js.html",
+									"hash": "lgufl5kA19qr7i+Bh845SxL2PzcSmBBu7fllu7r0Kyk=",
+									"size": 32569
+								},
+								{
+									"type": "file",
+									"name": "StandardMaterial.js.html",
+									"hash": "WXLkgPF+HrWsL1LUmIIJyHcgBTlW5sBg8w+H1lWQkhk=",
+									"size": 26655
+								},
+								{
+									"type": "file",
+									"name": "StaticGeometry.js.html",
+									"hash": "z5U34DhIvkXyesTzGTUcT2uXZN2gmPTK0nGvtJjuwE4=",
+									"size": 3116
+								},
+								{
+									"type": "file",
+									"name": "Texture.js.html",
+									"hash": "4fKe+KfnGv149yDMmP/BE1q7QN0SThZrPQIW4OrUsIc=",
+									"size": 36327
+								},
+								{
+									"type": "file",
+									"name": "Texture2D.js.html",
+									"hash": "uUs9Xaq2mF+oM3c/dkDtpd7mgJv9LuXcjBHpDEkX3Ko=",
+									"size": 23314
+								},
+								{
+									"type": "file",
+									"name": "TextureCube.js.html",
+									"hash": "gwUZ4M9MwGD68e/qZlgaCVOiqzKNuG/atDkuWAaAxrA=",
+									"size": 28844
+								},
+								{
+									"type": "file",
+									"name": "Timeline.js.html",
+									"hash": "eZt6argjxAiVPzf7KwyyLEcmOGc5RXTmMSWR8u099Aw=",
+									"size": 21714
+								},
+								{
+									"type": "file",
+									"name": "version.js.html",
+									"hash": "sOT5Yqlw5ItyNsTmGdQA2GUH9hZRrud/xdqQ0smGTvI=",
+									"size": 2453
+								}
+							]
+						},
+						{
+							"type": "file",
+							"name": "base.css",
+							"hash": "0xGM+izq5vbCcLBVXpjmM4FbzJnL73OjZimdgwECxE8=",
+							"size": 5143
+						},
+						{
+							"type": "file",
+							"name": "index.html",
+							"hash": "n1Y3vJPd9Wj0TaWIRyTIldz1/ONlC5kHi3xgUgXKmfo=",
+							"size": 20827
+						},
+						{
+							"type": "file",
+							"name": "prettify.css",
+							"hash": "6j/kM/lFBpjKiiMCcWiOeu7BL5nIp+9slDeauzjyeCM=",
+							"size": 676
+						},
+						{
+							"type": "file",
+							"name": "prettify.js",
+							"hash": "ZxJrbNTRsjBfjI+ll0lx6+kKsrD24gm6LxxuSvBfAgc=",
+							"size": 17569
+						},
+						{
+							"type": "file",
+							"name": "sort-arrow-sprite.png",
+							"hash": "zAUJu2eTzmTzWxmdOf6nutoT7MLTlaQ5V9DYquTwWGQ=",
+							"size": 209
+						},
+						{
+							"type": "file",
+							"name": "sorter.js",
+							"hash": "ouHujrQq5hUv+2gPHzQZz0oYlBK0/8ZjJSSS1HqWiRQ=",
+							"size": 5174
+						}
+					]
+				},
+				{
+					"type": "file",
+					"name": "coverage-final.json",
+					"hash": "GarmNpsyHEqkcM4ClhAD9prJzg3CyMMZ/uNV9FD30cg=",
+					"size": 2109772
+				},
+				{
+					"type": "file",
+					"name": "fixture-report.html",
+					"hash": "u74lWLZHbJEj4/bjoFZW/S0X5oBahGwO+Ka717Xo0W0=",
+					"size": 372
+				},
+				{
+					"type": "file",
+					"name": "lcov.info",
+					"hash": "CJsnoMaJbBCB/Zw7HhwSH17PGQlZEv/sYyH0u/zoW6Y=",
+					"size": 316117
+				}
+			]
+		},
+		{
+			"type": "directory",
+			"name": "dist",
+			"files": [
+				{
+					"type": "file",
+					"name": "claygl.es.js",
+					"hash": "xaGt8vYEnXBbH6j/+3YAKnvUy5RJOzNDQNuf7OftooE=",
+					"size": 1103788
+				},
+				{
+					"type": "file",
+					"name": "claygl.js",
+					"hash": "sdmHeSE1wHen7APWJEM9pJoXWFX04pzEtgUrUA4C3NE=",
+					"size": 1105122
+				},
+				{
+					"type": "file",
+					"name": "claygl.min.js",
+					"hash": "PxRuzzt90Y+kiOm7Emr2Fm0VdtH/yR++7yQdYNTJbCI=",
+					"size": 422472
+				}
+			]
+		},
+		{
+			"type": "directory",
+			"name": "src",
+			"files": [
+				{
+					"type": "directory",
+					"name": "animation",
+					"files": [
+						{
+							"type": "file",
+							"name": "Animator.js",
+							"hash": "KDBCGQhV3WgI+Dj0iqZdwi3ZEyN2KtJFwa/Qkso+WJI=",
+							"size": 15723
+						},
+						{
+							"type": "file",
+							"name": "Blend1DClip.js",
+							"hash": "ncpll7onEalGoPYlUTYXH9kyulHwhD/IjrkWVw5vyrY=",
+							"size": 5471
+						},
+						{
+							"type": "file",
+							"name": "Blend2DClip.js",
+							"hash": "yzYah2IP3aqx7YLbAFWm8jNhvrArKBPocAzr2BIdqCY=",
+							"size": 4790
+						},
+						{
+							"type": "file",
+							"name": "Clip.js",
+							"hash": "FTUYhskSCBYEVRmRWQnJ9jl71KRdw41j6SDi7VMGz6c=",
+							"size": 5453
+						},
+						{
+							"type": "file",
+							"name": "easing.js",
+							"hash": "Ca1VzhPNqmmOt4egFnmVxJPR370ylVimkcF3lRmTJ0c=",
+							"size": 8530
+						},
+						{
+							"type": "file",
+							"name": "SamplerTrack.js",
+							"hash": "XNKZULeiw9e+aaiZz8+axVvgUpwx5cCJmj9uLKIPzWg=",
+							"size": 12111
+						},
+						{
+							"type": "file",
+							"name": "Timeline.js",
+							"hash": "agD650sSLM6GTt1K0OKs03RL4YmmrQihmFDDit35CL4=",
+							"size": 74
+						},
+						{
+							"type": "file",
+							"name": "TrackClip.js",
+							"hash": "fqC1ZavjoZE/CP0nsvK4ugRb88GAKwJBpD13iP3p/UI=",
+							"size": 5718
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "async",
+					"files": [
+						{
+							"type": "file",
+							"name": "Task.js",
+							"hash": "KC3u2ZxLNuL8TOI6fNXv0uZwWmVwNremTM1LRjaVToc=",
+							"size": 2902
+						},
+						{
+							"type": "file",
+							"name": "TaskGroup.js",
+							"hash": "kiQVX5cKUhbEFF1d6dGfhfx4hIiR186aMizKYvhpf5c=",
+							"size": 6043
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "camera",
+					"files": [
+						{
+							"type": "file",
+							"name": "Orthographic.js",
+							"hash": "5/l8Bf+OiaxewPNYVax+5g+TrDcC+U2kb6YtSojqCrk=",
+							"size": 1445
+						},
+						{
+							"type": "file",
+							"name": "Perspective.js",
+							"hash": "P06qsp0SdywOOvIZK9rOCpbAlibQYa1i8f9+oowQgyI=",
+							"size": 1403
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "canvas",
+					"files": [
+						{
+							"type": "file",
+							"name": "Material.js",
+							"hash": "nw1hkkT4pQToorRwqy+EqLpi0TLYWPQkn2+qWjsotW4=",
+							"size": 196
+						},
+						{
+							"type": "file",
+							"name": "Renderer.js",
+							"hash": "c8Zhb9VZUZH+3jGVqe0NyGstg8eiTwMRfX8ct8GXqr4=",
+							"size": 14452
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "compositor",
+					"files": [
+						{
+							"type": "file",
+							"name": "Compositor.js",
+							"hash": "/kiGgyeKaYraX1vAQUE53+fgvuST35OXkZzs/R7OY3g=",
+							"size": 2116
+						},
+						{
+							"type": "file",
+							"name": "CompositorNode.js",
+							"hash": "hNm9VNeE4RM4I9OuFouxJptpkKwzprpU+P8V1MJBAkc=",
+							"size": 7133
+						},
+						{
+							"type": "file",
+							"name": "createCompositor.js",
+							"hash": "HNWBnQGTLdfgLMXsww3/+Jol8aP3JUDuKU++gckUx64=",
+							"size": 98
+						},
+						{
+							"type": "file",
+							"name": "FilterNode.js",
+							"hash": "ll2wclmQVzdAeB8IRemCPn7UAC5K+KfpaY8U1Q89BUA=",
+							"size": 8717
+						},
+						{
+							"type": "file",
+							"name": "Graph.js",
+							"hash": "Q2VCVWI62rFnsyDs4ICY+oH0fC0EcDSrbE4xfpvmqqg=",
+							"size": 3807
+						},
+						{
+							"type": "file",
+							"name": "Pass.js",
+							"hash": "DS9zuk5xBFs2bQQPjp+l+ws8IleDlkhPMvZptdXsLMk=",
+							"size": 5338
+						},
+						{
+							"type": "file",
+							"name": "SceneNode.js",
+							"hash": "WdESfH0DfGixygF7sDEq0dmcwkUcs47P+3IGIkXUV8k=",
+							"size": 2747
+						},
+						{
+							"type": "file",
+							"name": "TextureNode.js",
+							"hash": "jRIShj44q9ax53f/lG2n1c9/Z7KiHQ5ug1YI2b8Jz6g=",
+							"size": 670
+						},
+						{
+							"type": "file",
+							"name": "TexturePool.js",
+							"hash": "MNf1JUyWUijQU73NQiSgG4BHoWojZ/PYS4i2BMiArGQ=",
+							"size": 2804
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "core",
+					"files": [
+						{
+							"type": "directory",
+							"name": "mixin",
+							"files": [
+								{
+									"type": "file",
+									"name": "extend.js",
+									"hash": "Kqms0sEdnIDuZ7YQV9gcVee++HAO59VLlyu1CyMThqI=",
+									"size": 2965
+								},
+								{
+									"type": "file",
+									"name": "notifier.js",
+									"hash": "zr7GcWKgghZyVzOgV4MabsLn9S0upvORJcaXeOnfFyE=",
+									"size": 5214
+								}
+							]
+						},
+						{
+							"type": "file",
+							"name": "Base.js",
+							"hash": "V4p3+w7Rn+h2navYBG7phVYgZ6M1CZsnODxhXP5OE8I=",
+							"size": 520
+						},
+						{
+							"type": "file",
+							"name": "Cache.js",
+							"hash": "+2MUV/uMrLeWUH573A71ApxSngGcSFSJYzpzIebofJw=",
+							"size": 2392
+						},
+						{
+							"type": "file",
+							"name": "color.js",
+							"hash": "Yk09LbEMLzaBNf4gMB5ZrgqEabBgL5+hUnJu28eXaxQ=",
+							"size": 17576
+						},
+						{
+							"type": "file",
+							"name": "glenum.js",
+							"hash": "J/eriD5yTYPoI0McKQVWcbdd+2ZqmLeT8PqWruEgUpQ=",
+							"size": 15419
+						},
+						{
+							"type": "file",
+							"name": "GLInfo.js",
+							"hash": "F94Gumxxb8n4UXCVw9H5UWZ3QCuAgCsMtpDPeU33J/k=",
+							"size": 1598
+						},
+						{
+							"type": "file",
+							"name": "LinkedList.js",
+							"hash": "MPFjOKinPQk77kcspDYfN/380OD8O8VpUV2okfSVjLc=",
+							"size": 4788
+						},
+						{
+							"type": "file",
+							"name": "LRU.js",
+							"hash": "DldecI6ym6hRshVPZAYQmzfLfWZL6PjL5CSIN2hgZts=",
+							"size": 1625
+						},
+						{
+							"type": "file",
+							"name": "request.js",
+							"hash": "IV1Gaj8bQDkl5IFGRuW0tZTVsF0UQ/zfaqmF6FSHwLE=",
+							"size": 1170
+						},
+						{
+							"type": "file",
+							"name": "util.js",
+							"hash": "rCTqdZnFjyrfXTroKuOE8VO0oMAL4P2gmcIOjgYbzqY=",
+							"size": 5199
+						},
+						{
+							"type": "file",
+							"name": "vendor.js",
+							"hash": "x8ddl1IozIi8kF72hq1WvHpGCgDe8xaiqR6Fev/MA8c=",
+							"size": 1868
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "deferred",
+					"files": [
+						{
+							"type": "file",
+							"name": "GBuffer.js",
+							"hash": "omY3Pjb4npaKZR58Sn+pYHpxipkosUWv5ZoS/J0m4Is=",
+							"size": 21791
+						},
+						{
+							"type": "file",
+							"name": "Renderer.js",
+							"hash": "iwSkZdAVHVv9i9E2mLx4NIUx4PuRhxj5oV5b6fRkvw0=",
+							"size": 25089
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "dep",
+					"files": [
+						{
+							"type": "file",
+							"name": "glmatrix.js",
+							"hash": "vJuH0vojBJ7s9tkIUru7ALc4r7PVnJD3I19w6AeRD8Y=",
+							"size": 76
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "geometry",
+					"files": [
+						{
+							"type": "file",
+							"name": "Cone.js",
+							"hash": "gqkQU3fmgTntq6A8IS3RUnD2H3k48pabPCyC5TIZz0w=",
+							"size": 3823
+						},
+						{
+							"type": "file",
+							"name": "Cube.js",
+							"hash": "STs8DOyiMDzMTOK5eB0fHjxOebMDTcblkAT8ojzF/Ek=",
+							"size": 4502
+						},
+						{
+							"type": "file",
+							"name": "Cylinder.js",
+							"hash": "Y/3QN4aws/hHPUWpxBAbOM6jWRlcN4aypvvuL5NFe1w=",
+							"size": 1374
+						},
+						{
+							"type": "file",
+							"name": "ParametricSurface.js",
+							"hash": "NAQX6aILOMpjNskrdpZrqkRRyo6Cuzt+/STtLdhmkIQ=",
+							"size": 2981
+						},
+						{
+							"type": "file",
+							"name": "Plane.js",
+							"hash": "vvFeq2KZUiuiIboL6Tl3E2dxW+rC58Otg0LMIJCFlHo=",
+							"size": 1976
+						},
+						{
+							"type": "file",
+							"name": "Sphere.js",
+							"hash": "4Amaiszq4gYQMZ5grtkXNZD/u4RNYR5pz7QOgLPxZZk=",
+							"size": 3779
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "glmatrix",
+					"files": [
+						{
+							"type": "file",
+							"name": "common.js",
+							"hash": "4snBkiE+1xB7P0Ij3SO62pDmkxAKKqczlCTsn45/EGk=",
+							"size": 323
+						},
+						{
+							"type": "file",
+							"name": "index.js",
+							"hash": "Dsrtqeu0eniGgCELmlTPxamqhyWhoXCvusNNtM5YTJI=",
+							"size": 1858
+						},
+						{
+							"type": "file",
+							"name": "mat2.js",
+							"hash": "4fLXRRmshgnzaIfjfJzPL9Hsteq/IcKwLFXgzOvc7AE=",
+							"size": 6263
+						},
+						{
+							"type": "file",
+							"name": "mat2d.js",
+							"hash": "oodbGUHtmubyKe8YzvRUuM61tL6K0r2Mg3bcHGohxN0=",
+							"size": 6338
+						},
+						{
+							"type": "file",
+							"name": "mat3.js",
+							"hash": "Pdp+oMFzNfIW+fs8QMRQvGV07nXyjAB7XWY3FjGN2ZM=",
+							"size": 12037
+						},
+						{
+							"type": "file",
+							"name": "mat4.js",
+							"hash": "er7nqIUwuEbROCcKoSZCr/mEWmlcxC48eMS4UCmS5Ns=",
+							"size": 27098
+						},
+						{
+							"type": "file",
+							"name": "quat.js",
+							"hash": "bJ6RfUTm/4ByHzhFpNOfoJu6sjr3Up9MY9rDzGSZ7ig=",
+							"size": 13742
+						},
+						{
+							"type": "file",
+							"name": "vec2.js",
+							"hash": "vdIN9iDCxO+TkpVuBdTNkcJm1RYD6aktZnSPPRvzhg8=",
+							"size": 12172
+						},
+						{
+							"type": "file",
+							"name": "vec3.js",
+							"hash": "wF2ClF6Mipt3OwGFTh+w63dgKZXbQ12Hgp4bpoHhoOU=",
+							"size": 15846
+						},
+						{
+							"type": "file",
+							"name": "vec4.js",
+							"hash": "aix/1GpB+lP5Ng5QAwaia/EM7F3NP4IS3oh6ChQdu3M=",
+							"size": 12943
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "gpu",
+					"files": [
+						{
+							"type": "file",
+							"name": "GLProgram.js",
+							"hash": "pi3qM5V1q+oaWhGGwPljIRDTUR377t4qiiAgFw1aj10=",
+							"size": 11116
+						},
+						{
+							"type": "file",
+							"name": "ProgramManager.js",
+							"hash": "Yu173jNy/2YZ+GR8Hz+tUxGO5ueql4H6AuoYQxo0MGc=",
+							"size": 6373
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "light",
+					"files": [
+						{
+							"type": "file",
+							"name": "Ambient.js",
+							"hash": "1aQ7IlyHUZKuvdsLNLFbPtIM41lZxd7x/Q0b1ITG6t4=",
+							"size": 685
+						},
+						{
+							"type": "file",
+							"name": "AmbientCubemap.js",
+							"hash": "PXiQCNVgtE1sh58ZaMwShl5MWmSB3U9vVAL6u9geY3A=",
+							"size": 2705
+						},
+						{
+							"type": "file",
+							"name": "AmbientSH.js",
+							"hash": "jMN44GtKOZCuivNlT4vx3GKkZrMjFx1NPd6DfO+1lEw=",
+							"size": 1408
+						},
+						{
+							"type": "file",
+							"name": "Directional.js",
+							"hash": "Hf7bPe0rgFbafTp3iW2bidmYaUCNf4l4OC8+WyVO0Ws=",
+							"size": 1996
+						},
+						{
+							"type": "file",
+							"name": "Point.js",
+							"hash": "7+SljAHiGnBAukEiCusqLdXQU1UUjGtjZfwY46DVNR0=",
+							"size": 1237
+						},
+						{
+							"type": "file",
+							"name": "Sphere.js",
+							"hash": "kn3YA+uvKmKYlv3VBwGhafsB9kRDI7xpVf/R/B+x8W0=",
+							"size": 1157
+						},
+						{
+							"type": "file",
+							"name": "Spot.js",
+							"hash": "TCVbPVfeqYPbTiRnIx+6MJodcvE3MXxWqxxknhKb8EY=",
+							"size": 2645
+						},
+						{
+							"type": "file",
+							"name": "Tube.js",
+							"hash": "DeO6py9Qrxf7jhatxNXw5Vh2y+s7fmnzIcS7Zw8VFoQ=",
+							"size": 1412
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "loader",
+					"files": [
+						{
+							"type": "file",
+							"name": "FX.js",
+							"hash": "56yyOMmJtTnUEy2tZNrQW4an3jBBa18WBSpWEdEQxR0=",
+							"size": 1440
+						},
+						{
+							"type": "file",
+							"name": "GLTF.js",
+							"hash": "+XvdNwD6dQjJJny8JfViMUcEtpIELt/ESVyJ5rvAiBY=",
+							"size": 44998
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "math",
+					"files": [
+						{
+							"type": "file",
+							"name": "BoundingBox.js",
+							"hash": "/r+3LaYxwrSAafu8FppNT8afNCme2e/aFd2X+DgWHP0=",
+							"size": 9225
+						},
+						{
+							"type": "file",
+							"name": "Frustum.js",
+							"hash": "gb+1mr1HyfCALFjd/xryESPh6IN6yWuhOoJ5STndEjY=",
+							"size": 5934
+						},
+						{
+							"type": "file",
+							"name": "Matrix2.js",
+							"hash": "okvgvQNO5A+z5l1815/MhMpHK82F6G+b4pz3SKEyNrE=",
+							"size": 5769
+						},
+						{
+							"type": "file",
+							"name": "Matrix2d.js",
+							"hash": "pgpWP9tVfdzPiQkVMN02ekEtcOct2ExkK5kRuAyOvOc=",
+							"size": 5529
+						},
+						{
+							"type": "file",
+							"name": "Matrix3.js",
+							"hash": "8habQS2PCKM8YaVO2TlJR1FVyXLQuGpy1VH7D163Kt4=",
+							"size": 8226
+						},
+						{
+							"type": "file",
+							"name": "Matrix4.js",
+							"hash": "rJeqt57ttq1iIijSYpFYO2lNH+apqsHxuW00/oMYj+I=",
+							"size": 16541
+						},
+						{
+							"type": "file",
+							"name": "Plane.js",
+							"hash": "EoEKKRVjJuiIAW/o4SI7PLHjyAJ/CvowoUznZiz9Bv4=",
+							"size": 4778
+						},
+						{
+							"type": "file",
+							"name": "Quaternion.js",
+							"hash": "c4cMvK6OYe8adSBwL8HFDrAYimAwNCANCrM0EfLRWv0=",
+							"size": 18145
+						},
+						{
+							"type": "file",
+							"name": "Ray.js",
+							"hash": "tMNXIBn9x2xg8eseq+M2wh9IjaQ9XJVDnHUUm0RB060=",
+							"size": 9043
+						},
+						{
+							"type": "file",
+							"name": "util.js",
+							"hash": "x6GOUGg2I2s/WqxrbKB09vWMaqDIq3YqY+msrOeTBNQ=",
+							"size": 476
+						},
+						{
+							"type": "file",
+							"name": "Value.js",
+							"hash": "oVoubhgMLIS2ejea+TlBfgDH8azhhwNCeE8xgkzFMvw=",
+							"size": 3146
+						},
+						{
+							"type": "file",
+							"name": "Vector2.js",
+							"hash": "5iP4r4SMzxh7NSZ2m3m+1FpAVTU7zHCcYk7YUy8XB3c=",
+							"size": 15480
+						},
+						{
+							"type": "file",
+							"name": "Vector3.js",
+							"hash": "n50ZYu+MNSE731t0DJUxWdomxdKshSStEiFYPtVVriM=",
+							"size": 22656
+						},
+						{
+							"type": "file",
+							"name": "Vector4.js",
+							"hash": "iFj+nP2lLmmqldCyBblAGOrGTEKAich4KmD01+vRObU=",
+							"size": 14875
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "particle",
+					"files": [
+						{
+							"type": "file",
+							"name": "Emitter.js",
+							"hash": "1ONpKe27LR+ESyQUbe4/P25fWCxGxOCHneJjpCLRCBY=",
+							"size": 4142
+						},
+						{
+							"type": "file",
+							"name": "Field.js",
+							"hash": "snelxTdO0uljtaDoIiFPYhHlxY5u1Y7/oaKcc69leM0=",
+							"size": 501
+						},
+						{
+							"type": "file",
+							"name": "ForceField.js",
+							"hash": "bigT7WTHBEJCHDeXoWDc4OfhMI98x4ul9rlw3jGjjuQ=",
+							"size": 521
+						},
+						{
+							"type": "file",
+							"name": "particle.glsl",
+							"hash": "4XtTwcmVgpy9CSwY/rEKOJX52Lu47EPUpNCEGhH8tzE=",
+							"size": 1358
+						},
+						{
+							"type": "file",
+							"name": "particle.glsl.js",
+							"hash": "9CjzyutKOaSaCXfKvZPRQ5hLHCy3t6a0RPNoQLGFtfc=",
+							"size": 1293
+						},
+						{
+							"type": "file",
+							"name": "Particle.js",
+							"hash": "ZhVjBtMn4pjwGYamjI2fMlu3FaNlVDeyOeO27/jKJkg=",
+							"size": 1269
+						},
+						{
+							"type": "file",
+							"name": "ParticleRenderable.js",
+							"hash": "YdcBS7vHQu2EJ5+y/QKbBno3YQx8qrWF2GFpW9oQAI8=",
+							"size": 8750
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "picking",
+					"files": [
+						{
+							"type": "file",
+							"name": "color.glsl",
+							"hash": "L934++LsPpFFZTJB1XrXv5Uxs9iS2M16KxCx0EvBnU0=",
+							"size": 569
+						},
+						{
+							"type": "file",
+							"name": "color.glsl.js",
+							"hash": "DsrD2ySHkpR+RwIf20lF47U9v7CT4MeI5gZVXHzJXtY=",
+							"size": 563
+						},
+						{
+							"type": "file",
+							"name": "PixelPicking.js",
+							"hash": "Et0G7g+imsIyIsmA5262pM9W5T5AvzIz2C4mf5wZgi8=",
+							"size": 5316
+						},
+						{
+							"type": "file",
+							"name": "RayPicking.js",
+							"hash": "PI7kFqm2XmYvSwRDrNbcBoIst9S9PCNncNqquYKk/TA=",
+							"size": 9013
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "plugin",
+					"files": [
+						{
+							"type": "file",
+							"name": "FreeControl.js",
+							"hash": "zhXaD3IZpqy75kIZhrf8jOP4d2v11mvQ40hENtvYs1s=",
+							"size": 7367
+						},
+						{
+							"type": "file",
+							"name": "GamepadControl.js",
+							"hash": "I066kcqcp8Ah1aD4vHI7I6zfDyfmMUc9Ph5T33gvQjI=",
+							"size": 8432
+						},
+						{
+							"type": "file",
+							"name": "GestureMgr.js",
+							"hash": "r1CbMqofw/rTKSTPeG1g2EwgyOkkRJXklw48sqrkqLA=",
+							"size": 2439
+						},
+						{
+							"type": "file",
+							"name": "InfinitePlane.js",
+							"hash": "yK3RQod06KFIdhv/WGUSrI0hHo4CSPpusq5CuisV2Hw=",
+							"size": 3983
+						},
+						{
+							"type": "file",
+							"name": "OrbitControl.js",
+							"hash": "NwnrdC0hyuMR7kMEqk+QlXlTavoizk9EDIc/HuTe55o=",
+							"size": 21801
+						},
+						{
+							"type": "file",
+							"name": "Skybox.js",
+							"hash": "XjdswHak7CGe1KcPLS3kIZahjB0z56bgP4O1SIK84VE=",
+							"size": 4202
+						},
+						{
+							"type": "file",
+							"name": "Skydome.js",
+							"hash": "6JRyAHpuxITmUCgex1mzYBt3VUso6joLXrqfg0/0l/g=",
+							"size": 54
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "prePass",
+					"files": [
+						{
+							"type": "file",
+							"name": "EnvironmentMap.js",
+							"hash": "lGbpCNSF6cV0i4dG8f3R2C45dNN1i4IvC/PcC/xyBCY=",
+							"size": 4552
+						},
+						{
+							"type": "file",
+							"name": "ShadowMap.js",
+							"hash": "UpGowwLNiMO3Gqw7minMAR8SuyuLWLNvZ5WpRm9uarc=",
+							"size": 33088
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "shader",
+					"files": [
+						{
+							"type": "directory",
+							"name": "source",
+							"files": [
+								{
+									"type": "directory",
+									"name": "compositor",
+									"files": [
+										{
+											"type": "file",
+											"name": "blend.glsl",
+											"hash": "EUT3jyE+79Gfw4pRpadJbVLss8WNvI+0qCBR0GntAYE=",
+											"size": 1322
+										},
+										{
+											"type": "file",
+											"name": "blend.glsl.js",
+											"hash": "FKTI74ofA8PDZ5emuiqPCQ3GayVmDgE5S+qUoBNqOSA=",
+											"size": 1335
+										},
+										{
+											"type": "file",
+											"name": "blur.glsl",
+											"hash": "ldamfFIfg/FD4Gk6+/6r1ctBNrj+ep+w4AxP6B690pU=",
+											"size": 1776
+										},
+										{
+											"type": "file",
+											"name": "blur.glsl.js",
+											"hash": "qQ7EuIK0aGl9oM/F+3vBlJCChWtTzJ4Ao/SI6pokHpk=",
+											"size": 1496
+										},
+										{
+											"type": "file",
+											"name": "bright.glsl",
+											"hash": "4Cyj/D2GZRXj1ZIj7JYTkfy9ZOPDhzwO5sZKrza0wpw=",
+											"size": 1303
+										},
+										{
+											"type": "file",
+											"name": "bright.glsl.js",
+											"hash": "19UvAmzs0hH38g21qtotqud/HLG+kENAEmN57m2PgcU=",
+											"size": 1075
+										},
+										{
+											"type": "file",
+											"name": "coloradjust.glsl",
+											"hash": "4LaviE9JgnkZvYQ87jFH1W8+bEBO7DWQAJp2SRx/geQ=",
+											"size": 2415
+										},
+										{
+											"type": "file",
+											"name": "coloradjust.glsl.js",
+											"hash": "um30eF5IYAgb5bP20gyF2sbXhMRGYTilGO/SmaKtY84=",
+											"size": 2216
+										},
+										{
+											"type": "file",
+											"name": "downsample.glsl",
+											"hash": "x9SeIoueRQpFcwofx/IMopWpzZyZVCO217mWswhqLs0=",
+											"size": 1522
+										},
+										{
+											"type": "file",
+											"name": "downsample.glsl.js",
+											"hash": "Re41oY42GstZjMPr1QqXJcmYlKIf8Dh4XQ24xCbUL0Q=",
+											"size": 1292
+										},
+										{
+											"type": "file",
+											"name": "fxaa.glsl",
+											"hash": "1EjJ270ptpsEybDlJs7ztY6Ulkn2t333LUX68L6vIy8=",
+											"size": 2595
+										},
+										{
+											"type": "file",
+											"name": "fxaa.glsl.js",
+											"hash": "q6Qavwa7tN6ZwdZNVHfjGx6rzBQWh0+63zAYmula/yk=",
+											"size": 2362
+										},
+										{
+											"type": "file",
+											"name": "fxaa3.glsl",
+											"hash": "zoFTyYyhdKzAFWH0OLkmNl05UZ455lugEtXmMZgn8Q8=",
+											"size": 8180
+										},
+										{
+											"type": "file",
+											"name": "fxaa3.glsl.js",
+											"hash": "p+5REYLxjJRRZGQeLlMfIIRliuFRPm9vW2lHMG8KVBE=",
+											"size": 7441
+										},
+										{
+											"type": "file",
+											"name": "hdr.glsl",
+											"hash": "VqPcweHjaJCsNMsk/1gH2m+mM/tPSPf3knyFUwF0N+4=",
+											"size": 5461
+										},
+										{
+											"type": "file",
+											"name": "hdr.glsl.js",
+											"hash": "LS4FcyLtuR0/eP6Y/IuT6cK5miGE10wrXjtEK5p44eo=",
+											"size": 3931
+										},
+										{
+											"type": "file",
+											"name": "lensflare.glsl",
+											"hash": "DSQ97TV5Su2OhNk9BndXsOGl1CrNUwd1y7CBxc8aT0Y=",
+											"size": 1828
+										},
+										{
+											"type": "file",
+											"name": "lensflare.glsl.js",
+											"hash": "Mbr5Cn8zIP6p6f1BV61qZ0W51gAna1E0D4tR19QTKV4=",
+											"size": 1633
+										},
+										{
+											"type": "file",
+											"name": "lum.glsl",
+											"hash": "nXV6SjGzJZTGAHAjLiXtMjtRx31g6WGmSXH78KrSB1c=",
+											"size": 1177
+										},
+										{
+											"type": "file",
+											"name": "lum.glsl.js",
+											"hash": "6rFIl22Jxg9lzvXJIsfE5YcIZ+BL9zmdchJuKPRCd8Y=",
+											"size": 1180
+										},
+										{
+											"type": "file",
+											"name": "lut.glsl",
+											"hash": "boB3pOhE82XF/XAnCiSYVuH/SwcRBEohEO5SUXAzV3o=",
+											"size": 1108
+										},
+										{
+											"type": "file",
+											"name": "lut.glsl.js",
+											"hash": "DcD/vQKIKxssbotJ2X+fSISyr67JoEzIsPajxks7tgY=",
+											"size": 982
+										},
+										{
+											"type": "file",
+											"name": "output.glsl",
+											"hash": "ArIAwGjOAnUrfTAB79yNk3SKXPb4d9ZaLRsQEsqonsI=",
+											"size": 510
+										},
+										{
+											"type": "file",
+											"name": "output.glsl.js",
+											"hash": "mo1zvobf18Ai46Bf4YBZsrffVXfJaDTcSfY0ErbeX7I=",
+											"size": 460
+										},
+										{
+											"type": "file",
+											"name": "upsample.glsl",
+											"hash": "widA4giwK5yIlyN0n/AfXIAqASHAAlLoXfczdoDAjWo=",
+											"size": 1532
+										},
+										{
+											"type": "file",
+											"name": "upsample.glsl.js",
+											"hash": "QlTcQlCxjyqUr0LJwCzGPb/QdmLZ8hK+/md1iRji83U=",
+											"size": 1334
+										},
+										{
+											"type": "file",
+											"name": "vertex.glsl",
+											"hash": "F2H4DbyfDT0Nyc2BxVqxWdMScBK+ndWpgm3xv3m/p2o=",
+											"size": 300
+										},
+										{
+											"type": "file",
+											"name": "vertex.glsl.js",
+											"hash": "El2sPlj6R1yE6pyaG6jdnHgjOQgn0o6hWkQbOSRwafA=",
+											"size": 319
+										},
+										{
+											"type": "file",
+											"name": "vignette.glsl",
+											"hash": "vYsGZP06ezDbokgdMbhHiAKztKXJWbQaVIbXDJRvQHc=",
+											"size": 456
+										},
+										{
+											"type": "file",
+											"name": "vignette.glsl.js",
+											"hash": "nndpc1dM4n0X8jj9VnNUsFTVc9K2reDqyzzcLGxMiYo=",
+											"size": 467
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "deferred",
+									"files": [
+										{
+											"type": "file",
+											"name": "ambient.glsl",
+											"hash": "+PHYXioErwNZPP5skuuzNXpiPRfVG/W2/RPI2MDF7x4=",
+											"size": 496
+										},
+										{
+											"type": "file",
+											"name": "ambient.glsl.js",
+											"hash": "uGTbsMEKAqj+PM4w0a1ztVlZhxFxPJkSPmH33dltTck=",
+											"size": 482
+										},
+										{
+											"type": "file",
+											"name": "ambientcubemap.glsl",
+											"hash": "LOBEGYwcMmI4wMayb84wtCkqYgHBbHVlqRmcJUHP9e4=",
+											"size": 879
+										},
+										{
+											"type": "file",
+											"name": "ambientcubemap.glsl.js",
+											"hash": "qKHxtlqxiwtJQ+svb6JRJuACyjPdz/G1vXYSDBjq5Oo=",
+											"size": 790
+										},
+										{
+											"type": "file",
+											"name": "ambientsh.glsl",
+											"hash": "18cHcjSHT5x0QsXNO5ZscmGEnbcnR00SOmhvI6o+fSk=",
+											"size": 1066
+										},
+										{
+											"type": "file",
+											"name": "ambientsh.glsl.js",
+											"hash": "keGE1aYZVKpUyl633Ha9DGNGrHQOO+R8yQhLhEAOSD8=",
+											"size": 955
+										},
+										{
+											"type": "file",
+											"name": "chunk.glsl",
+											"hash": "HSv50AkMgnBH8TtwPI/WdH5zA5KsyB76HK8OkTcLyao=",
+											"size": 2321
+										},
+										{
+											"type": "file",
+											"name": "chunk.glsl.js",
+											"hash": "a9iF+KKuy8cks0WuvNKAdp1n5rSk1Cb/KFe+Lcngyrw=",
+											"size": 1757
+										},
+										{
+											"type": "file",
+											"name": "depth.glsl",
+											"hash": "U/e1uiqMK+WOI9GEOov0OccgCtB/xlCKM06WCr/LGHE=",
+											"size": 685
+										},
+										{
+											"type": "file",
+											"name": "depth.glsl.js",
+											"hash": "Q7SiH/dTCb9al6JDuuwYMQ+2YWyu7dp9qm2IFWQkxXg=",
+											"size": 689
+										},
+										{
+											"type": "file",
+											"name": "directional.glsl",
+											"hash": "szYkCBlU3VITbycIr7XWZQ+YLpXT3vw4GVpMRgrNcIQ=",
+											"size": 1537
+										},
+										{
+											"type": "file",
+											"name": "directional.glsl.js",
+											"hash": "Is1ztiSIrJp92LlcvJ+7bzam8QmLdapVcnn/rVJ/2aA=",
+											"size": 1429
+										},
+										{
+											"type": "file",
+											"name": "gbuffer.glsl",
+											"hash": "eQXJSBHEN+cD6yugL9FizOao5oRfgi+9M4SEzDyf1/o=",
+											"size": 7544
+										},
+										{
+											"type": "file",
+											"name": "gbuffer.glsl.js",
+											"hash": "GKyV6RCP2v4Wd5tY2t7FWVIApz81lmz+L0bKtD63ja0=",
+											"size": 6275
+										},
+										{
+											"type": "file",
+											"name": "lightvolume.glsl",
+											"hash": "snz3an01sqso/jlkLNc8qWNHneoGH3nRr9FTUW+J7Zo=",
+											"size": 273
+										},
+										{
+											"type": "file",
+											"name": "lightvolume.glsl.js",
+											"hash": "wAQHE8Obpw9ukmgRy9OCqi/bMGqTx/7afbsu7TMRWJU=",
+											"size": 289
+										},
+										{
+											"type": "file",
+											"name": "point.glsl",
+											"hash": "uBnblHV2ZS1kkUObHr53fLKqca3FasJ3DZ3Su7Ihu8w=",
+											"size": 1232
+										},
+										{
+											"type": "file",
+											"name": "point.glsl.js",
+											"hash": "13D+yCzcwROT4SksyiBgquLzaR2xApSJ4+N8XmqByUM=",
+											"size": 1191
+										},
+										{
+											"type": "file",
+											"name": "sphere.glsl",
+											"hash": "V7yAeJv/Ojw6tDllPGsH5A5MqRGZSiHS/Az1AzpXF58=",
+											"size": 1270
+										},
+										{
+											"type": "file",
+											"name": "sphere.glsl.js",
+											"hash": "SnE5HQz5ahcSveKrH2dCkjnQcNvEQmXBIQD/5UCMjN0=",
+											"size": 1178
+										},
+										{
+											"type": "file",
+											"name": "spot.glsl",
+											"hash": "fbHPaX9YXZFqM7GbED5f8dmORePqqPpR43om1F6E8dk=",
+											"size": 1572
+										},
+										{
+											"type": "file",
+											"name": "spot.glsl.js",
+											"hash": "bEkruSf+jv2rontbuojJSAmOn18EhDs+S7i3NYTrJwc=",
+											"size": 1528
+										},
+										{
+											"type": "file",
+											"name": "tube.glsl",
+											"hash": "NM9kJHXsrwqu8tMyw14W5Ubc038NCpx7NQvC0MJkj1A=",
+											"size": 1493
+										},
+										{
+											"type": "file",
+											"name": "tube.glsl.js",
+											"hash": "AlTqjBWTvgtCqkmqwttG1EYr9AE7h3SXuD1Lzs5L600=",
+											"size": 1338
+										}
+									]
+								},
+								{
+									"type": "directory",
+									"name": "header",
+									"files": [
+										{
+											"type": "file",
+											"name": "calcAmbientSHLight.glsl",
+											"hash": "2O4FfgWe5niZBYPZJqTOl0Y3vXZj1ih6d2ePktREv2A=",
+											"size": 586
+										},
+										{
+											"type": "file",
+											"name": "calcAmbientSHLight.glsl.js",
+											"hash": "ELRB8FKkB1tvE+hQuwjzD3F6+bmWvsO8Qw5KegJe4Vs=",
+											"size": 506
+										},
+										{
+											"type": "file",
+											"name": "light.js",
+											"hash": "o9ec6BV59kLcQ30lT2sSEEqU6oJ5rlp6muuzy2PWkV0=",
+											"size": 2260
+										}
+									]
+								},
+								{
+									"type": "file",
+									"name": "basic.glsl",
+									"hash": "XTB1uSIW33V7h8hp7VVuI4xZaFKyZo8O5oYh3pMMS18=",
+									"size": 2470
+								},
+								{
+									"type": "file",
+									"name": "basic.glsl.js",
+									"hash": "XaMRWdZca2xGp3wCxTPdlETCLZmAkn/F48j6SdkQ+/Q=",
+									"size": 2423
+								},
+								{
+									"type": "file",
+									"name": "lambert.glsl",
+									"hash": "zGuj53ltkPbIHLSSgANd2jhMCwaeq91MyqdLzSHVixU=",
+									"size": 7329
+								},
+								{
+									"type": "file",
+									"name": "lambert.glsl.js",
+									"hash": "jQbK0zUYaa/P9EMdbooF+LTXRIFTdJZ9WSZ7ICHi3Co=",
+									"size": 6558
+								},
+								{
+									"type": "file",
+									"name": "prez.glsl",
+									"hash": "J9vdWTTp7bwzZ40ePO11mF8nLfsLmx+xgKFgnMwOZ1I=",
+									"size": 940
+								},
+								{
+									"type": "file",
+									"name": "prez.glsl.js",
+									"hash": "jb46jTs5HT3rvpSvqVmy9Zf2YfnV9Jm1BspYLwCjakY=",
+									"size": 897
+								},
+								{
+									"type": "file",
+									"name": "shadowmap.glsl",
+									"hash": "EMtyxQkWnbRr8QQajC9nOlB7uexExRQE9eZ9xdnIzSs=",
+									"size": 11535
+								},
+								{
+									"type": "file",
+									"name": "shadowmap.glsl.js",
+									"hash": "/Ml1cWC/KvSXgFjN784UZ9MzRNe+OeRBAdc5aXhTddU=",
+									"size": 10092
+								},
+								{
+									"type": "file",
+									"name": "skybox.glsl",
+									"hash": "WNNIFER6FDTzSa+yrw+mT5Cy5fjQ7u3mGb0ipc8R0IQ=",
+									"size": 1526
+								},
+								{
+									"type": "file",
+									"name": "skybox.glsl.js",
+									"hash": "dAY2d1AtQ1uTroDuQzWM5HyR2GPrukk5Fqe8wx37dMw=",
+									"size": 1458
+								},
+								{
+									"type": "file",
+									"name": "standard.glsl",
+									"hash": "mxfsCKnnGsDNht0BO5fClo4YdIGSIoruM0MQFHUg4uM=",
+									"size": 17274
+								},
+								{
+									"type": "file",
+									"name": "standard.glsl.js",
+									"hash": "jIHgOmOJeIL+OKQ/xqSy9hRYas+1xMhS1SDXZLNr41Q=",
+									"size": 15027
+								},
+								{
+									"type": "file",
+									"name": "util.glsl",
+									"hash": "sIj8I1vXqw8dXlChXV+vzR2eLgL0Dl/dq5FvzHyNEjg=",
+									"size": 7443
+								},
+								{
+									"type": "file",
+									"name": "util.glsl.js",
+									"hash": "GomCImej9NXtV9TNbVt6MlAlcEI2bKdAgaDjzx70oic=",
+									"size": 5563
+								},
+								{
+									"type": "file",
+									"name": "wireframe.glsl",
+									"hash": "CDWf0i9A3jgHMtPohNAmTfkQrKmr5R1u/mVxi4yOqBE=",
+									"size": 838
+								},
+								{
+									"type": "file",
+									"name": "wireframe.glsl.js",
+									"hash": "7w4QWmvyobu71J36S3KEI/FvWhY9O0llUvIaHmcvFw4=",
+									"size": 844
+								}
+							]
+						},
+						{
+							"type": "file",
+							"name": "builtin.js",
+							"hash": "jsddgyA90F+uudyfaMO/wP/GhFrEhf9QfWzFCXcln10=",
+							"size": 1632
+						},
+						{
+							"type": "file",
+							"name": "library.js",
+							"hash": "tpeD0rO+E0OZnk12uxbOwSvvyzS8liqf7cuO7C4xaig=",
+							"size": 1679
+						},
+						{
+							"type": "file",
+							"name": "registerBuiltinCompositor.js",
+							"hash": "iUMajAfmSKaXTK6bkeDPtHP5mWKOr4cgHdzEBEA0pJ0=",
+							"size": 1468
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "util",
+					"files": [
+						{
+							"type": "directory",
+							"name": "shader",
+							"files": [
+								{
+									"type": "file",
+									"name": "integrateBRDF.glsl",
+									"hash": "iJ2T6Tluu1KSTnphasmeHXZ8OrgUFnNIiRDMjzl0JHk=",
+									"size": 1738
+								},
+								{
+									"type": "file",
+									"name": "integrateBRDF.glsl.js",
+									"hash": "36LVqz9/hxGA40SLwhjz0cRufTv09ckCKO6X0vcU5rU=",
+									"size": 1532
+								},
+								{
+									"type": "file",
+									"name": "prefilter.glsl",
+									"hash": "cDd+fBkjRip0gcSnjbutSAW1sbkApLK8U0IdYcC6Sto=",
+									"size": 1405
+								},
+								{
+									"type": "file",
+									"name": "prefilter.glsl.js",
+									"hash": "bHEfJJXbkBcZ2E4zH3iXXjJsARNLKt3ZfrkK+i51SzY=",
+									"size": 1316
+								},
+								{
+									"type": "file",
+									"name": "projectEnvMap.glsl",
+									"hash": "Y2P9fw2zSOell1/E8rdW+OrXje5MxugFKrvwXt2y6Ac=",
+									"size": 2225
+								},
+								{
+									"type": "file",
+									"name": "projectEnvMap.glsl.js",
+									"hash": "d0LQAo/0cjlRGgeGFbET3HuqlsRYj7GBkilPG+0kg3M=",
+									"size": 1803
+								}
+							]
+						},
+						{
+							"type": "file",
+							"name": "cubemap.js",
+							"hash": "2hUEXBDIXBt//h+nyLbkeyeiyL3wUlYfvXRbnqjeEH0=",
+							"size": 10137
+						},
+						{
+							"type": "file",
+							"name": "dds.js",
+							"hash": "YYLFwRu8aBA9vKpWk/kqrcW7ikgwEEf0jrRiZWuV05w=",
+							"size": 4572
+						},
+						{
+							"type": "file",
+							"name": "delaunay.js",
+							"hash": "EEfaTrATPXnIKSVevz9isCsKy3XWbagNYRtPLXDYa4Y=",
+							"size": 7845
+						},
+						{
+							"type": "file",
+							"name": "hdr.js",
+							"hash": "Z1ZH8vsPG57HwmVX84b81BiEg5pEYFDalgDktc4g1eo=",
+							"size": 4771
+						},
+						{
+							"type": "file",
+							"name": "mesh.js",
+							"hash": "Kz4KFsxl2jDcnGDfXRAL7t1p9HrDO54uL+++bp0gVJk=",
+							"size": 12051
+						},
+						{
+							"type": "file",
+							"name": "sh.js",
+							"hash": "YtYO45sy8xqRumORFp6Nhr82vW9jbxcTEl4P5bWueWI=",
+							"size": 6504
+						},
+						{
+							"type": "file",
+							"name": "texture.js",
+							"hash": "2VPL7zc1m4dI0KFm5RvTbtVfXyYAl5fSwfWKDDRNtnM=",
+							"size": 9862
+						},
+						{
+							"type": "file",
+							"name": "transferable.js",
+							"hash": "izDdp56Yj0/HmbRjC0oybk9TBw4DRbVhaiWPrOmdtr8=",
+							"size": 3737
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "vr",
+					"files": [
+						{
+							"type": "file",
+							"name": "CardboardDistorter.js",
+							"hash": "RZZfGe7ukcgbfluQ1GEqwENME6FSyj3CHLg8g26aX84=",
+							"size": 7139
+						},
+						{
+							"type": "file",
+							"name": "output.glsl",
+							"hash": "xyYQbD9A9gzG93wBVTHWG6UBec8ZMHX/57iuE1Wv03E=",
+							"size": 405
+						},
+						{
+							"type": "file",
+							"name": "output.glsl.js",
+							"hash": "pJVj+0p3TPATeTOrEiA2zL6CJ5ZCaTntTm+7n5vpNu4=",
+							"size": 422
+						},
+						{
+							"type": "file",
+							"name": "StereoCamera.js",
+							"hash": "SbONlg7nDA2VtC7A0kf5118gx2Rhdp7eyJhXton6GJg=",
+							"size": 3963
+						}
+					]
+				},
+				{
+					"type": "file",
+					"name": "application.js",
+					"hash": "zAf2kR6zKLIOq+vgfbMxyDFl2SLwL81mIV40pNfEi0g=",
+					"size": 46443
+				},
+				{
+					"type": "file",
+					"name": "Camera.js",
+					"hash": "6X2Kw3xMUhK0BnrQtqcB0qxAqjL9t+lvPzo4A+XxlWM=",
+					"size": 3401
+				},
+				{
+					"type": "file",
+					"name": "claygl.js",
+					"hash": "Nw2GP+UwHElFBHPbHR3OZ/Eg1XSjhIbN+iA1XvWUK4A=",
+					"size": 10595
+				},
+				{
+					"type": "file",
+					"name": "createCompositor.js",
+					"hash": "OVBYt8fyJxsQ/66vn/LtpM5iXmQdR2QMCZ4nJmnElUI=",
+					"size": 8898
+				},
+				{
+					"type": "file",
+					"name": "FrameBuffer.js",
+					"hash": "Pgre3QPVBLHrk3SiqnHiGOAojgAjJm5A9wFRu2HmAPc=",
+					"size": 13243
+				},
+				{
+					"type": "file",
+					"name": "Geometry.js",
+					"hash": "mV2Ac/JtmavPPRMAkT0DzStGeUo9/9I1ue8bMRjRwR8=",
+					"size": 18330
+				},
+				{
+					"type": "file",
+					"name": "GeometryBase.js",
+					"hash": "lfQjgHX3KmfVbrtRQs2TCsA/Q834ExIAXEizxoDFyPc=",
+					"size": 19340
+				},
+				{
+					"type": "file",
+					"name": "InstancedMesh.js",
+					"hash": "WoRUiVd81Iz0UBZ2OWNVpccnHSdlvBlDH8l2wQlAnTI=",
+					"size": 5429
+				},
+				{
+					"type": "file",
+					"name": "Joint.js",
+					"hash": "AO3eBfIF+XsU48TowfJEofWfuG0vzcwsbpGBUXt9bq0=",
+					"size": 500
+				},
+				{
+					"type": "file",
+					"name": "Light.js",
+					"hash": "q+yJq1feOY2pY2vzf78X6YtqvEbd2VOQNPJHUNA+UgM=",
+					"size": 1499
+				},
+				{
+					"type": "file",
+					"name": "Material.js",
+					"hash": "y81pSCQ0CnUAR/fjh7veThR93X778BD8RQqgSiPRnEc=",
+					"size": 14513
+				},
+				{
+					"type": "file",
+					"name": "Mesh.js",
+					"hash": "N3ihqV+5gAtuIsy0uZEwkfb5HlMIp4skEqRwmkIy3wA=",
+					"size": 1586
+				},
+				{
+					"type": "file",
+					"name": "Node.js",
+					"hash": "9sRnCYPyvxkqdzJgxNYRzpJ6vGpcnC14mW0mMARJ8+M=",
+					"size": 17500
+				},
+				{
+					"type": "file",
+					"name": "Renderable.js",
+					"hash": "snmKxCylvrxcbVN6Eesz/olxH52N0buH975iHdKQXRg=",
+					"size": 4443
+				},
+				{
+					"type": "file",
+					"name": "Renderer.js",
+					"hash": "N4QbwG6Mnw0vwQXfWB5admn/q81WMygqqNCji9Ij6q4=",
+					"size": 48610
+				},
+				{
+					"type": "file",
+					"name": "Scene.js",
+					"hash": "q6ZsAnRIWuPstqkZ5qZaHpcAe+KLdeX6nYljfBAL1BA=",
+					"size": 17207
+				},
+				{
+					"type": "file",
+					"name": "Shader.js",
+					"hash": "v9QdWmtLoF8cn/l+zJZ3w4P2aDcddFuK9BHx5RhgWvs=",
+					"size": 19588
+				},
+				{
+					"type": "file",
+					"name": "Skeleton.js",
+					"hash": "RWYeGlK3Egm9j7CDrDgIJ3m+8MmXTXQ0H8QfiSAIV3U=",
+					"size": 12068
+				},
+				{
+					"type": "file",
+					"name": "StandardMaterial.js",
+					"hash": "L7VKB9XH6Ot7gHSaMOkhkTp4CzYNUcnIUPYGaL6wtto=",
+					"size": 7648
+				},
+				{
+					"type": "file",
+					"name": "StaticGeometry.js",
+					"hash": "1yfKDNcTH+pH3OUq2DwXHIY7jAQaXQdCsntu5gP+3KE=",
+					"size": 267
+				},
+				{
+					"type": "file",
+					"name": "Texture.js",
+					"hash": "v64CwlhcU/AmNW6hYuwHzBMU5qi3qfk27Np9kHrfRMw=",
+					"size": 9651
+				},
+				{
+					"type": "file",
+					"name": "Texture2D.js",
+					"hash": "gF+K+BZ8K6XRu9cVClSbxCmEHcnFGPXg5ZjqXUIivQ4=",
+					"size": 7863
+				},
+				{
+					"type": "file",
+					"name": "TextureCube.js",
+					"hash": "VVBI7Yz+xi+gKljhSKtiwcbAu6MWljht7JqTA/EIGU0=",
+					"size": 8340
+				},
+				{
+					"type": "file",
+					"name": "Timeline.js",
+					"hash": "yXuqTi4tlgER/uvIMz6I2zUGstHL5zcWLmu4DbF+ftc=",
+					"size": 5096
+				},
+				{
+					"type": "file",
+					"name": "version.js",
+					"hash": "wSUU/O1EMhsr9/G2au6IyIS+jJznXU+SrqsM6TpFWGQ=",
+					"size": 54
+				}
+			]
+		},
+		{
+			"type": "directory",
+			"name": "tools",
+			"files": [
+				{
+					"type": "file",
+					"name": "fbx2gltf.py",
+					"hash": "FpoX66ACWENUa4UH5FV9eN/FLJaBqQb+M06tzcLYcck=",
+					"size": 58877
+				}
+			]
+		},
+		{
+			"type": "directory",
+			"name": "typescript",
+			"files": [
+				{
+					"type": "directory",
+					"name": "animation",
+					"files": [
+						{
+							"type": "file",
+							"name": "Blend1DClip.d.ts",
+							"hash": "JlbBD78XRh3CwWLz2v6YObRszqMEq7ABLAR/SNqPUt8=",
+							"size": 493
+						},
+						{
+							"type": "file",
+							"name": "Blend2DClip.d.ts",
+							"hash": "c2uIt6WGcwd0BPyKnIfOTdGh+WBSrfuG0sGX7QIUTqE=",
+							"size": 495
+						},
+						{
+							"type": "file",
+							"name": "Clip.d.ts",
+							"hash": "2fL6oQjorib09bewsIQP+U0Bi9lwPNAo3WsBdYxt/Mo=",
+							"size": 1021
+						},
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "pLa9tzGVQej6Pf9Zwffvmw70MrjiClBdvqadJRb912U=",
+							"size": 210
+						},
+						{
+							"type": "file",
+							"name": "SamplerTrack.d.ts",
+							"hash": "+Hb46G9jKevPO44n0CRgaxeq3YCYTvszH60VzdI+izU=",
+							"size": 454
+						},
+						{
+							"type": "file",
+							"name": "TrackClip.d.ts",
+							"hash": "cD2mRhH0sewS5MlXWZyTMAa1K9XPgv45yPrepiCbCn0=",
+							"size": 739
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "async",
+					"files": [
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "aCOfDEwdUkw+mjLBVxVPd+jDGHc/1LedAmjeBHMw8xk=",
+							"size": 73
+						},
+						{
+							"type": "file",
+							"name": "Task.d.ts",
+							"hash": "bGeEDkFSIErgkCgZfzBndIRsB17ecBmQ3HgBB3xRPJk=",
+							"size": 850
+						},
+						{
+							"type": "file",
+							"name": "TaskGroup.d.ts",
+							"hash": "VsYZSVhHGHzdvcnRmKChWbmvMkmTygLSfOmzzkZdrOg=",
+							"size": 358
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "camera",
+					"files": [
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "NIFFn3WNCRU8DiAm7H0/GJHrueCyW1C4l1f8HpDyZI4=",
+							"size": 93
+						},
+						{
+							"type": "file",
+							"name": "Orthographic.d.ts",
+							"hash": "9tDDPAjF5x/O87dz4czO8JR0umOOEA4Su4x2zVxgS2w=",
+							"size": 445
+						},
+						{
+							"type": "file",
+							"name": "Perspective.d.ts",
+							"hash": "aQ0cWOLtUQOFPiZnyQLnOxqHct1M8Gt4APMwnB4HXrg=",
+							"size": 363
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "compositor",
+					"files": [
+						{
+							"type": "file",
+							"name": "Compositor.d.ts",
+							"hash": "tqCFJd/PvzE6jJ5VsDlLuO9C7uz7lXbR1efyUN3pAq8=",
+							"size": 296
+						},
+						{
+							"type": "file",
+							"name": "CompositorNode.d.ts",
+							"hash": "/uc5dqCmiv1HKvb6XJcV79R1424kiwDS5T9XmlTdeA0=",
+							"size": 1900
+						},
+						{
+							"type": "file",
+							"name": "FilterNode.d.ts",
+							"hash": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+							"size": 0
+						},
+						{
+							"type": "file",
+							"name": "Graph.d.ts",
+							"hash": "IOfod7YpUwe1mNtvW4fT7yjQC7DXqFEBcMfGf/kYGqY=",
+							"size": 257
+						},
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "4WSzfmBKqOllQDcGfqhTQqjS4v0+gq6e8JB9Qaix2vA=",
+							"size": 333
+						},
+						{
+							"type": "file",
+							"name": "Pass.d.ts",
+							"hash": "uQFzqRyeEV3VT3FTcOb3CR6hY0ZmDgHKbZoAuwbqvtY=",
+							"size": 754
+						},
+						{
+							"type": "file",
+							"name": "SceneNode.d.ts",
+							"hash": "JhjnBCcqyvQx+g8u9p/u2hqIfMITgWevxnApUFSPe9M=",
+							"size": 486
+						},
+						{
+							"type": "file",
+							"name": "TextureNode.d.ts",
+							"hash": "+Heb+uRAoiUebx8+Zr0nO2rcdS5DQofm98aRyxZGdSk=",
+							"size": 324
+						},
+						{
+							"type": "file",
+							"name": "TexturePool.d.ts",
+							"hash": "nF8fUN/kbmiQ1l7yxjpVy2Je5cgULLQfTzfRYAWxEic=",
+							"size": 260
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "core",
+					"files": [
+						{
+							"type": "directory",
+							"name": "mixin",
+							"files": [
+								{
+									"type": "file",
+									"name": "derive.d.ts",
+									"hash": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+									"size": 0
+								},
+								{
+									"type": "file",
+									"name": "notifier.d.ts",
+									"hash": "Ca9RRWZLjaf69tYs80iIgwfpgkG6Uc08RCo4JCVm9y0=",
+									"size": 610
+								}
+							]
+						},
+						{
+							"type": "file",
+							"name": "Base.d.ts",
+							"hash": "+H8y7Kpl21m3ZtsE/HlTDgrAwa+OWxxQCCJ5od1mU1s=",
+							"size": 373
+						},
+						{
+							"type": "file",
+							"name": "container.d.ts",
+							"hash": "qdzkVcxFPtDWs71JEtNygUFeccpROPzifYgrMUNuO7o=",
+							"size": 134
+						},
+						{
+							"type": "file",
+							"name": "glinfo.d.ts",
+							"hash": "FR0uYnKoEgG0OrWpx5VeXHhb7J5e9nl5ruaikjzG6pY=",
+							"size": 143
+						},
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "1TkqPZqEcF9gkXYOesPTD5etSSLbOHjHXITXrrPYmXM=",
+							"size": 164
+						},
+						{
+							"type": "file",
+							"name": "LRU.d.ts",
+							"hash": "KUzKJXoBpooigNJ3/s6NBni1wrAwNANvDe1bZwVoT2w=",
+							"size": 216
+						},
+						{
+							"type": "file",
+							"name": "request.d.ts",
+							"hash": "OtQbzzi3x4AxUNH/GhXJv1oYFAfe9kFw/3vrFcUu64g=",
+							"size": 321
+						},
+						{
+							"type": "file",
+							"name": "util.d.ts",
+							"hash": "TBZouSM+UhMkvxVgmZWIUv63L5VAjkOPhxL/FKPZQSU=",
+							"size": 1125
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "deferred",
+					"files": [
+						{
+							"type": "file",
+							"name": "GBuffer.d.ts",
+							"hash": "PnXj7M0n9SjIC0CkCcU/8zi5TSkkoA/ze+iYJTi37Ow=",
+							"size": 829
+						},
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "RvJRx8vcGFzlfywdqLbS4nIwEQ1GSFJF5dV3YLDgmK0=",
+							"size": 75
+						},
+						{
+							"type": "file",
+							"name": "Renderer.d.ts",
+							"hash": "InJbsEJs+CaxXo9b5jG2DhTC78xNaEi9LDlBv1DQtec=",
+							"size": 1002
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "geometry",
+					"files": [
+						{
+							"type": "file",
+							"name": "Cone.d.ts",
+							"hash": "kkg22lIdCXgAS/ls5tWqWMwDI52v2rhjdTbJK87uy2g=",
+							"size": 418
+						},
+						{
+							"type": "file",
+							"name": "Cube.d.ts",
+							"hash": "SL9I3mUCbNvTNDBbyBAseCNvZSN1pd1y/2pokq5TFUc=",
+							"size": 377
+						},
+						{
+							"type": "file",
+							"name": "Cylinder.d.ts",
+							"hash": "CwP2TUCOhOoNcVVlYYlKacvd+SPgeXmh/pU5LmH4FlI=",
+							"size": 370
+						},
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "hwzFliNPguaQr1X24bKXNHwNPPpFdzuaTDzen7Yn0V8=",
+							"size": 227
+						},
+						{
+							"type": "file",
+							"name": "ParametricSurface.d.ts",
+							"hash": "cK0IkgaPL4qjUgwlwdpO9gaSl8KhEXqXXGgFFRXXUoY=",
+							"size": 474
+						},
+						{
+							"type": "file",
+							"name": "Plane.d.ts",
+							"hash": "oIzw/63bLK9qAEJ1vzR5c0YVJJH+Eh0hXwYfop73ex0=",
+							"size": 279
+						},
+						{
+							"type": "file",
+							"name": "Sphere.d.ts",
+							"hash": "PRZ3R+lAIecuNDZj2fuZfO4ysvXZUryrBO8F7wS3xLM=",
+							"size": 527
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "light",
+					"files": [
+						{
+							"type": "file",
+							"name": "Ambient.d.ts",
+							"hash": "2gYieIEAme11VXDxKFD9+KQSeMRl9HNzGvvShHTueSk=",
+							"size": 345
+						},
+						{
+							"type": "file",
+							"name": "AmbientCubemap.d.ts",
+							"hash": "Xa0vHk0xdQozpB9u4JbcMKxt7GNYsP2RclkEkxtN3JE=",
+							"size": 531
+						},
+						{
+							"type": "file",
+							"name": "AmbientSH.d.ts",
+							"hash": "Ce7xNCqSJ9vG+8YhtEzDfaOdqFuXI6QyXQnw0U5QcOs=",
+							"size": 306
+						},
+						{
+							"type": "file",
+							"name": "Directional.d.ts",
+							"hash": "M2kg6e30jFYXlKi37KhCEfu03xvRp6NG11Am+S/bXeY=",
+							"size": 609
+						},
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "XJNE2L2EK0Ifg3t9ybvgCTajWQxQCJ+Z0vSMKhGS3pY=",
+							"size": 239
+						},
+						{
+							"type": "file",
+							"name": "Point.d.ts",
+							"hash": "N1e5HJI3QS/Gpe52geYTEJTK7t7XJrspQ/ZZ0TSrR6A=",
+							"size": 476
+						},
+						{
+							"type": "file",
+							"name": "Spot.d.ts",
+							"hash": "cetCQ05HPXrrAiSm5vDsSi7AWivz1RjKEc1onzd7o9w=",
+							"size": 1019
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "loader",
+					"files": [
+						{
+							"type": "file",
+							"name": "FX.d.ts",
+							"hash": "pV9Y3h+kCNJtUoR7X9l66QNm+SEOn7MQ6Bb87b4t7Sw=",
+							"size": 713
+						},
+						{
+							"type": "file",
+							"name": "GLTF.d.ts",
+							"hash": "Sp3k9XJMT6TWMI1CfgoEdM3OvRzOWLZXfOUz9jkJ+V0=",
+							"size": 1739
+						},
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "aEglzfvhd3BxBGKsyb/QKKl04G4lr5ait9O+Zc3q1hg=",
+							"size": 58
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "math",
+					"files": [
+						{
+							"type": "file",
+							"name": "BoundingBox.d.ts",
+							"hash": "sV5qVWuT1v9h57bm+EtnMy3ZSCrDnNZHEn4xtsdXk0w=",
+							"size": 589
+						},
+						{
+							"type": "file",
+							"name": "Frustum.d.ts",
+							"hash": "FJwDV6kiy8cBccuwnTIfnFRsBlm3KDPHJh0e1pzOPNg=",
+							"size": 399
+						},
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "EVGQNPpGwNXtSbNEIhiAh4MQGlyWrFNYcuNW8ZtyFVY=",
+							"size": 352
+						},
+						{
+							"type": "file",
+							"name": "Matrix2.d.ts",
+							"hash": "7G0WwsF4U2zoKQsaNAV0r0GSBNYycWtuQPgYlTMWOYI=",
+							"size": 1084
+						},
+						{
+							"type": "file",
+							"name": "Matrix2d.d.ts",
+							"hash": "4i/vbyhbt4euXoWIljooeg+q/I3yfIXROJXa0ReWLxU=",
+							"size": 1068
+						},
+						{
+							"type": "file",
+							"name": "Matrix3.d.ts",
+							"hash": "qjyGgGkY5seI8TG21lK5/z/ktmuxtSNhrpQig6WhZYQ=",
+							"size": 1704
+						},
+						{
+							"type": "file",
+							"name": "Matrix4.d.ts",
+							"hash": "UzZy7wCKOdrPlzXV06XsunGtcxMEmgSrYmqkvdvXsh0=",
+							"size": 2674
+						},
+						{
+							"type": "file",
+							"name": "Plane.d.ts",
+							"hash": "7ic1oD6kVLGrVQthRuf7GvnPgVXhcJ9+Pzd2ogE+/Yk=",
+							"size": 646
+						},
+						{
+							"type": "file",
+							"name": "Quaternion.d.ts",
+							"hash": "t+IyXxfeTp9duZIYNotv/IrfdIFTmLBAB/7VEfV8XSo=",
+							"size": 3176
+						},
+						{
+							"type": "file",
+							"name": "Ray.d.ts",
+							"hash": "fyzGW1CjC/hsWc/Koss6fEFlRV0Br7ExshBSp9BM9UY=",
+							"size": 271
+						},
+						{
+							"type": "file",
+							"name": "Value.d.ts",
+							"hash": "BbGid7NzBIRpBI0TtuGR/OAN7suDv2c0aCh6sn/8Ivs=",
+							"size": 1796
+						},
+						{
+							"type": "file",
+							"name": "Vector2.d.ts",
+							"hash": "1C9AYoRHZokkaB9qfYgMjZ+711tJEY/fRRJAVCaF3XA=",
+							"size": 3421
+						},
+						{
+							"type": "file",
+							"name": "Vector3.d.ts",
+							"hash": "xnOLZs8+wBgTrizEeIKswjqg2T4PiaghquZnnt9/Y24=",
+							"size": 3526
+						},
+						{
+							"type": "file",
+							"name": "Vector4.d.ts",
+							"hash": "KmO9aeI7FdyjVNRpZK46NfLVsQar1BJTRy7/l8gNYBA=",
+							"size": 3135
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "particle",
+					"files": [
+						{
+							"type": "file",
+							"name": "Emitter.d.ts",
+							"hash": "/ZWeBQuQbf1IiUhMzjxlp4ZCWuh0uWTqDF5KkiY0ZKI=",
+							"size": 1375
+						},
+						{
+							"type": "file",
+							"name": "ForceField.d.ts",
+							"hash": "sAIoEQwvbdcJnoaB2iKiLmo2Ec0cVHLKMz9DCHmiBRY=",
+							"size": 314
+						},
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "9ij1TuMdfwZKnXaMFy7h8wg0QBWSdszy2v10BKXzg6g=",
+							"size": 178
+						},
+						{
+							"type": "file",
+							"name": "Particle.d.ts",
+							"hash": "+Irz5hD3qGLGn5QXNVODBrLew/Ie85c/Ij908C/8jNM=",
+							"size": 394
+						},
+						{
+							"type": "file",
+							"name": "ParticleRenderable.d.ts",
+							"hash": "F9azw4dcd+dSXREZvdWkus1WZ55Tct/NqftmJJAJuew=",
+							"size": 1311
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "plugin",
+					"files": [
+						{
+							"type": "file",
+							"name": "FreeControl.d.ts",
+							"hash": "HVBlEHvyg70JsXaa8Wd/d+ig5wurYUD298xj5M/vVhY=",
+							"size": 555
+						},
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "+IzUduknQFDByGt1b8HA2928/TzI/LTemarlVKgCm8s=",
+							"size": 164
+						},
+						{
+							"type": "file",
+							"name": "OrbitControl.d.ts",
+							"hash": "iavvoWAIQKNxPqEoZ4apZMbOyN/BkA9rC0wr0zjMkpg=",
+							"size": 1809
+						},
+						{
+							"type": "file",
+							"name": "Skybox.d.ts",
+							"hash": "OjYjV3fIL6SrbM6T0Wuc3qahmSr6b8Eq9tomzfhEIEA=",
+							"size": 545
+						},
+						{
+							"type": "file",
+							"name": "Skydome.d.ts",
+							"hash": "VRvZTT95FJosB0rUkt2X9Z5AeAybJe9NGyU42By0PZQ=",
+							"size": 438
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "prePass",
+					"files": [
+						{
+							"type": "file",
+							"name": "EnvironmentMap.d.ts",
+							"hash": "qnag67j8XpZFfKeYh4iq0i+T1pJ9JiFFfLLrjPUNJ4E=",
+							"size": 699
+						},
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "BBfgr29SaqCuzq2w0Uyvls3kqzyFUYb2W/hzThpoaec=",
+							"size": 92
+						},
+						{
+							"type": "file",
+							"name": "ShadowMap.d.ts",
+							"hash": "RaBYvOZhXFmD1HwUl/SkVVpGgMl8S7M1T9kMIOr9YTw=",
+							"size": 620
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "shader",
+					"files": [
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "5BG7P52FAP6nQXAscufFS6ljSD9zo9ONFAZPj/YqzyM=",
+							"size": 36
+						},
+						{
+							"type": "file",
+							"name": "library.d.ts",
+							"hash": "nsInemIY4vzadi3VBxStbfxJ/Y4c9unaFUpaVokbHZo=",
+							"size": 309
+						}
+					]
+				},
+				{
+					"type": "directory",
+					"name": "util",
+					"files": [
+						{
+							"type": "file",
+							"name": "index.d.ts",
+							"hash": "paMTS8+TRHz9rqEqqX0VaiqGUyV9yD/MhR/rHXlTJPw=",
+							"size": 67
+						},
+						{
+							"type": "file",
+							"name": "mesh.d.ts",
+							"hash": "o5FMxqNk+Z/NQefl4VuJODGG+dcg198BSuVZrCDnLT0=",
+							"size": 280
+						},
+						{
+							"type": "file",
+							"name": "texture.d.ts",
+							"hash": "OinpPEvjlAjYxL/b35/DIwOL+rGqkjxbiDM43JJ6b2o=",
+							"size": 1834
+						}
+					]
+				},
+				{
+					"type": "file",
+					"name": "application.d.ts",
+					"hash": "f2lcQtWNO/UqcdSGxXAZYAMJExgau9Bd/8Lgo+XRE4A=",
+					"size": 6324
+				},
+				{
+					"type": "file",
+					"name": "Camera.d.ts",
+					"hash": "+IfLlohAyH6uXIrjnTu2ED5x6aruhAD/udSRWeY8g0w=",
+					"size": 630
+				},
+				{
+					"type": "file",
+					"name": "createCompositor.d.ts",
+					"hash": "4m3KHz3OyQQ/I/iZTC22dn49kVIgdWhxAFyTblj7e90=",
+					"size": 262
+				},
+				{
+					"type": "file",
+					"name": "FrameBuffer.d.ts",
+					"hash": "jZpVa5THF3KnZbt2siByAvLVBkTnpxOmH0FL3Y8N9VQ=",
+					"size": 933
+				},
+				{
+					"type": "file",
+					"name": "Geometry.d.ts",
+					"hash": "j5A44Afzr6BrLUmQhdimcg99KEeIhEq4YK94IyGyyEw=",
+					"size": 703
+				},
+				{
+					"type": "file",
+					"name": "GeometryBase.d.ts",
+					"hash": "j0zKvjRmVQrLwv/RrGPSnpSlA1tS5Pudq3ScU2k14og=",
+					"size": 1781
+				},
+				{
+					"type": "file",
+					"name": "InstancedMesh.d.ts",
+					"hash": "60k2sownTH1ohbTS4MrOowRbt+EVUQBnP9Q6UTR/kNU=",
+					"size": 318
+				},
+				{
+					"type": "file",
+					"name": "Joint.d.ts",
+					"hash": "RNWH/ZF+pSdGAGGhS1FNDafvVtzApd2H3MGtpfYnK2k=",
+					"size": 184
+				},
+				{
+					"type": "file",
+					"name": "Light.d.ts",
+					"hash": "6JJAt/nMEIiN4hGFPd18jPZUAp8WjgNPBZObA8klksE=",
+					"size": 357
+				},
+				{
+					"type": "file",
+					"name": "Material.d.ts",
+					"hash": "LHNJuTGZbrqGek6TqCh/mxXvGUnGqLYGRzqHz4omk/M=",
+					"size": 1759
+				},
+				{
+					"type": "file",
+					"name": "Mesh.d.ts",
+					"hash": "ap9Jx9BL2iQb0gdZtNI/4tbXekhn+he4bV26aBL2RgQ=",
+					"size": 770
+				},
+				{
+					"type": "file",
+					"name": "Node.d.ts",
+					"hash": "hqhNuGJ2h7O6TsVunfiiSbjkzPS2ZaSU7LsVi0HNN+4=",
+					"size": 1543
+				},
+				{
+					"type": "file",
+					"name": "Renderable.d.ts",
+					"hash": "C4IF9Hwuhgvrb35hNOn27oBPAXo/wFu8Ago0QsSFqkc=",
+					"size": 1454
+				},
+				{
+					"type": "file",
+					"name": "Renderer.d.ts",
+					"hash": "EBY+YkgDLjaM96LafQ4ReDNTosR/EgflnC9n/MVAfek=",
+					"size": 4863
+				},
+				{
+					"type": "file",
+					"name": "Scene.d.ts",
+					"hash": "dKqwOWkRzhAvYk7FJb1XH3V7KrE98F1CqDIxVu+HU84=",
+					"size": 716
+				},
+				{
+					"type": "file",
+					"name": "Shader.d.ts",
+					"hash": "yEqljKVUHMpvi6TZZ1da54z6lynSQGtJ7vVDUk4QGH0=",
+					"size": 1295
+				},
+				{
+					"type": "file",
+					"name": "Skeleton.d.ts",
+					"hash": "vnIbvmVX9Orli8lgbhpZzQPAA1fYpGomF+WydWDeNSc=",
+					"size": 727
+				},
+				{
+					"type": "file",
+					"name": "Texture.d.ts",
+					"hash": "yE3sttqAwlGVPyK9hcfLPagy2W9XuUkR7qtMABg1e6s=",
+					"size": 2145
+				},
+				{
+					"type": "file",
+					"name": "Texture2D.d.ts",
+					"hash": "8lLyqPrXzb5Wq8BYhanh4HzVbtMTygCRVa5MZ+xB9rE=",
+					"size": 989
+				},
+				{
+					"type": "file",
+					"name": "TextureCube.d.ts",
+					"hash": "rb52GC3ZxFiqoFq0cmLnJj4OHMmiB9rUia7C6RRVavo=",
+					"size": 1398
+				},
+				{
+					"type": "file",
+					"name": "Timeline.d.ts",
+					"hash": "dEJkJhuj+XhjidrkfP/3JuCkrlp3gsPNxyVBfltLsFA=",
+					"size": 1375
+				}
+			]
+		},
+		{
+			"type": "file",
+			"name": ".jshintignore",
+			"hash": "CJc02veX5AF+XR/BvrOCi2Ld/KMRlhi5FNQNPCuBpts=",
+			"size": 50
+		},
+		{
+			"type": "file",
+			"name": ".jshintrc",
+			"hash": "VxYno13Wk65hnjm8vD6TCLwLbbx8e6bjZnQvlTSdlUs=",
+			"size": 1323
+		},
+		{
+			"type": "file",
+			"name": "circle.yml",
+			"hash": "YvQ3tBux0OiQobD3T3ynnECE58WtVCzndljDn1zt13k=",
+			"size": 130
+		},
+		{
+			"type": "file",
+			"name": "claygl.todo",
+			"hash": "2Hqvw9rV44CLiNzCigiE69jiLWiUKtPsmFxMJdJsLuY=",
+			"size": 5565
+		},
+		{
+			"type": "file",
+			"name": "index.d.ts",
+			"hash": "mPUMQ3/eqN+4lKyccvqQbL4nwxw6wT3hZsFiuHy9vrY=",
+			"size": 2374
+		},
+		{
+			"type": "file",
+			"name": "index.js",
+			"hash": "T3roKyWIhsQ5+HBaQfnYyzNNSSHUut74Tiq/0yNc13o=",
+			"size": 42
+		},
+		{
+			"type": "file",
+			"name": "jsconfig.json",
+			"hash": "gnQtrc3ZTcdJLyS2IQF59CopwdG4by51J+bBqA1FFxo=",
+			"size": 134
+		},
+		{
+			"type": "file",
+			"name": "LICENSE",
+			"hash": "yPoFjLqY9/KItdj6QRb0QdbayyW5bahZ5RjJc//0HQw=",
+			"size": 1289
+		},
+		{
+			"type": "file",
+			"name": "package.json",
+			"hash": "y1FgKg4ewk/Xp+fugJm/zh+GkO6m2lqJeVBSOX/i1aU=",
+			"size": 2274
+		},
+		{
+			"type": "file",
+			"name": "README.md",
+			"hash": "IxxRd2908jYItpwpwP3K8NSOPZgT6XTrvU3A6fstjQk=",
+			"size": 5612
+		},
+		{
+			"type": "file",
+			"name": "rollup.config.js",
+			"hash": "egOj49eBfqAVeJn23q2ICM2UMLKMIzM1IMPJwxSc9F0=",
+			"size": 418
+		},
+		{
+			"type": "file",
+			"name": "test.js",
+			"hash": "i4SXv3OtLBWCjROX+2FEDb5vGvk7ZHevBRbmH3aBWDU=",
+			"size": 1588
+		}
+	],
+	"links": {
+		"stats": "https://data.jsdelivr.com/v1/stats/packages/npm/claygl@1.3.0",
+		"entrypoints": "https://data.jsdelivr.com/v1/packages/npm/claygl@1.3.0/entrypoints"
+	}
+}

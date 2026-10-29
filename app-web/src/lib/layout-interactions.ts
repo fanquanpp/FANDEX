@@ -341,7 +341,8 @@ async function initAnimations(): Promise<void> {
 document.addEventListener('astro:page-load', initAnimations);
 void initAnimations();
 
-if (!('__TAURI__' in window) && 'serviceWorker' in navigator) {
+// SSR 预渲染期会求值页面脚本模块：顶层 window 访问必须带守卫（工程约束 3）
+if (!import.meta.env.SSR && typeof window !== 'undefined' && !('__TAURI__' in window) && 'serviceWorker' in navigator) {
   const base = import.meta.env.BASE_URL;
   navigator.serviceWorker.register(base + 'sw.js').catch((err) => {
     if (import.meta.env.DEV) {

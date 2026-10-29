@@ -636,7 +636,9 @@ const EXTERNAL_GROUPS = [
   .algo-views {
     position: sticky;
     top: 0;
-    z-index: 60;
+    /* 规格 4.2 刻度迁移：页内吸顶工具栏归 --z-sticky（10），低于顶栏 40
+       与一切遮罩；原裸值 60 在顶栏降为 40 后会翻转到顶栏之上 */
+    z-index: var(--z-sticky);
     display: inline-flex;
     gap: var(--space-1);
     margin-block: var(--space-6) 0;

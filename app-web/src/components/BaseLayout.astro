@@ -100,6 +100,8 @@ const { fxDecor, fxNum } = Astro.props;
     position: fixed;
     left: 0.75rem;
     top: 0.75rem;
+    /* 10000 为全站唯一特例（规格 4.2）：无障碍直达入口必须浮于一切
+       非 top-layer 元素之上，不参与 --z-* 常规刻度 */
     z-index: 10000;
     transform: translateY(-200%);
     padding: 0.5rem 1rem;
@@ -107,7 +109,7 @@ const { fxDecor, fxNum } = Astro.props;
     color: #ffffff;
     font-size: 0.85rem;
     font-weight: 600;
-    border-radius: var(--radius-md, 4px);
+    border-radius: var(--radius-control);
     box-shadow: var(--shadow-lg, 0 4px 12px rgb(0 0 0 / 0.2));
     transition: transform 0.15s ease;
   }
@@ -116,12 +118,8 @@ const { fxDecor, fxNum } = Astro.props;
   .skip-link:focus {
     transform: translateY(0);
   }
-
-  @media (prefers-reduced-motion: reduce) {
-    .skip-link {
-      transition: none;
-    }
-  }
+  /* reduced-motion 由 global.css 全局兜底（transition-duration 0.01ms），
+     此处不再重复 @media（规格 C6） */
 </style>
 
 <script>

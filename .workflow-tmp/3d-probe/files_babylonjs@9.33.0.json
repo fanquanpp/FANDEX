@@ -1,0 +1,138 @@
+{
+	"type": "npm",
+	"name": "babylonjs",
+	"version": "9.33.0",
+	"default": "/babylon.min.js",
+	"files": [
+		{
+			"type": "directory",
+			"name": "scripts",
+			"files": [
+				{
+					"type": "file",
+					"name": "checkNoChunks.js",
+					"hash": "LU84x8AoeujV3+YKU/Wy91ph64AW2GdzzSou3R1V2as=",
+					"size": 838
+				},
+				{
+					"type": "file",
+					"name": "postinstall.js",
+					"hash": "R01/o1V0WrN13GdtvDW2axUhDoH7VFA9zoMwfJiOgOw=",
+					"size": 228
+				}
+			]
+		},
+		{
+			"type": "directory",
+			"name": "src",
+			"files": [
+				{
+					"type": "file",
+					"name": "index.ts",
+					"hash": "iwPLKCPMldqtDkr/HJKd2oxZDdHoU2KRE+vm3M/nCbo=",
+					"size": 67
+				}
+			]
+		},
+		{
+			"type": "file",
+			"name": ".npmignore",
+			"hash": "EjYwR1qE8XM2tKA9m2rkM4tHJcVYJTEQaI5y6nt7K18=",
+			"size": 53
+		},
+		{
+			"type": "file",
+			"name": "babylon.d.ts",
+			"hash": "7PxZ0hoblCy4rS5/mK1YBPGnizVnf9jfAj0SeIYLqgc=",
+			"size": 7729886
+		},
+		{
+			"type": "file",
+			"name": "babylon.es5.js",
+			"hash": "3Nha2LV1CdwP/00l3uHLL6CbsbtjbxqxazmyRSTpV2I=",
+			"size": 13561052
+		},
+		{
+			"type": "file",
+			"name": "babylon.js",
+			"hash": "Q4VYkZYM49CrUW5jEbxh0EGhmsbT50A9rqRjPyvdKeU=",
+			"size": 8828560
+		},
+		{
+			"type": "file",
+			"name": "babylon.js.map",
+			"hash": "E4bsYeZla5N+ERc9Nz/i7MUsU3bZgTGD4tWx9AMY3L4=",
+			"size": 30684274
+		},
+		{
+			"type": "file",
+			"name": "babylon.max.js",
+			"hash": "Q4VYkZYM49CrUW5jEbxh0EGhmsbT50A9rqRjPyvdKeU=",
+			"size": 8828560
+		},
+		{
+			"type": "file",
+			"name": "babylon.max.js.map",
+			"hash": "E4bsYeZla5N+ERc9Nz/i7MUsU3bZgTGD4tWx9AMY3L4=",
+			"size": 30684274
+		},
+		{
+			"type": "file",
+			"name": "babylon.module.d.ts",
+			"hash": "TCWKpV6v2d89e0x6RnpOwNHLCZzBfbgjPkOByNig2mU=",
+			"size": 15767314
+		},
+		{
+			"type": "file",
+			"name": "config.json",
+			"hash": "0g51C6XywkExQ5kmQgUeuik0ow6XjybRDYUHhJnzSGE=",
+			"size": 210
+		},
+		{
+			"type": "file",
+			"name": "license.md",
+			"hash": "k2LqnqF8siGiDLvWP0BHEINMwnPSqae2AxT9aKtwLNY=",
+			"size": 9226
+		},
+		{
+			"type": "file",
+			"name": "NOTICE.md",
+			"hash": "IlRj79gVWPEgpuDN1/TBAH7UhgBtEijEhJ/uDElxWCM=",
+			"size": 46
+		},
+		{
+			"type": "file",
+			"name": "package.json",
+			"hash": "gJ8LICpDs4MDbLdkAf8YFOlKEK/TQ+ZFZwQTuV1sFts=",
+			"size": 1346
+		},
+		{
+			"type": "file",
+			"name": "readme.md",
+			"hash": "bNYYsfElpLiG8eN7CMlX96r2PgYJyVAeA8FgYxzeBSI=",
+			"size": 3863
+		},
+		{
+			"type": "file",
+			"name": "rollup.config.umd.mjs",
+			"hash": "5C/NzS1tqHyr/nlXHzBU07ysfw8af7+0JYalo9A6xA8=",
+			"size": 543
+		},
+		{
+			"type": "file",
+			"name": "tsconfig.build.json",
+			"hash": "YUtsubb2T9hpM+q5aUJbSZOaKHb4grA3uiHvr4jbg/c=",
+			"size": 565
+		},
+		{
+			"type": "file",
+			"name": "tsconfig.json",
+			"hash": "FZpZt4dllLgL8MGV4BDCjtDFJsiCpKll5nQD8+8IkvI=",
+			"size": 229
+		}
+	],
+	"links": {
+		"stats": "https://data.jsdelivr.com/v1/stats/packages/npm/babylonjs@9.33.0",
+		"entrypoints": "https://data.jsdelivr.com/v1/packages/npm/babylonjs@9.33.0/entrypoints"
+	}
+}

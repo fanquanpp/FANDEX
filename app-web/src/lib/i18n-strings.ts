@@ -9,8 +9,10 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
 
   'theme.tooltipLight': { zh: '亮色模式', en: 'Light mode' },
   'theme.tooltipDark': { zh: '暗色模式', en: 'Dark mode' },
+  'theme.tooltipSystem': { zh: '跟随系统', en: 'Follow system' },
   'theme.switchLight': { zh: '切换到亮色模式', en: 'Switch to light mode' },
   'theme.switchDark': { zh: '切换到暗色模式', en: 'Switch to dark mode' },
+  'theme.switchSystem': { zh: '切换到跟随系统模式', en: 'Switch to system mode' },
 
   'langToggle.label': { zh: 'EN', en: '中' },
   'langToggle.aria': { zh: '切换到英文界面', en: 'Switch to Chinese' },

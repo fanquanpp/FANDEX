@@ -4,8 +4,6 @@
     --nav-height: var(--size-control-md);
     --nav-height-mobile: 3.25rem;
 
-    --mobile-nav-height: var(--size-control-md);
-
     --reading-progress-height: 3px;
 
     --sidebar-width: 15rem;
@@ -21,17 +19,26 @@
     --layout-gap: var(--space-8);
     --layout-gap-lg: var(--space-12);
 
-    --z-header: 40;
-    --z-sidebar: 30;
-    --z-toc: 20;
-    --z-mobile-nav: 40;
-    --z-reading-progress: 50;
-    /* 侧边栏抽屉的遮罩：必须低于抽屉本身（30）且高于页面内容，
+    /* ===== z-index 全站唯一刻度（规格 4.2）=====
+       规则：fixed/sticky/absolute 的浮层、遮罩、吸顶、弹窗一律消费 --z-*，
+       禁止新裸值；行内 1/2 仅限"已定位父级栈内盖住兄弟"的局部整数（配注释）。
+       特例：skip-link 10000（BaseLayout.astro，全站唯一，高于一切非 top-layer）；
+       原生 <dialog>（搜索面板）在 top layer，不受本刻度治理。 */
+    --z-raised: 2; /* 行内浮起（卡内伪元素/悬浮角标） */
+    --z-sticky: 10; /* 页内吸顶条族（面包屑/工具栏/chips/文档头行），必须低于一切遮罩 */
+    --z-toc: 20; /* 目录吸顶条与展开面板 */
+    /* 侧边栏抽屉的遮罩：必须低于抽屉本身（30）且高于页内吸顶（10），
         否则抽屉内的关闭按钮与章节链接会被遮罩拦截点击 */
     --z-sidebar-backdrop: 25;
-    --z-backdrop: 150;
-    --z-modal: 200;
-    --z-toast: 300;
+    --z-sidebar: 30;
+    --z-header: 40;
+    --z-mobile-nav: 40;
+    --z-reading-progress: 50; /* 3px 进度条浮于头部上缘，功能性可见性优先 */
+    --z-dropdown: 120; /* 头部下拉浮层/工具提示 */
+    --z-backdrop: 150; /* 全屏遮罩（feature-sheet、抽屉类遮罩） */
+    --z-modal: 200; /* 模态与 dialog（必须高于自家遮罩 150） */
+    --z-toast: 300; /* toast 容器与 SW 更新提示 */
+    --z-overlay-top: 1000; /* 搜索面板触发层之上的悬浮窗（性能面板）、全局 tooltip */
 
     --header-bg: color-mix(in oklch, var(--color-bg-primary) 85%, transparent);
     --header-border: var(--color-border-default);
@@ -673,6 +680,7 @@
     position: absolute;
     top: var(--space-2);
     right: var(--space-2);
+    /* 局部整数：仅盖住抽屉栈内兄弟节点（规格 4.2 注 2），非浮层语义 */
     z-index: 2;
     display: none;
   }
@@ -1037,6 +1045,7 @@
   .fndx-toc__title {
     position: sticky;
     top: 0;
+    /* 局部整数：仅盖住 TOC 滚动容器内列表项（规格 4.2 注 2），非浮层语义 */
     z-index: 1;
     margin: 0;
     padding-bottom: var(--space-2);
@@ -1194,66 +1203,8 @@
     }
   }
 
-  .fndx-mobile-nav {
-    position: fixed;
-    inset-inline: 0;
-    bottom: 0;
-    z-index: var(--z-mobile-nav);
-    display: flex;
-    align-items: stretch;
-    height: var(--mobile-nav-height);
-    padding-bottom: env(safe-area-inset-bottom);
-    background-color: var(--color-bg-primary);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    border-top: 1px solid var(--header-border);
-  }
-
-  @media (min-width: 768px) {
-    .fndx-mobile-nav {
-      display: none;
-    }
-  }
-
-  .fndx-mobile-nav__item {
-    flex: 1 1 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-stack-xs);
-    padding: var(--space-1);
-    color: var(--color-fg-tertiary);
-    text-decoration: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: color var(--motion-duration-instant) var(--motion-easing-out);
-  }
-
-  @media (hover: hover) {
-    .fndx-mobile-nav__item:hover {
-      color: var(--color-fg-primary);
-    }
-  }
-
-  .fndx-mobile-nav__item.is-active,
-  .fndx-mobile-nav__item[aria-current='page'] {
-    color: var(--color-accent-base);
-  }
-
-  .fndx-mobile-nav__icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--size-icon-md);
-    height: var(--size-icon-md);
-  }
-
-  .fndx-mobile-nav__label {
-    font-size: var(--font-size-caption);
-    line-height: 1;
-  }
+  /* .fndx-mobile-nav 死类块已删（零 markup 消费，grep 全库实证）；
+     --z-mobile-nav 的唯一消费者为 components.css 的 .mobile-nav 移动底栏 */
 
   .fndx-breadcrumb {
     display: flex;
@@ -1441,7 +1392,7 @@
     position: absolute;
     opacity: 0;
     pointer-events: none;
-    z-index: 1000;
+    z-index: var(--z-overlay-top);
     transition: opacity var(--motion-duration-fast) var(--motion-easing-out);
     transition-delay: 300ms;
   }

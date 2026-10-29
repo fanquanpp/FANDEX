@@ -1,0 +1,117 @@
+---
+/**
+ * SiteHeader — 全站顶栏单一实现（规格 4.1 壳统一：此前 Layout.astro 与
+ * HomeLayout.astro 各写一份顶栏标记，搜索/安装/语言/主题按钮标记漂移）。
+ *
+ * 只统一标记与顺序，行为脚本不动：搜索走 data-search-trigger（search-palette.ts）、
+ * 安装走 data-install-app（pwa-install.ts）、全屏/Top 走对应 id
+ * （home-layout-interactions.ts / layout-interactions.ts）。
+ *
+ * Props：
+ *   variant — 'doc'  = 文档壳（Layout.astro）：含 Top 按钮与功能直达链接；
+ *             'home' = 首页壳（HomeLayout.astro）：含 GitHub 链接与全屏按钮。
+ *             容器类沿用各壳现有样式锚点（doc -> .app-nav，home -> .home-nav），
+ *             避免一次性改写两套壳的容器 CSS 造成回归面扩大。
+ */
+import ThemeToggle from '@/islands/ThemeToggle';
+import LangToggle from '@/components/LangToggle.astro';
+import HeaderFeatureLinks from '@/components/HeaderFeatureLinks.astro';
+import { t } from '@/lib/i18n';
+import { SITE } from '@/lib/constants';
+
+interface Props {
+  variant?: 'doc' | 'home';
+}
+
+const { variant = 'doc' } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const githubUrl = 'https://github.com/fanquanpp/FANDEX';
+---
+
+<header class={variant === 'home' ? 'home-nav' : 'app-nav'} data-site-header={variant}>
+  <div class="nav-left">
+    <a
+      href={base}
+      class="nav-logo"
+      aria-label={t('nav.backHomeAria')}
+      data-i18n-aria="nav.backHomeAria"
+    >
+      <span class="logo-text">{SITE.title}</span>
+    </a>
+    {variant === 'doc' && <HeaderFeatureLinks />}
+  </div>
+  <div class="nav-right">
+    <button class="nav-search-btn fndx-icon-btn fndx-icon-btn--labeled" type="button" data-search-trigger aria-label="搜索" data-i18n-aria="nav.searchAria" data-tooltip="搜索（Ctrl+K）" data-i18n-tooltip="nav.searchTooltip" data-tooltip-pos="bottom">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="7"></circle>
+        <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+      </svg>
+      <span class="nav-search-text" data-i18n="nav.search">搜索</span>
+    </button>
+    {
+      variant === 'doc' ? (
+        <button class="nav-back-to-top fndx-icon-btn fndx-icon-btn--labeled" id="nav-back-to-top" aria-label="返回顶部" data-i18n-aria="nav.backToTop" data-tooltip="返回顶部" data-i18n-tooltip="nav.backToTop" data-tooltip-pos="bottom">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
+          <span class="nav-back-to-top-text" data-i18n="nav.top">Top</span>
+        </button>
+      ) : (
+        <>
+          <a
+            href={githubUrl}
+            class="nav-github-link fndx-icon-btn fndx-icon-btn--labeled"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-tooltip="GitHub"
+            data-tooltip-pos="bottom"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
+              ><path
+                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+              ></path></svg
+            >
+            <span class="nav-github-text">GitHub</span>
+          </a>
+          <button class="nav-fullscreen-btn fndx-icon-btn" id="home-fullscreen-btn" aria-label="切换全屏模式" data-i18n-aria="nav.fullscreenAria" data-tooltip="全屏" data-i18n-tooltip="nav.fullscreenTooltip" data-tooltip-pos="bottom">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
+              ></path>
+            </svg>
+          </button>
+        </>
+      )
+    }
+    <button class="nav-install-btn fndx-icon-btn" type="button" data-install-app hidden aria-label="安装应用" data-i18n-aria="nav.install" data-tooltip="安装到桌面 / 主屏幕" data-i18n-tooltip="nav.installTooltip" data-tooltip-pos="bottom">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+    </button>
+    <LangToggle />
+    <ThemeToggle client:load />
+  </div>
+</header>
