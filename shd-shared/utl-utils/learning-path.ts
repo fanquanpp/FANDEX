@@ -44,6 +44,8 @@ export { default as gdscriptMap } from '../metadata/learning-path/gdscript.json'
 export { default as renpyMap } from '../metadata/learning-path/renpy.json';
 export { default as godeMap } from '../metadata/learning-path/gode.json';
 export { default as konadoMap } from '../metadata/learning-path/konado.json';
+export { default as aiLlmMap } from '../metadata/learning-path/ai-llm.json';
+export { default as bigdataMap } from '../metadata/learning-path/bigdata.json';
 
 export type KnowledgeDifficulty = 'beginner' | 'intermediate' | 'advanced';
 
