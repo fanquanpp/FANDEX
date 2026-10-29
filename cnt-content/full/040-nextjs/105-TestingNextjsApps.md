@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Next.js App Router 测试策略：Vitest + React Testing Library 测纯函数与同步组件（async 服务器组件的官方边界）、Route Handler 与 Server Action 的测试入口、Playwright 走真实渲染链路验证路由与表单，配购物车表单与列表页两个例子
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-29'
 related: []
 prerequisites: []
 ---

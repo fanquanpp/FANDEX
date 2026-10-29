@@ -11,6 +11,31 @@
 
 ## [未发布]
 
+### 新增
+
+- **AI 应用开发模块（ai-llm）**：新增第 47 个内容模块、20 篇全新教学文档，
+  归入「计算机科学」分类——覆盖 2026 年最热的 LLM 应用工程方向：LLM 心智
+  模型与幻觉机制、模型版图与选型、第一次 API 调用、提示工程、上下文工程、
+  结构化输出、嵌入与向量检索、RAG 基础与进阶（混合检索 / 重排 / agentic
+  RAG）、Agent 基础与工具调用设计、MCP 协议（以 2026-07-28 规范为事实基
+  线）、记忆与状态、多智能体系统、LLM 评估、微调、本地推理（Ollama / 量
+  化）、成本与延迟工程、提示注入与 AI 安全，并以「文档问答助手」综合实战
+  收束；模块学习路径地图同步注册，学习路径页新增 AI 路线卡片；
+- **现有模块 AI 集成强化篇（5 篇）**：MongoDB Atlas Vector Search 与
+  $rankFusion 混合检索（mongodb）、Next.js 流式 AI 体验（nextjs）、Python
+  调用大模型 API 工程细节（python）、Spring AI 集成（spring-boot）、Vue3
+  流式 AI 对话组件（vue3）——把存量技术栈与 LLM 工程方向衔接起来；
+- **大数据开发模块（bigdata）**：新增第 48 个内容模块、12 篇全新教学文档，
+  归入「后端技术」分类，补齐大数据应用开发赛项知识栈——大数据版图与学
+  习路线、HDFS 与 MapReduce、Hive 与数据仓库分层、Spark Core 与 RDD、
+  Spark SQL 与 DataFrame、Flink 流处理模型（时间语义/水位线/checkpoint/
+  精确一次）、Kafka 与采集管道（KRaft/CDC）、HBase 宽表与 RowKey 设计、
+  ClickHouse 列式 OLAP、面向 Spark 的 Scala 最小集、ECharts 可视化大屏，
+  以「离线+实时一体化数仓」综合实战收束；
+- **赛项缺口补充篇（3 篇）**：LangChain 与 LangGraph 框架层 Agent 开发
+  （ai-llm）、Vue3 管理后台 Element Plus 工程模式（vue3）、并将 MongoDB
+  向量搜索与上述新篇挂入各模块学习路径地图。
+
 ## [v4.5.0] - 2026-09-23
 
 ### 新增

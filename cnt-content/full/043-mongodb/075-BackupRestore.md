@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: mongodump/mongorestore 的范围与压缩、文件系统快照与 journal 一致性、oplog 时间点恢复（PIT）
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-29'
 related: []
 prerequisites: []
 ---

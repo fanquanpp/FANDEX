@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 190
 title: token、成本与延迟：LLM 应用的经济学
 description: '建立 LLM 应用成本与延迟的工程心智模型：输入输出分开计价与输出贵三到八倍的定价结构、prompt caching 的静态前缀命中机制、batch API 半价换等待、模型路由把简单请求分流给小模型、TTFT 与流式的体感原理、网络排队生成三段延迟，以及记账告警熔断三件预算护栏，含成本核算动手实验。'
 module: 'ai-llm'

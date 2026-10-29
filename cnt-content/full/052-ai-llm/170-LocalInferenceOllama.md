@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 180
 title: 本地推理与 Ollama：量化、GGUF 与一行切换云端本地
 description: '建立本地推理的完整心智模型：为什么把模型搬到自己机器上、量化把权重从 FP16 压到 Q4 的直觉与代价、Q4_K_M 命名与 GGUF 格式怎么读、Ollama 与 LM Studio 与 vLLM 的分工、参数量加 KV cache 的显存估算表、OpenAI 兼容端点让应用一行 base_url 切换云端本地，含 Ollama 跑通动手实验。'
 module: 'ai-llm'

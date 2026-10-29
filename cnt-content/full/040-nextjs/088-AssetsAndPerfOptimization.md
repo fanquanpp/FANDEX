@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: next/image 与 next/font 的生产用法、bundle 体积分析与 Web Vitals 采集上报
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-10-29'
 related: []
 prerequisites: []
 ---

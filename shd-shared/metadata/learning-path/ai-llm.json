@@ -8,9 +8,21 @@
       "title": "认知与第一次调用",
       "subtitle": "模型是什么、怎么选、怎么调",
       "nodes": [
-        { "id": "ai-001", "title": "LLM 是什么", "doc": "010-WhatIsLLM" },
-        { "id": "ai-002", "title": "模型版图与选型", "doc": "020-ModelLandscapeSelection" },
-        { "id": "ai-003", "title": "第一次调用 LLM API", "doc": "030-FirstLlmApiCall" }
+        {
+          "id": "ai-001",
+          "title": "LLM 是什么",
+          "doc": "010-WhatIsLLM"
+        },
+        {
+          "id": "ai-002",
+          "title": "模型版图与选型",
+          "doc": "020-ModelLandscapeSelection"
+        },
+        {
+          "id": "ai-003",
+          "title": "第一次调用 LLM API",
+          "doc": "030-FirstLlmApiCall"
+        }
       ]
     },
     {
@@ -18,9 +30,21 @@
       "title": "提示、上下文与结构化输出",
       "subtitle": "把模型当成不可靠但能干的函数来喂",
       "nodes": [
-        { "id": "ai-004", "title": "提示工程", "doc": "040-PromptEngineering" },
-        { "id": "ai-005", "title": "上下文工程", "doc": "050-ContextEngineering" },
-        { "id": "ai-006", "title": "结构化输出", "doc": "060-StructuredOutput" }
+        {
+          "id": "ai-004",
+          "title": "提示工程",
+          "doc": "040-PromptEngineering"
+        },
+        {
+          "id": "ai-005",
+          "title": "上下文工程",
+          "doc": "050-ContextEngineering"
+        },
+        {
+          "id": "ai-006",
+          "title": "结构化输出",
+          "doc": "060-StructuredOutput"
+        }
       ]
     },
     {
@@ -28,9 +52,21 @@
       "title": "知识接入与 RAG",
       "subtitle": "嵌入、检索与生成的一整套管线",
       "nodes": [
-        { "id": "ai-007", "title": "嵌入与向量检索", "doc": "070-EmbeddingsAndVectorSearch" },
-        { "id": "ai-008", "title": "RAG 基础", "doc": "080-RagFundamentals" },
-        { "id": "ai-009", "title": "进阶 RAG", "doc": "090-RagAdvanced" }
+        {
+          "id": "ai-007",
+          "title": "嵌入与向量检索",
+          "doc": "070-EmbeddingsAndVectorSearch"
+        },
+        {
+          "id": "ai-008",
+          "title": "RAG 基础",
+          "doc": "080-RagFundamentals"
+        },
+        {
+          "id": "ai-009",
+          "title": "进阶 RAG",
+          "doc": "090-RagAdvanced"
+        }
       ]
     },
     {
@@ -38,11 +74,36 @@
       "title": "Agent 与工具",
       "subtitle": "让模型动手：工具、循环、协议与协作",
       "nodes": [
-        { "id": "ai-010", "title": "AI Agent 基础", "doc": "100-AiAgentsFundamentals" },
-        { "id": "ai-011", "title": "工具调用设计", "doc": "110-ToolCallingDesign" },
-        { "id": "ai-012", "title": "MCP 协议", "doc": "120-McpProtocol" },
-        { "id": "ai-013", "title": "记忆与状态", "doc": "130-AgentMemoryAndState" },
-        { "id": "ai-014", "title": "多智能体系统", "doc": "140-MultiAgentSystems" }
+        {
+          "id": "ai-010",
+          "title": "AI Agent 基础",
+          "doc": "100-AiAgentsFundamentals"
+        },
+        {
+          "id": "ai-011",
+          "title": "工具调用设计",
+          "doc": "110-ToolCallingDesign"
+        },
+        {
+          "id": "ai-012",
+          "title": "MCP 协议",
+          "doc": "120-McpProtocol"
+        },
+        {
+          "id": "ai-013",
+          "title": "记忆与状态",
+          "doc": "130-AgentMemoryAndState"
+        },
+        {
+          "id": "ai-014",
+          "title": "多智能体系统",
+          "doc": "140-MultiAgentSystems"
+        },
+        {
+          "id": "ai-021",
+          "title": "LangChain 与 LangGraph",
+          "doc": "145-LangChainLangGraph"
+        }
       ]
     },
     {
@@ -50,12 +111,36 @@
       "title": "工程化与生产",
       "subtitle": "评估、微调、本地推理、成本与安全",
       "nodes": [
-        { "id": "ai-015", "title": "LLM 评估", "doc": "150-LlmEvaluationEvals" },
-        { "id": "ai-016", "title": "微调", "doc": "160-FinetuningWhenHow" },
-        { "id": "ai-017", "title": "本地推理", "doc": "170-LocalInferenceOllama" },
-        { "id": "ai-018", "title": "成本与延迟工程", "doc": "180-TokenCostLatency" },
-        { "id": "ai-019", "title": "提示注入与 AI 安全", "doc": "190-PromptInjectionSecurity" },
-        { "id": "ai-020", "title": "综合实战：文档问答助手", "doc": "200-CapstoneDocQaAssistant" }
+        {
+          "id": "ai-015",
+          "title": "LLM 评估",
+          "doc": "150-LlmEvaluationEvals"
+        },
+        {
+          "id": "ai-016",
+          "title": "微调",
+          "doc": "160-FinetuningWhenHow"
+        },
+        {
+          "id": "ai-017",
+          "title": "本地推理",
+          "doc": "170-LocalInferenceOllama"
+        },
+        {
+          "id": "ai-018",
+          "title": "成本与延迟工程",
+          "doc": "180-TokenCostLatency"
+        },
+        {
+          "id": "ai-019",
+          "title": "提示注入与 AI 安全",
+          "doc": "190-PromptInjectionSecurity"
+        },
+        {
+          "id": "ai-020",
+          "title": "综合实战：文档问答助手",
+          "doc": "200-CapstoneDocQaAssistant"
+        }
       ]
     }
   ]

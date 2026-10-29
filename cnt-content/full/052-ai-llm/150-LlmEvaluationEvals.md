@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 160
 title: LLM 评估与 Evals：从「感觉变好」到工程结论
 description: '建立 LLM 应用评估的工程心智模型：vibes 评估为什么不可用、评估集（golden set）怎么从真实失败案例攒出来、硬断言加 LLM-as-judge 加人工抽检的三层评估、像 CI 一样的回归门禁、线上反馈回流与 A/B 测试的统计直觉，含迷你评估器动手实现。'
 module: 'ai-llm'
