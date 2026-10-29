@@ -1142,6 +1142,38 @@
           "type": "docs"
         }
       ]
+    },
+    {
+      "id": "ai-llm",
+      "title": "AI 应用开发",
+      "icon": "Ai",
+      "description": "大模型应用工程一线：提示与上下文工程、结构化输出与工具调用、RAG 与 Agent、MCP 协议、评估、微调、本地推理、成本与安全",
+      "categories": [
+        "cs"
+      ],
+      "folder_order": 52,
+      "officialDocs": [
+        {
+          "label": "Model Context Protocol 规范",
+          "url": "https://modelcontextprotocol.io/specification/2026-07-28",
+          "type": "spec"
+        },
+        {
+          "label": "OpenAI API 文档",
+          "url": "https://platform.openai.com/docs",
+          "type": "docs"
+        },
+        {
+          "label": "Anthropic 文档",
+          "url": "https://docs.anthropic.com",
+          "type": "docs"
+        },
+        {
+          "label": "Ollama 文档",
+          "url": "https://docs.ollama.com",
+          "type": "docs"
+        }
+      ]
     }
   ],
   "modulePrerequisites": {
@@ -1287,6 +1319,10 @@
       "spring-boot",
       "mysql",
       "redis"
+    ],
+    "ai-llm": [
+      "python",
+      "cs-fundamentals"
     ]
   }
 }
