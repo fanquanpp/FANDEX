@@ -1,5 +1,5 @@
 ---
-order: 970
+order: 980
 title: Python 与计算机视觉
 module: 'python'
 category: 后端技术

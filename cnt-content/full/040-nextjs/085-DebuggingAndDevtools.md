@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 140
 title: 调试与 DevTools
 module: 'nextjs'
 category: 前端技术

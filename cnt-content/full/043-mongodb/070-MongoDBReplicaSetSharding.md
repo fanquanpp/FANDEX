@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 100
 title: 副本集与分片架构
 module: 'mongodb'
 category: 数据库

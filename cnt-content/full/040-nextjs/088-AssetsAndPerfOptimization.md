@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 150
 title: 静态资源与性能优化
 module: 'nextjs'
 category: 前端技术

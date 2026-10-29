@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 190
 title: Next.js 应用的测试
 module: 'nextjs'
 category: 前端技术
