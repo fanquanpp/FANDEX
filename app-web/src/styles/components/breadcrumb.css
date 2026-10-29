@@ -33,7 +33,8 @@
   gap: var(--space-1);
   padding: var(--space-2) 0;
   margin-bottom: var(--space-6);
-  font-size: 0.82em;
+  /* 高度与字号对齐（规格 4.5）：消费语义令牌，不再用裸 0.82em */
+  font-size: var(--font-size-secondary);
   border-bottom: 1px solid var(--color-border-light);
   max-width: var(--content-width);
   margin-left: auto;
@@ -70,7 +71,9 @@
   .breadcrumb {
     position: sticky;
     top: var(--nav-height, 56px);
-    z-index: 90;
+    /* z 刻度迁移（规格 4.2）：页内吸顶条族统一 --z-sticky（10），
+       必须低于侧栏抽屉遮罩（25）与移动目录吸顶条（20） */
+    z-index: var(--z-sticky);
     background: var(--color-bg-primary);
     padding: var(--space-2) var(--space-4);
     margin-bottom: 0;

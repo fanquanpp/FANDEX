@@ -237,8 +237,12 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
 
   .doc-title-row {
     position: sticky;
+    /* top:0 配合 .app-main 的移动端吸顶条占位 padding（layout-components 移动块），
+       恰好钉在目录吸顶条（--z-toc，2.5rem 高）下缘，两根吸顶条无缝相接 */
     top: 0;
-    z-index: 20;
+    /* z 刻度迁移（规格 4.2）：文档头行属页内吸顶条族，统一 --z-sticky（10），
+       低于侧栏抽屉遮罩（25）与移动目录吸顶条（20） */
+    z-index: var(--z-sticky);
     background: var(--color-bg-primary);
     display: flex;
     align-items: center;
@@ -309,7 +313,8 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
     line-height: 1.6;
   }
 
-  @media (max-width: 768px) {
+  /* 断点纪律（规格 4.3）：与全站规范档对齐为 767.98px，恰 768px 整数宽归桌面布局 */
+  @media (max-width: 767.98px) {
     .doc-page {
       padding: var(--space-2) var(--space-4) var(--space-12);
     }

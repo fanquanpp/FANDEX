@@ -75,6 +75,8 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'toc.collapse': { zh: '折叠子目录', en: 'Collapse sub-sections' },
   'toc.expand': { zh: '展开子目录', en: 'Expand sub-sections' },
   'toc.other': { zh: '其他', en: 'Other' },
+  'toc.backTop': { zh: '回到开头', en: 'Back to top' },
+  'toc.mobileToggleAria': { zh: '展开或折叠本页目录', en: 'Toggle this page outline' },
 
   'docNav.prev': { zh: '上一篇', en: 'Previous' },
   'docNav.next': { zh: '下一篇', en: 'Next' },
