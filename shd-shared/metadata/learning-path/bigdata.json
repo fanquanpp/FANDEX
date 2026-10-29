@@ -1,0 +1,54 @@
+{
+  "version": "1.0.0",
+  "module": "bigdata",
+  "summary": "从分布式存储与计算的心智模型起步，经 Hive 数仓分层、Spark 内存计算、Flink 流处理，走向 Kafka 管道、HBase 宽表、ClickHouse OLAP 与离线实时一体实战。",
+  "stages": [
+    {
+      "id": "foundations",
+      "title": "版图与分布式地基",
+      "subtitle": "生态地图与 Hadoop 双模型",
+      "nodes": [
+        { "id": "bd-001", "title": "大数据版图与学习路线", "doc": "010-BigDataLandscape" },
+        { "id": "bd-002", "title": "HDFS 与 MapReduce", "doc": "020-HadoopHdfsMapReduce" },
+        { "id": "bd-003", "title": "Hive 与数据仓库", "doc": "030-HiveWarehouseSql" }
+      ]
+    },
+    {
+      "id": "offline",
+      "title": "离线计算：Spark",
+      "subtitle": "内存计算与结构化处理",
+      "nodes": [
+        { "id": "bd-004", "title": "Spark Core 与 RDD", "doc": "040-SparkCoreRdd" },
+        { "id": "bd-005", "title": "Spark SQL 与 DataFrame", "doc": "050-SparkSqlDataframe" },
+        { "id": "bd-006", "title": "Scala 最小集", "doc": "100-ScalaForSpark" }
+      ]
+    },
+    {
+      "id": "realtime",
+      "title": "实时计算与管道",
+      "subtitle": "流处理模型与采集链路",
+      "nodes": [
+        { "id": "bd-007", "title": "Flink 流处理模型", "doc": "060-FlinkStreamingModel" },
+        { "id": "bd-008", "title": "Kafka 与采集管道", "doc": "070-KafkaPipeline" }
+      ]
+    },
+    {
+      "id": "storage-viz",
+      "title": "存储引擎与可视化",
+      "subtitle": "宽表、OLAP 与大屏",
+      "nodes": [
+        { "id": "bd-009", "title": "HBase 宽表存储", "doc": "080-HbaseWideTable" },
+        { "id": "bd-010", "title": "ClickHouse 列式 OLAP", "doc": "090-ClickhouseOlap" },
+        { "id": "bd-011", "title": "ECharts 可视化", "doc": "110-EchartsVisualization" }
+      ]
+    },
+    {
+      "id": "capstone",
+      "title": "综合实战",
+      "subtitle": "离线加实时一体化小项目",
+      "nodes": [
+        { "id": "bd-012", "title": "数仓实战：离线与实时", "doc": "120-CapstoneOfflineRealtime" }
+      ]
+    }
+  ]
+}

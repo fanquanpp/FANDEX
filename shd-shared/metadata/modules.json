@@ -1174,6 +1174,38 @@
           "type": "docs"
         }
       ]
+    },
+    {
+      "id": "bigdata",
+      "title": "大数据开发",
+      "icon": "Bd",
+      "description": "从 HDFS 与 MapReduce 到 Spark 4、Flink 2 与 ClickHouse：离线与实时两条计算链路、数据仓库分层、采集管道与可视化大屏",
+      "categories": [
+        "backend"
+      ],
+      "folder_order": 53,
+      "officialDocs": [
+        {
+          "label": "Apache Spark 文档",
+          "url": "https://spark.apache.org/docs/latest/",
+          "type": "docs"
+        },
+        {
+          "label": "Apache Flink 文档",
+          "url": "https://nightlies.apache.org/flink/flink-docs-stable/",
+          "type": "docs"
+        },
+        {
+          "label": "Apache Hadoop 文档",
+          "url": "https://hadoop.apache.org/docs/stable/",
+          "type": "docs"
+        },
+        {
+          "label": "ClickHouse 文档",
+          "url": "https://clickhouse.com/docs",
+          "type": "docs"
+        }
+      ]
     }
   ],
   "modulePrerequisites": {
@@ -1323,6 +1355,10 @@
     "ai-llm": [
       "python",
       "cs-fundamentals"
+    ],
+    "bigdata": [
+      "java",
+      "sql"
     ]
   }
 }

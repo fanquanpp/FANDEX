@@ -20,6 +20,7 @@
     "spring-boot",
     "mybatis",
     "spring-cloud",
+    "bigdata",
     "redis",
     "shell",
     "algorithm",
