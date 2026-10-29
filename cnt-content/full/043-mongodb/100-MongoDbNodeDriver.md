@@ -1,12 +1,12 @@
 ---
-order: 130
+order: 140
 title: Node.js 驱动集成
 module: 'mongodb'
 category: 数据库
 difficulty: intermediate
 description: 从 mongosh 到业务代码：MongoClient 连接与连接池、CRUD 语法对照、事务回调 API、Change Stream、重试写与错误处理，以及与 Mongoose 的分工。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-10-29'
 related:
   - 'mongodb/030-MongoDBAggregationPipeline'
   - 'mongodb/050-MongoDBSchemaDesign'

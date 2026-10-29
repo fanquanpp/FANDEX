@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 230
 title: 综合实战：从零件到整车的博客 API
 description: 以「010-180 十八篇零件如何组装成一辆能上生产心智的车」引入：博客 REST API 的需求与边界、ER 与接口清单、五层骨架走读、缓存异步可观测打包的环节串讲、测试与容器化验收清单，全模块收官串联。
 module: 'spring-boot'
@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/170-TestingStrategy'
   - 'spring-boot/180-PackagingDeployment'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-10-29'
 related:
   - 'spring-boot/070-UnifiedResponseExceptionHandling'
   - 'spring-boot/120-SpringSecurityJwt'

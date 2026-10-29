@@ -1,12 +1,12 @@
 ---
-order: 120
+order: 130
 title: 认证、代理与安全
 module: 'nextjs'
 category: 前端技术
 difficulty: intermediate
 description: 会话、JWT 与 proxy.ts：守住 Next.js 应用的入口。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-10-29'
 related:
   - 'nextjs/030-DataFetchingCaching'
   - 'nextjs/090-DeploymentOptimization'

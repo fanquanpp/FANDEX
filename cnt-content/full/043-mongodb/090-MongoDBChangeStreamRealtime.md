@@ -1,12 +1,12 @@
 ---
-order: 120
+order: 130
 title: 变更流与实时应用
 module: 'mongodb'
 category: 数据库
 difficulty: advanced
 description: 监听数据变化的每一跳：Change Streams、resume token 与实时架构。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-10-29'
 related:
   - 'mongodb/020-MongoDBCRUDOperations'
 prerequisites:

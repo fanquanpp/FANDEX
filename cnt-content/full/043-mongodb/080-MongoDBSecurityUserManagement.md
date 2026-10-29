@@ -1,12 +1,12 @@
 ---
-order: 110
+order: 120
 title: 安全与用户管理
 module: 'mongodb'
 category: 数据库
 difficulty: intermediate
 description: 认证、角色与最小权限：把数据库的门锁好。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-10-29'
 related:
   - 'mongodb/050-MongoDBSchemaDesign'
 prerequisites:

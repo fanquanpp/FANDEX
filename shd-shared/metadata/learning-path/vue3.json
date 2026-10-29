@@ -196,6 +196,11 @@
           "desc": "组件库开发、发布与文档规范",
           "difficulty": "advanced",
           "doc": "400-ComponentLibraryEngineering"
+        },
+        {
+          "id": "vue-025",
+          "title": "管理后台与 Element Plus",
+          "doc": "417-Vue3AdminDashboard"
         }
       ]
     }

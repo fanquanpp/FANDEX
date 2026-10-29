@@ -1,12 +1,12 @@
 ---
-order: 900
+order: 910
 title: Web 爬虫：从第一个页面到规模抓取
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 以「抓取 quotes.toscrape.com 做语料分析」为场景，写出第一个带超时、重试与限速的合规爬虫：requests 会话、BeautifulSoup 解析、翻页循环与 CSV 落盘；讲清 HTTP 客户端与解析器选型、robots.txt 礼仪、动态页面的 Playwright 出场时机与 Scrapy 的规模临界点。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-10-29'
 related:
   - 'python/320-HttpClient'
   - 'python/970-PythonProjectExampleWebCrawlerDataAnalysis'

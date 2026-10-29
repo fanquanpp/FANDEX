@@ -1,12 +1,12 @@
 ---
-order: 950
+order: 960
 title: Python 与深度学习
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: PyTorch与TensorFlow
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-10-29'
 related:
   - 'python/930-PythonGraphQL'
   - 'python/990-PythonMachineLearning'

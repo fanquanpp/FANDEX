@@ -50,6 +50,8 @@ import {
   renpyMap,
   godeMap,
   konadoMap,
+  aiLlmMap,
+  bigdataMap,
 } from '@fandex/utils/learning-path';
 import docIndex from '@/data/doc-index.json';
 import { getModule, categoryColors, getPrimaryCategory } from '@/lib/modules';
@@ -129,6 +131,8 @@ const technologyMaps: Readonly<Record<string, TechnologyMap>> = {
   renpy: renpyMap as unknown as TechnologyMap,
   gode: godeMap as unknown as TechnologyMap,
   konado: konadoMap as unknown as TechnologyMap,
+  'ai-llm': aiLlmMap as unknown as TechnologyMap,
+  bigdata: bigdataMap as unknown as TechnologyMap,
 };
 
 const docTitleMap = new Map<string, string>(

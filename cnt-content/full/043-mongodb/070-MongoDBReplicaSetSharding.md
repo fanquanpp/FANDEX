@@ -1,12 +1,12 @@
 ---
-order: 90
+order: 100
 title: 副本集与分片架构
 module: 'mongodb'
 category: 数据库
 difficulty: advanced
 description: 副本集高可用与水平分片：oplog、选举、shard key 选型与数据分布。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-10-29'
 related:
   - 'mongodb/040-MongoDBIndexPerformance'
 prerequisites:
