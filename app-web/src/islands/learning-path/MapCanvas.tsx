@@ -84,7 +84,9 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
     if (onScaleChange && scaleRafRef.current === 0) {
       scaleRafRef.current = requestAnimationFrame(() => {
         scaleRafRef.current = 0;
-        onScaleChange(k * 100);
+        // 回调触发时读当前值：同帧多次 applyTransform（fitStart -> ResizeObserver fit）
+        // 时旧闭包的 k 已过期，会报出与 DOM transform 不符的缩放读数
+        onScaleChange(transformRef.current.k * 100);
       });
     }
   }, [onScaleChange]);
@@ -206,7 +208,18 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    const observer = new ResizeObserver(() => fit());
+    // ResizeObserver 首次观察必然回调一次，且晚于同帧 rAF 中的 fitStart：
+    // 若不跳过，fit() 会以 MIN_SCALE 居中覆盖 fitStart 的舒适锚点（左侧锚定、
+    // 首阶段可读），窄视口下首阶段整体被裁出画布左缘。初始适配由 fitStart 负责，
+    // 后续真实尺寸变化仍走 fit()。
+    let initial = true;
+    const observer = new ResizeObserver(() => {
+      if (initial) {
+        initial = false;
+        return;
+      }
+      fit();
+    });
     observer.observe(container);
     return () => observer.disconnect();
   }, [fit]);

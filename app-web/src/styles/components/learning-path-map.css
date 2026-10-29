@@ -111,11 +111,15 @@
     cursor: grabbing;
   }
 
+  /* 连线即语义图形，按非文本对比度 3:1 审计提档（neutral 阶梯内解决）：
+     border-strong 暗色 #404040@0.72 于卡片底 #1F1F1F 仅 1.38:1、亮色 #BCC8D0 仅 1.32:1；
+     neutral-600 #737373 不透明于暗 #1F1F1F = 3.48:1、亮 #EBEFF3 = 4.10:1，双主题达标。
+     注：root-stage 边的 stroke 表现属性本就被本规则覆盖（CSS 优先于 SVG 表现属性），行为不变。 */
   .lp-edge {
     fill: none;
-    stroke: var(--color-border-strong);
+    stroke: var(--color-neutral-600);
     stroke-width: 1.4;
-    opacity: 0.72;
+    opacity: 1;
   }
 
   .lp-root {
@@ -201,9 +205,6 @@
     fill: color-mix(in oklch, var(--lp-color) 12%, transparent);
     stroke: color-mix(in oklch, var(--lp-color) 30%, transparent);
     stroke-width: 1;
-  }
-
-  .lp-stage__count-rect {
     rx: 2;
   }
 
@@ -243,9 +244,12 @@
     stroke-width: 2;
   }
 
+  /* 节点描边是地图必需图形，按非文本对比度 3:1 审计提档：border-default
+     暗 #2A2A2A 于卡片底 #1F1F1F 仅 1.15:1、亮 #CCD5DB 于 #EBEFF3 仅 1.29:1；
+     neutral-600 双主题分别为 3.48:1 / 4.10:1。投影底色同步去掉冷调 rgba(10,14,20)。 */
   .lp-node__rect {
     fill: var(--color-bg-card);
-    stroke: var(--color-border-default);
+    stroke: var(--color-neutral-600);
     stroke-width: 1;
     rx: 3;
     transition:
@@ -254,11 +258,11 @@
   }
 
   .lp-node__rect {
-    filter: drop-shadow(0 1px 2px rgba(10, 14, 20, 0.08));
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.08));
   }
 
   .lp-node--hovered .lp-node__rect {
-    filter: drop-shadow(0 2px 5px rgba(10, 14, 20, 0.16));
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.16));
   }
 
   .lp-node__rect--planned {
@@ -327,7 +331,7 @@
     min-height: 240px;
     padding: var(--space-6);
     border: 1px solid var(--color-border-light);
-    border-radius: var(--radius-md, 4px);
+    border-radius: var(--radius-card);
     background: var(--color-bg-card);
   }
 
@@ -540,11 +544,12 @@
     gap: 6px;
   }
 
+  /* 图例线与 .lp-edge 实际用色保持一致（同走对比度提档后的 neutral-600） */
   .lp-legend-line {
     display: inline-block;
     width: 18px;
     height: 2px;
-    background: var(--color-border-strong);
+    background: var(--color-neutral-600);
   }
 
   .lp-legend-line--planned {
@@ -578,7 +583,7 @@
     margin-right: auto;
     padding: 4px 10px 4px 4px;
     border: 1px solid var(--color-border-light);
-    border-radius: var(--radius-md, 4px);
+    border-radius: var(--radius-card);
     background: var(--color-bg-card);
   }
 
@@ -669,7 +674,7 @@
     gap: 4px;
     padding: 4px;
     border: 1px solid var(--color-border-light);
-    border-radius: var(--radius-md, 4px);
+    border-radius: var(--radius-card);
     background: var(--color-bg-sunken);
   }
 
@@ -693,15 +698,12 @@
     color: var(--color-fg-primary);
   }
 
+  /* 选中态 = 反色墨水（规格 3.3：互斥单选统一反色，暗色即浅底深字；
+     明确不与 cyan 混用，cyan 保留给焦点 outline 与画布上的进度刻度） */
   .lp-panel__progress-btn.is-active {
-    background: var(--color-bg-card);
-    border-color: color-mix(in srgb, var(--color-accent-base) 50%, transparent);
-    color: var(--color-accent-base);
-  }
-
-  .lp-panel__progress-btn.is-done.is-active {
-    border-color: color-mix(in srgb, var(--color-success-base) 50%, transparent);
-    color: var(--color-success-base);
+    background: var(--color-fg-primary);
+    border-color: transparent;
+    color: var(--color-bg-primary);
   }
 
   .lp-panel__progress-btn:focus-visible {
@@ -724,7 +726,8 @@
     background: var(--color-success-base);
   }
 
-  @media (max-width: 1024px) {
+  /* 断点纪律（规格 4.3.2a）：与 7 处 min-width:1024 互补，恰 1024px 归桌面档（双列布局） */
+  @media (max-width: 1023px) {
     .lp-map__body {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -743,6 +746,24 @@
     .lp-progress__learning {
       display: none;
     }
+  }
+
+  /* 暗色对比度集中提档（规格 5.4.2 审计结论）：
+     --color-fg-tertiary 暗色 #737373 在卡片底 #1F1F1F 上仅 3.48:1（页底 #0A0A0A 上 4.18:1），
+     均不达小号文本 4.5:1；提档到 --color-fg-secondary（#A3A3A3，卡片底 6.53:1）。
+     带状态变体的元素用 :not 排除，避免覆盖 learning/done/planned 的语义色。 */
+  [data-theme='dark'] .lp-node__status:not(.lp-node__status--learning):not(.lp-node__status--done),
+  [data-theme='dark'] .lp-node__seq,
+  [data-theme='dark'] .lp-stage__subtitle,
+  [data-theme='dark'] .lp-progress__label,
+  [data-theme='dark'] .lp-panel__status:not(.lp-panel__status--planned),
+  [data-theme='dark'] .lp-panel__sub,
+  [data-theme='dark'] .lp-panel__footer {
+    fill: var(--color-fg-secondary);
+  }
+
+  [data-theme='dark'] .lp-map__shortcuts {
+    color: var(--color-fg-secondary);
   }
 
   @media (prefers-reduced-motion: reduce) {
