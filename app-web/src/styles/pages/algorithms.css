@@ -31,10 +31,17 @@
 }
 
 .algo-section__en {
+  /* 规格本轮 5.6.2 迁移合并：原页内嵌 scoped 版（0.66rem/0.04em + flex 截断）
+     以更高优先级生效，此处按其生效值归一，避免双源 */
+  flex: 1;
+  min-width: 0;
   font-family: var(--font-family-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
   color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .algo-section__count {
@@ -42,6 +49,21 @@
   font-family: var(--font-family-mono);
   font-size: 0.68rem;
   color: var(--color-text-tertiary);
+}
+
+.algo-section__index {
+  font-family: var(--font-family-mono);
+  font-size: 0.66rem;
+  color: var(--unit-color, var(--page-color, var(--color-accent-base)));
+  margin-right: var(--space-2);
+  letter-spacing: 0.06em;
+}
+
+.algo-section__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .algo-units {
@@ -352,6 +374,7 @@
   content: '';
   position: absolute;
   inset: 0;
+  /* 规格 4.2 注 2 豁免：已定位父级栈内盖住同栈兄弟（拉伸链接热区），非浮层 */
   z-index: 1;
 }
 
@@ -366,6 +389,8 @@
 
 .ap-card__marks {
   position: relative;
+  /* 规格 4.2 注 2 豁免：卡内标记须盖过同栈的拉伸链接热区（::after z-index:1），
+     非浮层语义，保留行内整数 */
   z-index: 2;
   display: flex;
   justify-content: flex-end;
@@ -923,4 +948,344 @@
   display: flex;
   justify-content: center;
   margin-bottom: var(--space-6);
+}
+
+/* --------------------------------------------------------------------------
+   视图切换与外部资源区（规格 5.6.2：原 algorithms/index.astro 页内嵌 style 块
+   整体迁入，类名不变，样式单源化；本页类名经 grep 实证仅该页消费）
+   -------------------------------------------------------------------------- */
+
+.algo-units,
+[data-algo-ext] {
+  scroll-margin-top: 72px;
+}
+
+.algo-views {
+  position: sticky;
+  top: 0;
+  /* 规格 4.2 刻度迁移：页内吸顶工具栏归 --z-sticky（10），低于顶栏 40
+     与一切遮罩；原裸值 60 在顶栏降为 40 后会翻转到顶栏之上 */
+  z-index: var(--z-sticky);
+  display: inline-flex;
+  gap: var(--space-1);
+  margin-block: var(--space-6) 0;
+  padding: 4px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-bg-primary) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.algo-views__tab {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius-md) - 3px);
+  background: transparent;
+  font-family: var(--font-family-heading);
+  font-size: 0.82rem;
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    color var(--motion-duration-fast) var(--motion-easing-out),
+    border-color var(--motion-duration-fast) var(--motion-easing-out),
+    background-color var(--motion-duration-fast) var(--motion-easing-out);
+}
+
+.algo-views__tab em {
+  font-family: var(--font-family-mono);
+  font-size: 0.64rem;
+  font-style: normal;
+  color: var(--color-text-tertiary);
+}
+
+/* hover 态须先于 .is-active 声明：两者同特异性，保序使选中态在悬停时维持反色 */
+.algo-views__tab:hover {
+  color: var(--color-fg-primary);
+}
+
+.algo-views__tab:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* 选中态 = 反色墨水（规格 3.3 / 5.6.3：互斥单选统一反色，暗色即白底黑字；
+   与 cyan 强调互不混用，cyan 保留给焦点 outline） */
+.algo-views__tab.is-active {
+  color: var(--color-bg-primary);
+  border-color: transparent;
+  background: var(--color-fg-primary);
+}
+
+.algo-views__tab.is-active em {
+  color: color-mix(in srgb, var(--color-bg-primary) 72%, var(--color-fg-primary));
+}
+
+.algo-ext {
+  margin-block: var(--space-10) var(--space-8);
+}
+
+.algo-ext__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.algo-ext__note {
+  font-family: var(--font-family-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--color-text-tertiary);
+}
+
+.algo-ext__group {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  transition: grid-template-rows var(--motion-duration-normal) var(--motion-easing-out);
+}
+
+.algo-ext__group.collapsed {
+  grid-template-rows: auto 0fr;
+}
+
+.algo-ext__group + .algo-ext__group {
+  margin-top: var(--space-4);
+}
+
+.algo-ext__group-title {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: 0.8rem;
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-secondary);
+}
+
+.algo-ext__group-title em {
+  font-family: var(--font-family-mono);
+  font-size: 0.62rem;
+  font-style: normal;
+  letter-spacing: 0.04em;
+  color: var(--color-text-tertiary);
+}
+
+.algo-ext__group-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: calc(-1 * var(--space-2));
+  padding: var(--space-1) var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm, 2px);
+  background: none;
+  font: inherit;
+  color: var(--color-fg-primary);
+  cursor: pointer;
+  transition: background-color var(--motion-duration-instant) var(--motion-easing-out);
+}
+
+.algo-ext__group-toggle:hover {
+  background: var(--color-bg-hover);
+}
+
+.algo-ext__group-toggle:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.algo-ext__group-count {
+  font-size: 0.66rem;
+  color: var(--color-fg-tertiary);
+  font-variant-numeric: tabular-nums;
+  padding: 1px 8px;
+  border-radius: var(--radius-md, 4px);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-subtle);
+  line-height: 1.5;
+}
+
+.algo-ext__group-toggle .toggle-icon {
+  color: var(--color-fg-tertiary);
+  transition:
+    transform var(--motion-duration-normal) var(--motion-easing-out),
+    color var(--motion-duration-instant) var(--motion-easing-out);
+}
+
+.algo-ext__group-toggle:hover .toggle-icon {
+  color: var(--color-fg-secondary);
+}
+
+.algo-ext__group.collapsed .toggle-icon {
+  transform: rotate(-90deg);
+}
+
+.algo-ext__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  overflow: hidden;
+  min-height: 0;
+  padding: var(--space-1) 0 var(--space-2);
+}
+
+.algo-ext__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color var(--motion-duration-fast) var(--motion-easing-out),
+    box-shadow var(--motion-duration-fast) var(--motion-easing-out),
+    transform var(--motion-duration-fast) var(--motion-easing-out);
+}
+
+.algo-ext__card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background: var(--card-color);
+  opacity: 0.55;
+  transition: opacity var(--motion-duration-fast) var(--motion-easing-out);
+}
+
+.algo-ext__card:hover {
+  border-color: color-mix(in srgb, var(--card-color) 55%, transparent);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.algo-ext__card:hover::before {
+  opacity: 1;
+}
+
+.algo-ext__card:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.algo-ext__card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.algo-ext__name {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: 0.82rem;
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-fg-primary);
+}
+
+.algo-ext__tag {
+  padding: 1px var(--space-2);
+  border: 1px solid color-mix(in srgb, var(--card-color) 45%, transparent);
+  border-radius: 999px;
+  font-family: var(--font-family-mono);
+  font-size: 0.6rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.algo-ext__arrow {
+  margin-left: auto;
+  color: var(--color-text-tertiary);
+  transition: color var(--motion-duration-fast) var(--motion-easing-out);
+}
+
+.algo-ext__card:hover .algo-ext__arrow {
+  color: var(--card-color);
+}
+
+.algo-ext__desc {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.algo-ext__host {
+  margin-top: auto;
+  font-family: var(--font-family-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.05em;
+  color: var(--color-text-tertiary);
+}
+
+.algo-ext__disclaimer {
+  margin-block: var(--space-4) 0;
+  font-size: 0.72rem;
+  line-height: 1.7;
+  color: var(--color-text-tertiary);
+}
+
+.algo-ext__disclaimer a {
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* 断点纪律（规格 4.3.2）：900px 非规范档，为外部资源卡自身列密度需要保留
+   （三卡在窄平板先降两列，1024 规范档前仍有可读卡宽），成文防扩散 */
+@media (max-width: 900px) {
+  .algo-ext__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 断点纪律（规格 4.3.1）：迁入时 767px 归一为 767.98px，与全站移动档写法一致
+   （恰 768px 整数宽走桌面布局） */
+@media (max-width: 767.98px) {
+  .algo-section__en {
+    display: none;
+  }
+
+  .algo-views {
+    display: flex;
+    width: 100%;
+  }
+
+  .algo-views__tab {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .algo-ext__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   题目详情阅读宽度（规格 5.6.4 / 2.4）：题面与解题思路对齐 .prose 行宽帽；
+   令牌 --size-prose-measure 由 DTCG 批次（5.8.2）落地，批次未落时回退同值
+   68ch（与 typography.css:444 同律）。ch 为字体相对单位：帽挂在承载阅读
+   字号的文本元素上（题面 p 0.82rem / 思路 li 0.8rem，同带 30-40 全角字），
+   不挂 1rem 的父容器，避免两类块解析宽度互异出现宽度锯齿。标题保持结构
+   左缘对齐，复杂度卡片 / 参考实现 / 关联教程等卡面族不帽（全宽族）。
+   -------------------------------------------------------------------------- */
+
+.apd-statement p {
+  max-width: var(--size-prose-measure, 68ch);
+}
+
+.apd-idea li {
+  max-width: var(--size-prose-measure, 68ch);
 }
