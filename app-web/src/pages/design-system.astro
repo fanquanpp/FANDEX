@@ -389,8 +389,11 @@ const codeFocusLines = [
     </section>
   </div>
 
-  {/* shadcn/Tailwind 试验场：第三方组件基元原样演示，不代表站点基元 */}
-  <DesignSystemDemo client:load stats={stats} />
+  {/* shadcn/Tailwind 试验场：第三方组件基元原样演示，不代表站点基元。
+      client:visible： specimens 区在首屏下方（HTML 中位于 hero/目录之后），
+      拖后 hydration 可省 81KB gzip 的首屏 JS（motion + radix 全家桶 + react-dom），
+      进入视口才挂载，滚动到即交互，SSR 骨架照常渲染不破版。 */}
+  <DesignSystemDemo client:visible stats={stats} />
 
   <section class="fx-showcase" aria-labelledby="fx-showcase-title">
     <header class="fx-showcase__head">

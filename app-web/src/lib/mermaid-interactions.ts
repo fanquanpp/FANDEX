@@ -1,4 +1,4 @@
-import panzoom from 'panzoom';
+import type panzoom from 'panzoom';
 import { t } from './i18n';
 
 /**
@@ -46,7 +46,7 @@ const ICONS = {
   zoomIn:
     '<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>',
   zoomOut:
-    '<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/><line x1="8" y1="11" x2="14" y2="11"/>',
+    '<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>',
   reset:
     '<path d="M3 12a9 9 0 1 0 2.6-6.4"/><polyline points="3 4 3 9 8 9"/>',
   fullscreen:
@@ -55,28 +55,26 @@ const ICONS = {
     '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
 };
 
+// panzoom 懒加载：全站 2307 个文档页中仅 573 页含 mermaid 图，此前静态 import
+// 把 panzoom（约 11KB 原始 / 4KB gzip）打进所有文档页必经的页面脚本 chunk。
+// 改为按需动态加载：只有页面真实存在 mermaid 图时才拉取，其余页面零成本。
+type PanzoomFactory = typeof panzoom;
+let panzoomFactoryPromise: Promise<PanzoomFactory> | null = null;
+
+function loadPanzoom(): Promise<PanzoomFactory> {
+  panzoomFactoryPromise ??= import('panzoom').then((mod) => mod.default);
+  return panzoomFactoryPromise;
+}
+
 function attachInteractions(figure: HTMLElement): void {
   if (contexts.has(figure)) return;
 
   const canvases = Array.from(figure.querySelectorAll<HTMLElement>('.mermaid-svg'));
   const instances: PanzoomInstance[] = [];
+  const svgs: SVGSVGElement[] = [];
   for (const canvas of canvases) {
     const svg = canvas.querySelector('svg');
-    if (!svg) continue;
-    instances.push(
-      panzoom(svg, {
-        maxZoom: 8,
-        minZoom: 0.4,
-        // 普通滚轮保留页面滚动；Ctrl/Cmd + 滚轮或全屏内滚轮才缩放
-        beforeWheel: (event: WheelEvent) => {
-          const target = event.target as Element | null;
-          const fig = target?.closest('[data-mermaid-figure]');
-          const isFullscreen = Boolean(fig && fig.classList.contains('is-fullscreen'));
-          if (!isFullscreen && !event.ctrlKey && !event.metaKey) return true;
-          return false;
-        },
-      }) as unknown as PanzoomInstance,
-    );
+    if (svg) svgs.push(svg);
   }
 
   const toolbar = figure.querySelector<HTMLElement>('[data-mermaid-toolbar]');
@@ -139,8 +137,31 @@ function attachInteractions(figure: HTMLElement): void {
     if (!active) requestAnimationFrame(resetView);
   };
   document.addEventListener('fullscreenchange', onFullscreenChange);
-
   contexts.set(figure, { figure, instances, onFullscreenChange });
+
+  if (svgs.length > 0) {
+    void loadPanzoom().then((panzoomFn) => {
+      // astro:page-load 换页后 figure 可能已被替换并 detach，挂载前确认仍登记在案
+      if (!contexts.get(figure) || !figure.isConnected) return;
+      for (const svg of svgs) {
+        if (!svg.isConnected) continue;
+        instances.push(
+          panzoomFn(svg, {
+            maxZoom: 8,
+            minZoom: 0.4,
+            // 普通滚轮保留页面滚动；Ctrl/Cmd + 滚轮或全屏内滚轮才缩放
+            beforeWheel: (event: WheelEvent) => {
+              const target = event.target as Element | null;
+              const fig = target?.closest('[data-mermaid-figure]');
+              const isFullscreen = Boolean(fig && fig.classList.contains('is-fullscreen'));
+              if (!isFullscreen && !event.ctrlKey && !event.metaKey) return true;
+              return false;
+            },
+          }) as unknown as PanzoomInstance,
+        );
+      }
+    });
+  }
 }
 
 function detachInteractions(root: ParentNode): void {
