@@ -1,6 +1,5 @@
 ---
 import '@/styles/site.css';
-import SceneBackdrop from '@/components/SceneBackdrop.astro';
 import ThemeLangBootstrap from '@/components/ThemeLangBootstrap.astro';
 import { SITE } from '@/lib/constants';
 import { MINIMAL_CSP } from '@/lib/csp';
@@ -35,8 +34,9 @@ const UPDATED = '2026-09-23';
     <ThemeLangBootstrap />
   </head>
   <body>
+    <!-- 独立壳页不挂 SceneBackdrop / fx 脚本链（规格 5.7.2 / 验收 8.7：零 fx 请求），
+         阅读页以令牌底色 + 细线排版承载 -->
     <div class="legal-page">
-      <SceneBackdrop decor="info" />
       <main class="legal-container">
         <header class="legal-head">
           <div class="legal-head-row">
@@ -268,7 +268,8 @@ const UPDATED = '2026-09-23';
         </article>
 
         <nav class="legal-actions" aria-label="免责页出口" data-i18n-aria="legal.exitsAria">
-          <a href={base} class="legal-btn" data-i18n="legal.backHome">返回首页</a>
+          <!-- ghost 返回按钮（规格 4.1.3/3.2.5：消费 .fndx-button 令牌，视觉同源） -->
+          <a href={base} class="fndx-button fndx-button--ghost" data-i18n="legal.backHome">返回首页</a>
         </nav>
       </main>
     </div>
@@ -324,6 +325,8 @@ const UPDATED = '2026-09-23';
   }
 
   .legal-container {
+    /* 行内 z-index:1 保留（z 刻度总表注 2：局部栈内整数；原用于压过 fx 背景层，
+       fx 层移除后仅为防第三方扩展干扰的保守值） */
     position: relative;
     z-index: 1;
     max-width: 760px;
@@ -397,25 +400,7 @@ const UPDATED = '2026-09-23';
   }
 
   .legal-actions {
-    margin-top: var(--space-7);
-  }
-
-  .legal-btn {
-    display: inline-flex;
-    align-items: center;
-    padding: 10px 22px;
-    border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-md, 4px);
-    color: var(--color-fg-secondary);
-    text-decoration: none;
-    font-size: var(--font-size-secondary);
-    transition:
-      color var(--motion-duration-instant) var(--motion-easing-out),
-      border-color var(--motion-duration-instant) var(--motion-easing-out);
-  }
-
-  .legal-btn:hover {
-    color: var(--color-accent-base);
-    border-color: color-mix(in srgb, var(--color-accent-base) 50%, transparent);
+    /* 现存档为 4/5/6/8/10（无 space-7），出口块与上方留白取 space-6 */
+    margin-top: var(--space-6);
   }
 </style>

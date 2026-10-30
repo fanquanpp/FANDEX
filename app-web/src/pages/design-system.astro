@@ -1,10 +1,8 @@
 ---
-
 import HomeLayout from '@/components/HomeLayout.astro';
 import SEO from '@/components/SEO.astro';
 import DesignSystemDemo from '@/islands/DesignSystemDemo';
 import { getDocStats, getAllModules } from '@/services';
-
 
 const docStats = await getDocStats();
 const allModules = getAllModules();
@@ -12,18 +10,386 @@ const stats = {
   totalModules: allModules.length,
   totalDocs: docStats.totalDocs,
 };
+
+// ---- 标本数据（规格 5.7.1：本页为第 1 期设计规格的活体标本 / 验收 8.7 目视基准）----
+
+// 按钮：四层级语义钉死（规格 3.2.1），三尺寸 32/40/48 随 --button-size-* 令牌
+const buttonLevels = [
+  { id: 'primary', use: '主行动：每视图至多一枚（表单提交 / hero CTA）', text: '保存更改' },
+  { id: 'secondary', use: '次行动：带边框的并列选项', text: '查看详情' },
+  { id: 'ghost', use: '工具栏 / 导航内联操作', text: '筛选' },
+  { id: 'danger', use: '仅破坏性操作', text: '删除数据' },
+] as const;
+
+// 圆角：使用档收敛 0 / 2 / 4 / 8 / full 五档（规格 3.1），md/xl/2xl/3xl 语义层停用
+const radiusSteps = [
+  { value: '0', name: '0', use: '直角面板 / 分区内块' },
+  { value: 'var(--radius-control)', name: '--radius-control', use: '控件：按钮 / 输入框 / 徽标' },
+  { value: 'var(--radius-card)', name: '--radius-card', use: '卡片 / 内容面板' },
+  { value: 'var(--radius-modal)', name: '--radius-modal', use: '浮层：模态 / 弹出面板' },
+  { value: 'var(--radius-full)', name: '--radius-full', use: '真圆：进度环 / 开关 / 头像（禁用于胶囊按钮）' },
+];
+
+// 字号阶梯：数值不变（规格 2.2），补成文纪律
+const fontLadder = [
+  { token: '--font-size-xs', px: '12px', sample: 'caption 辅助注记 Aa 0123' },
+  { token: '--font-size-sm', px: '14px', sample: 'secondary 次要文字 Aa 0123' },
+  { token: '--font-size-base', px: '16px', sample: 'body 中文正文基准 Aa 0123' },
+  { token: '--font-size-lg', px: '18px', sample: 'body-lg 大正文 Aa 0123' },
+  { token: '--font-size-xl', px: '20px', sample: 'heading-4 小标题 Aa 0123' },
+  { token: '--font-size-2xl', px: '24px', sample: 'heading-3 中标题 Aa 0123' },
+  { token: '--font-size-3xl', px: '30px', sample: 'heading-2 大标题 Aa 0123' },
+  { token: '--font-size-4xl', px: '36px', sample: 'heading-1 主标题 Aa 0123' },
+  { token: '--font-size-5xl', px: '48px', sample: 'display 展示 Aa 0123' },
+  { token: '--font-size-6xl', px: '60px', sample: 'hero 英雄 Aa 0123' },
+];
+
+// 表格标本行：数字列验证 tabular-nums（滚动前后列宽稳定）
+const tableRows = [
+  { module: 'frontend / react', docs: '128', updated: '2026-10-24', status: '已审计' },
+  { module: 'backend / database', docs: '96', updated: '2026-10-19', status: '已审计' },
+  { module: 'cs / network', docs: '1,204', updated: '2026-10-28', status: '审计中' },
+  { module: 'infra / cloud', docs: '57', updated: '2026-09-30', status: '已审计' },
+];
+
+const tocDemoItems = [
+  { label: '排版体系', depth: 2 },
+  { label: '代码块：SSR 化与行级增强', depth: 2, current: true },
+  { label: 'transformers 与元信息', depth: 3 },
+  { label: '表格与标题精修', depth: 2 },
+];
+
+// 代码标本行数据：行高亮 / diff / focus 三例按规格 2.6 的行级语义拆行
+const codeHighlightLines = [
+  { text: 'function reset(state) {', cls: '' },
+  { text: '  state.pending.clear();', cls: 'is-highlighted' },
+  { text: '  state.frames = 0;', cls: 'is-highlighted' },
+  { text: '  return true;', cls: '' },
+  { text: '}', cls: '' },
+];
+
+const codeDiffLines = [
+  { text: 'const cache = new Map();', cls: '' },
+  { text: '- cache.set(key, value);', cls: 'is-del' },
+  { text: '+ cache.set(key, lru(value));', cls: 'is-add' },
+];
+
+const codeFocusLines = [
+  { text: 'init();', cls: 'is-blur' },
+  { text: 'observe(el);  // [!code focus]', cls: '' },
+  { text: 'teardown();', cls: 'is-blur' },
+];
 ---
 
 <HomeLayout title="Design System">
   <SEO
     slot="head"
     title="设计系统 · FANDEX"
-    description="FANDEX 设计系统展示页：8 个基础 UI 组件（Button、Card、Badge、Tooltip、Dialog、Tabs、Accordion、ScrollArea）的全变体演示，基于 Tailwind CSS v4 + shadcn/ui + Radix UI 实现。"
+    description="FANDEX 设计系统页：第 1 期「仪器面板」语言活体标本（按钮四层级三尺寸、圆角五档、反色墨水选中、刻度线语言、字号阶梯、代码块四例、表格三件、移动端目录），附 Tailwind v4 + shadcn/ui 组件试验场与 fx 动效体系演示。"
     canonical={new URL(Astro.url.pathname, Astro.site).href}
     type="website"
   />
   <meta slot="head" name="robots" content="noindex, nofollow" />
 
+  <div class="ds-page">
+    <header class="ds-head">
+      <p class="ds-head__marker" aria-hidden="true">fandex://design-system / spec-v1</p>
+      <h1 class="ds-head__title">设计系统</h1>
+      <p class="ds-head__sub">
+        「仪器面板」语言活体标本：以下各节与站点实物同源（同一套令牌与基元类），是第
+        1 期验收的目视基准。本页 noindex 且不入 sitemap。
+      </p>
+    </header>
+
+    {/* 1. 按钮四层级三尺寸 */}
+    <section class="ds-section" aria-labelledby="ds-buttons-title">
+      <h2 class="ds-section__title" id="ds-buttons-title">按钮：四层级 × 三尺寸</h2>
+      <p class="ds-section__note">
+        层级数量不再新增；尺寸 sm 32 / md 40 / lg 48 由 --button-size-* 令牌驱动。键盘焦点统一
+        2px --color-border-focus 外描边（Tab 至任意按钮可见），按压态 scale(0.98)。
+      </p>
+      <div class="ds-panel">
+        {
+          buttonLevels.map((lv) => (
+            <div class="ds-btn-row">
+              <code class="ds-btn-row__name">.fndx-button--{lv.id}</code>
+              <span class="ds-btn-row__use">{lv.use}</span>
+              <div class="ds-btn-row__demo">
+                <button type="button" class:list={['fndx-button', `fndx-button--${lv.id}`, 'fndx-button--sm']}>
+                  {lv.text}
+                </button>
+                <button type="button" class:list={['fndx-button', `fndx-button--${lv.id}`]}>{lv.text}</button>
+                <button type="button" class:list={['fndx-button', `fndx-button--${lv.id}`, 'fndx-button--lg']}>
+                  {lv.text}
+                </button>
+                <button type="button" class:list={['fndx-button', `fndx-button--${lv.id}`]} disabled>
+                  禁用
+                </button>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    {/* 2. 圆角五档 */}
+    <section class="ds-section" aria-labelledby="ds-radius-title">
+      <h2 class="ds-section__title" id="ds-radius-title">圆角五档</h2>
+      <p class="ds-section__note">
+        使用档收敛为 0 / 2 / 4 / 8 / full；md(6) / xl(12) / 2xl(16) / 3xl(24) 保留在 primitive
+        但语义层停止引用。数值随 DTCG 令牌批次实时解析，标本始终与站点同值。
+      </p>
+      <div class="ds-panel ds-radius-grid">
+        {
+          radiusSteps.map((step) => (
+            <figure class="ds-radius-item">
+              <span
+                class="ds-radius-swatch"
+                style={`border-radius: ${step.value}; ${step.value === 'var(--radius-full)' ? 'height: auto; aspect-ratio: 1;' : ''}`}
+                aria-hidden="true"
+              />
+              <figcaption>
+                <code class="ds-radius-name">{step.name}</code>
+                <span class="ds-radius-use">{step.use}</span>
+              </figcaption>
+            </figure>
+          ))
+        }
+      </div>
+    </section>
+
+    {/* 3. 反色墨水选中 + 位置指示对照 */}
+    <section class="ds-section" aria-labelledby="ds-ink-title">
+      <h2 class="ds-section__title" id="ds-ink-title">选中态：反色墨水与位置指示</h2>
+      <p class="ds-section__note">
+        互斥单选（分段控件 / 菜单 / palette 选中项）用反色墨水：background var(--color-fg-primary)
+        + color var(--color-bg-primary)。常驻位置指示（侧栏当前文档 / TOC 当前节）不用——继续用
+        刻度线 + 字重。焦点由 2px cyan outline 管，与选中互不替代（规格 3.3）。
+      </p>
+      <div class="ds-panel ds-ink-grid">
+        <div class="ds-ink-demo">
+          <p class="ds-ink-demo__label">反色墨水：互斥单选（点击切换）</p>
+          <fieldset class="ds-seg">
+            <legend class="ds-visually-hidden">视图切换演示</legend>
+            <label class="ds-seg__item">
+              <input class="ds-visually-hidden" type="radio" name="ds-seg-demo" value="tutorial" />
+              <span class="ds-seg__text">教程</span>
+            </label>
+            <label class="ds-seg__item">
+              <input class="ds-visually-hidden" type="radio" name="ds-seg-demo" value="problems" checked />
+              <span class="ds-seg__text">题库</span>
+            </label>
+            <label class="ds-seg__item">
+              <input class="ds-visually-hidden" type="radio" name="ds-seg-demo" value="visual" />
+              <span class="ds-seg__text">图鉴</span>
+            </label>
+          </fieldset>
+        </div>
+        <div class="ds-ink-demo">
+          <p class="ds-ink-demo__label">位置指示：刻度线 + 字重（反色墨水不适用场景）</p>
+          <ul class="ds-navlist">
+            <li><span class="ds-navlist__link">排版体系</span></li>
+            <li class="is-current"><span class="ds-navlist__link">代码块：SSR 化与行级增强</span></li>
+            <li><span class="ds-navlist__link">表格与标题精修</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    {/* 4. 刻度线语言 */}
+    <section class="ds-section" aria-labelledby="ds-tick-title">
+      <h2 class="ds-section__title" id="ds-tick-title">刻度线与角标</h2>
+      <p class="ds-section__note">
+        1-4px 条形（横线 / 竖线 / 顶线）承担标题、列表、当前项与 hover 语言；角标（左上 4px
+        直角描线）仅限精选表面：首页精选卡与本页演示。
+      </p>
+      <div class="ds-panel ds-tick-grid">
+        <div class="ds-tick-demo">
+          <p class="ds-tick-demo__label">标题左条（3px）</p>
+          <h3 class="ds-tick-heading">学习路径与模块地图</h3>
+        </div>
+        <div class="ds-tick-demo">
+          <p class="ds-tick-demo__label">列表刻度（2px marker）</p>
+          <ul class="ds-tick-list">
+            <li>行内 2px 刻度替代圆点</li>
+            <li>条目命中区垂直外扩 6px</li>
+          </ul>
+        </div>
+        <div class="ds-tick-demo">
+          <p class="ds-tick-demo__label">卡片：hover 顶线 scaleX（右卡为常驻精选态 + 角标）</p>
+          <div class="ds-cards">
+            <article class="ds-card">
+              <h4>普通卡</h4>
+              <p>悬停观察顶线自左展开，边框同步 tint。</p>
+            </article>
+            <article class="ds-card ds-card--featured">
+              <h4>精选卡</h4>
+              <p>顶线常驻 + 左上角 4px 直角描线。</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* 5. 字号阶梯 */}
+    <section class="ds-section" aria-labelledby="ds-type-title">
+      <h2 class="ds-section__title" id="ds-type-title">字号阶梯</h2>
+      <p class="ds-section__note">
+        数值阶梯 12-60px 保持（规格 2.2）。纪律：12px 是 CJK 可读下限，禁止新增 11px 档；一级灰
+        仅限 caption / meta，不进长正文。
+      </p>
+      <div class="ds-panel ds-type-list">
+        {
+          fontLadder.map((row) => (
+            <div class="ds-type-row">
+              <span class="ds-type-row__meta">
+                <code>{row.token}</code>
+                <span>{row.px}</span>
+              </span>
+              <span class="ds-type-row__sample" style={`font-size: var(${row.token})`}>
+                {row.sample}
+              </span>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    {/* 6. 代码块四例 */}
+    <section class="ds-section" aria-labelledby="ds-code-title">
+      <h2 class="ds-section__title" id="ds-code-title">代码块：头栏与行级表达</h2>
+      <p class="ds-section__note">
+        目标态标本（ds- 前缀，数值按规格 2.6）：头栏高 2.25rem、1px 底边、语言名右对齐 0.68em
+        mono 大写；行高亮 = accent 12% 背景 + 左缘 2px 刻度；diff 绿/红 tint；focus 非焦点行
+        opacity 0.45。站点实物由文档域 SSR 插件 + Shiki transformers 输出，copy 按钮常驻头栏右侧。
+      </p>
+      <div class="ds-panel ds-code-grid">
+        {/* 例一：title 头栏 */}
+        <figure class="ds-code">
+          <figcaption class="ds-code__head">
+            <span class="ds-code__title">api-client.ts</span>
+            <span class="ds-code__lang">TypeScript</span>
+          </figcaption>
+          <pre><code>{`export async function fetchDoc(id: string) {
+  const res = await get(\`/doc/\${id}\`);
+  return res.json();
+}`}</code></pre>
+        </figure>
+
+        {/* 例二：行高亮（meta {2,3}） */}
+        <figure class="ds-code">
+          <figcaption class="ds-code__head">
+            <span class="ds-code__title">行高亮 · meta {`{2,3}`}</span>
+            <span class="ds-code__lang">TS</span>
+          </figcaption>
+          <pre><code>{codeHighlightLines.map((line) => (
+            <span class:list={['ds-code-line', line.cls]}>{line.text}</span>
+          ))}</code></pre>
+        </figure>
+
+        {/* 例三：notation diff */}
+        <figure class="ds-code">
+          <figcaption class="ds-code__head">
+            <span class="ds-code__title">diff · [!code ++/--]</span>
+            <span class="ds-code__lang">TS</span>
+          </figcaption>
+          <pre><code>{codeDiffLines.map((line) => (
+            <span class:list={['ds-code-line', line.cls]}>{line.text}</span>
+          ))}</code></pre>
+        </figure>
+
+        {/* 例四：notation focus */}
+        <figure class="ds-code">
+          <figcaption class="ds-code__head">
+            <span class="ds-code__title">focus · [!code focus]</span>
+            <span class="ds-code__lang">TS</span>
+          </figcaption>
+          <pre><code class="has-focus">{codeFocusLines.map((line) => (
+            <span class:list={['ds-code-line', line.cls]}>{line.text}</span>
+          ))}</code></pre>
+        </figure>
+      </div>
+    </section>
+
+    {/* 7. 表格三件 */}
+    <section class="ds-section" aria-labelledby="ds-table-title">
+      <h2 class="ds-section__title" id="ds-table-title">表格：降噪表头 / tabular-nums / hover 刻度环</h2>
+      <p class="ds-section__note">
+        表头 = accent 8% 混合底 + 2px accent 底线（明暗同式）；数字列 tabular-nums；行 hover
+        为 inset 1px 刻度环叠加既有底色（规格 2.7）。
+      </p>
+      <div class="ds-panel">
+        <div class="ds-table-wrap">
+          <table class="ds-table">
+            <thead>
+              <tr>
+                <th scope="col">模块</th>
+                <th scope="col" class="ds-table__num">文档数</th>
+                <th scope="col">更新日期</th>
+                <th scope="col">状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                tableRows.map((row) => (
+                  <tr>
+                    <td>{row.module}</td>
+                    <td class="ds-table__num">{row.docs}</td>
+                    <td>{row.updated}</td>
+                    <td>{row.status}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    {/* 8. 移动端目录演示 */}
+    <section class="ds-section" aria-labelledby="ds-toctitle">
+      <h2 class="ds-section__title" id="ds-toctitle">移动端目录（&lt;1024px 吸顶折叠条）</h2>
+      <p class="ds-section__note">
+        文档页在窄视口把右栏 TOC 重排为吸顶折叠条（规格 4.6，站点实物见 TableOfContents.astro）：
+        行高 2.5rem、summary 回显当前标题、展开面板 1px 边框 + --radius-modal。下为可交互复刻
+        （原生 details）：
+      </p>
+      <div class="ds-panel ds-toc-stage">
+        <details class="ds-toc">
+          <summary class="ds-toc__bar">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="ds-toc__chevron"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+            <span class="ds-toc__label">本页目录</span>
+            <span class="ds-toc__current">代码块：SSR 化与行级增强</span>
+          </summary>
+          <nav class="ds-toc__panel" aria-label="目录演示">
+            <ul class="ds-toc__list">
+              {
+                tocDemoItems.map((item) => (
+                  <li class:list={['ds-toc__item', { 'is-current': item.current }]} style={`padding-left: ${(item.depth - 2) * 0.875}rem`}>
+                    <a class="ds-toc__link" href="#ds-toctitle">{item.label}</a>
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+        </details>
+      </div>
+    </section>
+  </div>
+
+  {/* shadcn/Tailwind 试验场：第三方组件基元原样演示，不代表站点基元 */}
   <DesignSystemDemo client:load stats={stats} />
 
   <section class="fx-showcase" aria-labelledby="fx-showcase-title">
@@ -116,107 +482,751 @@ const stats = {
 </HomeLayout>
 
 <style>
-  .fx-showcase {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    max-width: 72rem;
+  /* ================= 页头 ================= */
+  .ds-page {
+    max-width: 76rem;
     margin: 0 auto;
-    padding: 2rem 2rem 4rem;
-  }
-
-  .fx-showcase__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1rem;
-  }
-
-  .fx-showcase__card {
-    padding: 1.25rem;
-    border: 1px solid var(--color-border-subtle);
-    border-radius: 0.75rem;
-    background: var(--color-bg-elevated);
+    padding: var(--space-6) var(--space-6) var(--space-10);
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    overflow: hidden;
+    /* 现存档为 4/5/6/8/10（无 space-7），分区主间隔取 space-8 */
+    gap: var(--space-8);
   }
 
-  .fx-showcase__card h3 {
-    font-size: 0.95rem;
-    font-weight: 600;
+  .ds-head {
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .ds-head__marker {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-family-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--color-fg-tertiary);
+  }
+
+  .ds-head__title {
+    margin: 0;
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.04em;
     color: var(--color-fg-primary);
   }
 
-  .fx-showcase__card p {
-    font-size: 0.85rem;
+  .ds-head__sub {
+    margin: var(--space-2) 0 0;
+    max-width: 46rem;
+    font-size: var(--font-size-secondary);
     color: var(--color-fg-secondary);
+    line-height: var(--font-line-height-body);
+  }
+
+  /* ================= 分区骨架 ================= */
+  .ds-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .ds-section__title {
+    margin: 0;
+    position: relative;
+    padding-left: 0.875rem;
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.03em;
+    color: var(--color-fg-primary);
+  }
+
+  /* 标题 3px 左条（规格 1.4 刻度线语言） */
+  .ds-section__title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.2em;
+    width: 3px;
+    height: 1em;
+    background: var(--color-accent-base);
+  }
+
+  .ds-section__note {
+    margin: 0;
+    max-width: 52rem;
+    font-size: var(--font-size-secondary);
+    color: var(--color-fg-tertiary);
+    line-height: var(--font-line-height-body);
+  }
+
+  .ds-panel {
+    padding: var(--space-5);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-card);
+    background: var(--color-bg-card);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  /* ================= 1. 按钮 ================= */
+  .ds-btn-row {
+    display: grid;
+    grid-template-columns: 13rem 1fr;
+    gap: var(--space-2) var(--space-5);
+    align-items: center;
+  }
+
+  .ds-btn-row__name {
+    font-family: var(--font-family-mono);
+    font-size: 0.78rem;
+    color: var(--color-fg-secondary);
+  }
+
+  .ds-btn-row__use {
+    grid-column: 2;
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-tertiary);
+  }
+
+  .ds-btn-row__demo {
+    grid-column: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  @media (max-width: 767.98px) {
+    .ds-btn-row {
+      grid-template-columns: 1fr;
+    }
+
+    .ds-btn-row__use,
+    .ds-btn-row__demo {
+      grid-column: 1;
+    }
+  }
+
+  /* ================= 2. 圆角 ================= */
+  .ds-radius-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+  }
+
+  .ds-radius-item {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    width: 10.5rem;
+  }
+
+  .ds-radius-swatch {
+    display: block;
+    width: 100%;
+    height: 4.5rem;
+    border: 1px solid var(--color-border-strong);
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--color-accent-base) 10%, transparent), transparent 60%),
+      var(--color-bg-elevated);
+  }
+
+  .ds-radius-name {
+    display: block;
+    font-family: var(--font-family-mono);
+    font-size: 0.78rem;
+    color: var(--color-fg-primary);
+  }
+
+  .ds-radius-use {
+    display: block;
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-tertiary);
+    line-height: 1.5;
+  }
+
+  /* ================= 3. 反色墨水 ================= */
+  .ds-ink-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-8);
+  }
+
+  .ds-ink-demo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  .ds-ink-demo__label {
+    margin: 0;
+    font-size: var(--font-size-caption);
+    letter-spacing: var(--font-letter-spacing-label);
+    text-transform: uppercase;
+    color: var(--color-fg-tertiary);
+  }
+
+  .ds-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .ds-seg {
+    margin: 0;
+    padding: 2px;
+    display: inline-flex;
+    gap: 2px;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-control);
+    width: max-content;
+  }
+
+  .ds-seg__item {
+    cursor: pointer;
+  }
+
+  .ds-seg__text {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.875rem;
+    border-radius: calc(var(--radius-control) - 2px);
+    font-size: var(--font-size-secondary);
+    color: var(--color-fg-secondary);
+    transition:
+      background-color var(--motion-duration-instant) var(--motion-easing-out),
+      color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .ds-seg__item:hover .ds-seg__text {
+    color: var(--color-fg-primary);
+    background: var(--color-bg-hover);
+  }
+
+  /* 反色墨水选中态（规格 3.3） */
+  .ds-seg__item input:checked + .ds-seg__text {
+    background: var(--color-fg-primary);
+    color: var(--color-bg-primary);
+    font-weight: var(--font-weight-emphasis);
+  }
+
+  .ds-seg__item input:focus-visible + .ds-seg__text {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  .ds-navlist {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    min-width: 16rem;
+  }
+
+  .ds-navlist li {
+    position: relative;
+  }
+
+  .ds-navlist__link {
+    display: block;
+    padding: 0.4rem 0.75rem;
+    font-size: var(--font-size-secondary);
+    color: var(--color-fg-secondary);
+  }
+
+  /* 常驻位置指示：2px 刻度 + 字重（不用反色墨水） */
+  .ds-navlist li.is-current .ds-navlist__link {
+    font-weight: var(--font-weight-emphasis);
+    color: var(--color-fg-primary);
+  }
+
+  .ds-navlist li.is-current::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 2px;
+    height: 1em;
+    transform: translateY(-50%);
+    background: var(--color-accent-base);
+  }
+
+  /* ================= 4. 刻度线 ================= */
+  .ds-tick-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-8);
+  }
+
+  .ds-tick-demo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  .ds-tick-demo__label {
+    margin: 0;
+    font-size: var(--font-size-caption);
+    letter-spacing: var(--font-letter-spacing-label);
+    text-transform: uppercase;
+    color: var(--color-fg-tertiary);
+  }
+
+  .ds-tick-heading {
+    margin: 0;
+    position: relative;
+    padding-left: 0.75rem;
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-xl);
+    color: var(--color-fg-primary);
+  }
+
+  .ds-tick-heading::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.22em;
+    width: 3px;
+    height: 1em;
+    background: var(--color-accent-base);
+  }
+
+  .ds-tick-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .ds-tick-list li {
+    position: relative;
+    padding-left: 1rem;
+    font-size: var(--font-size-secondary);
+    color: var(--color-fg-secondary);
+  }
+
+  .ds-tick-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 2px;
+    height: 0.9em;
+    transform: translateY(-50%);
+    background: var(--color-accent-base);
+    opacity: 0.85;
+  }
+
+  .ds-cards {
+    display: flex;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+
+  .ds-card {
+    position: relative;
+    width: 13rem;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-card);
+    background: var(--color-bg-elevated);
+    transition: border-color var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  /* hover 顶线 scaleX（与 module-card 同语言，不加第二种光效） */
+  .ds-card::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--color-accent-base);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--motion-duration-normal) var(--motion-easing-out);
+  }
+
+  .ds-card:hover {
+    border-color: color-mix(in srgb, var(--color-accent-base) 45%, var(--color-border-light));
+  }
+
+  .ds-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .ds-card h4 {
+    margin: 0 0 var(--space-1);
+    font-size: var(--font-size-secondary);
+    font-weight: var(--font-weight-emphasis);
+    color: var(--color-fg-primary);
+  }
+
+  .ds-card p {
+    margin: 0;
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-tertiary);
     line-height: 1.6;
   }
 
-  .fx-showcase__demo-text {
+  /* 精选表面：顶线常驻 + 左上 4px 直角描线（规格 1.4 角标白名单） */
+  .ds-card--featured::before {
+    transform: scaleX(1);
+  }
+
+  .ds-card--featured::after {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 14px;
+    height: 14px;
+    border-top: 2px solid var(--color-accent-base);
+    border-left: 2px solid var(--color-accent-base);
+  }
+
+  /* ================= 5. 字号阶梯 ================= */
+  .ds-type-list {
+    gap: 0;
+  }
+
+  .ds-type-row {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
-    font-size: 1.05rem;
-    font-weight: 700;
+    align-items: baseline;
+    gap: var(--space-5);
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .ds-type-row:last-child {
+    border-bottom: none;
+  }
+
+  .ds-type-row__meta {
+    flex-shrink: 0;
+    width: 13rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .ds-type-row__meta code {
+    font-family: var(--font-family-mono);
+    font-size: 0.72rem;
+    color: var(--color-fg-tertiary);
+  }
+
+  .ds-type-row__meta span {
+    font-size: 0.72rem;
+    color: var(--color-fg-tertiary);
+  }
+
+  .ds-type-row__sample {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: var(--color-fg-primary);
+    line-height: 1.25;
   }
 
-  .fx-showcase__demo-text--mono {
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
-    letter-spacing: 0.06em;
+  /* ================= 6. 代码块标本 ================= */
+  .ds-code-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-5);
   }
 
-  .fx-showcase__num {
-    color: var(--color-accent-base);
+  .ds-code {
+    margin: 0;
+    /* 全局 figure 规则（typography.css）自带 text-align:center，代码必须显式回正 */
+    text-align: left;
+    flex: 1 1 20rem;
+    max-width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-card);
+    background: var(--color-bg-elevated);
+  }
+
+  /* 头栏：高 2.25rem、1px 底边、语言名右对齐 mono 大写（规格 2.6.3） */
+  .ds-code__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    height: 2.25rem;
+    padding: 0 var(--space-4);
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .ds-code__title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--font-family-mono);
+    font-size: 0.78rem;
+    color: var(--color-fg-secondary);
+  }
+
+  .ds-code__lang {
+    flex-shrink: 0;
+    font-family: var(--font-family-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-fg-tertiary);
+  }
+
+  .ds-code pre {
+    margin: 0;
+    padding: var(--space-4);
+    overflow-x: auto;
+    font-family: var(--font-family-mono);
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    /* 与站点实物代码块同源：双主题恒为暗底浅字（--color-code-*，同 code.css/.astro-code），
+       禁止消费 --color-fg-primary（浅色主题下会变成暗底暗字） */
+    background: var(--color-code-bg);
+    color: var(--color-code-text);
+  }
+
+  .ds-code pre code {
+    display: block;
+  }
+
+  .ds-code pre code .ds-code-line {
+    display: block;
+    position: relative;
+    padding-left: 0.75rem;
+  }
+
+  /* 行高亮：accent 12% 背景 + 左缘 2px 刻度 */
+  .ds-code pre code .is-highlighted {
+    background: color-mix(in srgb, var(--color-accent-base) 12%, transparent);
+    box-shadow: inset 2px 0 0 var(--color-accent-base);
+  }
+
+  /* diff：绿/红 tint 行 */
+  .ds-code pre code .is-add {
+    background: color-mix(in srgb, var(--color-success-base) 14%, transparent);
+  }
+
+  .ds-code pre code .is-del {
+    background: color-mix(in srgb, var(--color-danger-base) 14%, transparent);
+  }
+
+  /* focus：非焦点行 0.45 */
+  .ds-code pre code.has-focus .is-blur {
+    opacity: 0.45;
+  }
+
+  /* ================= 7. 表格 ================= */
+  .ds-table-wrap {
+    overflow-x: auto;
+  }
+
+  .ds-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-secondary);
+  }
+
+  .ds-table th {
+    padding: 0.6rem var(--space-4);
+    text-align: left;
+    background: color-mix(in srgb, var(--color-accent-base) 8%, var(--color-bg-card));
+    border-bottom: 2px solid var(--color-accent-base);
+    font-weight: var(--font-weight-emphasis);
+    color: var(--color-fg-primary);
+    white-space: nowrap;
+  }
+
+  .ds-table td {
+    padding: 0.6rem var(--space-4);
+    border-bottom: 1px solid var(--color-border-subtle);
+    color: var(--color-fg-secondary);
+  }
+
+  .ds-table tbody tr:nth-child(even) td {
+    background: color-mix(in srgb, var(--color-fg-primary) 3%, transparent);
+  }
+
+  .ds-table td {
     font-variant-numeric: tabular-nums;
   }
 
-  .fx-showcase__stage {
-    position: relative;
-    height: 220px;
-    border: 1px solid var(--color-border-subtle);
-    border-radius: 0.75rem;
+  .ds-table__num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 行 hover 刻度环（叠加既有底色） */
+  .ds-table tbody tr:hover td {
+    box-shadow: inset 0 0 0 1px var(--color-border-strong);
+  }
+
+  /* ================= 8. 移动端目录复刻 ================= */
+  .ds-toc-stage {
+    padding: 0;
     overflow: hidden;
-    background: var(--color-bg-primary);
   }
 
-  .fx-showcase__stage-wrap {
+  .ds-toc {
+    position: relative;
+  }
+
+  .ds-toc__bar {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    align-items: center;
+    gap: var(--space-2);
+    height: 2.5rem;
+    padding: 0 var(--space-4);
+    border-bottom: 1px solid var(--color-border-light);
+    color: var(--color-fg-secondary);
+    font-size: var(--font-size-caption);
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    transition:
+      background-color var(--motion-duration-instant) var(--motion-easing-out),
+      color var(--motion-duration-instant) var(--motion-easing-out);
   }
 
-  .fx-showcase__ref {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
+  .ds-toc__bar::-webkit-details-marker {
+    display: none;
   }
 
-  .fx-showcase__ref th,
-  .fx-showcase__ref td {
-    text-align: left;
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--color-border-subtle);
-    vertical-align: top;
-  }
-
-  .fx-showcase__ref th {
-    color: var(--color-fg-tertiary);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 0.75rem;
-  }
-
-  .fx-showcase__ref td:first-child {
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
-    white-space: nowrap;
+  .ds-toc__bar:hover {
+    background-color: var(--color-bg-hover);
     color: var(--color-fg-primary);
   }
 
-  .fx-showcase__ref td:last-child {
+  .ds-toc__bar:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: -2px;
+  }
+
+  .ds-toc__chevron {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    transition: transform var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  .ds-toc[open] .ds-toc__chevron {
+    transform: rotate(180deg);
+  }
+
+  .ds-toc__label {
+    flex-shrink: 0;
+    font-weight: var(--font-weight-emphasis);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-label);
+  }
+
+  .ds-toc__current {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+    color: var(--color-fg-primary);
+  }
+
+  .ds-toc__panel {
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .ds-toc__list {
+    margin: 0;
+    padding: var(--space-2) 0;
+    list-style: none;
+    max-height: 14rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .ds-toc__item {
+    position: relative;
+  }
+
+  .ds-toc__link {
+    display: block;
+    padding: 0.4rem var(--space-4);
+    font-size: var(--font-size-secondary);
     color: var(--color-fg-secondary);
+    text-decoration: none;
+    transition: color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .ds-toc__link:hover {
+    color: var(--color-fg-primary);
+  }
+
+  .ds-toc__item.is-current .ds-toc__link {
+    position: relative;
+    font-weight: var(--font-weight-emphasis);
+    color: var(--color-fg-primary);
+  }
+
+  .ds-toc__item.is-current .ds-toc__link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 2px;
+    height: 1em;
+    transform: translateY(-50%);
+    background: var(--color-accent-base);
+  }
+
+  /* ================= 窄视口 ================= */
+  @media (max-width: 767.98px) {
+    .ds-page {
+      padding: var(--space-5) var(--space-4) var(--space-8);
+    }
+
+    .ds-panel {
+      padding: var(--space-4);
+    }
+
+    .ds-ink-grid,
+    .ds-tick-grid {
+      gap: var(--space-6);
+    }
+
+    .ds-type-row {
+      flex-direction: column;
+      gap: var(--space-1);
+      align-items: flex-start;
+    }
+
+    .ds-type-row__meta {
+      width: auto;
+      flex-direction: row;
+      gap: var(--space-2);
+      align-items: baseline;
+    }
+
+    .ds-type-row__sample {
+      white-space: normal;
+    }
   }
 </style>
