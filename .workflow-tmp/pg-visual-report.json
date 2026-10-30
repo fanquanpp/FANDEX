@@ -1,0 +1,94 @@
+{
+  "probes": [
+    {
+      "name": "url",
+      "value": "http://localhost:4321/FANDEX/playground/?pen=frontend"
+    },
+    {
+      "name": "fxBackdropZ",
+      "value": "-1"
+    },
+    {
+      "name": "toolbarButtonCount",
+      "value": 10
+    },
+    {
+      "name": "toolbarButtonHeight",
+      "value": "32px"
+    },
+    {
+      "name": "editorTabCount",
+      "value": 3
+    },
+    {
+      "name": "editorTabHeight",
+      "value": "32px"
+    },
+    {
+      "name": "iconBtnCount",
+      "value": 7
+    },
+    {
+      "name": "titleInputHeight",
+      "value": "32px"
+    },
+    {
+      "name": "paneHeadHeight",
+      "value": "40px"
+    },
+    {
+      "name": "toolbarTooltips",
+      "value": "10/10 have title"
+    },
+    {
+      "name": "pgBtnResidue",
+      "value": 0
+    },
+    {
+      "name": "drawerMaskZ",
+      "value": "150"
+    },
+    {
+      "name": "scMaskZ",
+      "value": "151"
+    },
+    {
+      "name": "guideMaskZ",
+      "value": "60"
+    },
+    {
+      "name": "darkThemeAttr",
+      "value": "dark"
+    },
+    {
+      "name": "768 horizontalOverflow",
+      "value": false
+    },
+    {
+      "name": "768 paneVisibleCount",
+      "value": 3
+    },
+    {
+      "name": "768 paneSplitterDisplay",
+      "value": "block"
+    },
+    {
+      "name": "375 labelsHidden",
+      "value": "none"
+    },
+    {
+      "name": "375 horizontalOverflow",
+      "value": false
+    },
+    {
+      "name": "editorMetaRefresh",
+      "value": "missing"
+    },
+    {
+      "name": "editorRedirectLanded",
+      "value": "http://localhost:4321/FANDEX/playground/"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}
