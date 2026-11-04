@@ -1,5 +1,5 @@
 
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import {
   categoryColors,
   getModulesByCategory,
@@ -9,15 +9,29 @@ import {
 import { useLang } from '@/lib/use-lang';
 import { t } from '@/lib/i18n';
 import { getCategories, type CategoryInfo } from '@/services/module-service';
-import docIndexData from '@/data/doc-index.json';
-import type { DocIndexItem } from '@/services';
 
 interface SidebarModulesProps {
   moduleId: string;
   currentSlug?: string;
+  /** SSR 注入的各模块文档计数（Sidebar.astro data-module-doc-counts），决定展开箭头显隐 */
+  moduleDocCounts?: Record<string, number>;
 }
 
+/** public/data/doc-index/{module}.json 分块形状（scripts/build-stats.mjs 产出） */
+interface ModuleDocChunk {
+  module: string;
+  docs: Array<{ slug: string; title: string; order: number }>;
+}
+
+type ChunkState =
+  | { status: 'loading' }
+  | { status: 'ready'; docs: ModuleDocChunk['docs'] }
+  | { status: 'error' };
+
 const MODULE_EXPANDED_KEY = 'fandex-sidebar-expanded';
+
+// 会话级分块缓存：astro:page-load 会卸载重挂岛屿，缓存避免已看过的模块列表重复请求
+const chunkCache = new Map<string, ModuleDocChunk['docs']>();
 
 function readExpandedSet(): Set<string> {
   try {
@@ -48,22 +62,48 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
   return color ? `--module-color:${color}` : undefined;
 }
 
-export default function SidebarModules({ moduleId, currentSlug }: SidebarModulesProps) {
+export default function SidebarModules({
+  moduleId,
+  currentSlug,
+  moduleDocCounts,
+}: SidebarModulesProps) {
   const base = import.meta.env.BASE_URL;
   const categories = getCategories();
   const lang = useLang();
 
-  const docsByModule = useMemo(() => {
-    const map = new Map<string, DocIndexItem[]>();
-    for (const doc of docIndexData as DocIndexItem[]) {
-      const list = map.get(doc.module) ?? [];
-      list.push(doc);
-      map.set(doc.module, list);
-    }
-    return map;
-  }, []);
+  const [chunkStates, setChunkStates] = useState<Record<string, ChunkState>>(() => {
+    const initial: Record<string, ChunkState> = {};
+    for (const [id, docs] of chunkCache) initial[id] = { status: 'ready', docs };
+    return initial;
+  });
 
   const [expanded, setExpanded] = useState<Set<string>>(() => readExpandedSet());
+
+  const loadChunk = useCallback(
+    (id: string): void => {
+      setChunkStates((prev) => ({ ...prev, [id]: { status: 'loading' } }));
+      fetch(`${base}data/doc-index/${id}.json`)
+        .then(async (res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const chunk = (await res.json()) as ModuleDocChunk;
+          const docs = Array.isArray(chunk?.docs) ? chunk.docs : [];
+          chunkCache.set(id, docs);
+          setChunkStates((prev) => ({ ...prev, [id]: { status: 'ready', docs } }));
+        })
+        .catch((err: unknown) => {
+          console.warn(`[sidebar-modules] 文档分块加载失败（${id}）:`, err);
+          setChunkStates((prev) => ({ ...prev, [id]: { status: 'error' } }));
+        });
+    },
+    [base],
+  );
+
+  // 展开时才按需拉取该模块分块；覆盖挂载时已处于展开态的模块（localStorage 恢复）
+  useEffect(() => {
+    expanded.forEach((id) => {
+      if (!chunkCache.has(id)) loadChunk(id);
+    });
+  }, [expanded, loadChunk]);
 
   const toggleModule = (id: string): void => {
     setExpanded((prev) => {
@@ -97,9 +137,9 @@ export default function SidebarModules({ moduleId, currentSlug }: SidebarModules
             </h3>
             <ul className="fndx-sidebar__list">
               {modulesInCategory.map((m: Module) => {
-                const moduleDocs = docsByModule.get(m.id) ?? [];
-                const hasDocs = moduleDocs.length > 0;
+                const hasDocs = (moduleDocCounts?.[m.id] ?? 0) > 0;
                 const isExpanded = expanded.has(m.id);
+                const chunkState = chunkStates[m.id];
                 return (
                   <li className="fndx-sidebar__module" data-module={m.id} key={m.id}>
                     <div className="fndx-sidebar__module-row">
@@ -149,25 +189,53 @@ export default function SidebarModules({ moduleId, currentSlug }: SidebarModules
                         className={`fndx-sidebar__module-docs${isExpanded ? '' : ' is-collapsed'}`}
                         data-module={m.id}
                       >
-                        {moduleDocs.map((doc: DocIndexItem) => {
-                          const docIsActive = m.id === moduleId && currentSlug === doc.slug;
-                          return (
-                            <li key={doc.slug}>
-                              <a
-                                href={`${base}${m.id}/${doc.slug}/`}
-                                className={`fndx-sidebar__link fndx-sidebar__link--sub${docIsActive ? ' is-active' : ''}`}
-                                style={
-                                  moduleColorStyle(m)
-                                    ? ({ '--module-color': moduleColor(m) } as CSSProperties)
-                                    : undefined
-                                }
-                                aria-current={docIsActive ? 'page' : undefined}
-                              >
-                                <span className="fndx-sidebar__link-text">{doc.title}</span>
-                              </a>
-                            </li>
-                          );
-                        })}
+                        {isExpanded &&
+                          chunkState?.status === 'ready' &&
+                          chunkState.docs.map((doc) => {
+                            const docIsActive = m.id === moduleId && currentSlug === doc.slug;
+                            return (
+                              <li key={doc.slug}>
+                                <a
+                                  href={`${base}${m.id}/${doc.slug}/`}
+                                  className={`fndx-sidebar__link fndx-sidebar__link--sub${docIsActive ? ' is-active' : ''}`}
+                                  style={
+                                    moduleColorStyle(m)
+                                      ? ({ '--module-color': moduleColor(m) } as CSSProperties)
+                                      : undefined
+                                  }
+                                  aria-current={docIsActive ? 'page' : undefined}
+                                >
+                                  <span className="fndx-sidebar__link-text">{doc.title}</span>
+                                </a>
+                              </li>
+                            );
+                          })}
+                        {isExpanded && chunkState?.status === 'error' && (
+                          <li>
+                            <button
+                              type="button"
+                              className="fndx-sidebar__link fndx-sidebar__link--sub"
+                              style={
+                                {
+                                  width: '100%',
+                                  cursor: 'pointer',
+                                  textAlign: 'left',
+                                  background: 'none',
+                                  border: 'none',
+                                  font: 'inherit',
+                                  color: 'inherit',
+                                } as CSSProperties
+                              }
+                              onClick={() => loadChunk(m.id)}
+                            >
+                              <span className="fndx-sidebar__link-text">
+                                {lang === 'en'
+                                  ? 'Failed to load list, tap to retry'
+                                  : '列表加载失败，点击重试'}
+                              </span>
+                            </button>
+                          </li>
+                        )}
                       </ul>
                     )}
                   </li>

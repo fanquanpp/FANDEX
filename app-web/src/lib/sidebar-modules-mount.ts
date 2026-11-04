@@ -2,9 +2,9 @@
 // React 与 react-dom/client 必须与岛屿同一懒加载边界：
 // 此前顶层静态 import 会把 createRoot 渲染路径打进文档页必经的 Sidebar 脚本 chunk，
 // 使「全部模块」面板的 React 依赖成为首屏静态图的一部分；islands/SidebarModules
-// 内联的 doc-index.json（约 187KB 原始 / 70KB gzip）也只在用户切到该面板时才有意义。
-// 改为动态 import 后，React 渲染运行时与数据 JSON 都延迟到面板真正可见时才加载，
-// 从不打开该面板的用户全程零成本。
+// 内联的全量 doc-index.json（约 187KB 原始 / 70KB gzip）同理已退役（S2 消费接线）：
+// 现在模块行仅靠 SSR 注入的 counts 判定「有文档」，展开列表按模块从
+// /data/doc-index/{module}.json 分块按需拉取，从不打开该面板的用户全程零成本。
 type ReactModule = typeof import('react');
 type ReactDomClientModule = typeof import('react-dom/client');
 type SidebarModulesModule = typeof import('@/islands/SidebarModules');
@@ -18,12 +18,29 @@ let rootInstance: import('react-dom/client').Root | null = null;
 function parseProps(container: HTMLElement): {
   moduleId: string;
   currentSlug?: string;
+  moduleDocCounts?: Record<string, number>;
 } | null {
   const moduleId = container.getAttribute('data-module-id');
   if (!moduleId) return null;
   const currentSlug = container.getAttribute('data-current-slug') || undefined;
-  const props: { moduleId: string; currentSlug?: string } = { moduleId };
+  const props: {
+    moduleId: string;
+    currentSlug?: string;
+    moduleDocCounts?: Record<string, number>;
+  } = { moduleId };
   if (currentSlug) props.currentSlug = currentSlug;
+  const rawCounts = container.getAttribute('data-module-doc-counts');
+  if (rawCounts) {
+    try {
+      const parsed: unknown = JSON.parse(rawCounts);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        props.moduleDocCounts = parsed as Record<string, number>;
+      }
+    } catch {
+      // counts 缺失仅降级为不显示展开箭头（列表本就按需拉取），不阻塞面板挂载
+      console.warn('[sidebar-modules-mount] data-module-doc-counts 解析失败');
+    }
+  }
   return props;
 }
 
