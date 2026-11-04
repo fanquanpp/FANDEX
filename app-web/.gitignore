@@ -47,5 +47,8 @@ reports/bundle-stats.html
 CODE_WIKI.md
 Code-Wiki.md
 
-# 构建统计缓存（build-stats.mjs 生成，避免 OOM）
-src/data/doc-stats.json
+# 数据产物（scripts 生产者生成，唯一真源在仓库根 node_modules/.cache/fandex-data/，不入库）
+# 注意：必须用精确模式，禁用递归 glob —— src/data/ 下有被跟踪的 algo-problems/*.ts 源码
+src/data/*.json
+public/data/
+public/syntax-data/
