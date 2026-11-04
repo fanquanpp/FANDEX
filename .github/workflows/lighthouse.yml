@@ -60,6 +60,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # mermaid-dual 缓存持久化（第 2 期 S5）：本工作流不装 Playwright Chromium，
+      # pnpm build:web 内部首步 render-mermaid 与构建期插件（rehype-mermaid-dual）
+      # 在无浏览器环境下只做缓存直读——未命中时批次失败被兜底吞掉、插件整体跳过，
+      # mermaid 块退化为客户端动态渲染，Lighthouse 会量到退化页。key 与 deploy.yml
+      # 同构（sha 级 + 前缀回退），两条工作流共享同一份渲染缓存。
+      - name: Restore mermaid render cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.cache/mermaid-dual
+          key: mermaid-${{ github.sha }}
+          restore-keys: mermaid-
+
       - name: Sync content
         run: pnpm --filter @fandex/web sync
 

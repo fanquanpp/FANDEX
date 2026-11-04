@@ -62,6 +62,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # mermaid-dual 缓存持久化（第 2 期 S5）：render-mermaid.mjs 本身按内容哈希
+      # 增量（cacheKey = sha256(version+theme+canonicalSource)），但缓存目录
+      # node_modules/.cache/mermaid-dual 此前每次 CI 从零开始，导致 1033 图 x2 主题
+      # 全量重渲。sha 级 key 精确命中；新提交经 restore-keys 前缀回退部分命中，
+      # 只有新增/变更图才真正渲染。目录已被根 .gitignore 的 node_modules/ 覆盖，
+      # 不会入库。数据前置链步（build-syntax / build-learning-path）见下方 S1 注释。
+      - name: Restore mermaid render cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.cache/mermaid-dual
+          key: mermaid-${{ github.sha }}
+          restore-keys: mermaid-
+
       - name: Install Playwright Chromium (mermaid build-time rendering)
         run: pnpm --filter @fandex/web exec playwright install --with-deps chromium
 

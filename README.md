@@ -60,8 +60,9 @@ web 端命令在 `app-web/` 目录（或 `pnpm --filter @fandex/web <script>`）
 
 ```bash
 pnpm --filter @fandex/web lint        # eslint（CI deploy 工作流前置步骤）
-pnpm --filter @fandex/web qa          # qa-check.mjs：产物目录 20 余项静态检查
-                                      # （页面数/base/sitemap/暗色/响应式/shiki 等）
+pnpm --filter @fandex/web qa          # qa-check.mjs：产物目录静态检查（页面数/base/sitemap/
+                                      # 暗色/响应式/shiki 等）+ 数据产物新鲜度门禁
+                                      # （零写入运行四个生产者 --check 对账）
 pnpm --filter @fandex/web test:smoke  # Playwright 冒烟（tests/ 共 20 用例：smoke 8 +
                                       # subpage-ux 10 + nav-depth 2；跑前需 build）
 ```
@@ -125,6 +126,29 @@ flowchart LR
 实操手册（新增文档 / 模块、常见问题排查）见 [CONTENT-GUIDE.md](CONTENT-GUIDE.md)；
 完整协作流程见 [CONTRIBUTING.md](CONTRIBUTING.md)；全项目强约束见 [AGENTS.md](AGENTS.md)。
 
+### 数据产物层（构建期「内容后端 → 站点前端」分离）
+
+文档索引与统计、语法速查、学习路径地图等派生数据由 `app-web/scripts/` 下的
+生产者脚本在构建前生成，链路为：内容后端（`cnt-content` + `shd-shared`）→
+产物缓存区（仓库根 `node_modules/.cache/fandex-data/`，内容哈希键 + manifest
+版本化）→ 发布通道（`app-web/src/data/` 构建期 import；`app-web/public/data/`
+与 `public/syntax-data/` 运行时按需 fetch）→ 站点前端只读消费。要点：
+
+- **缓存键 = 输入内容哈希**：任何内容变更必然失效重算，禁止按 mtime/时间戳
+  缓存；键逻辑只存在于各生产者单份（基座 `app-web/scripts/lib/data-cache.mjs`，
+  支持 `--check` 只报待算项与 `--rebuild` 全量重建）。
+- **发布通道按内容字节跳写（writeIfChanged）**：连跑数据前置段零磁盘写，
+  git status 保持干净；派生产物（`src/data/*.json`、`public/data/`、
+  `public/syntax-data/`）一律不入库，fresh checkout 由 dev/build 链内的数据
+  前置段先补齐产物。
+- **qa 新鲜度门禁**：`pnpm --filter @fandex/web qa` 会以零写入子进程运行
+  content-sync / build-stats / build-syntax / build-learning-path 四个生产者的
+  `--check`，任一待重建即失败并提示「先跑 pnpm dev 或数据前置链」——本地
+  冷缓存下该报错属预期，不是代码缺陷。
+- **CI 渲染缓存**：mermaid 图表缓存（`node_modules/.cache/mermaid-dual/`）经
+  actions/cache 在 deploy 与 lighthouse 两条工作流间持久化（key 随提交走 +
+  前缀回退），部署构建只渲染新增/变更图。
+
 ## 维护要点
 
 - **内容是第一公民**：改内容 = 改 `cnt-content/full` 下的 md，跑一次 `pnpm sync`
@@ -132,6 +156,9 @@ flowchart LR
 - **脚本各司其职**：`content-sync.mjs`（元数据）、`render-mermaid.mjs`（图表缓存）、
   `build-syntax.mjs`（速查卡片）、`audit-learning-path.mjs`（路径数据完整性）。
   它们之间只通过文件与 JSON 交接，没有隐藏耦合。
+- **数据产物异常兜底**：删除仓库根 `node_modules/.cache/fandex-data/` 再重跑
+  数据前置段（或 `pnpm sync`）即回到无缓存全量重建；单个生产者可用
+  `--rebuild` 强制全量、`--check` 只报待算项（零写入）。缓存目录天然不入库。
 - **样式单一来源**：设计令牌在 `shd-shared/tokens/`（DTCG JSON）。web 端副本与
   Android 的 `TokenColors.kt`（`Theme.kt` 只做 Material 角色映射）均由它派生：
   改 JSON 后运行 `pnpm --filter @fandex/tokens build:css && pnpm --filter @fandex/tokens generate:kt`，
