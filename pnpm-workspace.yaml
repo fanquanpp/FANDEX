@@ -47,6 +47,9 @@ catalog:
 
   gray-matter: ^4.0.3
   shiki: ^4.5.0
+  # 代码块 SSR 化（规格 2.6）：行高亮 / diff / focus 官方 transformer。
+  # 钉 4.5.0 与 shiki ^4.5.0 同版本线，仅 devDependency，客户端运行时零新增。
+  '@shikijs/transformers': 4.5.0
   katex: ^0.19.0
   unified: ^11.0.5
   remark-parse: ^11.0.0

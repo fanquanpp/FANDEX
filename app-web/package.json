@@ -73,6 +73,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@shikijs/transformers": "catalog:",
     "@astrojs/check": "catalog:",
     "@eslint/js": "catalog:",
     "@pagefind/windows-x64": "1.5.2",

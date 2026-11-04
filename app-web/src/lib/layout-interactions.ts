@@ -176,79 +176,72 @@ function readFullscreenFlag(): string | null {
   }
 }
 
-function initCopyButtons(): void {
-  document.querySelectorAll('pre > code').forEach((codeEl) => {
-    const pre = codeEl.parentElement;
-    if (!pre) return;
-    // mermaid 源码块由 mermaid-render 异步替换为图表，包进 code-block 会产生
-    // 双层边框、多余语言徽标与复制按钮
-    if (pre.getAttribute('data-language') === 'mermaid') return;
+/**
+ * copy 按钮的 document 级事件委托（规格 2.6 SSR 化后唯一保留的客户端代码）：
+ * 按钮与 figure.code-block 框架已由构建期 rehype-wrap-code-blocks 输出到
+ * HTML 源码，这里只补点击行为——复制 + copied 反馈（2s 回退）。
+ * document 级委托跨 astro:page-load 持续有效，无需逐页重绑。
+ */
+function initCopyDelegation(): void {
+  if (document.body.dataset.copyDelegationBound === 'true') return;
+  document.body.dataset.copyDelegationBound = 'true';
 
-    const parent = pre.parentElement;
-    if (!parent) return;
-    if (parent.classList.contains('code-block')) return;
-    if (parent.querySelector(':scope > .copy-btn')) return;
+  document.addEventListener('click', (event) => {
+    const btn = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>('button.copy-btn');
+    if (!btn) return;
+    const block = btn.closest('.code-block');
+    const codeEl = block?.querySelector('pre code') ?? block?.querySelector('pre');
+    if (!codeEl) return;
+    const text = codeEl.textContent || '';
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'code-block';
-
-    const lang =
-      (codeEl.className.match(/language-(\S+)/) || [])[1] ||
-      pre.getAttribute('data-language') ||
-      '';
-    if (lang) wrapper.setAttribute('data-lang', lang);
-
-    const btn = document.createElement('button');
-    btn.className = 'copy-btn fndx-icon-btn fndx-icon-btn--labeled';
-    btn.setAttribute('aria-label', t('code.copyAria'));
-    btn.innerHTML =
-      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-
-    btn.addEventListener('click', async () => {
-      const text = codeEl.textContent || '';
-      try {
-        await navigator.clipboard.writeText(text);
-        btn.classList.add('copied');
+    const showCopied = (): void => {
+      btn.classList.add('copied');
+      btn.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+      setTimeout(() => {
+        btn.classList.remove('copied');
         btn.innerHTML =
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
-        setTimeout(() => {
-          btn.classList.remove('copied');
-          btn.innerHTML =
-            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-        }, 2000);
-      } catch {
-        // execCommand 兜底：必须以 document 为接收者调用（直接
-        // Reflect.get(document,'execCommand') 再裸调用会丢 this 抛
-        // Illegal invocation，视检交互第 1 轮 I2）；execCommand 本身可能
-        // 被环境禁用，再包一层 try 保证失败路径静默。
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.cssText = 'position:fixed;opacity:0';
-        document.body.appendChild(ta);
-        ta.select();
-        try {
-          // execCommand 已弃用但仍作 clipboard 兜底（弃用警告 hint 属预期）
-          document.execCommand('copy');
-        } catch {
-          // 复制彻底不可用时放弃反馈，不打扰阅读
-        }
-        document.body.removeChild(ta);
-        btn.classList.add('copied');
-        setTimeout(() => btn.classList.remove('copied'), 2000);
-      }
-    });
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+      }, 2000);
+    };
 
-    const parentNode = pre.parentNode;
-    if (!parentNode) return;
-    parentNode.insertBefore(wrapper, pre);
-    wrapper.appendChild(pre);
-    wrapper.appendChild(btn);
+    try {
+      void navigator.clipboard
+        .writeText(text)
+        .then(showCopied)
+        .catch(() => {
+          fallbackCopy(text);
+          showCopied();
+        });
+    } catch {
+      fallbackCopy(text);
+      showCopied();
+    }
   });
+}
+
+function fallbackCopy(text: string): void {
+  // execCommand 兜底：必须以 document 为接收者调用（直接
+  // Reflect.get(document,'execCommand') 再裸调用会丢 this 抛
+  // Illegal invocation，视检交互第 1 轮 I2）；execCommand 本身可能
+  // 被环境禁用，再包一层 try 保证失败路径静默。
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    // execCommand 已弃用但仍作 clipboard 兜底（弃用警告 hint 属预期）
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  } catch {
+    // 复制彻底不可用时放弃反馈，不打扰阅读
+  }
 }
 
 initLayoutInteractions();
 initFullscreenToggle();
-initCopyButtons();
+initCopyDelegation();
 
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape') closeFeatureSheet();
@@ -261,8 +254,6 @@ document.addEventListener('astro:page-load', () => {
   initLayoutInteractions();
   initFullscreenToggle();
 });
-
-document.addEventListener('astro:page-load', initCopyButtons);
 
 function initCodeOverflow(): void {
   const blocks = document.querySelectorAll<HTMLElement>('.code-block');

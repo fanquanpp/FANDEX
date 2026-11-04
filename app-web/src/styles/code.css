@@ -26,6 +26,42 @@
   margin: 1em 0;
   border: 1px solid var(--color-border-strong);
   position: relative;
+  /* 全局 figure 规则（typography.css @layer base）自带 text-align:center，代码必须显式回正 */
+  text-align: left;
+}
+
+/* 头栏（规格 2.6.3）：常显（copy 按钮驻头栏右侧，触屏无 hover 不再悬浮显隐）；
+   高 2.25rem、1px 底边、语言名右对齐 0.68em mono 大写（排版语言继承原 data-lang 角标） */
+.code-block__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  height: 2.25rem;
+  padding: 0 0.25rem 0 0.9em;
+  border-bottom: 1px solid var(--color-border-light);
+  background: color-mix(in srgb, var(--color-border-light) 30%, transparent);
+}
+
+.code-block__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-family-mono, monospace);
+  font-size: 0.8em;
+  color: var(--color-text-secondary);
+}
+
+.code-block__lang {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-family: var(--font-family-mono, monospace);
+  font-size: 0.68em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
 }
 
 .copy-btn {
@@ -35,25 +71,6 @@
 .copy-btn.copied {
   background-color: color-mix(in oklch, var(--color-success-base) 20%, transparent);
   color: var(--color-success-base);
-}
-
-.code-block .copy-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
-  opacity: 0.6;
-  transition:
-    opacity var(--motion-duration-normal),
-    background-color var(--motion-duration-instant) var(--motion-easing-out),
-    color var(--motion-duration-instant) var(--motion-easing-out),
-    border-color var(--motion-duration-instant) var(--motion-easing-out),
-    box-shadow var(--motion-duration-normal) var(--motion-easing-out),
-    transform var(--motion-duration-instant) var(--motion-easing-out);
-}
-
-.code-block:hover .copy-btn {
-  opacity: 1;
 }
 
 .code-block.has-overflow pre {
@@ -81,33 +98,63 @@
   line-height: inherit;
 }
 
-.code-block[data-lang]::before {
-  content: attr(data-lang);
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 0.2em 0.75em;
-  font-family: var(--font-family-mono, monospace);
-  font-size: 0.68em;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 500;
-  color: var(--color-text-tertiary);
-  background: color-mix(in srgb, var(--color-border-light) 35%, transparent);
-  border-bottom-right-radius: 6px;
-  opacity: 0.85;
-  pointer-events: none;
-  z-index: 1;
+/* 行级表达（Shiki transformers 构建期输出类名，规格 2.6.2；类名实测 4.5.0 dist）。
+   inline-block + width:100% 让背景与左缘刻度跨包裹行完整铺开，2px accent 左刻度
+   只落在行首一次（仪器刻度线语言） */
+.code-block pre .line.highlighted {
+  display: inline-block;
+  width: 100%;
+  min-height: 1.6em;
+  background: color-mix(in srgb, var(--color-accent-base) 12%, transparent);
+  box-shadow: inset 2px 0 0 var(--color-accent-base);
 }
 
+.code-block pre .line.diff.add {
+  display: inline-block;
+  width: 100%;
+  min-height: 1.6em;
+  background: color-mix(in srgb, var(--color-success-base) 14%, transparent);
+}
+
+.code-block pre .line.diff.remove {
+  display: inline-block;
+  width: 100%;
+  min-height: 1.6em;
+  background: color-mix(in srgb, var(--color-danger-base) 14%, transparent);
+}
+
+/* focus：非焦点行 0.45（has-focused 挂 pre，focused 挂行，同为 4.5.0 dist 实测类名） */
+.code-block pre.has-focused .line:not(.focused) {
+  opacity: 0.45;
+}
+
+/* 行号：默认关（规格 2.6.4），仅 meta line-numbers 的单块开启 */
+.code-block pre[data-line-numbers] code {
+  counter-reset: line;
+}
+
+.code-block pre[data-line-numbers] .line::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  width: 2.2em;
+  margin-right: 1.25em;
+  text-align: right;
+  color: var(--color-text-tertiary);
+  opacity: 0.6;
+  user-select: none;
+}
+
+/* 主题双套配色：作用于 shiki token span；.line 行容器排除——否则行级
+   背景（highlighted/diff tint）会被这里的 !important 覆盖成整行主题底色 */
 html[data-theme='dark'] .astro-code,
-html[data-theme='dark'] .astro-code span {
+html[data-theme='dark'] .astro-code span:not(.line) {
   color: var(--shiki-dark) !important;
   background-color: var(--shiki-dark-bg) !important;
 }
 
 html[data-theme='light'] .astro-code,
-html[data-theme='light'] .astro-code span {
+html[data-theme='light'] .astro-code span:not(.line) {
   color: var(--shiki-light) !important;
   background-color: var(--shiki-light-bg) !important;
 }
@@ -131,14 +178,8 @@ html[data-theme='light'] .astro-code span {
     -webkit-overflow-scrolling: touch;
   }
 
-  .copy-btn {
-    padding: 3px 8px;
-    font-size: 0.78em;
-  }
-
-  .code-block[data-lang]::before {
-    font-size: 0.6em;
-    padding: 0.15em 0.5em;
+  .code-block__head {
+    padding: 0 0.15rem 0 0.75em;
   }
 }
 

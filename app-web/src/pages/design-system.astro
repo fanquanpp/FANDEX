@@ -1,8 +1,15 @@
 ---
 import HomeLayout from '@/components/HomeLayout.astro';
 import SEO from '@/components/SEO.astro';
+import { Code } from 'astro:components';
 import DesignSystemDemo from '@/islands/DesignSystemDemo';
 import { getDocStats, getAllModules } from '@/services';
+import { transformerCodeBlockTitle } from '@/plugins/rehype-wrap-code-blocks';
+import {
+  transformerMetaHighlight,
+  transformerNotationDiff,
+  transformerNotationFocus,
+} from '@shikijs/transformers';
 
 const docStats = await getDocStats();
 const allModules = getAllModules();
@@ -59,26 +66,65 @@ const tocDemoItems = [
   { label: '表格与标题精修', depth: 2 },
 ];
 
-// 代码标本行数据：行高亮 / diff / focus 三例按规格 2.6 的行级语义拆行
-const codeHighlightLines = [
-  { text: 'function reset(state) {', cls: '' },
-  { text: '  state.pending.clear();', cls: 'is-highlighted' },
-  { text: '  state.frames = 0;', cls: 'is-highlighted' },
-  { text: '  return true;', cls: '' },
-  { text: '}', cls: '' },
+// 代码标本（规格 2.6 / S3）：四例走真实 shiki 管线（Code 组件 + 与 astro.config
+// shikiConfig 相同的 transformer 组合与 meta 语法），外层结构复刻
+// rehype-wrap-code-blocks 的输出，样式直接消费 code.css 的 .code-block 实物类
+const dsCodeTransformers = [
+  transformerMetaHighlight(),
+  transformerNotationDiff(),
+  transformerNotationFocus(),
+  transformerCodeBlockTitle(),
 ];
 
-const codeDiffLines = [
-  { text: 'const cache = new Map();', cls: '' },
-  { text: '- cache.set(key, value);', cls: 'is-del' },
-  { text: '+ cache.set(key, lru(value));', cls: 'is-add' },
-];
-
-const codeFocusLines = [
-  { text: 'init();', cls: 'is-blur' },
-  { text: 'observe(el);  // [!code focus]', cls: '' },
-  { text: 'teardown();', cls: 'is-blur' },
-];
+const codeSpecimens = [
+  {
+    label: 'title 头栏 · meta title="api-client.ts"',
+    lang: 'ts',
+    langLabel: 'TypeScript',
+    title: 'api-client.ts',
+    meta: 'title="api-client.ts"',
+    code: [
+      'export async function fetchDoc(id: string) {',
+      '  const res = await get(`/doc/${id}`);',
+      '  return res.json();',
+      '}',
+    ].join('\n'),
+  },
+  {
+    label: '行高亮 + 行号开关 · meta {2,3} line-numbers',
+    lang: 'ts',
+    langLabel: 'TypeScript',
+    title: '',
+    meta: '{2,3} line-numbers',
+    code: [
+      'function reset(state) {',
+      '  state.pending.clear();',
+      '  state.frames = 0;',
+      '  return true;',
+      '}',
+    ].join('\n'),
+  },
+  {
+    label: 'diff · [!code --] / [!code ++]',
+    lang: 'ts',
+    langLabel: 'TypeScript',
+    title: '',
+    meta: '',
+    code: [
+      'const cache = new Map();',
+      'cache.set(key, value); // [!code --]',
+      'cache.set(key, lru(value)); // [!code ++]',
+    ].join('\n'),
+  },
+  {
+    label: 'focus · [!code focus]',
+    lang: 'ts',
+    langLabel: 'TypeScript',
+    title: '',
+    meta: '',
+    code: ['init();', 'observe(el); // [!code focus]', 'teardown();'].join('\n'),
+  },
+] as const;
 ---
 
 <HomeLayout title="Design System">
@@ -258,61 +304,54 @@ const codeFocusLines = [
       </div>
     </section>
 
-    {/* 6. 代码块四例 */}
+    {/* 6. 代码块四例（站点实物标本：真实 shiki + transformers 管线，结构同 rehype-wrap-code-blocks） */}
     <section class="ds-section" aria-labelledby="ds-code-title">
       <h2 class="ds-section__title" id="ds-code-title">代码块：头栏与行级表达</h2>
       <p class="ds-section__note">
-        目标态标本（ds- 前缀，数值按规格 2.6）：头栏高 2.25rem、1px 底边、语言名右对齐 0.68em
-        mono 大写；行高亮 = accent 12% 背景 + 左缘 2px 刻度；diff 绿/红 tint；focus 非焦点行
-        opacity 0.45。站点实物现状（SSR 化 + Shiki transformers 属规格 2.6 后续任务）：代码框
-        由 src/lib/layout-interactions.ts 客户端包 .code-block 输出，语言角标为伪元素（code.css），
-        copy 按钮 hover 才显，头栏与行级表达未落地。
+        站点实物标本（.code-block 实类 + code.css，规格 2.6 已落地）：figure.code-block 框架与
+        SSR copy 按钮由构建期 rehype-wrap-code-blocks 输出，关 JS 时框架 / 语言名 / 按钮仍在
+        HTML 源码；头栏高 2.25rem、1px 底边、语言名右对齐 0.68em mono 大写（原 data-lang 角标
+        退役）；行高亮 = accent 12% 背景 + 左缘 2px 刻度；diff 绿/红 tint；focus 非焦点行
+        opacity 0.45；行号默认关，meta line-numbers 单块开启。以下四例直接走 shiki +
+        transformers 真实管线，明暗随主题切换。
       </p>
       <div class="ds-panel ds-code-grid">
-        {/* 例一：title 头栏 */}
-        <figure class="ds-code">
-          <figcaption class="ds-code__head">
-            <span class="ds-code__title">api-client.ts</span>
-            <span class="ds-code__lang">TypeScript</span>
-          </figcaption>
-          <pre><code>{`export async function fetchDoc(id: string) {
-  const res = await get(\`/doc/\${id}\`);
-  return res.json();
-}`}</code></pre>
-        </figure>
-
-        {/* 例二：行高亮（meta {2,3}） */}
-        <figure class="ds-code">
-          <figcaption class="ds-code__head">
-            <span class="ds-code__title">行高亮 · meta {`{2,3}`}</span>
-            <span class="ds-code__lang">TS</span>
-          </figcaption>
-          <pre><code>{codeHighlightLines.map((line) => (
-            <span class:list={['ds-code-line', line.cls]}>{line.text}</span>
-          ))}</code></pre>
-        </figure>
-
-        {/* 例三：notation diff */}
-        <figure class="ds-code">
-          <figcaption class="ds-code__head">
-            <span class="ds-code__title">diff · [!code ++/--]</span>
-            <span class="ds-code__lang">TS</span>
-          </figcaption>
-          <pre><code>{codeDiffLines.map((line) => (
-            <span class:list={['ds-code-line', line.cls]}>{line.text}</span>
-          ))}</code></pre>
-        </figure>
-
-        {/* 例四：notation focus */}
-        <figure class="ds-code">
-          <figcaption class="ds-code__head">
-            <span class="ds-code__title">focus · [!code focus]</span>
-            <span class="ds-code__lang">TS</span>
-          </figcaption>
-          <pre><code class="has-focus">{codeFocusLines.map((line) => (
-            <span class:list={['ds-code-line', line.cls]}>{line.text}</span>
-          ))}</code></pre>
-        </figure>
+        {
+          codeSpecimens.map((item) => (
+            <div class="ds-tick-demo">
+              <p class="ds-tick-demo__label">{item.label}</p>
+              <figure class="code-block" data-lang={item.lang}>
+                <div class="code-block__head">
+                  {item.title ? <span class="code-block__title">{item.title}</span> : null}
+                  <span class="code-block__lang">{item.langLabel}</span>
+                  <button type="button" class="copy-btn fndx-icon-btn" aria-label="Copy code">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      aria-hidden="true"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                </div>
+                <Code
+                  code={item.code}
+                  lang={item.lang}
+                  themes={{ light: 'github-light', dark: 'github-dark' }}
+                  defaultColor={false}
+                  wrap
+                  {...(item.meta ? { meta: item.meta } : {})}
+                  transformers={dsCodeTransformers}
+                />
+              </figure>
+            </div>
+          ))
+        }
       </div>
     </section>
 
@@ -955,95 +994,23 @@ const codeFocusLines = [
   }
 
   /* ================= 6. 代码块标本 ================= */
+  /* 标本本体（figure.code-block / 头栏 / 行级样式）直接消费 code.css 实物类，
+     此处只保留网格布局约束（规格 2.6 S3：站点实物标本，非 ds- 近似） */
   .ds-code-grid {
     flex-direction: row;
     flex-wrap: wrap;
     gap: var(--space-5);
   }
 
-  .ds-code {
-    margin: 0;
-    /* 全局 figure 规则（typography.css）自带 text-align:center，代码必须显式回正 */
-    text-align: left;
+  /* flex 尺寸放在网格的直接子项上：.ds-tick-demo 是列 flex 容器，flex-basis
+     若落在 .code-block（其子项）上会变成高度把标本拉高 */
+  .ds-code-grid > .ds-tick-demo {
     flex: 1 1 20rem;
     max-width: 100%;
-    overflow: hidden;
-    border: 1px solid var(--color-border-light);
-    border-radius: var(--radius-card);
-    background: var(--color-bg-elevated);
   }
 
-  /* 头栏：高 2.25rem、1px 底边、语言名右对齐 mono 大写（规格 2.6.3） */
-  .ds-code__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    height: 2.25rem;
-    padding: 0 var(--space-4);
-    border-bottom: 1px solid var(--color-border-light);
-  }
-
-  .ds-code__title {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-family: var(--font-family-mono);
-    font-size: 0.78rem;
-    color: var(--color-fg-secondary);
-  }
-
-  .ds-code__lang {
-    flex-shrink: 0;
-    font-family: var(--font-family-mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-fg-tertiary);
-  }
-
-  .ds-code pre {
+  .ds-code-grid .code-block {
     margin: 0;
-    padding: var(--space-4);
-    overflow-x: auto;
-    font-family: var(--font-family-mono);
-    font-size: 0.8125rem;
-    line-height: 1.7;
-    /* 与站点实物代码块同源：双主题恒为暗底浅字（--color-code-*，同 code.css/.astro-code），
-       禁止消费 --color-fg-primary（浅色主题下会变成暗底暗字） */
-    background: var(--color-code-bg);
-    color: var(--color-code-text);
-  }
-
-  .ds-code pre code {
-    display: block;
-  }
-
-  .ds-code pre code .ds-code-line {
-    display: block;
-    position: relative;
-    padding-left: 0.75rem;
-  }
-
-  /* 行高亮：accent 12% 背景 + 左缘 2px 刻度 */
-  .ds-code pre code .is-highlighted {
-    background: color-mix(in srgb, var(--color-accent-base) 12%, transparent);
-    box-shadow: inset 2px 0 0 var(--color-accent-base);
-  }
-
-  /* diff：绿/红 tint 行 */
-  .ds-code pre code .is-add {
-    background: color-mix(in srgb, var(--color-success-base) 14%, transparent);
-  }
-
-  .ds-code pre code .is-del {
-    background: color-mix(in srgb, var(--color-danger-base) 14%, transparent);
-  }
-
-  /* focus：非焦点行 0.45 */
-  .ds-code pre code.has-focus .is-blur {
-    opacity: 0.45;
   }
 
   /* ================= 7. 表格 ================= */
@@ -1240,3 +1207,10 @@ const codeFocusLines = [
     }
   }
 </style>
+
+<script>
+  // 本节标本含真实 copy 按钮（结构同 rehype-wrap-code-blocks 输出），复制交互
+  // 与文档页同源：引入 layout-interactions 的 document 级委托。侧栏 / 全屏等
+  // 元素在本页不存在，模块内各 init 按元素存在性守卫，均为安全 no-op。
+  import '@/lib/layout-interactions';
+</script>
