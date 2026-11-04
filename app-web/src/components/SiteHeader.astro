@@ -7,13 +7,18 @@
  * 安装走 data-install-app（pwa-install.ts）、全屏/Top 走对应 id
  * （home-layout-interactions.ts / layout-interactions.ts）。
  *
+ * 主题按钮（S4 去 React 化）：SSR 输出完整三图标标记，由页尾脚本装载的
+ * src/lib/theme-toggle.ts（vanilla）接线。SSR 首帧按「未保存偏好 = system」
+ * 渲染：按钮隐藏（aria-hidden / tabindex -1 / 无 --ready 类），tooltip/aria
+ * 指向三态循环中 system 的下一站 light；模块接线后与已存偏好对齐。
+ * data-theme-icon 值 = 点亮该图标的偏好（sun=dark / moon=light / system=system）。
+ *
  * Props：
  *   variant — 'doc'  = 文档壳（Layout.astro）：含 Top 按钮与功能直达链接；
  *             'home' = 首页壳（HomeLayout.astro）：含 GitHub 链接与全屏按钮。
  *             容器类沿用各壳现有样式锚点（doc -> .app-nav，home -> .home-nav），
  *             避免一次性改写两套壳的容器 CSS 造成回归面扩大。
  */
-import ThemeToggle from '@/islands/ThemeToggle';
 import LangToggle from '@/components/LangToggle.astro';
 import HeaderFeatureLinks from '@/components/HeaderFeatureLinks.astro';
 import { t } from '@/lib/i18n';
@@ -112,6 +117,42 @@ const githubUrl = 'https://github.com/fanquanpp/FANDEX';
       </svg>
     </button>
     <LangToggle />
-    <ThemeToggle client:load />
+    <!-- ThemeToggle vanilla 标记：图标可见性/tooltip/aria 由 theme-toggle.ts 接线维护 -->
+    <button
+      type="button"
+      class="fndx-theme-toggle fndx-icon-btn"
+      data-theme-toggle
+      data-tooltip={t('theme.tooltipLight')}
+      data-tooltip-pos="bottom"
+      aria-label={t('theme.switchLight')}
+      aria-hidden="true"
+      tabindex="-1"
+    >
+      <svg class="fndx-theme-icon" data-theme-icon="sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="fndx-theme-icon fndx-theme-icon--moon" data-theme-icon="moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+      <svg class="fndx-theme-icon fndx-theme-icon--system" data-theme-icon="system" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor" stroke="none"></path>
+      </svg>
+    </button>
   </div>
 </header>
+
+<script>
+  // ThemeToggle vanilla 模块（S4 去 React 化）：不再经 React island 挂载，
+  // 甩掉全站页面常驻的 react-dom 调度器；生命周期接线见 theme-toggle.ts
+  import { initThemeToggle } from '@/lib/theme-toggle';
+  initThemeToggle();
+</script>

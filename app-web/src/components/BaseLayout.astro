@@ -5,7 +5,6 @@ import { MAIN_CSP, DESKTOP_CSP } from '@/lib/csp';
 import { ClientRouter } from 'astro:transitions';
 import SceneBackdrop from '@/components/SceneBackdrop.astro';
 import ThemeLangBootstrap from '@/components/ThemeLangBootstrap.astro';
-import WebVitalsTracker from '@/islands/WebVitalsTracker';
 import faviconMeta from '@fandex/shared-assets/icons/favicon.svg';
 import appleTouchIconMeta from '@fandex/shared-assets/icons/apple-touch-icon.png';
 const faviconUrl: string = (faviconMeta as unknown as { src: string }).src;
@@ -90,7 +89,6 @@ const { fxDecor, fxNum } = Astro.props;
     <a class="skip-link" href="#app-main" data-i18n="a11y.skipToContent">跳转到主要内容</a>
     <SceneBackdrop decor={fxDecor} num={fxNum} />
     <slot />
-    <WebVitalsTracker client:idle />
   </body>
 </html>
 
@@ -125,6 +123,13 @@ const { fxDecor, fxNum } = Astro.props;
 <script>
   import { initThemePersistence } from '@/lib/theme';
   initThemePersistence();
+</script>
+
+<script>
+  // WebVitalsTracker vanilla 模块（S4 去 React 化）：纯观测上报，无 DOM 标记。
+  // 整页会话注册一次，监听跨 ClientRouter 换页持续有效，无需 before-swap 清理。
+  import { initWebVitalsTracking } from '@/lib/web-vitals';
+  initWebVitalsTracking();
 </script>
 
 <script>
