@@ -1,0 +1,654 @@
+{
+  "findings": [
+    {
+      "page": "javascript/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "javascript/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "javascript/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "javascript/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "javascript/page/2/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "javascript/page/2/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "javascript/page/2/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "javascript/page/2/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "javascript/010-WhatIsJavaScript/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "javascript/010-WhatIsJavaScript/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "javascript/010-WhatIsJavaScript/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "javascript/010-WhatIsJavaScript/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "algorithm/290-NetworkFlow/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "algorithm/290-NetworkFlow/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "algorithm/290-NetworkFlow/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "algorithm/290-NetworkFlow/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "learning-path/javascript/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "learning-path/javascript/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "learning-path/javascript/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "learning-path/javascript/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "playground/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "playground/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "playground/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "playground/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "playground/editor/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "playground/editor/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "playground/editor/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "playground/editor/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "syntax/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "syntax/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "syntax/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "syntax/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "ai/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "主导航 [data-site-header] 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "ai/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "ai/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "主导航 [data-site-header] 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "ai/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "ai/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "主导航 [data-site-header] 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "ai/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "ai/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "主导航 [data-site-header] 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "ai/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": ".fx-backdrop 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "[data-fx=letter-glitch] 挂载点不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "主导航 [data-site-header] 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": ".fx-backdrop 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "[data-fx=letter-glitch] 挂载点不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "主导航 [data-site-header] 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": ".fx-backdrop 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "[data-fx=letter-glitch] 挂载点不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "主导航 [data-site-header] 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": ".fx-backdrop 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "[data-fx=letter-glitch] 挂载点不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "主导航 [data-site-header] 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "disclaimer/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "页脚 footer 不存在",
+      "severity": "low"
+    },
+    {
+      "page": "404",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "data-theme 实际为 null",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": ".fx-backdrop 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "[data-fx=letter-glitch] 挂载点不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "light",
+      "viewport": "desktop",
+      "problem": "主导航 [data-site-header] 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "data-theme 实际为 null",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": ".fx-backdrop 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "[data-fx=letter-glitch] 挂载点不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "dark",
+      "viewport": "desktop",
+      "problem": "主导航 [data-site-header] 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "data-theme 实际为 null",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": ".fx-backdrop 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "[data-fx=letter-glitch] 挂载点不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "light",
+      "viewport": "narrow",
+      "problem": "主导航 [data-site-header] 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "data-theme 实际为 null",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": ".fx-backdrop 不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "[data-fx=letter-glitch] 挂载点不存在",
+      "severity": "medium"
+    },
+    {
+      "page": "404",
+      "theme": "dark",
+      "viewport": "narrow",
+      "problem": "主导航 [data-site-header] 不存在",
+      "severity": "medium"
+    }
+  ],
+  "pageErrors": [
+    {
+      "url": "http://localhost:4321/FANDEX/playground/",
+      "theme": "light",
+      "viewport": "narrow",
+      "error": "pageerror: Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  <FrontendLab>\n    <div className={\"pg-front...\"}>\n      <header className=\"pg-toolbar\">\n        <div>\n        <div className=\"pg-toolbar...\">\n          <div>\n          <div className=\"pg-toolbar...\">\n            <button>\n            <button>\n            <button type=\"button\" className=\"fndx-butto...\" onClick={function onClick} title=\"切换编辑区布局\">\n              <PgIcon name=\"layout-top\" size={14}>\n                <svg className={undefined} width={14} height={14} viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" ...>\n                  <rect>\n                  <path\n+                   d=\"M3 9h18\"\n-                   d=\"M9 4v16\"\n                  >\n              <span>\n+               上下\n-               左右\n            ...\n          ...\n      ...\n"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/playground/",
+      "theme": "light",
+      "viewport": "narrow",
+      "error": "pageerror: Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  <FrontendLab>\n    <div className={\"pg-front...\"}>\n      <header className=\"pg-toolbar\">\n        <div>\n        <div className=\"pg-toolbar...\">\n          <div>\n          <div className=\"pg-toolbar...\">\n            <button>\n            <button>\n            <button type=\"button\" className=\"fndx-butto...\" onClick={function onClick} title=\"切换编辑区布局\">\n              <PgIcon name=\"layout-top\" size={14}>\n                <svg className={undefined} width={14} height={14} viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" ...>\n                  <rect>\n                  <path\n+                   d=\"M3 9h18\"\n-                   d=\"M9 4v16\"\n                  >\n              <span>\n+               上下\n-               左右\n            ...\n          ...\n      ...\n"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/playground/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "error": "pageerror: Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  <FrontendLab>\n    <div className={\"pg-front...\"}>\n      <header className=\"pg-toolbar\">\n        <div>\n        <div className=\"pg-toolbar...\">\n          <div>\n          <div className=\"pg-toolbar...\">\n            <button>\n            <button>\n            <button type=\"button\" className=\"fndx-butto...\" onClick={function onClick} title=\"切换编辑区布局\">\n              <PgIcon name=\"layout-top\" size={14}>\n                <svg className={undefined} width={14} height={14} viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" ...>\n                  <rect>\n                  <path\n+                   d=\"M3 9h18\"\n-                   d=\"M9 4v16\"\n                  >\n              <span>\n+               上下\n-               左右\n            ...\n          ...\n      ...\n"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/playground/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "error": "pageerror: Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  <FrontendLab>\n    <div className={\"pg-front...\"}>\n      <header className=\"pg-toolbar\">\n        <div>\n        <div className=\"pg-toolbar...\">\n          <div>\n          <div className=\"pg-toolbar...\">\n            <button>\n            <button>\n            <button type=\"button\" className=\"fndx-butto...\" onClick={function onClick} title=\"切换编辑区布局\">\n              <PgIcon name=\"layout-top\" size={14}>\n                <svg className={undefined} width={14} height={14} viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" ...>\n                  <rect>\n                  <path\n+                   d=\"M3 9h18\"\n-                   d=\"M9 4v16\"\n                  >\n              <span>\n+               上下\n-               左右\n            ...\n          ...\n      ...\n"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/playground/editor/",
+      "theme": "light",
+      "viewport": "narrow",
+      "error": "pageerror: Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  <FrontendLab>\n    <div className={\"pg-front...\"}>\n      <header className=\"pg-toolbar\">\n        <div>\n        <div className=\"pg-toolbar...\">\n          <div>\n          <div className=\"pg-toolbar...\">\n            <button>\n            <button>\n            <button type=\"button\" className=\"fndx-butto...\" onClick={function onClick} title=\"切换编辑区布局\">\n              <PgIcon name=\"layout-top\" size={14}>\n                <svg className={undefined} width={14} height={14} viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" ...>\n                  <rect>\n                  <path\n+                   d=\"M3 9h18\"\n-                   d=\"M9 4v16\"\n                  >\n              <span>\n+               上下\n-               左右\n            ...\n          ...\n      ...\n"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/playground/editor/",
+      "theme": "light",
+      "viewport": "narrow",
+      "error": "pageerror: Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  <FrontendLab>\n    <div className={\"pg-front...\"}>\n      <header className=\"pg-toolbar\">\n        <div>\n        <div className=\"pg-toolbar...\">\n          <div>\n          <div className=\"pg-toolbar...\">\n            <button>\n            <button>\n            <button type=\"button\" className=\"fndx-butto...\" onClick={function onClick} title=\"切换编辑区布局\">\n              <PgIcon name=\"layout-top\" size={14}>\n                <svg className={undefined} width={14} height={14} viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" ...>\n                  <rect>\n                  <path\n+                   d=\"M3 9h18\"\n-                   d=\"M9 4v16\"\n                  >\n              <span>\n+               上下\n-               左右\n            ...\n          ...\n      ...\n"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/playground/editor/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "error": "pageerror: Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  <FrontendLab>\n    <div className={\"pg-front...\"}>\n      <header className=\"pg-toolbar\">\n        <div>\n        <div className=\"pg-toolbar...\">\n          <div>\n          <div className=\"pg-toolbar...\">\n            <button>\n            <button>\n            <button type=\"button\" className=\"fndx-butto...\" onClick={function onClick} title=\"切换编辑区布局\">\n              <PgIcon name=\"layout-top\" size={14}>\n                <svg className={undefined} width={14} height={14} viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" ...>\n                  <rect>\n                  <path\n+                   d=\"M3 9h18\"\n-                   d=\"M9 4v16\"\n                  >\n              <span>\n+               上下\n-               左右\n            ...\n          ...\n      ...\n"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/playground/editor/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "error": "pageerror: Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  <FrontendLab>\n    <div className={\"pg-front...\"}>\n      <header className=\"pg-toolbar\">\n        <div>\n        <div className=\"pg-toolbar...\">\n          <div>\n          <div className=\"pg-toolbar...\">\n            <button>\n            <button>\n            <button type=\"button\" className=\"fndx-butto...\" onClick={function onClick} title=\"切换编辑区布局\">\n              <PgIcon name=\"layout-top\" size={14}>\n                <svg className={undefined} width={14} height={14} viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" ...>\n                  <rect>\n                  <path\n+                   d=\"M3 9h18\"\n-                   d=\"M9 4v16\"\n                  >\n              <span>\n+               上下\n-               左右\n            ...\n          ...\n      ...\n"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/syntax/",
+      "theme": "light",
+      "viewport": "desktop",
+      "error": "console.error: Invalid DOM property `%s`. Did you mean `%s`? stroke-width strokeWidth"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/syntax/",
+      "theme": "light",
+      "viewport": "desktop",
+      "error": "console.error: Invalid DOM property `%s`. Did you mean `%s`? stroke-width strokeWidth"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/syntax/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "error": "console.error: Invalid DOM property `%s`. Did you mean `%s`? stroke-width strokeWidth"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/syntax/",
+      "theme": "dark",
+      "viewport": "desktop",
+      "error": "console.error: Invalid DOM property `%s`. Did you mean `%s`? stroke-width strokeWidth"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/syntax/",
+      "theme": "light",
+      "viewport": "narrow",
+      "error": "console.error: Invalid DOM property `%s`. Did you mean `%s`? stroke-width strokeWidth"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/syntax/",
+      "theme": "light",
+      "viewport": "narrow",
+      "error": "console.error: Invalid DOM property `%s`. Did you mean `%s`? stroke-width strokeWidth"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/syntax/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "error": "console.error: Invalid DOM property `%s`. Did you mean `%s`? stroke-width strokeWidth"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/syntax/",
+      "theme": "dark",
+      "viewport": "narrow",
+      "error": "console.error: Invalid DOM property `%s`. Did you mean `%s`? stroke-width strokeWidth"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/404",
+      "theme": "light",
+      "viewport": "desktop",
+      "error": "console.error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/404",
+      "theme": "light",
+      "viewport": "desktop",
+      "error": "console.error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/404",
+      "theme": "dark",
+      "viewport": "desktop",
+      "error": "console.error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/404",
+      "theme": "dark",
+      "viewport": "desktop",
+      "error": "console.error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/404",
+      "theme": "light",
+      "viewport": "narrow",
+      "error": "console.error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/404",
+      "theme": "light",
+      "viewport": "narrow",
+      "error": "console.error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/404",
+      "theme": "dark",
+      "viewport": "narrow",
+      "error": "console.error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/404",
+      "theme": "dark",
+      "viewport": "narrow",
+      "error": "console.error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ]
+}

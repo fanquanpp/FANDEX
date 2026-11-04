@@ -123,6 +123,12 @@
     position: relative;
     flex: 1;
     min-width: 0;
+    /* 下划线净空 2px：行盒高度取 Chakra Petch（拉丁）度量，CJK 回退字体
+       （Microsoft YaHei 等）ink 下缘越过盒底 ~1px，常驻线在 bottom:0 时
+       恰好贯穿 CJK 标题（"零基础起步"呈删除线，明暗均现）。padding 撑出
+       净空后线仍在 overflow:hidden 盒内（bottom:-2px 会被裁掉不渲染），
+       拉丁/CJK 两类标题的墨迹均不与线相交。 */
+    padding-bottom: 2px;
   }
 
   .module-card:hover .card-title {
@@ -131,7 +137,8 @@
 
   /* 卡片标题双层下划线（规格 3.5）：底层 1px 常驻线（currentColor 30%），
    * hover 时上层 1px 线自基线上移 2px 交叉。纯 CSS，reduced-motion 由
-   * global.css 全局兜底降级，此处不重复写 @media。 */
+   * global.css 全局兜底降级，此处不重复写 @media。线位说明见 .card-title
+   * 的 padding-bottom 注释（CJK ink 净空）。 */
   .card-title::after {
     content: '';
     position: absolute;

@@ -1,0 +1,24 @@
+{
+  "url": "http://localhost:4321/FANDEX/disclaimer/",
+  "theme": "dark",
+  "viewport": "desktop",
+  "probe": {
+    "finalUrl": "http://localhost:4321/FANDEX/disclaimer/",
+    "theme": "dark",
+    "bodyTextLen": 2253,
+    "fx": {
+      "backdropPresent": false,
+      "backdropPosition": null,
+      "backdropZIndex": null,
+      "glitchCanvasMounted": false,
+      "glitchCanvasW": null,
+      "glitchCanvasH": null
+    },
+    "nav": {
+      "headerPresent": false,
+      "footerPresent": false
+    },
+    "swActive": true
+  },
+  "errors": []
+}

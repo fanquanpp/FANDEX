@@ -36,6 +36,20 @@ const groups: TocGroup[] = [];
   let currentH2: TocHeading | null = null;
   let currentGroup: { type: 'h3-group'; parent: TocHeading; items: TocHeading[] } | null = null;
 
+  // 先扫一遍确定每个 h2 是否紧跟 h3 子项：有的话 h2 只作为 h3-group 的
+  // 父头渲染（组头本身即链接），否则独立成条。否则同一章标题会在目录
+  // 里连排两次（一次裸 h2 条目、一次组头），视检第 3 轮 #12 实锤。
+  const h2HasChildren = new Set<string>();
+  let pendingH2: TocHeading | null = null;
+  for (const h of visibleHeadings) {
+    if (h.depth === 2) {
+      pendingH2 = h;
+    } else if (h.depth === 3 && pendingH2) {
+      h2HasChildren.add(pendingH2.slug);
+      pendingH2 = null;
+    }
+  }
+
   for (const h of visibleHeadings) {
     if (h.depth === 2) {
       if (currentGroup) {
@@ -43,7 +57,9 @@ const groups: TocGroup[] = [];
         currentGroup = null;
       }
       currentH2 = h;
-      groups.push({ type: 'h2', heading: h });
+      if (!h2HasChildren.has(h.slug)) {
+        groups.push({ type: 'h2', heading: h });
+      }
     } else if (h.depth === 3) {
       if (!currentH2) {
         groups.push({ type: 'h3-group', parent: { depth: 2, slug: '', text: '' }, items: [h] });

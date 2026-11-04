@@ -1,0 +1,24 @@
+{
+  "url": "http://localhost:4321/FANDEX/syntax/",
+  "theme": "dark",
+  "viewport": "desktop",
+  "probe": {
+    "finalUrl": "http://localhost:4321/FANDEX/syntax/",
+    "theme": "dark",
+    "bodyTextLen": 1791,
+    "fx": {
+      "backdropPresent": true,
+      "backdropPosition": "fixed",
+      "backdropZIndex": "-1",
+      "glitchCanvasMounted": false,
+      "glitchCanvasW": null,
+      "glitchCanvasH": null
+    },
+    "nav": {
+      "headerPresent": true,
+      "footerPresent": false
+    },
+    "swActive": true
+  },
+  "errors": []
+}

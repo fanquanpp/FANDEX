@@ -217,17 +217,21 @@ function initCopyButtons(): void {
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
         }, 2000);
       } catch {
-        const execCommandCopy = Reflect.get(document, 'execCommand') as (
-          commandId: string,
-          showUI?: boolean,
-          value?: string,
-        ) => boolean | undefined;
+        // execCommand 兜底：必须以 document 为接收者调用（直接
+        // Reflect.get(document,'execCommand') 再裸调用会丢 this 抛
+        // Illegal invocation，视检交互第 1 轮 I2）；execCommand 本身可能
+        // 被环境禁用，再包一层 try 保证失败路径静默。
         const ta = document.createElement('textarea');
         ta.value = text;
         ta.style.cssText = 'position:fixed;opacity:0';
         document.body.appendChild(ta);
         ta.select();
-        execCommandCopy?.('copy');
+        try {
+          // execCommand 已弃用但仍作 clipboard 兜底（弃用警告 hint 属预期）
+          document.execCommand('copy');
+        } catch {
+          // 复制彻底不可用时放弃反馈，不打扰阅读
+        }
         document.body.removeChild(ta);
         btn.classList.add('copied');
         setTimeout(() => btn.classList.remove('copied'), 2000);
@@ -251,7 +255,9 @@ document.addEventListener('keydown', event => {
 });
 
 document.addEventListener('astro:page-load', () => {
-  closeSidebar();
+  // 先恢复深链（?sidebar=1）再注册交互：此前的无条件 closeSidebar 会把
+  // restore 刚布好的打开态立即清掉（视检交互第 1 轮 I4），深链恢复失效。
+  restoreSidebarFromUrl();
   initLayoutInteractions();
   initFullscreenToggle();
 });
@@ -313,7 +319,10 @@ function initHeadingAnchors(): void {
       e.preventDefault();
       const url = `${window.location.origin}${window.location.pathname}#${heading.id}`;
       if (navigator.clipboard) {
-        void navigator.clipboard.writeText(url);
+        // 复制是尽力而为：权限拒绝（NotAllowedError）等失败静默吞掉，
+        // 不产生 unhandled rejection（视检交互第 1 轮 I3）；hash 与滚动
+        // 不受复制成败影响。
+        navigator.clipboard.writeText(url).catch(() => {});
       }
       window.history.replaceState(null, '', `#${heading.id}`);
       // scrollIntoView 按 scroll-margin-top 落点，标题不会被置顶标题栏遮住

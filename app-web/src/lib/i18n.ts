@@ -41,7 +41,10 @@ export function setLang(lang: Lang): void {
   setItem(LANG_STORAGE_KEY, lang);
   applyLang(lang);
   if (!isServer) {
-    document.dispatchEvent(new CustomEvent(LANG_CHANGE_EVENT, { detail: { lang } }));
+    // detail 直接携带 Lang：订阅端 subscribeLang 把 detail 原样交给回调，
+    // 包成 { lang } 会让 React state 变成对象、t() 里 entry[lang] 取到
+    // undefined 抛 replace TypeError，整树 island 崩溃（交互深检 L1）。
+    document.dispatchEvent(new CustomEvent<Lang>(LANG_CHANGE_EVENT, { detail: lang }));
   }
 }
 
@@ -54,7 +57,19 @@ export function toggleLang(): Lang {
 export function subscribeLang(callback: (lang: Lang) => void): () => void {
   if (isServer) return () => {};
   const handler = (event: Event): void => {
-    callback((event as CustomEvent<Lang>).detail ?? readLangFromDom());
+    // 防御性归一：detail 契约为 Lang（'zh'/'en'）；历史事件或第三方派发
+    // 可能带 { lang } 包装（truthy 对象会让 ?? 兜底失效，回调拿到非
+    // Lang 值后 t() 里 entry[lang] 为 undefined 抛 replace TypeError，
+    // useLang 消费 island 整树崩溃，交互深检 L1）。异常形态一律回读
+    // DOM 权威值。
+    const raw = (event as CustomEvent<unknown>).detail;
+    const normalized =
+      raw === 'zh' || raw === 'en'
+        ? raw
+        : raw && typeof raw === 'object' && ((raw as { lang?: unknown }).lang === 'zh' || (raw as { lang?: unknown }).lang === 'en')
+          ? (raw as { lang: Lang }).lang
+          : readLangFromDom();
+    callback(normalized);
   };
   document.addEventListener(LANG_CHANGE_EVENT, handler);
   return () => document.removeEventListener(LANG_CHANGE_EVENT, handler);

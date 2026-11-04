@@ -1,0 +1,33 @@
+{
+  "phase": "hover",
+  "stats": {
+    "cases": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0
+  },
+  "findings": [],
+  "skipped": [],
+  "checked": [
+    {
+      "page": "/",
+      "element": "hover a.module-card",
+      "verdict": "pass",
+      "note": "hovered; tooltips visible=0 "
+    },
+    {
+      "page": "/",
+      "element": "hover .feature-nav button",
+      "verdict": "pass",
+      "note": "no matching element on page"
+    },
+    {
+      "page": "/design-system/",
+      "element": "hover button[data-state]",
+      "verdict": "pass",
+      "note": "hovered; tooltips visible=0 "
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": []
+}

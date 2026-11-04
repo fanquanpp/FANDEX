@@ -289,7 +289,9 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'syntaxPage.quickTooltip': { zh: '直达 {title} 语法速查', en: 'Jump to {title} syntax cards' },
 
   'syntax.langsAria': { zh: '语法语言切换', en: 'Switch language' },
-  'syntax.filterPlaceholder': { zh: '筛选语法点（小节 / 写法 / 公式 / 代码）', en: 'Filter cards (section / name / formula / code)' },
+  // zh 文案长度以窄屏 375px 输入框内宽（~205px）为上限：原 19 字占位
+  // 238px 被裁尾（视检第 3 轮 #15），缩为 12 字 146px 全可见。
+  'syntax.filterPlaceholder': { zh: '筛选语法点 / 写法 / 公式', en: 'Filter cards (section / code)' },
   'syntax.filterAria': { zh: '筛选当前语言的语法点', en: 'Filter syntax cards of the current language' },
   'syntax.clearAria': { zh: '清除筛选关键词', en: 'Clear filter keyword' },
   'syntax.focusHint': { zh: '聚焦', en: 'focus' },

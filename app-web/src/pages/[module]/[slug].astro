@@ -215,6 +215,13 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
     color: var(--color-text-secondary);
   }
 
+  /* 标签列禁竖断：窄屏 flex 收缩会把"前置知识: "压到 47px 逐字竖排
+     （视检第 3 轮 #17），禁止该 span 收缩换行。 */
+  .prereq-notice > span:first-of-type {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
   .prereq-notice svg {
     flex-shrink: 0;
     color: var(--color-warning-base);

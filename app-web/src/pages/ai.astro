@@ -398,8 +398,9 @@ const channelActive = AI_CHANNEL_ACTIVE;
   }
 
   .ai-lang-btn.is-active {
-    background: color-mix(in srgb, var(--color-accent-base) 14%, transparent);
-    color: var(--color-accent-base);
+    /* 反色墨水选中态（规格 3.3：互斥单选含语言切换），与全站统一 */
+    background: var(--color-fg-primary);
+    color: var(--color-bg-primary);
   }
 
   .ai-title {

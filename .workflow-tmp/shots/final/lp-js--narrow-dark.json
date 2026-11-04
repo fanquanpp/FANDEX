@@ -1,0 +1,24 @@
+{
+  "url": "http://localhost:4321/FANDEX/learning-path/javascript/",
+  "theme": "dark",
+  "viewport": "narrow",
+  "probe": {
+    "finalUrl": "http://localhost:4321/FANDEX/learning-path/javascript/",
+    "theme": "dark",
+    "bodyTextLen": 2344,
+    "fx": {
+      "backdropPresent": true,
+      "backdropPosition": "fixed",
+      "backdropZIndex": "-1",
+      "glitchCanvasMounted": false,
+      "glitchCanvasW": null,
+      "glitchCanvasH": null
+    },
+    "nav": {
+      "headerPresent": true,
+      "footerPresent": false
+    },
+    "swActive": true
+  },
+  "errors": []
+}

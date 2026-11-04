@@ -1,0 +1,139 @@
+{
+  "results": [
+    {
+      "name": "home module-card /start/ navigates",
+      "verdict": "error",
+      "actual": "Error: locator.click: Error: strict mode violation: locator('a.module-card[href=\"/FANDEX/start/\"]') resolved to 3 elements:\n    1) <a class=\"module-card\" data-hover-fx=\"css\" href=\"/FANDEX/start/\">…</a> aka getByRole('link', { name: 'Go 零基础起"
+    },
+    {
+      "name": "js page/2 pager links",
+      "verdict": "pass",
+      "actual": "{\"jsLinks\":[\"/FANDEX/javascript/010-WhatIsJavaScript/\",\"/FANDEX/javascript/020-JavaScriptOverviewRuntimeEnv/\",\"/FANDEX/javascript/030-ProgramStructureBasicSyntax/\",\"/FANDEX/javascript/040-VariableDataType/\",\"/FANDEX/javascript/050-DataTypeOperator/\",\"/FANDEX/javascript/060-ControlFlow/\",\"/FANDEX/jav"
+    },
+    {
+      "name": "search palette Enter navigates",
+      "verdict": "pass",
+      "actual": "items=7 http://localhost:4321/FANDEX/ -> http://localhost:4321/FANDEX/playground/"
+    },
+    {
+      "name": "doc nav-toggle visibility at 1440",
+      "verdict": "skip",
+      "actual": "{\"toggleExists\":true,\"toggleVisible\":false,\"toggleDisplay\":\"none\",\"mobileSidebarExists\":true,\"mobileSidebarVisible\":false,\"mobileFeaturesExists\":true,\"mobileFeaturesVisible\":false}"
+    },
+    {
+      "name": "doc mobile sidebar open/close at 375px",
+      "verdict": "bug",
+      "actual": "{\"body\":true,\"sidebar\":true,\"url\":true,\"closedByBtn\":true,\"closedByBackdrop\":false}"
+    },
+    {
+      "name": "feature sheet open/navigate at 375px",
+      "verdict": "pass",
+      "actual": "{\"opened\":{\"open\":true,\"aria\":\"true\"},\"nav\":\"http://localhost:4321/FANDEX/algorithms/\"}"
+    },
+    {
+      "name": "toc link sets decoded hash",
+      "verdict": "pass",
+      "actual": "hash=#学习目标 want=#学习目标 scrollTop=523"
+    },
+    {
+      "name": "doc code copy button",
+      "verdict": "pass",
+      "actual": "copied=true clip=\"console.log('你好，世界');\" code=\"console.log('你好，世界');\""
+    },
+    {
+      "name": "heading anchor sets decoded hash",
+      "verdict": "pass",
+      "actual": "hash=#前置知识 want=#前置知识"
+    },
+    {
+      "name": "algo reset-all in empty state",
+      "verdict": "bug",
+      "actual": "{\"url\":\"?view=problems\",\"shown\":95,\"total\":95,\"inputCleared\":true}"
+    },
+    {
+      "name": "syntax panel copy feedback",
+      "verdict": "pass",
+      "actual": "after click: \"已复制\""
+    },
+    {
+      "name": "pg editor tab toggles pane",
+      "verdict": "error",
+      "actual": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.pg-editor-tab').nth(1)\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" aria-pressed=\"true\" title=\"切换到 CSS 编辑器\" class=\"pg-editor-tab is-o"
+    },
+    {
+      "name": "pg template menu creates draft",
+      "verdict": "error",
+      "actual": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.pg-menu .pg-menu-item').first()\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" role=\"menuitem\" class=\"pg-menu-item\">…</button>\u001b[22m\n\u001b[2"
+    },
+    {
+      "name": "pg gallery (灵感库) opens + load",
+      "verdict": "pass",
+      "actual": "{\"opened\":{\"mask\":true,\"cards\":25},\"loaded\":{\"before\":\"\",\"after\":\"\",\"changed\":false},\"closed\":true}"
+    },
+    {
+      "name": "pg console toggle",
+      "verdict": "pass",
+      "actual": "before=true after={\"panel\":false,\"empty\":false,\"lines\":0}"
+    },
+    {
+      "name": "ds dialog opens/closes (radix state)",
+      "verdict": "error",
+      "actual": "Error: page.evaluate: SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"打开对话框\")' is not a valid selector.\n    at eval (eval at evaluate (:370:30), <anonymous>:3:37)\n    at UtilityScript.evaluate (<anonymous>:37"
+    },
+    {
+      "name": "ds button matrix count",
+      "verdict": "pass",
+      "actual": "{\"fndx\":16,\"radix\":36,\"sizeVariants\":[\"h-8\",\"h-10\",\"h-11\"]}"
+    },
+    {
+      "name": "404 back-home link",
+      "verdict": "bug",
+      "actual": "{\"all\":[{\"t\":\"/FANDEX/404/\",\"h\":\"/FANDEX/404/\",\"cls\":\"\"},{\"t\":\"the documentation fo\",\"h\":\"https://docs.astro.build/en/reference/configuration-reference/#trailingslash\",\"cls\":\"\"}]}"
+    },
+    {
+      "name": "networkflow mermaid renders",
+      "verdict": "bug",
+      "actual": "{\"svgs\":0,\"anySvg\":75,\"blockCls\":[],\"blocks\":5}"
+    },
+    {
+      "name": "networkflow code copy feedback",
+      "verdict": "pass",
+      "actual": "copied=true clip=\"# 代码 2.1：多源多汇归一化为单源单汇\r\n# 输入：原图\""
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    {
+      "url": "http://localhost:4321/FANDEX/",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/javascript/010-WhatIsJavaScript/",
+      "message": "You are calling ReactDOMClient.createRoot() on a container that has already been passed to createRoot() before. Instead, call root.render() on the existing root instead if you want to update it."
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/javascript/010-WhatIsJavaScript/",
+      "message": "You are calling ReactDOMClient.createRoot() on a container that has already been passed to createRoot() before. Instead, call root.render() on the existing root instead if you want to update it."
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/javascript/010-WhatIsJavaScript/",
+      "message": "You are calling ReactDOMClient.createRoot() on a container that has already been passed to createRoot() before. Instead, call root.render() on the existing root instead if you want to update it."
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/javascript/010-WhatIsJavaScript/",
+      "message": "You are calling ReactDOMClient.createRoot() on a container that has already been passed to createRoot() before. Instead, call root.render() on the existing root instead if you want to update it."
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/404",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/algorithm/290-NetworkFlow/",
+      "message": "You are calling ReactDOMClient.createRoot() on a container that has already been passed to createRoot() before. Instead, call root.render() on the existing root instead if you want to update it."
+    },
+    {
+      "url": "http://localhost:4321/FANDEX/algorithm/290-NetworkFlow/",
+      "message": "You are calling ReactDOMClient.createRoot() on a container that has already been passed to createRoot() before. Instead, call root.render() on the existing root instead if you want to update it."
+    }
+  ]
+}

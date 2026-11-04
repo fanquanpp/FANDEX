@@ -70,7 +70,11 @@
 @media (max-width: 767.98px) {
   .breadcrumb {
     position: sticky;
-    top: var(--nav-height, 56px);
+    /* 吸顶偏移相对滚动容器（#app-main）而非视口：容器顶已在 fixed 头部
+       下方 48px，再写 var(--nav-height) 会把胶囊从文档流位置下压一个头高，
+       首屏盖住 H1/前置知识（视检第 1 轮实锤）。同容器内 .fndx-header、
+       .fndx-toc__title 均以 top:0 吸住容器顶。 */
+    top: 0;
     /* z 刻度迁移（规格 4.2）：页内吸顶条族统一 --z-sticky（10），
        必须低于侧栏抽屉遮罩（25）与移动目录吸顶条（20） */
     z-index: var(--z-sticky);

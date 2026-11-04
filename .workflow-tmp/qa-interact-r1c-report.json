@@ -1,0 +1,45 @@
+{
+  "results": [
+    {
+      "name": "404 all links enumerated",
+      "verdict": "bug",
+      "actual": "{\"all\":[{\"text\":\"/FANDEX/404/\",\"href\":\"/FANDEX/404/\",\"cls\":\"\"},{\"text\":\"the documentation for tr\",\"href\":\"https://docs.astro.build/en/reference/configuration-reference/#trailingslash\",\"cls\":\"\"}]}"
+    },
+    {
+      "name": "sidebar backdrop closes drawer (375px, real click)",
+      "verdict": "pass",
+      "actual": "{\"backdrop\":{\"visible\":true,\"opacity\":\"1\",\"visibility\":\"visible\",\"rect\":{\"x\":0,\"y\":48,\"w\":375,\"h\":1652},\"pointerEvents\":\"auto\"},\"afterClick\":{\"body\":false,\"visible\":false}}"
+    },
+    {
+      "name": "algo reset-all via empty-inducing cat filter",
+      "verdict": "pass",
+      "actual": "{\"url\":\"?view=problems\",\"shown\":95,\"total\":95,\"solvedActive\":false,\"allActive\":true}"
+    },
+    {
+      "name": "pg editor tab toggles pane (dom click)",
+      "verdict": "bug",
+      "actual": "{\"pressed\":\"true\",\"panes\":3,\"paneKeys\":[\"HTML\",\"CSS\",\"JS\"]} -> {\"pressed\":\"true\",\"panes\":3,\"paneKeys\":[\"HTML\",\"CSS\",\"JS\"]}"
+    },
+    {
+      "name": "pg template menu creates draft (dom click)",
+      "verdict": "bug",
+      "actual": "items=4 title \"\" -> \"\""
+    },
+    {
+      "name": "ds dialog opens/closes",
+      "verdict": "error",
+      "actual": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '取消' }).first()\u001b[22m\n"
+    },
+    {
+      "name": "mermaid blocks state on NetworkFlow (dev)",
+      "verdict": "inconclusive",
+      "actual": "{\"initial\":{\"count\":5,\"samples\":[{\"tag\":\"PRE\",\"cls\":\"mermaid-source\",\"childTags\":\"\",\"textSample\":\"flowchart LR\\n    s([源点 s]) -->|c=10| a((\",\"dataProcessed\":null},{\"tag\":\"PRE\",\"cls\":\"mermaid-source\",\"childTags\":\"\",\"textSample\":\"flowchart TB\\n    subgraph Phase1[\\\"阶段 1: \",\"dataProcessed\":null},{\"tag\":\"PRE\",\"cls\":\"mermaid-source\",\"childTags\":\"\",\"textSample\":\"stateDiagram-v2\\n    [*] --> InitPreflow:\",\"dataProcessed\":null},{\"tag\":\"PRE\",\"cls\":\"mermaid-source\",\"childTags\":\"\",\"textSample\":\"flowchart T"
+    },
+    {
+      "name": "404 with trailing slash",
+      "verdict": "pass",
+      "actual": "status=404 links=[{\"t\":\"返回首页→\",\"h\":\"/FANDEX/\"},{\"t\":\"学习路线\",\"h\":\"/FANDEX/learning-path/\"}]"
+    }
+  ],
+  "pageErrors": []
+}

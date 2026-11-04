@@ -97,7 +97,7 @@ const codeFocusLines = [
       <h1 class="ds-head__title">设计系统</h1>
       <p class="ds-head__sub">
         「仪器面板」语言活体标本：以下各节与站点实物同源（同一套令牌与基元类），是第
-        1 期验收的目视基准。本页 noindex 且不入 sitemap。
+        1 期验收的目视基准。本页 noindex 且不入 sitemap（astro.config.ts sitemap filter）。
       </p>
     </header>
 
@@ -105,8 +105,9 @@ const codeFocusLines = [
     <section class="ds-section" aria-labelledby="ds-buttons-title">
       <h2 class="ds-section__title" id="ds-buttons-title">按钮：四层级 × 三尺寸</h2>
       <p class="ds-section__note">
-        层级数量不再新增；尺寸 sm 32 / md 40 / lg 48 由 --button-size-* 令牌驱动。键盘焦点统一
-        2px --color-border-focus 外描边（Tab 至任意按钮可见），按压态 scale(0.98)。
+        层级数量不再新增；尺寸 sm 32 / md 40 / lg 48 由 --button-size-* 令牌驱动（--size-control-sm/md/lg
+        = 2rem / 2.5rem / 3rem）。键盘焦点统一 2px --color-border-focus 外描边（Tab 至任意按钮可见），
+        按压态 scale(0.97)（components.css .fndx-button:active 实现值）。
       </p>
       <div class="ds-panel">
         {
@@ -137,7 +138,9 @@ const codeFocusLines = [
       <h2 class="ds-section__title" id="ds-radius-title">圆角五档</h2>
       <p class="ds-section__note">
         使用档收敛为 0 / 2 / 4 / 8 / full；md(6) / xl(12) / 2xl(16) / 3xl(24) 保留在 primitive
-        但语义层停止引用。数值随 DTCG 令牌批次实时解析，标本始终与站点同值。
+        但语义层停止引用。现状（规格 3.1 重映射尚未落 DTCG 批次）：语义层仍映射旧档
+        （--radius-control = default 4px、--radius-card = lg 8px、--radius-modal = xl 12px、
+        --radius-badge = default 4px），标本引用语义令牌，与站点始终同值。
       </p>
       <div class="ds-panel ds-radius-grid">
         {
@@ -261,7 +264,9 @@ const codeFocusLines = [
       <p class="ds-section__note">
         目标态标本（ds- 前缀，数值按规格 2.6）：头栏高 2.25rem、1px 底边、语言名右对齐 0.68em
         mono 大写；行高亮 = accent 12% 背景 + 左缘 2px 刻度；diff 绿/红 tint；focus 非焦点行
-        opacity 0.45。站点实物由文档域 SSR 插件 + Shiki transformers 输出，copy 按钮常驻头栏右侧。
+        opacity 0.45。站点实物现状（SSR 化 + Shiki transformers 属规格 2.6 后续任务）：代码框
+        由 src/lib/layout-interactions.ts 客户端包 .code-block 输出，语言角标为伪元素（code.css），
+        copy 按钮 hover 才显，头栏与行级表达未落地。
       </p>
       <div class="ds-panel ds-code-grid">
         {/* 例一：title 头栏 */}
@@ -315,8 +320,9 @@ const codeFocusLines = [
     <section class="ds-section" aria-labelledby="ds-table-title">
       <h2 class="ds-section__title" id="ds-table-title">表格：降噪表头 / tabular-nums / hover 刻度环</h2>
       <p class="ds-section__note">
-        表头 = accent 8% 混合底 + 2px accent 底线（明暗同式）；数字列 tabular-nums；行 hover
-        为 inset 1px 刻度环叠加既有底色（规格 2.7）。
+        表头 = accent 8% 混合底 + 2px accent 底线（明暗同式，站点实物同式落地于 typography.css）；
+        数字列 tabular-nums；行 hover 为 inset 1px 刻度环叠加既有底色（规格 2.7）。
+        注：站点实物斑马纹基于 --color-bg-card，此处标本为 --color-fg-primary 3% 近似。
       </p>
       <div class="ds-panel">
         <div class="ds-table-wrap">
@@ -351,8 +357,9 @@ const codeFocusLines = [
       <h2 class="ds-section__title" id="ds-toctitle">移动端目录（&lt;1024px 吸顶折叠条）</h2>
       <p class="ds-section__note">
         文档页在窄视口把右栏 TOC 重排为吸顶折叠条（规格 4.6，站点实物见 TableOfContents.astro）：
-        行高 2.5rem、summary 回显当前标题、展开面板 1px 边框 + --radius-modal。下为可交互复刻
-        （原生 details）：
+        吸顶条高 2.5rem（.app-main 同步 padding-top 占位）、summary 回显当前标题、展开面板 1px
+        边框 + --radius-modal 底角 + max-height 85vh + overscroll-behavior contain。层级：吸顶条
+        --z-toc（20，低于 header 40），面板不另设 z-index。下为可交互复刻（原生 details）：
       </p>
       <div class="ds-panel ds-toc-stage">
         <details class="ds-toc">

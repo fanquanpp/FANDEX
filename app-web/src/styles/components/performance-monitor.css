@@ -69,6 +69,29 @@
   display: none;
 }
 
+/* 折叠态缩窄并半透明：360px 全宽条常驻右下会盖住文档列表行文右端
+   （视检第 2 轮 #13/14：010/011 条描述被"性能监控"条截断）。折叠后
+   只是展开入口，收窄 + 半透明降低存在感，展开态恢复全宽。 */
+.perf-monitor.collapsed {
+  width: auto;
+  opacity: 0.55;
+  transition: opacity var(--motion-duration-fast) var(--motion-easing-out);
+}
+
+.perf-monitor.collapsed:hover {
+  opacity: 1;
+}
+
+/* 窄屏让位移动底栏（56px）：折叠徽标常驻右下会压住底栏"功能"标签
+   （视检第 3 轮 #13，z 1000 vs --z-mobile-nav 40）。仅 dev 工具，抬离
+   底栏并进一步缩小；展开态仍用常规 bottom:16px。 */
+@media (max-width: 767.98px) {
+  .perf-monitor.collapsed {
+    bottom: 64px;
+    right: 10px;
+  }
+}
+
 .perf-section {
   margin-bottom: 12px;
 }

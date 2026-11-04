@@ -6,7 +6,7 @@
 
 **FANDEX 是一套面向零基础学习者的编程自学笔记库，也是学成之后的随身语法速查伴侣。**
 
-43 个技术模块、1700+ 篇中文教学笔记，从"计算机是如何工作的"一路讲到数据库、后端、
+48 个技术模块、2000+ 篇中文教学笔记，从"计算机是如何工作的"一路讲到数据库、后端、
 云原生与游戏开发。网页、Windows 桌面端、移动端（iOS + Android）共享同一内容体系，
 全部内容离线可用。写作风格是"带实战、讲解、知识点、理论的学习笔记"：先动手做出来，再讲
 为什么，最后给坑点与自检——不是教材，也没有概念堆砌。
@@ -50,10 +50,53 @@ FANDEX/
 git clone https://github.com/fanquanpp/FANDEX.git
 cd FANDEX && pnpm install --frozen-lockfile
 
-pnpm dev:web        # 网页端开发服务器
-pnpm build:web      # 完整构建（mermaid 预渲染 + 内容同步 + 静态构建 + 搜索索引）
-pnpm typecheck      # 全仓类型检查
+pnpm dev:web        # 网页端开发服务器（content-sync + tokens-drift 门禁 + astro dev）
+pnpm build:web      # 完整构建（mermaid 预渲染 + 内容同步 + tokens-drift 门禁 + 静态构建
+                    # + katex 字体裁剪 + 搜索索引）
+pnpm typecheck      # 全仓类型检查（app-web astro check + shd-shared/tokens）
 ```
+
+web 端命令在 `app-web/` 目录（或 `pnpm --filter @fandex/web <script>`）：
+
+```bash
+pnpm --filter @fandex/web lint        # eslint（CI deploy 工作流前置步骤）
+pnpm --filter @fandex/web qa          # qa-check.mjs：产物目录 20 余项静态检查
+                                      # （页面数/base/sitemap/暗色/响应式/shiki 等）
+pnpm --filter @fandex/web test:smoke  # Playwright 冒烟（tests/ 共 20 用例：smoke 8 +
+                                      # subpage-ux 10 + nav-depth 2；跑前需 build）
+```
+
+Lighthouse CI（lighthouserc.json：perf >= 0.85、CLS <= 0.1 为 error 档硬断言，
+LCP <= 2500ms、字体 <= 300KB 为 warn 档）由 CI 在推送/PR 指向 main 且改动涉及
+app-web 等路径时自动运行；冒烟测试经 scripts/lhci-server.mjs 本地起产物服务。
+
+### web 端 UI/UX 体系（2026-10「仪器面板」改版）
+
+第 1 期改版落地了一套全站自洽的视觉语言「仪器面板」：细线、刻度、角标、反色墨水
+取代大圆角与光效。要点（活体标本见站内 noindex 页 `/design-system/`）：
+
+- **设计令牌**：唯一真源 `shd-shared/tokens/`（DTCG JSON），web 副本
+  `app-web/src/styles/shared/tokens.css` 由它派生，`check-tokens-drift.mjs` 挂在
+  dev/build 链上硬校验逐值一致；样式单一入口 `app-web/src/styles/site.css`。
+  暗色纯黑灰板 + cyan 强调；亮色冷雾灰板；品牌字体 IBM Plex Sans / Chakra Petch /
+  JetBrains Mono 自托管（woff2 latin 子集）。
+- **排版**：.prose 行宽帽 `--size-prose-measure`（默认 68ch，段落/列表/引用/提示块/
+  折叠块/脚注同帽，代码块/表格/图保持全宽）；表头 accent 8% tint 降噪 +
+  `tabular-nums` 数字列 + 行 hover 1px 刻度环；h4 下划线改为模块色竖刻度。
+- **组件基元**：`.fndx-button` 四层级（primary/secondary/ghost/danger）× 三尺寸
+  （32/40/48px），active 按压 scale(0.97)、focus-visible 2px outline、hover 态仅在
+  支持 hover 的设备生效；互斥单选选中态统一「反色墨水」（前景底 + 背景字），
+  常驻位置指示用刻度线 + 字重，二者分工。
+- **导航框架**：Layout 与 HomeLayout 共用 `SiteHeader.astro`（doc/home 两变体）；
+  z-index 全站统一刻度（`--z-sticky 10` 至 `--z-overlay-top 1000`，见
+  `shared/layout-components.css` 令牌块）；<1024px 目录重排为吸顶折叠条
+  （补齐全站移动端页内导航），目录尾部「回到开头」常驻。
+- **动效预算**：全部动效可解释、可降级，尊重全局 prefers-reduced-motion 兜底
+  （global.css）；唯一背景层 SceneBackdrop（fixed + z-index -1）承载 fx 体系
+  （WebGL2 letter-glitch 字符海 + data-fx 声明式入场），不新增背景层与光效。
+- **性能**：KaTeX 字体三格式裁剪（构建期剔除 woff/ttf，部署产物少约 580KB）、
+  侧栏「全部模块」面板 React 依赖懒加载（不打开零成本）、设计系统页第三方组件
+  试验场 client:visible 拖后水合。
 
 Android 与 Windows 桌面端的构建命令见 `CONTRIBUTING.md`「环境准备」与各端 README。
 
@@ -63,7 +106,7 @@ Android 与 Windows 桌面端的构建命令见 `CONTRIBUTING.md`「环境准备
 
 ```mermaid
 flowchart LR
-    A["cnt-content/full<br/>43 模块 · 1700+ 篇"] --> B["content-sync<br/>元数据自动补全"]
+    A["cnt-content/full<br/>48 模块 · 2000+ 篇"] --> B["content-sync<br/>元数据自动补全"]
     B --> C["app-web<br/>Content Collections"]
     B --> D["app-mobile<br/>generate-content.mjs"]
     C --> E["GitHub Pages<br/>+ app-desktop 内嵌"]

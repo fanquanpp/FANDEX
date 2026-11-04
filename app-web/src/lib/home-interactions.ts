@@ -66,6 +66,9 @@ interface ScrollerState {
   isPaused: boolean;
   isHovering: boolean;
   isDragging: boolean;
+  // 左键按下但尚未越过拖拽阈值：期间不 capture、不挂 is-dragging，
+  // 让静止点击的 click 正常落到卡片 anchor（I1）。
+  pendingLeftDrag: boolean;
   rafId: number | null;
   inertiaVelocity: number;
   isInertiaActive: boolean;
@@ -161,6 +164,7 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
     isPaused: reduceMotion,
     isHovering: false,
     isDragging: false,
+    pendingLeftDrag: false,
     rafId: null,
     inertiaVelocity: 0,
     isInertiaActive: false,
@@ -407,11 +411,18 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
     if (e.pointerType !== 'mouse') return;
     // 左键拖拽（配合 click 拦截）+ 中键拖拽（沿用旧能力并屏蔽自动滚动）
     if (e.button !== 0 && e.button !== 1) return;
+    // preventDefault 保留：抑制卡片链接的原生拖拽与文本选择（不阻 click
+    // 与导航），否则原生 dragstart 会吞掉后续 pointermove，左键拖拽失灵。
     e.preventDefault();
     cancelSettle();
     cancelNav();
     cancelInertia();
-    state.isDragging = true;
+    // 中键立即 capture（无点击语义）；左键延后到真正拖过阈值才 capture：
+    // pointer capture 会把 pointerup/click 的 target 重定向到 scroller，
+    // 立即 capture 会让静止左键点击永远到不了卡片 anchor（视检交互
+    // 第 1 轮 I1：左键点卡片无响应，回归自 4f1a1e04 引入左键拖拽）。
+    state.isDragging = e.button === 1;
+    state.pendingLeftDrag = e.button === 0;
     state.isHovering = true;
     state.isPaused = true;
     suppressClick = false;
@@ -422,15 +433,35 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
     lastMoveTime = performance.now();
     lastMoveX = e.clientX;
     pointerId = e.pointerId;
-    scroller.classList.add('is-dragging');
-    try {
-      scroller.setPointerCapture(e.pointerId);
-    } catch {
-      // 安全降级
+    if (e.button === 1) {
+      scroller.classList.add('is-dragging');
+      try {
+        scroller.setPointerCapture(e.pointerId);
+      } catch {
+        // 安全降级
+      }
     }
   };
 
   const onPointerMove = (e: PointerEvent): void => {
+    // 左键待定拖拽：越过阈值才转正——此刻才 capture 并挂 is-dragging。
+    // capture 会重定向 pointerup/click 的 target 到 scroller，静止点击
+    // 必须保持无 capture 状态让 click 落回卡片 anchor（I1）。
+    if (state.pendingLeftDrag && e.pointerId === pointerId) {
+      const dxPending = e.clientX - dragStartX;
+      if (Math.abs(dxPending) > DRAG_CLICK_SUPPRESS_PX) {
+        state.pendingLeftDrag = false;
+        state.isDragging = true;
+        suppressClick = true;
+        scroller.classList.add('is-dragging');
+        try {
+          scroller.setPointerCapture(e.pointerId);
+        } catch {
+          // 安全降级
+        }
+      }
+      return;
+    }
     if (!state.isDragging || e.pointerId !== pointerId) return;
     const dx = e.clientX - dragStartX;
     if (Math.abs(dx) > DRAG_CLICK_SUPPRESS_PX) {
@@ -457,6 +488,13 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
         state.userHold = false;
         state.startAt = performance.now() + TOUCH_RESUME_DELAY_MS;
       }
+      return;
+    }
+    // 左键待定拖拽在未越过阈值时结束 = 一次静止点击：清标记即可，
+    // click 事件正常派发到卡片 anchor 完成跳转。
+    if (state.pendingLeftDrag && e.pointerId === pointerId) {
+      state.pendingLeftDrag = false;
+      pointerId = null;
       return;
     }
     if (!state.isDragging || e.pointerId !== pointerId) return;

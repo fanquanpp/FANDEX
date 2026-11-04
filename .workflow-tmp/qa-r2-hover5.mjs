@@ -1,0 +1,20 @@
+/* doc-list-link hover：background-color 与 .doc-list-border rect stroke-dashoffset */
+import path from 'node:path';
+import { createRequire } from 'node:module';
+const ROOT = 'C:/Atian/Project/FANDEX';
+const { chromium } = createRequire(path.join(ROOT, 'app-web/package.json'))('playwright');
+const BASE = 'http://localhost:4321/FANDEX/';
+const browser = await chromium.launch({ headless: true });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+const page = await ctx.newPage();
+await page.goto(BASE+'javascript/', { waitUntil: 'load' });
+await page.waitForTimeout(1200);
+const dl = page.locator('a.doc-list-link').first();
+const b1 = await dl.evaluate(el => ({ bg: getComputedStyle(el).backgroundColor, dash: getComputedStyle(el.querySelector('.doc-list-border rect')).strokeDashoffset }));
+await dl.hover();
+await page.waitForTimeout(600);
+const b2 = await dl.evaluate(el => ({ bg: getComputedStyle(el).backgroundColor, dash: getComputedStyle(el.querySelector('.doc-list-border rect')).strokeDashoffset }));
+console.log('doc-list-link hover bg+dash:', JSON.stringify(b1), '->', JSON.stringify(b2));
+const hoverWorks = b1.bg !== b2.bg || b1.dash !== b2.dash;
+console.log(hoverWorks ? 'HOVER OK' : 'HOVER NO EFFECT');
+await browser.close();

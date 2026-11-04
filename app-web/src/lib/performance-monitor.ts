@@ -16,6 +16,12 @@ function initPerformanceMonitor(): void {
 
   clearMonitorInterval(panel);
 
+  // 监听器只登记一次：本初始化在模块加载与 astro:page-load 双触发，每次
+  // 重跑都会再 addEventListener，点击一次实际 toggle 两次（净效果无变化，
+  // 折叠/展开失灵）。以 dataset 标记防重入。
+  if (panel.dataset.listenersBound === '1') return;
+  panel.dataset.listenersBound = '1';
+
   const toggleBtn = document.getElementById('perf-monitor-toggle');
   const closeBtn = document.getElementById('perf-monitor-close');
   const vitalsGrid = document.getElementById('perf-vitals-grid');

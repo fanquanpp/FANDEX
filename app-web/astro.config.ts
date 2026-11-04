@@ -23,6 +23,9 @@ const SITE_BASE = process.env.DESKTOP_BUILD === '1' ? '/' : '/FANDEX/';
 export default defineConfig({
   site: 'https://fanquanpp.github.io',
   base: SITE_BASE,
+  // dev 工具栏（底部居中悬浮胶囊）会盖住页面底部内容并污染视检截图
+  // （视检第 1 轮误报为站点 Dock 遮挡），dev 验证一律关闭。
+  devToolbar: { enabled: false },
   build: {
     inlineStylesheets: 'auto',
   },

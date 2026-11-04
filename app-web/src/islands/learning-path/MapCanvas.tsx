@@ -155,9 +155,16 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
     const focusY = firstStage
       ? firstStage.y + firstStage.height / 2
       : layout.height / 2;
-    t.y = Math.min(
-      pad,
-      Math.max(vh - layout.height * k - pad, vh / 2 - focusY * k),
+    // 下限必须保住根节点：根在 layout 顶部（y=padding），此前 t.y 只顾首
+    // 阶段纵向居中，负偏移把根节点整个裁出视口上缘——窄屏左半空白、
+    // 首列节点贴右缘（视检第 3 轮 #16/#25）。下限 = 根节点底缘不越上缘。
+    const minY = pad - (layout.root.y + layout.root.height) * k;
+    t.y = Math.max(
+      minY,
+      Math.min(
+        pad,
+        Math.max(vh - layout.height * k - pad, vh / 2 - focusY * k),
+      ),
     );
     applyTransform();
   }, [applyTransform, layout]);

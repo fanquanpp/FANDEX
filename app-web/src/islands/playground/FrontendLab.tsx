@@ -203,16 +203,20 @@ function FrontendLab() {
     setPen((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  const [narrowLayoutChecked, setNarrowLayoutChecked] = useState(false);
-  if (!narrowLayoutChecked) {
-    setNarrowLayoutChecked(true);
+  // 窄屏偏好布局：SSR 与客户端首帧必须一致（规格 C7）。render 期读
+  // window.innerWidth 改初值会造成 HTML 不匹配并整树重建，故延迟到
+  // 水合完成后的 effect 里再切换（布局徽标在 effect 前短暂显示 left）。
+  const narrowLayoutAppliedRef = useRef(false);
+  useEffect(() => {
+    if (narrowLayoutAppliedRef.current) return;
+    narrowLayoutAppliedRef.current = true;
     const preferred = narrowPreferredLayout();
     setPen((prev) =>
       prev.id === 'draft' && prev.createdAt === 0 && prev.layout !== preferred
         ? { ...prev, layout: preferred }
         : prev,
     );
-  }
+  }, []);
 
   const {
     split,
@@ -272,8 +276,13 @@ function FrontendLab() {
         target = await loadPenDraft();
       }
       if (!cancelled && target) {
+        // 窄屏强制 top：已存 pen/showcase 自带的 layout:'left' 在 <700px
+        // 只剩 ~185px 编辑列（视检第 3 轮 #24），仅本次会话覆盖，不回写
+        // 存储——宽屏重新打开仍是作者保存的布局。
+        const forcedLayout = window.innerWidth < 700 ? narrowPreferredLayout() : target.layout;
         const opened = {
           ...target,
+          layout: forcedLayout,
           paneWeights: target.paneWeights ?? { html: 1, css: 1, js: 1 },
           split: target.split ?? 0.5,
           lastOpenedAt: target.lastOpenedAt || Date.now(),
@@ -539,8 +548,11 @@ const handleOpenLibrary = useCallback(async () => {
 
   const handleOpenPen = useCallback(async (item: FrontendPen) => {
     const now = Date.now();
+    // 窄屏强制 top（同深链打开路径：不回写存储，宽屏重开仍是保存值）
+    const forcedLayout = window.innerWidth < 700 ? narrowPreferredLayout() : item.layout;
     const opened = {
       ...item,
+      layout: forcedLayout,
       paneWeights: item.paneWeights ?? { html: 1, css: 1, js: 1 },
       split: item.split ?? 0.5,
       lastOpenedAt: now,

@@ -1,0 +1,110 @@
+{
+  "round": 1,
+  "kind": "interaction-deep-check",
+  "date": "2026-11-04",
+  "protocol": "Playwright chromium headless, 1440x900, astro dev @ http://localhost:4321 (restarted by agent), SW unregistered + caches cleared before first per-page sweep, per-element goto re-setup, pageerror/console error capture",
+  "scripts": [
+    ".workflow-tmp/qa-interact-r1.mjs  (main sweep: 127 cases)",
+    ".workflow-tmp/qa-interact-r1b.mjs (triage re-run, 21 failed cases)",
+    ".workflow-tmp/qa-interact-r1c.mjs (second triage: backdrop/reset/dialog/mermaid/404)",
+    "ad-hoc node -e probes for root-cause isolation (logged in conversation)"
+  ],
+  "stats": { "casesRun": 127, "passedFirstPass": 106, "failedFirstPass": 21, "confirmedProductBugs": 4, "testScriptArtifacts": 15, "notReproduced": 2 },
+  "pagesCovered": [
+    "/", "/javascript/", "/javascript/page/2/", "/javascript/010-WhatIsJavaScript/",
+    "/algorithm/290-NetworkFlow/", "/learning-path/", "/learning-path/javascript/",
+    "/learning-path/algorithm/ (spot)", "/playground/", "/playground/editor/",
+    "/syntax/", "/algorithms/", "/algorithms/?view=problems",
+    "/algorithms/problems/remove-element/", "/ai/", "/disclaimer/", "/design-system/",
+    "/404/", "/404 (dev only)",
+    "8 extra module hubs spot-checked: css/ html5/ python/ algorithm/ cs-fundamentals/ roadmap/ start/ ai-llm/"
+  ],
+  "interactionsVerified": [
+    "header search palette open/input/Enter navigate (7 items found in dev, navigated to /playground/)",
+    "header lang toggle: data-lang flip + localStorage + i18n DOM rewrite (all pages)",
+    "header theme toggle: data-theme cycle + persistence (all pages)",
+    "home: entry links, category collapse toggle, scroller nav button (scrollLeft 0->459), card hover bg, css ::after tooltip on hover, module-card click (BUG)",
+    "module list: doc card navigation on 4 hubs incl. javascript/page/2 pager prev (page/2 -> /javascript/)",
+    "doc page: sidebar chapter link, collapse btn + localStorage + reload persistence, expand FAB, view tabs chapters/modules (React island mount), module arrow expand, mobile drawer open/close/backdrop (375px), feature sheet open/aria/navigate, back-to-top scroll, TOC link scroll+hash (decoded zh slug), TOC group collapse, code copy (granted clipboard), heading anchor hash, doc-nav prev/next, perf monitor toggle/close",
+    "algorithms: view tab tutorials<->problems + URL sync, ?view=problems deep link, category chip filter + URL, search filter, mark solved/review + localStorage + status counts, reset-all via empty state (URL keeps view=problems correctly)",
+    "problem detail: mark solved persist across reload, mark review, back link with filter context",
+    "syntax: lang chips (is-active transfer + fetch + ?lang= URL), quick chips, filter input + clear, load-more, card dialog open/Esc close, panel copy feedback",
+    "learning path hub: tech card nav, career chip nav, resume chip (after real visit write) navigation, progress badge render",
+    "learning path map: node click opens panel, hover opens panel (pointerenter mouse-only), progress tri-state writes localStorage, panel close, stage collapse, zoom in (scale transform), Esc clears panel, tech chips nav, reset-progress confirm (dialog dismissed safely)",
+    "playground: pane close button + editor tab re-open (aria-pressed false->true), console toggle, run re-render, template menu open (4 items) + item click loads template into CodeMirror, guide dialog, gallery (25 cards) open/load (title applied)/close, library drawer open/save/duplicate/delete with confirm, title input edit + save state, layout switch, auto-run toggle, open-new-window no-nav",
+    "playground/editor: meta-refresh redirect to /playground/ (200)",
+    "ai: page lang buttons, key show/hide toggle (aria-pressed), save persists masked status + settings JSON, clear wipes fandex-ai-*, test-connection no-key message, model input save, external links rel=noopener",
+    "disclaimer: legal lang swap (articles hidden/is-active/html.lang/localStorage), back-home nav, 10 external links all noopener",
+    "design system: dialog open/cancel/Esc (after client:visible hydration), tabs switch, accordion expand, radix tooltip on hover, 16 fndx-button + 36 radix buttons with 3 sizes",
+    "404: HTTP 404 status, back-home -> /FANDEX/, learning-path escape link",
+    "NetworkFlow doc: 5 mermaid blocks all render to .mermaid-figure svg in dev client fallback, 40 copy buttons, copy works, prose 140k chars, doc-nav present"
+  ],
+  "findings": [
+    {
+      "id": "IR1-1",
+      "page": "/ (all category sections)",
+      "element": "a.module-card (left mouse click)",
+      "expected": "点击首页模块卡片跳转到 /FANDEX/<module>/",
+      "actual": "鼠标左键点击后 URL 停留在 /FANDEX/（card 完全不响应 click）；键盘 focus+Enter 与 JS el.click() 均可正常跳转",
+      "severity": "high",
+      "rootCause": "src/lib/home-interactions.ts:427 onPointerDown 对左键(pointerType=mouse,button=0)无条件调用 scroller.setPointerCapture(e.pointerId)。按 Pointer Events 规范，click 事件 target 跟随 pointerup 的 target，而 capture 期间 pointerup 的 target 被重定向到 scroller 本身（实测 document capture 阶段观察到 'click target=DIV.feature-scroller'），anchor 永远收不到 click，导航不触发。410 行的 e.preventDefault() 与 478-483 行的 suppressClick 逻辑均未参与本次阻断（实测 pdDefault=true 但 click prevented=false）",
+      "evidence": [
+        "实测：mouse.click 卡片中心 -> URL 不变；JS 禁用后同样点击 -> 正常跳转 /FANDEX/start/",
+        "实测：addInitScript 拦截 feature-scroller 的 setPointerCapture 后点击 -> 正常跳转 /FANDEX/start/",
+        "对照：src/lib/home-interactions.ts:427（setPointerCapture）与 :52-53（模块标注）；上一次提交 1e9ccae2 中 onPointerDown 仅对中键(button 1)拖拽，左键不 capture，因此回归由 4f1a1e04 引入左键拖拽时带入"
+      ],
+      "repro": "node 下 Playwright mouse.click、CDP Input.dispatchMouseEvent 均复现；任何真实浏览器左键点击都受影响"
+    },
+    {
+      "id": "IR1-2",
+      "page": "/javascript/010-WhatIsJavaScript/ (all doc pages with code blocks)",
+      "element": ".copy-btn fallback path (layout-interactions.ts:219-233)",
+      "expected": "navigator.clipboard.writeText 失败（权限拒绝/非安全上下文）时 execCommand 兜底静默复制",
+      "actual": "兜底路径抛未捕获 TypeError: Illegal invocation（pageerror），复制失败且无反馈",
+      "severity": "medium",
+      "rootCause": "src/lib/layout-interactions.ts:220 使用 Reflect.get(document, 'execCommand') 取函数再 :230 直接调用，函数未绑定 this（document），原生方法调用抛 Illegal invocation。实测：Reflect.get 写法抛错，document.execCommand('copy') 正常",
+      "evidence": "pageerror stack: TypeError: Illegal invocation at HTMLButtonElement.<anonymous> (src/lib/layout-interactions.ts:195:22 dev 映射)；复制按钮首次渲染在 :195-198 的 codeEl.className.match 对 SVG/classed 元素不抛，实际抛点是 Reflect.get 后的调用"
+    },
+    {
+      "id": "IR1-3",
+      "page": "/javascript/010-WhatIsJavaScript/ (all doc pages)",
+      "element": ".heading-anchor click (layout-interactions.ts:315)",
+      "expected": "点击标题锚点复制链接；剪贴板被拒时应不影响 hash 与滚动",
+      "actual": "剪贴板权限拒绝时抛未捕获 NotAllowedError: Failed to execute 'writeText'（unhandled promise rejection），但 hash 更新与滚动仍正常完成",
+      "severity": "low",
+      "rootCause": "src/lib/layout-interactions.ts:315 使用 'void navigator.clipboard.writeText(url)'，void 不捕获 promise rejection",
+      "evidence": "实测无权限时 pageerror 1 条 NotAllowedError；授权后 0 错误且 hash=#前置知识 正确"
+    },
+    {
+      "id": "IR1-4",
+      "page": "doc pages (mobile drawer)",
+      "element": "#sidebar-close-btn (sidebar-interactions.ts:121-131)",
+      "expected": "关闭按钮关闭抽屉后 URL ?sidebar=1 同步清除（与 backdrop 关闭行为一致）",
+      "actual": "点击关闭按钮后 body.sidebar-open/is-open 清除，但 URL 仍残留 ?sidebar=1；backdrop 关闭则会正确清空（实测 search 从 ?sidebar=1 -> ''）",
+      "severity": "low",
+      "rootCause": "initCloseButton 手写 removeClass，未调用 layout-interactions 的 syncSidebarUrl；两处关闭路径行为不一致",
+      "evidence": "实测 375px: close-btn 后 location.search='?sidebar=1'；backdrop 点击(真实坐标 360,500)后 location.search=''",
+      "note": "副作用有限：刷新后 restoreSidebarFromUrl 恢复抽屉，但实测首屏加载时 astro:page-load 的无条件 closeSidebar() (layout-interactions.ts:253-254) 会覆盖 restore（restoreSidebarFromUrl 于模块加载时执行，随后被清），因此残留参数实际不会重新拉起抽屉——但这也意味着 ?sidebar=1 深链恢复功能本身在首次加载即失效（时序：restore 先于 page-load close）"
+    }
+  ],
+  "notReproduced": [
+    {
+      "observedInRound1": "TypeError: Cannot read properties of undefined (reading 'replace') x2 (pageerror, round-1 run only)",
+      "triage": "重放 r1 完整页面序列、语法页快速连点/筛选/面板、playground 格式化/另存/模板/图鉴/作品库全流程、ai+ds 主题多击、lang toggle 8 连击、rapid goto 中断 swap、algorithms 停留 35s、lp map reset confirm 等 20+ 组合均未复现；i18n-strings 键 zh/en 对称性扫描亦无缺失（多行对象误报已排除）。判定为一次性瞬态（大概率与 r1 当时的 SW 供旧残留或被 30s 超时中断的用例时序相关）。r1 后所有 SW 已清（最终实测 registrations=0），后续复测全程 0 pageerror"
+    },
+    {
+      "observedInRound1": "console error 'Failed to load resource: 404' x14 (round-1 run only)",
+      "triage": "复测多轮 reload/networkidle/交互后 0 条 console error；r1 期间 404 来源无法归因（当时 r1 报告未记录 URL）。当前 dev 服务对全部页面与资源返回正常（含 sw.js=200）"
+    }
+  ],
+  "devEnvironmentNotes": [
+    "dev 下 /FANDEX/404（无尾斜杠）由 Astro 默认 404 兜底（Astro 自带错误页），项目自定义 404 页需尾斜杠 /404/ 才呈现（astro.config.ts:132 trailingSlash:'always'，生产 clean-prerender 链路另行处理）——不判产品缺陷",
+    "dev 下 pagefind 索引存在（搜索 Enter 可导航至 /playground/ 等真实命中），与 r1 首轮的 pagefind 404 假设不符，功能正常"
+  ],
+  "interactionsSkipped": [
+    "pg pane splitter / main splitter / console splitter 拖拽（pointer 序列拖拽在 headless 下与 rAF 缩放手感耦合，已通过 pane 显隐与 zoom transform 间接覆盖缩放类交互；拖拽本身未断言）",
+    "home feature-scroller 鼠标拖拽横滑（引擎常滚动与拖拽速度耦合，headless 下数值断言不稳定；已覆盖 nav 按钮翻页与 click 抑制路径）",
+    "mermaid figure 工具栏（全屏/缩放）在 dev 客户端渲染路径下的交互——已验证渲染与 panzoom 挂载，工具栏按钮点击未逐个断言",
+    "站外链接（github/orcarouter/docs.github.com）按任务要求不点击，仅校验 rel/noopener 与 href 存在性"
+  ]
+}

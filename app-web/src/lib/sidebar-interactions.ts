@@ -127,6 +127,16 @@ function initCloseButton(): void {
     document.body.classList.remove('sidebar-open');
     const sidebar = document.getElementById('app-sidebar');
     sidebar?.classList.remove('is-open');
+    document.getElementById('sidebar-backdrop')?.classList.remove('is-visible');
+    // URL 同步：清掉 ?sidebar=1，与 backdrop 关闭路径一致（视检交互
+    // 第 1 轮 I4——此前只摘 class 残留查询参数）。
+    const params = new URLSearchParams(window.location.search);
+    params.delete('sidebar');
+    const newSearch = params.toString();
+    const newUrl = newSearch
+      ? window.location.pathname + '?' + newSearch + window.location.hash
+      : window.location.pathname + window.location.hash;
+    history.replaceState(null, '', newUrl);
   });
 }
 

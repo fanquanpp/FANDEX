@@ -4,8 +4,10 @@ const isDev = import.meta.env.DEV;
 import '@/styles/components/performance-monitor.css';
 ---
 
+{/* 默认折叠（dev-only 工具）：展开态 360px 宽会盖住桌面端"本页目录"
+    与窄屏正文（视检第 1 轮多条遮挡记录），需要时点标题栏展开 */}
 {isDev && (
-  <aside id="fandex-perf-monitor" class="perf-monitor" aria-label="性能监控面板" role="complementary">
+  <aside id="fandex-perf-monitor" class="perf-monitor collapsed" aria-label="性能监控面板" role="complementary">
     <header class="perf-monitor-header">
       <span class="perf-monitor-title">性能监控</span>
       <div class="perf-monitor-actions">

@@ -6,7 +6,10 @@
     justify-content: space-between;
     gap: var(--space-inline-md);
     padding: 0 var(--space-6);
-    background: color-mix(in oklch, var(--color-bg-primary) 95%, transparent);
+    /* srgb 混合：oklch 与 transparent 混合时 5% 透明腿把色相拉成 none
+       （偏红粉），95% 混合结果实测 #F3EDEF 暖调，与文档页顶栏
+       （--color-nav-bg srgb 混合，#EBEFF3）同面异色（视检第 2 轮 #22）。 */
+    background: color-mix(in srgb, var(--color-bg-primary) 95%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--color-border-light);
