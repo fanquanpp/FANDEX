@@ -52,9 +52,10 @@
     --decor-note: rgba(57, 197, 187, 0.52);
 
     /* 暗色场景：纯黑灰板（#0A0A0A 系）+ 青系不可动（色彩裁定基线），
-       背景为单墨色线与几何，无光斑无色散无网格 */
-    --fx-scene-base: #0A0E14;
-    --fx-scene-vignette: rgba(2, 6, 10, 0.55);
+       背景为单墨色线与几何，无光斑无色散无网格。
+       OD-1 裁决（2026-11-06）：scene-base 从 #0A0E14（发蓝）改纯黑灰板 #0A0A0A */
+    --fx-scene-base: #0A0A0A;
+    --fx-scene-vignette: rgba(0, 0, 0, 0.55);
     --fx-ambient-ink: #39C5BB;
     /* 故障字符场高亮色板：色彩裁定基线内的青系三色，不可动 */
     --fx-ambient-accents: #00E5FF #39C5BB #66CCFF #00FFCC #EE0000 #9900FF #FF8800 #101820;

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 前几周必然遇到的高频术语，一句话大白话解释，不追求严谨只求可理解。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-11-07'
 related:
   - 'mysql/010-HowToUseThisCourse'
 prerequisites: []
@@ -54,3 +54,9 @@ prerequisites: []
 - 使用指南：[如何使用本课程](/mysql/010-HowToUseThisCourse)；
 - 路线图：[学习路线图](/mysql/020-Roadmap)；
 - 第一课：[数据库设计与 MySQL 概述](/mysql/050-MySQLOverviewDatabaseDesign)。
+
+## 自检
+
+- 遮住解释列，只看术语：事务、主键、外键、左连接、聚合函数——能各说出一句话解释吗？
+- 「查用户表时要按姓名快速定位」该用哪个术语对应的手段？「订单删除后库存自动扣减」又靠哪个？
+- 说得出这两个场景的答案，就可以放心进入第一课；卡住了就回到上表对应行再读一遍。

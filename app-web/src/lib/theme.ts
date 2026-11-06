@@ -9,7 +9,7 @@ export const THEME_STORAGE_KEY = 'fandex-theme';
 
 const THEME_COLOR_LIGHT = '#EBEFF3';
 
-const THEME_COLOR_DARK = '#0a0e14';
+const THEME_COLOR_DARK = '#0a0a0a';
 
 let darkSchemeQuery: MediaQueryList | null = null;
 

@@ -1,12 +1,12 @@
 {
-  "$description": "FANDEX 语义圆角令牌 — 引用 primitive/radius.json，ark 家族偏好小圆角",
+  "$description": "FANDEX 语义圆角令牌 — 引用 primitive/radius.json，ark 家族偏好小圆角。5.8 批次重映射（2026-11-06）：control 4→2px、card 8→4px、modal 12→8px，第 1 期规格 3.1 裁定",
   "radius": {
     "$type": "dimension",
     "none": { "$value": "{radius.none}", "$description": "直角" },
-    "control": { "$value": "{radius.default}", "$description": "控件圆角（4px）" },
-    "card": { "$value": "{radius.lg}", "$description": "卡片圆角（8px）" },
-    "modal": { "$value": "{radius.xl}", "$description": "模态圆角（12px）" },
-    "badge": { "$value": "{radius.default}", "$description": "徽章圆角（4px）" },
+    "control": { "$value": "{radius.sm}", "$description": "控件圆角（2px）" },
+    "card": { "$value": "{radius.default}", "$description": "卡片圆角（4px）" },
+    "modal": { "$value": "{radius.lg}", "$description": "模态圆角（8px）" },
+    "badge": { "$value": "{radius.sm}", "$description": "徽章圆角（2px）" },
     "pill": { "$value": "{radius.full}", "$description": "药丸形（圆形）" },
     "tooltip": { "$value": "{radius.sm}", "$description": "工具提示圆角（2px）" }
   }

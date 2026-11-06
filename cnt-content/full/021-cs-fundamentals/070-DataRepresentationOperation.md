@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 数据表示与运算：数值编码、浮点标准、定点运算、溢出检测与校验码
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-07'
 related:
   - 'cs-fundamentals/540-DiscreteMathematics'
   - 'cs-fundamentals/100-ComputerOrganizationRapidReview'
@@ -233,3 +233,9 @@ $$2^r \geq m + r + 1$$
 | 奇偶校验 | 1位                         | 奇数个错 | 无               | 内存ECC基础 |
 | 海明码   | $\lceil\log_2(m+r+1)\rceil$ | 2位错    | 1位错            | ECC内存     |
 | CRC      | $r$位                       | 突发错误 | 无（可配合重传） | 网络通信    |
+
+## 自检
+
+- 遮住上面的表格重推一遍：十进制 -5 的 8 位补码是什么？（提示：先写原码，取反加一。）
+- 补码世界里为什么只有一个 0？移码又为什么偏爱「平移到无符号」的表示？
+- 不看表格，说出海明码与 CRC 各自的强项——一个能纠错、一个擅检突发错误，应用场景分别在哪？

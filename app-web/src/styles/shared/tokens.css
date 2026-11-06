@@ -464,14 +464,14 @@
     --motion-transition-transform: var(--motion-duration-normal) var(--motion-delay-none) var(--motion-easing-out);
     /* 阴影过渡预设 */
     --motion-transition-shadow: var(--motion-duration-normal) var(--motion-delay-none) var(--motion-easing-out);
-    /* 控件圆角（4px） */
-    --radius-control: var(--radius-default);
-    /* 卡片圆角（8px） */
-    --radius-card: var(--radius-lg);
-    /* 模态圆角（12px） */
-    --radius-modal: var(--radius-xl);
-    /* 徽章圆角（4px） */
-    --radius-badge: var(--radius-default);
+    /* 控件圆角（2px，5.8 批次重映射） */
+    --radius-control: var(--radius-sm);
+    /* 卡片圆角（4px，5.8 批次重映射） */
+    --radius-card: var(--radius-default);
+    /* 模态圆角（8px，5.8 批次重映射） */
+    --radius-modal: var(--radius-lg);
+    /* 徽章圆角（2px，5.8 批次重映射） */
+    --radius-badge: var(--radius-sm);
     /* 药丸形（圆形） */
     --radius-pill: var(--radius-full);
     /* 工具提示圆角（2px） */
@@ -504,6 +504,8 @@
     --size-sidebar-width-lg: var(--size-sidebar-md);
     /* 头部高度（64px） */
     --size-header-height: var(--size-header-md);
+    /* 正文行宽帽（5.8.2 入册） */
+    --size-prose-measure: 68ch;
     /* 小屏断点 640px */
     --size-breakpoint-sm: 40rem;
     /* 中屏断点 768px */

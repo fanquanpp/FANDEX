@@ -24,6 +24,9 @@
     "header": {
       "height": { "$value": "{size.header.md}", "$description": "头部高度（64px）" }
     },
+    "prose": {
+      "measure": { "$value": "68ch", "$description": "正文行宽帽（5.8.2 入册，第 1 期规格 2.4 裁定 68ch）" }
+    },
     "breakpoint": {
       "sm": { "$value": "40rem", "$description": "小屏断点 640px" },
       "md": { "$value": "48rem", "$description": "中屏断点 768px" },
