@@ -187,6 +187,17 @@ function pageHref(n: number): string {
 
 <style>
   @layer pages {
+  /* 分类色文本派生（第 3 期对比度修复）：categoryColors 原色作小号文本在
+     亮色下发暗（#0000FF 1.92:1 档）、暗色下发亮（#00FFCC 1.12:1 档），
+     不可读。文本/描边消费统一走本派生：亮色向黑收、暗色向白提，
+     达到 4.5:1 档；大色块背景仍用原色 --module-color 不受影响。 */
+  .module-page {
+    --module-color-text: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 78%, black);
+  }
+  :global([data-theme='dark']) .module-page {
+    --module-color-text: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 62%, white);
+  }
+
   .module-page {
     padding: var(--space-2) var(--space-4);
     width: 94vw;
@@ -251,7 +262,7 @@ function pageHref(n: number): string {
   }
 
   .doc-chip:hover {
-    color: var(--module-color, var(--color-accent-base));
+    color: var(--module-color-text, var(--color-accent-base));
     border-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 50%, transparent);
     background-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 6%, transparent);
   }
@@ -260,7 +271,7 @@ function pageHref(n: number): string {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--module-color, var(--color-accent-base));
+    color: var(--module-color-text, var(--color-accent-base));
     opacity: 0.85;
   }
 
@@ -440,7 +451,7 @@ function pageHref(n: number): string {
   }
 
   a.pager-link:hover {
-    color: var(--module-color, var(--color-accent-base));
+    color: var(--module-color-text, var(--color-accent-base));
     border-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 50%, transparent);
   }
 
