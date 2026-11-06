@@ -427,6 +427,23 @@ dfn {
   line-height: 1.9;
 }
 
+/* 行宽帽（规格 2.4）：正文文本流族统一帽宽 68ch（约 37 个全角字），杜绝
+   「段落窄、提示块/折叠块全宽」的宽度锯齿。令牌 --size-prose-measure 由
+   DTCG 批次（规格 5.8.2，semantic/size.json size.prose.measure）落地；
+   批次未落时回退同值 68ch，落批后自动切换，无需改本文件。
+   不帽名单（保持全宽）：h1-h6（结构对齐左缘）、.table-wrap、pre/.astro-code、
+   .mermaid、img、hr（分隔线属结构元素）。 */
+.prose p,
+.prose ul,
+.prose ol,
+.prose blockquote,
+.prose dl,
+.prose details,
+.prose .admonition,
+.prose .footnotes {
+  max-width: var(--size-prose-measure, 68ch);
+}
+
 /* 长英文 URL / 内联公式无法自然断行，防止撑破移动端页面宽度 */
 .prose p,
 .prose li,
@@ -475,20 +492,31 @@ dfn {
   padding-left: 0.5em;
 }
 
+/* h4 精修（规格 2.5.2）：text-decoration 下划线观感似误设的链接样式，
+   改为行内前置 2px x 0.75em 模块色竖刻度（与列表刻度同语言） */
 .prose h4 {
-  font-size: 1.05em;
-  text-decoration: underline;
-  text-underline-offset: 0.25em;
-  text-decoration-color: var(--color-border-light);
+  font-size: 1.02em;
+  font-weight: 600;
+}
+
+.prose h4::before {
+  content: '';
+  display: inline-block;
+  width: 2px;
+  height: 0.75em;
+  margin-right: 0.45em;
+  background: var(--module-color, var(--color-accent-base));
 }
 
 .prose h5 {
   font-size: 1em;
 }
 
+/* h6 = 小节注记（规格 2.5.3）：收紧为 fg-secondary 并加字距 */
 .prose h6 {
   font-size: 0.95em;
-  color: var(--color-text-secondary);
+  color: var(--color-fg-secondary);
+  letter-spacing: 0.02em;
 }
 
 .prose h1:first-child {
@@ -627,6 +655,7 @@ dfn {
   margin-bottom: 0;
 }
 
+/* 变体 tint 常量（规格 2.8）：亮色 10% / 暗色 16% 两档，现值即终值，防漂移 */
 .prose blockquote.warning {
   border-left-color: var(--color-warning-base);
   background: color-mix(in srgb, var(--color-warning-base) 10%, var(--color-bg-card));
@@ -684,26 +713,32 @@ dfn {
   border: 1px solid var(--color-border-light);
 }
 
+/* 表头降噪（规格 2.7.1）：整行实心 accent 填充改为 8% tint + 2px accent
+   底线（仪器刻度线语言）。明暗同式——cyan 在暗色 8% 混合下已自然降饱和，
+   不再保留 [data-theme='dark'] 特例。 */
 .prose th {
-  background: var(--color-accent-base);
-  color: var(--color-text-inverse);
+  background: color-mix(in srgb, var(--color-accent-base) 8%, var(--color-bg-card));
+  color: var(--color-fg-primary);
   font-family: var(--font-family-heading);
   font-size: 0.9em;
   font-weight: 600;
   white-space: nowrap;
+  border-bottom: 2px solid var(--color-accent-base);
 }
 
-[data-theme='dark'] .prose th {
-  background: var(--color-primary-700);
-  color: var(--color-primary-200);
+/* 数字排版（规格 2.7.2）：教学站大量数据表，tabular-nums 保证数字列宽稳定 */
+.prose td {
+  font-variant-numeric: tabular-nums;
 }
 
 .prose tr:nth-child(even) td {
   background: var(--color-bg-card);
 }
 
+/* 行 hover 刻度环（规格 2.7.3）：1px 内描边环 + 保留原 hover 底色，二者叠加 */
 .prose tr:hover td {
   background: var(--color-bg-hover);
+  box-shadow: inset 0 0 0 1px var(--color-border-strong);
 }
 
 .prose img {
@@ -711,10 +746,18 @@ dfn {
   border: 1px solid var(--color-border-strong);
 }
 
+/* hr 细化（规格 2.9）：3px 粗线降为 1px 细线 + 中段 40% 透明的横向渐变，
+   统一进「细线代阴影」语言；分隔线不参与行宽帽 */
 .prose hr {
   border: none;
-  border-top: 3px solid var(--color-border-strong);
+  height: 1px;
   margin: 2.5em 0;
+  background: linear-gradient(
+    to right,
+    var(--color-border-strong),
+    color-mix(in srgb, var(--color-border-strong) 40%, transparent) 50%,
+    var(--color-border-strong)
+  );
 }
 
 .prose strong {
@@ -786,10 +829,12 @@ dfn {
   line-height: 1.6;
 }
 
+/* 提示块（规格 2.8）：左条 4px 收敛为 3px，与 blockquote 统一；
+   变体 tint 常量同上：亮 10% / 暗 16% */
 .prose .admonition {
   margin: 1.2em 0;
   padding: 0.85em 1.25em;
-  border-left: 4px solid var(--color-accent-base);
+  border-left: 3px solid var(--color-accent-base);
   background: var(--color-bg-card);
   border-radius: 0 4px 4px 0;
 }

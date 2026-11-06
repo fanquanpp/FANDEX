@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync, readdirSync, renameSync, existsSync } from
 import { join, dirname, basename, extname } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { productDir, readJsonIfExists, writeProduct } from './lib/data-cache.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..');
@@ -11,6 +12,7 @@ const MODULES_JSON = join(ROOT, 'shd-shared', 'metadata', 'modules.json');
 const LEARNING_PATH_DIR = join(ROOT, 'shd-shared', 'metadata', 'learning-path');
 
 const CHECK_MODE = process.argv.includes('--check');
+const REBUILD_MODE = process.argv.includes('--rebuild');
 
 const FOLDER_RE = /^(\d{1,3})-([a-z][a-z0-9-]*)$/;
 const BARE_FOLDER_RE = /^([a-z][a-z0-9-]*)$/;
@@ -82,30 +84,116 @@ function dumpScalar(v) {
   return t;
 }
 
-function loadGitDates() {
-  const map = new Map();
+// git-dates 缓存（第 2 期 S1）：唯一真源在仓库根 node_modules/.cache/fandex-data/content-sync/v1/，
+// 存 { headAtBuild: 完整 HEAD hash, map: { path: date } }。内容派生键 + 祖先校验，不依赖 mtime。
+const GIT_DATES_PRODUCT = 'content-sync';
+const GIT_DATES_SCHEMA_VERSION = 1;
+
+function gitHeadHash() {
   try {
-    const out = execFileSync('git', ['log', '--pretty=format:@%cs', '--name-only'], {
-      cwd: ROOT, encoding: 'utf-8', maxBuffer: 64 * 1024 * 1024,
+    const out = execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: ROOT, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'],
     });
-    let currentDate = null;
-    for (const line of out.split('\n')) {
-      const t = line.trim();
-      if (!t) continue;
-      if (t.startsWith('@')) { currentDate = t.slice(1); continue; }
-      if (currentDate && !map.has(t)) map.set(t, currentDate);
-    }
+    return out.trim() || null;
   } catch {
-    // git 命令本身失败（无 git 等）时降级为空表
+    return null;
+  }
+}
+
+function runGitLog(rangeArgs) {
+  return execFileSync('git', ['log', '--pretty=format:@%cs', '--name-only', ...rangeArgs], {
+    cwd: ROOT, encoding: 'utf-8', maxBuffer: 64 * 1024 * 1024,
+  });
+}
+
+// log 输出按 newest-first 遍历：路径首现日期即该路径在全历史（或区间内）的最新提交日
+function parseLogFirstSeen(out) {
+  const map = new Map();
+  let currentDate = null;
+  for (const line of out.split('\n')) {
+    const t = line.trim();
+    if (!t) continue;
+    if (t.startsWith('@')) { currentDate = t.slice(1); continue; }
+    if (currentDate && !map.has(t)) map.set(t, currentDate);
+  }
+  return map;
+}
+
+function saveGitDatesCache(head, map) {
+  // 键序固定，保证同输入同字节（payload 经 writeIfChanged，map 不变则零写盘）
+  const sorted = [...map.entries()].sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  writeProduct(GIT_DATES_PRODUCT, GIT_DATES_SCHEMA_VERSION, {
+    inputsHash: head,
+    envelope: { headAtBuild: head, map: Object.fromEntries(sorted) },
+    publish: [],
+  });
+}
+
+function loadGitDates() {
+  const hasGit = existsSync(join(ROOT, '.git'));
+  const head = hasGit ? gitHeadHash() : null;
+
+  // 增量路径：缓存的 headAtBuild 是当前 HEAD 祖先时，全历史 = 旧历史 ∪ (headAtBuild..HEAD]，
+  // 路径 P 的全量首现日期 = max(缓存值, 区间首现值)。
+  // 评审 MF6：必须 max 合并，禁止「新覆盖旧」——merge 送入的早日期提交触碰已缓存路径时，
+  // 覆盖会把 updated 降级（全量 log 会给出较新的首现日期）。
+  // 评审 MF4：区间用 headAtBuild..HEAD 范围语法，禁用 --since=<newestDate>
+  //（merge 送入的早日期提交会被 --since 的日期边界整段漏掉）。
+  if (hasGit && head && !REBUILD_MODE) {
+    const cached = readJsonIfExists(join(productDir(GIT_DATES_PRODUCT, GIT_DATES_SCHEMA_VERSION), 'payload.json'));
+    if (cached && typeof cached.headAtBuild === 'string' && cached.headAtBuild
+      && cached.map && typeof cached.map === 'object') {
+      let isAncestor = false;
+      try {
+        execFileSync('git', ['merge-base', '--is-ancestor', cached.headAtBuild, head], {
+          cwd: ROOT, stdio: 'ignore',
+        });
+        isAncestor = true;
+      } catch {
+        // rebase / amend / 切分支破坏祖先关系（isAncestor 保持 false）→ 回退全量
+      }
+      if (isAncestor) {
+        try {
+          const rangeMap = parseLogFirstSeen(runGitLog([`${cached.headAtBuild}..HEAD`]));
+          const map = new Map(Object.entries(cached.map));
+          for (const [path, date] of rangeMap) {
+            const prev = map.get(path);
+            // 日期为 YYYY-MM-DD，字典序比较即时间序比较；仅当区间首现值更大才覆盖
+            if (prev === undefined || date > prev) map.set(path, date);
+          }
+          if (map.size === 0) {
+            // 与全量路径同一守卫口径：仓库存在但推导不出任何日期时必须硬失败
+            console.error('[content-sync] git 历史为空（浅克隆或 fetch-depth 不足），无法推导 updated 字段。');
+            console.error('[content-sync] 请以完整历史检出仓库（CI 中 actions/checkout 需 fetch-depth: 0）。');
+            process.exit(1);
+          }
+          if (!CHECK_MODE) saveGitDatesCache(head, map);
+          return map;
+        } catch {
+          // 范围 log 失败等任何一步不满足 → 回退全量
+        }
+      }
+    }
+  }
+
+  // 全量路径（既有算法）：全历史 newest-first，首现即生效
+  let map = new Map();
+  if (hasGit) {
+    try {
+      map = parseLogFirstSeen(runGitLog([]));
+    } catch {
+      // git 命令本身失败（无 git 等）时降级为空表
+    }
   }
   // 关键守卫：仓库存在但历史为空（浅克隆 / fetch-depth 不足）时，
   // 空表会让全部文档的 updated 被静默改写为今天，构建产物日期集体失真。
   // 此时必须硬失败，提示检查 checkout 深度，而不是带病产出。
-  if (map.size === 0 && existsSync(join(ROOT, '.git'))) {
+  if (map.size === 0 && hasGit) {
     console.error('[content-sync] git 历史为空（浅克隆或 fetch-depth 不足），无法推导 updated 字段。');
     console.error('[content-sync] 请以完整历史检出仓库（CI 中 actions/checkout 需 fetch-depth: 0）。');
     process.exit(1);
   }
+  if (hasGit && head && !CHECK_MODE) saveGitDatesCache(head, map);
   return map;
 }
 

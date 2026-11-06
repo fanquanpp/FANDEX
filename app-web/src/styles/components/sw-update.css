@@ -4,7 +4,9 @@
   bottom: var(--space-4);
   left: 50%;
   transform: translate(-50%, calc(100% + var(--space-4)));
-  z-index: 90;
+  /* SW 更新提示与 toast 同层（--z-toast 300）：两者互斥出现，且都须低于
+     性能悬浮窗（--z-overlay-top 1000），高于一切页内浮层 */
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -73,10 +75,4 @@
 .sw-update-bar-close:hover {
   color: var(--color-fg-primary);
   background: var(--color-bg-hover);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sw-update-bar {
-    transition: none;
-  }
 }

@@ -2,6 +2,7 @@
 import '@/styles/site.css';
 import SceneBackdrop from '@/components/SceneBackdrop.astro';
 import ThemeLangBootstrap from '@/components/ThemeLangBootstrap.astro';
+import Footer from '@/components/Footer.astro';
 import { SITE } from '@/lib/constants';
 import { AI_SETTINGS_CSP } from '@/lib/csp';
 import { t } from '@/lib/i18n';
@@ -180,6 +181,8 @@ const channelActive = AI_CHANNEL_ACTIVE;
         <nav class="ai-exits" aria-label={t('ai.exitsAria')} data-i18n-aria="ai.exitsAria">
           <a href={base} class="ai-btn ai-btn--ghost" data-i18n="legal.backHome">返回首页</a>
         </nav>
+
+        <Footer />
       </main>
     </div>
 
@@ -398,8 +401,9 @@ const channelActive = AI_CHANNEL_ACTIVE;
   }
 
   .ai-lang-btn.is-active {
-    background: color-mix(in srgb, var(--color-accent-base) 14%, transparent);
-    color: var(--color-accent-base);
+    /* 反色墨水选中态（规格 3.3：互斥单选含语言切换），与全站统一 */
+    background: var(--color-fg-primary);
+    color: var(--color-bg-primary);
   }
 
   .ai-title {
@@ -637,7 +641,8 @@ const channelActive = AI_CHANNEL_ACTIVE;
   }
 
   .ai-exits {
-    margin-top: var(--space-7);
+    /* 现存档为 4/5/6/8/10（无 space-7），出口块与上方留白取 space-6 */
+    margin-top: var(--space-6);
     display: flex;
     gap: var(--space-3);
   }

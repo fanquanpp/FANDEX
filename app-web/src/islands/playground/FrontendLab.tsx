@@ -203,16 +203,20 @@ function FrontendLab() {
     setPen((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  const [narrowLayoutChecked, setNarrowLayoutChecked] = useState(false);
-  if (!narrowLayoutChecked) {
-    setNarrowLayoutChecked(true);
+  // 窄屏偏好布局：SSR 与客户端首帧必须一致（规格 C7）。render 期读
+  // window.innerWidth 改初值会造成 HTML 不匹配并整树重建，故延迟到
+  // 水合完成后的 effect 里再切换（布局徽标在 effect 前短暂显示 left）。
+  const narrowLayoutAppliedRef = useRef(false);
+  useEffect(() => {
+    if (narrowLayoutAppliedRef.current) return;
+    narrowLayoutAppliedRef.current = true;
     const preferred = narrowPreferredLayout();
     setPen((prev) =>
       prev.id === 'draft' && prev.createdAt === 0 && prev.layout !== preferred
         ? { ...prev, layout: preferred }
         : prev,
     );
-  }
+  }, []);
 
   const {
     split,
@@ -272,8 +276,13 @@ function FrontendLab() {
         target = await loadPenDraft();
       }
       if (!cancelled && target) {
+        // 窄屏强制 top：已存 pen/showcase 自带的 layout:'left' 在 <700px
+        // 只剩 ~185px 编辑列（视检第 3 轮 #24），仅本次会话覆盖，不回写
+        // 存储——宽屏重新打开仍是作者保存的布局。
+        const forcedLayout = window.innerWidth < 700 ? narrowPreferredLayout() : target.layout;
         const opened = {
           ...target,
+          layout: forcedLayout,
           paneWeights: target.paneWeights ?? { html: 1, css: 1, js: 1 },
           split: target.split ?? 0.5,
           lastOpenedAt: target.lastOpenedAt || Date.now(),
@@ -539,8 +548,11 @@ const handleOpenLibrary = useCallback(async () => {
 
   const handleOpenPen = useCallback(async (item: FrontendPen) => {
     const now = Date.now();
+    // 窄屏强制 top（同深链打开路径：不回写存储，宽屏重开仍是保存值）
+    const forcedLayout = window.innerWidth < 700 ? narrowPreferredLayout() : item.layout;
     const opened = {
       ...item,
+      layout: forcedLayout,
       paneWeights: item.paneWeights ?? { html: 1, css: 1, js: 1 },
       split: item.split ?? 0.5,
       lastOpenedAt: now,
@@ -658,7 +670,7 @@ const handleOpenLibrary = useCallback(async () => {
               <button
                 key={editor.key}
                 type="button"
-                className={`pg-btn pg-btn--editors${editor.visible ? ' is-on' : ''}${effectivePane === editor.key ? ' is-active' : ''}`}
+                className={`pg-editor-tab${editor.visible ? ' is-on' : ''}${effectivePane === editor.key ? ' is-active' : ''}`}
                 onClick={() => togglePane(editor.key)}
                 aria-pressed={editor.visible}
                 title={t('pg.switchEditor', { lang: editor.label }, lang)}
@@ -670,7 +682,7 @@ const handleOpenLibrary = useCallback(async () => {
           <div className="pg-toolbar-group">
             <button
               type="button"
-              className="pg-btn pg-btn--ghost"
+              className="fndx-button fndx-button--sm fndx-button--ghost"
               onClick={() => void handleFormat()}
               disabled={formatting}
               title={t('pg.formatTitle', undefined, lang)}
@@ -680,7 +692,7 @@ const handleOpenLibrary = useCallback(async () => {
             </button>
             <button
               type="button"
-              className="pg-btn pg-btn--ghost"
+              className="fndx-button fndx-button--sm fndx-button--ghost"
               onClick={() => updatePen({ autoRun: !pen.autoRun })}
               aria-pressed={pen.autoRun}
               title={t('pg.autoTitle', undefined, lang)}
@@ -690,7 +702,7 @@ const handleOpenLibrary = useCallback(async () => {
             </button>
             <button
               type="button"
-              className="pg-btn pg-btn--ghost"
+              className="fndx-button fndx-button--sm fndx-button--ghost"
               onClick={() => updatePen({ layout: pen.layout === 'left' ? 'top' : 'left' })}
               title={t('pg.layoutTitle', undefined, lang)}
             >
@@ -699,7 +711,7 @@ const handleOpenLibrary = useCallback(async () => {
             </button>
             <button
               type="button"
-              className="pg-btn pg-btn--ghost"
+              className="fndx-button fndx-button--sm fndx-button--ghost"
               onClick={() => updatePen({ showConsole: !pen.showConsole })}
               aria-pressed={pen.showConsole}
               title={t('pg.consoleTitle', undefined, lang)}
@@ -716,7 +728,7 @@ const handleOpenLibrary = useCallback(async () => {
           <div className="pg-toolbar-group">
             <button
               type="button"
-              className="pg-btn pg-btn--ghost"
+              className="fndx-button fndx-button--sm fndx-button--ghost"
               onClick={() => setShowGallery(true)}
               title={t('pg.galleryTitle', undefined, lang)}
             >
@@ -726,7 +738,7 @@ const handleOpenLibrary = useCallback(async () => {
             <div className="pg-new-wrap">
               <button
                 type="button"
-                className="pg-btn pg-btn--ghost"
+                className="fndx-button fndx-button--sm fndx-button--ghost"
                 onClick={() => setShowTemplates((v) => !v)}
                 aria-expanded={showTemplates}
                 title={t('pg.newTitle', undefined, lang)}
@@ -751,18 +763,18 @@ const handleOpenLibrary = useCallback(async () => {
                 </div>
               )}
             </div>
-            <button type="button" className="pg-btn pg-btn--ghost" onClick={() => void handleSave()} title={t('pg.saveTitle', undefined, lang)}>
+            <button type="button" className="fndx-button fndx-button--sm fndx-button--ghost" onClick={() => void handleSave()} title={t('pg.saveTitle', undefined, lang)}>
               <PgIcon name="copy" size={14} />
               <span>{t('pg.save', undefined, lang)}</span>
             </button>
-            <button type="button" className="pg-btn pg-btn--ghost pg-btn--library" onClick={() => void handleOpenLibrary()} title={t('pg.libraryTitle', undefined, lang)}>
+            <button type="button" className="fndx-button fndx-button--sm fndx-button--ghost" onClick={() => void handleOpenLibrary()} title={t('pg.libraryTitle', undefined, lang)}>
               <PgIcon name="folder" size={14} />
               <span>{t('pg.library', undefined, lang)}</span>
               {library.length > 0 && <em className="pg-count">{library.length}</em>}
             </button>
             <button
               type="button"
-              className="pg-btn pg-btn--ghost"
+              className="fndx-button fndx-button--sm fndx-button--ghost"
               onClick={() => setShowGuide(true)}
               aria-expanded={showGuide}
               title={t('pg.guideTitle', undefined, lang)}
@@ -772,7 +784,7 @@ const handleOpenLibrary = useCallback(async () => {
             </button>
             <button
               type="button"
-              className="pg-btn pg-btn--primary"
+              className="fndx-button fndx-button--sm fndx-button--primary"
               onClick={handleRun}
               title={t('pg.runTitle', undefined, lang)}
             >
@@ -831,7 +843,7 @@ const handleOpenLibrary = useCallback(async () => {
                     <span className="pg-pane-title">{editor.label}</span>
                     <button
                       type="button"
-                      className="pg-pane-toggle"
+                      className="fndx-icon-btn"
                       onClick={() =>
                         updatePen(
                           editor.key === 'html'
@@ -888,7 +900,7 @@ const handleOpenLibrary = useCallback(async () => {
               <span className="pg-preview-size">{formatBytes(penBytes)}</span>
               <button
                 type="button"
-                className="pg-btn pg-btn--ghost pg-btn--sm"
+                className="fndx-icon-btn"
                 onClick={openPreviewInNewWindow}
                 title={t('pg.openNewTitle', undefined, lang)}
               >
@@ -896,7 +908,7 @@ const handleOpenLibrary = useCallback(async () => {
               </button>
               <button
                 type="button"
-                className="pg-btn pg-btn--ghost pg-btn--sm"
+                className="fndx-icon-btn"
                 onClick={downloadPenHtml}
                 title={t('pg.downloadTitle', undefined, lang)}
               >
@@ -904,7 +916,7 @@ const handleOpenLibrary = useCallback(async () => {
               </button>
               <button
                 type="button"
-                className="pg-btn pg-btn--ghost pg-btn--sm"
+                className="fndx-icon-btn"
                 onClick={handleRun}
                 title={t('pg.rerunTitle', undefined, lang)}
               >
@@ -940,7 +952,7 @@ const handleOpenLibrary = useCallback(async () => {
                   {consoleEntries.length > 0 && (
                     <button
                       type="button"
-                      className="pg-btn pg-btn--ghost pg-btn--sm"
+                      className="fndx-button fndx-button--sm fndx-button--ghost"
                       onClick={() => setConsoleEntries([])}
                     >
                       {t('pg.consoleClear', undefined, lang)}
@@ -948,7 +960,7 @@ const handleOpenLibrary = useCallback(async () => {
                   )}
                   <button
                     type="button"
-                    className="pg-btn pg-btn--ghost pg-btn--sm"
+                    className="fndx-icon-btn"
                     onClick={() => updatePen({ showConsole: false })}
                     title={t('pg.consoleCollapse', undefined, lang)}
                   >
@@ -994,7 +1006,7 @@ const handleOpenLibrary = useCallback(async () => {
               </span>
               <button
                 type="button"
-                className="pg-btn pg-btn--ghost pg-btn--sm"
+                className="fndx-icon-btn"
                 onClick={() => setShowGuide(false)}
                 title={t('pg.closeAria', undefined, lang)}
               >
@@ -1018,7 +1030,7 @@ const handleOpenLibrary = useCallback(async () => {
               <div className="pg-guide__start">
                 <button
                   type="button"
-                  className="pg-btn pg-btn--ghost"
+                  className="fndx-button fndx-button--sm fndx-button--ghost"
                   onClick={() => {
                     setShowGuide(false);
                     setShowTemplates(true);
@@ -1029,7 +1041,7 @@ const handleOpenLibrary = useCallback(async () => {
                 </button>
                 <button
                   type="button"
-                  className="pg-btn pg-btn--ghost"
+                  className="fndx-button fndx-button--sm fndx-button--ghost"
                   onClick={() => {
                     setShowGuide(false);
                     setShowGallery(true);
@@ -1040,7 +1052,7 @@ const handleOpenLibrary = useCallback(async () => {
                 </button>
                 <button
                   type="button"
-                  className="pg-btn pg-btn--ghost"
+                  className="fndx-button fndx-button--sm fndx-button--ghost"
                   onClick={() => {
                     setShowGuide(false);
                     void handleOpenLibrary();
@@ -1140,7 +1152,7 @@ const handleOpenLibrary = useCallback(async () => {
                 <PgIcon name="folder" size={15} />
                 {t('pg.libraryTitle2', undefined, lang)}
               </span>
-              <button type="button" className="pg-btn pg-btn--ghost pg-btn--sm" onClick={() => setShowLibrary(false)}>
+              <button type="button" className="fndx-icon-btn" onClick={() => setShowLibrary(false)}>
                 <PgIcon name="close" size={14} />
               </button>
             </div>
@@ -1151,7 +1163,7 @@ const handleOpenLibrary = useCallback(async () => {
                   <div className="pg-lib-empty-actions">
                     <button
                       type="button"
-                      className="pg-btn pg-btn--ghost pg-btn--sm"
+                      className="fndx-button fndx-button--sm fndx-button--ghost"
                       onClick={() => {
                         setShowLibrary(false);
                         setShowTemplates(true);
@@ -1162,7 +1174,7 @@ const handleOpenLibrary = useCallback(async () => {
                     </button>
                     <button
                       type="button"
-                      className="pg-btn pg-btn--ghost pg-btn--sm"
+                      className="fndx-button fndx-button--sm fndx-button--ghost"
                       onClick={() => {
                         setShowLibrary(false);
                         setShowGallery(true);
@@ -1183,12 +1195,12 @@ const handleOpenLibrary = useCallback(async () => {
                       </span>
                     </div>
                     <div className="pg-lib-actions">
-                      <button type="button" className="pg-btn pg-btn--ghost pg-btn--sm" onClick={() => void handleOpenPen(item)}>
+                      <button type="button" className="fndx-button fndx-button--sm fndx-button--ghost" onClick={() => void handleOpenPen(item)}>
                         {t('pg.open', undefined, lang)}
                       </button>
                       <button
                         type="button"
-                        className="pg-btn pg-btn--ghost pg-btn--sm"
+                        className="fndx-button fndx-button--sm fndx-button--ghost"
                         onClick={() => void handleDuplicatePen(item)}
                         title={t('pg.duplicateTitle', undefined, lang)}
                       >
@@ -1196,7 +1208,7 @@ const handleOpenLibrary = useCallback(async () => {
                       </button>
                       <button
                         type="button"
-                        className="pg-btn pg-btn--ghost pg-btn--sm pg-btn--danger"
+                        className="fndx-button fndx-button--sm fndx-button--danger"
                         onClick={() => handleDeletePen(item)}
                       >
                         {t('pg.delete', undefined, lang)}

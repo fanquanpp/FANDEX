@@ -15,7 +15,7 @@ const { mod, color } = Astro.props as {
 const moduleColorStyle = color ? `--module-color:${color}` : undefined;
 ---
 
-<a href={`${import.meta.env.BASE_URL}${mod.id}/`} class="module-card" style={moduleColorStyle}>
+<a href={`${import.meta.env.BASE_URL}${mod.id}/`} class="module-card" style={moduleColorStyle} data-hover-fx="css">
   <div class="card-header">
     <span class="card-icon">{mod.icon}</span>
     <h3 class="card-title">{mod.title}</h3>

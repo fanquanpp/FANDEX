@@ -1,3 +1,7 @@
+/* playground 岛内 z-index 局部刻度声明（规格 4.2 迁移总表）：
+   分隔条 2 / 菜单遮罩 30 / 下拉菜单 40 / 弹层遮罩 60 在 2-60 局部带内按需取值；
+   全屏遮罩不属局部带：作品库抽屉与图鉴 lightbox 遮罩消费全局 --z-backdrop（150）。
+   本文件禁止新增裸值浮层与遮罩。 */
 @layer components {
 
   .pg-page {
@@ -12,18 +16,28 @@
     min-height: 0;
   }
 
-  .pg-btn {
+  /* 按钮基元收敛（规格 3.2.5 / 5.5.1）：文本按钮统一 .fndx-button--sm + 层级修饰符，
+     纯图标按钮统一 .fndx-icon-btn，几何与状态全部消费 --button-* 令牌链。
+     实验室是密集仪器面板，去掉页面 CTA 语义的 --button-min-width（80px）最小宽；
+     其余 .fndx-button 行为（hover/active/focus-visible/disabled）直接复用全站实现。 */
+  .pg-frontend .fndx-button {
+    min-width: 0;
+  }
+
+  /* 编辑器开关组：分段控件语义（aria-pressed 切换），保留 mono 仪器标签与 is-on 刻度线，
+     几何消费 --button-size-sm-* 令牌链，不脱离体系另造尺寸 */
+  .pg-editor-tab {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    height: 28px;
-    padding: 0 12px;
-    border-radius: var(--radius-sm, 2px);
+    height: var(--button-size-sm-height);
+    padding: 0 var(--button-size-sm-padding-x);
     border: 1px solid transparent;
+    border-radius: var(--button-radius);
     background: transparent;
     color: var(--color-fg-secondary);
-    font-size: 12px;
-    font-family: var(--font-family-body);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xs);
+    letter-spacing: 0.06em;
     cursor: pointer;
     white-space: nowrap;
     transition:
@@ -32,74 +46,21 @@
       border-color var(--motion-duration-instant) var(--motion-easing-out);
   }
 
-  .pg-btn:hover {
+  .pg-editor-tab:hover {
     color: var(--color-fg-primary);
     background: var(--color-bg-hover);
   }
 
-  .pg-btn:active {
-    transform: translateY(1px);
+  .pg-editor-tab:active {
+    transform: scale(0.97);
   }
 
-  .pg-btn:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-
-  .pg-btn:focus-visible {
+  .pg-editor-tab:focus-visible {
     outline: 2px solid var(--color-border-focus);
     outline-offset: 2px;
   }
 
-  .pg-btn--ghost {
-    border-color: var(--color-border-light);
-    background: var(--color-bg-card);
-  }
-
-  .pg-btn--ghost:hover {
-    border-color: var(--color-border-strong);
-    color: var(--color-fg-primary);
-  }
-
-  .pg-btn--primary {
-    background: var(--color-accent-base);
-    border-color: var(--color-accent-base);
-    color: var(--color-accent-fg);
-    font-weight: 600;
-  }
-
-  .pg-btn--primary:hover {
-    background: var(--color-accent-hover);
-    border-color: var(--color-accent-hover);
-    color: var(--color-accent-fg);
-  }
-
-  .pg-btn--danger {
-    border-color: color-mix(in srgb, var(--color-danger-base) 45%, transparent);
-    color: var(--color-danger-base);
-  }
-
-  .pg-btn--danger:hover {
-    background: color-mix(in srgb, var(--color-danger-base) 10%, transparent);
-    border-color: var(--color-danger-base);
-    color: var(--color-danger-base);
-  }
-
-  .pg-btn--sm {
-    height: 24px;
-    padding: 0 8px;
-    font-size: 11px;
-  }
-
-  .pg-btn--editors {
-    height: 24px;
-    padding: 0 9px;
-    font-family: var(--font-family-mono);
-    font-size: 10px;
-    letter-spacing: 0.06em;
-  }
-
-  .pg-btn--editors.is-on {
+  .pg-editor-tab.is-on {
     color: var(--color-fg-primary);
     border-color: var(--color-border-strong);
     background: var(--color-bg-card);
@@ -121,12 +82,12 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    height: 28px;
-    padding: 0 8px;
-    border-radius: var(--radius-sm, 2px);
+    height: var(--button-size-sm-height);
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-control);
     color: var(--color-fg-secondary);
     text-decoration: none;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     font-family: var(--font-family-heading);
     letter-spacing: 0.04em;
     transition: color var(--motion-duration-instant) var(--motion-easing-out), background-color var(--motion-duration-instant) var(--motion-easing-out);
@@ -210,20 +171,23 @@
 
   .pg-title-input {
     width: min(260px, 34vw);
-    height: 28px;
-    padding: 0 10px;
-    border: 1px solid var(--color-border-light);
-    border-radius: var(--radius-sm, 2px);
+    height: var(--input-size-sm-height);
+    padding: 0 var(--input-size-sm-padding-x);
+    border: var(--input-border-width) solid var(--color-border-light);
+    border-radius: var(--input-radius);
     background: var(--color-bg-card);
     color: var(--color-fg-primary);
-    font-size: 12px;
+    font-size: var(--input-size-sm-font-size);
     font-family: var(--font-family-body);
     outline: none;
-    transition: border-color var(--motion-duration-instant) var(--motion-easing-out);
+    transition: border-color var(--motion-duration-instant) var(--motion-easing-out), box-shadow var(--motion-duration-instant) var(--motion-easing-out);
   }
 
+  /* 焦点可见性（规格 3.4）：focus 描边走 --color-border-focus，外圈 3px 30% 环；
+     不改边框宽度，避免聚焦时内容区 1px 抖动 */
   .pg-title-input:focus {
-    border-color: var(--color-accent-base);
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-border-focus) 30%, transparent);
   }
 
   .pg-workspace {
@@ -266,7 +230,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    height: 28px;
+    /* 仪器行高度对齐 --size-control-md（40px），容纳 32px 全站控件基元 */
+    height: var(--size-control-md);
     padding: 0 10px 0 14px;
     background: var(--color-bg-surface, var(--color-bg-sidebar));
     border-bottom: 1px solid var(--color-border-light);
@@ -293,31 +258,6 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-fg-secondary);
-  }
-
-  .pg-pane-note {
-    font-family: var(--font-family-mono);
-    font-size: 10px;
-    color: var(--color-fg-tertiary);
-  }
-
-  .pg-pane-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    border: none;
-    border-radius: var(--radius-sm, 3px);
-    background: transparent;
-    color: var(--color-fg-tertiary);
-    cursor: pointer;
-    transition: color var(--motion-duration-instant) var(--motion-easing-out), background-color var(--motion-duration-instant) var(--motion-easing-out);
-  }
-
-  .pg-pane-toggle:hover {
-    color: var(--color-danger-base);
-    background: var(--color-bg-hover);
   }
 
   .pg-pane-body {
@@ -460,7 +400,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 28px;
+    height: var(--size-control-md);
     padding: 0 10px 0 14px;
     background: var(--color-bg-surface, var(--color-bg-sidebar));
     border-bottom: 1px solid var(--color-border-light);
@@ -525,7 +465,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 22px;
+    height: var(--size-control-md);
     padding: 0 8px 0 10px;
     flex-shrink: 0;
   }
@@ -590,7 +530,8 @@
   .pg-drawer-mask {
     position: fixed;
     inset: 0;
-    z-index: var(--fandex-z-overlay);
+    /* 全屏遮罩走全局 --z-backdrop（150），退役旧 --fandex-z-overlay=1200 越界值（规格 4.2） */
+    z-index: var(--z-backdrop);
     background: rgba(0, 0, 0, 0.35);
     display: flex;
     justify-content: flex-end;
@@ -734,13 +675,10 @@
     animation-delay: 0.08s;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .pg-frontend .pg-toolbar,
-    .pg-frontend .pg-workspace {
-      animation: none;
-    }
-  }
+  /* reduced-motion 不在本文件重复写 @media：global.css 已对全部元素置 0.01ms 兜底（C6） */
 
+  /* 720px 断点归档说明（规格 4.3.2）：非页面级断点，属工作台自身密度需要——
+     双行工具栏在 720px 以下放不下完整文字标签，先于全站移动档（767.98px）收紧为图标态 */
   @media (max-width: 720px) {
     .pg-toolbar {
       padding: 6px 10px;
@@ -755,18 +693,43 @@
       margin-left: 0;
     }
 
-    .pg-btn span {
+    /* 标签隐藏后按钮进入图标态：与旧 .pg-btn span 规则等价的三个落点 */
+    .pg-toolbar .fndx-button span,
+    .pg-guide__start .fndx-button span,
+    .pg-sc-load span {
       display: none;
     }
 
-    .pg-btn {
-      padding: 0 9px;
+    .pg-toolbar .fndx-button,
+    .pg-guide__start .fndx-button,
+    .pg-sc-load {
+      padding-inline: var(--space-2);
     }
 
     .pg-console {
       height: 80px;
     }
 
+    /* 左右布局窄屏时预览列约 180px：隐藏次要信息与 spark 图标，标题省略号兜底，
+       避免 40px 头行内文字竖排换行 */
+    .pg-preview-title {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .pg-preview-title svg {
+      display: none;
+    }
+
+    .pg-preview-size {
+      display: none;
+    }
+
+    .pg-preview-actions {
+      gap: var(--space-1);
+    }
   }
 
   .pg-toolbar-row {
@@ -786,7 +749,7 @@
   }
 
   @media (max-width: 720px) {
-    .pg-btn--editors.is-active {
+    .pg-editor-tab.is-active {
       color: var(--color-accent-base);
       border-color: color-mix(in srgb, var(--color-accent-base) 65%, transparent);
       background: color-mix(in srgb, var(--color-accent-base) 14%, transparent);
@@ -799,18 +762,10 @@
     display: inline-flex;
   }
 
-  .pg-new-wrap .pg-btn {
-    border-color: var(--color-border-light);
-    background: var(--color-bg-card);
-  }
-
-  .pg-new-wrap .pg-btn:hover {
-    border-color: color-mix(in srgb, var(--color-accent-base) 45%, transparent);
-  }
-
-  .pg-new-wrap .pg-btn[aria-expanded='true'] {
+  /* 新建模板菜单触发钮随体系转 ghost（透明底）；展开态用 accent 提示开启 */
+  .pg-new-wrap .fndx-button[aria-expanded='true'] {
     color: var(--color-accent-base);
-    border-color: color-mix(in srgb, var(--color-accent-base) 55%, transparent);
+    background: var(--color-bg-hover);
   }
 
   .pg-menu {
@@ -884,15 +839,6 @@
     background: color-mix(in oklch, var(--color-neutral-50, #000) 45%, transparent);
   }
 
-  .pg-keys {
-    width: min(340px, calc(100vw - 40px));
-    padding: var(--space-4);
-    background: var(--color-bg-surface, var(--color-bg-sidebar));
-    border: 1px solid var(--color-border-light);
-    border-radius: var(--radius-md, 4px);
-    box-shadow: var(--shadow-lg);
-  }
-
   .pg-keys__head {
     display: flex;
     align-items: center;
@@ -947,14 +893,6 @@
     font-size: 0.65rem;
     line-height: 1.5;
     color: var(--color-text-secondary);
-  }
-
-  .pg-keys__note {
-    margin: var(--space-3) 0 0;
-    padding-top: var(--space-2);
-    border-top: 1px dashed var(--color-border-light);
-    font-size: 0.7rem;
-    color: var(--color-text-tertiary);
   }
 
   /* 上手指南：比快捷键面板更宽的分节弹层 */
@@ -1065,14 +1003,16 @@
   }
 
   .pg-count--danger {
+    /* 错误计数徽标：danger tint 底 + danger 字（原规则误留 accent 实底与无 border 的 border-color） */
+    background: color-mix(in srgb, var(--color-danger-base) 12%, transparent);
     color: var(--color-danger-base);
-    border-color: color-mix(in srgb, var(--color-danger-base) 55%, transparent);
   }
 
   .pg-sc-mask {
     position: fixed;
     inset: 0;
-    z-index: calc(var(--fandex-z-overlay, 50) + 1);
+    /* 图鉴 lightbox 遮罩 = --z-backdrop + 1（规格 4.2 迁移总表），删除 fallback 死码 */
+    z-index: calc(var(--z-backdrop) + 1);
     background: rgba(0, 0, 0, 0.45);
     display: flex;
     align-items: stretch;
@@ -1257,7 +1197,8 @@
   .pg-sc-preview {
     position: relative;
     aspect-ratio: 16 / 10;
-    background: #101418;
+    /* 占位态底色随主题（加载完成由 iframe 内容覆盖），替代旧冷调硬编码 #101418 */
+    background: var(--color-bg-code);
     border-bottom: 1px solid var(--color-border-light);
     overflow: hidden;
   }
@@ -1320,12 +1261,8 @@
     flex-shrink: 0;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .pg-sc-panel {
-      animation: none;
-    }
-  }
-
+  /* 860px 断点归档说明（规格 4.3.2）：图鉴弹层内部布局断点，与页面级规范档无关——
+     弹层宽 min(1240px, 100%)，860px 以下侧栏 172px 已挤占成品网格，折叠为横向滚动条 */
   @media (max-width: 860px) {
     .pg-sc-layout {
       grid-template-columns: 1fr;
@@ -1366,6 +1303,8 @@
     }
   }
 
+  /* 全站移动规范档（max-width: 767.98px，规格 4.3.1）：
+     编辑器三栏折叠为单 pane 标签态，工具栏进一步收紧 */
   @media (max-width: 767.98px) {
     .pg-toolbar {
       padding: 6px 10px;
@@ -1374,11 +1313,6 @@
 
     .pg-toolbar-row .pg-save-state {
       display: none;
-    }
-
-    .pg-btn--editors {
-      height: 26px;
-      padding: 0 12px;
     }
 
     .pg-editors .pg-pane {

@@ -4,8 +4,6 @@
     --nav-height: var(--size-control-md);
     --nav-height-mobile: 3.25rem;
 
-    --mobile-nav-height: var(--size-control-md);
-
     --reading-progress-height: 3px;
 
     --sidebar-width: 15rem;
@@ -21,17 +19,26 @@
     --layout-gap: var(--space-8);
     --layout-gap-lg: var(--space-12);
 
-    --z-header: 40;
-    --z-sidebar: 30;
-    --z-toc: 20;
-    --z-mobile-nav: 40;
-    --z-reading-progress: 50;
-    /* 侧边栏抽屉的遮罩：必须低于抽屉本身（30）且高于页面内容，
+    /* ===== z-index 全站唯一刻度（规格 4.2）=====
+       规则：fixed/sticky/absolute 的浮层、遮罩、吸顶、弹窗一律消费 --z-*，
+       禁止新裸值；行内 1/2 仅限"已定位父级栈内盖住兄弟"的局部整数（配注释）。
+       特例：skip-link 10000（BaseLayout.astro，全站唯一，高于一切非 top-layer）；
+       原生 <dialog>（搜索面板）在 top layer，不受本刻度治理。 */
+    --z-raised: 2; /* 行内浮起（卡内伪元素/悬浮角标） */
+    --z-sticky: 10; /* 页内吸顶条族（面包屑/工具栏/chips/文档头行），必须低于一切遮罩 */
+    --z-toc: 20; /* 目录吸顶条与展开面板 */
+    /* 侧边栏抽屉的遮罩：必须低于抽屉本身（30）且高于页内吸顶（10），
         否则抽屉内的关闭按钮与章节链接会被遮罩拦截点击 */
     --z-sidebar-backdrop: 25;
-    --z-backdrop: 150;
-    --z-modal: 200;
-    --z-toast: 300;
+    --z-sidebar: 30;
+    --z-header: 40;
+    --z-mobile-nav: 40;
+    --z-reading-progress: 50; /* 3px 进度条浮于头部上缘，功能性可见性优先 */
+    --z-dropdown: 120; /* 头部下拉浮层/工具提示 */
+    --z-backdrop: 150; /* 全屏遮罩（feature-sheet、抽屉类遮罩） */
+    --z-modal: 200; /* 模态与 dialog（必须高于自家遮罩 150） */
+    --z-toast: 300; /* toast 容器与 SW 更新提示 */
+    --z-overlay-top: 1000; /* 搜索面板触发层之上的悬浮窗（性能面板）、全局 tooltip */
 
     --header-bg: color-mix(in oklch, var(--color-bg-primary) 85%, transparent);
     --header-border: var(--color-border-default);
@@ -643,16 +650,25 @@
     font-size: var(--font-size-secondary);
     line-height: var(--font-line-height-body);
     border-left: 2px solid transparent;
+    position: relative;
     transition: background-color var(--motion-duration-instant) var(--motion-easing-out),
                 color var(--motion-duration-instant) var(--motion-easing-out),
                 border-color var(--motion-duration-instant) var(--motion-easing-out);
   }
 
+  /* 条目命中区垂直外扩 6px（规格 4.4.3，typelex LineSidebar 同款）：
+     细密列表的点击容错，纯命中区扩展，零视觉与逐帧成本 */
+  .fndx-sidebar__link::before {
+    content: '';
+    position: absolute;
+    inset: -6px 0;
+  }
+
+  /* hover 仅底色（规格 4.4.2）：禁止指近位移型/描边型效果，长列表滚动零干扰 */
   @media (hover: hover) {
     .fndx-sidebar__link:hover {
-      background-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 8%, var(--color-bg-hover));
+      background-color: var(--color-bg-hover);
       color: var(--color-fg-primary);
-      border-left-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 60%, transparent);
     }
   }
 
@@ -673,6 +689,7 @@
     position: absolute;
     top: var(--space-2);
     right: var(--space-2);
+    /* 局部整数：仅盖住抽屉栈内兄弟节点（规格 4.2 注 2），非浮层语义 */
     z-index: 2;
     display: none;
   }
@@ -808,11 +825,6 @@
     border-right: 2px solid transparent;
     transition: color var(--motion-duration-instant) var(--motion-easing-out),
                 border-color var(--motion-duration-instant) var(--motion-easing-out);
-  }
-
-  .fndx-sidebar__link:hover .fndx-sidebar__link-index {
-    color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 70%, var(--color-fg-secondary));
-    border-right-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 45%, transparent);
   }
 
   .fndx-sidebar__link.is-active .fndx-sidebar__link-index,
@@ -1003,10 +1015,10 @@
     }
   }
 
-  @media (max-width: 1023px) {
-    .fndx-toc {
-      display: none;
-    }
+  /* 移动端吸顶折叠条触发按钮：桌面隐藏；<1024px 规则见本文件 toc 段末尾的
+     移动端块（基础规则必须先声明，否则同特异性下回写不生效） */
+  .fndx-toc__mobile-toggle {
+    display: none;
   }
 
   .fndx-toc__nav {
@@ -1037,6 +1049,7 @@
   .fndx-toc__title {
     position: sticky;
     top: 0;
+    /* 局部整数：仅盖住 TOC 滚动容器内列表项（规格 4.2 注 2），非浮层语义 */
     z-index: 1;
     margin: 0;
     padding-bottom: var(--space-2);
@@ -1086,6 +1099,13 @@
     color: var(--module-color, var(--color-accent-base));
     border-left-color: var(--module-color, var(--color-accent-base));
     font-weight: var(--font-weight-emphasis);
+  }
+
+  /* 暗色下高饱和模块色（如 tools #0000FF）直接作激活文字色压深底接近
+     不可读（视检第 2 期第 4 项，桌面右栏激活项与窄屏展开面板同源），
+     向暗色前景方向调亮；亮色主题保持模块原色不变 */
+  [data-theme='dark'] .fndx-toc__link.is-active {
+    color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 45%, var(--color-fg-primary));
   }
 
   .fndx-toc__link:focus-visible {
@@ -1169,6 +1189,169 @@
     opacity: 0.7;
   }
 
+  /* 回到开头（规格 4.6.4）：目录尾部常驻行，滚动 >2 屏后由脚本解禁 */
+  .fndx-toc__back-top {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    margin-top: var(--space-2);
+    padding: var(--space-1) var(--space-3);
+    background: transparent;
+    border: none;
+    border-left: 2px solid transparent;
+    color: var(--color-fg-tertiary);
+    font-size: var(--font-size-caption);
+    cursor: pointer;
+    transition: background-color var(--motion-duration-instant) var(--motion-easing-out),
+                color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .fndx-toc__back-top svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  @media (hover: hover) {
+    .fndx-toc__back-top:not([disabled]):hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-fg-primary);
+    }
+  }
+
+  .fndx-toc__back-top:not([disabled]):focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: -2px;
+  }
+
+  .fndx-toc__back-top[disabled] {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  /* ===== 移动端目录（规格 4.6）：<1024px 重排为吸顶折叠条 =====
+     声明位置必须在 .fndx-toc__nav 等基础规则之后（同特异性靠源序取胜）。
+     定位用 fixed：滚动容器是 #app-main，而 .fndx-toc 挂在 .app-layout 下
+     （main 的兄弟节点），sticky 相对不滚动的外层容器不会吸附。
+     层级规则（规格 4.6.2）：吸顶条整体 --z-toc（20，低于 header 40）；
+     展开面板是吸顶条子元素，不另设 z-index，禁用 --z-overlay-top/--z-backdrop
+     等浮层令牌（目录不是模态）。 */
+  @media (max-width: 1023px) {
+    .fndx-toc {
+      display: block;
+      position: fixed;
+      top: var(--nav-height);
+      right: 0;
+      /* 平板（768-1023）侧栏是常驻栅格列，吸顶条只铺主列；<768px 由下方
+         窄屏块铺满 */
+      left: var(--sidebar-width);
+      z-index: var(--z-toc);
+      width: auto;
+      max-height: none;
+      background-color: var(--color-bg-primary);
+      overflow: visible;
+    }
+
+    /* 侧栏折叠后主列扩展到左缘（--sidebar-collapsed-width = 0） */
+    html.sidebar-collapsed .fndx-toc {
+      left: var(--sidebar-collapsed-width);
+    }
+
+    /* 吸顶条占位：内容顶部留出条高，防面包屑/首屏段落被盖 */
+    .app-layout.has-toc .app-main {
+      padding-top: 2.5rem;
+    }
+
+    .fndx-toc__mobile-toggle {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      width: 100%;
+      height: 2.5rem;
+      padding: 0 var(--space-page-x);
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--color-border-light);
+      color: var(--color-fg-secondary);
+      font-size: var(--font-size-caption);
+      cursor: pointer;
+      transition: background-color var(--motion-duration-instant) var(--motion-easing-out),
+                  color var(--motion-duration-instant) var(--motion-easing-out);
+    }
+
+    @media (hover: hover) {
+      .fndx-toc__mobile-toggle:hover {
+        background-color: var(--color-bg-hover);
+        color: var(--color-fg-primary);
+      }
+    }
+
+    .fndx-toc__mobile-toggle:focus-visible {
+      outline: 2px solid var(--color-border-focus);
+      outline-offset: -2px;
+    }
+
+    .fndx-toc__mobile-chevron {
+      display: inline-flex;
+      flex-shrink: 0;
+      width: 14px;
+      height: 14px;
+      transition: transform var(--motion-duration-fast) var(--motion-easing-out);
+    }
+
+    .fndx-toc.is-open .fndx-toc__mobile-chevron {
+      transform: rotate(180deg);
+    }
+
+    .fndx-toc__mobile-label {
+      flex-shrink: 0;
+      font-weight: var(--font-weight-emphasis);
+      text-transform: uppercase;
+      letter-spacing: var(--font-letter-spacing-label);
+    }
+
+    .fndx-toc__mobile-current {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: right;
+      color: var(--color-fg-primary);
+    }
+
+    .fndx-toc__nav {
+      display: none;
+    }
+
+    /* 展开面板：吸顶条子元素，同栈上下文内自然高于页面内容、低于头部 */
+    .fndx-toc.is-open .fndx-toc__nav {
+      display: flex;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      max-height: 85vh;
+      overscroll-behavior: contain;
+      background-color: var(--color-bg-primary);
+      border: 1px solid var(--color-border-light);
+      border-top: none;
+      border-radius: 0 0 var(--radius-modal) var(--radius-modal);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* 面板内粘性小标题不透底（基础态 --toc-bg 为 transparent，链接会从底下穿出） */
+    .fndx-toc.is-open .fndx-toc__title {
+      background-color: var(--color-bg-primary);
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    /* 窄屏侧栏是抽屉（fixed，translateX(-100%)），吸顶条铺满全宽 */
+    .fndx-toc {
+      left: 0;
+    }
+  }
+
   .fndx-reading-progress {
     position: fixed;
     top: 0;
@@ -1194,66 +1377,8 @@
     }
   }
 
-  .fndx-mobile-nav {
-    position: fixed;
-    inset-inline: 0;
-    bottom: 0;
-    z-index: var(--z-mobile-nav);
-    display: flex;
-    align-items: stretch;
-    height: var(--mobile-nav-height);
-    padding-bottom: env(safe-area-inset-bottom);
-    background-color: var(--color-bg-primary);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    border-top: 1px solid var(--header-border);
-  }
-
-  @media (min-width: 768px) {
-    .fndx-mobile-nav {
-      display: none;
-    }
-  }
-
-  .fndx-mobile-nav__item {
-    flex: 1 1 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-stack-xs);
-    padding: var(--space-1);
-    color: var(--color-fg-tertiary);
-    text-decoration: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: color var(--motion-duration-instant) var(--motion-easing-out);
-  }
-
-  @media (hover: hover) {
-    .fndx-mobile-nav__item:hover {
-      color: var(--color-fg-primary);
-    }
-  }
-
-  .fndx-mobile-nav__item.is-active,
-  .fndx-mobile-nav__item[aria-current='page'] {
-    color: var(--color-accent-base);
-  }
-
-  .fndx-mobile-nav__icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--size-icon-md);
-    height: var(--size-icon-md);
-  }
-
-  .fndx-mobile-nav__label {
-    font-size: var(--font-size-caption);
-    line-height: 1;
-  }
+  /* .fndx-mobile-nav 死类块已删（零 markup 消费，grep 全库实证）；
+     --z-mobile-nav 的唯一消费者为 components.css 的 .mobile-nav 移动底栏 */
 
   .fndx-breadcrumb {
     display: flex;
@@ -1441,7 +1566,7 @@
     position: absolute;
     opacity: 0;
     pointer-events: none;
-    z-index: 1000;
+    z-index: var(--z-overlay-top);
     transition: opacity var(--motion-duration-fast) var(--motion-easing-out);
     transition-delay: 300ms;
   }

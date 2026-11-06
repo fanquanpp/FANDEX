@@ -36,6 +36,20 @@ const groups: TocGroup[] = [];
   let currentH2: TocHeading | null = null;
   let currentGroup: { type: 'h3-group'; parent: TocHeading; items: TocHeading[] } | null = null;
 
+  // 先扫一遍确定每个 h2 是否紧跟 h3 子项：有的话 h2 只作为 h3-group 的
+  // 父头渲染（组头本身即链接），否则独立成条。否则同一章标题会在目录
+  // 里连排两次（一次裸 h2 条目、一次组头），视检第 3 轮 #12 实锤。
+  const h2HasChildren = new Set<string>();
+  let pendingH2: TocHeading | null = null;
+  for (const h of visibleHeadings) {
+    if (h.depth === 2) {
+      pendingH2 = h;
+    } else if (h.depth === 3 && pendingH2) {
+      h2HasChildren.add(pendingH2.slug);
+      pendingH2 = null;
+    }
+  }
+
   for (const h of visibleHeadings) {
     if (h.depth === 2) {
       if (currentGroup) {
@@ -43,7 +57,9 @@ const groups: TocGroup[] = [];
         currentGroup = null;
       }
       currentH2 = h;
-      groups.push({ type: 'h2', heading: h });
+      if (!h2HasChildren.has(h.slug)) {
+        groups.push({ type: 'h2', heading: h });
+      }
     } else if (h.depth === 3) {
       if (!currentH2) {
         groups.push({ type: 'h3-group', parent: { depth: 2, slug: '', text: '' }, items: [h] });
@@ -60,6 +76,16 @@ const groups: TocGroup[] = [];
 }
 
 const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offsetTop });
+
+/**
+ * 标题锚点显示文本修正：rehype-autolink-headings（behavior:'append'，astro.config
+ * 对全部 h2/h3 生效）把 '#' 文本追加进标题，Astro 收集 headings 时连锚点文本一起
+ * 计入，导致目录条目显示「前置知识#」。每个 h2/h3 恰被注入一个 '#'，这里剥掉
+ * 末尾的一个 '#' 与其随后的空白即可完整还原（真实以 # 结尾的标题收集后为两个 #）。
+ */
+function displayTocText(text: string): string {
+  return text.replace(/#\s*$/, '');
+}
 ---
 
 {
@@ -71,6 +97,31 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
       data-toc-scroll-config={scrollConfig}
       style={style}
     >
+      {/* 移动端（<1024px）吸顶折叠条（规格 4.6）：桌面端由 CSS display:none 隐藏，
+          交互脚本见下方 initTocMobile；当前标题由 IntersectionObserver active 态回显 */}
+      <button
+        type="button"
+        class="fndx-toc__mobile-toggle"
+        aria-expanded="false"
+        aria-controls="fndx-toc-nav"
+        data-i18n-aria="toc.mobileToggleAria"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="fndx-toc__mobile-chevron"
+          aria-hidden="true"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+        <span class="fndx-toc__mobile-label" data-i18n="toc.title">本页目录</span>
+        <span class="fndx-toc__mobile-current" data-toc-current aria-hidden="true"></span>
+      </button>
       <nav class="fndx-toc__nav" id="fndx-toc-nav" aria-label="目录导航" data-i18n-aria="toc.navAria">
         <h2 class="fndx-toc__title" data-i18n="toc.title">本页目录</h2>
         <ul class="fndx-toc__list">
@@ -83,7 +134,7 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
                     class="fndx-toc__link"
                     data-toc-slug={group.heading.slug}
                   >
-                    {group.heading.text}
+                    {displayTocText(group.heading.text)}
                   </a>
                 </li>
               );
@@ -99,7 +150,7 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
                         class="fndx-toc__link fndx-toc__link--parent"
                         data-toc-slug={parentSlug}
                       >
-                        {group.parent.text}
+                        {displayTocText(group.parent.text)}
                       </a>
                       <button
                         type="button"
@@ -136,7 +187,7 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
                         class="fndx-toc__link fndx-toc__link--level-3"
                         data-toc-slug={h.slug}
                       >
-                        {h.text}
+                        {displayTocText(h.text)}
                       </a>
                     </li>
                   ))}
@@ -145,6 +196,22 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
             );
           })}
         </ul>
+        {/* 回到开头（规格 4.6.4）：滚动超过 2 屏后可用，桌面目录与移动面板共用 */}
+        <button type="button" class="fndx-toc__back-top" data-toc-back-top disabled>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="18 15 12 9 6 15" />
+          </svg>
+          <span data-i18n="toc.backTop">回到开头</span>
+        </button>
       </nav>
     </aside>
   )
@@ -196,6 +263,60 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
     }
   }
 
+  /* ===== 移动端吸顶折叠条（规格 4.6.3）：选中链接 / 点击外部 / Esc 三路关闭 =====
+     document 级监听只登记一次（模块单例，不持有跨页节点引用），处理器在事件时
+     现查活跃 DOM，避免 astro:before-swap 清理负担。 */
+  let tocDocListenersBound = false;
+
+  function closeTocMobile(aside: HTMLElement): void {
+    aside.classList.remove('is-open');
+    const toggle = aside.querySelector<HTMLButtonElement>('.fndx-toc__mobile-toggle');
+    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+  }
+
+  function bindTocDocListeners(): void {
+    if (tocDocListenersBound) return;
+    tocDocListenersBound = true;
+
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement | null;
+      if (!target || !target.closest) return;
+      const aside = document.querySelector<HTMLElement>('.fndx-toc.is-open');
+      if (!aside) return;
+      // 选中链接：滚动开始前先收起面板
+      if (target.closest('.fndx-toc__link')) {
+        closeTocMobile(aside);
+        return;
+      }
+      // 点击吸顶条与展开面板之外：关闭
+      if (!aside.contains(target)) closeTocMobile(aside);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const aside = document.querySelector<HTMLElement>('.fndx-toc.is-open');
+      if (!aside) return;
+      closeTocMobile(aside);
+      aside.querySelector<HTMLButtonElement>('.fndx-toc__mobile-toggle')?.focus();
+    });
+  }
+
+  function initTocMobile(): void {
+    const aside = document.querySelector<HTMLElement>('.fndx-toc');
+    const toggle = aside?.querySelector<HTMLButtonElement>('.fndx-toc__mobile-toggle');
+    if (!aside || !toggle) return;
+
+    bindTocDocListeners();
+
+    if (toggle.dataset.bound === '1') return;
+    toggle.dataset.bound = '1';
+    toggle.addEventListener('click', () => {
+      const willOpen = !aside.classList.contains('is-open');
+      aside.classList.toggle('is-open', willOpen);
+      toggle.setAttribute('aria-expanded', String(willOpen));
+    });
+  }
+
   function initTocHighlight(): void {
     // 先清理上一页遗留的 observer 与滚动监听，即使本页无目录也要断开，
     // 否则旧 observer 会继续引用已分离的标题节点造成泄漏
@@ -227,19 +348,26 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
 
     let activeSlug = '';
 
+    // 移动端吸顶条的「本页目录：{当前标题}」回显（规格 4.6.1）：
+    // 复用 IntersectionObserver active 态，仅回显文本，无额外观察器
+    const currentEcho = document.querySelector<HTMLElement>('[data-toc-current]');
+
     function highlightActive(slug: string): void {
       if (slug === activeSlug) return;
       activeSlug = slug;
+      let activeText = '';
       tocLinks.forEach((link) => {
         const linkSlug = link.getAttribute('data-toc-slug');
         if (linkSlug === slug) {
           link.classList.add('is-active');
           link.setAttribute('aria-current', 'location');
+          activeText = link.textContent || '';
         } else {
           link.classList.remove('is-active');
           link.removeAttribute('aria-current');
         }
       });
+      if (currentEcho) currentEcho.textContent = activeText;
     }
 
     tocLinks.forEach((link) => {
@@ -298,6 +426,7 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
           if (mainEl.scrollTop + mainEl.clientHeight >= mainEl.scrollHeight - 4) {
             highlightActive(lastSlug);
           }
+          updateBackTopState();
         });
       };
       mainEl.addEventListener('scroll', onScroll, { passive: true });
@@ -305,9 +434,31 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
       prevScrollHandler = onScroll;
     }
 
+    // 回到开头（规格 4.6.4）：滚动 >2 屏后可用；复用上方既有 rAF 滚动监听，
+    // 不新增独立 scroll listener；移动端点击后顺带收起面板
+    const backTopBtn = document.querySelector<HTMLButtonElement>(
+      '.fndx-toc__back-top[data-toc-back-top]',
+    );
+    const updateBackTopState = (): void => {
+      if (!backTopBtn) return;
+      const enabled = mainEl.scrollTop > mainEl.clientHeight * 2;
+      if (enabled) backTopBtn.removeAttribute('disabled');
+      else backTopBtn.setAttribute('disabled', '');
+    };
+    if (backTopBtn && backTopBtn.dataset.bound !== '1') {
+      backTopBtn.dataset.bound = '1';
+      backTopBtn.addEventListener('click', () => {
+        mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+        if (tocAside) closeTocMobile(tocAside);
+      });
+    }
+    updateBackTopState();
+
     initTocCollapse();
 
     restoreTocCollapseState();
+
+    initTocMobile();
   }
 
   function initTocCollapse(): void {

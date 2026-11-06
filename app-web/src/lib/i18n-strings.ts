@@ -9,8 +9,10 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
 
   'theme.tooltipLight': { zh: '亮色模式', en: 'Light mode' },
   'theme.tooltipDark': { zh: '暗色模式', en: 'Dark mode' },
+  'theme.tooltipSystem': { zh: '跟随系统', en: 'Follow system' },
   'theme.switchLight': { zh: '切换到亮色模式', en: 'Switch to light mode' },
   'theme.switchDark': { zh: '切换到暗色模式', en: 'Switch to dark mode' },
+  'theme.switchSystem': { zh: '切换到跟随系统模式', en: 'Switch to system mode' },
 
   'langToggle.label': { zh: 'EN', en: '中' },
   'langToggle.aria': { zh: '切换到英文界面', en: 'Switch to Chinese' },
@@ -73,6 +75,8 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'toc.collapse': { zh: '折叠子目录', en: 'Collapse sub-sections' },
   'toc.expand': { zh: '展开子目录', en: 'Expand sub-sections' },
   'toc.other': { zh: '其他', en: 'Other' },
+  'toc.backTop': { zh: '回到开头', en: 'Back to top' },
+  'toc.mobileToggleAria': { zh: '展开或折叠本页目录', en: 'Toggle this page outline' },
 
   'docNav.prev': { zh: '上一篇', en: 'Previous' },
   'docNav.next': { zh: '下一篇', en: 'Next' },
@@ -285,7 +289,9 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'syntaxPage.quickTooltip': { zh: '直达 {title} 语法速查', en: 'Jump to {title} syntax cards' },
 
   'syntax.langsAria': { zh: '语法语言切换', en: 'Switch language' },
-  'syntax.filterPlaceholder': { zh: '筛选语法点（小节 / 写法 / 公式 / 代码）', en: 'Filter cards (section / name / formula / code)' },
+  // zh 文案长度以窄屏 375px 输入框内宽（~205px）为上限：原 19 字占位
+  // 238px 被裁尾（视检第 3 轮 #15），缩为 12 字 146px 全可见。
+  'syntax.filterPlaceholder': { zh: '筛选语法点 / 写法 / 公式', en: 'Filter cards (section / code)' },
   'syntax.filterAria': { zh: '筛选当前语言的语法点', en: 'Filter syntax cards of the current language' },
   'syntax.clearAria': { zh: '清除筛选关键词', en: 'Clear filter keyword' },
   'syntax.focusHint': { zh: '聚焦', en: 'focus' },

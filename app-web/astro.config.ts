@@ -10,7 +10,13 @@ import { remarkInternalLinks } from './src/plugins/remark-internal-links';
 import { rehypeLazyImages } from './src/plugins/rehype-lazy-images';
 import { rehypeWrapTables } from './src/plugins/rehype-wrap-tables';
 import { rehypeMermaidDual } from './src/plugins/rehype-mermaid-dual';
+import { rehypeWrapCodeBlocks, transformerCodeBlockTitle } from './src/plugins/rehype-wrap-code-blocks';
 import { integrationSitemapLastmod } from './src/plugins/integration-sitemap-lastmod';
+import {
+  transformerMetaHighlight,
+  transformerNotationDiff,
+  transformerNotationFocus,
+} from '@shikijs/transformers';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkEmoji from 'remark-emoji';
@@ -23,6 +29,9 @@ const SITE_BASE = process.env.DESKTOP_BUILD === '1' ? '/' : '/FANDEX/';
 export default defineConfig({
   site: 'https://fanquanpp.github.io',
   base: SITE_BASE,
+  // dev 工具栏（底部居中悬浮胶囊）会盖住页面底部内容并污染视检截图
+  // （视检第 1 轮误报为站点 Dock 遮挡），dev 验证一律关闭。
+  devToolbar: { enabled: false },
   build: {
     inlineStylesheets: 'auto',
   },
@@ -112,12 +121,23 @@ export default defineConfig({
         [rehypeKatex, { output: 'htmlAndMathml', strict: false }],
         rehypeLazyImages, // 图片懒加载（添加 loading="lazy"）
         rehypeWrapTables, // 表格包裹：将 table 包入 <div class="table-wrap"> 以承担横向滚动，规避 display:table 与 overflow-x:auto 冲突
+        // 代码块 SSR 化（规格 2.6）：构建期包 figure.code-block + 头栏 + copy 按钮，
+        // mermaid 块跳过；交互由 layout-interactions.ts 的 document 级委托接管
+        [rehypeWrapCodeBlocks, { copyAriaLabel: 'Copy code' }],
       ],
     }),
     shikiConfig: {
       themes: { light: 'github-light', dark: 'github-dark' },
       defaultColor: false,
       wrap: true,
+      // 构建期行级增强（全部作用于 <span class="line">，客户端零 JS）：
+      // meta {3,7-9} 行高亮 / [!code ++/--] diff / [!code focus] 聚焦 / meta title 头栏
+      transformers: [
+        transformerMetaHighlight(),
+        transformerNotationDiff(),
+        transformerNotationFocus(),
+        transformerCodeBlockTitle(),
+      ],
       langAlias: {
         gitignore: 'bash', // .gitignore 文件使用 bash 语法
         sshconfig: 'plaintext', // SSH 配置文件使用纯文本

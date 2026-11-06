@@ -153,23 +153,8 @@
   --duration-normal: var(--motion-duration-normal);
   --duration-slow: var(--motion-duration-slow);
 
-  --z-index-base: var(--fandex-z-base);
-  --z-index-dropdown: var(--fandex-z-dropdown);
-  --z-index-sticky: var(--fandex-z-sticky);
-  --z-index-overlay: var(--fandex-z-overlay);
-  --z-index-modal: var(--fandex-z-modal);
-  --z-index-popover: var(--fandex-z-popover);
-  --z-index-tooltip: var(--fandex-z-tooltip);
-  --z-index-notification: var(--fandex-z-notification);
-
-  --z-base: var(--z-index-base);
-  --z-dropdown: var(--z-index-dropdown);
-  --z-sticky: var(--z-index-sticky);
-  --z-overlay: var(--z-index-overlay);
-  --z-modal: var(--z-index-modal);
-  --z-popover: var(--z-index-popover);
-  --z-tooltip: var(--z-index-tooltip);
-  --z-notification: var(--z-index-notification);
+  /* --z-index-* / --z-* 别名块已删（零消费死码，且 --z-modal 与 tokens 层同名
+     碰撞恒被覆盖，规格 4.2）：唯一层级刻度见 shared/layout-components.css */
 }
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));

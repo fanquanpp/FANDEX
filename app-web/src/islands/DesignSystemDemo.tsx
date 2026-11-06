@@ -55,7 +55,8 @@ export function DesignSystemDemo({ stats }: DesignSystemDemoProps = {}) {
   return (
     <MotionProvider>
       <div className="flex flex-col gap-12 p-8 max-w-6xl mx-auto">
-        {/* 页面标题 */}
+        {/* 试验场标题：页面级 h1 已移交 SSR 标本页头（design-system.astro），
+            本区为第三方组件试验场，类名与圆角保留上游原样，不代表站点基元 */}
         <motion.header
           className="flex flex-col gap-2 border-b border-border pb-6"
           variants={revealUp}
@@ -63,9 +64,12 @@ export function DesignSystemDemo({ stats }: DesignSystemDemoProps = {}) {
           whileInView="visible"
           viewport={revealViewport}
         >
-          <h1 className="text-5xl font-bold tracking-tight text-text-primary">Design System</h1>
+          <h2 className="text-2xl font-semibold text-text-primary border-l-4 border-primary-600 pl-3">
+            shadcn/ui + Tailwind v4 组件试验场
+          </h2>
           <p className="text-base text-text-secondary">
-            FANDEX 设计系统 · 8 个基础组件 · Tailwind v4 + shadcn + radix
+            第三方组件基元全变体演示：8 个组件（Tailwind v4 + shadcn + radix）。
+            本区保留上游样式原样，站点基元与语言规范以上方标本区为准。
           </p>
         </motion.header>
 
@@ -403,7 +407,7 @@ export function DesignSystemDemo({ stats }: DesignSystemDemoProps = {}) {
         whileInView="visible"
         viewport={revealViewport}
       >
-        FANDEX Design System · Phase 1.3 · 8 个基础组件已就绪
+        shadcn/ui 组件试验场 · 8 个第三方组件 · 站点基元以上方标本区为准
       </motion.footer>
       </div>
     </MotionProvider>

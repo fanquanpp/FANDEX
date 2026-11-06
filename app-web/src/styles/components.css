@@ -73,7 +73,7 @@
   border-bottom: 1px solid var(--color-border-light);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--z-header);
   height: var(--nav-height);
   overflow: hidden;
 }
@@ -223,7 +223,7 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     border-top: 1px solid var(--color-border-strong);
-    z-index: 150;
+    z-index: var(--z-mobile-nav);
   }
 
   .mobile-nav-link {
@@ -321,7 +321,7 @@
   position: fixed;
   top: calc(var(--nav-height, 48px) + 6px);
   right: 12px;
-  z-index: 200;
+  z-index: var(--z-dropdown);
   max-width: min(300px, calc(100vw - 24px));
   padding: 10px 12px;
   border: 1px solid var(--color-border-default);
@@ -447,7 +447,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--motion-duration-fast);
-    z-index: 200;
+    z-index: var(--z-backdrop);
   }
 
   .feature-sheet-backdrop.is-visible {
@@ -471,7 +471,8 @@
     transition:
       transform var(--motion-duration-fast),
       opacity var(--motion-duration-fast);
-    z-index: 210;
+    /* 高于自家遮罩（--z-backdrop 150）与底栏（--z-mobile-nav 40） */
+    z-index: var(--z-modal);
   }
 
   .feature-sheet.is-open {

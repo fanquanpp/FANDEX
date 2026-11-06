@@ -1,6 +1,9 @@
 
 import type { VitalRecord, VitalName, VitalPercentiles } from '@services/observability-service';
 
+/** 关闭态会话级持久化键：关闭后跨换页不再复现（视检第 2 期第 5-8 项） */
+const DISMISSED_KEY = 'fandex-perf-monitor-dismissed';
+
 function clearMonitorInterval(panel: HTMLElement): void {
   const existing = panel.dataset.intervalId;
   if (existing) {
@@ -15,6 +18,22 @@ function initPerformanceMonitor(): void {
   if (!panel) return;
 
   clearMonitorInterval(panel);
+
+  // 监听器只登记一次：本初始化在模块加载与 astro:page-load 双触发，每次
+  // 重跑都会再 addEventListener，点击一次实际 toggle 两次（净效果无变化，
+  // 折叠/展开失灵）。以 dataset 标记防重入。
+  if (panel.dataset.listenersBound === '1') return;
+  panel.dataset.listenersBound = '1';
+
+  // 本会话内关闭过的不再复现（换页后 DOM 重建，靠存储找回关闭态）
+  try {
+    if (sessionStorage.getItem(DISMISSED_KEY) === '1') {
+      panel.style.display = 'none';
+      return;
+    }
+  } catch {
+    /* 存储不可用时维持每页默认折叠行为 */
+  }
 
   const toggleBtn = document.getElementById('perf-monitor-toggle');
   const closeBtn = document.getElementById('perf-monitor-close');
@@ -33,6 +52,11 @@ function initPerformanceMonitor(): void {
   if (closeBtn) {
     closeBtn.addEventListener('click', () => {
       panel.style.display = 'none';
+      try {
+        sessionStorage.setItem(DISMISSED_KEY, '1');
+      } catch {
+        /* 存储不可用时仅当前页关闭 */
+      }
       clearMonitorInterval(panel);
     });
   }

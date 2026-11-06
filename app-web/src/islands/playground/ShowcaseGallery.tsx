@@ -86,7 +86,7 @@ const ShowcaseCard = memo(function ShowcaseCard({
         </div>
         <button
           type="button"
-          className="pg-btn pg-btn--ghost pg-btn--sm pg-sc-load"
+          className="fndx-button fndx-button--sm fndx-button--ghost pg-sc-load"
           onClick={() => onLoad(item)}
           title={t('pgSc.loadAria', { name: item.name }, lang)}
         >
@@ -158,7 +158,7 @@ export default function ShowcaseGallery({ open, onClose, onLoad }: GalleryProps)
           </span>
           <button
             type="button"
-            className="pg-btn pg-btn--ghost pg-btn--sm"
+            className="fndx-icon-btn"
             onClick={onClose}
             title={t('pgSc.closeTitle', undefined, lang)}
           >

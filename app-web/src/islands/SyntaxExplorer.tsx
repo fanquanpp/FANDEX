@@ -270,7 +270,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
       {/* 筛选行：关键词筛选（当前语言内子串匹配），"/" 快捷键聚焦 */}
       <div className="syntax-filter">
         <div className="syntax-filter__box">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
             <circle cx="11" cy="11" r="7" />
             <line x1="16.5" y1="16.5" x2="21" y2="21" />
           </svg>
@@ -290,7 +290,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
               onClick={clearQuery}
               aria-label={t('syntax.clearAria', undefined, lang)}
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
             </button>
@@ -315,7 +315,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
       {/* 加载失败提示 */}
       {error && (
         <div className="syntax-error" role="alert">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -428,11 +428,11 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
                     onClick={() => void copyCode(selected.id, selected.code)}
                   >
                     {copiedId === selected.id ? (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
                     ) : (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <rect x="9" y="9" width="13" height="13" rx="2" />
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                       </svg>
@@ -469,7 +469,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
                     }}
                     aria-label={t('syntax.prevAria', undefined, lang)}
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                       <polyline points="15 18 9 12 15 6" />
                     </svg>
                     {t('syntax.prevItem', undefined, lang)}
@@ -489,7 +489,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
                     aria-label={t('syntax.nextAria', undefined, lang)}
                   >
                     {t('syntax.nextItem', undefined, lang)}
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                       <polyline points="9 18 15 12 9 6" />
                     </svg>
                   </button>
@@ -500,7 +500,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
                 href={`${base}${active?.id}/`}
               >
                 <span>{t('syntax.viewDoc', { title: active?.title ?? '' }, lang)}</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="5" y1="12" x2="19" y2="12" />
                   <polyline points="12 5 19 12 12 19" />
                 </svg>

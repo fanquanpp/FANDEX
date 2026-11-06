@@ -1,12 +1,10 @@
 ---
 import BaseLayout from '@/components/BaseLayout.astro';
-import ThemeToggle from '@/islands/ThemeToggle';
-import LangToggle from '@/components/LangToggle.astro';
+import SiteHeader from '@/components/SiteHeader.astro';
+import Footer from '@/components/Footer.astro';
 import PerformanceMonitor from '@/components/PerformanceMonitor.astro';
 import ReadingProgress from '@/components/ReadingProgress.astro';
-import HeaderFeatureLinks from '@/components/HeaderFeatureLinks.astro';
 import { getFeatureSheetEntries } from '@/lib/feature-entries';
-import { SITE } from '@/lib/constants';
 
 const { title, fxDecor, fxNum } = Astro.props;
 const base = import.meta.env.BASE_URL;
@@ -38,55 +36,12 @@ const hasToc = Astro.slots.has('toc');
     class="app-layout"
     class:list={{ 'no-sidebar': !hasSidebar, 'has-toc': hasToc }}
   >
-    <header class="app-nav">
-      <div class="nav-left">
-        <a href={base} class="nav-logo">
-          <span class="logo-text">{SITE.title}</span>
-        </a>
-        <HeaderFeatureLinks />
-      </div>
-      <div class="nav-right">
-        <button class="nav-search-btn fndx-icon-btn fndx-icon-btn--labeled" type="button" data-search-trigger aria-label="搜索" data-i18n-aria="nav.searchAria" data-tooltip="搜索（Ctrl+K）" data-i18n-tooltip="nav.searchTooltip" data-tooltip-pos="bottom">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <circle cx="11" cy="11" r="7"></circle>
-            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
-          </svg>
-          <span class="nav-search-text" data-i18n="nav.search">搜索</span>
-        </button>
-        <button class="nav-back-to-top fndx-icon-btn fndx-icon-btn--labeled" id="nav-back-to-top" aria-label="返回顶部" data-i18n-aria="nav.backToTop" data-tooltip="返回顶部" data-i18n-tooltip="nav.backToTop" data-tooltip-pos="bottom">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-          >
-            <polyline points="18 15 12 9 6 15"></polyline>
-          </svg>
-          <span class="nav-back-to-top-text" data-i18n="nav.top">Top</span>
-        </button>
-        <button class="nav-install-btn fndx-icon-btn" type="button" data-install-app hidden aria-label="安装应用" data-i18n-aria="nav.install" data-tooltip="安装到桌面 / 主屏幕" data-i18n-tooltip="nav.installTooltip" data-tooltip-pos="bottom">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-          >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-        </button>
-        <LangToggle />
-        <ThemeToggle client:load />
-      </div>
-    </header>
+    <SiteHeader variant="doc" />
     <slot name="sidebar" />
     <main class="app-main" id="app-main">
       <slot />
+      {/* 页脚上收到壳（规格 4.7）：文档壳页此前缺页脚（视检第 2 期第 3 项） */}
+      <Footer />
     </main>
     {hasToc && <slot name="toc" />}
   </div>
@@ -170,16 +125,6 @@ const hasToc = Astro.slots.has('toc');
   import '@/lib/layout-interactions';
 </script>
 
-<style>
-  @layer components {
-  .nav-toggle {
-    display: none;
-  }
-
-  @media (max-width: 768px) {
-    .nav-toggle {
-      display: flex;
-    }
-  }
-  }
-</style>
+<!-- .nav-toggle 的样式单点在 styles/components/breadcrumb.css（按钮本体在
+     Breadcrumb.astro 内，scoped 选择器匹配不到 slot 内容，原此处的死块已删，
+     连带清除唯一的 max-width:768px 孤儿断点，规格 4.3） -->

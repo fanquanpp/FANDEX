@@ -117,10 +117,8 @@
   .fndx-fixed { position: fixed; }
   .fndx-sticky { position: sticky; }
 
-  .fndx-z-base { z-index: 1; }
-  .fndx-z-dropdown { z-index: 100; }
-  .fndx-z-modal { z-index: 200; }
-  .fndx-z-toast { z-index: 300; }
+  /* .fndx-z-* 工具类已删（零消费，grep 全库实证）：层级一律消费
+     layout-components.css 的 --z-* 刻度令牌，禁止工具类绕过单一刻度 */
 
   .fndx-block { display: block; }
   .fndx-inline { display: inline; }

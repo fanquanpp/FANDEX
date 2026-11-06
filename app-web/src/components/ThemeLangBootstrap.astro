@@ -2,6 +2,8 @@
 /**
  * 首屏防闪烁引导脚本：绘制前从 localStorage 恢复主题、语言与侧栏折叠态。
  * BaseLayout 与独立的 404 / 免责声明页共用，避免三处脚本各自漂移。
+ * 主题偏好三态（规格 5.1.5）：light/dark 为显式值，system 与未保存一致，
+ * 都走 matchMedia 解析；运行期跟随系统切换由 lib/theme.ts 的 change 监听负责。
  * 所有读取都在 try/catch 内：localStorage 被禁用（隐私模式/安全设置）时
  * 抛出的异常不能中断脚本，否则主题与语言都会回退到默认值。
  */
@@ -12,11 +14,11 @@
     var theme = null;
     try {
       var raw = localStorage.getItem('fandex-theme');
-      if (raw === 'dark' || raw === 'light') theme = raw;
+      if (raw === 'dark' || raw === 'light' || raw === 'system') theme = raw;
     } catch (e) {
       /* 存储不可用时回退到系统偏好 */
     }
-    if (!theme) {
+    if (!theme || theme === 'system') {
       theme =
         window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
           ? 'dark'

@@ -1,7 +1,6 @@
 ---
 import '@/styles/site.css';
 import '@/styles/pages/error.css';
-import SceneBackdrop from '@/components/SceneBackdrop.astro';
 import ThemeLangBootstrap from '@/components/ThemeLangBootstrap.astro';
 import { SITE } from '@/lib/constants';
 import { MINIMAL_CSP } from '@/lib/csp';
@@ -16,9 +15,6 @@ const base = import.meta.env.BASE_URL;
     <meta http-equiv="Content-Security-Policy" content={MINIMAL_CSP} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>404 - 页面未找到 | {SITE.title}</title>
-    <script is:inline>
-      document.documentElement.dataset.fxReady = '1';
-    </script>
 
     <link rel="stylesheet" href={`${base}fonts/fonts.css`} />
     <link
@@ -39,10 +35,11 @@ const base = import.meta.env.BASE_URL;
   </head>
   <body>
     <div class="error-page">
-      <SceneBackdrop decor="error" />
+      <!-- 错误页不挂 SceneBackdrop / fx 脚本链（规格 5.7.2 / 验收 8.7：网络面板零 fx 请求），
+           背景为纯令牌底色，视觉重心交给角标框与刻度条 -->
       <main class="error-container">
         <div class="error-code-frame" aria-hidden="true">
-          <div class="error-code" data-fx-split="pop" data-fx-split-stagger="90">404</div>
+          <div class="error-code">404</div>
         </div>
         <h1 class="error-title" data-i18n="error404.title">页面未找到</h1>
         <p class="error-desc" data-i18n="error404.desc">地址不存在或内容已被移动。</p>
@@ -57,18 +54,20 @@ const base = import.meta.env.BASE_URL;
         </div>
 
         <nav class="error-actions" aria-label="错误页出口" data-i18n-aria="error404.exitsAria">
-          <a href={base} class="error-btn error-btn--primary" data-i18n="error404.backHome">返回首页</a>
-          <a href={`${base}learning-path/`} class="error-btn" data-i18n="error404.learningPath">学习路线</a>
+          <!-- 主出口：ghost 基元 + 规格 3.6 双层文字滑动（全视图仅此一枚；
+               data-i18n 必须落在内层 label 上，i18n-dom 会整节点重写 textContent） -->
+          <a href={base} class="fndx-button fndx-button--ghost error-cta">
+            <i class="error-cta__tick" aria-hidden="true"></i>
+            <span class="error-cta__label" data-i18n="error404.backHome">返回首页</span>
+            <span class="error-cta__arrow" aria-hidden="true">→</span>
+          </a>
+          <a href={`${base}learning-path/`} class="fndx-button fndx-button--ghost" data-i18n="error404.learningPath">学习路线</a>
         </nav>
       </main>
     </div>
 
     <script>
       import '@/lib/i18n-dom';
-    </script>
-
-    <script>
-      import '@/fx';
     </script>
 
     <script is:inline>

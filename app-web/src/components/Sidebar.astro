@@ -1,8 +1,10 @@
 ---
 import { categoryColors, getPrimaryCategory } from '@/lib/modules'
+import { toPlainTextMath } from '@/lib/plain-math'
 import {
   getModule,
   getDocsByModule,
+  getDocsIndex,
   docSlug,
   type DocEntry,
   type Module,
@@ -31,6 +33,14 @@ function moduleColor(m: Module | undefined): string {
 function moduleColorStyle(m: Module | undefined): string | undefined {
   const color = moduleColor(m)
   return color ? `--module-color:${color}` : undefined
+}
+
+// 「全部模块」面板岛不再内联全量 doc-index（S2 消费接线）：SSR 仅下发各模块
+// 文档计数（约 1KB，供展开箭头显隐判定），展开列表由岛屿按模块从
+// /data/doc-index/{module}.json 分块拉取（sidebar-modules-mount.ts 传参）。
+const moduleDocCounts: Record<string, number> = {}
+for (const doc of getDocsIndex()) {
+  moduleDocCounts[doc.module] = (moduleDocCounts[doc.module] ?? 0) + 1
 }
 ---
 
@@ -172,7 +182,7 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
                   <span class="fndx-sidebar__link-index" aria-hidden="true">
                     {String(index + 1).padStart(2, '0')}
                   </span>
-                  <span class="fndx-sidebar__link-text">{doc.data.title}</span>
+                  <span class="fndx-sidebar__link-text">{toPlainTextMath(doc.data.title)}</span>
                 </a>
               </li>
             )
@@ -193,6 +203,7 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
       class="fndx-sidebar__scroll"
       data-module-id={moduleId}
       data-current-slug={currentSlug ?? ''}
+      data-module-doc-counts={JSON.stringify(moduleDocCounts)}
     >
     </div>
   </nav>

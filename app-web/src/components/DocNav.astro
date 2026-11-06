@@ -1,5 +1,6 @@
 ---
 import { docSlug, type DocEntry } from '@/services';
+import { toPlainTextMath } from '@/lib/plain-math';
 import '@/styles/components/doc-nav.css';
 
 const { prev, next } = Astro.props as { prev: DocEntry | null; next: DocEntry | null };
@@ -25,7 +26,7 @@ const { prev, next } = Astro.props as { prev: DocEntry | null; next: DocEntry | 
         </svg>
         <div>
           <span class="nav-label" data-i18n="docNav.prev">上一篇</span>
-          <span class="nav-title">{prev.data.title}</span>
+          <span class="nav-title">{toPlainTextMath(prev.data.title)}</span>
         </div>
       </a>
     ) : (
@@ -42,7 +43,7 @@ const { prev, next } = Astro.props as { prev: DocEntry | null; next: DocEntry | 
       >
         <div>
           <span class="nav-label" data-i18n="docNav.next">下一篇</span>
-          <span class="nav-title">{next.data.title}</span>
+          <span class="nav-title">{toPlainTextMath(next.data.title)}</span>
         </div>
         <svg
           width="12"

@@ -36,6 +36,43 @@
   （ai-llm）、Vue3 管理后台 Element Plus 工程模式（vue3）、并将 MongoDB
   向量搜索与上述新篇挂入各模块学习路径地图。
 
+### 变更
+
+- **数据产物层与构建期「内容后端 → 站点前端」分离（web）**：文档索引/统计、
+  语法速查、学习路径地图等派生数据收敛为单链路——唯一真源为仓库根
+  `node_modules/.cache/fandex-data/`（内容哈希键 + manifest 版本化，键逻辑
+  只存在于各生产者单份），发布通道 `app-web/src/data/`、`public/data/`、
+  `public/syntax-data/` 退为按内容字节跳写（writeIfChanged）的按需副本，并
+  全部移出 git 索引（不再产生 PR diff 噪音）；学习路径由 48 张地图 + 全量
+  文档索引的构建期静态 import 收敛为单份 base 中立解析产物
+  （`learning-path-resolved.json`，web/桌面双构建共享缓存）；侧栏「全部模块」
+  面板不再打包约 70KB gz 的全量索引，改为展开时按模块分块按需 fetch，
+  失败可重试；
+- **qa 门禁增补产物新鲜度检查**：qa-check 以零写入子进程运行 content-sync /
+  build-stats / build-syntax / build-learning-path 四个生产者的 `--check`，
+  任一非零退出（待算项 > 0）即失败并附「先跑 pnpm dev 或数据前置链」指引
+  ——qa 侧不重新推导缓存键，杜绝第三份键实现漂移；本地冷缓存下该报错属
+  预期，不是代码缺陷；
+- **CI 渲染缓存持久化**：deploy 与 lighthouse 两条工作流新增 actions/cache@v4
+  持久化 mermaid 渲染缓存（`node_modules/.cache/mermaid-dual`，key =
+  mermaid-<commit-sha> + 前缀回退），部署构建对 1033 张图 x2 主题不再全量
+  重渲，只有新增/变更图真正渲染；lighthouse 工作流不装 Chromium，此前
+  缓存未命中会把 mermaid 块退化为客户端动态渲染并被 Lighthouse 量到，
+  现依赖同一份缓存直读。
+
+### 性能
+
+- **dev / build 数据前置段提速**：content-sync 的 git 日期统计改为按 HEAD
+  祖先区间增量（区间结果与缓存按 max 合并，防 merge 送入早日期提交把文档
+  「更新于」降级），build-syntax 按语言分块缓存（shiki 高亮只对失效语言
+  重算），全部产物写入走 writeIfChanged——热缓存下数据前置段由约 15.6s
+  降至约 1s（本轮实测 content-sync 537ms、build-syntax 108ms，其余命中
+  跳写），连跑零磁盘写；
+- **运行时批次（岛屿去 React 化 + 字体 fallback）**：ThemeToggle 与
+  WebVitalsTracker 由 React 岛改为 vanilla 模块，island 挂载点由 6 收敛至 4，
+  文档页首屏静态 JS 图不再携带 react-dom 调度器；IBM Plex Sans 补
+  size-adjust metric fallback，字体加载期布局偏移收窄。
+
 ## [v4.5.0] - 2026-09-23
 
 ### 新增

@@ -23,7 +23,9 @@
   position: relative;
   background: var(--color-bg-card);
   border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
+  /* 圆角档位收敛（规格 3.1）：上下篇卡片面统一消费 --radius-card，
+     不再引用已停用的 --radius-md 档 */
+  border-radius: var(--radius-card);
   transition:
     border-color var(--motion-duration-fast) var(--motion-easing-out),
     background-color var(--motion-duration-fast) var(--motion-easing-out);

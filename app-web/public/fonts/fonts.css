@@ -83,3 +83,53 @@
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
     U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+
+/*
+ * IBM Plex Sans metric fallback（第 1 期规格 5.1.4 / 第 2 期 S4 落地）。
+ *
+ * 目的：压 font-display:swap 期间的布局跳动。IBM Plex Sans 是 webfont，下载完成前
+ * 按字体栈取下一族渲染；原栈 Inter 槽在未装 Inter 的系统上形同虚设，实际落到
+ * Segoe UI / 系统默认，行框（ascent+descent）与字宽都和 Plex 差一个档位（实测
+ * 100px 下 Arial 行框 115 vs Plex 131，差 12%），换页即抖。
+ *
+ * 家族名取 'Inter' 的理由：--font-family-sans / --font-family-display（tokens.css）
+ * 在 IBM Plex Sans / Chakra Petch 之后的次位就是 Inter——在这里声明 @font-face，
+ * swap 窗口内的文字（latin 区）会命中下面按 Plex 度量校准的本地字体（src 走
+ * local()，0 字节网络成本），Plex 下载完成后首槽优先级照旧生效，无需改任何
+ * 令牌与字体栈。本机已装 Inter 的用户同样受益：校准面比原生 Inter 更贴近 Plex。
+ * 若日后真要自托管 Inter webfont，请先迁移此 fallback（换独立家族名并同步令牌栈）。
+ *
+ * 数值实测校准（2026-11-05，Playwright Chromium/Windows，canvas measureText）：
+ * 样串 "The quick brown fox jumps over the lazy dog 0123456789" @100px。
+ *   Plex 400  宽 2606.4 asc 103 desc 28   Arial 宽 2562.7 asc 91 desc 21
+ *   Plex 700  宽 2704.2 asc 103 desc 28   Arial Bold 宽 2723.1 asc 91 desc 21
+ *   size-adjust = 宽度比；ascent/descent-override = 目标比率 * 10000 / size-adjust。
+ * 回读验证：FB400 宽 2606.3 / FB700 宽 2704.0，行框 131px 与 Plex 完全一致
+ * （公式：override * size-adjust/100 = Plex 对应比率）。
+ * 400-500 档按 400 校准；600-900 档按 700 校准（500/600 的宽度偏差 < 1.5%）。
+ * src 局部字体链：Liberation Sans 与 Arial 度量兼容，overrides 同样成立；
+ * 无 Arial 的平台（如裸 Linux/Android）该 face 加载失败，回退行为与现状一致。
+ */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 500;
+  src: local('Arial'), local('Liberation Sans');
+  size-adjust: 101.7%;
+  ascent-override: 101.3%;
+  descent-override: 27.5%;
+  line-gap-override: 0%;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600 900;
+  src: local('Arial Bold'), local('Liberation Sans Bold');
+  size-adjust: 99.3%;
+  ascent-override: 103.7%;
+  descent-override: 28.2%;
+  line-gap-override: 0%;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}

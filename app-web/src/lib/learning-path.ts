@@ -1,61 +1,10 @@
 import type {
   KnowledgeDifficulty,
   KnowledgeOfficialLink,
-  KnowledgeStage,
-  TechnologyMap,
 } from '@fandex/utils/learning-path';
-import {
-  getLearningPathIndex,
-  countKnowledgeCoverage,
-  javascriptMap,
-  typescriptMap,
-  gitMap,
-  html5Map,
-  cssMap,
-  reactMap,
-  vue3Map,
-  pythonMap,
-  javaMap,
-  goMap,
-  cMap,
-  cppMap,
-  sqlMap,
-  mysqlMap,
-  redisMap,
-  shellMap,
-  algorithmMap,
-  csFundamentalsMap,
-  devopsMap,
-  markdownMap,
-  githubMap,
-  svgMap,
-  astroMap,
-  viteMap,
-  tailwindMap,
-  kotlinMap,
-  csharpMap,
-  rustMap,
-  postgresqlMap,
-  networkingMap,
-  cybersecurityMap,
-  cloudComputingMap,
-  softwareTestingMap,
-  nextjsMap,
-  nestjsMap,
-  startMap,
-  roadmapMap,
-  mongodbMap,
-  godotMap,
-  gdscriptMap,
-  renpyMap,
-  godeMap,
-  konadoMap,
-  aiLlmMap,
-  bigdataMap,
-} from '@fandex/utils/learning-path';
-import docIndex from '@/data/doc-index.json';
-import { getModule, categoryColors, getPrimaryCategory } from '@/lib/modules';
 import type { OfficialDoc } from '@fandex/utils/modules';
+import { toPlainTextMath } from '@/lib/plain-math';
+import learningPathResolved from '@/data/learning-path-resolved.json';
 
 export interface LearningPathNodeVM {
   id: string;
@@ -87,85 +36,63 @@ export interface LearningPathTechVM {
   stats: { stages: number; nodes: number; docs: number; gaps: number };
 }
 
-const technologyMaps: Readonly<Record<string, TechnologyMap>> = {
-  javascript: javascriptMap as unknown as TechnologyMap,
-  typescript: typescriptMap as unknown as TechnologyMap,
-  git: gitMap as unknown as TechnologyMap,
-  html5: html5Map as unknown as TechnologyMap,
-  css: cssMap as unknown as TechnologyMap,
-  react: reactMap as unknown as TechnologyMap,
-  vue3: vue3Map as unknown as TechnologyMap,
-  python: pythonMap as unknown as TechnologyMap,
-  java: javaMap as unknown as TechnologyMap,
-  go: goMap as unknown as TechnologyMap,
-  c: cMap as unknown as TechnologyMap,
-  cpp: cppMap as unknown as TechnologyMap,
-  sql: sqlMap as unknown as TechnologyMap,
-  mysql: mysqlMap as unknown as TechnologyMap,
-  redis: redisMap as unknown as TechnologyMap,
-  shell: shellMap as unknown as TechnologyMap,
-  algorithm: algorithmMap as unknown as TechnologyMap,
-  'cs-fundamentals': csFundamentalsMap as unknown as TechnologyMap,
-  devops: devopsMap as unknown as TechnologyMap,
-  markdown: markdownMap as unknown as TechnologyMap,
-  github: githubMap as unknown as TechnologyMap,
-  svg: svgMap as unknown as TechnologyMap,
-  astro: astroMap as unknown as TechnologyMap,
-  vite: viteMap as unknown as TechnologyMap,
-  tailwind: tailwindMap as unknown as TechnologyMap,
-  kotlin: kotlinMap as unknown as TechnologyMap,
-  csharp: csharpMap as unknown as TechnologyMap,
-  rust: rustMap as unknown as TechnologyMap,
-  postgresql: postgresqlMap as unknown as TechnologyMap,
-  networking: networkingMap as unknown as TechnologyMap,
-  cybersecurity: cybersecurityMap as unknown as TechnologyMap,
-  'cloud-computing': cloudComputingMap as unknown as TechnologyMap,
-  'software-testing': softwareTestingMap as unknown as TechnologyMap,
-  nextjs: nextjsMap as unknown as TechnologyMap,
-  nestjs: nestjsMap as unknown as TechnologyMap,
-  start: startMap as unknown as TechnologyMap,
-  roadmap: roadmapMap as unknown as TechnologyMap,
-  mongodb: mongodbMap as unknown as TechnologyMap,
-  godot: godotMap as unknown as TechnologyMap,
-  gdscript: gdscriptMap as unknown as TechnologyMap,
-  renpy: renpyMap as unknown as TechnologyMap,
-  gode: godeMap as unknown as TechnologyMap,
-  konado: konadoMap as unknown as TechnologyMap,
-  'ai-llm': aiLlmMap as unknown as TechnologyMap,
-  bigdata: bigdataMap as unknown as TechnologyMap,
-};
+// learning-path-resolved.json（scripts/build-learning-path.mjs 产物，schema v1）节点形状：
+// meta（title/icon/color/officialDocs）与 docTitle 已在构建期 join 完成；
+// href 不烘进产物（base 中立，评审 MF2：web /FANDEX/ 与桌面 / 双构建共享缓存），
+// 本模块是唯一 SSR 拼接点：href = `${base}${docRef.module}/${docRef.slug}/`，
+// 与旧实现 learning-path.ts:183 的现式逐字一致，调用点契约（[tech]/index.astro:20,26,33）零变更。
+interface ResolvedNode {
+  id: string;
+  title: string;
+  desc?: string;
+  difficulty?: KnowledgeDifficulty;
+  stageId: string;
+  stageTitle: string;
+  official?: KnowledgeOfficialLink;
+  docRef?: { module: string; slug: string; docTitle: string };
+}
 
-const docTitleMap = new Map<string, string>(
-  (docIndex as Array<{ module: string; slug: string; title: string }>).map((doc) => [
-    `${doc.module}/${doc.slug}`,
-    doc.title,
-  ]),
-);
+interface ResolvedStage {
+  id: string;
+  title: string;
+  subtitle?: string;
+  nodes: ResolvedNode[];
+}
+
+interface ResolvedMap {
+  module: string;
+  title: string;
+  icon: string;
+  summary: string;
+  color: string;
+  officialDocs: readonly OfficialDoc[];
+  stages: ResolvedStage[];
+  stats: { stages: number; nodes: number; docs: number; gaps: number };
+}
+
+interface ResolvedArtifact {
+  index: string[];
+  maps: Record<string, ResolvedMap>;
+}
+
+const resolved = learningPathResolved as unknown as ResolvedArtifact;
 
 export function getLearningPathModules(): readonly string[] {
-  return getLearningPathIndex();
+  return resolved.index;
 }
 
 export function hasLearningPathMap(module: string): boolean {
-  return module in technologyMaps;
-}
-
-export function getTechnologyMap(module: string): TechnologyMap | undefined {
-  return technologyMaps[module];
+  return module in resolved.maps;
 }
 
 export function getLearningPathTechVM(
   module: string,
   base: string,
 ): LearningPathTechVM | undefined {
-  const map = technologyMaps[module];
-  const meta = getModule(module);
-  if (!map || !meta) return undefined;
+  const map = resolved.maps[module];
+  if (!map) return undefined;
 
-  const color = categoryColors[getPrimaryCategory(meta)] || '#666666';
-  const stats = countKnowledgeCoverage(map);
-
-  const stages: LearningPathStageVM[] = map.stages.map((stage: KnowledgeStage) => ({
+  const stages: LearningPathStageVM[] = map.stages.map((stage: ResolvedStage) => ({
     id: stage.id,
     title: stage.title,
     ...(stage.subtitle ? { subtitle: stage.subtitle } : {}),
@@ -173,15 +100,17 @@ export function getLearningPathTechVM(
       const vm: LearningPathNodeVM = {
         id: node.id,
         title: node.title,
-        stageId: stage.id,
-        stageTitle: stage.title,
+        stageId: node.stageId,
+        stageTitle: node.stageTitle,
       };
       if (node.desc) vm.desc = node.desc;
       if (node.difficulty) vm.difficulty = node.difficulty;
       if (node.official) vm.official = node.official;
-      if (node.doc) {
-        vm.href = `${base}${module}/${node.doc}/`;
-        vm.docTitle = docTitleMap.get(`${module}/${node.doc}`) || node.title;
+      if (node.docRef) {
+        vm.href = `${base}${node.docRef.module}/${node.docRef.slug}/`;
+        // 产物 docTitle 面向 KaTeX 通道书写（与 frontmatter title 同源）；节点
+        // 面板/地图为纯文本展示，按视检第 2 期第 1 项清洗行内 LaTeX
+        vm.docTitle = toPlainTextMath(node.docRef.docTitle);
       }
       return vm;
     }),
@@ -189,12 +118,12 @@ export function getLearningPathTechVM(
 
   return {
     module: map.module,
-    title: meta.title,
-    icon: meta.icon,
+    title: map.title,
+    icon: map.icon,
     summary: map.summary,
-    color,
-    officialDocs: meta.officialDocs ?? [],
+    color: map.color,
+    officialDocs: map.officialDocs,
     stages,
-    stats: { stages: map.stages.length, ...stats },
+    stats: { ...map.stats },
   };
 }

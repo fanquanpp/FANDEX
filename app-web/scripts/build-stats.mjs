@@ -1,12 +1,23 @@
-import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+
+import { readdirSync, readFileSync } from 'node:fs';
 import { join, dirname, extname, relative, basename, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseFrontmatter } from './lib/frontmatter.mjs';
+import { isFresh, parseProducerArgs, sha256, writeProduct } from './lib/data-cache.mjs';
+
+// 生产逻辑（扫描/解析/排序规则）变更时人工 bump；键只覆盖输入内容
+const PRODUCER_VERSION = 1;
+// 产物 schema 版本：v2 = doc-stats 三字段（generatedAt 已移除，评审裁定为内容稳定产物前提）
+const SCHEMA_VERSION = 2;
+
+const { check: CHECK_MODE, rebuild: REBUILD_MODE } = parseProducerArgs();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const contentDir = join(__dirname, '..', '..', 'cnt-content', 'full');
-const statsOutputPath = join(__dirname, '..', 'src', 'data', 'doc-stats.json');
-const indexOutputPath = join(__dirname, '..', 'src', 'data', 'doc-index.json');
+const srcDataDir = join(__dirname, '..', 'src', 'data');
+const statsPublishPath = join(srcDataDir, 'doc-stats.json');
+const indexPublishPath = join(srcDataDir, 'doc-index.json');
+const chunksPublishDir = join(__dirname, '..', 'public', 'data', 'doc-index');
 
 function collectMarkdownFiles(dir, result = []) {
   const entries = readdirSync(dir, { withFileTypes: true });
@@ -43,7 +54,22 @@ function fileToSlug(filePath) {
   return name.replace(/\.(md|mdx)$/, '');
 }
 
+// 每模块一个运行时分块（public/data/doc-index/{module}.json），供岛屿按需 fetch（spec 7.2/7.3）
+function chunkByModule(records) {
+  const byModule = new Map();
+  for (const rec of records) {
+    let docs = byModule.get(rec.module);
+    if (!docs) {
+      docs = [];
+      byModule.set(rec.module, docs);
+    }
+    docs.push({ slug: rec.slug, title: rec.title, order: rec.order });
+  }
+  return byModule;
+}
+
 function main() {
+  const t0 = Date.now();
   console.log('[build-stats] Scanning', contentDir);
   const files = collectMarkdownFiles(contentDir);
   console.log(`[build-stats] Found ${files.length} markdown files`);
@@ -80,22 +106,86 @@ function main() {
     return a.order - b.order;
   });
 
-  const stats = {
+  const totals = {
     totalDocs: files.length,
     totalModules: moduleSet.size,
     totalCategories: categorySet.size,
-    generatedAt: new Date().toISOString(),
   };
 
-  console.log('[build-stats] Stats:', JSON.stringify(stats, null, 2));
+  // 共享缓存键（评审 MF5）：totals 与记录数组必须同键——
+  // totalDocs = 全部 .md/.mdx 文件数（含无 module 文件与下划线前缀目录）、
+  // totalCategories 来自独立 categorySet（category 不在记录数组内）；
+  // 仅按记录数组哈希会漏失效（无 module 文件增删 / category 变更）。
+  const inputsHash = sha256(JSON.stringify({ producer: PRODUCER_VERSION, totals, sortedRecords: docIndex }));
+
+  const chunks = chunkByModule(docIndex);
+  const chunkPaths = [...chunks.keys()].map((module) => join(chunksPublishDir, `${module}.json`));
+
+  const fresh = !REBUILD_MODE
+    && isFresh('doc-index', SCHEMA_VERSION, inputsHash, [indexPublishPath, ...chunkPaths])
+    && isFresh('doc-stats', SCHEMA_VERSION, inputsHash, [statsPublishPath]);
+
+  if (CHECK_MODE) {
+    if (fresh) {
+      console.log('[build-stats] --check: 0 待算（doc-index / doc-stats / 分块全部新鲜）');
+      return;
+    }
+    console.log('[build-stats] --check: 产物待重建（inputsHash 变化或发布通道文件缺失），请先运行数据前置链');
+    process.exit(1);
+  }
+
+  if (fresh) {
+    console.log('[build-stats] 缓存新鲜，跳过写盘（发布通道字节未变）');
+    console.log(`[build-stats] Stats: ${JSON.stringify(totals)}`);
+    console.log(`[build-stats] Doc index entries: ${docIndex.length}`);
+    return;
+  }
+
+  console.log('[build-stats] Stats:', JSON.stringify(totals, null, 2));
   console.log(`[build-stats] Doc index entries: ${docIndex.length}`);
 
-  mkdirSync(dirname(statsOutputPath), { recursive: true });
-  writeFileSync(statsOutputPath, JSON.stringify(stats, null, 2) + '\n', 'utf-8');
-  console.log('[build-stats] Written stats to', statsOutputPath);
+  // 发布通道 payload 形状保持既有契约：
+  // doc-index = 裸数组（qa-check.mjs 模块一致性对账依赖）；doc-stats = 三字段
+  //（generatedAt 移除：唯一消费者 doc-service.ts 只读三个计数器）
+  const statsContent = `${JSON.stringify({
+    totalDocs: totals.totalDocs,
+    totalModules: totals.totalModules,
+    totalCategories: totals.totalCategories,
+  }, null, 2)}\n`;
+  const indexContent = `${JSON.stringify(docIndex)}\n`;
 
-  writeFileSync(indexOutputPath, JSON.stringify(docIndex) + '\n', 'utf-8');
-  console.log('[build-stats] Written index to', indexOutputPath);
+  writeProduct('doc-index', SCHEMA_VERSION, {
+    inputsHash,
+    envelope: {
+      schemaVersion: SCHEMA_VERSION,
+      inputsHash,
+      producerVersion: PRODUCER_VERSION,
+      payload: { totals, index: docIndex },
+    },
+    publish: [
+      { path: indexPublishPath, content: indexContent },
+      ...[...chunks.entries()].map(([module, docs]) => ({
+        path: join(chunksPublishDir, `${module}.json`),
+        content: `${JSON.stringify({ module, docs })}\n`,
+      })),
+    ],
+  });
+
+  writeProduct('doc-stats', SCHEMA_VERSION, {
+    inputsHash,
+    envelope: {
+      schemaVersion: SCHEMA_VERSION,
+      inputsHash,
+      producerVersion: PRODUCER_VERSION,
+      payload: totals,
+    },
+    publish: [{ path: statsPublishPath, content: statsContent }],
+  });
+
+  console.log('[build-stats] Written stats to', statsPublishPath);
+  console.log('[build-stats] Written index to', indexPublishPath);
+  console.log(`[build-stats] Written ${chunks.size} module chunks to`, chunksPublishDir);
+  console.log(`[build-stats] Done in ${Date.now() - t0}ms`);
 }
 
 main();

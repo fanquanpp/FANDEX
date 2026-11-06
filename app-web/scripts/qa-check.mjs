@@ -1,6 +1,8 @@
 
+import { spawnSync } from 'node:child_process';
 import { readdir, stat, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const DIST = 'dist';
 const SRC = 'src';
@@ -321,6 +323,60 @@ async function checkLazyLoading() {
   else warn('No lazy loading detected (no images or not configured)');
 }
 
+// 产物新鲜度门禁（第 2 期 S5，spec 第 8 节 / 评审 OR1 钉死方案 b）：
+// 以零写入子进程运行各生产者的 --check（spec 第 4 节 CLI 约定：--check 只报告
+// 待算项、零写入，待算项 > 0 时生产者自行 exit 1）。任一生产者非零退出即 fail。
+// 刻意不在这里重新推导 inputsHash——缓存键逻辑只存在于生产者单份，qa 只消费
+// 退出码与输出，杜绝第三份键实现漂移；「pending > 0」与「非零退出」在生产者
+// 的 --check 语义下是同一件事，无需解析输出文案。
+// 指引（评审 N-(d)）：本地冷缓存（fresh clone / 刚清空 node_modules/.cache）下
+// 前置段待算项 > 0 属预期，不是代码缺陷——先跑 pnpm dev 或数据前置链再 qa。
+const SCRIPTS_DIR = dirname(fileURLToPath(import.meta.url));
+const FRESHNESS_PRODUCERS = [
+  { name: 'content-sync', script: 'content-sync.mjs' },
+  { name: 'build-stats', script: 'build-stats.mjs' },
+  { name: 'build-syntax', script: 'build-syntax.mjs' },
+  { name: 'build-learning-path', script: 'build-learning-path.mjs' },
+];
+const FRESHNESS_TIMEOUT_MS = 5 * 60 * 1000;
+
+function checkDataFreshness() {
+  const failGuidance =
+    '指引: 先跑 pnpm dev 或数据前置链（content-sync / build-stats / build-syntax / ' +
+    'build-learning-path）再 qa；CI 中这些步骤已在部署构建链内自动执行。';
+  const staleProducers = [];
+  for (const producer of FRESHNESS_PRODUCERS) {
+    // 脚本路径锚定在本文件所在目录，cwd 维持 app-web（与 pnpm qa 调用契约一致）
+    const result = spawnSync(process.execPath, [join(SCRIPTS_DIR, producer.script), '--check'], {
+      cwd: process.cwd(),
+      encoding: 'utf-8',
+      timeout: FRESHNESS_TIMEOUT_MS,
+      maxBuffer: 32 * 1024 * 1024,
+    });
+    if (result.status === 0 && !result.error) {
+      console.log(`  [check] ${producer.name}: 0 待算`);
+      continue;
+    }
+    staleProducers.push(producer.name);
+    const reason = result.error
+      ? `spawn 失败: ${result.error.message}`
+      : `exit ${result.status ?? 'signal ' + result.signal}`;
+    fail(`产物新鲜度门禁未过: ${producer.name}（${reason}）`);
+    const output = `${result.stdout ?? ''}${result.stderr ?? ''}`.split('\n').filter(Boolean);
+    for (const line of output.slice(-6)) {
+      console.error(`         | ${line}`);
+    }
+  }
+  if (staleProducers.length > 0) {
+    fail(
+      `数据产物待重建（${staleProducers.join(', ')}）。` +
+        `本地冷缓存下待算项 > 0 属预期而非代码缺陷。${failGuidance}`,
+    );
+  } else {
+    pass(`产物新鲜度: ${FRESHNESS_PRODUCERS.length} 个生产者 --check 全部 0 待算`);
+  }
+}
+
 console.log('\n+------------------------------------------+');
 console.log('|     FANDEX PRE-LAUNCH QUALITY CHECK      |');
 console.log('+------------------------------------------+\n');
@@ -358,6 +414,9 @@ console.log('\n[Dimension 6: Quality Control]');
 await checkOversizedPages();
 await checkNo100vh();
 await checkNoConsoleLog();
+
+console.log('\n[Dimension 7: Data Pipeline Freshness]');
+checkDataFreshness();
 
 console.log(`\n+------------------------------------------+`);
 console.log(`|  Results: ${errors} errors, ${warnings} warnings`);
