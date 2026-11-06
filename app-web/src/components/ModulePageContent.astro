@@ -1,6 +1,7 @@
 ---
 import { categoryColors, getPrimaryCategory } from '@/lib/modules';
 import { MODULE_PAGE_SIZE } from '@/lib/constants';
+import { toPlainTextMath } from '@/lib/plain-math';
 import { docSlug, type DocEntry, type Module } from '@/services';
 
 interface Props {
@@ -143,8 +144,8 @@ function pageHref(n: number): string {
                 </span>
               }
             </span>
-            <span class="doc-list-title">{doc.data.title}</span>
-            {doc.data.description && <span class="doc-list-desc">{doc.data.description}</span>}
+            <span class="doc-list-title">{toPlainTextMath(doc.data.title)}</span>
+            {doc.data.description && <span class="doc-list-desc">{toPlainTextMath(doc.data.description)}</span>}
           </a>
         </li>
       ))

@@ -2,9 +2,9 @@
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import FeatureNav from '@/components/FeatureNav.astro'
-import Footer from '@/components/Footer.astro'
 import { t } from '@/lib/i18n'
 import { categoryColors } from '@/lib/modules'
+import { toPlainTextMath } from '@/lib/plain-math'
 import { getDocsByModule, docSlug } from '@/services'
 import {
   ALGO_PROBLEMS,
@@ -134,8 +134,8 @@ const units = UNITS.map((unit) => ({
       if (!doc) return null
       return {
         slug,
-        title: doc.data.title,
-        description: doc.data.description,
+        title: toPlainTextMath(doc.data.title),
+        description: toPlainTextMath(doc.data.description ?? ''),
         difficulty: String(doc.data.difficulty),
         order: doc.data.order,
       }
@@ -155,8 +155,8 @@ if (restDocs.length > 0) {
     color: categoryColors.cs,
     docs: restDocs.map((doc) => ({
       slug: docSlug(doc.id),
-      title: doc.data.title,
-      description: doc.data.description,
+      title: toPlainTextMath(doc.data.title),
+      description: toPlainTextMath(doc.data.description ?? ''),
       difficulty: String(doc.data.difficulty),
       order: doc.data.order,
     })),
@@ -622,8 +622,6 @@ const EXTERNAL_GROUPS = [
         <a href={`${base}disclaimer/`} data-i18n="footer.disclaimer">免责声明</a><span data-i18n="algoExt.disclaimerPost">。</span>
       </p>
     </section>
-
-    <Footer />
   </div>
 </HomeLayout>
 

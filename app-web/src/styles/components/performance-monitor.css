@@ -82,6 +82,29 @@
   opacity: 1;
 }
 
+/* 折叠态再收缩为单图标钮：标题条（约 140x38）仍会盖住右栏目录末行与
+   窄屏正文行尾（视检第 2 期第 5-8 项），折叠后只保留展开钮，语义由
+   tooltip 与 aria-label 承担；关闭入口在展开态标题栏 */
+.perf-monitor.collapsed .perf-monitor-title,
+.perf-monitor.collapsed #perf-monitor-close {
+  display: none;
+}
+
+.perf-monitor.collapsed .perf-monitor-header {
+  padding: 5px;
+  background: var(--color-bg-card);
+}
+
+.perf-monitor.collapsed .perf-monitor-actions button {
+  color: var(--color-fg-secondary);
+  background: transparent;
+}
+
+.perf-monitor.collapsed .perf-monitor-actions button:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-fg-primary);
+}
+
 /* 窄屏让位移动底栏（56px）：折叠徽标常驻右下会压住底栏"功能"标签
    （视检第 3 轮 #13，z 1000 vs --z-mobile-nav 40）。仅 dev 工具，抬离
    底栏并进一步缩小；展开态仍用常规 bottom:16px。 */

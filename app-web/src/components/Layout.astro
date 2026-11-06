@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '@/components/BaseLayout.astro';
 import SiteHeader from '@/components/SiteHeader.astro';
+import Footer from '@/components/Footer.astro';
 import PerformanceMonitor from '@/components/PerformanceMonitor.astro';
 import ReadingProgress from '@/components/ReadingProgress.astro';
 import { getFeatureSheetEntries } from '@/lib/feature-entries';
@@ -39,6 +40,8 @@ const hasToc = Astro.slots.has('toc');
     <slot name="sidebar" />
     <main class="app-main" id="app-main">
       <slot />
+      {/* 页脚上收到壳（规格 4.7）：文档壳页此前缺页脚（视检第 2 期第 3 项） */}
+      <Footer />
     </main>
     {hasToc && <slot name="toc" />}
   </div>

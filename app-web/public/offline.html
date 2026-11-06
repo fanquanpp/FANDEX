@@ -16,7 +16,7 @@
       --border: #c9d4de;
     }
     @media (prefers-color-scheme: dark) {
-      :root {
+      :root:not([data-theme-forced='light']) {
         --bg: #0a0e14;
         --surface: #11161d;
         --fg: #dbe4ec;
@@ -24,6 +24,19 @@
         --accent: #39c5bb;
         --border: #232d38;
       }
+    }
+    /* 手动主题跟随（视检第 2 期第 10/11 项）：站点内切到暗色的用户离线时
+       仍看到浅色离线板——脚本读 localStorage[fandex-theme] 写
+       data-theme-forced。下方暗色值与 prefers-color-scheme 块逐字一致，
+       两处必须同步修改（offline 色值为历史遗留豁免清单成员，禁止改动） */
+    :root[data-theme-forced='dark'] {
+      color-scheme: dark;
+      --bg: #0a0e14;
+      --surface: #11161d;
+      --fg: #dbe4ec;
+      --fg-2: #8296a9;
+      --accent: #39c5bb;
+      --border: #232d38;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; }
@@ -85,8 +98,17 @@
     }
   </style>
   <script>
-    // 界面语言跟随全局偏好（fandex-lang）：离线兜底页自包含，内联微型字典
+    // 主题与界面语言跟随全局偏好（fandex-theme / fandex-lang）：离线兜底页
+    // 自包含，内联微型字典；显式 light/dark 覆盖系统偏好，system 交还媒体查询
     (function () {
+      try {
+        var theme = localStorage.getItem('fandex-theme');
+        if (theme === 'dark' || theme === 'light') {
+          document.documentElement.setAttribute('data-theme-forced', theme);
+        }
+      } catch (e) {
+        /* localStorage 不可用时保持系统偏好 */
+      }
       try {
         if (localStorage.getItem('fandex-lang') === 'en') {
           document.documentElement.setAttribute('lang', 'en');

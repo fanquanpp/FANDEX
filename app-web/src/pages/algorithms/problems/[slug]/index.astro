@@ -2,8 +2,8 @@
 import { Code } from 'astro:components';
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
-import Footer from '@/components/Footer.astro'
 import { getDocsByModule, docSlug } from '@/services'
+import { toPlainTextMath } from '@/lib/plain-math'
 import {
   ALGO_PROBLEMS,
   ALGO_CATEGORIES,
@@ -26,7 +26,7 @@ interface RelatedDoc {
 
 export async function getStaticPaths() {
   const algoDocs = await getDocsByModule('algorithm')
-  const docTitleBySlug = new Map(algoDocs.map((doc) => [docSlug(doc.id), doc.data.title]))
+  const docTitleBySlug = new Map(algoDocs.map((doc) => [docSlug(doc.id), toPlainTextMath(doc.data.title)]))
 
   return ALGO_PROBLEMS.map((problem, index) => ({
     params: { slug: problem.slug },
@@ -206,8 +206,6 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
         <a class="ap-chip" data-apd-back href={`${base}algorithms/?view=problems`} data-i18n="apd.back">返回题图鉴</a>
       </p>
     </article>
-
-    <Footer />
   </div>
 </HomeLayout>
 

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '@/components/BaseLayout.astro';
 import SiteHeader from '@/components/SiteHeader.astro';
+import Footer from '@/components/Footer.astro';
 import '@/styles/components/home-layout.css';
 
 const { title, fxDecor, fxNum } = Astro.props;
@@ -27,6 +28,9 @@ const { title, fxDecor, fxNum } = Astro.props;
   <SiteHeader variant="home" />
   <main class="home-main" id="app-main">
     <slot />
+    {/* 页脚上收到壳（规格 4.7：HomeLayout/Layout/404/disclaimer 四处仅一份实现），
+        各页面不再直引，防止双份 */}
+    <Footer />
   </main>
 </BaseLayout>
 

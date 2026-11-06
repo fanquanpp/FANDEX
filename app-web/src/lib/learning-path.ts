@@ -3,6 +3,7 @@ import type {
   KnowledgeOfficialLink,
 } from '@fandex/utils/learning-path';
 import type { OfficialDoc } from '@fandex/utils/modules';
+import { toPlainTextMath } from '@/lib/plain-math';
 import learningPathResolved from '@/data/learning-path-resolved.json';
 
 export interface LearningPathNodeVM {
@@ -107,7 +108,9 @@ export function getLearningPathTechVM(
       if (node.official) vm.official = node.official;
       if (node.docRef) {
         vm.href = `${base}${node.docRef.module}/${node.docRef.slug}/`;
-        vm.docTitle = node.docRef.docTitle;
+        // 产物 docTitle 面向 KaTeX 通道书写（与 frontmatter title 同源）；节点
+        // 面板/地图为纯文本展示，按视检第 2 期第 1 项清洗行内 LaTeX
+        vm.docTitle = toPlainTextMath(node.docRef.docTitle);
       }
       return vm;
     }),

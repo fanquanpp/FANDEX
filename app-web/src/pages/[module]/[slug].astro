@@ -9,6 +9,7 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
 import DocNav from '@/components/DocNav.astro';
 import { render } from 'astro:content';
 import { getModule, modulePrerequisites, categoryColors, getPrimaryCategory } from '@/lib/modules';
+import { toPlainTextMath } from '@/lib/plain-math';
 import {
   getAllDocs,
   getDocsByModule,
@@ -48,7 +49,7 @@ const showToc = tocHeadings.length >= 3;
 const breadcrumb = [
   { label: '首页', href: `${import.meta.env.BASE_URL}`, i18nKey: 'breadcrumb.home' },
   { label: meta?.title || module, href: `${import.meta.env.BASE_URL}${module}/` },
-  { label: doc.data.title },
+  { label: toPlainTextMath(doc.data.title) },
 ];
 
 const moduleColor = categoryColors[meta ? getPrimaryCategory(meta) : 'tools'];
@@ -77,10 +78,20 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
     <Breadcrumb items={breadcrumb} hasSidebar />
     {
       (() => {
-        const prereqs =
+        const prereqCandidates =
           doc.data.prerequisites?.length > 0
             ? doc.data.prerequisites
             : modulePrerequisites[module] || [];
+        // chip 文本取前置条目所属模块的 title：同模块多篇前置会渲染出同名
+        // 重复 chip（视检第 2 期第 2 项，290-NetworkFlow 的 algorithm/010 与
+        // algorithm/110），按模块 id 去重保留首现条目
+        const seenModules = new Set<string>();
+        const prereqs = prereqCandidates.filter((p: string) => {
+          const modId = p.split('/')[0] || '';
+          if (seenModules.has(modId)) return false;
+          seenModules.add(modId);
+          return true;
+        });
         if (prereqs.length === 0) return null;
         return (
           <div class="prereq-notice">
@@ -123,7 +134,7 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
     }
     <article class="prose">
       <div class="doc-title-row fndx-scroll-reveal">
-        <h1 class="doc-title">{doc.data.title}</h1>
+        <h1 class="doc-title">{toPlainTextMath(doc.data.title)}</h1>
       </div>
       <header class="doc-header fndx-scroll-reveal-fade">
         <div class="doc-meta">
@@ -178,7 +189,7 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
             )
           }
         </div>
-        {doc.data.description && <p class="doc-description">{doc.data.description}</p>}
+        {doc.data.description && <p class="doc-description">{toPlainTextMath(doc.data.description)}</p>}
       </header>
       <Content />
     </article>

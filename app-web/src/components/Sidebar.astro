@@ -1,5 +1,6 @@
 ---
 import { categoryColors, getPrimaryCategory } from '@/lib/modules'
+import { toPlainTextMath } from '@/lib/plain-math'
 import {
   getModule,
   getDocsByModule,
@@ -181,7 +182,7 @@ for (const doc of getDocsIndex()) {
                   <span class="fndx-sidebar__link-index" aria-hidden="true">
                     {String(index + 1).padStart(2, '0')}
                   </span>
-                  <span class="fndx-sidebar__link-text">{doc.data.title}</span>
+                  <span class="fndx-sidebar__link-text">{toPlainTextMath(doc.data.title)}</span>
                 </a>
               </li>
             )

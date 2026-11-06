@@ -1101,6 +1101,13 @@
     font-weight: var(--font-weight-emphasis);
   }
 
+  /* 暗色下高饱和模块色（如 tools #0000FF）直接作激活文字色压深底接近
+     不可读（视检第 2 期第 4 项，桌面右栏激活项与窄屏展开面板同源），
+     向暗色前景方向调亮；亮色主题保持模块原色不变 */
+  [data-theme='dark'] .fndx-toc__link.is-active {
+    color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 45%, var(--color-fg-primary));
+  }
+
   .fndx-toc__link:focus-visible {
     outline: 2px solid var(--color-border-focus);
     outline-offset: -2px;
