@@ -6,7 +6,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: advanced
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-07'
 related:
   - 'cpp/090-RvalueReferenceMoveSemantics'
   - 'cpp/100-MoveSemanticsDetailed'
