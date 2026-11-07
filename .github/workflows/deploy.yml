@@ -69,7 +69,7 @@ jobs:
       # 只有新增/变更图才真正渲染。目录已被根 .gitignore 的 node_modules/ 覆盖，
       # 不会入库。数据前置链步（build-syntax / build-learning-path）见下方 S1 注释。
       - name: Restore mermaid render cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: node_modules/.cache/mermaid-dual
           key: mermaid-${{ github.sha }}
