@@ -9,7 +9,7 @@ packages:
   - 'shd-shared/assets'
 
 catalog:
-  astro: ^7.4.1
+  astro: ^7.4.7
   react: ^19.3.1
   react-dom: ^19.3.1
   '@astrojs/react': ^7.1.0
