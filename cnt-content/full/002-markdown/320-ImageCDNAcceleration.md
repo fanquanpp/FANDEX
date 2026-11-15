@@ -100,6 +100,8 @@ https://cdn.jsdelivr.net/gh/user/repo@v1.0/images/photo.png
 | **腾讯云 COS**    | 50 GB（6个月） | 国内速度快   |
 | **七牛云**        | 10 GB          | 国内老牌     |
 
+（免费额度随各云厂商政策随时调整，表内数字仅为量级参考，选型前以官网报价页为准。）
+
 ### 3.2 Cloudflare R2 + CDN 配置
 
 ```bash
@@ -150,8 +152,8 @@ CDN 通常提供图片处理功能：
 # 使用 Sharp（Node.js）
 npx sharp-cli -i input.png -o output.webp --format webp --quality 80
 
-# 使用 ImageMagick
-convert input.png -quality 85 output.webp
+# 使用 ImageMagick 7（新版命令名是 magick；convert 属于兼容旧版的别名）
+magick input.png -quality 85 output.webp
 
 # 使用 Squoosh CLI
 npx @nicolo-ribaudo/squoosh-cli --webp '{quality:80}' input.png
@@ -243,3 +245,29 @@ document.querySelectorAll('img:not([loading])').forEach((img) => {
 
 # 使用：粘贴图片后自动上传并插入链接
 ```
+
+## 动手实践：遮代码自检
+
+**任务**：为一个开源项目 README 设计图片加载方案，写出来——一张构建徽章走 jsDelivr（仓库 `user/repo` 的 `v1.2.0` 标签下 `docs/badge.svg`）；一张产品截图放仓库 `docs/img/shot.png` 用 HTML 标签引用，要求懒加载且指定宽高防布局抖动；最后各写一条命令把一张 2 MB 的 PNG 压成 80% 质量的 WebP（sharp 与 ImageMagick 各一条）。
+
+**提示**：jsDelivr 的 GitHub 路径结构与版本写法（回看 2.4）；懒加载与宽高是 `<img>` 的哪些属性（回看 4.3 与 5.1）；压缩工具回看 4.2。
+
+<details>
+<summary>参考实现（先自己写完再看）</summary>
+
+```markdown
+<!-- 徽章：jsDelivr + 版本标签，小文件走 CDN 收益最大 -->
+![build](https://cdn.jsdelivr.net/gh/user/repo@v1.2.0/docs/badge.svg)
+
+<!-- 截图：仓库相对路径 + 懒加载 + 显式宽高 -->
+<img src="docs/img/shot.png" alt="产品截图" loading="lazy" width="640" height="360" />
+```
+
+```bash
+npx sharp-cli -i photo.png -o photo.webp --format webp --quality 80
+magick photo.png -quality 80 photo.webp
+```
+
+</details>
+
+要点自查：徽章这类高频小图走 CDN（全球边缘缓存、分担仓库带宽）；正文截图走仓库相对路径（版本受控、离线可用）而不是外链图床（易失效）；`loading="lazy"` 配合 `width`/`height` 是"加载快且不跳动"的标准组合——只加懒加载不加宽高，页面滚动时仍会抖动。

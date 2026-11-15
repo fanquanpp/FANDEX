@@ -76,7 +76,7 @@ GitHub Flavored Markdown（GFM）是 GitHub 在 CommonMark 基础上扩展的 Ma
 ~~已废弃的 API~~，新 API 见文档 v2。
 ```
 
-要点：双波浪号、紧贴内容；单波浪号在 GitHub 网页端不生效；纯 CommonMark 渲染器原样显示。详见 `markdown/120-Strikethrough`。
+要点：双波浪号、紧贴内容；GitHub 上单波浪号 `~文本~` 其实也渲染（cmark-gfm 支持一对 1-2 个波浪号），但其他渲染器普遍只认双波浪号，跨平台一律写 `~~`；纯 CommonMark 渲染器原样显示。详见 `markdown/120-Strikethrough`。
 
 ### 3.4 自动链接
 
@@ -101,7 +101,7 @@ GFM 自动识别裸 URL（http/https/ftp）、`www.` 域名与裸邮箱；尾随
 
 以下功能是 GitHub 网站的行为，写成 Markdown 通用规范的一部分并不成立——在其他平台渲染为普通文本。
 
-### 4.1 警报块（alerts，2024 年起）
+### 4.1 警报块（alerts，2023 年 12 月起）
 
 ```markdown
 > [!NOTE]

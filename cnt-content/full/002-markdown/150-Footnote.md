@@ -264,7 +264,7 @@ Pandoc 支持更丰富的脚注语法：
 
 **任务**：把下面这段"行内括号注释"风格的文字改写成标准脚注版，要求——三个补充说明全部变成脚注；其中"发布年份"这个来源被正文两处引用（只定义一次）；脚注标签全部语义化；脚注内容里带一个链接。
 
-> Rust（发布于 2015 年，1.0 版，Mozilla 主导）是一门系统级语言。它的所有权模型（详见官方 Book，链接 https://doc.rust-lang.org/book/）让内存安全无需垃圾回收。2024 年 Rust 已进入 Linux 内核（6.1 起合入初步支持）。
+> Rust（发布于 2015 年，1.0 版，Mozilla 主导）是一门系统级语言。它的所有权模型（详见官方 Book，链接 https://doc.rust-lang.org/book/）让内存安全无需垃圾回收。2022 年 Rust 已进入 Linux 内核（6.1 起合入初步支持）。
 
 **提示**：先找出三个"括号里"的信息块（发布信息 /所有权 Book / 内核支持），分别给语义化标签；注意"发布于 2015 年"与"Mozilla 主导"要共用同一个来源标记（回看 4.1）。
 
@@ -272,7 +272,7 @@ Pandoc 支持更丰富的脚注语法：
 
 ```markdown
 Rust[^rust-release] 是一门系统级语言。它的所有权模型[^rust-book]让内存安全
-无需垃圾回收。2024 年 Rust 已进入 Linux 内核[^rust-kernel]。
+无需垃圾回收。2022 年 Rust 已进入 Linux 内核[^rust-kernel]。
 
 [^rust-release]: 1.0 版发布于 2015 年，由 Mozilla 主导，另见
     [Rust Blog](https://blog.rust-lang.org)。
