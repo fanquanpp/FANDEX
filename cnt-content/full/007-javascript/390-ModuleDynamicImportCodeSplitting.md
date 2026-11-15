@@ -1899,6 +1899,26 @@ const mod = await lazyImport('./heavy-module.js', {
 
 ---
 
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 静态 `import` 与动态 `import()` 的三条核心差异（语法位置、返回值、打包行为）各是什么；
+2. 手写「路由级懒加载」：点击按钮时才加载 `./heavy-chart.js`，加载中显示 loading，失败显示重试按钮——写出完整事件处理函数；
+3. Webpack 的 `/* webpackPrefetch: true */` 与 `/* webpackPreload: true */` 注释分别控制什么时机加载？选错了会怎样；
+4. 动态导入的说明符能写变量吗？写出按语言包名 `lang` 加载翻译文件的例子，并说明打包器因此如何生成产物；
+5. 为什么「入口只引公共代码、重模块全部动态化」不一定是好策略？说出至少一条代价。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：静态 import 必须在顶层、说明符是字面量、同步返回绑定并会被打进主包；`import()` 是表达式、说明符可运行时确定、返回 Promise，打包器据此切出独立 chunk 按需加载；
+- 第 2 问：`btn.onclick = async () => { loading = true; try { const { drawChart } = await import('./heavy-chart.js'); drawChart(); } catch { showRetry(); } finally { loading = false; } }`——Promise 语义让 loading/error/retry 三态都可控；
+- 第 3 问：prefetch 是「空闲时预取未来可能用的 chunk」（下一个页面），preload 是「当前导航立即预加载本轮就要用的 chunk」；把大依赖标成 preload 会推迟当前页面关键路径，把确需的标成 prefetch 则首用时仍有延迟；
+- 第 4 问：可以——`const dict = await import(\`./locales/${lang}.json\`)`；打包器把模板字符串展开为 glob，每个可匹配文件各生成一个 chunk，运行时按 lang 选择加载；
+- 第 5 问：代价包括首次交互延迟（点击后才发请求）、瀑布式请求（动态模块再依赖其他动态模块时逐层等待）、缓存碎片化（chunk 数量暴涨），以及 loading 态设计成本——公共路径上的依赖应该静态引入。
+</details>
+
 ## 附录 A：术语表
 
 | 术语 | 英文 | 释义 |

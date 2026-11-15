@@ -683,11 +683,11 @@ setInterval(() => {
 | 类型系统 | 动态类型 | 静态类型 |
 | 编译期检测 | 无 | 可检测部分泄漏（如未释放资源） |
 | `IDisposable` 接口 | 无（需手动实现） | 可用 `interface IDisposable { dispose(): void }` 模拟 |
-| `using` 关键字 | 无 | TC39 Stage 2（Explicit Resource Management） |
+| `using` 关键字 | 无 | 已定稿（Stage 4，随 ES2027 出版） |
 | WeakRef 类型 | `WeakRef<T>` | `WeakRef<T>`（需类型参数） |
 | FinalizationRegistry | `FinalizationRegistry<T>` | 同左，类型化回调 |
 
-TypeScript 在编译期可借助 `using` 提案（TC39 Stage 2，2024）实现 RAII 模式：
+TypeScript 5.2+ 原生支持 `using`（TC39 Explicit Resource Management，已定稿随 ES2027 出版；Chrome 134+ 已先行落地），编译期即可实现 RAII 模式：
 
 ```typescript
 // TypeScript 5.2+ — using 关键字（TC39 Explicit Resource Management）
@@ -1642,6 +1642,26 @@ const data = await withResourceAsync(
 - **Berkeley CS162: Operating Systems** — 操作系统内存管理与分配器设计。
 
 ---
+
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 「detached DOM」泄漏是什么：写出一段「节点从页面移除了，JS 里还留着引用」的最小代码，并指出是谁拖住谁；
+2. 口述 Chrome DevTools Memory 面板的一次完整排查：用哪个视图、拍几次快照、对比时看哪一列、如何定位到具体函数；
+3. Node.js 侧没有 DevTools 面板，说出两种等价手段（提示：`--inspect` 与 `performance` / `v8` 模块）；
+4. 判断题：`FinalizationRegistry` 回调里重新把对象塞回一个全局 Map 做「延迟复活」，可行吗？为什么；
+5. 说出 `performance.measureUserAgentSpecificMemory()` 与旧 `performance.memory` 的两条关键差别（精度/触发条件与标准化状态）。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：`const list = []; el.remove(); list.push(el)`——DOM 树不再引用节点，但 JS 数组强引用它；引擎眼里节点「JS 引用可达」，连同样式、事件与整棵子树都回收不掉；
+- 第 2 问：Heap snapshot 视图；操作前拍基线、可疑操作后拍第二张、手动 GC 后第三张；Summary 模式切换 Comparison 看「# Delta / Size Delta」正增长列，按 constructor 分组（如 detached `<div>`、闭包）展开 Retainers 链一路看到全局变量或闭包持有者；
+- 第 3 问：`node --inspect` 配 Chrome DevTools 的 Memory 面板拍堆快照（同款对比流程）；或 `v8.getHeapStatistics()` / `v8.writeHeapSnapshot()` 编程式取快照，`process.memoryUsage()` 盯 rss/heapUsed 走势；
+- 第 4 问：不可行且危险——规范明确回调触发时机不可控（可能不触发、可能延迟），且回调里不能持有或复活目标引用，否则死循环回收失败；它是兜底观测，不是资源管理机制；
+- 第 5 问：新 API 需要跨源隔离（COOP/COEP）才能调用、返回带 breakDown 的精确字节数、是标准化规范；旧 `performance.memory` 只有 Chrome 支持的近似值（且粒度粗、精度受限），非标准且逐步被取代。
+</details>
 
 ## 附录 A：术语表（Glossary）
 

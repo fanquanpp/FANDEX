@@ -69,9 +69,9 @@ Web 存储机制经历了从「状态保持」到「离线优先」的长期演�
 | 2016 | Web Storage 第二版成为 W3C 推荐标准 | W3C |
 | 2018 | Storage API 引用 navigator.storage.estimate() | W3C |
 | 2021 | IndexedDB 3.0 草案发布，支持 Promise API | W3C |
-| 2023 | Cookie 第三方限制在 Chrome 全面实施 | Google |
+| 2023 | Chrome 启动第三方 Cookie 有限灰度后于 7 月叫停默认禁用计划 | Google |
 | 2024 | Storage Access API 标准化，跨站存储访问 | W3C |
-| 2026 | IndexedDB 3.0 推荐标准，原生 Promise API | W3C |
+| 2026 | IndexedDB 3.0 持续广泛实现（规范仍为 Working Draft） | W3C |
 
 ### 1.2 状态保持的痛点
 
@@ -402,12 +402,11 @@ const json = JSON.parse(decodeURIComponent(cookies.json));
 // 用户访问其他包含 ad.com 的站点时，ad.com 可读取该 Cookie
 // 这就是跨站追踪的基础
 
-// 2024 年起，Chrome 默认禁用第三方 Cookie
-// 开发者需使用替代方案：
-// 1. Storage Access API（请求用户授权）
-// 2. Federated Credential Management API（联邦认证）
-// 3. Topics API（基于兴趣的广告）
-// 4. First-Party Sets（同主体站点共享存储）
+// 注意：Google 曾计划 2024 年起在 Chrome 默认禁用第三方 Cookie，
+// 但 2024-07 已宣布放弃该计划，2025-04 进一步确认不再废弃、不新增独立授权弹窗。
+// 现状：第三方 Cookie 仍在，但 Safari/Firefox 早已默认拦截，Privacy Sandbox 系列
+// API（Storage Access API、Topics API、Related Website Sets 等）保持可选。
+// 跨站能力开发应按"随时可能被拦"设计，而不是押注某个禁用日期。
 ```
 
 ---
@@ -1939,8 +1938,6 @@ class OperationLog {
 - **Jackson, C. and Barth, A. 2008. Beware of Finer-Grained Origins**. W2SP 2008. —— 同源策略的细化研究
 - **Liu, Y. et al. 2012. Tracking for Free, Cookies for Sale**. IEEE S&P 2012. —— Cookie 追踪研究
 
----
-
 ## 14. 附录
 
 ### 14.1 语法速查表
@@ -2419,3 +2416,23 @@ const storage = {
 ```javascript
 // 小数据用 localStorage 大数据用 IndexedDB
 ```
+
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 不看表格，列出本篇五种存储机制（Cookie、localStorage、sessionStorage、IndexedDB、Cache API）各自的一条不可替代场景；
+2. 写出「30 天有效的登录态 Cookie」的完整 `Set-Cookie` 三要素（过期方式、作用域限制、安全三开关：HttpOnly/Secure/SameSite），并说明每个开关防什么攻击；
+3. `localStorage` 写入 2MB 数据会发生什么（容量、阻塞、异常）？为什么大 JSON 不该进 localStorage；
+4. 一个标签页改了 localStorage，另一个标签页怎么知道？写出监听代码，并说出它的一个天然盲区；
+5. 口述配额查询与清空：`navigator.storage.estimate()` 返回什么、`persist()` 请求什么；什么情况会触发浏览器自动清除数据。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：Cookie——随请求自动带向服务器的会话凭证；localStorage——跨会话的小型键值配置；sessionStorage——标签页级的一次性状态；IndexedDB——结构化大数据与索引查询；Cache API——Request/Response 级的 HTTP 资源缓存（配 Service Worker）；
+- 第 2 问：`Set-Cookie: token=...; Max-Age=2592000; Path=/; Domain=example.com; HttpOnly; Secure; SameSite=Lax`——HttpOnly 防 XSS 偷取，Secure 防明文传输截获，SameSite 防 CSRF 跨站携带；
+- 第 3 问：超配额（通常 5MB）抛 QuotaExceededError；写入是同步操作，主线程被 IO 卡住造成掉帧；JSON.parse 大对象每次读取都重建全量——大结构化数据应走 IndexedDB；
+- 第 4 问：`window.addEventListener('storage', e => ...)` 只在**其他**标签页触发（本页不触发）；盲区：storage 事件不带新值以外的上下文，且同页多标签的时序竞争要自己处理（通常配 BroadcastChannel 补足）；
+- 第 5 问：estimate 返回 `{ usage, quota }` 字节数；persist 请求「持久化豁免」——不被自动清理；浏览器在磁盘紧张且站点未被标记为重要（低使用频率、未安装 PWA、未授予持久化）时可能整站清除存储。
+</details>

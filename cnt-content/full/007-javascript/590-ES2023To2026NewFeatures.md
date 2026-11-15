@@ -162,7 +162,7 @@ Error.isError({ name: 'Error' });       // false，伪装对象拦下
 
 **Upsert：Map 的「没有就插入」**。缓存代码的高频两连（`get` 一把、没有再 `set`），该提案给 Map/WeakMap 补了 `getOrInsert(key, value)` 与惰性求值的 `getOrInsertComputed(key, fn)`，命名以最终规范为准；落地前等价写法是 `if (!map.has(k)) map.set(k, v)`。
 
-同批次还有 Uint8Array 原生 base64 编解码等；Temporal 与显式资源管理（`using`）也已在 2026 年定稿，体量够大各有专篇（610、620）。「哪些进了我的环境」，深水区篇有排查方法。
+同批次还有 Uint8Array 原生 base64 编解码、`Iterator.concat`（把多个迭代器接成一个）与 `JSON.rawJSON`（保留原始文本的 JSON 生成）等。显式资源管理（`using`）已于 2025 年 5 月、Temporal 已于 2026 年 3 月先后升到 Stage 4 定稿，两者均按 TC39 官方归属随 **ES2027** 出版——「定稿」不等于「进了今年的规范」，体量够大各有专篇（610、620）。「哪些进了我的环境」，深水区篇有排查方法。
 
 ## 6. 修改实验
 
@@ -225,7 +225,7 @@ TypeError: scores.findLast is not a function
 
 ## 本章总结
 
-ES2023 让数组学会不搞破坏（`findLast` 与「to 系」非破坏方法），ES2024 补了分组（`Object.groupBy`）与正则集合运算（`v` 标志），ES2025 给迭代器配上惰性方法、把集合运算收进 Set 原型、解禁重复命名捕获组，ES2026 批次带来 `Error.isError`、`Math.sumPrecise`、Map 的 Upsert——外加一条推断归属的年度规则：3 月截稿，Stage 4 进当年版。「什么时候能放心用」是另一门功课，下一篇专门讲。
+ES2023 让数组学会不搞破坏（`findLast` 与「to 系」非破坏方法），ES2024 补了分组（`Object.groupBy`）与正则集合运算（`v` 标志），ES2025 给迭代器配上惰性方法、把集合运算收进 Set 原型、解禁重复命名捕获组，ES2026 批次带来 `Error.isError`、`Math.sumPrecise`、Map 的 Upsert（以及 `Array.fromAsync`、Uint8Array base64 等）——外加一条推断归属的年度规则：3 月截稿，Stage 4 进当年版（Temporal、`using` 这类 3 月后才并入规范文本的特例随下一年出版，以 tc39 官方清单为准）。「什么时候能放心用」是另一门功课，下一篇专门讲。
 
 ## 下一步
 

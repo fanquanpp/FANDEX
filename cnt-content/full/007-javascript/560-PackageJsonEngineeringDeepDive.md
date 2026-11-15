@@ -175,3 +175,23 @@ export default tseslint.config(
 ## 10. 一句话记住
 
 > package.json 是工程契约：exports 圈定公共 API、engines/packageManager 锁工具链、peerDependencies 立宿主契约、sideEffects 换 Tree Shaking；质量门禁交给 ESLint/Biome，锁文件永远入库。
+
+## 教学自检
+
+> 用法：遮住正文里的示例配置，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. `dependencies`、`devDependencies`、`peerDependencies` 三者的语义差异各是什么？`react` 若被一个组件库声明进 `dependencies` 而不是 `peerDependencies`，会出什么实际问题；
+2. `^1.2.3` 与 `~1.2.3` 各允许升级到什么范围？为什么团队项目真正锁版本的是锁文件而不是这两个符号；
+3. `exports` 字段写了 `"."` 之后，用户还能 `import 'pkg/src/internal.js'` 吗？这条设计「逼」库作者做什么；
+4. `engines` 与 `packageManager` 字段各约束什么？哪个是真的会拦截安装（在什么配置下）；
+5. `sideEffects: false` 向打包器承诺了什么？什么样的模块不能这么写（举一例）。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：dependencies 是运行必需、随库安装；devDependencies 只在开发与 CI 装；peerDependencies 声明「我是插件，宿主必须自己提供某依赖」——组件库若自带 react，宿主应用会出现两个 React 实例，hooks 状态与 context 全部断开；
+- 第 2 问：^ 允许 1.x.x（不动首位），~ 允许 1.2.x（不动次位）；但 `npm install` 实际安装的版本由 package-lock.json 固定，符号只在「从零解析」时生效——锁文件入库 + `npm ci` 才是真正的版本锁；
+- 第 3 问：不能——exports 是封闭清单，未列出的路径全部禁止深导入；它逼库作者明确公共 API 面积，重构内部结构不再破坏用户（用户也拿不到「内部路径」的承诺）；
+- 第 4 问：engines 声明 Node/npm 版本兼容范围，配合 `.npmrc` 的 `engine-strict=true`（或 pnpm 默认严格）才会拦截安装；packageManager 由 Corepack 读取，直接固定包管理器及其版本，保证团队构建可复现；
+- 第 5 问：承诺「本包所有模块无副作用，未用到的导出可安全删除」；有副作用的模块（如 CSS-in-JS 的 import 'reset.css'、polyfill、装饰注册表 import './register'）不能打 false，要用数组白名单列出这些文件，否则打包器会把关键副作用摇掉。
+</details>

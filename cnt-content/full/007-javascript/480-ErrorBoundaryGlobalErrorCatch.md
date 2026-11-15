@@ -1698,6 +1698,26 @@ class App extends React.Component {
 
 ---
 
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. `window.onerror` 与 `window.addEventListener('unhandledrejection')` 各自接得住什么、接不住什么？各写一行注册代码；
+2. `try { setTimeout(() => { throw new Error('x'); }, 0); } catch (e) { ... }` 能捕获吗？为什么——说出异步错误的传播路径；
+3. ES2022 的 `Error.cause` 解决什么问题？写出「把底层错误包装成业务错误但保留根因」的抛法与读取方式；
+4. 加载同源脚本的错误有完整堆栈，第三方 CDN 脚本的错误只有 "Script error."——两步修复是什么；
+5. 错误上报至少要带哪些字段才能在后台定位问题（至少五项），其中哪一项要自己做采样防止上报洪峰？
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：onerror 接同步运行时错误与资源加载错误（后者的 event 上没有完整堆栈），接不住 Promise 拒绝；unhandledrejection 专接没人 catch 的 Promise 拒绝——两者是互补的全局兜底，不能互相替代；
+- 第 2 问：不能——try/catch 只捕获同一次调用栈里的异常；setTimeout 的回调在新一轮事件循环中执行，异常直接进 window.onerror，catch 早已退出；
+- 第 3 问：错误链溯源——`throw new Error('下单失败', { cause: err })`；读取 `err.cause`（可链式多层）——包装层给用户看语义，根因给排查用；
+- 第 4 问：script 标签加 `crossorigin="anonymous"`，CDN 返回 `Access-Control-Allow-Origin`；两步齐了浏览器才肯给完整堆栈（同源策略默认抹掉跨源错误详情）；
+- 第 5 问：message、stack（含 sourcemap 后的行列）、错误类型 name、页面 URL 与路由、用户会话/版本号、时间与设备信息；上报本身要做采样与去重（同一 message 聚合计数），否则事故期的上报流量会压垮日志服务。
+</details>
+
 ## 附录 A：错误类型速查表
 
 | 错误类型 | 触发场景 | 示例 |

@@ -2358,6 +2358,26 @@ async function submitOrder(cart) {
 | urql          | 轻量 GraphQL 客户端     | https://formidable.com/open-source/urql/ |
 | Relay         | Facebook 的 GraphQL 客户端 | https://relay.dev/             |
 
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 「fetch 要 await 两次」各拿到什么？两次分别对应 HTTP 交换的哪个阶段；
+2. 为什么 `fetch` 收到 404/500 不抛错？写出「状态码不对就抛带状态信息的 Error」的标准封装；
+3. 用 `AbortController` 实现一个 5 秒超时的 `fetchWithTimeout(url)`——说出超时与手动取消在错误对象上的共同点；
+4. 同一个 `Response` 的 `body` 为什么不能读两次？想读两次怎么办；
+5. 说出触发 CORS 预检（OPTIONS）的至少两个条件，以及预检失败时浏览器在控制台之外给你的真实可用信息。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：第一次 await 得到 `Response`（响应头到达，状态码可查、body 还在路上）；第二次 await `res.json()` / `res.text()`（响应体流式收完再解析）——分别对应「头到了」与「体收完了」；
+- 第 2 问：fetch 只在网络层失败（断网、DNS、被取消）才 reject；`if (!res.ok) throw new Error(\`HTTP ${res.status}\`)` 把 4xx/5xx 转成可 catch 的异常是所有封装的第一行；
+- 第 3 问：`setTimeout(() => controller.abort(), 5000)`；共同点：都是 reject 出 `AbortError`（`err.name === 'AbortError'`），封装里超时重试与用户取消要据此区分；
+- 第 4 问：body 是一次性流（流被消费后 lock 且耗尽）；需要复用就先 `const text = await res.clone().json()` 用 clone 读一份，或缓存解析结果；
+- 第 5 问：非简单请求（如 `Content-Type: application/json`）、自定义头、非简单方法（PUT/DELETE）都会先发 OPTIONS；预检失败时服务器返回体在 JS 里拿不到（TypeError: Failed to fetch），真实原因在浏览器 Network 面板的该 OPTIONS 请求与控制台 CORS 报错里。
+</details>
+
 ## 附录 A:浏览器兼容性速查
 
 ### A.1 Fetch API

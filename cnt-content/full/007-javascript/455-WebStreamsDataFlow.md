@@ -591,6 +591,26 @@ class LineSplitter extends TransformStream {
 
 ---
 
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 用拉取协议口述 `for await (const chunk of readable)` 的每一步：谁调谁、什么时候调、读完一段后为什么不会把内存撑爆；
+2. 背压（backpressure）的信号是什么？`desiredSize` 为负意味着什么，生产者应当做什么；
+3. 手写一个 WritableStream：`new WritableStream({ write(chunk) {...} })` 把收到的字符串逐条追加到数组——说出 `highWaterMark` 在这里控制什么；
+4. `pipeTo` 与「手动 reader 循环 + writer.write」相比多了哪些自动行为（至少两条）；
+5. TransformStream 的典型场景是什么？写出「每行文本转大写」的最小 transform 骨架。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：迭代器协议的拉模式——每消费完一个 chunk，内部 reader 调 `pull`/`read` 再要下一个；下游不拉，上游就停在 `pull` 等待，数据停在源头而不是堆在内存里；
+- 第 2 问：`desiredSize` 不在 `read()` 的返回值里（`read()` 只返回 `{ value, done }`）——它从流对象上取：`readable.desiredSize`、可写端的 `writer.desiredSize` 或自定义流里 `controller.desiredSize`；它小于等于 0 表示内部队列积压已超过 highWaterMark，生产者应暂停生成，等 `pull` 再被调用或 writer 的 `ready` 兑现；
+- 第 3 问：`write(chunk)` 处理每个 chunk；`highWaterMark` 是「队列里积压多少 chunk 后向生产者施压」的水位线，不是内存上限也不是数量上限；
+- 第 4 问：pipeTo 自动处理背压（read 与 write 联动暂停）、自动传播关闭（一端 close 另一端跟着）、自动把任一端的错误转发到另一端并 abort，出错时不留半截流；
+- 第 5 问：边读边改的流式管道（解压、加解密、逐行拆分）；`new TransformStream({ transform(chunk, controller) { controller.enqueue(String(chunk).toUpperCase()); } })`——transform 里处理并 enqueue 输出，flush 里收尾。
+</details>
+
 ## 附录 A:Stream 类型关系图
 
 ```mermaid

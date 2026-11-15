@@ -783,7 +783,7 @@ observable.subscribe({
 | 来源 | 第三方库 | 语言原生 |
 | API | `pipe(filter(), map())` | `.filter().map()` |
 | 包体积 | ~30KB | 0（内置） |
-| AsyncIterator | 支持 | 支持（async版本，Stage 3） |
+| AsyncIterator | 支持 | 异步版辅助方法仍为 Stage 2，无引擎默认可用 |
 | 性能 | 用户态实现 | 引擎优化 |
 
 ### 5.4 与 Python itertools 的对比
@@ -1330,6 +1330,26 @@ Chris Okasaki. 1999. *Purely Functional Data Structures* (1st. ed.). Cambridge U
 - Records与Tuples — 不可变数据与惰性求值的组合。
 
 ---
+
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 用一句话说清迭代器辅助方法与数组同名方法的本质差异（中间数组、惰性求值），并举例说明什么时候这个差异决定内存生死；
+2. `document.querySelectorAll('li')` 是 NodeList 不是数组，直接 `.map` 会报错——写出用迭代器辅助方法过滤后取前 10 条并转数组的正确链；
+3. 手写一个无限自然数生成器 `function* naturals()`，用辅助方法取出「前 5 个偶数」——解释为什么漏写 `take` 会永远挂起；
+4. `map.keys().filter(x => x > 1).toArray()` 与 `[...map.keys()].filter(...)` 两个版本，哪个在大 Map 上更省内存？为什么；
+5. 迭代器辅助方法挂在 `Iterator.prototype` 上而不是可迭代对象上——这意味着 `Set` 实例能直接 `.filter` 吗？写一行验证代码。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：数组方法每一步生成完整中间数组（10 万元素 filter 后 map，内存里多挂一份）；迭代器方法元素按需流动、`take(2)` 拿够即停——日志流、分页、无限序列这类「读不完的数据源」只有惰性版本可用；
+- 第 2 问：`Iterator.from(document.querySelectorAll('li')).filter(fn).take(10).toArray()`——先拿到迭代器（或 `Iterator.from`），链才能起步；
+- 第 3 问：`naturals().filter(n => n % 2 === 0).take(5).toArray()`；没有 `take` 时 `toArray` 会永远拉取无限生成器，程序不报错只是不返回——惰性链条的终点必须有「收口」；
+- 第 4 问：前者省——`map.keys()` 本来就是惰性视图，filter 也不落盘，只有 `toArray` 产生一份结果；后者先展开成完整数组再 filter，多一份全量中间数组；
+- 第 5 问：不能——方法在 `Iterator.prototype` 上，Set 是可迭代对象不是迭代器；`new Set([1,2,3]).filter` 是 undefined，正确写法 `new Set([1,2,3]).keys().filter(...)` 或 `Iterator.from(set)`。
+</details>
 
 ## 附录 A：方法速查表
 

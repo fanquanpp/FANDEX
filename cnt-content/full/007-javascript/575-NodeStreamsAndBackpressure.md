@@ -386,6 +386,26 @@ async function lineStats(path) {
 
 </details>
 
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 四种流（Readable/Writable/Duplex/Transform）各举一个真实对象：文件读写、`net.Socket`、`zlib.createGzip()` 归到哪类；
+2. 背压是怎么发生的：写出「不用 pipeline、手动 pipe」时 `write()` 返回 false 之后的正确处理两步（pause/drain），并说明漏掉会怎样；
+3. `pipe` 与 `pipeline` 的核心差异是什么？说出 pipeline 在错误传播上的两条保证；
+4. highWaterMark 设成 64KB 与 1GB 各会怎样？它是不是「内存上限」；
+5. 口述第 4 节大日志逐行处理的内存账单：为什么流式方案处理 10GB 文件只用几十 MB 内存。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：`fs.createReadStream` 可读、`fs.createWriteStream` 可写、`net.Socket` 双工（Duplex，两端独立）、`zlib.createGzip()` 转换流（Transform，读入压缩后写出）；
+- 第 2 问：`if (!ws.write(chunk)) { rs.pause(); ws.once('drain', () => rs.resume()); }`——write 返回 false 表示内部缓冲超过 highWaterMark，应暂停读、等 drain 再恢复；漏掉则上游不停读、缓冲无限膨胀，等于把流式方案退化成「一次性全载入」，内存随文件大小线性爆掉；
+- 第 3 问：pipe 出错时不会自动清理下游也不传播错误（容易留半开句柄）；pipeline 把所有流当作一个整体：任一段出错全部销毁并向返回的 Promise/回调抛错，结束时机统一；
+- 第 4 问：64KB 缓冲小、频繁触发读写切换（CPU 稍高但内存稳）；1GB 让内部缓冲膨胀到 GB 级（背压几乎失效）；它不是内存上限——只是开始施压的水位线，实际内存还取决于生产速度与消费速度的差；
+- 第 5 问：readstream 按块读（如 64KB/块）、逐行转换即读即传、写完即释放——任意时刻内存里只有「一个块 + 一行」级别的东西在流动，10GB 文件与 1KB 文件的内存占用几乎一样。
+</details>
+
 ## 附录：node:stream/promises 速查（承接自性能篇 12.1）
 
 ```javascript
