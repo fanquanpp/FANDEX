@@ -295,7 +295,7 @@ SVG `<text>` 不支持自动换行,实现多行文本有几种策略:
 
 1. **多个 `<text>`**:每行独立 `<text>`,通过 `y` 控制行距
 2. **`<tspan>` + `dy`**:同一 `<text>` 内用 `<tspan>` 换行
-3. **`<text>` + `white-space: pre`**(SVG 2):支持自动换行
+3. **`<text>` + `inline-size` + `white-space`**(SVG 2 设计的换行模型):规范已定义,但截至 2026-11 主流浏览器仍未完整实现,不要作为生产方案
 4. **`<foreignObject>`**:嵌入 HTML `<div>` 实现复杂布局
 
 形式化策略选择:
@@ -698,7 +698,7 @@ console.log(m); // { width: 90.3, height: 28.5 }
 | 特性 | SVG `<text>` | HTML `<p>` |
 | ---- | ------------ | ---------- |
 | 布局 | 绝对坐标 | 流式 |
-| 自动换行 | 不支持(SVG 2 部分) | 默认 |
+| 自动换行 | 未完整实现(SVG 2 已定义模型) | 默认 |
 | 选择 | `user-select: text` | 默认可选 |
 | 字体 | CSS font-* | 同 SVG |
 | textPath | 支持 | 不支持 |
@@ -1146,17 +1146,22 @@ mlt.render(10, 20, ['第一行', '第二行', '第三行']);
 
 ### 7.5 SVG 自动换行(SVG 2)
 
-SVG 2 引入 `white-space` 属性,支持自动换行:
+SVG 2 设计了文本自动换行模型:用 CSS `inline-size` 属性给 `<text>` 指定行盒宽度,再配合 CSS `white-space`(如 `pre-wrap`)决定换行行为:
 
 ```html
 <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
-  <text x="10" y="20" font-size="14" style="white-space: pre-wrap; width: 180px;">
-    这是一段长文本,会自动换行到下一行,无需手动拆分。
+  <text x="10" y="20" font-size="14" style="inline-size: 180px; white-space: pre-wrap;">
+    这是一段长文本,规范期望它自动换行,无需手动拆分。
   </text>
 </svg>
 ```
 
-> 注意:浏览器支持有限,生产环境推荐用 `<foreignObject>` 或手动换行。
+注意两点(截至 2026-11):
+
+- 给 `<text>` 写 `width` 是无效写法——SVG 2 模型用的是 CSS `inline-size` 属性,`<text>` 元素本身没有 width 属性;
+- 该模型至今没有主流浏览器完整实现(Chrome 连 SVG 文本上的 `white-space: break-spaces` 都尚未支持,兼容数据曾多次纠错),上面的示例在多数浏览器里不会真的换行。
+
+> 生产环境推荐 `<foreignObject>` 嵌 HTML 或用 `<tspan>` 手动拆行,选型依据见 3.8 节。
 
 ### 7.6 SVG 文本可访问性检查器
 
@@ -1446,7 +1451,7 @@ Material Design 中 SVG 文本用于卡片、列表项的数据展示:
 
 **解析讲解**：`多个 <text> 元素`、`<tspan> + dy 换行`、`<foreignObject> 嵌入 HTML`
 
-**解析讲解**：三种策略各有优劣:多个 `<text>` 适合静态少量行;`<tspan>` 适合同一文本内换行;`<foreignObject>` 适合复杂布局(支持 HTML/CSS)。SVG 2 引入 `white-space: pre-wrap` 但浏览器支持有限。
+**解析讲解**：三种策略各有优劣:多个 `<text>` 适合静态少量行;`<tspan>` 适合同一文本内换行;`<foreignObject>` 适合复杂布局(支持 HTML/CSS)。SVG 2 的换行模型(`inline-size` + `white-space`)浏览器至今未完整实现,不要依赖。
 
 **题目 10**:字体子集化的作用是 ________,可将中文字体从 5MB 降至 ________。
 
@@ -1624,13 +1629,13 @@ component.render('沿曲线排列的文字');
 
 ### 10.1 W3C 规范
 
-1. W3C. 2018. **SVG 2 Specification: Text**. W3C Recommendation. https://www.w3.org/TR/SVG2/text.html
+1. W3C. 2026. **SVG 2 Specification: Text**. W3C Candidate Recommendation Snapshot（2026-10-06）. https://www.w3.org/TR/SVG2/text.html
 
 2. W3C. 2003. **SVG 1.1 Specification: Text**. W3C Recommendation. https://www.w3.org/TR/SVG11/text.html
 
-3. W3C. 2023. **CSS Text Module Level 3**. W3C Working Draft. https://www.w3.org/TR/css-text-3/
+3. W3C. 2026. **CSS Text Module Level 3**. W3C Candidate Recommendation Draft（2026-08-14）. https://www.w3.org/TR/css-text-3/
 
-4. W3C. 2023. **CSS Writing Modes Level 4**. W3C Working Draft. https://www.w3.org/TR/css-writing-modes-4/
+4. W3C. 2019. **CSS Writing Modes Level 4**. W3C Candidate Recommendation（2019-07-30 起至今未到 REC）. https://www.w3.org/TR/css-writing-modes-4/
 
 5. W3C. 2021. **WOFF File Format 2.0**. W3C Recommendation. https://www.w3.org/TR/WOFF2/
 

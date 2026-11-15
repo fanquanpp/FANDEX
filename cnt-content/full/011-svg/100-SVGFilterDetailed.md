@@ -23,7 +23,7 @@ prerequisites:
 
 ---
 
-> 前置知识：渐变与 `<defs>` 复用（《SVG 渐变与图案》，008-SVGGradientPattern）、蒙版与裁剪的概念（《SVG 裁剪与蒙版》，011-SVGClipMask）。
+> 前置知识：渐变与 `<defs>` 复用（《SVG 渐变与图案》，080-SVGGradientPattern）、蒙版与裁剪的概念（《SVG 裁剪与蒙版》，110-SVGClipMask）。
 >
 > 学习目标：理解滤镜是"像素级后处理管线"：一串基元从 SourceGraphic 出发、用 in/result 串成有向图；掌握最常用的几个基元（模糊、阴影、颜色矩阵、合成、湍流）；会排查"效果被裁掉"与"滤镜太卡"两大高频问题。
 

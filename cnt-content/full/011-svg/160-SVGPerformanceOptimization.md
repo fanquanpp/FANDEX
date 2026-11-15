@@ -390,6 +390,31 @@ svg.appendChild(fragment); // 一次性插入
 | 复杂图像处理             | Canvas        |
 | 需要交互与可访问性       | SVG           |
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：节点数到什么量级就该评估切换 Canvas？除了节点数，决定"切与不切"还要看什么？
+
+2. 预测题：`rect.setAttribute('x', 100)` 与 `rect.style.transform = 'translateX(100px)'`，哪个对动画更友好？为什么？
+
+3. 手写题：写出把 input.svg 压到不再变化的 SVGO 命令；响应式场景常配哪个插件开关？
+
+4. 判断题：「改 stdDeviation 做扫光」与「平移一道亮条」两种方案，性能差在哪？为什么差一个量级？
+
+<details>
+<summary>参考答案（先自己写，再展开对照）</summary>
+
+1. 1000-5000 明显卡顿、>5000 考虑 Canvas/WebGL（正文 1.2 的阈值表）。还要看是否每帧全量重绘、元素是否需要 DOM 事件拾取——需要精细交互时 SVG 有不可替代性（正文第 9 节）。
+
+2. transform。改几何属性（x）参与布局计算触发重排；transform 不参与布局，可被合成器加速（正文 2.5）。
+
+3. `svgo --multipass input.svg -o output.svg`（--multipass 允许多轮压缩直到不再变化）；响应式场景常开 removeDimensions，删掉 width/height 交给外部 CSS 控制（正文 2.3）。
+
+4. 改滤镜参数（stdDeviation）每帧重算整条滤镜链；平移亮条只是移动已渲染的结果，滤镜链只算一次。所以扫光位移务必放在滤镜外层（正文 2.4 与 100 篇的性能分级）。
+
+</details>
+
 ## 小结
 
 初学者要点：

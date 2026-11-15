@@ -372,7 +372,7 @@ function animate() {
 | CSS transform on SVG | 支持    | 支持    | 支持   | 支持 |
 | CSS 动画几何属性     | 支持    | 支持（较新版本） | 支持 | 支持 |
 | WAAPI on SVG         | 支持    | 支持    | 支持   | 支持 |
-| CSS 的 d 属性（path）| 仅 Chromium | 不支持 | 不支持 | 仅 Chromium |
+| CSS 的 d 属性（path）| 支持 | 支持（97 起） | 不支持 | 支持 |
 
 SMIL 的历史一句话讲清：Chrome 曾在 2015 年前后宣布废弃，因社区反馈
 （尤其是「独立 SVG 文件内无替代品」这一条）于 2016 年撤回并稳定支持
@@ -400,7 +400,7 @@ WAAPI，享受更好的调试工具（Animations 面板）与未来演进；新�
 - **fill="freeze" 与 remove**：SMIL 动画结束默认回弹（remove），
   要停在终点必须 `fill="freeze"`。CSS 对应 `animation-fill-mode: forwards`。
 - **prefers-reduced-motion**：正式产品加一段媒体查询关掉非必要动画
-  （前庭障碍用户的可访问性要求，见 170 篇）。
+  （前庭障碍用户的可访问性要求，见 175 篇）。
 - **<img> 引用的 SVG**：内部 CSS/JS 被隔离，SMIL 照常播放；需要
   JS 交互就必须内联。
 

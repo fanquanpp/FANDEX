@@ -15,9 +15,7 @@ prerequisites:
   - 'svg/040-SVGBasicShapeDetailed'
 ---
 
----
-
-> 前置知识：基本图形的属性写法（见《SVG 基本图形详解》，004-SVGBasicShapeDetailed）；CSS 变量与颜色函数基础。
+> 前置知识：基本图形的属性写法（见《SVG 基本图形详解》，040-SVGBasicShapeDetailed）；CSS 变量与颜色函数基础。
 >
 > 学习目标：分清 fill / stroke / opacity / fill-opacity / stroke-opacity 五个属性各自控制哪一层透明度与颜色；会用 currentColor 与 CSS 变量做主题化；理解 paint-order、vector-effect 两个进阶绘制属性。
 
@@ -214,7 +212,7 @@ prerequisites:
 
 ## 7. fill-rule 填充规则
 
-复杂路径的填充规则详见《SVG path 详解》（005-SVGPathDetailed），这里只演示效果。
+复杂路径的填充规则详见《SVG path 详解》（050-SVGPathDetailed），这里只演示效果。
 
 ```html
 <!-- 五角星中心镂空 -->
@@ -342,6 +340,31 @@ SVG 可使用 CSS 自定义属性，实现运行时主题切换。
 </svg>
 ```
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：`opacity="0.5"` 与 `fill-opacity="0.5"` 改的分别是哪一层？带描边的图形想"填充半透明、描边不透明"该怎么写？
+
+2. 手写题：让一个心形图标的颜色始终跟随父元素的文字颜色（hover 变红它也跟着变红）。核心写法是什么？
+
+3. 预测题：viewBox="0 0 100 100" 的 svg 以 200×200 渲染，`stroke-width="2"` 的矩形描边实际显示多宽？加什么属性能锁定为 2px？
+
+4. 修 Bug 题：`<text font-size="40" stroke="#fff" stroke-width="6">Hi</text>` 的字看起来"变瘦了"，白色描边吃掉了字形内部——怎么改？
+
+<details>
+<summary>参考答案（先自己写，再展开对照）</summary>
+
+1. opacity 是元素级透明度（整组合成后的结果，含子元素叠加），fill-opacity 只作用于填充层。写 `fill-opacity="0.5"` 即可：描边由 stroke-opacity 单独管，默认 1 保持不透明（正文第 1、3 节）。
+
+2. `fill="currentColor"`：currentColor 取当前 `color` 值，父元素 color 变（含 :hover）图标跟着变——这也是 120/170 篇图标主题化的核心机制（正文第 4 节）。
+
+3. 4px（2 × 缩放比 2）。加 `vector-effect="non-scaling-stroke"`，描边按最终渲染设备的 2px 绘制，无视 viewBox 与 transform 缩放（正文第 6 节）。
+
+4. 默认绘制顺序 fill→stroke，粗描边压在字形上。加 `paint-order="stroke fill"` 让填充最后画、盖在描边上（正文第 5 节）。
+
+</details>
+
 ## 小结
 
 初学者要点：
@@ -354,5 +377,5 @@ SVG 可使用 CSS 自定义属性，实现运行时主题切换。
 
 - `paint-order` 对文字描边几乎是必选项：粗描边文字若保持默认 fill→stroke 顺序，描边会吃掉字形内部；`paint-order="stroke fill"` 让填充盖在描边上。
 - `vector-effect="non-scaling-stroke"` 的"不缩放"是相对最终渲染设备而言，它无视 viewBox 缩放与 transform 缩放，做地图/图表时能省去手动补偿线宽。
-- 10.1 用的 SMIL `<animate>`：它是历史最久的 SVG 原生动画方案，定义已移入独立的 SVG Animations 规范（SVG 2 不强制要求实现），社区新项目更倾向 CSS 动画或 WAAPI；但它至今被所有主流浏览器完整支持，独立 `.svg` 文件里仍是零依赖首选，详见《SVG 动画基础》（013-SVGAnimationBasics）。
+- 10.1 用的 SMIL `<animate>`：它是历史最久的 SVG 原生动画方案，定义已移入独立的 SVG Animations 规范（SVG 2 不强制要求实现），社区新项目更倾向 CSS 动画或 WAAPI；但它至今被所有主流浏览器完整支持，独立 `.svg` 文件里仍是零依赖首选，详见《SVG 动画基础》（140-SVGAnimationBasics）。
 

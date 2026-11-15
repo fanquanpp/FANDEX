@@ -15,9 +15,7 @@ prerequisites:
   - 'svg/100-SVGFilterDetailed'
 ---
 
----
-
-> 前置知识：渐变（《SVG 渐变与图案》，008-SVGGradientPattern）与 transform（《SVG 变换 transform》，009-SVGTransform，倒影一节会用到垂直翻转）。
+> 前置知识：渐变（《SVG 渐变与图案》，080-SVGGradientPattern）与 transform（《SVG 变换 transform》，090-SVGTransform，倒影一节会用到垂直翻转）。
 >
 > 学习目标：分清 clipPath（硬裁剪、几何并集）与 mask（软蒙版、逐像素亮度/alpha）的适用场景；掌握两套 Units 属性的含义；能实现圆形头像、文字镂空、渐隐、光带扫过四个高频效果；了解 CSS 端的 mask-type / mask-mode 与 SVG 蒙版的关系。
 
@@ -375,6 +373,44 @@ clipPath 与 mask 可同时应用，clipPath 先裁剪，mask 再蒙版。
 | 缩小 mask 区域 | mask x/y/width/height 限制计算范围 |
 | 避免大图蒙版   | 高分辨率图像 + mask 会显著拖慢渲染 |
 | 缓存复用       | 多个元素复用同一 mask 定义         |
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：圆形头像裁剪和"上下渐隐"分别该用 clipPath 还是 mask？一句话说清两者计算依据的差别。
+
+2. 手写题：写一个"左边可见、右边渐隐"的蒙版结构（蒙版内容可以用渐变矩形）。
+
+3. 修 Bug 题：`<mask><rect width="100" height="100" fill="#808080" /></mask>` 蒙出来的图形比预想的暗很多——默认按什么通道计算？给出两种改法。
+
+4. 判断题：`mask-type="alpha"` 是 XML 属性吗？应该写在哪里？
+
+<details>
+<summary>参考答案（先自己写，再展开对照）</summary>
+
+1. 头像用 clipPath（硬边几何裁剪），渐隐用 mask（软边逐像素）。差别：clipPath 只看形状并集、无过渡；mask 看每个像素的亮度或 alpha 通道，能表达半透明（正文第 3 节对比表）。
+
+2. 参考：
+
+   ```svg
+   <linearGradient id="fade-grad" x1="0%" x2="100%">
+     <stop offset="0%" stop-color="#fff" />
+     <stop offset="100%" stop-color="#000" />
+   </linearGradient>
+   <mask id="fade">
+     <rect width="200" height="200" fill="url(#fade-grad)" />
+   </mask>
+   <rect width="200" height="200" fill="#4f5bd5" mask="url(#fade)" />
+   ```
+
+   考点：白显示、黑隐藏、灰半透明，渐变白到黑就是渐隐（正文第 2 节示例）。
+
+3. 默认 luminance（亮度）：#808080 亮度大约只有 0.2，只剩约两成可见。改法一：改用白色系按亮度设计蒙版；改法二：给 mask 元素写 CSS `mask-type: alpha` 改按透明度通道计算（正文 2.1 与 2.3）。
+
+4. 不是。mask-type 是 CSS 属性，写在 `<mask>` 元素的样式上（Chromium 120 起支持，正文 2.3 的兼容提示）。
+
+</details>
 
 ## 小结
 

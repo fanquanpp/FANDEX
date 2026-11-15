@@ -145,7 +145,7 @@ svg.addEventListener('click', (e) => {
 
 - `getBBox()` 回答「这块图形在用户坐标系里占哪块地」——动态计算内容范围后设置 viewBox 的标准前置（如「让 svg 自动框住全部内容」：把 bbox 的 x/y/width/height 直接抄给 viewBox）；
 - `getScreenCTM()` 回答「用户坐标怎么变成屏幕像素」——它的逆矩阵把点击的 clientX/Y 换算回用户坐标，图表的点击拾取（判断点到哪个数据点）全靠它；换算前若 svg 刚被缩放或滚动过，CTM 需重新取，缓存旧矩阵是常见 bug；
-- `getBBox()` 的两个坑：对 `display: none` 的元素返回全零（先临时显示或改用 getBoundingClientRect）；默认**不含描边宽度**，SVG 2 允许传 `{ stroke: true }` 等选项但兼容性需查——按 bbox 拼接图形时给描边留余量。
+- `getBBox()` 的两个坑：对 `display: none` 的元素返回全零（先临时显示或改用 getBoundingClientRect）；默认**不含描边宽度**，SVG 2 允许传 `{ stroke: true }` 等选项（目前仅 Firefox 155+ 支持；Chromium 与 Safari 尚未实现，传入的选项被忽略、退回默认几何框）——按 bbox 拼接图形时给描边留余量。
 
 ## 9. 调试实录：图标失真的三步排查
 

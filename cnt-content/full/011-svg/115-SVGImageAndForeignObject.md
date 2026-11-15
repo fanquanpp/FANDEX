@@ -85,7 +85,7 @@ SVG 文件通过 `<img>`、CSS background-image、iframe src 引用时，运行�
 | --- | --- | --- |
 | 内联在 HTML 文档里 | 可用 | 主战场；D3 图表的富文本标签即此用法 |
 | 经 `<img>` / background-image 引用 | 不可用 | 静态安全模式禁用 HTML 内容，渲染结果为空或整体失败 |
-| 画到 canvas（drawImage） | 不可靠 | Safari 长期不支持；跨浏览器代码不要依赖 |
+| 画到 canvas（drawImage） | 不可靠 | 各引擎都要求 SVG 有显式 width/height（仅 viewBox 会画成 0×0），Safari 对内嵌资源与尺寸异常长期更严格；跨浏览器代码不要依赖 |
 | 导出 PDF / 打印 | 看导出器 | 多数工具链对 foreignObject 支持不完整，上线前必须实测 |
 
 结论：foreignObject 适合「页面内交互式图示」这一个场景；凡是图示要离开页面（导出图片、打印、邮件附件），就退回 text + tspan 手动排版或位图方案。设计阶段就要问清楚交付形态，这是它最大的工程风险。

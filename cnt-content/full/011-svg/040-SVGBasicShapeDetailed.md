@@ -15,7 +15,7 @@ prerequisites:
   - 'svg/030-SVGCoordinateSystemViewBox'
 ---
 
-> 前置知识：建议先读《SVG 坐标系统与 viewBox》（003-SVGCoordinateSystemViewBox）理解 viewBox 与用户坐标系——本文所有坐标都落在该坐标系上。
+> 前置知识：建议先读《SVG 坐标系统与 viewBox》（030-SVGCoordinateSystemViewBox）理解 viewBox 与用户坐标系——本文所有坐标都落在该坐标系上。
 >
 > 学习目标：掌握 rect、circle、ellipse、line、polyline、polygon 六种基本图形的定位方式与必需属性；理解描边的几何行为（居中扩展、端点、拐角、虚线）；能避开 polyline 默认填充这类典型陷阱。
 
@@ -300,6 +300,38 @@ points="10 90 50 10 90 90 130 10 170 90"
 
 正的 `stroke-dashoffset` 会让实线段从末端"缩回"，这是后续动画篇里"线条绘制动画"的原理；本例不需要偏移。
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 修 Bug 题：折线 `<polyline points="0,40 20,10 40,40" stroke="#4f5bd5" />` 在页面上出现了一块实心色块，为什么？怎么改？
+
+2. 手写题：在 48×48 画布中央画一个 24×24 的圆角正方形（圆角 6），再用一个半径 4 的圆盖住它顶边中点。写出两个元素。
+
+3. 预测题：`<rect x="50" y="50" width="100" height="80" rx="90" />` 的圆角半径实际生效值是多少？会报错吗？
+
+4. 概念自问：`stroke-width="10"` 的水平 `<line>`，实际占位宽度是多少？父容器不留余量会发生什么？
+
+<details>
+<summary>参考答案（先自己写，再展开对照）</summary>
+
+1. polyline 默认 `fill="black"`：它虽然不闭合，浏览器仍按填充规则把首尾连成区域涂色（正文 5.2 的陷阱）。改法：显式写 `fill="none"`。
+
+2. 参考：
+
+   ```svg
+   <rect x="12" y="12" width="24" height="24" rx="6" />
+   <circle cx="24" cy="12" r="4" />
+   ```
+
+   考点：居中要两条轴一起算——x 与 y 都取 (48-24)/2 = 12；rect 用 x/y 定左上角、rx 定圆角（ry 省略时默认等于 rx）；顶边中点是 (24, 12)，把圆心落在顶边上（cy = 12 = 顶边的 y），圆恰好一半压在边框外、「盖住」顶边中点。
+
+3. 50。SVG 2 规定 rx/ry 超过对应边长一半时自动钳制到一半：宽 100 的一半是 50，不报错也不撑破（正文进阶注意）。
+
+4. 描边以路径为中心向两侧各扩展 stroke-width/2：10 单位宽的描边上下各占 5，总占位 10 个单位高。不预留这"半个线宽"，边缘就会被父容器或相邻元素裁掉、遮挡（正文 2.1 与小结）。
+
+</details>
+
 ## 小结
 
 初学者要点：
@@ -310,7 +342,7 @@ points="10 90 50 10 90 90 130 10 170 90"
 
 进阶注意：
 
-- SVG 2 把 `x` / `y` / `width` / `height` / `cx` / `cy` / `r` / `rx` / `ry` 定义为 CSS 几何属性（geometry properties）：内联 SVG 中可以直接写 `rect { x: 10px; width: 80px; }`，现代浏览器均支持；`d` 属性的 CSS 化目前只有 Chromium 实现，跨浏览器代码仍应以属性写法为准。
+- SVG 2 把 `x` / `y` / `width` / `height` / `cx` / `cy` / `r` / `rx` / `ry` 定义为 CSS 几何属性（geometry properties）：内联 SVG 中可以直接写 `rect { x: 10px; width: 80px; }`，现代浏览器均支持；`d` 属性的 CSS 化在 Chromium 与 Firefox（97 起）已支持，Safari 稳定版尚未跟进，跨浏览器代码仍应以属性写法为准。
 - `rx` / `ry` 超过对应边长一半时，SVG 2 规定自动钳制到一半（如 200 宽的矩形 `rx="200"` 等效 `rx="100"`），不会报错。
 - 进度环本质是 `dasharray` / `dashoffset` 操作路径长度；给 `<circle>` 加 `pathLength="100"` 后可直接写 `dasharray="70 100"` 表示 70%，免去周长换算（现代浏览器均支持基本图形上的 `pathLength`）。
 

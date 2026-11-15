@@ -14,9 +14,7 @@ prerequisites:
   - 'svg/020-SVGBasicSyntaxDocStructure'
 ---
 
----
-
-> 前置知识：文档骨架与 `<defs>` 的基本概念（《SVG 基础语法与文档结构》，002-SVGBasicSyntaxDocStructure）；CSS 选择器与变量。
+> 前置知识：文档骨架与 `<defs>` 的基本概念（《SVG 基础语法与文档结构》，020-SVGBasicSyntaxDocStructure）；CSS 选择器与变量。
 >
 > 学习目标：分清 defs + url(#)、use 直引、symbol + use 三种复用机制的适用场景；理解 `<use>` 的 shadow DOM 隔离带来哪些样式限制及 CSS 变量如何穿透；能搭建一套 sprite 图标系统。
 
@@ -352,6 +350,39 @@ CSS 变量可穿透 shadow DOM，实现实例级定制。
 ```
 
 但 SVG sprite + use 仍是性能与兼容性最优的方案，适合大多数场景。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：`<use>` 实例化后生成什么？为什么外部 CSS 写 `.icon path { fill: red }` 选不到实例内部的 path？外部样式影响实例的两条"合法通道"是什么？
+
+2. 手写题：定义一个 24×24 的图标 symbol，并在页面上以 24 和 48 两种尺寸各放一个实例。
+
+3. 修 Bug 题：sprite 容器用 `display:none` 隐藏后，页面上的渐变图标全部失效——为什么？稳妥的隐藏写法？
+
+4. 判断题：`<use href="#g1" width="48" height="48">` 引用的是 `<g>`，width/height 会生效吗？
+
+<details>
+<summary>参考答案（先自己写，再展开对照）</summary>
+
+1. 一棵封闭的 shadow tree：视觉上继承 `<use>` 所在位置的层叠与继承链，但 CSS 选择器进不去。两条通道：可继承属性（fill/stroke/color 等）顺继承链流进去；CSS 自定义属性（变量）能穿透隔离，配合内部 `fill="var(--icon)"` 做实例级定制（正文第 6、7 节）。
+
+2. 参考：
+
+   ```html
+   <symbol id="icon-home" viewBox="0 0 24 24"><path d="..." /></symbol>
+   <svg width="24" height="24"><use href="#icon-home" /></svg>
+   <svg width="48" height="48"><use href="#icon-home" /></svg>
+   ```
+
+   考点：symbol 自带 viewBox，外部 width/height 才能把同一份定义等比放大（正文第 4 节）。
+
+3. display:none 容器里被 `url()` 引用的资源（渐变/蒙版/裁剪路径）在个别浏览器（历史上以 Safari 为主）会失效（正文 4.2）。稳妥写法：`<svg width="0" height="0" style="position:absolute" aria-hidden="true">` 的零尺寸隐藏。
+
+4. 不生效。width/height 仅对 `<symbol>` 引用生效；`<g>` 引用只能用 x/y 偏移或 transform（正文 3.1 与 4.1）。
+
+</details>
 
 ## 小结
 

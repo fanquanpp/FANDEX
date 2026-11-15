@@ -23,7 +23,7 @@ prerequisites:
 
 ---
 
-> 前置知识：fill / stroke 取值规则（《SVG 颜色与填充》，007-SVGColorFill）、`<defs>` 定义机制（《SVG 基础语法与文档结构》，002-SVGBasicSyntaxDocStructure）。
+> 前置知识：fill / stroke 取值规则（《SVG 颜色与填充》，070-SVGColorFill）、`<defs>` 定义机制（《SVG 基础语法与文档结构》，020-SVGBasicSyntaxDocStructure）。
 >
 > 学习目标：会用 linearGradient / radialGradient 描述方向、焦点与色标；分清 gradientUnits 的 objectBoundingBox 与 userSpaceOnUse 两种坐标系何时用哪个；能用 pattern 平铺点阵、网格与斜纹；避开"渐变元素零尺寸边界框"等经典陷阱。
 
@@ -395,6 +395,40 @@ prerequisites:
 | **警惕大面积渐变动画**     | 动画 stop-color / 坐标会触发区域逐帧重绘，小元素上做更划算    |
 | **渐变区域匹配元素**       | gradientUnits=objectBoundingBox 时渐变自动适配元素尺寸        |
 | **极复杂纹理用位图**       | 数百个图元的 pattern 可改为 PNG/WebP 平铺背景                 |
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：linearGradient 与 radialGradient 各自"三件套"属性是什么？radialGradient 的 fx/fy 不写时在哪，写了会发生什么？
+
+2. 手写题：写一个 20×20 的圆点图案（点在瓦片正中），平铺到一个 200×200 的矩形。两个 Units 属性怎么选？
+
+3. 修 Bug 题：`<line stroke="url(#g)">` 上渐变没显示出来，而同一个渐变在 rect 上正常——为什么？标准解法？
+
+4. 预测题：`gradientUnits="objectBoundingBox"`（默认）下，两个大小不同的矩形用同一个渐变，渐变进度一样吗？想"两块拼接出同一条渐变带"该用哪个值？
+
+<details>
+<summary>参考答案（先自己写，再展开对照）</summary>
+
+1. linearGradient 看 x1/y1 到 x2/y2 的方向（默认左到右）；radialGradient 看 cx/cy/r 三件套，fx/fy 是焦点——不写时焦点与圆心重合，偏移后"高光"移位，能做聚光灯效果（正文第 1、2 节）。
+
+2. 参考：
+
+   ```svg
+   <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+     <circle cx="10" cy="10" r="3" fill="#4f5bd5" />
+   </pattern>
+   <rect width="200" height="200" fill="url(#dots)" />
+   ```
+
+   考点：patternUnits 管"瓦片怎么摆"（x/y/width/height 的基准），实践最常用 userSpaceOnUse，瓦片与内容坐标都在用户坐标系里直观好算（正文 4.1 的提醒）。
+
+3. 渐变默认按 objectBoundingBox 解析，而水平 line 的包围盒高度为 0，零尺寸边界框让渐变失效（正文小结进阶注意）。标准解法：给该渐变加 `gradientUnits="userSpaceOnUse"`。
+
+4. 一样——每个元素都把渐变按"自身 bbox 的 0% 到 100%"铺满，所以各自独立成带。拼接同一渐变带必须用 userSpaceOnUse，让渐变固定在用户坐标区间（正文 3.1 与 3.2 的对照）。
+
+</details>
 
 ## 小结
 

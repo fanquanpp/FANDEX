@@ -1722,11 +1722,11 @@ console.log(points);
 
 ### 10.1 W3C 规范
 
-1. W3C. 2018. **SVG 2 Specification: Path Element**. W3C Recommendation. https://www.w3.org/TR/SVG2/paths.html
+1. W3C. 2026. **SVG 2 Specification: Path Element**. W3C Candidate Recommendation Snapshot（2026-10-06）. https://www.w3.org/TR/SVG2/paths.html
 
 2. W3C. 2003. **SVG 1.1 Specification: Path**. W3C Recommendation. https://www.w3.org/TR/SVG11/paths.html
 
-3. W3C. 2023. **CSS Masking Module Level 1: fill-rule**. W3C Candidate Recommendation. https://www.w3.org/TR/css-masking-1/
+3. W3C. 2021. **CSS Masking Module Level 1: fill-rule**. W3C Candidate Recommendation Draft（2021-08-05）. https://www.w3.org/TR/css-masking-1/
 
 ### 10.2 学术论文
 
