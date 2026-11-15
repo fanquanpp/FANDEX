@@ -177,3 +177,49 @@ a {
 - 字体加载与 @font-face：`css/510-CSSFontLoading`；
 - 响应式字号（clamp）：`css/120-CSSFunctions`；
 - 盒模型与间距：`css/050-CSS3BoxModelDetailed`。
+
+## 12. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1-7 节的示例代码自己写，再对照参考实现。
+
+**任务一**：为「文章页」写一份正文排版——中文字体栈（含通用类别兜底）、根字号 16px、正文 0.875rem、无单位行高 1.7、段落首行缩进 2 字符、标题加粗并带一点字距。
+
+**任务二**：回答两问并各给一行代码佐证——（a）为什么 `line-height` 推荐写无单位值而不是 `24px`；（b）字体栈末尾为什么必须放 `sans-serif` 这类通用类别。
+
+**提示**：任务一照着第 7 节「文章页最小可用排版」的骨架默写，注意 `text-indent` 用 `em` 不是 `px`；任务二的两个「为什么」分别在第 4、1 节的讲解里——一个关乎字号变化后的行距，一个关乎找不到字体时的回退。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  line-height: 1.7;
+}
+
+p {
+  font-size: 0.875rem; /* 16 * 0.875 = 14px，相对根字号 */
+  text-indent: 2em;
+}
+
+h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* 任务二 */
+/* (a) line-height: 1.7 —— 无单位是「字号的倍数」，字号变大行距自动跟着放大；
+       24px 是死值，标题字号 28px 时行高反而比字号小，文字会叠 */
+p { line-height: 1.7; }
+
+/* (b) 末尾的通用类别是「保底字体」——前面所有具体字体都不存在时，
+       浏览器至少能选一个同风格的系统字体，而不是任由默认值兜底 */
+body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
+```
+
+验收点：任务一里把根字号从 16px 改成 20px 后，正文与标题应等比放大——这正是 rem 体系的意义；任务二 (a) 如果把 `line-height: 1.7` 换成 `24px` 再把某段字号调到 32px，会看到行间挤在一起，即验证了死值的缺陷。

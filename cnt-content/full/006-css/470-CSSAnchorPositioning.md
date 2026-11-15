@@ -24,9 +24,11 @@ CSS 锚点定位（Anchor Positioning）把这件事改成声明式：触发元�
 
 ## 2. 支持现状（2025-2026）
 
-- 锚点定位已于 2025 年进入 Baseline Newly Available：Chrome / Edge 125 起（2024-05）率先支持，Safari 与 Firefox 在 2025 年内跟进。
+- 2024-05：Chrome / Edge 125 率先稳定支持；
+- 2025-09：Safari 26.0 跟进（WebKit 官方发布说明将锚点定位列入 Safari 26 新特性）；
+- 2026-01：Firefox 147 落地——至此三大引擎齐备，锚点定位进入 Baseline Newly Available（时间以最后一个引擎的稳定版为准）。
 - 具体到每个子特性（`anchor-size()`、`position-visibility` 等）的引擎支持差异，以 MDN / caniuse 为准。
-- 生产环境建议：用 `@supports` 检测，不支持时回退到固定定位或 JS 方案（见第 11 节）。
+- 生产环境建议：已全引擎可用的新项目可直接使用；仍需覆盖旧版本用户时，用 `@supports` 检测并回退到固定定位或 JS 方案（见第 11 节）。
 
 ```css
 /* 特性检测：支持锚点定位才启用锚点方案 */
@@ -258,6 +260,52 @@ top: anchor(center);              /* 锚点垂直中线 */
 4. 用 `anchor-size(width)` 做一个与按钮同宽的下拉菜单；
 5. 进阶挑战：`popover` + 隐式锚点 + `@position-try` 实现无 JS、防溢出的下拉菜单。
 
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 4、7、8 节的示例代码自己写，再对照参考实现。
+
+**任务一**：写一个纯 CSS 的 tooltip——触发元素是 `.btn`，弹层是 `.tip`（DOM 中紧随按钮之后）。要求：弹层出现在按钮正上方居中，与按钮保持 8px 间距；弹层跟随按钮滚动；不支持锚点定位的环境里弹层退化为「相对父容器顶部居中」的静态定位。
+
+**任务二**：写一个与按钮同宽的下拉菜单 `.menu`，默认展开在按钮下方并向右拉伸到按钮右边缘；视口下方放不下时整体翻转到上方。用到的成员：`anchor-name`、`position-anchor`、`position-area`、`anchor-size()`、`position-try-fallbacks`。
+
+**提示**：两个任务的弹层都必须 `position: absolute` 才会生效（第 4 节硬性条件）；任务一的「退化」用 `@supports (anchor-name: --a)` 包住锚点规则（第 11 节）；任务二的「同宽 + 防翻转」各是一个成员就能解决（第 7、8 节）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.btn { anchor-name: --btn; }
+
+.tip {
+  position: absolute;
+  bottom: calc(100% + 8px);   /* 静态回退：父容器上方居中 */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@supports (anchor-name: --a) {
+  .tip {
+    bottom: auto;
+    left: auto;
+    transform: none;
+    position-anchor: --btn;
+    position-area: top;
+    margin-bottom: 8px;
+  }
+}
+
+/* 任务二 */
+.menu {
+  position: absolute;
+  position-anchor: --btn;
+  position-area: bottom span-right;
+  width: anchor-size(width);
+  position-try-fallbacks: flip-block;
+}
+```
+
+验收点：任务一里静态回退的 `bottom/left/transform` 必须在 `@supports` 内显式清掉，否则两套定位叠加；任务二把窗口压窄到下方放不下，菜单应整体跳到按钮上方而不是被裁掉。
+
 ## 核心知识点
 
 > 一句话记住锚点定位：anchor-name 命名锚点，position-anchor 引用，position-area 定方位，anchor()/anchor-size() 精细取值，position-try 防溢出。
@@ -268,7 +316,7 @@ top: anchor(center);              /* 锚点垂直中线 */
 - `position-try-fallbacks` + `@position-try` + `position-try-order` 构成溢出回退体系；
 - `position-visibility: anchors-visible` 处理锚点滚出视口的情况；
 - 与 Popover API 搭配（隐式锚点）可实现零 JS 弹层；
-- 2025 年进入 Baseline Newly Available（Chrome/Edge 125 起，Safari/Firefox 2025 年内跟进），用 `@supports` 做渐进增强。
+- Chrome/Edge 125（2024-05）、Safari 26（2025-09）、Firefox 147（2026-01）相继落地，2026 年起进入 Baseline Newly Available；旧版本覆盖需求仍在时用 `@supports` 做渐进增强。
 
 ## 注意事项与改进建议
 

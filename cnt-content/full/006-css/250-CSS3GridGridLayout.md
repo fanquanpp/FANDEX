@@ -817,23 +817,18 @@ Grid 在现代浏览器中得到了广泛支持，但在一些旧版本浏览器
 | Edge    | 16+      |
 | IE      | 不支持   |
 
-### 7.2 前缀使用
+### 7.2 前缀：不需要，别被老教程误导
 
-在一些旧版本浏览器中，需要使用厂商前缀。
+现代 Grid（上表所列版本起）全部无需任何厂商前缀，直接写 `display: grid` 即可。老教程里的 `-ms-grid` 系列前缀属于 IE10/11 时代的旧 Grid 规范（2011 年版），属性名与行为都与现代 Grid 不兼容——它不是现代 Grid 的「前缀」，而是另一套已死的方言；IE 自 2022-06 起彻底停止支持，没有任何理由再写 `-ms-` 前缀。Grid 自 2017 年三大引擎齐备后进入 Baseline，兼容策略是「旧浏览器提供 flex 兜底」，而不是前缀。
 
 ```css
-/* 带前缀的 Grid */
+/* 现代写法：零前缀 */
 .container {
-  display: -ms-grid; /* IE */
   display: grid;
-  -ms-grid-columns: 1fr 2fr 1fr;
   grid-template-columns: 1fr 2fr 1fr;
-  -ms-grid-rows: 50px 1fr 50px;
   grid-template-rows: 50px 1fr 50px;
 }
 .item {
-  -ms-grid-column: 1;
-  -ms-grid-column-span: 3;
   grid-column: 1 / 4;
 }
 ```
@@ -1797,16 +1792,24 @@ Grid 布局是一种强大的二维布局系统，具有以下优势：
 
 ---
 
-**基本写法：grid-template-rows/columns masonry 砌体布局**
-`grid-template-rows: masonry;`
+**基本写法：masonry 砌体布局（实验性，标准名 Grid Lanes）**
+`display: grid-lanes;`（规范定稿写法；早期提案的 `grid-template-rows: masonry` 已被取代）
 ```css
-/* 砌体布局:类似 Pinterest 瀑布流 */
+/* 砌体布局（Pinterest 瀑布流）：规范方案 2026-01 定稿为 CSS Grid Lanes；
+   截至 2026-11 仅 Safari 26.4+ 默认启用，Chromium/Firefox 在 flag 后——
+   生产环境当渐进增强写，用 @supports 包裹并提供多栏/JS 兜底 */
 .masonry {
-  display: grid;
+  display: grid-lanes;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  /* 行轨道按砌体方式排列 */
-  grid-template-rows: masonry;
   gap: 16px;
+}
+
+/* 兜底：不支持的引擎退回普通 grid（或多栏 columns） */
+@supports not (display: grid-lanes) {
+  .masonry {
+    columns: 200px;
+    column-gap: 16px;
+  }
 }
 ```
 
@@ -1888,3 +1891,46 @@ Grid 布局是一种强大的二维布局系统，具有以下优势：
 - 响应式：`css/370-ResponsiveDesign`；
 - 实战：`css/680-CSSProjectExampleResponsiveHomepage`；
 - 快速上手入门：`css/690-GridQuickStart`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住「自动布局」「常见布局模式」「响应式 Grid」三节的示例代码自己写，再对照参考实现。
+
+**任务一**：默写「页面骨架」——头部横跨全行、左侧导航 200px、主区自适应、底部横跨全行；只允许 `grid-template-areas` + `grid-area` 完成，不写一行媒体查询。
+
+**任务二**：写出「自适应卡片网格」——每张卡最小 240px、空间多余时等分拉满；容器变窄到放不下 240px 时列数自动减少；并回答 `auto-fit` 与 `auto-fill` 在「只有两张卡」时的行为差异。
+
+**提示**：任务一先在纸上画 2 行 2 列的格子再命名区域（`grid-template-areas` 要求每行引号内的区域数相等）；任务二是 `repeat(auto-fit, minmax(240px, 1fr))` 的标准配方，两值差异看「空轨道」是折叠还是保留（响应式 Grid 一节）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.page {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "nav    main"
+    "footer footer";
+  grid-template-columns: 200px 1fr;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+}
+
+.page .header { grid-area: header; }
+.page .nav    { grid-area: nav; }
+.page .main   { grid-area: main; }
+.page .footer { grid-area: footer; }
+
+/* 任务二 */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+/* auto-fit：空轨道折叠成 0，两张卡拉伸占满整行；
+   auto-fill：空轨道保留占位，两张卡各占一格，右侧留空格 */
+```
+
+验收点：任务一里若漏写 `"footer footer"` 那一行，`grid-area: footer` 将指向一个不存在的区域、页脚落进隐式网格——先画格子再命名正是 areas 语法的使用纪律；区域名拼错或某行区域数不一致时整条 `grid-template-areas` 无效、布局退化为单列，这是「声明式模板」的静默失效现场。任务二把 `auto-fit` 换成 `auto-fill` 后两张卡从「拉伸铺满」变成「靠左留空」，一眼区分两者。

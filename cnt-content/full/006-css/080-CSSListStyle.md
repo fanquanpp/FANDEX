@@ -125,3 +125,43 @@ ul {
 - `::marker`：`css/140-PseudoClassPseudoElement`；
 - 选择器：`css/130-CSS3SelectorSystem`；
 - 导航实战：`css/680-CSSProjectExampleResponsiveHomepage`。
+
+## 6. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1 节的示例代码自己写，再对照参考实现。
+
+**任务一**：写一个横向导航——`<ul class="nav">` 里有三个 `<li><a>`，要求：无标记、标记不占布局、链接横向排开（本篇只考列表部分，横向排列用 `display: inline-block` 即可）。
+
+**任务二**：给一个「文件清单」`<ul>` 用图片标记（`check.svg`），并回答：标记颜色想改成红色，`list-style-image` 做得到吗？写出更好的方案。
+
+**提示**：任务一考「去掉标记但不换标签」——语义要保留（第 1.1 节讲解），`list-style: none` 一行即可；任务二的「红色标记」考的是 `list-style-image` 不会继承文字颜色这个限制，替代方案是 `::marker` 的 `color` + `content`（第 1.1 节末句与第 5 节扩展）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.nav {
+  list-style: none; /* 类型/位置/图片一并清掉，导航的标准起点 */
+  padding-left: 0;  /* 去点之后别忘了把默认缩进也收掉 */
+}
+
+.nav li {
+  display: inline-block;
+  margin-right: 16px;
+}
+
+/* 任务二 */
+ul.files {
+  list-style-image: url("check.svg");
+  list-style-type: disc; /* 图片加载失败时的兜底标记 */
+}
+
+/* 红色标记的正路：list-style-image 不吃 color，
+   ::marker 伪元素把标记当成可着色的内容 */
+ul.done li::marker {
+  color: red;
+  content: "→ ";
+}
+```
+
+验收点：任务一如果只写 `list-style: none` 不清 `padding-left`，列表会有默认 40px 缩进，「横向导航」会歪；任务二里把 `check.svg` 路径写错后应看到 disc 兜底圆点而不是空白——这正是「image + type 双保险」的意义。

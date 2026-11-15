@@ -113,3 +113,43 @@ prerequisites:
 - 文本与字体：`css/070-TextAndFontsBasics`；
 - 国际化与可访问性样式：`css/500-AccessibleStyling`；
 - 排版进阶：`css/490-TypeScaleAndSpacingTokens`。
+
+## 9. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1-4 节的示例代码自己写，再对照参考实现。
+
+**任务一**：实现「中式竖排书签」——一段唐诗竖排显示（行从右往左推进），年份「2026」要求直立压缩成一个数字串，拉丁字母不旋转。
+
+**任务二**：口算轴翻转——`writing-mode: vertical-rl` 容器里，`margin-block-start` 与 `padding-inline-start` 各对应哪个物理方向？把两者各写一行并注明映射结果。
+
+**提示**：任务一的三个开关分别是 `writing-mode`、`text-combine-upright: all`、`text-orientation: upright`（第 1-2 节）；任务二靠「名字拆解法」——vertical-rl 是行内方向垂直、块级方向从右到左，block 轴变成水平、inline 轴变成竖直（第 1 节讲解）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.scroll {
+  writing-mode: vertical-rl;      /* 竖排：行垂直，新行从右往左推进 */
+  text-orientation: mixed;         /* 中文直立、拉丁字母旋转（默认值） */
+}
+
+.scroll .year {
+  text-combine-upright: all;       /* 2026 压缩成一个直立数字串 */
+}
+
+/* 若要求拉丁字母也直立 */
+.scroll .latin {
+  text-orientation: upright;
+}
+
+/* 任务二 */
+/* vertical-rl 下：
+   margin-block-start = margin-right（块级方向从右往左，起点在右）
+   padding-inline-start = padding-top（行内方向自上而下，起点在上） */
+.v-card {
+  margin-block-start: 16px;   /* 物理右侧留白 */
+  padding-inline-start: 8px;  /* 物理顶部留白 */
+}
+```
+
+验收点：任务二在 DevTools 的 Computed 面板里能看到 `margin-block-start` 展开为 `margin-right`——轴映射以计算值为准，不要凭横排直觉猜；任务一里若漏了 `text-combine-upright`，年份会四个数字各占一格，竖排节奏全乱。

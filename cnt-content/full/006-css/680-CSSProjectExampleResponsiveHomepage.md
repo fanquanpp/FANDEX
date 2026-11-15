@@ -1165,3 +1165,57 @@ document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
 - Flex：`css/240-CSS3FlexboxFlexLayout`；
 - 响应式：`css/370-ResponsiveDesign`；
 - 性能：`css/540-CSSPerformanceOptimizationDetailed`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住本文各节的实现代码，自己从空文件搭一遍再对照。
+
+**任务一**：不看正文，从零写出项目骨架——目录分层（reset/变量/基础/组件/布局五个文件名）、`:root` 里至少六组变量（色板三组、间距、圆角、阴影）、深色主题的覆盖入口。
+
+**任务二**：把本文「卡片墙 + 导航 + 双主题」三个核心块各用 10 行以内默写出来——卡片墙用 auto-fit 配方、导航用 flex 两端对齐、主题用 `prefers-color-scheme` 换变量表；写完与正文对照并标注自己漏了哪个零件。
+
+**提示**：任务一对照「运行说明」前的分层清单——变量层放语义令牌而不是裸色值；任务二的三个块分别在卡片、导航与主题章节，验收点是「每个零件都能说出来源」：auto-fit 管列数（Grid 篇）、flex 管对齐（Flexbox 篇）、媒体查询只换变量（媒体查询篇 3.4 节）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一（styles/variables.css 骨架） */
+:root {
+  --color-bg: #f8fafc;
+  --color-text: #171717;
+  --color-primary: #2563eb;
+  --space-2: 8px;
+  --space-4: 16px;
+  --radius-md: 8px;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.07);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0f172a;
+    --color-text: #e5e7eb;
+    /* 阴影在深色下弱化：亮表面加细边替代加大阴影 */
+    --shadow-1: 0 0 0 1px rgb(255 255 255 / 0.08);
+  }
+}
+
+/* 任务二 */
+.nav {
+  display: flex;
+  justify-content: space-between; /* 两端对齐：logo 贴左、菜单贴右 */
+  align-items: center;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+```
+
+验收点：任务二里若把主题切换写成逐组件的 `@media` 块（每个组件里各写一遍深色），变量表方案只需一处——「组件不感知主题」是这套架构的核心验收标准；卡片墙在只有两张卡时用 `auto-fit` 会拉伸铺满，若想保留空轨道应换 `auto-fill`（Grid 篇第 7 节）。

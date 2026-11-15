@@ -112,7 +112,7 @@ prerequisites:
 }
 ```
 
-**讲解：** 不支持滚动驱动动画的浏览器会忽略 `animation-timeline`，此时应保证普通动画先声明，作为兜底。Chrome/Edge 已稳定支持多年，Safari 的较新版本已跟进，Firefox 支持仍在推进中——上线前以 caniuse / MDN 实时数据为准，并用 `@supports (animation-timeline: scroll())` 精确开关增强样式。
+**讲解：** 不支持滚动驱动动画的浏览器会忽略 `animation-timeline`，此时应保证普通动画先声明，作为兜底。支持现状（截至 2026-11）：Chrome/Edge 115 起（2023）稳定支持，Safari 26（2025-09）跟进，Firefox 159（2026-10-27）默认启用——滚动驱动动画就此进入 Baseline Newly Available；仍需覆盖更旧版本时，用 `@supports (animation-timeline: scroll())` 精确开关增强样式，兜底写法保留价值不变。
 
 ## 6. 动手试试
 
@@ -121,7 +121,51 @@ prerequisites:
 3. 用 `animation-range: exit` 实现元素滚出时淡出；
 4. 进阶挑战：用命名时间线做一个“滚动翻页”的长页叙事。
 
-## 7. 核心知识点
+## 7. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1-4 节的示例代码自己写，再对照参考实现。
+
+**任务一**：写一个阅读进度条——`<div class="progress">` 固定在页面顶部，随整页滚动从左到右填满（`scaleX(0)` 到 `scaleX(1)`）。要求：不支持滚动驱动动画的浏览器里进度条不显示动画也不报错。
+
+**任务二**：正文区 `.scroller` 内部滚动，顶栏的 `.progress` 是它的兄弟元素。让进度条仍然跟随正文滚动——不许把进度条挪进 `.scroller`。
+
+**提示**：任务一用 `animation-timeline: scroll()`，注意普通动画声明要放在 `animation-timeline` 之前当兜底（第 5 节）；任务二考的是「命名时间线只能被滚动容器后代引用」这条限制——在共同祖先上用 `timeline-scope` 把名字提上去（第 4 节）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.progress {
+  height: 4px;
+  background: #4f5bd5;
+  transform-origin: left;
+  animation: grow linear both;      /* 兜底动画在前 */
+  animation-timeline: scroll(root); /* 明确跟随根滚动容器 */
+}
+
+@keyframes grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* 任务二 */
+.page {
+  timeline-scope: --page; /* 共同祖先上提升命名时间线 */
+}
+
+.scroller {
+  scroll-timeline-name: --page;
+}
+
+.progress {
+  animation: grow linear both;
+  animation-timeline: --page; /* 兄弟节点现在也能引用 */
+}
+```
+
+验收点：任务一漏写兜底动画时，不支持 `animation-timeline` 的浏览器会把整条 `animation` 当无效——进度条直接消失；任务二删掉 `timeline-scope` 后进度条应完全不动，这是验证「提升」是否生效的最快方法。
+
+## 8. 核心知识点
 
 > 一句话记住滚动驱动动画：animation-timeline 指向 scroll()/view()/命名时间线，动画进度跟滚动走，animation-range 控制播放窗口。
 
@@ -132,7 +176,7 @@ prerequisites:
 - 先写普通动画做兼容兜底；
 - 与滚动捕捉（`css/440-ScrollSnap`）搭配可做翻页体验。
 
-## 8. 注意事项与改进建议
+## 9. 注意事项与改进建议
 
 | 问题点 | 说明 | 改进方案 |
 | --- | --- | --- |
@@ -141,7 +185,7 @@ prerequisites:
 | 动画范围失控 | 元素一出现就播完 | 用 `animation-range` 收缩窗口 |
 | 忽略 reduced-motion | 大量滚动动画加重不适 | 媒体查询中禁用滚动驱动动画 |
 
-## 9. 扩展学习
+## 10. 扩展学习
 
 - 动画与过渡：`css/330-CSSAnimationTransition`；
 - 滚动捕捉：`css/440-ScrollSnap`；

@@ -152,3 +152,59 @@ ol li::before {
 - 列表样式：`css/080-CSSListStyle`；
 - 选择器：`css/130-CSS3SelectorSystem`；
 - 内容生成：`css/120-CSSFunctions` 中 `counter()` 函数。
+
+## 6. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1 节的示例代码自己写，再对照参考实现。
+
+**任务一**：给文档页的 `h2/h3` 写「1 / 1.1 / 1.2」两级自动编号——h2 用一级计数器，h3 用嵌套计数器（counters），并保证 h2 换章时二级编号归零。
+
+**任务二**：把自定义有序列表做成「（一）（二）（三）」中文编号——原生标记隐藏、计数器输出中文序号；回答「为什么编号写在 CSS 里比手写进 HTML 更稳」。
+
+**提示**：任务一的骨架是「容器 reset、h2 递增一级、h3 递增二级 + `counters(chapter, ".")`」，二级归零靠 reset 声明在 h2 上（每个 h2 都是新的作用域起点）；任务二用 `cjk-ideographic` 或手写格式（第 2 节提示），三步曲顺序是 reset → increment → counter()。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.doc {
+  counter-reset: chapter; /* 文档级：一级计数器归零 */
+}
+
+.doc h2 {
+  counter-reset: section;   /* 每个 h2 开启新的二级作用域 */
+  counter-increment: chapter;
+}
+
+.doc h2::before {
+  content: counter(chapter) " ";
+}
+
+.doc h3 {
+  counter-increment: section;
+}
+
+.doc h3::before {
+  content: counters(chapter, ".") "." counter(section) " ";
+  /* counters(chapter, ".") 输出外层编号；再接二级值 → 「1.1」 */
+}
+
+/* 任务二 */
+ol.steps {
+  counter-reset: step;
+  list-style: none; /* 先隐藏原生编号，否则双编号 */
+}
+
+ol.steps li {
+  counter-increment: step;
+}
+
+ol.steps li::before {
+  content: "（" counter(step, cjk-ideographic) "）";
+}
+
+/* 编号放 CSS 的理由：增删条目、调整顺序后编号自动重算，
+   内容（HTML）与呈现（编号格式）分离——JS 手写编号会随编辑漂移 */
+```
+
+验收点：任务一里若忘写 `counter-reset: section` 在 h2 上（例如写在容器上），第二章的 h3 会从「2.4」继续而不是回到「2.1」——作用域归零点是嵌套计数器的核心；任务二若漏 `list-style: none`，列表会同时出现「1. （一）」双编号。

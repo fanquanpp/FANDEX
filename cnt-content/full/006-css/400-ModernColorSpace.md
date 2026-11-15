@@ -220,6 +220,52 @@ oklch(L C H) 把颜色拆成三个可独立拧的旋钮：**L**（Lightness，�
 - 能说出 color-mix 的 in 参数决定什么、与 transparent 混合为何只动透明度；
 - 能默写双声明与 @supports 两种降级各自的适用场合，拿到没见过的颜色函数第一反应开 caniuse。
 
+## 12. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 3、4、5 节的示例代码自己写，再对照参考实现。
+
+**任务一**：从零写一套品牌绿色阶——变量名 `--leaf-100` 到 `--leaf-900` 共五档，色相用 145，全部用 oklch()；要求浅端与深端各降一档色度；再写一条规则把 `body` 的文字色设为中间档并配 hex 兜底。
+
+**任务二**：只允许引用 `var(--leaf-500)`（不许出现新的 oklch 字面量），派生三个颜色——hover 时更暗 10%、浅底变体（几乎白）、40% 透明度遮罩，每个声明都写出兜底行。
+
+**提示**：任务一考验「三个旋钮互不牵连」——五档只该动 L，两端顺手降 C（第 3 节）；任务二的三种派生各对应 color-mix 的一条要点：in 空间、比例只写一头、与 transparent 混合只动透明度（第 4 节）；兜底行靠层叠覆盖，写在前（第 5 节）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+:root {
+  --leaf-100: oklch(96% 0.03 145);
+  --leaf-300: oklch(80% 0.10 145);
+  --leaf-500: oklch(60% 0.18 145);
+  --leaf-700: oklch(45% 0.16 145);
+  --leaf-900: oklch(28% 0.09 145);
+}
+
+body {
+  color: #4d7c0f;                    /* hex 兜底 */
+  color: var(--leaf-500);
+}
+
+/* 任务二 */
+.btn:hover {
+  background: #3f6212;                                /* 兜底 */
+  background: color-mix(in oklch, var(--leaf-500), black 10%);
+}
+
+.card-soft {
+  background: #f7fee7;                                /* 兜底 */
+  background: color-mix(in oklch, var(--leaf-500), white 90%);
+}
+
+.overlay {
+  background: rgba(101, 163, 41, 0.4);                /* 兜底 */
+  background: color-mix(in srgb, var(--leaf-500), transparent 60%);
+}
+```
+
+验收点：任务二里三个派生都不得写死色相——把 145 换成 29 后页面应整体变橙红；遮罩那行混 transparent 时用 `in srgb` 或 `in oklch` 都可以，因为与 transparent 混合在预乘透明度规则下只动透明度，但要能说出为什么浅底变体更推荐 `in oklch`（中间路径不路过低饱和浑浊区）。
+
 ## 本章总结
 
 hex 与 rgb 住在 sRGB 里：色域窄，装不下广色域屏的鲜艳色；亮度不按人眼感知，配色只能手调。oklch(L C H) 用感知均匀的三个旋钮把明暗与色相解耦，同一 L 不同色相一样亮，色阶可批量生成。color-mix 把派生色变成声明式，in oklch 是派生场景的默认选择，与 transparent 混合只动透明度。降级靠双声明与 @supports 门闩，原则是渐进增强：先能看，再更好。兼容性事实会过期，caniuse 与 DevTools 警告图标是常备工具。

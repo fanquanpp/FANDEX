@@ -446,3 +446,41 @@ function Card({ variant, children }) {
 - BEM：`css/600-BEMNamingMethodology`；
 - @layer：`css/450-CascadeLayer`；
 - 变量：`css/410-CSSVariableCustomAttribute`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2-3 节的示例代码自己写，再对照参考实现。
+
+**任务一**：用 OOCSS 思想重构——一份样式表里出现了 `.blue-btn-large`、`.green-btn-small`、`.blue-btn-small` 三个类，各写全量样式；写出拆分后的结构（结构与皮肤分离、组合使用），并说明类定义数量与可扩展性的变化。
+
+**任务二**：给一个项目做 SMACSS 分层——把「reset.css、.btn 组件、.is-hidden 工具、布局栅格、主题色变量」五样归入对应分类，各给一句归档理由。
+
+**提示**：任务一的关键是「每个类只负责一个维度」——结构（尺寸、形状）与皮肤（颜色）分开定义、组合使用（OOCSS 两条原则，第 2 节）；任务二对照第 3 节分类定义，判断标准是「这条规则变了会牵动谁」。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一：2 个基类 + 维度增量，组合出全部按钮且可继续扩展 */
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn--large { padding: 12px 24px; }               /* 结构维度：尺寸 */
+.btn--blue  { background: #2563eb; color: #fff; } /* 皮肤维度：颜色 */
+.btn--green { background: #16a34a; color: #fff; }
+
+/* 用法：<button class="btn btn--large btn--blue">
+   三种按钮的全量定义从 3 份收敛为「1 基类 + 3 增量」 */
+
+/* 任务二 */
+/* base：reset.css —— 全局地基，牵动一切，改动最克制 */
+/* layout：布局栅格 —— 只管「页面骨架」不管「长相」 */
+/* module：.btn 组件 —— 自包含的可复用视觉单元 */
+/* state：.is-hidden —— 描述「当前处于什么状态」，JS 可切换 */
+/* theme：主题色变量 —— 换肤只动这一层，组件层不感知 */
+```
+
+验收点：任务一里若在 `.btn--blue` 里也写 padding，两条皮肤类开始互相牵制——OOCSS 的红利只在「一维一类」时兑现；任务二里把 `.is-hidden` 塞进 module 会让「状态切换」与「组件样式」耦合，`.is-*` 前缀约定正是为了切开这两件事。

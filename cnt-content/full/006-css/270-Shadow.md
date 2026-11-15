@@ -221,7 +221,56 @@ box-shadow 变化触发重绘（不是重排），元素大、列表长时 hover
 - 给透明 PNG 图标配阴影时会选 drop-shadow 并说清原因；
 - 知道动画阴影的 60fps 方案是把阴影常驻伪元素、hover 只动 opacity。
 
-## 本章总结
+## 11. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2-3 节的示例代码自己写，再对照参考实现。
+
+**任务一**：默写三档海拔令牌并各配一个使用者——输入框（贴桌面细影）、下拉菜单（中等浮起）、模态框（最高层大柔影）；全部用半透明黑，光源统一正上方。
+
+**任务二**：两个场景各写一行正确工具——透明 PNG 图标要贴轮廓投影；给一个 48px 的卡片列表做「hover 抬升不掉帧」的动画方案（写出完整伪元素配方）。
+
+**提示**：任务一对照第 3.2 节直觉规则「层级越高越大越柔越淡」，令牌名见示例；任务二的第一空是 box-shadow 与 drop-shadow 的分界（第 3.3 节），第二空是「影不离身、动的是透明度」（第 3.4 节），别忘了 `border-radius: inherit`。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+:root {
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.07);
+  --shadow-2: 0 1px 2px rgb(0 0 0 / 0.07), 0 4px 12px rgb(0 0 0 / 0.08);
+  --shadow-3: 0 2px 4px rgb(0 0 0 / 0.07), 0 12px 32px rgb(0 0 0 / 0.12);
+}
+
+.input  { box-shadow: var(--shadow-1); }
+.menu   { box-shadow: var(--shadow-2); }
+.modal  { box-shadow: var(--shadow-3); }
+
+/* 任务二 */
+.icon {
+  filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.3)); /* 沿不透明轮廓投影 */
+}
+
+.card {
+  position: relative;
+  border-radius: 12px;
+  transition: transform 0.3s;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit; /* 跟随卡片圆角，否则方角影子露馅 */
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.12);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.card:hover { transform: translateY(-4px); } /* 只碰 transform/opacity */
+.card:hover::after { opacity: 1; }
+```
+
+验收点：任务一里把某档颜色改成实色 `#000` 立刻廉价——半透明黑是铁律；任务二删掉 `border-radius: inherit` 后圆角卡片 hover 时四角会露出方形阴影边，这是伪元素方案最高频的翻车点。
 
 阴影是层级语言：五段语法（x、y、模糊、扩展、色）加 inset 反转，多条叠加出「近锐远柔」的海拔。设计守则三条：永远半透明色、全站统一光源、尺度随元素大小。box-shadow 沿盒子、drop-shadow 沿轮廓，异形用后者。动效上，大阴影常驻伪元素、hover 只切 opacity，是 60fps 的标准姿势。工程落点是把海拔收进令牌，深色主题用亮表面加细边替代加大阴影。
 

@@ -243,6 +243,8 @@ div ul li a span {
 }
 ```
 
+> 2026 年的口径提醒：「从右到左匹配」值得理解——它解释了为什么右侧选择器决定匹配基数；但上表的效率排序在当代引擎里已属于微优化（现代选择器匹配高度优化，真实页面的选择器开销几乎不进性能画像）。选择器设计的首要标准是**可维护性**（贴近结构语义、短而平），其次才是极端场景的微调；别按这张表把可读的后代选择器改成冗长的类名链。
+
 ## 5. 渲染性能优化
 
 ### 5.1 触发重排的属性
@@ -410,3 +412,32 @@ npx postcss styles.css -u cssnano -o styles.min.css
 - 渲染路径：`css/550-CriticalRenderPathOptimization`；
 - 指标：`javascript/510-CoreWebVitalsAndPerformanceMetrics`；
 - 动画：`css/330-CSSAnimationTransition`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 5 节的三张属性表自己答，再对照参考实现。
+
+**任务一**：把 12 个属性分进「重排 / 重绘 / 仅合成」三个桶——`width`、`color`、`transform`、`box-shadow`、`font-size`、`opacity`、`top`、`background-color`、`display`、`filter`、`padding`、`visibility`，并写出动画选型的推论。
+
+**任务二**：回答两问——（a）为什么「动画只碰 transform 与 opacity」这条铁律成立；（b）`will-change` 应该常驻还是按需写，错误的常驻会带来什么。
+
+**提示**：任务一对照第 5.1-5.3 节三张表——判定标准是「改动是否影响布局几何」（几何变 = 重排；只重新上色 = 重绘；已有独立图层内变化 = 合成）；任务二(b)见 5.4 节与第 230 篇的合成层讨论。
+
+**参考实现**（先自己写完再看）：
+
+```text
+/* 任务一 */
+/* 重排（Layout）：width、font-size、top、display、padding */
+/* 重绘（Paint）：color、box-shadow、background-color、visibility */
+/* 仅合成（Composite）：transform、opacity、filter */
+
+/* 推论：动画只从「仅合成」桶里选属性；60fps 的预算里
+   重排是每帧全文档几何计算，重绘是像素级重涂，合成是 GPU 平移已有图层 */
+
+/* 任务二 */
+/* (a) transform/opacity 的变化在合成器线程完成，不进主线程的
+       布局与绘制流水线——主线程再忙动画也不掉帧 */
+/* (b) 按需写（动画前加、结束后移除，或只在 :hover 等明确时机）；
+       常驻 will-change 让元素长期占据合成层与显存，层数一多
+       内存暴涨、层爆炸反而拖慢合成 */
+```

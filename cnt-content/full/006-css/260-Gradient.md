@@ -234,7 +234,68 @@ prerequisites:
 - 渐变文字三件套能默写，并说出无支持环境的降级策略；
 - 蓝黄渐变发灰时知道加 `in oklch`，并说清原因。
 
-## 本章总结
+## 11. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2-3 节的示例代码自己写，再对照参考实现。
+
+**任务一**：不查资料写出三个零图片组件——45 度灰白条纹带（周期 16px）、75% 进度的绿色进度环（灰色底环 + 镂空）、三段式饼图（30%/40%/30%）。
+
+**任务二**：写出「渐变大标题」的完整三行配方，并补一条「不支持 background-clip: text 时给纯色」的 @supports 兜底；再把主渐变改成 oklch 插值版本。
+
+**提示**：任务一全部由「同位置双色标」的硬停派生（第 3.1 节），进度环的镂空用伪元素内圆（或 mask）；任务二三行缺一不可且顺序固定（第 3.3 节），oklch 插值写在方向参数之后（第 3.4 节）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.stripes {
+  background: repeating-linear-gradient(
+    45deg,
+    #e2e8f0 0 8px,
+    #94a3b8 8px 16px
+  );
+}
+
+.ring {
+  border-radius: 50%;
+  background: conic-gradient(#22c55e 0 75%, #e2e8f0 75% 100%);
+}
+
+.ring::before {
+  content: '';
+  display: block;
+  margin: 20px;
+  border-radius: 50%;
+  background: #fff;
+  aspect-ratio: 1;
+}
+
+.pie {
+  border-radius: 50%;
+  background: conic-gradient(
+    #ef4444 0 30%,
+    #f59e0b 30% 70%,
+    #22c55e 70% 100%
+  );
+}
+
+/* 任务二 */
+.gradient-text {
+  background: linear-gradient(to right in oklch, #7c3aed, #2563eb);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@supports not (background-clip: text) {
+  .gradient-text {
+    background: none;
+    color: #2563eb; /* 降级纯色，文字可读 */
+  }
+}
+```
+
+验收点：任务一饼图若把相邻分段写成 `#f59e0b 30% 40%, #f59e0b 40% 70%` 会得到无过渡的纯色段——同位置双色标才是「硬边」，异位置才有渐变；任务二里把 `color: transparent` 写在 `background-clip` 之前不会报错，但兜底块里必须显式把 `background` 清掉，否则残留渐变会盖住纯色文字。
 
 渐变是数学描述的图像：linear 沿直线、radial 从圆心扩散、conic 绕圈，色标带位置即可分段，同位置即硬停——条纹、饼图、进度环全部由硬停派生。渐变文字三件套（background、background-clip: text、color: transparent）缺一不可；跨色相渐变发灰是 sRGB 插值的锅，`in oklch` 一行修复。工程上把渐变收进变量令牌，主题换色改一张表；动渐变先想性能，值动画交给注册过的 @property 变量。
 

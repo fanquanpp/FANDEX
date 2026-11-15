@@ -147,3 +147,47 @@ table {
 - 隔行变色：`css/140-PseudoClassPseudoElement` 的 `:nth-child`；
 - 响应式表格：`css/370-ResponsiveDesign`；
 - 数据可视化：用 `css/250-CSS3GridGridLayout` 做网格布局。
+
+## 6. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1 节的示例代码自己写，再对照参考实现。
+
+**任务一**：给一张「订单表」写样式——合并相邻边框、表头有底色、奇偶行隔行变色、标题 `<caption>` 置于表格下方；列宽不随内容乱撑（用 `fixed` 模式并给两列显式宽度）。
+
+**任务二**：回答两问——（a）`border-spacing: 8px` 写在 `border-collapse: collapse` 的表上为什么不生效；（b）`table-layout: fixed` 快在哪里、代价是什么。
+
+**提示**：任务一是第 1.6 节标准套路加两处新要求：`caption-side: bottom` 与 `table-layout: fixed`（fixed 模式的列宽由第一行决定，给 `th` 设 `width`）；任务二的两个「为什么」分别在第 1.2、1.5 节的讲解里。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+th { width: 30%; }     /* fixed 模式：第一行的列宽决定全表 */
+td { width: 70%; }
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+}
+
+th { background: #f5f5f5; }
+
+tbody tr:nth-child(odd) { background: #fafafa; }
+
+table caption { caption-side: bottom; }
+
+/* 任务二 */
+/* (a) border-spacing 只在 separate 模式下生效——collapse 已把相邻边框
+       合并成一条，单元格之间没有「缝」可调，属性直接被忽略 */
+/* (b) fixed 只读第一行就把列宽定死，后面的行不再参与测宽，长表格渲染更快；
+       代价是列宽不再随内容自适应，内容过长会溢出或换行，需要自己规划列宽 */
+```
+
+验收点：任务一里若忘了 `table-layout: fixed` 模式下第一行才定列宽，把宽度写在了某个 `td` 上是无效的；把 `caption-side` 写在 `<caption>` 元素自身上也无效——它要写在 `<caption>` 的父级表格上。

@@ -215,7 +215,57 @@ CSS 对应两套工具：**transition 补间**（浏览器自动在两个状态�
 - 拿到掉帧的动效能检查是否在动布局属性，并给出 transform 替代方案；
 - 知道 prefers-reduced-motion 是必做项而不是加分项。
 
-## 本章总结
+## 11. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2-3 节的示例代码自己写，再对照参考实现。
+
+**任务一**：不查资料写一个「呼吸提醒点」——8px 圆点用 @keyframes 做无限脉动（放大到 1.4 倍再回原位，ease-in-out），必须包含：完整的 animation 简写、`prefers-reduced-motion` 降级（关闭动画、保留静止圆点）。
+
+**任务二**：写一条「两属性过渡」——按钮 hover 时背景色 0.2s 过渡 + 上移 4px 带 0.3s 过冲曲线（cubic-bezier 过冲），两条属性不同时长不同曲线；再回答为什么不能写 `transition: all`。
+
+**提示**：任务一的简写顺序是「先时长后延迟」（第 3 节），infinite 循环配 linear/ease-in-out 的选择看是否需要匀速；降级块写在动画规则之后才能覆盖它（层叠顺序）。任务二的多值 transition 用逗号分隔，每段自带属性名、时长、曲线（第 3 节四件套）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+@keyframes pulse {
+  50% { transform: scale(1.4); } /* 0%/100% 不写即回到原始尺寸 */
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none; /* 关闭动画，圆点保持静止仍可见 */
+  }
+}
+
+/* 任务二 */
+.btn {
+  background: #2563eb;
+  transform: translateY(0);
+  transition:
+    background 0.2s ease,
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* 过冲贝塞尔 */
+}
+
+.btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-4px);
+}
+
+/* 不写 transition: all：新属性一加入就意外参与动画，
+   既有性能风险（可能动画了布局属性）也有可预测性问题 */
+```
+
+验收点：任务一里把 `50%` 关键帧换成 `100% { transform: scale(1.4) }` 后圆点会「瞬移放大」而不是平滑脉动——中间帧是补间的关键；任务二里若把两条过渡写成一条 `transition: all 0.3s`，背景色也会拖到 0.3s 且失去各自的曲线设计。
 
 动效两件套：transition 管「两态之间的补间」，四件套是属性、时长、曲线、延迟，只声明属性名不声明起止；@keyframes 管「多帧与循环」，animation 简写先时长后延迟，fill-mode 决定播完留不留终态。手感靠时序函数：界面偏爱 ease-out，循环用 linear，弹性靠贝塞尔过冲。性能铁律：只动 transform 与 opacity，布局属性动画是掉帧元凶。2024 年后的拼图是 @starting-style 与 allow-discrete——display 参与过渡后，「关闭时淡出」不再需要 JS 打补丁。
 

@@ -16,7 +16,7 @@ prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
 
-> 前置依赖：先读 014 定位详解，理解 z-index 基本用法。
+> 前置依赖：先读 [定位详解](/css/220-PositionDetailed)，理解 z-index 基本用法。
 
 ## 概述
 
@@ -383,6 +383,63 @@ prerequisites:
 2. 给其中一个元素加 `opacity: 0.99`，观察它是否“困住”了子元素的 z-index；
 3. 用 DevTools 的 Layers 面板查看层叠上下文；
 4. 进阶挑战：用 CSS 变量定义 `--z-dropdown/--z-modal/--z-toast` 层级体系。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住「详细用法」「嵌套层叠上下文」两节的示例代码自己写，再对照参考实现。
+
+**任务一**：构造一个「z-index 失效现场」——`.outer`（z-index: 1 的定位元素）里有一个 `z-index: 9999` 的子弹层，`.outer` 外面有一个 `z-index: 2` 的兄弟；先写下谁在上，再指出让子弹层「越狱」成功的唯一改法（不许删兄弟）。
+
+**任务二**：写出「隔离层」的规范写法——卡片 hover 时 `transform: translateY(-4px)`，卡片内部的 tooltip 需要盖过相邻卡片，但不想让 transform 把 tooltip 关进卡片自己的层叠上下文之外；用变量给出三个层级的命名方案。
+
+**提示**：任务一考「嵌套规则」：子上下文整体以父上下文的 z-index 参与外面的比较，9999 改不了牌局，能改的是 `.outer` 自己的 z-index 或去掉它创建上下文的条件（「快速上手」「嵌套层叠上下文」两节）；任务二考 `isolation: isolate`（无副作用的显式创建）与变量分层（进阶用法一节）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.outer {
+  position: relative;
+  z-index: 1; /* 现场根源：这行把整个 outer 关进了 z-index=1 的笼子 */
+}
+
+.outer .tooltip {
+  position: absolute;
+  z-index: 9999; /* 只在 outer 内部称王，对外只有 1 的话语权 */
+}
+
+.sibling {
+  position: relative;
+  z-index: 2; /* 赢的是 2 > 1，不是 2 vs 9999 */
+}
+
+/* 越狱改法：把 .outer 的 z-index 提到 3 以上，或去掉它的定位/z-index
+   （不创建上下文时，子元素的 z-index 直接参与外层比较） */
+
+/* 任务二 */
+:root {
+  --z-card: 1;
+  --z-card-hover: 2;
+  --z-tooltip: 10;
+}
+
+.card {
+  position: relative;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  z-index: var(--z-card-hover); /* hover 时整卡升到相邻卡之上 */
+}
+
+.card .tooltip {
+  position: absolute;
+  z-index: var(--z-tooltip); /* 在卡片内部体系内仍是最顶层 */
+  isolation: isolate;        /* 需要独立隔离时才加：无副作用创建 */
+}
+```
+
+验收点：任务一里给 `.outer` 加 `opacity: 0.99` 后现场会加重——又一个隐式创建上下文的条件；任务二里若把 `--z-tooltip` 调到 99999 但忘记 hover 时卡片本身只到 2，相邻卡片里同样是 9999 的 tooltip 依然会按卡片层级分胜负——层级治理永远是「管好上下文的入口」。
 
 ## 核心知识点
 

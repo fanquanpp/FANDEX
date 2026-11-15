@@ -1271,3 +1271,43 @@ a::after {
 - 现代布局：`css/240-CSS3FlexboxFlexLayout`、`css/250-CSS3GridGridLayout`；
 - 尺寸单位：`css/020-CSS3OverviewBasicSyntax` 中单位章节；
 - 性能：避免大面积重排时的高频尺寸读写。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1、2 节与「动手试试」的示例代码自己写，再对照参考实现。
+
+**任务一**：手算两种盒模型的占宽——盒子 `width: 200px; padding: 20px; border: 5px solid #333`，分别在 `content-box` 与 `border-box` 下写出「实际占宽」；再用一行全局声明把全站统一到后者。
+
+**任务二**：实现「卡套卡」的两个变体——外卡 `margin-top: 20px`、内卡 `margin-top: 40px`：（a）写出默认行为下两者之间的实际间距与现象名称；（b）写两种打断方式并说明各自原理——注意两者都作用在父级上：一个在父级建新上下文，一个在父级加阻隔边界。
+
+**提示**：任务一的两条公式在第 2 节——content-box 是「width + padding + border」，border-box 是「width 就是你说的那个数」；任务二考垂直外边距塌陷「取最大者」与「父子穿透」（第 3 节与 060 篇），打断方式对应 BFC 与 padding/border 隔断两条路线。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+/* content-box：200 + 20×2 + 5×2 = 250px */
+/* border-box：200px（padding 与 border 向内挤压内容区） */
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* 现代项目的全局默认 */
+}
+
+/* 任务二 */
+.outer-card { margin-top: 20px; }
+.inner-card { margin-top: 40px; }
+
+/* (a) 默认：父子外边距塌陷合并取最大，外卡整体被推下 40px，
+   两卡之间是 0 间距——内卡的 margin「穿透」到了外卡外面 */
+
+/* 两种打断方式（二选一） */
+/* 方式一：父级建立新 BFC，子元素 margin 在容器内结算 */
+.outer-card { display: flow-root; }
+
+/* 方式二：父级加 padding/border 隔断塌陷路径——必须加在父级上；
+   子元素自己的 padding 挡不住它的 margin-top 与父级 margin 合并 */
+.outer-card { padding-top: 1px; }
+```
+
+验收点：任务一里给 border-box 版本写 `width: 200px; padding: 60px` 时内容区会被挤成 70px 甚至负值溢出——border-box 不是「随便多大都行」；任务二的方式一若写成给外卡 `overflow: hidden`，会连带裁掉卡内阴影与下拉菜单（060/065 篇的副作用表）。

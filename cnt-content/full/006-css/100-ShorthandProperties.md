@@ -147,3 +147,38 @@ margin: 10px 20px 30px 40px;
 - 背景完整体系：`css/290-BackgroundEnhancement`；
 - 文本与字体：`css/070-TextAndFontsBasics`；
 - 动画与过渡简写：`css/330-CSSAnimationTransition`。
+
+## 11. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1-6 节的示例代码自己写，再对照参考实现。
+
+**任务一**：只用 `padding` 的简写各写一行，实现四种方向组合——四边 10px、上下 10px 左右 20px、上 10px 左右 20px 下 30px、上 10px 右 20px 下 30px 左 40px。
+
+**任务二**：修一份「背景丢失」的样式——`.card` 本来有白色底和一张角标图，同事为了加圆角把声明改成了 `background: url("badge.png") no-repeat;`，白底消失了。要求修复并说明根因，再用 `font` 简写复现一次同类问题（改 `font-size` 结果字重变了）。
+
+**提示**：任务一背口诀「上右下左，顺时针」，3 值的中间一档是「左右」；任务二的根因在第 6 节——简写会重置未写的子属性，修法是「子属性覆盖子属性」，`font` 的同类问题同理。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.a { padding: 10px; }
+.b { padding: 10px 20px; }
+.c { padding: 10px 20px 30px; } /* 上 | 左右 | 下 */
+.d { padding: 10px 20px 30px 40px; } /* 上右下左 */
+
+/* 任务二 */
+.card {
+  background-color: #fff;            /* 白底：子属性保住 */
+  background-image: url("badge.png"); /* 只改图片，颜色不受牵连 */
+  background-repeat: no-repeat;
+  border-radius: 8px;
+}
+
+.article {
+  font: 16px/1.7 "PingFang SC", sans-serif; /* 先简写：此时 font-weight 被重置为 normal */
+  font-weight: 700;                          /* 再用子属性补回想要的重置项 */
+}
+```
+
+验收点：任务二若在 `.article` 里把 `font-weight: 700` 写在 `font` 简写之前，字重会被简写重置回 normal——「简写在前、子属性在后」是这条规则的固定动作。

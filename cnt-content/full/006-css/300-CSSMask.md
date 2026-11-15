@@ -29,7 +29,7 @@ prerequisites:
 }
 ```
 
-**讲解：** 渐变遮罩是最常用写法：黑色区域完全显示，向透明渐变处逐步隐藏，实现“图片到底部淡出”。注意兼容性：许多浏览器仍需要 `-webkit-mask-image` 前缀。
+**讲解：** 渐变遮罩是最常用写法：黑色区域完全显示，向透明渐变处逐步隐藏，实现“图片到底部淡出”。兼容性现状：标准写法（不带前缀）自 Chrome 120（2023-12）起已全主流可用，`-webkit-mask-image` 前缀行是给更旧环境的低成本兜底，成对书写即可。
 
 ## 2. 用图片做遮罩
 
@@ -88,7 +88,7 @@ prerequisites:
 
 - `mask-image` 接受渐变或图片，黑色显示、透明隐藏；
 - `mask-size`/`mask-repeat`/`mask-position` 与背景对应属性一致；
-- 兼容性：多数浏览器需要 `-webkit-` 前缀；
+- 兼容性：标准写法已全主流可用（Chrome 120 起），`-webkit-` 前缀留作旧环境兜底；
 - `clip-path` 是硬裁剪，`mask` 支持软过渡；
 - 两者都不改变元素布局占位；
 - 结合渐变函数使用最频繁，见 `css/260-Gradient`。
@@ -108,3 +108,44 @@ prerequisites:
 - 渐变：`css/260-Gradient`；
 - 滤镜组合：`css/310-CSSFilters`；
 - 函数与图像处理：`css/120-CSSFunctions`。
+
+## 9. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1-4 节的示例代码自己写，再对照参考实现。
+
+**任务一**：实现「长文预览卡」——卡片高 240px 固定，文字超出部分向下渐隐消失（保留占位、不换行裁切痕迹），并保证遮罩不挡卡片内的按钮点击。
+
+**任务二**：用一张星形 SVG 做「印章徽标」——底色元素被裁成星形显示；回答 mask 与 clip-path 在「半透明边缘」与「点击命中区域」上的两点差异。
+
+**提示**：任务一的遮罩方向是 `to bottom`，色标在「完整显示」与「完全隐藏」之间拉开距离（第 1、4 节）；任务二考 mask 的图像化裁剪（第 2 节）与第 3 节的分工表——mask 软裁剪但命中区域不变，clip-path 硬裁剪且命中区域跟着变小。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.preview {
+  height: 240px;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, black 60%, transparent 95%);
+}
+
+/* 命中区域仍是原始盒子：按钮只要在盒子内就能点，
+   即使它正处在渐隐区（视觉变淡）——这是 mask 与 clip-path 的分界 */
+
+/* 任务二 */
+.stamp {
+  width: 160px;
+  height: 160px;
+  background: #4f5bd5;
+  mask-image: url("star.svg");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+/* 两点差异：
+   (1) mask 用灰度/透明通道做软过渡（边缘可半透明），clip-path 是几何硬边；
+   (2) clip-path 裁剪后指针事件区域随之缩小，mask 不改变命中区域 */
+```
+
+验收点：任务一里把 `mask-image` 换成 `clip-path: inset(0 0 60% 0)` 会把下半段直接切掉且按钮点不到——两个工具的边界一目了然；任务二若忘写 `mask-size: contain`，星形会按原始尺寸平铺出满屏星点。

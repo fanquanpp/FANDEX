@@ -291,6 +291,40 @@ input:required::placeholder-shown {
 - 被问到「不写 JS 怎么做一个开关」，能说出 `:checked` + 相邻兄弟选择器这套方案；
 - 「伪元素不显示」时能按 content 缺失与可替换元素两条线索排查。
 
+## 11. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2、3 节的示例代码自己写，再对照参考实现。
+
+**任务一**：对一个「评论区列表」写三条规则——奇数行浅灰底；第一条顶部不加边线、末条底部不加边线（其余条目有 1px 边线）；被禁用的输入框文字变浅但「悬停有反馈」的样式不影响它。
+
+**任务二**：写一条「零优先级默认值」规则——用一组复杂选择器给 `.card` 内的标题设置默认灰色，要求后续任何一条 `.title` 规则都能无压力覆盖它；再用 `:has()` 写出「卡片里有未读标记时整个卡片加左边框」。
+
+**提示**：任务一的三个需求分别是 `:nth-child` 的奇偶公式、`:first-child/:last-child`（想清楚它们数的是「所有孩子」）、`:disabled` 与 `:hover:not(:disabled)` 的组合；任务二的关键词是 `:where()`（第 3.5 节）与「父级看后代」（`:has`），注意 `:has()` 写在容器选择器上、条件写在括号里。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.comment:nth-child(odd) { background: #f8fafc; }
+
+.comment {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.comment:first-child { border-top: none; }
+.comment:last-child { border-bottom: none; }
+
+input:disabled { color: #94a3b8; }
+input:hover:not(:disabled) { border-color: #2563eb; }
+
+/* 任务二 */
+:where(.card h2, .card h3) { color: #64748b; } /* :where 整体 (0,0,0,0)，任何规则都能盖 */
+
+.card:has(.unread) { border-left: 3px solid #f59e0b; }
+```
+
+验收点：任务一里若把 `:nth-child(odd)` 误写成 `:nth-of-type(odd)`，当列表里混入一个非 `li` 元素时两种计数的错位就会显现——这是 child 与 of-type 的分水岭；任务二若把 `:where` 换成 `:is`，这条默认值规则会继承括号里最高优先级，后续覆盖会莫名失败，正是第 5 节错误三的现场。
+
 ## 本章总结
 
 伪类一个冒号管「状态与位置」，伪元素两个冒管「造零件」。结构伪类的核心是 An+B 公式（从 A 起每隔 B 取一个，n 从 0 起）与 child/of-type 的计数差别；交互与表单伪类让样式跟随 hover、focus、checked、valid 走，全程不碰 JS；`:not` 排除、`:is` 合并、`:where` 零优先级、`:has()` 让父级看后代脸色——四件套是 2020 年代选择器的分水岭。伪元素里 `content` 是 ::before/::after 的开关，`::selection`、`::placeholder`、`::marker` 各管一小块体验。

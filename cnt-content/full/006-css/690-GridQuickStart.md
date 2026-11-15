@@ -213,6 +213,46 @@ auto-fill 与 auto-fit 只差在「空格子」：卡片只有 3 张而宽屏算
 - 「格子没按预期排」时会按三步排查（display: grid、区域名拼写、每行格子数），长内容撑破列知道换 minmax(0, 1fr)；
 - 面对布局需求，能用决策表说出选 Flex 还是 Grid。
 
+## 12. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2-3 节的示例代码自己写，再对照参考实现。
+
+**任务一**：默写「自适应相册网格」——列宽最小 200px、随容器自动增减列数、间距 16px；偶数需求补一条：最后一张孤图横跨整行铺满，不许变形（用对象适配兜住）。
+
+**任务二**：写「双区块文档页」——左侧目录 220px 固定、右侧正文自适应；正文里的长链接不许撑破右侧列。要求一条 `grid-template-columns` 完成，并用一句注释解释防撑破的那半个 minmax。
+
+**提示**：任务一是 `repeat(auto-fill, minmax(200px, 1fr))` 配方的默写（第 3.2 节），孤图横跨用 `grid-column: 1 / -1`（负数线表示「倒数第几条网格线」）；任务二防撑破的关键是 `minmax(0, 1fr)` 把最小宽度从「内容固有宽度」改成 0（第 6 节陷阱）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.album {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.album .solo {
+  grid-column: 1 / -1; /* 从第 1 条线跨到最后 1 条线：整行 */
+}
+
+.album img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 跨行后比例不定，cover 保住不变形 */
+}
+
+/* 任务二 */
+.doc-page {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr); /* 0 是关键：正文列允许收缩到 0 */
+  gap: 24px;
+}
+```
+
+验收点：任务二把 `minmax(0, 1fr)` 改回 `1fr` 后塞进一条超长 URL，正文列会被撑出横向滚动条——`1fr` 的隐式最小宽度是 auto（内容尺寸）；任务一的 `.solo` 若写成 `grid-column: span 2`，列数变化时跨列数就不对，`1 / -1` 才是「永远横跨全行」的安全写法。
+
 ## 本章总结
 
 Grid 是二维布局系统：`display: grid` 让直接子元素按格子就位，`grid-template-columns/rows` 用轨道定义行与列，px 是先扣的固定开支、fr 是剩余空间的股份，gap 把间距还给容器。repeat 加 minmax 一行声明得到响应式卡片墙；`grid-template-areas` 先画图纸再按名入座，图纸必须行列对齐、区域成矩形，长内容多的列记得 minmax(0, 1fr)。分工一句话：一维找 Flex，二维找 Grid。

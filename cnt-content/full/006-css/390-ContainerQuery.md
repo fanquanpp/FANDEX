@@ -334,7 +334,7 @@ prerequisites:
 </html>
 ```
 
-### 1.5 Style Queries：主题切换（实验性）
+### 1.5 Style Queries：主题切换
 
 ```html
 <!DOCTYPE html>
@@ -343,7 +343,8 @@ prerequisites:
 <meta charset="UTF-8">
 <title>Style Queries：基于 CSS 变量切换主题</title>
 <style>
-  /* 实验性：截至 2024 年仅 Chrome 111+ 部分支持 */
+  /* style() 查询：Chrome 111+（2023）与 Safari 18+（2024，自定义属性查询）先落地，
+     Firefox 151（2026-05）补齐后三大引擎可用；以自定义属性为查询对象是最通用的形态 */
   .theme-container {
     container-type: inline-size;
     --theme: light;
@@ -1093,7 +1094,7 @@ Material Design 3 在组件库 MDC Web 中引入容器查询：
 | `@container` 尺寸查询 | 105+ | 110+ | 16+ | 105+ |
 | `cqw` / `cqi` 单位 | 105+ | 110+ | 16+ | 105+ |
 | `container-name` 命名 | 105+ | 110+ | 16+ | 105+ |
-| Style Queries `style()` | 111+（部分） | 不支持 | 不支持 | 111+（部分） |
+| Style Queries `style()` | 111+ | 151+（2026-05） | 18+（自定义属性查询） | 111+ |
 | Tailwind `@container` 插件 | 需 v3.4+ | 需 v3.4+ | 需 v3.4+ | 需 v3.4+ |
 
 ---
@@ -1919,7 +1920,7 @@ W3C 长期拒绝将元素查询纳入规范，正是因为此问题。
 - `@container` 规则：根据容器条件应用样式。
 - `cqw`、`cqh`、`cqi`、`cqb`、`cqmin`、`cqmax` 单位：相对于容器尺寸的长度单位。
 
-2022 年 8 月，Chrome 105、Safari 16、Firefox 110 相继实现容器查询，正式进入生产可用阶段。
+2022 年 8 月起，Chrome 105（2022-08）、Safari 16（2022-09）、Firefox 110（2023-03）相继实现容器查询，2023 年进入 Baseline Newly Available。
 
 ### 6.1.5 Style Queries 的实验（2023+）
 
@@ -1933,7 +1934,7 @@ W3C 长期拒绝将元素查询纳入规范，正是因为此问题。
 }
 ```
 
-截至 2024 年，Chrome 111+ 部分支持，Safari 与 Firefox 仍在实现中。
+截至 2026-11：Chrome 111+（2023）与 Safari 18+（2024）支持以自定义属性为对象的 `style()` 查询，Firefox 151（2026-05）补齐后三大引擎可用；对普通属性（非自定义属性）的 style 查询各引擎支持仍在推进中，以 MDN/caniuse 为准。
 
 ### 6.1.6 演进时间线
 
@@ -1947,6 +1948,7 @@ W3C 长期拒绝将元素查询纳入规范，正是因为此问题。
 | 2022.8 | Chrome 105 / Safari 16 实现 | 容器查询进入生产可用 |
 | 2023 | Style Queries 实验 | `style(--var: val)` 查询 |
 | 2024 | 容器查询单位普及 | `cqi` 单位被广泛使用 |
+| 2026.5 | Firefox 151 支持样式查询 | `style()` 查询三大引擎可用 |
 
 ---
 
@@ -2450,3 +2452,52 @@ $$
   .card .body { padding: 16px; }
 }
 ```
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1 节与第 1.5 节的示例代码自己写，再对照参考实现。
+
+**任务一**：写一个「容器自适应卡片」——`.card-wrap` 是查询容器（只关心行内尺寸），卡片标题字号用容器查询单位写成「容器宽度的 6%」，并且容器宽于 480px 时卡片改为横向双栏（标题占 1/3、正文占 2/3）。要求不用任何媒体查询。
+
+**任务二**：写一个「容器主题」样式查询——容器上可切换 `--theme: dark`，当且仅当容器被标记为深色时，其后代 `.card` 换深色底与浅色字；页面上另一个浅色容器里的同名 `.card` 不受影响。
+
+**提示**：任务一的「容器宽度的 6%」要用容器查询单位而不是 `%` 或 `vw`——回顾第 1.4 节 `cqi` 的参照对象；双栏切换条件写在 `@container (min-width: 480px)` 里，grid 双栏用 `grid-template-columns: 1fr 2fr` 即可。任务二的容器要能用 `@container style(--theme: dark)` 命中，容器本身必须声明 `container-type`（第 1.5 节）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.card-wrap {
+  container-type: inline-size;
+}
+
+.card .title {
+  font-size: 6cqi; /* 6% 容器行内宽度；cqi 参照容器的 inline size */
+}
+
+@container (min-width: 480px) {
+  .card {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+  }
+}
+
+/* 任务二 */
+.theme-container {
+  container-type: inline-size;
+  --theme: light;
+}
+
+.theme-container[data-theme="dark"] {
+  --theme: dark;
+}
+
+@container style(--theme: dark) {
+  .card {
+    background: #1a1a1a;
+    color: #f8f9fa;
+  }
+}
+```
+
+验收点：任务一把窗口拉宽时，只有 `.card-wrap` 变宽才会触发字号与双栏变化——直接改视口大小但容器宽度不变时应毫无反应，这正是容器查询与媒体查询的分界；任务二把同一份 `.card` 结构放进两个容器（一个 `data-theme="dark"` 一个不标），只有前者变深色，说明样式查询命中的是「容器上的自定义属性值」而不是继承或视口。

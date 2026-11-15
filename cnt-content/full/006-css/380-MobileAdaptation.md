@@ -333,3 +333,45 @@ body {
 - 容器查询（组件级适配）：`css/390-ContainerQuery`；
 - 响应式设计方法论：`css/370-ResponsiveDesign`；
 - CSS 函数与单位：`css/120-CSSFunctions`、`css/110-CSSValuesAndUnits`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2、4 节的示例代码自己写，再对照参考实现。
+
+**任务一**：写出移动适配的「第一行代码」——head 里锁定真实布局视口的完整 meta 标签；再写一个「整页顶天立地且地址栏伸缩不跳动」的 hero 区，并说明 `100vh` 在移动端为什么会跳动。
+
+**任务二**：写出底部栏的安全区适配——全面屏手机小白条会遮住固定在底部的操作栏；给出 meta 与 CSS 两层写法，并说明 `env(safe-area-inset-bottom)` 在非全面屏上返回什么。
+
+**提示**：任务一对照第 2 节 meta 三段写法与第 4 节视口高度三兄弟——`100dvh` 是实时动态视口，`100vh` 是「最大视口」；任务二的关键词是 `viewport-fit=cover` 与 `env()`（注意事项表的安全区一行），无遮挡环境时 env 返回 0，所以可以直接当 padding 用。
+
+**参考实现**（先自己写完再看）：
+
+```html
+<!-- 任务一：第一行代码 -->
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+```
+
+```css
+/* 任务一：不跳动的 hero */
+.hero {
+  min-height: 100dvh; /* 实时视口：地址栏收起/展开时跟随变化 */
+}
+
+/* 100vh 是「最大视口」：地址栏显示时比可见区域高，底部被遮；
+   svh 是最小视口（内容永不遮挡），dvh 是实时值 */
+
+/* 任务二 */
+/* meta 层：viewport-fit=cover 让页面延伸到安全区外
+   （写在 head 的 viewport meta 里）：
+   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" /> */
+
+/* CSS 层：底部栏垫上安全区高度 */
+.bottom-bar {
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+}
+
+/* 非全面屏（无遮挡）：env 返回 0px，calc 退化为普通 12px，
+   所以无需条件判断，一行通吃 */
+```
+
+验收点：任务一里把 `100dvh` 换回 `100vh` 后在真机上下滑，hero 底部会被地址栏压住或露出白条；任务二若漏了 `viewport-fit=cover`，页面不延伸进安全区，`env()` 恒为 0，适配等于没写。

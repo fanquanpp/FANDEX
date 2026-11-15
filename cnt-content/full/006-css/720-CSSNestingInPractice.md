@@ -133,7 +133,7 @@ prerequisites:
 
 ### 3.4 禁止字符串拼接式 `&`
 
-`&__title`、`&--active` 这类 Sass 习惯在原生 CSS 中是无效语法（详见 042 第 7 节）。团队规范里应直接列为禁用项，lint 规则（stylelint `selector-nested-pattern` 等）可以兜底。
+`&__title`、`&--active` 这类 Sass 习惯在原生 CSS 中是无效语法（详见 [CSS 原生嵌套](/css/480-CSSNativeNesting) 第 7 节）。团队规范里应直接列为禁用项，lint 规则（stylelint `selector-nested-pattern` 等）可以兜底。
 
 ## 4. 与 BEM、@layer 的组合拳
 
@@ -227,7 +227,7 @@ npx lightningcss --browserslist ">= 0.5%, not dead" \
 
 | Sass 能力 | 原生 CSS 对应物 | 迁移结论 |
 | --- | --- | --- |
-| 嵌套 + `&` | 原生嵌套（注意不能拼接，见 042） | 可直接迁移 |
+| 嵌套 + `&` | 原生嵌套（注意不能拼接，见 `css/480-CSSNativeNesting`） | 可直接迁移 |
 | 变量 `$x` | 自定义属性 `--x`（运行时、可继承、可动画） | 可迁移，语义更强 |
 | `@mixin`/`@include` | 工具类 + `@layer`；少量场景仍需 Sass | 大部分可替代 |
 | `@extend` | 无直接对应（`composes` 仅限 CSS Modules） | 保留或改写工具类 |
@@ -380,3 +380,44 @@ npx lightningcss --browserslist ">= 0.5%, not dead" \
 - 层叠层：`css/450-CascadeLayer`；
 - 架构方法论：`css/560-CSSArchitectureMethodology`；
 - PostCSS 构建链：`css/590-PostCSS`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 3、5 节的示例代码自己写，再对照参考实现。
+
+**任务一**：按本文约定默写一个组件的嵌套骨架——`.card` 组件：声明块在前、hover 与后代各一层、深度不超三层、显式 `&`；再写出会被约定否决的两种写法（拼接、超三层）并说明否决理由。
+
+**任务二**：给一段 Sass 做「四步法」迁移预判——组件里用了 `$radius` 变量、嵌套、`@include focus-ring` mixin 与一段 `@each` 生成的工具类；标出每一样迁到原生的去向（直接迁 / 换等价物 / 保留 Sass）。
+
+**提示**：任务一对照第 3 节约定清单——显式 `&` 指 `&:hover` 这种状态组合而不是裸后缀；拼接（`&--large`）在原生里是无效语法、整条嵌套规则被丢弃（`&` 不能当字符串拼接），是迁移头号事故（第 8 节）。任务二对照第 6 节能力表：变量换 `--`、嵌套直接迁、mixin 视复杂度（简单规则组合可用原生嵌套加类名，需要参数逻辑的保留 Sass）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.card {
+  padding: var(--space-4);      /* 声明在前 */
+
+  &:hover {                     /* 显式 &：状态组合 */
+    box-shadow: var(--shadow-2);
+  }
+
+  .title {                      /* 后代一层：全类名 BEM 风格 */
+    font-size: var(--text-lg);
+  }
+}
+
+/* 被否决 1：&--large 拼接 —— 无效语法，整条嵌套规则被丢弃
+   （`&` 是真选择器，不能当字符串拼接）；BEM 变体应写 .card--large 全类名 */
+/* 被否决 2：嵌套里再嵌嵌套再嵌 —— 深度超三层说明在用 DOM 结构
+   写样式，产物选择器冗长且权重抬升 */
+
+/* 任务二 */
+/* $radius: 8px     → --radius: 8px（运行时令牌，换等价物） */
+/* 嵌套             → 直接迁（原生已支持） */
+/* @include focus-ring（无参数、纯规则组合）→ 原生嵌套复写或公共类 */
+/* @each 生成工具类 → 保留 Sass（控制指令仍是 Sass 阵地），
+   或改由构建期原子化方案生成 */
+```
+
+验收点：任务一里把 `&:hover` 写成裸 `:hover`（隐式 &）在原生 CSS 里合法，但本文约定显式写出——可读性审查时一眼区分「状态」与「拼接失误」；任务二里把 `@each` 硬翻成十段手写工具类会立刻失去维护性——「保留价值评估」比「一刀切去 Sass」更专业。

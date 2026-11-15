@@ -244,7 +244,7 @@ ctx.globalCompositeOperation = 'destination-out';
 | 画布在高分屏发虚 | 位图尺寸是 CSS 尺寸 1 倍 | DPR 三件套：属性尺寸乘 dpr、style 尺寸不变、`ctx.scale(dpr, dpr)` |
 | 图形越画越连成一片 | 忘 `beginPath()`，路径累积 | 每个新形状前开新路径 |
 | 画布显示比例不对/模糊 | 用 CSS 拉伸了默认 300x150 的位图 | 用 `width`/`height` 属性（或 JS）设真实位图尺寸 |
-| 动画卡顿、切后台回来狂跳 | 用了 `setInterval` | 改 `requestAnimationFrame`，时间差用帧间隔算 |
+| 动画卡顿、切后台回来狂跳 | 用了 `setInterval`，或 rAF 的帧间隔没钳制 | 改 `requestAnimationFrame`；帧间隔算 dt 并钳制上限（如 `Math.min(dt, 0.05)`），防止后台恢复首帧瞬移 |
 | 满帧重绘拖慢页面 | 每帧清整幅、画全部 | 只清更新区域；静态背景分层到离屏 canvas |
 | 图片画上去但 `toDataURL/toBlob` 报安全错误 | 画过跨域且无 CORS 头的图，画布被"污染" | 图片服务返回 CORS 头并设 `img.crossOrigin = 'anonymous'` |
 | 想在点击处画但位置偏了 | 事件坐标是页面坐标 | `getBoundingClientRect()` 换算（见像素画器的 `paintAt`） |
@@ -273,6 +273,52 @@ Canvas 性能问题只有一条主线：**每帧做了多少像素工作**。按
 ```
 
 - 纯装饰性 Canvas（粒子背景）设 `aria-hidden="true"`，别让读屏用户听一段空白。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2 节生成器里「DPR 三件套」与动画相关代码自己写，再对照参考实现。
+
+**任务一**：不看正文，从空 HTML 写出一个「高分屏不糊」的画布初始化三件套——物理位图尺寸、CSS 显示尺寸、坐标缩放各一行，并注明为什么少任何一件都会发虚或变形。
+
+**任务二**：写一个最小的「弹跳球」——圆在画布内匀速运动、碰壁反弹，用正确的时间驱动方式（不是 setInterval）；写完对照第 5 节坑点表自查「路径累积」「切后台狂跳」两个坑为什么不会出现在你的实现里。
+
+**提示**：任务一的三行对应第 2 节代码里的 `canvas.width = ...`、`canvas.style.width = ...`、`ctx.scale(...)`——位图与显示是两套尺寸，DPR 只进位图；任务二用 `requestAnimationFrame` 配帧间隔算位移（第 5 节坑点表第 4 行），每帧先 `clearRect`。
+
+**参考实现**（先自己写完再看）：
+
+```js
+// 任务一：DPR 三件套
+const dpr = window.devicePixelRatio || 1;
+canvas.width = W * dpr;            // 物理位图：乘 DPR，模糊的根源在这里
+canvas.style.width = W + 'px';     // CSS 显示：保持逻辑尺寸不变
+ctx.scale(dpr, dpr);               // 坐标系缩放：后续代码仍按逻辑像素写
+
+// 任务二：弹跳球
+const ball = { x: 60, y: 60, r: 10, dx: 120, dy: 90 }; // 单位：逻辑像素/秒
+let last = performance.now();
+
+function frame(now) {
+  // 帧间隔（秒）。rAF 在后台标签页会暂停，回来时首帧 dt 极大，
+  // 必须钳制上限，否则球瞬移甚至穿墙
+  const dt = Math.min((now - last) / 1000, 0.05);
+  last = now;
+  ctx.clearRect(0, 0, W, H);
+
+  ball.x += ball.dx * dt;
+  ball.y += ball.dy * dt;
+  if (ball.x < ball.r || ball.x > W - ball.r) ball.dx *= -1; // 碰壁反向
+  if (ball.y < ball.r || ball.y > H - ball.r) ball.dy *= -1;
+
+  ctx.beginPath();                 // 每个新形状开新路径，避免连成一片
+  ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+  ctx.fill();
+
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+```
+
+验收点：任务一漏掉 `ctx.scale` 时图形只占画布四分之一（坐标系没跟上位图），漏掉 `style.width` 时画布被 CSS 拉伸发虚；任务二切到别的标签页再回来——没有钳制时球会瞬移甚至穿墙，加了 `Math.min(dt, 0.05)` 上限则从原位置平滑继续；固定 1/60 的写法只是停帧不瞬移，钳制是 dt 方案的安全阀。
 
 ## 8. 练习
 

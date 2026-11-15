@@ -182,9 +182,9 @@ Stylus 的自由是双刃剑：写起来快，但团队没有 lint 时风格最�
 | 需求 | 旧做法（Less/Stylus） | 原生 CSS 对应 | 结论 |
 | --- | --- | --- | --- |
 | 变量 | `@primary` | 自定义属性 `--primary` | 迁移后语义更强（运行时可切主题） |
-| 嵌套 | `&:hover` | 原生嵌套（`css/042`） | 可直接替换 |
+| 嵌套 | `&:hover` | 原生嵌套（`css/480-CSSNativeNesting`） | 可直接替换 |
 | 命名空间/优先级治理 | 无好方案 | `@layer`（`css/040`） | 原生更优 |
-| 颜色计算 | `darken()` 等编译期函数 | `color-mix()` / 相对颜色（`css/035`） | 基本可替代 |
+| 颜色计算 | `darken()` 等编译期函数 | `color-mix()` / 相对颜色（`css/400-ModernColorSpace`） | 基本可替代 |
 | 复杂逻辑（循环生成工具类） | 循环 + 插值 | 无原生等价物 | 保留预处理器 |
 | 拆分与组织 | `@import` | 原生 `@import`（构建器处理） | 可替代 |
 
@@ -298,3 +298,60 @@ nav-bg = #1f2937
 - 原生嵌套与迁移策略：`css/480-CSSNativeNesting`、`css/720-CSSNestingInPractice`；
 - CSS 自定义属性：`css/410-CSSVariableCustomAttribute`；
 - 架构方法论：`css/560-CSSArchitectureMethodology`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2.2、5 节的示例代码自己写，再对照参考实现。
+
+**任务一**：用 Less 写一个「带守卫的混合」——`.text-size(@n)` 当 `@n >= 16` 时输出字号，否则不输出任何规则；再把它用于三个元素（16/12/20px），预测产物里哪个规则消失了。
+
+**任务二**：判断迁移面——把下面 Less 片段迁到纯原生 CSS，列出「哪些能力有原生等价物、哪些必须重构」：
+
+```less
+@brand: #2563eb;
+.card {
+  color: @brand;
+  &:hover { color: darken(@brand, 10%); }
+  &--large { font-size: 20px; }
+}
+```
+
+**提示**：任务一考 `when` 守卫（第 2.2 节混合一节）——守卫不满足时整个混合不产出；任务二逐行对照原生能力清单：变量换 `--`、嵌套换原生嵌套、`darken()` 换 `color-mix()`、`&--large` 的拼接换 BEM 命名（原生 `&` 只能放后缀不能拼新块名）。
+
+**参考实现**（先自己写完再看）：
+
+```less
+/* 任务一 */
+.text-size(@n) when (@n >= 16) {
+  font-size: (@n * 1px);
+}
+
+.a { .text-size(16); }  /* 产出：font-size: 16px */
+.b { .text-size(12); }  /* 守卫不满足：整条规则从产物中消失 */
+.c { .text-size(20); }  /* 产出：font-size: 20px */
+```
+
+```css
+/* 任务二：原生等价写法 */
+:root {
+  --brand: #2563eb;
+}
+
+.card {
+  color: var(--brand);
+}
+
+.card:hover {
+  color: color-mix(in srgb, var(--brand), black 10%); /* darken 的原生替身 */
+}
+
+.card--large {
+  font-size: 20px; /* &--x 拼接改用 BEM 命名：原生嵌套的 & 后只能接
+                      组合器或状态后缀，拼不出新的块名 */
+}
+
+/* 迁移结论：变量/嵌套/派生色都有原生等价物；
+   「编译期字符串拼接、循环生成工具类」是仅剩的重构点 */
+```
+
+验收点：任务一里去掉 `when (@n >= 16)` 后 12px 也会产出——守卫是「按输入决定产出」的编译期开关；任务二若把 `&--large` 原样照抄进原生 CSS，它是无效语法（`&` 是真选择器，不能当字符串拼接），整条嵌套规则会被静默丢弃——这是第 5 节迁移清单的招牌坑。

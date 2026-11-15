@@ -238,6 +238,53 @@ sync(mq)                            // 初始化先手动执行一次
 - 能说出深色模式的推荐实现（变量加偏好查询）与减少动画的必要性；
 - 面对需求能判断该用媒体查询还是容器查询。
 
+## 11. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 3.1、3.4 节的示例代码自己写，再对照参考实现。
+
+**任务一**：默写三条互斥断点（移动优先）——窄屏单列、`(640px <= width < 1024px)` 两列、`1024px` 以上三列；要求用区间新写法，且三条拼起来在任意宽度恰好命中一条。
+
+**任务二**：写「尊重用户设置」的组合包——深色主题只切换变量令牌；减少动效用户关闭 banner 动画；触屏设备不启用 hover 抬升。三个各一条媒体查询。
+
+**提示**：任务一用 `(width >= X)` 与区间 `(A <= width < B)`，注意移动优先是「窄屏写基础、宽屏写增强」（第 3.3 节层叠顺序）；任务二三条分别是 `prefers-color-scheme`、`prefers-reduced-motion`、`hover: hover`（第 3.4 节），深色主题应只改 `:root` 的变量而不是逐个组件改色。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.grid {
+  grid-template-columns: 1fr; /* 基础：单列 */
+}
+
+@media (640px <= width < 1024px) {
+  .grid { grid-template-columns: 1fr 1fr; } /* 中档：两列 */
+}
+
+@media (width >= 1024px) {
+  .grid { grid-template-columns: repeat(3, 1fr); } /* 宽屏：三列 */
+}
+
+/* 任务二 */
+:root {
+  --bg: #ffffff;
+  --text: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #171717; --text: #f5f5f5; } /* 只换令牌，组件不感知 */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner { animation: none; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover { transform: translateY(-2px); }
+}
+```
+
+验收点：任务一里若把第一条写成 `(width < 640px)` 显式规则也行，但三条必须互斥且全覆盖——把窗口拖过 640/1024 两个点验证恰好一档生效；任务二深色主题若在组件里写死色值而非换变量，切主题时这些组件会「留在亮色」，正是「变量管值、媒体查询管时机」分工的反例。
+
 ## 本章总结
 
 媒体查询让样式响应「环境」：viewport meta 先锁定真实布局视口，移动优先从窄屏基础样式起步，min-width 或区间语法逐级增强；@media 由类型、特性、操作符组成，层叠优先级不受它影响、只由书写顺序与优先级决定。用户偏好查询（深色模式、减少动画、hover/pointer）把系统设置变成设计约束，与 CSS 变量配合是主题系统的标准结构。页面级找媒体查询、组件级找容器查询，断点跟着内容取值并收敛为团队令牌。
