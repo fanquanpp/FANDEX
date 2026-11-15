@@ -44,7 +44,7 @@ pattern 语法与 `.gitignore` 相同（glob，`/` 开头锚定根，`**` 跨目
 
 ### 2.2 两种机制怎么分工
 
-`core.autocrlf` 是**每台机器的本地偏好**（不随仓库分发）；`.gitattributes` 的 `text`/`eol` 是**随仓库分发的团队约定**。两者同时存在时属性优先。Git 2.16 起官方文档明确推荐：仓库用 `.gitattributes` 定规范，不再依赖让每个人配对 autocrlf。
+`core.autocrlf` 是**每台机器的本地偏好**（不随仓库分发）；`.gitattributes` 的 `text`/`eol` 是**随仓库分发的团队约定**。两者同时存在时属性优先——官方 gitattributes 文档的分工正是「想让约定进仓库就用属性，`core.autocrlf` 只管本机偏好」，且给出了 `* text=auto` + renormalize 的官方迁移配方。团队仓库应把规范写进 `.gitattributes`，而不是依赖每个人配对 autocrlf。
 
 ```bash
 # 推荐的迁移路径：把行尾策略写进仓库，然后逐步废弃 autocrlf

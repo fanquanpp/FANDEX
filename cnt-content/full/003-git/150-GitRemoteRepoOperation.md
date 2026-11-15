@@ -356,7 +356,37 @@ prerequisites: []
 - **最佳实践**：遵循远程仓库操作的最佳实践
   通过熟练掌握远程仓库操作，可以更好地进行团队协作，提高开发效率。
 
-## 添加远程仓库
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令，再展开对照。
+
+1. 新仓库第一次推送 `main` 并建立跟踪，最少哪一条命令？之后裸 `git push` 靠什么信息知道推到哪？
+2. `git remote rename origin upstream` 之后，本地分支 main 的上游会跟着变吗？为什么？
+3. 实操：给任意一个仓库把 origin 的 URL 从 HTTPS 换成 SSH，并用两条不同命令验证改动生效。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```bash
+# 1)
+git push -u origin main
+# -u 把 branch.main.remote=origin 与 branch.main.merge=refs/heads/main 写进配置；
+# 此后裸 git push/pull 读这两个键（再配合 remote.origin.url 与 refspec 通配映射）。
+
+# 2) 会。rename 会同步改写引用配置与远程跟踪引用名（origin/main → upstream/main），
+#    本地分支的上游自动指向 upstream/main；这也是为什么改名后 git branch -vv 显示变化。
+
+# 3)
+git remote set-url origin git@github.com:you/repo.git
+git remote -v                  # 验证一：fetch/push 两行地址已变
+git remote show origin         # 验证二：详情视图读出新 URL
+```
+
+</details>
+
+## 命令速查
+
+### 添加远程仓库
 
 **基本写法：添加远程仓库**
 `git remote add <远程仓库名> <仓库地址>`
@@ -367,7 +397,7 @@ git remote add origin https://github.com/username/repository.git;
 
 ---
 
-## 查看远程仓库信息
+### 查看远程仓库信息
 
 **基本写法：查看远程仓库列表**
 `git remote -v`
@@ -385,7 +415,7 @@ git remote show origin;
 
 ---
 
-## 重命名远程仓库
+### 重命名远程仓库
 
 **基本写法：重命名远程仓库**
 `git remote rename <旧远程仓库名> <新远程仓库名>`
@@ -396,7 +426,7 @@ git remote rename origin upstream;
 
 ---
 
-## 删除远程仓库
+### 删除远程仓库
 
 **基本写法：删除远程仓库**
 `git remote remove <远程仓库名>`
@@ -407,7 +437,7 @@ git remote remove origin;
 
 ---
 
-## 更新远程仓库 URL
+### 更新远程仓库 URL
 
 **基本写法：更新远程仓库 URL**
 `git remote set-url <远程仓库名> <新仓库地址>`
@@ -418,7 +448,7 @@ git remote set-url origin https://github.com/username/new-repository.git;
 
 ---
 
-## 首次推送
+### 首次推送
 
 **基本写法：首次推送并设置上游**
 `git push -u <远程仓库名> <本地分支名>:<远程分支名>`
@@ -429,7 +459,7 @@ git push -u origin main;
 
 ---
 
-## 后续推送
+### 后续推送
 
 **基本写法：简化推送**
 `git push`
@@ -461,7 +491,7 @@ git push -f origin main;
 
 ---
 
-## 拉取远程更改
+### 拉取远程更改
 
 **基本写法：拉取并合并**
 `git pull`
@@ -486,7 +516,7 @@ git pull --allow-unrelated-histories;
 
 ---
 
-## 获取远程更改
+### 获取远程更改
 
 **基本写法：获取所有更新**
 `git fetch <远程仓库名>`
@@ -511,7 +541,7 @@ git branch -r;
 
 ---
 
-## 远程分支管理
+### 远程分支管理
 
 **基本写法：从远程分支创建本地分支**
 `git checkout -b <本地分支名> <远程仓库名>/<远程分支名>`
@@ -536,7 +566,7 @@ git push origin --delete feature;
 
 ---
 
-## 高级远程操作
+### 高级远程操作
 
 **基本写法：推送特定提交**
 `git push <远程仓库名> <提交哈希>:<远程分支名>`
@@ -575,7 +605,7 @@ git fetch --all --prune;
 
 ---
 
-## 多远程仓库管理
+### 多远程仓库管理
 
 **基本写法：添加主仓库**
 `git remote add <名称> <地址>`

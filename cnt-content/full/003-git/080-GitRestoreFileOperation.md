@@ -172,6 +172,38 @@ git status                       # working tree clean
 
 通用保命符：任何「丢弃」前跑一次 `git stash -u`，改动进栈后工作区即干净，事后 `git stash drop` 即等效丢弃——代价只是一条栈记录。
 
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. `git restore file`、`git restore --staged file` 各在两棵树之间复制什么？哪一个的结果**不可恢复**？
+2. `git clean -fd`、`-fX`、`-fx` 三个档位各删什么？任何一种执行前必跑的命令是什么？
+3. 实操：制造 ` M app.js`、`M  config.js`、`?? tmp/` 三种状态，按决策表清场到 working tree clean，全程不丢任何一个「想留」的改动。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) restore file：暂存区 → 工作区，覆盖掉未暂存修改——丢弃的内容从未进对象库，
+   不可恢复（除非 stash/IDE 本地历史兜底过）。
+   restore --staged file：HEAD → 暂存区，只退暂存记录——工作区文件原样，
+   完全可恢复（文件还在，只是不再「已暂存」）。
+
+2) -fd：删未跟踪文件与目录（构建产物若被忽略则保留）；
+   -fX：只删被 .gitignore 忽略的文件；
+   -fx：未跟踪 + 被忽略全删（核弹档，含 .env）。
+   执行前必跑 git clean -n（dry run 预览）。
+
+3)
+git restore --staged config.js   # 先退回误暂存（可恢复区先处理）
+git restore app.js               # 丢弃未暂存修改（不可恢复，先 diff 确认）
+git clean -nd                    # 预览 tmp/
+git clean -fd                    # 执行清理
+git status                       # → working tree clean
+```
+
+</details>
+
 ## 小结
 
 **初学者要点**

@@ -180,6 +180,33 @@ git fetch upstream && git rebase upstream/main   # 定期跟进上游
 
 此刻每个分支的上游仍是 `origin/*`（`branch.<名>.remote` 决定 push/pull 的默认对象），而 `upstream/*` 只是另一组只读抄送件，随 `git fetch upstream` 更新——两组缓存互不干扰，正是「远程只是名字」的直接体现。
 
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. `origin/main` 物理上住在哪里、由哪些命令更新、你能直接在它上面提交吗？它是「远程服务器上的分支」吗？
+2. `git branch -vv` 显示 `[origin/main: ahead 2, behind 1]`，两个数字各指什么？`@{u}` 是什么、写一条「看我还没推的提交」的命令？
+3. 实操：首推一个新分支并建上游；同事视角删除远端分支后，用 `fetch --prune` 清掉本地过期引用。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```bash
+# 1) 住在本地 .git/refs/remotes/origin/main（或 packed-refs），由 git fetch/pull/push 更新；
+#    不可直接提交（只读缓存）。它不是服务器上的分支，是「上次同步时对方各分支位置」的本地抄送件。
+
+# 2) ahead 2 = 本地独有 2 个提交（待推送）；behind 1 = 远程独有 1 个提交（待拉取）。
+#    @{u}（@{upstream}）是当前分支上游的引用简写：
+git log --oneline @{u}..              # 我还没推送的提交
+
+# 3)
+git push -u origin feature            # 首推并建立 branch.feature.remote/merge 配置
+git branch -vv                        # 验证 [origin/feature] 无 ahead/behind
+git fetch --prune                     # 或 git remote prune origin --dry-run 先预览
+```
+
+</details>
+
 ## 小结
 
 **初学者要点**

@@ -25,17 +25,14 @@ sparse-checkout 允许只检出仓库的**部分目录**，而非整个仓库。
 
 ## 2. 基本用法
 
-### 2.1 cone 模式（推荐）
+### 2.1 cone 模式（默认，推荐）
 
 ```bash
 # 初始化
 git clone --filter=blob:none --sparse https://github.com/user/monorepo.git
 cd monorepo
 
-# 启用 sparse-checkout
-git sparse-checkout init --cone
-
-# 添加需要的目录
+# cone 是默认模式：一条 set 完成启用与路径设定
 git sparse-checkout set apps/web packages/ui
 
 # 添加更多目录
@@ -45,13 +42,14 @@ git sparse-checkout add apps/api
 git sparse-checkout list
 ```
 
+注意：老教程里的 `git sparse-checkout init --cone` 仍能跑，但 `init` 已被官方标记为**废弃**（行为等价于不带路径的 `set`），新代码一律直接 `set`。
+
 ### 2.2 完整流程
 
 ```bash
 # 从零开始
 git clone --filter=blob:none --sparse https://github.com/user/monorepo.git
 cd monorepo
-git sparse-checkout init --cone
 git sparse-checkout set apps/web
 
 # 只会检出 apps/web 目录
@@ -62,39 +60,37 @@ ls
 git sparse-checkout add packages/shared
 ```
 
-### 2.3 禁用 sparse-checkout
+### 2.3 禁用与重新启用 sparse-checkout
 
 ```bash
 # 检出所有文件
 git sparse-checkout disable
 
-# 重新启用
-git sparse-checkout enable
+# 重新启用：不存在 enable 子命令，用 set 重新给出路径（规则保留在 .git/info/sparse-checkout 时）
+git sparse-checkout set apps/web
 ```
 
 ## 3. 模式对比
 
-### 3.1 cone 模式
+### 3.1 cone 模式（默认）
 
 ```bash
-git sparse-checkout init --cone
 git sparse-checkout set apps/web packages/ui
 ```
 
 只检出指定目录及其内容，性能最优。
 
-### 3.2 非 cone 模式
+### 3.2 非 cone 模式（已废弃）
 
 ```bash
-git sparse-checkout init
-git sparse-checkout set <<EOF
+git sparse-checkout set --no-cone <<EOF
 apps/web/*
 !apps/web/tests/*
 packages/ui/src/*
 EOF
 ```
 
-支持 glob 模式，但性能较差。
+支持 glob 模式，但官方文档已明确将其标记为**废弃**（性能差、维护成本高），仅在维护旧仓库的遗留规则时认识它即可。
 
 ## 4. 与 shallow clone 配合
 
@@ -125,36 +121,71 @@ git clone --depth=1 --filter=blob:none --sparse \
 - cone 模式下目录名不支持 glob
 - 切换分支时可能需要更新 sparse-checkout
 - CI/CD 中可利用 sparse-checkout 加速构建
-## sparse-checkout 启用
+- Git 2.52 新增 `git sparse-checkout clean`：清理检出范围外残留的未跟踪文件
 
-**基本写法：初始化稀疏检出**
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令或结论，再展开对照。
+
+1. `git clone --filter=blob:none --sparse` 之后，本地只有哪些东西？如果此时直接 `git log -p` 某个未检出目录里的文件会发生什么？
+2. 老教程写 `git sparse-checkout init --cone` 再 `set`，为什么现在一条 `set` 就够？`init` 目前的官方状态是什么？
+3. 实操：把已有仓库的检出范围追加一个目录，并预检某个路径会不会被检出。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```bash
+# 1) clone --filter=blob:none --sparse 拿到：全部提交与 tree（提交历史完整）
+#    但只下载检出路径需要的 blob，且只检出根目录文件 + 指定目录。
+#    查看/触碰未检出路径的 blob 时 Git 通过 promisor 远程按需补取，
+#    所以 git log -p 能工作，只是会现场发起网络下载（离线时报 missing object 类错误）。
+
+# 2) cone 是默认模式，set 自带「启用配置 + 写规则 + 更新工作区」三件事；
+#    init 的历史职责（初始化配置）已被 set 覆盖，官方文档标注 deprecated，
+#    行为等价于不带路径的 set，未来版本可能移除。
+
+# 3)
+git sparse-checkout add apps/api            # 追加目录并立即更新工作区
+echo src/api/users.ts | git sparse-checkout check-rules
+# 有输出（回显路径本身）即会被检出；无输出则不会。
+# 注意 check-rules 只从 stdin 读路径：把路径当位置参数传会被静默忽略，
+# 按空输入处理（无输出、退出码 0）
+```
+
+</details>
+
+## 命令速查
+
+### sparse-checkout 启用
+
+**基本写法：一条 set 完成启用与路径设定（推荐）**
+`git sparse-checkout set <路径1> <路径2>`
+```bash
+# cone 是默认模式：启用配置、写规则、更新工作区一次完成
+git sparse-checkout set src docs
+```
+
+---
+
+**基本写法：init（已废弃，仅认识旧教程）**
 `git sparse-checkout init`
 ```bash
-# 启用稀疏检出（默认仅根目录文件）
+# 行为等价于不带路径的 set；官方文档标注 deprecated，未来可能移除
 git sparse-checkout init
 ```
 
 ---
 
-**基本写法：启用锥形模式**
-`git sparse-checkout init --cone`
+**基本写法：非 cone 模式（已废弃）**
+`git sparse-checkout set --no-cone`
 ```bash
-# 启用推荐的锥形模式（目录级匹配）
-git sparse-checkout init --cone
+# 完整模式匹配（支持通配符），官方已标记废弃，仅维护旧仓库时认识
+git sparse-checkout set --no-cone
 ```
 
 ---
 
-**基本写法：启用模式模式**
-`git sparse-checkout init --no-cone`
-```bash
-# 启用完整模式匹配（支持通配符）
-git sparse-checkout init --no-cone
-```
-
----
-
-## 设置检出路径
+### 设置检出路径
 
 **基本写法：设置需要检出的目录**
 `git sparse-checkout set <路径1> <路径2>`
@@ -192,7 +223,7 @@ git sparse-checkout reapply
 
 ---
 
-## 查看与管理
+### 查看与管理
 
 **基本写法：查看当前检出规则**
 `git sparse-checkout list`
@@ -221,7 +252,7 @@ git sparse-checkout disable
 
 ---
 
-## cone 模式规则
+### cone 模式规则
 
 **基本写法：添加根目录文件**
 `git sparse-checkout set "/*"`
@@ -250,7 +281,7 @@ git sparse-checkout set src/api src/shared
 
 ---
 
-## 非 cone 模式规则
+### 非 cone 模式规则（已废弃，仅认识即可）
 
 **基本写法：使用通配符匹配**
 `git sparse-checkout set "/*.md"`
@@ -279,7 +310,7 @@ git sparse-checkout set "src/" "src/legacy/file.ts"
 
 ---
 
-## partial clone 部分克隆
+### partial clone 部分克隆
 
 **基本写法：克隆时跳过所有 blob**
 `git clone --filter=blob:none <仓库URL>`
@@ -317,7 +348,7 @@ git clone --branch main --single-branch https://github.com/org/repo.git
 
 ---
 
-## 组合使用
+### 组合使用
 
 **基本写法：稀疏检出加部分克隆**
 `git clone --filter=blob:none --sparse <仓库URL>`
@@ -338,15 +369,17 @@ git sparse-checkout set src/api
 ---
 
 **基本写法：将现有仓库转为部分克隆**
-`git remote set-origin --filter=blob:none origin`
+`git config remote.origin.partialclonefilter blob:none`
 ```bash
-# 修改远程配置启用过滤（需新克隆才生效）
+# 对已有仓库声明 blob:none 过滤（配合 promisor 标记，需远程与 Git 版本支持；
+# 不如重新克隆干净，仅在无法重新克隆时使用）
+git config remote.origin.promisor true
 git config remote.origin.partialclonefilter blob:none
 ```
 
 ---
 
-## 浅克隆对比
+### 浅克隆对比
 
 **基本写法：浅克隆指定深度**
 `git clone --depth=<深度> <仓库URL>`
@@ -375,13 +408,12 @@ git fetch --unshallow
 
 ---
 
-## 按需获取对象
+### 按需获取对象
 
-**基本写法：手动获取缺失 blob**
-`git fetch origin <路径>`
+**基本写法：缺失 blob 由 Git 懒加载补取**
 ```bash
-# 按需拉取指定路径的 blob
-git fetch origin src/api/users.ts
+# partial clone 下，diff / checkout / log -p 触碰缺失 blob 时自动按需下载
+git log -p HEAD -- src/api/users.ts
 ```
 
 ---
@@ -404,7 +436,7 @@ git fsck --connectivity-only
 
 ---
 
-## 配置与优化
+### 配置与优化
 
 **基本写法：配置部分克隆过滤**
 `git config remote.origin.partialclonefilter <过滤>`

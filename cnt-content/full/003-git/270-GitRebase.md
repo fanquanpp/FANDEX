@@ -205,7 +205,36 @@ git push --force-with-lease
 - **同一冲突反复出现**：重放是逐提交的，多个提交改同一区域就会多次冲突；解决后可考虑 `git rebase --continue` 前用 `git rerere`（复用已记录的解决方案）自动重放。
 - **`rebase -i` 打开了错误的提交列表**：基准写多了一格（如 `HEAD~3` 想改最近 2 个）；任何时候 `--abort` 退出重来。
 - **变基后 diff 看起来不对**：你在比较副本与原件的父链差异；用 `git log --oneline main..feature` 确认重放结果。
-- **嵌套分支栈断裂**：基于 feature 又开了 feature2，变基 feature 后 feature2 还挂在旧链上；变基时开启 `rebase.updateRefs`（较新版本默认开启）可让栈内分支指针一起前移。
+- **嵌套分支栈断裂**：基于 feature 又开了 feature2，变基 feature 后 feature2 还挂在旧链上；变基时开启 `rebase.updateRefs`（默认关闭，需显式开启）可让栈内分支指针一起前移。
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. rebase 与 merge 在「历史结构」与「提交对象」上的本质差异各是什么？变基后原提交去哪了？
+2. 黄金法则的内容是什么？为什么 force push 一律用 `--force-with-lease` 而不用 `--force`？
+3. 实操：工作区有未提交改动时用 `--autostash` 完成一次 rebase；再故意在重放中制造冲突，用三键（continue / skip / abort）各退出一次，验证现场恢复。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) merge 保留分叉、产生合并提交，原提交不变；rebase 削平分叉、把独有提交逐个重放，
+   D'/E' 是全新哈希的副本。原提交对象不删，在 reflog 过期前可从 reflog 找回。
+
+2) 不 rebase 已推送给他人使用的提交（改写共享历史会让协作者历史分叉）。
+   --force-with-lease 只在「远程仍停在你上次看到的位置」时才覆盖，
+   期间有他人推送会拒绝；--force 无条件覆盖，会直接毁掉别人的新提交。
+
+3)
+git rebase --autostash main          # 脏工作区自动 stash + 恢复
+git rebase main                       # 冲突后：
+# git add <file> && git rebase --continue   （以解决成果继续）
+# git rebase --skip                          （丢弃当前提交）
+# git rebase --abort                         （整体回到变基前）
+```
+
+</details>
 
 ## 小结
 

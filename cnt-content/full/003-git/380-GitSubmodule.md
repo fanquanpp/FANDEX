@@ -187,6 +187,39 @@ git subtree push --prefix=lib/shared https://github.com/user/shared-lib.git main
 
 选型速记：**依赖方少、要锁版本、接受两段式流程 → submodule；想让仓库自成一体、依赖改动以主项目为主 → subtree；纯库依赖 → 包管理器。**
 
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. 主仓库为子模块记录了什么、存在哪两个位置？「更新子模块」的两个方向各是什么命令？
+2. 新人 clone 后子模块目录是空的，原因与三种补救？为什么改完子模块必须「先推子模块再推主仓库」？
+3. 实操：把一个本地仓库作为子模块加入测试仓库，走一遍 `update --remote` 与裸 `update` 的区别，最后按 5.4 三步完整移除。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 只记录一个提交指针（tree 条目里 mode 160000 的 gitlink，随主仓库提交），
+   外加 .gitmodules 里的 path + url（哈希不含地址，所以地址单独存）。
+   方向 A「追上游最新」：git submodule update --remote <路径>；
+   方向 B「对齐主仓库锁定版本」：git submodule update --init --recursive。
+
+2) 原因：gitlink 只是指针，克隆不会自动取子模块内容。补救：
+   git clone --recurse-submodules；或事后 git submodule update --init --recursive；
+   或 git config --global submodule.recurse true 让 pull 自动处理。
+   先推子模块：主仓库的指针指向的提交若只在你的本地，同事 submodule update 时
+   会 fatal: remote error 找不到对象。
+
+3)
+git submodule add ../shared-lib lib/shared && git commit -m "add submodule"
+git submodule update --remote lib/shared   # 指向子模块远端分支最新
+git submodule update --init                # 回到主仓库锁定的提交
+git submodule deinit -f lib/shared && git rm -f lib/shared
+rm -rf .git/modules/lib/shared && git commit -m "remove submodule"
+```
+
+</details>
+
 ## 小结
 
 **初学者要点**

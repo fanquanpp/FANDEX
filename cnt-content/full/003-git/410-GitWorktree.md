@@ -160,6 +160,35 @@ git worktree remove ../build-v1 ../build-v2
 
 相比再 clone 一份省去对象传输；构建产物各树独立，互不覆盖。CI 缓存目录按工作树路径区分即可。
 
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. 链接工作树与主仓库共享什么、各自独有什么？链接工作树根目录的 `.git` 变成了什么？
+2. 为什么同一个分支不能同时检出在两个工作树？只读查看一个标签的正确姿势？
+3. 实操：为主分支建一个链接工作树做「紧急修复」，走完 add → 提交 → remove 全生命周期；再故意对已检出分支再次 add，复现 `already checked out` 报错。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 共享：.git 对象库、全部引用、远程配置（branch/tag/remote 完全一致）；
+   独有：工作区、暂存区、HEAD。链接工作树的 .git 是一个文本指针文件，
+   内容为 gitdir: <主仓库>/.git/worktrees/<名字>。
+
+2) 分支指针只有一份，两个 HEAD 同时推动它会互相覆盖——是单指针设计而非 bug。
+   只读查看用 --detach（分离 HEAD 不占分支）：
+git worktree add --detach ../v1-view v1.0.0
+
+3)
+git worktree add -b hotfix/lab ../hotfix-lab main
+cd ../hotfix-lab && git commit -m "fix: lab" && git push -u origin hotfix/lab
+cd - && git worktree remove ../hotfix-lab
+git worktree add ../again main        # fatal: 'main' is already checked out
+```
+
+</details>
+
 ## 小结
 
 **初学者要点**

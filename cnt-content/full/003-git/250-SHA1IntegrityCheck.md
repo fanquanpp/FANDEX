@@ -111,11 +111,11 @@ fetch/pull 时对每个传输对象逐一验哈希，损坏的数据包会被整
 ### 4.2 SHA-256 的演进现状
 
 ```bash
-git init --object-format=sha256 sha256-lab   # 实验性创建 SHA-256 仓库
+git init --object-format=sha256 sha256-lab   # 创建 SHA-256 仓库（本地可用，托管平台尚未支持）
 git rev-parse HEAD                            # 哈希为 64 个十六进制字符
 ```
 
-Git 2.29 起支持 SHA-256 对象格式，但主流托管平台（GitHub 等）的工具链兼容尚未全面落地，跨仓库互推、签名生态也仍在过渡。日常项目维持 SHA-1 即可；关注安全签名实践见 [签名提交与安全实践](git/350-SignedCommitsAndSecurityPractices)。
+Git 2.29 起支持 SHA-256 对象格式，2.42 起官方视其为生产可用；但主流托管平台（GitHub 等）尚不能托管 SHA-256 仓库，跨仓库互推、签名生态也仍在过渡。官方 BreakingChanges 文档已宣布 Git 3.0 计划将新仓库默认哈希切到 SHA-256（无废弃 SHA-1 格式的计划）。日常项目维持 SHA-1 即可；关注安全签名实践见 [签名提交与安全实践](git/350-SignedCommitsAndSecurityPractices)。
 
 ## 5. 短哈希与引用
 
@@ -155,6 +155,33 @@ git show-ref                  # 全部引用及其哈希
 | 超大仓库/超长周期  | 12 位    | 罕见     |
 
 Git 的 `--abbrev-commit` 默认按当前对象数自动选择够用的长度并留余量，团队脚本不必手工定长；固定长度（`--short=10`）只在跨仓库引用、日志比对等需要稳定列宽的场景使用。
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令或结论，再展开对照。
+
+1. 给一个 blob 改一个字节，列出会连锁变化的全部哈希；为什么说「历史无法被静默篡改」？
+2. sha1dc 是什么、自哪个版本起成为默认？它如何让 SHAttered 类碰撞在 Git 里失效？
+3. 实操：用 `--short=8` 取短哈希；造一个前缀歧义（或用 `git rev-parse --disambiguate=` 查询）体会补长前缀的消歧过程。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) blob 哈希变 → 引用它的 tree 变 → 引用该 tree 的 commit 变 → 其后所有后代提交哈希全变；
+   篡改必然改变哈希身份，且 fetch 时每个对象逐一验哈希，对不上整体拒收——
+   要篡改历史必须让篡改后的整条链重算并让所有协作者换用新历史，无法「静默」。
+
+2) sha1dc（sha1collisiondetection）是能识别构造性碰撞的 SHA-1 实现，
+   Git 2.13 起默认集成：读取对象时即检测，遇到碰撞对象直接报错拒绝而非静默接受。
+
+3)
+git rev-parse --short=8 HEAD
+git rev-parse --disambiguate=8c9d0   # 列出该前缀命中的全部对象
+# 若 short 哈希报 ambiguous argument，补长前缀即可
+```
+
+</details>
 
 ## 小结
 

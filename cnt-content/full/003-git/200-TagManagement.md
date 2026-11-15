@@ -148,7 +148,39 @@ git tag -a v1.0.0 -m "Release v1.0.0"
 git push origin v1.0.0
 # → 触发自动部署
 ```
-## 创建轻量标签
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令，再展开对照。
+
+1. 打完 `v1.2.0` 附注标签后直接 `git push`，远端会有这个标签吗？为什么？把已有标签补到远端的两条等价写法是什么？
+2. `git show v1.0.0` 与 `git cat-file -p v1.0.0` 输出有何不同？哪个能看到 tag 对象的原始内容？
+3. 实操：在测试仓库创建一个轻量标签和附注标签各指向同一提交，用 `git cat-file -t` 看两者的对象类型差异。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```bash
+# 1) 不会有。push 只推分支引用，标签默认不随 push 上传；
+git push origin v1.2.0              # 单推一个
+git push origin --follow-tags       # 推「从本次推送提交可达」且远端缺失的附注标签——
+                                    # 指向历史旧提交、不被本次推送可达的附注标签不会被推
+
+# 2) git show v1.0.0：面向人的总览——对附注标签显示 tag 对象信息 + 提交内容；
+#    对轻量标签直接显示提交本身。git cat-file -p v1.0.0：原始对象内容——
+#    附注标签看到 tag 对象四元组（object/type/tag/tagger + 消息），轻量标签看到 commit 对象。
+
+# 3)
+git tag light-tag && git tag -a note-tag -m "note"
+git cat-file -t light-tag           # commit   ← 轻量标签不是独立对象
+git cat-file -t note-tag            # tag      ← 附注标签是第四种对象
+```
+
+</details>
+
+## 命令速查
+
+### 创建轻量标签
 
 **基本写法：在当前提交创建标签**
 `git tag <标签名>`
@@ -166,7 +198,7 @@ git tag v0.9.0 abc1234;
 
 ---
 
-## 创建附注标签
+### 创建附注标签
 
 **基本写法：创建附注标签**
 `git tag -a <标签名> -m "<标签消息>"`
@@ -184,7 +216,7 @@ git tag -a v0.9.0 abc1234 -m "Release version 0.9.0";
 
 ---
 
-## 语义化版本
+### 语义化版本
 
 **基本写法：语义化版本格式**
 `v<主版本号>.<次版本号>.<修订号>`
@@ -198,7 +230,7 @@ v1.2.3
 
 ---
 
-## 列出标签
+### 列出标签
 
 **基本写法：列出所有标签**
 `git tag`
@@ -230,7 +262,7 @@ git cat-file -p v1.0.0;
 
 ---
 
-## 查看标签指向的提交
+### 查看标签指向的提交
 
 **基本写法：获取标签指向的提交哈希**
 `git rev-parse <标签名>`
@@ -248,7 +280,7 @@ git log v1.0.0 -1;
 
 ---
 
-## 推送标签
+### 推送标签
 
 **基本写法：推送单个标签**
 `git push <远程仓库名> <标签名>`
@@ -273,7 +305,7 @@ git push origin --follow-tags;
 
 ---
 
-## 删除标签
+### 删除标签
 
 **基本写法：删除本地标签**
 `git tag -d <标签名>`
@@ -298,7 +330,7 @@ git push origin :refs/tags/v1.0.0;
 
 ---
 
-## 签名标签
+### 签名标签
 
 **基本写法：创建 GPG 签名标签**
 `git tag -s <标签名> -m "<标签消息>"`
@@ -316,7 +348,7 @@ git tag -v v1.0.0;
 
 ---
 
-## 配置 SSH 签名
+### 配置 SSH 签名
 
 **基本写法：配置 SSH 签名格式**
 `git config --global gpg.format ssh`
@@ -334,7 +366,7 @@ git config --global user.signingkey ~/.ssh/id_ed25519.pub;
 
 ---
 
-## 检出标签
+### 检出标签
 
 **基本写法：检出标签对应的提交（分离 HEAD；现代命令 git switch --detach）**
 `git switch --detach <标签名>`

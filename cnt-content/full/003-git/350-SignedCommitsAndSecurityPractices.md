@@ -116,7 +116,7 @@ git log --show-signature -1 --format='%h %ae %G?'
 # %G? 输出签名状态：G=有效且邮箱匹配 / B=验证失败 / N=无签名 / U/E=部分有效
 ```
 
-`%G?` 完整取值：`G` 有效签名；`B` 无效签名（数据被改或公钥不符）；`U` 有效但有效性未知（公钥未建立信任）；`C` 有效但身份已被吊销；`X` 签名已过期；`Y` 签名密钥已过期；`R` 签名密钥已被吊销；`E` 无法校验（如缺公钥）；`N` 无签名。CI 审计脚本可直接对 `%G?` 做 `grep '^[GN]'` 类筛查。
+`%G?` 完整取值（官方 pretty-formats 文档共八种）：`G` 有效签名；`B` 无效签名（数据被改或公钥不符）；`U` 有效但有效性未知（公钥未建立信任）；`X` 签名有效但已过期；`Y` 签名有效但密钥已过期；`R` 签名有效但密钥已被吊销；`E` 无法校验（如缺公钥）；`N` 无签名。老资料里出现的 `C` 不是 `%G?` 的取值，勿混淆。CI 审计脚本可直接对 `%G?` 做 `grep '^[GN]'` 类筛查。
 
 团队落地顺序建议：先统一「邮箱规范」（工位邮箱 vs 个人邮箱），再推签名，否则会出现大量「签名有效却不显示 Verified」的困惑。
 
@@ -158,6 +158,37 @@ git verify-commit $(git rev-list origin/main..HEAD) || {
 | rebase/amend 后签名丢失 | 改写历史必然生成新提交，重签即可；`git rebase --exec 'git commit -S --amend --no-edit'` 可批量补签 |
 | 换了机器签名就断了 | 私钥可迁移（GPG 导出私钥、SSH 复制密钥文件），迁移后更新各平台的公钥信任 |
 | `gpg failed to sign the data` = 配置错误 | 先区分原因：agent 没跑起来、pinentry 弹窗被吞、gpg.program 路径错，逐项排查 |
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令或结论，再展开对照。
+
+1. 哈希链与签名各自保证什么？`git commit --author="..."` 能伪造什么、伪造不了什么？
+2. 写出 SSH 签名起步的三行配置；本地 `git log --show-signature` 对 SSH 签名报 `No signature` 的原因与修复？
+3. 实操：给测试仓库配 SSH 签名提交一次，用 `git log --format='%h %G?' -1` 读签名状态；把 author 邮箱改成一个未验证的邮箱再签一次，对比状态字母。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```bash
+# 1) 哈希链保证完整性（历史无法静默篡改）；签名保证身份（内容出自署名人的私钥持有者）。
+#    --author 能把提交「写上」任何名字——这正是冒名提交的入口；
+#    伪造不了的是签名：冒名者没有你的私钥，签不出能通过公钥验证的签名。
+
+# 2)
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/id_ed25519.pub
+git config --global commit.gpgsign true
+# 报 No signature 是因为 Git 不知道哪些公钥可信；建立信任名单：
+echo "you@example.com ssh-ed25519 AAAA... you@laptop" > ~/.ssh/allowed_signers
+git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
+
+# 3) 签名有效且邮箱匹配 → G；邮箱不是平台已验证邮箱 → 显示 Unverified
+#    （%G? 共八种取值：G 有效 / B 无效 / N 无签名 / U 未知有效性 /
+#      X 签名过期 / Y 密钥过期 / R 密钥被吊销 / E 无法校验；没有 C）
+```
+
+</details>
 
 ## 小结
 

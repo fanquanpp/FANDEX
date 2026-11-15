@@ -204,6 +204,34 @@ git cat-file -p 8d0e4123       # 查看内容，确认后手动恢复
 - **reset 后 push 被拒**：本地历史已被改写、落后于远程。共享分支请 revert；确要覆盖用 `--force-with-lease` 并知会协作者（见 [git rebase 的黄金法则](git/270-GitRebase)）。
 - **以为 `HEAD~3` 是「第三个提交」**：`HEAD~n` 沿第一父提交回溯 n 步；合并提交的「另一条腿」要用 `HEAD^2`（第二父），不要混淆。
 
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. `--soft` / `--mixed` / `--hard` 各动到哪几棵树？「撤销提交但改动退回工作区」用哪个？
+2. 带路径的 `git reset` 语义是什么？为什么它不允许 `--soft` / `--hard`？
+3. 实操：提交三次后 `reset --hard HEAD~2`，先预测 status 与 reflog 的样子，再用 reflog 完整救回两个提交。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) soft：只移分支指针；mixed（默认）：再重置暂存区；hard：连工作区（已跟踪文件）一起还原。
+   「撤销提交、改动退回工作区」= git reset --mixed HEAD~1（改动处于未暂存状态）。
+
+2) 路径级 reset 不动分支指针，语义收窄为「把该路径的暂存区条目从目标提交复制回来」。
+   --soft 根本不碰暂存区、--hard 要动工作区，都与「只动暂存区条目」的模型无定义，故直接报错。
+
+3)
+git reset --hard HEAD~2
+git status        # working tree clean（改动看似全没了）
+git reflog        # HEAD@{0}: reset: moving to HEAD~2；HEAD@{1} 是 reset 前位置
+git reset --hard HEAD@{1}   # 或 git reset --hard ORIG_HEAD
+git log --oneline # 三个提交齐了——reset 从不删提交，只摘指针
+```
+
+</details>
+
 ## 小结
 
 **初学者要点**

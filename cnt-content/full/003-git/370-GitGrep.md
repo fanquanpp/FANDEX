@@ -180,6 +180,33 @@ fi
 
 配合 pre-commit 钩子（见 [Git Hook 与 LFS](/git/340-GitHooks)）只检查暂存内容：`git grep --cached` 让门禁聚焦「这次要提交的东西」而不是全仓历史遗留。
 
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. git grep 相对系统 grep 的三个核心优势？第二个位置参数可以填什么？
+2. 「v1.2.0 里还有哪些 TODO」「最近 5 个提交新增了哪些 TODO」分别用什么查？为什么第二个不是 grep 的问题？
+3. 实操：组合出一条「在 src 下搜 password 但排除测试文件」的命令；再用 `--and/--not` 写出「含 eval 且不含 e comment 注释」的行。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 只搜跟踪文件（自动遵循 .gitignore，跳过 node_modules/dist）；可搜任意历史版本
+   （第二参数 = 树：提交/分支/标签，无需 checkout）；内置多线程并行。
+   第二参数是任意树对象。
+
+2) 版本内盘点：git grep "TODO" v1.2.0（grep 的独门能力——直接指定树）；
+   版本间增量是 diff 的职责：git diff v1.0.0 v1.2.0 --unified=0 | grep '^+.*TODO'，
+   或找引入提交：git log -S "TODO" --oneline。grep 只能搜「一棵树」，做不了区间。
+
+3)
+git grep -n "password" -- 'src/' ':!src/**/*test*'
+git grep -e "eval" --and --not -e "safe"
+```
+
+</details>
+
 ## 小结
 
 **初学者要点**

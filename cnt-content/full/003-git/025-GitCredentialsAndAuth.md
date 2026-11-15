@@ -48,7 +48,7 @@ remote: Support for password authentication was removed on August 13, 2021.
 每次推送都手填 token 不可忍受，Git 用 credential helper 决定凭证的存取：
 
 ```bash
-# Git Credential Manager（Windows/macOS 安装包自带，推荐）
+# Git Credential Manager（Git for Windows 安装包自带，推荐）
 # 弹出浏览器 OAuth 授权，凭证存入系统凭据管理器
 git config --global credential.helper manager
 

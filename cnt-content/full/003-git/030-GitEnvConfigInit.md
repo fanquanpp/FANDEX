@@ -158,7 +158,7 @@ git config core.autocrlf
 
 ### 4.2 init.defaultBranch 与 core.editor（可选）
 
-`init.defaultBranch` 只在 `git init` 出生那一刻被读取，决定新仓库的默认分支名；没配的话每次建仓附赠一段 master 的 `hint:`（原文与解法见 020 篇第 5 节）。不想动全局配置，可对单个仓库临时指定：`git init -b main`。
+`init.defaultBranch` 只在 `git init` 出生那一刻被读取，决定新仓库的默认分支名；没配的话每次建仓附赠一段 master 的 `hint:`（原文与解法见 020 篇第 5 节）。不想动全局配置，可对单个仓库临时指定：`git init -b main`。另外 Git 官方的 BreakingChanges 文档已宣布：下一个大版本 Git 3.0 起新仓库的默认分支名将直接改为 `main`——现在统一配好 `init.defaultBranch main`，就是提前与官方路线对齐。
 
 `core.editor` 决定 `git commit` 不带 `-m` 时弹出哪个编辑器，默认常是 vim——困住过无数新手。装了 VS Code 就一行配好，可选不急：
 

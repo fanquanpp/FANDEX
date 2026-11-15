@@ -146,7 +146,7 @@ git branch -d feature         # 安全删除：未合并会拒绝
 ^2a3b4c5d...                  ← 附注标签的剥壳行，指向真实 commit
 ```
 
-更新的方向是 **reftable** 后端（Git 2.45 起可用，`git init --ref-format=reftable`），以日志结构存储引用并内置变更历史，主要服务于大型仓库与 JGit 生态互通；传统 files 后端仍是默认，日常无需关心。
+更新的方向是 **reftable** 后端（Git 2.45 起可用，`git init --ref-format=reftable`），以日志结构存储引用并内置变更历史，主要服务于大型仓库与 JGit 生态互通；传统 files 后端仍是默认，日常无需关心。官方 BreakingChanges 文档已宣布 Git 3.0 将把新仓库的默认引用后端切到 reftable（与默认哈希改用 SHA-256 同批），届时这套「文件即引用」的心智模型仍适用于理解引用体系，只是物理存储换了实现。
 
 ## 4. 底层观察工具箱
 
@@ -168,6 +168,36 @@ git log main..feature --oneline   # feature 独有的提交
 - **`HEAD^` 与 `HEAD~` 混淆**：`^n` 选「第 n 个父提交」（合并提交有多父），`~n` 沿第一父回溯 n 步；`HEAD~2` 等于 `HEAD~~`，但 `HEAD^2` 不是 `HEAD^^`。
 - **同名引用歧义**：本地分支、远程分支、标签同名时简写解析可能不符合预期，脚本中一律写全路径（`refs/heads/...`）。
 - **手动 `echo` 写 refs 文件**：能跑但不更新 reflog、不校验，仅限理解原理；真实操作用 `git update-ref`。
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. `cat .git/HEAD` 与 `cat .git/refs/heads/main` 分别输出什么？「分支 = 指针文件」从哪一步看出来？
+2. `git branch feature` 与 `git switch -c feature` 各做了哪些动作？为什么说分支创建是 O(1)？
+3. 实操：分离 HEAD 状态提交一个 commit，切回 main 后凭 reflog 把它救回新分支。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```bash
+# 1) .git/HEAD 输出符号引用：ref: refs/heads/main（或分离状态下的裸哈希）；
+#    .git/refs/heads/main 输出一个 40 位提交哈希。分支没有历史、没有容器，
+#    只是一个写着哈希的文本文件——这就是「分支 = 指针」的证据。
+
+# 2) git branch feature：只写一个新指针文件 .git/refs/heads/feature，内容为当前哈希，
+#    不创建任何提交对象 → O(1)；
+#    git switch -c feature：写指针文件 + 改写 HEAD 符号引用 + 按目标提交更新工作区与 index。
+
+# 3)
+git checkout 8c9d0e1          # 分离 HEAD（detached HEAD 警告出现）
+# ...改文件、git commit ...
+git switch main               # 直接切走，新提交会「消失」
+git reflog                    # 找到刚才那条 commit 的哈希，如 1a2b3c4
+git switch -c rescued 1a2b3c4 # 以该哈希重建分支，提交救回
+```
+
+</details>
 
 ## 小结
 

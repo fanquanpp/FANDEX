@@ -200,6 +200,34 @@ git show 'HEAD@{2}:src/app.js'         # 某历史位置上某个文件的内容
 - **换机器后想恢复**：reflog 不随 push/clone 传输；跨设备救援靠提前推送分支或 bundle。
 - **以为 expire = 立即删除对象**：过期只是标记，对象在 gc 后才物理消失；紧急找回就是与这两个时钟赛跑。
 
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. reflog 与 log 各记录什么？`git reflog` 第一列哈希是「离开的位置」还是「到达的位置」？
+2. `git reset --hard HEAD~3` 之后恢复原位置的两种写法？各自的依据是什么？
+3. 实操：`git branch -D` 一个还有独立提交的分支，再完整走一遍「查 reflog → 定位哈希 → 重建分支」的救援流程。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) log 记录从当前提交沿 parent 回溯的历史；reflog 记录引用（HEAD、各分支）的每次移动。
+   第一列是「移动后到达的位置」——注意 reset 条目的第一列是 reset 之后所在的新位置。
+
+2) git reset --hard HEAD@{1}   # HEAD@{1} 是 reflog 里 reset 前的位置
+   git reset --hard ORIG_HEAD  # reset 系命令自动把旧位置写入 ORIG_HEAD
+   前者通用（任何移动都可查 reflog），后者专属于刚执行过 reset/merge/rebase 的场景。
+
+3)
+git switch -c doomed && echo x > f && git add f && git commit -m "doomed work"
+git switch main && git branch -D doomed
+git reflog                            # 找到 doomed work 对应哈希，如 3f4a5b6
+git switch -c doomed 3f4a5b6          # 重建分支，提交找回
+```
+
+</details>
+
 ## 小结
 
 **初学者要点**

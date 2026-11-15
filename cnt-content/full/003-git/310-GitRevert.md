@@ -152,7 +152,43 @@ git revert -e wrong-commit
 #   This reverts commit abc1234...
 #   （在此补充回退原因、影响面与后续计划）
 ```
-## revert 基本用法
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令或结论，再展开对照。
+
+1. `git revert` 与 `git reset --hard` 都能「撤销最近一个提交」，在「刚推送到共享分支」的场景下为什么只能选 revert？两者的可逆性差异在哪里？
+2. revert 一个合并提交后想重新合并该分支，正确步骤是什么？直接再 `git merge` 为什么无效？
+3. 实操：制造三个提交 A、B、C，revert 中间的 B（用 `abc1234..def5678` 区间与直接点名两种写法各做一次），观察结果差异。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```bash
+# 1) reset --hard 会改写历史：远程 main 上 B 仍存在，本地重写后 push 被拒，
+#    强推则所有已拉取过 B 的协作者历史分叉。revert 只追加反向提交 D'，
+#    历史只向前生长，任何人 pull 都不冲突。
+#    可逆性：reset 靠 reflog（90/30 天过期 + gc 即物理消失）；
+#    revert 的可逆是「再 revert 那个 revert 提交」，永远可做、不依赖时间窗。
+
+# 2) 合并提交被 revert 后，主分支历史上已有「feature 全部变更被撤销」的记录；
+#    直接再 merge 时 Git 发现双方共同祖先之后 feature 没有新提交，合并结果为空。
+#    正确步骤：
+git revert <那个 revert 提交>       # 先撤销「撤销」
+git merge feature                   # 或等 feature 有新提交后再合
+
+# 3)
+git revert abc1234..def5678         # 区间写法：不含 abc1234，只反放 def5678（B..C 区间内者）
+git revert def5678                  # 点名写法：只撤销被点名的这一个
+# 两者在「撤销单个提交」时结果一致，但区间语义是左开右闭，
+# 撤销「一段」提交时忘记 A^..B 的修正写法是高频事故。
+```
+
+</details>
+
+## 命令速查
+
+### revert 基本用法
 
 **基本写法：撤销单个提交**
 `git revert <提交哈希>`
@@ -198,7 +234,7 @@ git commit -m "revert: 回退认证功能（原因：...）";
 
 ---
 
-## 合并提交的 revert
+### 合并提交的 revert
 
 **基本写法：查看合并提交的父提交**
 `git cat-file -p <合并提交哈希>`
@@ -223,7 +259,7 @@ git revert -m 2 abc1234;
 
 ---
 
-## 重新合并已撤销的分支
+### 重新合并已撤销的分支
 
 **基本写法：revert 之前的 revert**
 `git revert <revert提交哈希>`
@@ -241,7 +277,7 @@ git merge feature;
 
 ---
 
-## revert 冲突处理
+### revert 冲突处理
 
 **基本写法：触发 revert 冲突**
 `git revert <提交哈希>`
@@ -273,7 +309,7 @@ git revert --abort;
 
 ---
 
-## reset 撤销提交
+### reset 撤销提交
 
 **基本写法：软回退**
 `git reset --soft HEAD~<n>`
@@ -298,7 +334,7 @@ git reset --hard HEAD~1;
 
 ---
 
-## 撤销工作区修改
+### 撤销工作区修改
 
 **基本写法：撤销单个文件修改**
 `git checkout -- <file>`
@@ -316,7 +352,7 @@ git restore src/index.js;
 
 ---
 
-## 撤销暂存
+### 撤销暂存
 
 **基本写法：取消暂存（保留修改）**
 `git reset HEAD <file>`
@@ -334,7 +370,7 @@ git restore --staged src/index.js;
 
 ---
 
-## 实际场景
+### 实际场景
 
 **基本写法：回退已推送的功能**
 `git revert <提交哈希>`
