@@ -192,4 +192,11 @@ console.log(bee.keeper.hasMask); // true
 
 > 泛型用 `<T>` 占住类型空位，调用时自动填上；需要"能力"就先 `extends` 约束，需要"键"就用 `keyof`；静态成员不碰 T。
 
-前篇到此结束。下一篇进入 `006-BasicTypeSystem`（基础类型系统），系统学习类型规则；如果环境还没有搭好，先回头读完 `001-TypeScriptOverviewEnvSetup`（概述与环境配置）再继续。
+## 自检
+
+- 遮住第 2 节代码，自己写出 `identity<T>`，并说出它与 `any` 版本的本质区别（返回类型是否丢失信息）。
+- `function f<T>(arg: T)` 里直接写 `arg.length` 为什么报错？两种合法修法分别是什么？
+- `K extends keyof T` 约束挡住了哪一类运行时事故？遮住 5 节示例自己写一遍 `getProperty`。
+- 泛型类的静态成员能不能使用类型参数 T？为什么？
+
+前篇到此结束。下一篇进入[基础类型系统](/typescript/080-BasicTypeSystem)，系统学习类型规则；如果环境还没有搭好，先回头读完 [TypeScript 概述与环境配置](/typescript/030-TypeScriptOverviewEnvSetup)再继续。

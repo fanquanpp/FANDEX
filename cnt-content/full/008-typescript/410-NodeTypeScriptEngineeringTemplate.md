@@ -177,8 +177,8 @@ createServer((req, res) => {
 
 这套骨架的核心是"开发快、构建干净、类型严格"：
 `tsx` 负责开发体验，`tsc` 负责产物质量，双 tsconfig 让两件事互不干扰。
-继续深化可看 tsconfig 严格模式 与
-编译与性能优化。
+继续深化可看 [tsconfig 严格模式](/typescript/360-TsconfigStrictMode) 与
+[编译与性能优化](/typescript/380-TypeScriptCompilePerformanceOptimization)。
 
 ## 动手练习（先遮住参考实现）
 

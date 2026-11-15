@@ -15,7 +15,7 @@ related:
 prerequisites: []
 ---
 
-## 0.1 TypeScript 类型能力速查
+## TypeScript 类型能力速查
 
 ### 从 JavaScript 到 TypeScript 的升级路径
 
@@ -37,6 +37,8 @@ prerequisites: []
 | `strictNullChecks` | `true` | 区分空值和正常值，减少线上空指针错误 |
 | `moduleResolution` | `bundler` 或 `node16` | 与现代构建工具或 Node ESM 对齐 |
 | `noEmit` | 按项目决定 | 只做类型检查时交给 Vite、tsup 或 swc 输出 |
+
+> 版本提示：TypeScript 6.0（2026-03）起 `strict` 已默认开启，上表从「推荐值」变成了「新默认值」。老项目升级后「突然变红」，多数是默认值翻转所致，把关键项显式写进 tsconfig 即可锁档，详见 [TS 6.0 与 7.0](/typescript/680-TypeScript6And7CompilerEvolution)。
 
 ### 类型设计小练习
 
@@ -60,7 +62,7 @@ function canPublish(course: Course): boolean {
 
 ## 0. 这份资料怎么用
 
-本模块有 75 篇文档，文件名前缀（010、020……730）大致就是学习顺序。**不要跳着读，也不要一次读完**。文档分三类：
+本模块有 80 篇文档，文件名前缀（010、020……730）大致就是学习顺序。**不要跳着读，也不要一次读完**。文档分三类：
 
 **必读（零基础主线，约 3-4 周）**
 
@@ -135,3 +137,9 @@ flowchart LR
 ## 6. 一句话记住
 
 > 先跑通环境，再学语法；公式跳过、代码必敲；遇到问题先查 FAQ 和术语表。
+
+## 自检
+
+- 遮住上面的速查表，自己说出「字符串分支」这一行：JavaScript 写法、TypeScript 增强写法各长什么样？解决的是什么问题？
+- 三条阅读规则分别是什么？为什么「看到公式直接跳过」不影响学习效果？
+- 四周路线里，第 1 周和第 4 周各自的验收标准是什么？用自己的话复述一遍再对照第 5 节的表格。

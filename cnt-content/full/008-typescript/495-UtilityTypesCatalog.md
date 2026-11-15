@@ -571,3 +571,11 @@ type NoteEvents = {
 
 - TypeScript 官方 Handbook「Utility Types」参考页（microsoft/TypeScript-Website，文档内容 CC BY 4.0），https://www.typescriptlang.org/docs/handbook/utility-types/ ——本篇目录结构、签名与版本信息以该页为准，正文例子为原创重写。
 - typescript-eslint 官方文档（相关规则在 [TypeScript 代码质量工具链](/typescript/365-TypeScriptLintToolchain) 中引用），https://typescript-eslint.io
+
+## 自检
+
+- 遮住第 1 节的全景目录，按家族默写八个家族的名字与代表成员（属性修饰、选择排除、字典构造、联合过滤、函数萃取、this 族、异步推断、字符串变换）。
+- `Partial` 与 `Required` 的实现各一行怎么写？`-?` 修饰符去掉的是什么？
+- `Exclude` 的实现为什么必须依赖分发？遮住第 5 节，自己写一遍并解释 `never` 成员去哪了。
+- `Parameters` 与 `ReturnType` 的实现都用到了哪两件工具（`infer` 与 `T extends (...args: infer A) => infer R`）？遮住第 6 节默写。
+- `Omit` 为什么被一些团队禁用而改用 `OmitAlways`/键校验版？它的键校验漏洞是怎么来的？

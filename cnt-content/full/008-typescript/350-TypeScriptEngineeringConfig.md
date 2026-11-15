@@ -1707,4 +1707,12 @@ flowchart TD
 - **Verbatim Module Syntax**：原样模块语法，区分 type/value import
 - **Composite Project**：复合项目，支持被其他项目引用
 
+## 自检
+
+- 遮住第 3 节，默写一份新项目的 `compilerOptions` 起步配置：`target`、`module`、`moduleResolution`、`strict` 四项各写什么值，为什么？
+- `extends` 继承链里，哪些字段会被子配置整体覆盖而不是合并（如 `references`、`files`）？相对路径以谁为基准？
+- `paths` 别名在 TS 6.0 起为什么不再需要 `baseUrl`？打包器与 `tsc` 各自怎么消费这份映射？
+- `composite: true` 强制打开了哪些选项？为什么被引用的项目必须有它？
+- 你的 CI 里 `tsc --noEmit` 与构建工具的转译是两回事吗？为什么「Vite 不报错」不等于「类型正确」？
+
 ---

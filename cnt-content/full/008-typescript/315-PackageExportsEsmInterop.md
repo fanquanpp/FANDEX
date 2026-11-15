@@ -155,7 +155,7 @@ import { bar } from 'lodash';
 // 4. /node_modules/@types/lodash/index.d.ts
 ```
 
-`node` 是 TypeScript 4.6 及以前的默认策略，至今仍是最广泛使用的。
+`node` 是 TypeScript 4.6 及以前的默认策略，存量老项目里仍最常见。但注意版本红线：TS 6.0（2026-03）已将其列入弃用清单（`ignoreDeprecations: "6.0"` 可暂时压制，7.0 起彻底移除），新项目一律选 `nodenext` 或 `bundler`，详见 [TS 6.0 与 7.0](/typescript/680-TypeScript6And7CompilerEvolution)。
 
 ### 3.4 node16/nodenext 解析策略
 
@@ -1809,3 +1809,11 @@ interface ImportMeta {
 // 要求类型导入显式标注
 export type { User }
 ```
+
+## 自检
+
+- 遮住 3.2-3.4 节的对比表，说出 `node`（node10）、`node16`/`nodenext`、`bundler` 三类策略各自对「`.js` 后缀」「exports 字段」的处理差异，以及 TS 6.0 对 `node` 策略的处置。
+- ESM 项目里源码写 `.ts` 却要带 `.js` 后缀的原因是什么？哪类工具链会自动补全、哪类运行时必踩？
+- `exports` 字段的 `.`（主入口）、`"./sub"`（子路径）、`"types"` 条件各怎么写？遮住第 5 节示例自己写一遍。
+- CJS 依赖没有 `default` 导出时，`esModuleInterop` 帮你做了什么？`import x = require()` 是哪条模块线上的写法？
+- monorepo 里「类型找不到、运行时正常」的常见根因是什么？按 420 篇的思路先查 package.json 的哪几个字段？

@@ -87,7 +87,7 @@ type B = { a: number } & never; // 等价于 never
 
 （2）交叉是"且"：`{ a: number } & never` 表示"同时满足有 a 属性和没有任何值"，这不可能，所以结果是 `never`；
 
-（3）这两条规则是条件类型分发（见 `032-ConditionalTypeDistribute`）和 `Exclude` 等工具类型能工作的基础。
+（3）这两条规则是条件类型分发（见[条件类型与分发](/typescript/430-ConditionalTypeDistribute)）和 `Exclude` 等工具类型能工作的基础。
 
 ## 4. 穷尽性检查（exhaustiveness check）
 
@@ -203,7 +203,7 @@ type Result = MyExclude<"a" | "b" | "c", "a">;
 
 （2）再借助"联合吸收"规则，所有 `never` 自动消失，剩下的就是过滤结果；
 
-（3）`Exclude`、`NonNullable`、`Omit`（内部用 Exclude）等工具类型都依赖这个机制，详见 `031-UtilityTypePrinciple`。
+（3）`Exclude`、`NonNullable`、`Omit`（内部用 Exclude）等工具类型都依赖这个机制，详见[工具类型原理](/typescript/490-UtilityTypePrinciple)。
 
 ## 8. 常见错误与修正（错-对对比）
 
@@ -275,7 +275,7 @@ function die(): never {
 
 **Q5：条件类型里 never 为什么不分发？**
 
-`never extends U` 本身成立（never 是任何类型的子类型），所以直接判断时结果为 true 分支；但 `never` 作为裸类型参数参与分发时不会产生任何成员（空集分发还是空集）。这是工具类型里常见的行为差异，详见 `032-ConditionalTypeDistribute`。
+`never extends U` 本身成立（never 是任何类型的子类型），所以直接判断时结果为 true 分支；但 `never` 作为裸类型参数参与分发时不会产生任何成员（空集分发还是空集）。这是工具类型里常见的行为差异，详见[条件类型与分发](/typescript/430-ConditionalTypeDistribute)。
 
 ## 11. 自测（小测验）
 
@@ -300,8 +300,8 @@ function die(): never {
 
 ## 扩展阅读
 
-- `010-LocalTypeInference`：可辨识联合与穷尽检查的入门；
-- `016-TypeGuardCustomGuard`：类型守卫与收窄的完整机制；
-- `015-IntersectionTypeMerge`：交叉类型与 never 的相遇（属性冲突）；
-- `031-UtilityTypePrinciple`：Exclude、NonNullable 等工具类型的实现；
-- `032-ConditionalTypeDistribute`：条件类型分发与 never 的交互。
+- [字面量与联合类型](/typescript/110-LiteralUnionTypes)：可辨识联合与穷尽检查的入门；
+- [类型守卫与自定义守卫](/typescript/150-TypeGuardCustomGuard)：类型守卫与收窄的完整机制；
+- [交叉类型与合并](/typescript/120-IntersectionTypeMerge)：交叉类型与 never 的相遇（属性冲突）；
+- [工具类型原理](/typescript/490-UtilityTypePrinciple)：Exclude、NonNullable 等工具类型的实现；
+- [条件类型与分发](/typescript/430-ConditionalTypeDistribute)：条件类型分发与 never 的交互。

@@ -79,6 +79,7 @@ TypeScript 适用于以下场景：
 1. `npm install -g` 把 TypeScript 安装到全局，之后任何目录都能直接用 `tsc` 命令。
 2. `tsc --version` 验证安装是否成功，并显示当前版本号。
 3. 全局安装适合学习阶段；真实项目应使用下面的"本地安装"，保证团队版本一致。
+4. 版本提示：2026-07 起 `typescript` 包的 `latest` 已是 7.0（Go 原生编译器，命令仍是 `tsc`），5.x/6.0 的语言知识原样适用，版本演进见 [TS 6.0 与 7.0](/typescript/680-TypeScript6And7CompilerEvolution)。
 
 #### 2.1.2 项目本地安装
 
@@ -173,7 +174,7 @@ flowchart TD
 1. `ts-node` 在内存里把 TypeScript 编译后直接执行，省去"先编译再看 js"的步骤。
 2. `npx ts-node src/index.ts` 与 `node dist/index.js` 效果相同，但能更快进入调试。
 3. 注意：ts-node 只适合开发；生产环境一般用 `tsc` 编译出 JS 后再运行。
-4. 2026 年的新项目更推荐 `tsx`（基于 esbuild，更快、零配置）：`npm install --save-dev tsx` 后用 `npx tsx src/index.ts`。ts-node 已进入维护模式，遇到新项目优先选 tsx。另外 Node.js 22.6+ 的原生「类型剥离」也能直接跑部分 TS 文件，详见 `typescript/680-TypeScript6And7CompilerEvolution`。
+4. 2026 年的新项目更推荐 `tsx`（基于 esbuild，更快、零配置）：`npm install --save-dev tsx` 后用 `npx tsx src/index.ts`。ts-node 已进入维护模式，遇到新项目优先选 tsx。另外 Node.js 的原生「类型剥离」已随 Node 24 LTS（24.12+）转为稳定特性并默认开启，只含可擦除语法的 `.ts` 文件可以直接 `node index.ts` 运行（enum、namespace 等不可擦除语法仍需转译），详见 [TS 6.0 与 7.0](/typescript/680-TypeScript6And7CompilerEvolution)。
 
 #### 2.3.3 使用构建工具
 
@@ -240,8 +241,8 @@ flowchart TD
 | 工具              | 描述                     | 用途                 |
 | :---------------- | :----------------------- | :------------------- |
 | **tsc**           | TypeScript 编译器        | 编译 TypeScript 代码 |
-| **ts-node**       | 直接运行 TypeScript 文件 | 开发和调试           |
-| **tslint/eslint** | TypeScript 代码检查工具  | 代码质量检查         |
+| **tsx / ts-node** | 直接运行 TypeScript 文件 | 开发和调试（新项目优先 tsx） |
+| **eslint**        | TypeScript 代码检查工具（TSLint 已于 2019 年废弃，不要选用） | 代码质量检查 |
 | **prettier**      | 代码格式化工具           | 保持代码风格一致     |
 | **jest**          | 测试框架                 | 单元测试             |
 | **webpack**       | 模块打包工具             | 前端项目构建         |
@@ -263,10 +264,9 @@ flowchart TD
 推荐的 IDE 和编辑器：
 | IDE/编辑器 | 特点 | 推荐插件 |
 | :--- | :--- | :--- |
-| **Visual Studio Code** | 官方推荐，内置 TypeScript 支持 | TypeScript Hero, ESLint, Prettier |
+| **Visual Studio Code** | 官方推荐，内置 TypeScript 语言服务 | ESLint, Prettier |
 | **WebStorm** | 强大的 IDE，内置 TypeScript 支持 | ESLint, Prettier |
 | **Sublime Text** | 轻量级编辑器 | TypeScript, SublimeLinter |
-| **Atom** | 开源编辑器 | atom-typescript |
 
 ## 4. 最佳实践
 
@@ -491,14 +491,14 @@ export function calculateTotal(items) {
 - **《TypeScript 编程》** - Boris Cherny
 - **《TypeScript 权威指南》** - 张容铭
 
-### 7.3 在线教程
+### 7.2 在线教程
 
 - **TypeScript 官方教程**: [https://www.typescriptlang.org/docs/handbook/typescript-from-scratch.html](https://www.typescriptlang.org/docs/handbook/typescript-from-scratch.html)
 - **MDN TypeScript 教程**: [https://developer.mozilla.org/en-US/docs/Web/JavaScript/TypeScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/TypeScript)
 - **TypeScript Deep Dive**: [https://basarat.gitbook.io/typescript/](https://basarat.gitbook.io/typescript/)
 - **freeCodeCamp TypeScript 教程**: [https://www.freecodecamp.org/learn/typescript/](https://www.freecodecamp.org/learn/typescript/)
 
-### 7.4 社区与论坛
+### 7.3 社区与论坛
 
 - **TypeScript 社区**: [https://github.com/microsoft/TypeScript/discussions](https://github.com/microsoft/TypeScript/discussions)
 - **Stack Overflow TypeScript**: [https://stackoverflow.com/questions/tagged/typescript](https://stackoverflow.com/questions/tagged/typescript)
@@ -547,3 +547,10 @@ TypeScript 是一种强大的编程语言，它通过添加静态类型系统和
 | 协变/逆变 | 高级类型兼容规则：数组是协变的、函数参数是逆变的，初学先记住"赋值时类型要兼容" |
 | 类型体操 | 用条件类型、映射类型等"像写程序一样写类型"，属于进阶领域 |
 | 速查（Cheat Sheet） | 文档末尾的紧凑代码片段区，用于查阅而非逐行精读 |
+
+## 自检
+
+- 遮住 2.1 节的命令，自己写出「全局安装 + 验证」与「项目本地安装 + 验证」两组命令，并说出团队项目为什么必须用本地安装。
+- `tsc src/index.ts`、`tsc`、`tsc --watch` 三条命令各做什么？初学者最常用的组合是哪两条搭配使用？
+- ts-node 与 tsx 的取舍是什么？2026 年的新项目默认选哪个，为什么？
+- 用自己的话解释「TypeScript 是 JavaScript 的超集」：浏览器能直接运行 TS 吗？类型标注最终去了哪里？

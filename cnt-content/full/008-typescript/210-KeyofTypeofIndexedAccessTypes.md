@@ -273,3 +273,10 @@ function connect(c: typeof config) {}    // 修正：typeof 提取值的类型
 2. **类型安全的事件总线**：基于 `EventPayloadMap` 实现 `on` 与 `off`，要求监听器参数类型随事件名精确收窄。思路：`on<E extends EventName>(name: E, cb: (payload: EventPayloadMap[E]) => void)`，注意泛型在参数与回调位置的双向约束。
 
 3. **配置表改造**：把项目中一个手写联合类型（如难度档位、地区列表）重构为 `as const` 配置表加 `keyof typeof` 派生。思路：对比重构前后新增一个档位需要改动的文件数，体会"单源"的意义。
+
+## 自检
+
+- 遮住第一节代码，自己写出「`keyof` 把对象类型的键变成联合类型」的最小示例，并说出它挡住的是哪类拼写事故。
+- 类型位置的 `typeof` 与值位置的 `typeof` 差在哪？为什么 `Object.keys` 的返回值替代不了 `keyof`？
+- `T[K]` 里 `K` 是联合类型时结果是什么？`T[number]` 用在数组类型上取到什么？
+- 遮住「四、三者组合」的实例，自己从零写一遍「事件名到载荷类型的映射」：`as const` 配置表 → `keyof typeof` → 索引访问三步各产出什么？

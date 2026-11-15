@@ -373,3 +373,10 @@ async function* poll<T>(
 - **TypeScript 官方手册：Interfaces**（https://www.typescriptlang.org/docs/handbook/2/objects.html，文档许可 CC-BY 4.0）。
 - MDN「迭代协议」（https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Iteration_protocols，许可 CC-BY-SA 2.5）：迭代协议的运行时定义。
 - 本文的分页迭代器、文件流、任务队列三个例子为原创工程场景；扫描素材 `e-core-java-mysql-web.md` 3.1 节 JS 基础练习 7 题合集的图片轮播页（`querySelectorAll` 消费场景）为 DOM 集合迭代的真实页面来源。
+
+## 自检
+
+- 遮住第 1 节，默写两个协议、四个接口的名字，并说清谁消费谁（`for...of` 消费哪个？`for await...of` 又消费哪个？）。
+- `Generator<T, TReturn, TNext>` 三个类型参数各代表什么？遮住第 2 节示例自己填一遍。
+- 让自定义结构可迭代需要实现哪两个成员？遮住第 3 节代码自己写一遍 `[Symbol.iterator](): IterableIterator<T>`。
+- 分页游标迭代器里，为什么返回 `AsyncIterableIterator` 而不是 `AsyncIterator`？两者在 `for await...of` 里的差别是什么？

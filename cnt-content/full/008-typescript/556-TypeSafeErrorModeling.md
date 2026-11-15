@@ -349,3 +349,11 @@ function importBatchR(rows: ImportRow<string>[]): Result<ImportReport, string> {
 
 - TypeScript 官方 Handbook「Narrowing」「Never」章（microsoft/TypeScript-Website，文档内容 CC BY 4.0），https://www.typescriptlang.org/docs/handbook/2/narrowing.html ——收窄与 assert never 语义以官方文档为准。
 - 本篇 Result/Ok/Err 与三例代码均为原创，场景取材自内容仓库的笔记元数据、分页列表与批量导入流程。
+
+## 自检
+
+- 「异常路线」与「返回值路线（Result）」各自的适用边界是什么？遮住第 1 节，说出两条选择依据。
+- 遮住第 2 节，自己写出最小 `Result<T, E>` 与 `Ok`/`Err` 构造器，并解释判别字段为什么选 `'ok'`/`'err'`。
+- catch 拿到 `unknown` 后的归一函数要处理哪几类值（Error 实例、字符串、其他）？遮住第 3 节自己写一遍。
+- 部分失败聚合（批量导入）里，`Result<T, E>[]` 怎么在类型层面区分「全成功」与「有失败」？
+- 第 7 节说「什么时候别用 Result」——至少说出两条不该用的场景。

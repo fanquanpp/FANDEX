@@ -679,3 +679,11 @@ const controller = new AbortController();
 setTimeout(() => controller.abort(), 5000);
 await api.users.list({}, { signal: controller.signal });
 ```
+
+## 自检
+
+- 这个示例项目的类型分层有哪几层（共享类型、端点映射、请求封装、错误模型）？遮住「完整代码」自己先画出分层图。
+- 「端点映射表」如何让 URL 与参数类型绑定？拼错端点名或漏传路径参数时，报错出现在哪一步？
+- 错误模型的判别字段是什么？业务错误与网络错误在类型上怎么区分？
+- `AbortController` 的 signal 参数怎么进类型签名？取消后的异常属于哪个分支？
+- 对照 [570：类型安全 API 客户端](/typescript/570-TypeSafeAPIClient) 的理论版，本示例省略了什么、补上了什么？

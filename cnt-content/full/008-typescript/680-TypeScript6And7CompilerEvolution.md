@@ -39,6 +39,8 @@ prerequisites:
 | 2026-03-23 | **TypeScript 6.0 正式发布**（后续补丁至 6.0.3）：最后一个基于 JS 代码库的版本，编译器 API 与 5.9 完全兼容 |
 | 2026-07-08 | **TypeScript 7.0 正式发布**：经 `typescript` npm 包直接发布，`latest` 标签指向 7.0.2；`@typescript/native-preview` 完成历史使命 |
 | 2026-07 起 | `typescript@next` 已是 7.1 夜间版（7.1 计划提供新的编译器 API） |
+| 2026-10-20 | **TypeScript 7.1 Beta 发布**：兑现 7.0 欠下的承诺——恢复编译器 API（作为一套新的、不同于 6.x 的入口），供 typescript-eslint、Volar 系语言工具等消费 |
+| 2026-11-24（计划） | TypeScript 7.1 正式版计划发布；发布前 API 消费者仍以 6.0 双轨为主 |
 
 `npm` 上的 `typescript` 包 `latest` 已是 7.0.2，命令行入口仍叫 `tsc`——对多数项目，"升级"真的只是改一下依赖版本号。
 
@@ -55,7 +57,7 @@ flowchart LR
     A["5.9（2025-08）<br/>5.x 功能线收官"] --> B["6.0（2026-03）<br/>默认值翻转 + 清空弃用<br/>API 与 5.9 兼容"]
     B --> C["7.0（2026-07）<br/>Go 原生重写<br/>语义以 6.0 为基线"]
     B -.编译器 API 消费者暂留.-> B
-    C --> D["7.1（夜间）<br/>计划提供新编译器 API"]
+    C --> D["7.1（2026-10 Beta）<br/>恢复新编译器 API<br/>正式版计划 2026-11-24"]
 ```
 
 ## 3. TypeScript 6.0 详解
@@ -259,7 +261,7 @@ grep -rn "ts.createProgram|ts.factory"  src/ scripts/
 4. 升级到 7.0，CI 上并行跑 `tsc6` 与 `tsc` 比对一周（错误集合应一致）；
 5. 切换主工具链，保留 `@typescript/typescript6` 以备回退。
 
-**API 消费者**：停留在 6.0（API 与 5.9 兼容，无迁移成本），把"7.0 CLI + `tsc6`/6.0 API"双轨作为过渡架构，跟踪 `typescript@next`（7.1 夜间）中 API 的落地形态再评估重写量。
+**API 消费者**：停留在 6.0（API 与 5.9 兼容，无迁移成本），把"7.0 CLI + `tsc6`/6.0 API"双轨作为过渡架构。7.1 Beta（2026-10-20）已恢复编译器 API，但这是一套**新的、不同于 6.x 的 API**——typescript-eslint、Volar 系工具需要各自适配后才可切换；在对应工具链官方宣布支持前，继续跟踪 `typescript@next`（7.1 夜间）中 API 的落地形态再评估重写量。
 
 ## 6. 常见疑问
 
@@ -301,3 +303,12 @@ grep -rn "ts.createProgram|ts.factory"  src/ scripts/
 - 一致性判据：6.0 + `stableTypeOrdering` + 无 `ignoreDeprecations` 的干净编译结果 = 7.0 行为；`stableTypeOrdering` 在 7.0 不可关闭；
 - 模板字面量类型按 Unicode 码点切分、JS/JSDoc 支持收紧等"有意变更"要过一遍官方清单；
 - 库项目迁移前开 `isolatedDeclarations`，并确认 dts 消费链与模板框架工具链（vue-tsc 等）的适配声明。
+
+## 自检
+
+- 遮住第 1 节时间线，按顺序复述六个关键节点：Go 移植宣布、5.9 收官、6.0 GA、7.0 GA、7.1 Beta、7.1 正式版计划——各自的关键词是什么？
+- 6.0 翻转的 7 个默认值是哪些？遮住 3.1 的表自己默写，并说出每项的「升级后典型症状」。
+- `ignoreDeprecations: "6.0"` 的有效期是多久？7.0 为什么让它失效？
+- 7.0 的提速来源是哪三重红利？`--checkers` 与 `--builders` 分别控制什么并行度？
+- 你是普通用户还是 API 消费者？写出判定命令，并说出两条路线各自的第一步。
+- 遮住 4.2 节的码点示例，解释 `HeadTail<"𠮷abc">` 在 6.0 与 7.0 下结果为什么不同——类型系统知识因此要重学吗？

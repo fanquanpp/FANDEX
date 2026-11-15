@@ -42,12 +42,12 @@ const conf = defineConfig({ mode: 'production', level: 3 });
 
 ### 1.2 装饰器进入标准（Stage 3 实现）
 
-5.0 起装饰器实现完全对齐 TC39 Stage 3 提案：参数从三个改为两个（`value, context`），类方法、访问器、字段、getter/setter 均可装饰。旧版实验性装饰器（`experimentalDecorators`）继续保留但已非主线。对比与实践见 `typescript/280-DecoratorStandardImpl`。
+5.0 起装饰器实现完全对齐 TC39 Stage 3 提案：参数从三个改为两个（`value, context`），类方法、访问器、字段、getter/setter 均可装饰。旧版实验性装饰器（`experimentalDecorators`）继续保留但已非主线。对比与实践见[装饰器标准实现](/typescript/280-DecoratorStandardImpl)。
 
 ### 1.3 其他
 
 - `--moduleResolution bundler`：为 Vite/esbuild 等打包器定制的模块解析策略；
-- `--verbatimModuleSyntax`：导入语句原样保留，`import type` 语义更严格（详见 `typescript/320-ImportTypeVerbatimModuleSyntax`）；
+- `--verbatimModuleSyntax`：导入语句原样保留，`import type` 语义更严格（详见 [import type 与 verbatimModuleSyntax](/typescript/320-ImportTypeVerbatimModuleSyntax)）；
 - 所有枚举、`--target` 与泛型运算符的性能优化。
 
 ### 1.4 速查卡：const 类型参数
@@ -205,7 +205,7 @@ function processFile(path: string) {
 }                                      // 此处确定性释放，无需 try/finally
 ```
 
-`using`/`await using` 为 JS 引入确定性资源释放语义，语言层面对应 `Disposable`/`AsyncDisposable` 接口。这是 5.2 最重要的一步，完整的运行时行为与落地进度见 `javascript/620-ExplicitResourceManagement`。
+`using`/`await using` 为 JS 引入确定性资源释放语义，语言层面对应 `Disposable`/`AsyncDisposable` 接口。这是 5.2 最重要的一步，完整的运行时行为与落地进度见 [显式资源管理：using 与 await using](/javascript/620-ExplicitResourceManagement)。
 
 ### 2.1 速查卡：using 与 await using
 
@@ -521,7 +521,7 @@ export function use() { return lib.foo(); }
 
 ## 10. TypeScript 6.0（2026-03）：语言层面的收官
 
-6.0 定位是"桥梁版本"：编译器 API 与 5.9 完全兼容，重心在默认值现代化与弃用清理（完整迁移指南见 `typescript/680-TypeScript6And7CompilerEvolution`）。语言与类型层面同样有一批正向变化，值得在 5.x 视角下记录：
+6.0 定位是"桥梁版本"：编译器 API 与 5.9 完全兼容，重心在默认值现代化与弃用清理（完整迁移指南见 [TypeScript 6.0 与 7.0](/typescript/680-TypeScript6And7CompilerEvolution)）。语言与类型层面同样有一批正向变化，值得在 5.x 视角下记录：
 
 ```typescript
 // target/lib es2025：ES2025 内建 API 的类型定义就位
@@ -541,22 +541,14 @@ m.getOrInsertComputed("ts", () => Date.now());
 - **`--stableTypeOrdering`**：诊断信息里类型的展示顺序稳定化（7.0 默认开启且不可关闭）；
 - **`dom` 库并入 `dom.iterable` / `dom.asynciterable`**：`"lib": ["dom"]` 自动获得集合迭代能力。
 
-6.0 之后语言特性趋近冻结，团队重心转向 Go 原生编译器（TypeScript 7.0，详见 `typescript/680-TypeScript6And7CompilerEvolution`）。
+6.0 之后语言特性趋近冻结，团队重心转向 Go 原生编译器（TypeScript 7.0，详见 [TypeScript 6.0 与 7.0](/typescript/680-TypeScript6And7CompilerEvolution)）。
 
 ## 11. 升级策略
 
 1. **不要跳版本**：5.x 各版本破坏性极小，`typescript` 直接升到 5.9.x 通常只需处理少量类型错误；
 2. **新开关按需逐个开**：`strictNullChecks`/`noUncheckedIndexedAccess` 类家族之外，`isolatedDeclarations`、`erasableSyntaxOnly`、`noUncheckedSideEffectImports` 都属于"先评估再开启"；
-3. **面向 6.x/7.x 提前铺路**：6.0 把 `strict` 设为默认、`target` 滚动到 es2025（详见 `typescript/680-TypeScript6And7CompilerEvolution`），现在显式写全 tsconfig 关键项，迁移成本最低；
+3. **面向 6.x/7.x 提前铺路**：6.0 把 `strict` 设为默认、`target` 滚动到 es2025（详见 [TypeScript 6.0 与 7.0](/typescript/680-TypeScript6And7CompilerEvolution)），现在显式写全 tsconfig 关键项，迁移成本最低；
 4. **库作者优先**：`isolatedDeclarations` + `verbatimModuleSyntax` 越早开，声明产出越健壮。
-
-## 12. 动手试试
-
-1. 写一个 `defineConfig<const T>` 并验证推断结果与手写 `as const` 一致；
-2. 用 `using` 重写一个临时文件清理逻辑，对比 try/finally 版本；
-3. 找一个 `filter(Boolean)` 场景，升级到 5.5+ 后删掉手写类型谓词；
-4. 用 `import defer` 延迟一个重依赖模块，在 DevTools 里观察模块体何时真正执行；
-5. 在实验分支开启 `--erasableSyntaxOnly`，清点项目里枚举与参数属性的数量，评估 Node 类型剥离的迁移面。
 
 ## 12. 动手试试
 
@@ -603,3 +595,12 @@ const names = mixed.filter((x) => x !== null); // 5.5+：直接 string[]
 ## 13. 一句话记住
 
 > 5.0-5.2 立语法（const 泛型、标准装饰器、using），5.4-5.5 强推断（NoInfer、推断谓词、isolatedDeclarations），5.6-5.8 收检查贴运行时（不可能代码、类型剥离），5.9 引入 import defer、6.0 补齐 es2025/Temporal 类型——然后一切为 6.0/7.0 的编译器换代让路。
+
+## 自检
+
+- 遮住各节标题，按年份默写 5.0-6.0 每个版本的一个代表特性，并说出 5.0「三块基石」是哪三块。
+- `const` 类型参数与 `as const` 各解决什么？什么时候写 `<const T>` 比在实参上 `as const` 更合适？
+- 推断类型谓词（5.5）省了什么事？哪两类回调它推不出来？
+- `erasableSyntaxOnly`（5.8）与 Node 类型剥离的关系是什么？它禁止哪三类语法？
+- 5.9 的 `import defer` 与动态 `import()` 的区别是什么？哪类依赖适合延迟求值？
+- 6.0 的「桥梁」定位体现在哪两件事上？语言层面它补齐了什么（es2025、Temporal）？

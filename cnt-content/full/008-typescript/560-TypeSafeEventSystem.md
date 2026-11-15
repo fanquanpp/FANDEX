@@ -1262,7 +1262,9 @@ jobs:
       - run: npm run build
 ```
 
-### 填空题知识点讲解
+## 13. 自测练习
+
+### 13.1 填空题知识点讲解
 
 1. 类型安全 EventEmitter 的泛型约束应为 `Events extends ______`，确保事件名是字符串且负载有显式类型。
 2. 同步 emit 中若 listener 抛错，会 ______ 后续 listener 执行；可用 ______ 包裹每个 listener 实现「错误隔离」。
@@ -1271,7 +1273,7 @@ jobs:
 5. TS 5.0 引入的 ______ 操作符可校验事件负载是否满足目标 Schema，同时保留字面量类型。
 6. 监听器函数 `this` 绑定丢失的修复方法有两种：______ 或 ______。
 
-### 13.3 代码修复题
+### 13.2 代码修复题
 
 1. 下列 EventEmitter 的 emit 方法在 listener 内部调用 off 时会抛错，请修复：
 
@@ -1302,15 +1304,15 @@ async emit<K extends keyof Events>(event: K, payload: Events[K]) {
 }
 ```
 
-### 13.4 开放题
+### 13.3 开放题
 
 1. 请用 300 字以内论述：在微服务架构中，进程内事件总线（EventEmitter）与跨进程消息队列（Kafka、RabbitMQ）的边界应如何划分？类型系统在两者间应扮演什么角色？
 
 2. 假设你正在设计一个支持「事件版本演化」的类型安全事件总线，请列出至少 3 个类型层的硬性约束，并说明每条约束的工程动机。考虑事件 Schema 演化、向后兼容、版本协商等维度。
 
-## 16. 附录 A：API 速查表
+## 14. 附录 A：API 速查表
 
-### 16.1 核心 API
+### 14.1 核心 API
 
 | 方法 | 签名 | 说明 |
 | ---- | ---- | ---- |
@@ -1323,7 +1325,7 @@ async emit<K extends keyof Events>(event: K, payload: Events[K]) {
 | `removeAllListeners` | `<K extends keyof Events>(event?: K) => void` | 清空监听 |
 | `listenerCount` | `<K extends keyof Events>(event: K) => number` | 统计 |
 
-### 16.2 常用类型工具
+### 14.2 常用类型工具
 
 ```typescript
 // 提取事件名联合
@@ -1348,7 +1350,7 @@ function createEventBus<Events extends Record<string, unknown>>(): EventEmitter<
 }
 ```
 
-### 16.3 推荐库对比
+### 14.3 推荐库对比
 
 | 库 | 体积 | 类型安全 | 异步 | 运算符 | 适用场景 |
 | -- | ---- | -------- | ---- | ------ | -------- |
@@ -1359,37 +1361,37 @@ function createEventBus<Events extends Record<string, unknown>>(): EventEmitter<
 | @nestjs/event-emitter | 5KB | 强 | 是 | 否 | NestJS 应用 |
 | Redux Toolkit | 30KB | 强 | 是 | 是 | 状态管理 |
 
-## 17. 附录 B：学习路径
+## 15. 附录 B：学习路径
 
-### 17.1 入门阶段（1-2 周）
+### 15.1 入门阶段（1-2 周）
 
 1. 理解 Observer 模式（GoF《设计模式》第 5 章）
 2. 阅读 Node.js EventEmitter 源码（lib/events.js）
 3. 阅读 mitt 源码（200 行）
 4. 完成本模块习题 1-3
 
-### 17.2 进阶阶段（2-4 周）
+### 15.2 进阶阶段（2-4 周）
 
 1. 学习 RxJS 基础运算符（map、filter、merge、switchMap）
 2. 阅读 Bierman《Understanding TypeScript》ECOOP 2014 论文
 3. 实现一个支持 once、off、maxListeners 的 EventEmitter
 4. 完成本模块习题 4-7
 
-### 17.3 高级阶段（4-8 周）
+### 15.3 高级阶段（4-8 周）
 
 1. 阅读 Erik Meijer《Your Mouse is a Database》CACM 2012
 2. 研究 Event Sourcing 与 CQRS 模式
 3. 实现一个支持事件回放与时间旅行的事件总线
 4. 完成本模块所有习题与开放题
 
-### 17.4 专家阶段（持续）
+### 15.4 专家阶段（持续）
 
 1. 贡献 RxJS、mitt、@nestjs/event-emitter 等开源项目
 2. 研究分布式事件流（Kafka、Pulsar）的类型系统设计
 3. 探索类型层事件 Schema 演化与版本协商
 4. 发表类型安全事件系统的工程实践论文
 
-## 18. 结语
+## 16. 结语
 
 类型安全的事件系统是 TypeScript 类型系统在工程实践中的最高级应用之一。它要求开发者同时掌握：
 
@@ -1406,3 +1408,11 @@ function createEventBus<Events extends Record<string, unknown>>(): EventEmitter<
 - 评估事件系统的性能、内存、错误传播特性，制定相应的工程规范。
 
 类型安全事件系统的真正价值，不在于「让编译器不报错」，而在于把领域知识编码进类型，让事件流的形状、约束、演化规则成为可读、可维护、可演进的工程资产。这是 TypeScript 类型系统从「语法校验工具」走向「领域建模语言」的关键一步。
+
+## 自检
+
+- 遮住第 4 节，自己写出「事件名到载荷类型映射 + 泛型 `on/off/emit`」的最小实现，并说出 `EventMap[E]` 在回调参数位置上提供了什么保证。
+- `off` 的处理器参数类型为什么必须与 `on` 完全一致？哪个工具类型（`Parameters`）能帮你从映射中提取？
+- once/通配符/异步订阅三者中，哪一个对类型系统的挑战最大？为什么？
+- `strictFunctionTypes` 与事件回调参数的型变方向有什么关系？把 handler 存进数组时发生了什么？
+- 遮住第 10 节对比表，说出 EventEmitter 与 Observable 至少两条选型依据（背压、多播、取消语义）。

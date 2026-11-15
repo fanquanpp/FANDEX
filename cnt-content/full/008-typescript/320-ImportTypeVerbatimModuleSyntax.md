@@ -262,7 +262,7 @@ TS 5.0 起推荐直接迁移到 `verbatimModuleSyntax`，旧的三个开关（re
 
 ## 扩展阅读
 
-- `023-ModuleResolutionInModernJavaScriptToolchains`：模块解析策略与 exports/imports 字段；
-- `021-DeclarationFileWriting`：声明文件中的导入导出写法；
-- `057-TsconfigStrictMode`：isolatedModules 等编译选项详解；
-- `029-NamespaceModule`：命名空间与模块的边界。
+- [模块解析与 ESM 互操作](/typescript/315-PackageExportsEsmInterop)：模块解析策略与 exports/imports 字段；
+- [声明文件编写](/typescript/300-DeclarationFileWriting)：声明文件中的导入导出写法；
+- [tsconfig 严格模式](/typescript/360-TsconfigStrictMode)：isolatedModules 等编译选项详解；
+- [命名空间与模块](/typescript/290-NamespaceModule)：命名空间与模块的边界。

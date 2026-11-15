@@ -2442,3 +2442,11 @@ class AppService {
 | Frontmatter | 前置元数据 | Markdown 顶部的 YAML 块 |
 | Interface Merging | 接口合并 | 同名接口自动合并 |
 | Discriminated Union | 判别式联合 | 共享字面量属性的联合类型 |
+
+## 自检
+
+- `process.env.X` 的类型为什么永远是 `string | undefined`？编译期注解（`ImportMetaEnv`/`ProcessEnv` 接口合并）与运行时校验各自补上了哪半边？
+- 遮住正文，用「接口合并 + `import.meta.env`」给 Vite 项目声明 `VITE_API_URL: string`，再说出为什么启动时仍可能拿到空串。
+- 运行时校验失败时应该怎么处理（抛错、降级、警告放行）？附录 B 的标准流程是什么？
+- 构建时注入与运行时读取的适用边界是什么？前端把 `SECRET_KEY` 放进 env 变量会发生什么？
+- 遮住附录 D 安全检查清单，默写至少四条（密钥不进前端、.env 不入库、默认值不掩盖缺失、生产/开发分离）。

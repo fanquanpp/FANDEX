@@ -331,3 +331,10 @@ form?.addEventListener("submit", (e: SubmitEvent) => {
 - **TypeScript 官方 tsconfig 参考：lib**（https://www.typescriptlang.org/tsconfig/#lib，文档许可 Apache-2.0）：lib 组装规则的基准来源。
 - MDN「Window」与「HTMLCanvasElement」（https://developer.mozilla.org/zh-CN/docs/Web/API/Window，许可 CC-BY-SA 2.5）。
 - 本文的图片轮播与实时时钟例子改编自扫描素材 `e-core-java-mysql-web.md` 3.1 节 JS 基础练习 7 题合集（第 2 题图片轮播、第 3 题实时时钟）与 3.4 节 JS 综合考试卷的真实页面需求，并升级为 TS 类型化版本；canvas 收窄、lib 差异对策为原创工程场景。
+
+## 自检
+
+- `querySelector('.btn')` 返回的元素类型是什么？三种收窄手段（`as HTMLButtonElement`、泛型参数、`instanceof`）各怎么写？遮住第 3 节自己写一遍。
+- `addEventListener('click', ...)` 为什么回调参数自动是 `MouseEvent`？这套映射定义在哪个声明里？
+- `lib.dom.d.ts` 从哪来？为什么「升级 TS 或 @types/web 更新」可能让原本编译通过的代码报错？
+- Node 项目里误用了 DOM 类型（或反之）时，`lib` 组合该怎么改？遮住第 6 节的三连报错示例，自己给出修复配置。

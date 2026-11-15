@@ -79,7 +79,7 @@ const directions = ["up", "down"]; // directions: string[]，不是 ("up" | "dow
 
 （3）数组元素会被拓宽，因为元素可能被替换；这常让初学者困惑"为什么我的字面量数组变成 string[] 了"。
 
-**控制拓宽的三种手段**：类型注解（`const mode: "dev" = "dev"`）、`as const` 断言（见 `ConstAssertion`）、`satisfies`（见 `049-SatisfiesOperator`）。注意：`as const` 不只阻止拓宽，还会递归地把属性变成 readonly、数组变成元组。
+**控制拓宽的三种手段**：类型注解（`const mode: "dev" = "dev"`）、`as const` 断言（见 [as const 完整讲解](/typescript/170-ConstAssertion)）、`satisfies`（见 [satisfies 操作符](/typescript/180-SatisfiesOperator)）。注意：`as const` 不只阻止拓宽，还会递归地把属性变成 readonly、数组变成元组。
 
 ## 4. const 与 let 推断差异对照表
 
@@ -241,7 +241,7 @@ function show(input: string | number) {
 }
 ```
 
-收窄的完整机制（typeof、in、instanceof、类型谓词、穷尽检查）见 `010-LocalTypeInference` 与 `016-TypeGuardCustomGuard`。本篇只需要记住：**收窄不改变推断，只改变某个代码位置上的可见类型**。
+收窄的完整机制（typeof、in、instanceof、类型谓词、穷尽检查）见 [字面量与联合类型](/typescript/110-LiteralUnionTypes) 与 [类型守卫与自定义守卫](/typescript/150-TypeGuardCustomGuard)。本篇只需要记住：**收窄不改变推断，只改变某个代码位置上的可见类型**。
 
 ## 11. 常见错误与修正（错-对对比）
 
@@ -298,7 +298,7 @@ const fn = (x: number) => x.toFixed(2);
 
 **Q2：想保留字面量类型有什么办法？**
 
-三种：显式类型注解、`as const`、`satisfies`。三者的差别见 `ConstAssertion` 与 `049-SatisfiesOperator`。
+三种：显式类型注解、`as const`、`satisfies`。三者的差别见 [as const 完整讲解](/typescript/170-ConstAssertion) 与 [satisfies 操作符](/typescript/180-SatisfiesOperator)。
 
 **Q3：为什么我的数组推断成 `string[]` 而不是联合字面量？**
 
@@ -335,7 +335,7 @@ const fn = (x: number) => x.toFixed(2);
 
 ## 扩展阅读
 
-- `ConstAssertion`：as const 如何彻底阻止拓宽；
-- `049-SatisfiesOperator`：既要校验又要保留精确类型的第三条路；
-- `010-LocalTypeInference`：字面量类型、联合类型与收窄的完整讲解；
-- `057-TsconfigStrictMode`：noImplicitAny 与其他 strict 开关。
+- [as const 完整讲解](/typescript/170-ConstAssertion)：as const 如何彻底阻止拓宽；
+- [satisfies 操作符](/typescript/180-SatisfiesOperator)：既要校验又要保留精确类型的第三条路；
+- [字面量与联合类型](/typescript/110-LiteralUnionTypes)：字面量类型、联合类型与收窄的完整讲解；
+- [tsconfig 严格模式](/typescript/360-TsconfigStrictMode)：noImplicitAny 与其他 strict 开关。

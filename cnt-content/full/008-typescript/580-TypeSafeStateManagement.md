@@ -2773,3 +2773,11 @@ global.fetch = jest.fn(() =>
   Promise.resolve({ ok: true, json: () => Promise.resolve({ id: '1', name: 'Test' }) }),
 ) as any;
 ```
+
+## 自检
+
+- 「状态是可辨识联合」为什么是 TS 状态管理的第一原则？遮住正文，用 `idle | loading | success | error` 自己写出 state 与 `assertNever` 兜底的 reducer。
+- Redux 里 `PayloadAction` 与手写 `Action` 类型的差别是什么？action creator 与 reducer 共享类型单源怎么做？
+- `as const` 在 action type 字符串上防的是什么事故？
+- reducer 的「穷尽 switch + never 兜底」在新增 action 时如何强制补逻辑？遮住示例自己走一遍报错路径。
+- 遮住附录 F 的 Signal 响应式实现，说出 Signal 与 Redux 在「读取追踪」上的本质差别，以及 TS 在两者中各自守住什么。

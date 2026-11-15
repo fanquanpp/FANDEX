@@ -2411,3 +2411,11 @@ fp-ts 利用 HKT 模拟实现函数式类型类（Functor、Monad、Applicative�
 
 本文最后审阅日期：2026-07-20
 审阅方：FANDEX Content Engineering Team
+
+## 自检
+
+- STLC、System F、HM 三层各补上了什么能力（函数类型、参数多态、全局推断）？TypeScript 的设计落在哪一层加哪些扩展？
+- 结构化类型与名义类型的判定规则差在哪？TypeScript 为什么选结构化，又用哪些机制模拟名义性（品牌类型、unique symbol）？
+- 函数参数逆变、返回值协变的类型论依据是什么？`strictFunctionTypes` 关闭后退回到什么行为？
+- 条件类型分发与同态映射类型的「同态」各指什么？遮住对应节自己复述定义。
+- 类型层计算是图灵完备的——TS2589（实例化过深）为什么是这个特性的直接代价？编译器用什么策略限制递归？

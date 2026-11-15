@@ -172,7 +172,7 @@ routes.admin.auth === true;
 
 1. 传统写法 `const routes: Routes = {...}` 会把类型"扩宽"成 `Routes`，丢失每个键的具体推断；`satisfies` 做到"按契约校验、按字面量推断"两全；
 2. 在类型测试中，`satisfies` 适合验证"对象字面量是否符合接口契约"，手写 `Expect/Equal` 适合验证"泛型推断结果"，二者互补；
-3. `satisfies` 由 TS 4.9 引入，详见 `typescript/180-SatisfiesOperator`。
+3. `satisfies` 由 TS 4.9 引入，详见 [satisfies 操作符](/typescript/180-SatisfiesOperator)。
 
 ## 7. never 穷尽检查：联合类型加成员时强制补逻辑
 
@@ -201,7 +201,7 @@ function area(s: Shape): number {
 
 1. `never` 是所有类型的子类型：只有当 switch 覆盖了**全部**成员时，`default` 分支里的 `s` 才会被收窄成 `never`；
 2. 这是一种"自动过期的测试"：新增联合成员的那一刻，忘记补的分支立刻在编译期红掉；
-3. 相关的 never 语义全解见 `typescript/190-NeverTypeSemantics`。
+3. 相关的 never 语义全解见 [never 类型完整语义](/typescript/190-NeverTypeSemantics)。
 
 ## 8. 常见误区
 
@@ -253,3 +253,11 @@ function area(s: Shape): number {
 - `Equal` 必须用泛型函数身份比较实现，`extends` 双向检查会误判 `any` 与联合类型；
 - `@ts-expect-error` 是双向断言（错误消失时它自己报错），永远用 `@ts-ignore` 的场合仅限"明知有错且不想管"的第三方代码缝隙；
 - `satisfies` 负责对象契约校验并保留字面量推断，与 `Equal` 断言、`never` 穷尽检查组成完整的类型测试工具箱。
+
+## 自检
+
+- 遮住第 3 节，默写零依赖三件套：`Expect`、`Equal`（泛型函数身份比较版）、`@ts-expect-error` 的完整写法。
+- `Equal` 为什么不能用 `X extends Y ? Y extends X ? true : false : false` 实现？`any` 与联合类型各在哪里漏判？
+- `@ts-expect-error` 与 `@ts-ignore` 的语义差别是什么？为什么前者更安全？
+- `satisfies` 保留字面量推断的价值在哪里？遮住 6 节的路由示例，说出 `as Routes` 版丢失了什么信息。
+- CI 里跑类型测试的命令是什么？`.test-d.ts` 文件如何避免进入构建产物？

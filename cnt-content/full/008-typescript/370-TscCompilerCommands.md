@@ -43,7 +43,7 @@ tsc -p ./packages/core         # -p 指定配置文件或所在目录
 
 1. 命令行传文件时，tsc **不读取 tsconfig.json**，所有选项都要在命令行给，适合单文件试验；
 2. 项目模式读 tsconfig（含 `extends` 继承链），是工程的标准用法；
-3. TypeScript 6.0 起，tsconfig.json 存在时再在命令行传文件会直接**报错**（TS5112）；确要临时合并配置可用 `tsc --ignoreConfig main.ts`（详见 `typescript/680-TypeScript6And7CompilerEvolution`）。
+3. TypeScript 6.0 起，tsconfig.json 存在时再在命令行传文件会直接**报错**（TS5112）；确要临时合并配置可用 `tsc --ignoreConfig main.ts`（详见 [TypeScript 6.0 与 7.0](/typescript/680-TypeScript6And7CompilerEvolution)）。
 
 ## 3. 环境初始化与版本确认
 
@@ -132,7 +132,7 @@ tsc -b --watch                 # 项目引用下的监听构建
 
 **讲解：**
 
-1. `tsc -b` 是 monorepo 的原生构建方案，只重建"过期"的子项目（详见 `typescript/420-ProjectReferencesMonorepo`）；
+1. `tsc -b` 是 monorepo 的原生构建方案，只重建"过期"的子项目（详见 [Project References 与 Monorepo](/typescript/420-ProjectReferencesMonorepo)）；
 2. 被引用的项目必须开启 `composite: true`，这是 `-b` 能判断增量的前提；
 3. TS 7.0 为 `-b` 重写了并行的 builders 实现（`--builders N` 可调并行度），大仓构建进一步提速。
 
@@ -174,7 +174,7 @@ tsc --verbatimModuleSyntax     # import/export 原样保留，强制用 import t
 
 1. `module`/`moduleResolution`/`target` 三件套决定产出的"形态"，`strict` 家族决定检查的"力度"，排错时先确认自己改的是哪一类；
 2. `verbatimModuleSyntax` 与"保留 import 断言"无关——它管的是**导入语句的形态原样保留**（类型导入必须写 `import type`）；
-3. 完整的选项语义与推荐组合见 `typescript/350-TypeScriptEngineeringConfig` 与 `typescript/360-TsconfigStrictMode`。
+3. 完整的选项语义与推荐组合见 [TypeScript 工程化配置](/typescript/350-TypeScriptEngineeringConfig) 与 [tsconfig 严格模式](/typescript/360-TsconfigStrictMode)。
 
 ## 9. 诊断与排查命令
 
@@ -207,7 +207,7 @@ tsc --noCheck                  # 跳过类型检查但仍完整产出（5.6+，�
 
 1. **命令形态不变**：7.0（Go 原生实现）仍是 `tsc` 命令，`--noEmit`、`-w`、`-b` 全部照旧，典型全量检查提速 8-12 倍；
 2. **默认值变了**：6.0 起 `strict` 默认开启、`target` 默认当年年度 ES 版本、命令行文件与 tsconfig 不可混用——依赖旧默认的脚本要显式补参数；
-3. **双轨工具**：迁移期可用 `@typescript/typescript6` 提供的 `tsc6` 与 7.x 的 `tsc` 并行比对（详见 `typescript/680-TypeScript6And7CompilerEvolution`）。
+3. **双轨工具**：迁移期可用 `@typescript/typescript6` 提供的 `tsc6` 与 7.x 的 `tsc` 并行比对（详见 [TypeScript 6.0 与 7.0](/typescript/680-TypeScript6And7CompilerEvolution)）。
 
 ## 12. 常见陷阱
 
@@ -246,3 +246,11 @@ tsc --noCheck                  # 跳过类型检查但仍完整产出（5.6+，�
 - `--outFile` 已随 6.0 移除、命令行文件与 tsconfig 不可混用（`--ignoreConfig` 除外）、`moduleResolution: node10/classic` 已弃用或移除——老脚本迁移时逐一核对；
 - CI 门禁用一次性 `--noEmit` 全量检查，本地开发用 watch/增量，`--noCheck` 只用于"产物先行"的流水线；
 - 升级到 TS 7 后命令不变、默认并行（`--checkers`/`--builders` 可调），老 CI 脚本无需改动即可享受提速。
+
+## 自检
+
+- 两种工作模式各写一条命令：给文件与给 tsconfig。TS 6.0 起，两者混用会发生什么？逃生开关叫什么？
+- 「CI 类型检查门禁」的命令怎么写？为什么必须带 `--noEmit`？
+- 遮住第 6 节，默写 watch、增量缓存、清缓存三条命令，并说出 `.tsbuildinfo` 该不该进版本库。
+- `tsc -b` 与普通 `tsc` 的区别是什么？被引用项目必须打开哪个开关？
+- `--showConfig`、`--explainFiles`、`--listFiles`、`--diagnostics` 四条诊断命令各自回答什么问题？遮住第 9 节自己配对一遍。

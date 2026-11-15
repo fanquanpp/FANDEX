@@ -380,3 +380,11 @@ function requestCached<T>(path: string): Promise<T> {
 - **TypeScript 官方 tsconfig 参考：useUnknownInCatchVariables**（https://www.typescriptlang.org/tsconfig/#useUnknownInCatchVariables，文档许可 Apache-2.0）。
 - MDN「async function」（https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/async_function，许可 CC-BY-SA 2.5）。
 - 本文的 fetch 封装、轮询修正、事件回调三例为原创工程场景；轮询需求原型取自扫描素材 `e-core-java-mysql-web.md` 3.4 节 JS 综合考试卷「点击换图后每半秒自动变换」与 3.1 节练习 2 的定时器换图页，升级为 TS 异步类型化版本。
+
+## 自检
+
+- `async` 函数的返回类型一定是 `Promise<U>` 吗？返回 `undefined` 与返回 `void` 的 async 函数，类型分别是什么？
+- `Awaited<T>` 与手写 `T extends Promise<infer U> ? U : T` 的差别在哪？后者漏了什么（thenable、嵌套 Promise）？
+- `PromiseLike` 与 `Promise` 的关系是什么？为什么公共 API 的参数常标成 `PromiseLike`？
+- `try/catch` 的 `catch` 变量在 strict 下是什么类型？遮住第 4 节，写出你项目里的 `errorMessage(error: unknown)`。
+- 「事件处理器里的 async 回调会吞错」的机理是什么？遮住第 8 节，说出至少两种兜底方案。

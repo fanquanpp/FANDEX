@@ -1831,3 +1831,12 @@ class User {
     age: number = 0
 }
 ```
+
+## 自检
+
+- 遮住 2.2 节，默写标准装饰器（TS 5.0+）与实验性装饰器（`experimentalDecorators`）的方法装饰器签名差异：参数个数、类型与返回值各是什么？
+- 字段装饰器为什么拿不到「值」？它返回的「初始化函数」在什么时机被调用？
+- `context` 对象上 `kind` / `name` / `access` / `addInitializer` 各自的用途是什么？遮住附录 B 自己填一遍。
+- `Symbol.metadata`（TS 5.2+）与 `reflect-metadata` 的旧方案差别在哪？新项目该用哪个？
+- 2026 年生态现状：NestJS/Angular 为什么还跑在 Legacy 装饰器上？新项目开 `experimentalDecorators` 吗？
+- 遮住附录 G 的 `@validate_age` 示例，用标准装饰器的 `(value, context)` 签名重写一遍，并说出两者行为差异。
