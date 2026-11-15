@@ -21,7 +21,7 @@ prerequisites:
 >
 > 本节导航：先学流水线五步（含回流/重绘/合成）→ 再学脚本加载与资源提示 → 最后用性能指标验证优化效果。
 >
-> 前置要求：本篇是 005"性能优化"小节的深化版。需要先理解资源加载与响应式图片（`html5/018`）、CSS 盒模型（`css/050-CSS3BoxModelDetailed`）、浏览器事件循环（`javascript/027`）；移动端性能关联 `html5/034`。建议学完 CSS 性能优化（`css/540-CSSPerformanceOptimizationDetailed`）后再做完整实践。
+> 前置要求：本篇是性能小节的深化版。需要先理解资源加载与响应式图片（`html5/140-ImagesAndResponsiveImages`）、CSS 盒模型（`css/050-CSS3BoxModelDetailed`）、浏览器事件循环（`javascript/290-EventLoop`）；移动端性能关联 `html5/360-ViewportConfigMobileFirst`。建议学完 CSS 性能优化（`css/540-CSSPerformanceOptimizationDetailed`）后再做完整实践。
 
 ## 一句话理解
 
@@ -135,7 +135,7 @@ list.appendChild(fragment);
 
 1. `transform` 与 `opacity` 动画不会触发回流/重绘，是动画性能的首选。
 2. `will-change: transform` 可以提前告诉浏览器"这个元素要动"，为它单独建图层；但图层会占 GPU 内存，**滥用反而更慢**，只在确有动画时使用。
-3. 主线程与合成线程的分工：JavaScript 在主线程执行，长任务会卡住渲染（表现为动画掉帧）；把耗时计算放进 Web Worker（`html5/026`），把动画交给 CSS，是两条最重要的减负手段。
+3. 主线程与合成线程的分工：JavaScript 在主线程执行，长任务会卡住渲染（表现为动画掉帧）；把耗时计算放进 Web Worker（`html5/290-WebWorkers`），把动画交给 CSS，是两条最重要的减负手段。
 
 ## 脚本加载：async 与 defer
 
@@ -259,7 +259,30 @@ list.appendChild(fragment);
 5. 用 Lighthouse 生成报告（F12 → Lighthouse → Generate report），对照"性能指标速查"表看 FCP/LCP/CLS 是否达标；
 6. 进阶挑战：给字体加 `preload` + `font-display: swap`，对比文字渲染时间。
 
-> 回到你写的第一个页面（001 的 `index.html`），试着把其中的 `<script>` 标签加上 `defer`，对比加与不加的加载速度差异。
+> 回到你写的第一个页面（`html5/010-WhatIsWebpage` 的 `index.html`），试着把其中的 `<script>` 标签加上 `defer`，对比加与不加的加载速度差异。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写「业务脚本 + 统计脚本」两个 script 标签的推荐写法，并说明两者的执行时机差异。
+
+参考答案（先自己写，再对照）：
+
+```html
+<script defer src="/js/main.js"></script>
+<script async src="/js/analytics.js"></script>
+```
+
+`defer` 下载不阻塞解析，HTML 解析完成后按文档顺序执行，适合有顺序依赖的业务脚本；`async` 下载完就立即执行、顺序不可控，只适合相互独立的统计/广告脚本。
+
+2. 概念自问：为什么 CSS 是「渲染阻塞」资源？回流与重绘的代价谁大？为什么动画首选 transform？
+
+参考答案（先自己答，再对照）：没建好 CSSOM 就不知道节点长什么样，浏览器不敢画像素，所以外链 CSS 阻塞渲染；回流重算几何位置代价大于重绘（只重画像素）；transform/opacity 只走合成层，主线程不参与每帧布局绘制，GPU 直接完成。
+
+3. 场景判断：首屏字体该用什么资源提示？「下一步可能访问的页面」呢？第三方 API 域名呢？
+
+参考答案（先自己答，再对照）：字体用 `preload`（`as="font"` + `crossorigin`）配合 `font-display: swap`；未来页面用 `prefetch`（空闲时低优先级）；确定要请求的第三方域名用 `preconnect`，只是「可能用到」用更轻的 `dns-prefetch`。
 
 ## 核心知识点
 

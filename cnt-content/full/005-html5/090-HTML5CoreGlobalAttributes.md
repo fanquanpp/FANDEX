@@ -119,8 +119,8 @@ HTML 只负责"有什么"，CSS 负责"长什么样"，JavaScript 负责"能做�
 | `tabindex` | 参与 Tab 焦点序（配合键盘导航） | 进阶无障碍时学 |
 | `spellcheck` | 拼写检查开关 | `<textarea spellcheck="false">` |
 | `translate` | 提示翻译工具不要翻译（如品牌名） | `<span translate="no">FANDEX</span>` |
-| `draggable` | 是否可拖拽 | 配合 Drag API，见 026 |
-| `data-*` | 自定义数据，供 JS 读取 | `data-price="99"`，详见 034 专项 |
+| `draggable` | 是否可拖拽 | 配合 Drag API，详见 `html5/250-DragAPI` |
+| `data-*` | 自定义数据，供 JS 读取 | `data-price="99"`，详见 `html5/340-CustomDataAttribute` |
 
 三个立刻能玩的小示例：
 
@@ -144,6 +144,40 @@ HTML 只负责"有什么"，CSS 负责"长什么样"，JavaScript 负责"能做�
 | `id` | 不能（全页唯一） | `#header` | `getElementById('header')` | 身份证号 |
 | `class` | 能 | `.notice` | `getElementsByClassName('notice')` | 班级标签 |
 | `style` | 不涉及（写在元素上） | 直接生效，无需选择器 | 读 `element.style.color` | 临时记号笔 |
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写一个「紧急通知」列表项：样式要求「蓝色 + 加粗」，且 JS 能单独抓到这一条。选择 id、class 还是 style？写出 HTML 与 CSS。
+
+参考答案（先自己写，再对照）：
+
+```html
+<style>
+  .notice { color: blue; }
+  .urgent { font-weight: bold; }
+</style>
+<p class="notice urgent" id="alert-2026">系统维护通知</p>
+```
+
+外观用两个 class（一个管颜色一个管加粗，职责分离），JS 抓取才需要补一个唯一的 id；内联 style 会让样式写死、无法复用，正式代码不用。
+
+2. 概念自问：重复 id 的三个隐性后果？id 与 class 在锚点跳转上的本质差异？
+
+参考答案（先自己答，再对照）：`getElementById` 只返回第一个、锚点 `#id` 只认第一个、校验器报错；URL 片段只找 `id`，class 做不到锚点——这就是「身份证号要唯一」的结构理由。
+
+3. 说出 `title`、`hidden`、`contenteditable` 三个全局属性各写一行示例，并说明 hidden 与 CSS 隐藏的层次差别。
+
+参考答案（先自己答，再对照）：
+
+```html
+<abbr title="HyperText Markup Language">HTML</abbr>
+<p hidden>还没上线的内容</p>
+<p contenteditable="true">这段可以直接编辑</p>
+```
+
+`hidden` 是 HTML 结构层开关（默认表现不显示不占位），CSS 只是视觉层——两者冲突时 CSS 可能覆盖 hidden 的默认表现，所以「结构上隐藏」优先用 hidden 属性表达。
 
 ## 7. 动手试试
 

@@ -234,13 +234,13 @@ CSS 属性选择器 `[data-x]`、`[data-x=val]`、`[data-x^=val]` 的匹配复�
 
 ### 3.5 attr() 函数的限制
 
-CSS `attr(data-x)` 在 CSS 2.1 中仅支持 `content` 属性使用，且仅返回字符串。CSS Values Level 5 扩展了 `attr()`，但浏览器支持有限（2024 年仅 Firefox 实验性支持）。
+CSS `attr(data-x)` 在 CSS 2.1 中仅支持 `content` 属性使用，且仅返回字符串。CSS Values Level 5 扩展了 `attr()`（可用于任意属性并声明类型），支持面截至 2026 年仍未 Baseline：Chrome/Edge 133（2025 年 2 月）起支持，Firefox 近期跟进，Safari 尚未支持——生产中仍按渐进增强对待。
 
 ```css
 /* CSS 2.1（广泛支持） */
 .tooltip::after { content: attr(data-tooltip); }
 
-/* CSS Values Level 5（实验性） */
+/* CSS Values Level 5（未 Baseline，Chrome/Edge 133+ 先行） */
 .box { width: attr(data-width px, 100px); }
 ```
 
@@ -1351,9 +1351,9 @@ app.start();
 | `DOMStringMap` | 8+ | 6+ | 5.1+ | 12+ | 11+ | 11+ |
 | CSS `[data-x]` 选择器 | 全部 | 全部 | 全部 | 全部 | 全部 | 8+ |
 | CSS `attr(data-x)` 用于 `content` | 全部 | 全部 | 全部 | 全部 | 全部 | 8+ |
-| CSS `attr(data-x)` 用于其他属性 | 实验 | 实验 | 不支持 | 实验 | 实验 | 不支持 |
+| CSS `attr(data-x)` 用于其他属性 | 133+ | 155 前后跟进 | 不支持 | 133+ | 119+ | 不支持 |
 
-数据来源：MDN Browser Compatibility Data (BCD), 2024 年 7 月更新。
+数据来源：MDN Browser Compatibility Data (BCD)，2024 年 7 月基线；末行按 2025-2026 年 caniuse 数据更新（CSS Values Level 5 高级 `attr()` 未 Baseline，Safari 仍不支持）。
 
 ## 附录 B：术语表
 
@@ -1598,6 +1598,40 @@ const user = JSON.parse(el.dataset.user);
 - **语义化**:data-* 是自定义数据属性,不应替代 class、id 等语义化属性
 - **性能优化**:大量元素访问 data-* 时,优先使用 `getAttribute`(略快于 `dataset`)
 - **命名一致性**:全项目统一使用连字符命名(如 `data-user-id`),不要混用驼峰
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写三个商品卡片（HTML 连字符命名），然后用事件委托：点击任一卡片在控制台打印「选择了 N 号商品，价格 P 元」，不写 `Number()` 转换会怎样先预测再验证。
+
+参考答案（先自己写，再对照）：
+
+```html
+<div class="product" data-id="1" data-price="2999">智能手机</div>
+<div class="product" data-id="2" data-price="5999">笔记本电脑</div>
+<div class="product" data-id="3" data-price="1999">平板电脑</div>
+
+<script>
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('[data-id]');
+    if (!card) return;
+    const id = card.dataset.id;                       // '1'（字符串）
+    const price = Number(card.dataset.price);         // 2999（不转就是字符串）
+    console.log(`选择了 ${id} 号商品，价格 ${price} 元`);
+  });
+</script>
+```
+
+不转换时 `'5999' + 100` 得 `'5999100'`（字符串拼接）——data-* 的值永远是字符串。
+
+2. 概念自问：`data-user-id` 与 `dataset` 的映射规则？为什么不在 data-* 里存 Token？CSS 怎么直接消费 data-*？
+
+参考答案（先自己答，再对照）：连字符转驼峰，`data-user-id` 读写 `dataset.userId`，反向同理；属性在 HTML 源码与 DevTools 里完全可见，任何能读 DOM 的脚本都能拿到，敏感数据放 HttpOnly Cookie；CSS 用属性选择器直接控制样式，如 `.product[data-state="sold-out"] { opacity: .5; }`——状态驱动样式是 data-* 的标准用法。
+
+3. 判断题：`data-count` 与 `class="count"` 的职责区别？什么数据不该放 data-*？
+
+参考答案（先自己答，再对照）：class 是样式/语义钩子（面向 CSS），data-* 是业务数据载荷（面向 JS/CSS 消费）；大数据量、需要频繁更新的复杂状态不该放 DOM——属性写入会触发序列化与选择器重算，放 JS 状态管理或 WeakMap 更合适。
 
 ## 动手试试
 

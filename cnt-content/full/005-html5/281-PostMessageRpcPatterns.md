@@ -328,6 +328,22 @@ window.addEventListener('message', (e) => {
 3. （选做）给 TabAuthSync 增加"强制全员登出"：管理标签页广播 `FORCE_LOGOUT`，所有标签页（包括自己）清空状态；
 4. （选做）把 PostMessageRPC 的 `call` 改造成支持并发上限（同时最多 5 个未完成请求），超出排队。
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己答，再展开参考答案对照。
+
+1. 概念自问：裸 `postMessage` 撑不起业务调用，RPC 化至少要补哪三件事？`MessageChannel` 相比「双方各自监听 message」解决了什么？
+
+参考答案（先自己答，再对照）：请求 ID（把响应和请求对上）、超时（对端不回时 Promise 能拒绝而不是悬挂）、来源校验（只在白名单 origin 收发）；MessageChannel 开出一条专用双工端口（port1/port2），业务回包不再与页面里其他广播消息混流，处理函数不必靠 type 分流全局消息。
+
+2. 排查题：iframe 通信「发出去收不到」，按什么顺序查？
+
+参考答案（先自己答，再对照）：先核对两端 `location.origin` 是否逐字符一致（协议/端口最易翻车）；再确认 iframe 已等 `load` 事件后才握手（`contentWindow` 里的脚本可能还没就绪）；最后用调试拦截把每条消息的 origin/内容打进控制台，定位是「没发出」还是「收了没匹配」。
+
+3. 判断题：多标签页登录同步为什么选 `BroadcastChannel` 而不是 storage 事件轮询？心跳补的又是什么？
+
+参考答案（先自己答，再对照）：BroadcastChannel 是同源内的原生发布订阅，消息即发即达、无需写 storage 再监听 change 事件，也不污染存储；心跳解决的是「标签页关闭后成员表失真」——定期广播存活信号，超时未回应即从成员表剔除，让「谁在线」的判断保持准确。
+
 ## 8. 下一步
 
 - 基础概念回顾：`html5/280-CrossDocumentCommunication`；

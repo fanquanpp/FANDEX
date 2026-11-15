@@ -995,6 +995,38 @@ fetch('/api/submit', {
 - 跨字段规则（如两次密码一致）必须用 JavaScript 在 `submit` 事件中实现；
 - `FormData` 是把表单数据交给 `fetch` 的标准方式。
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写出实现，再展开参考答案对照。
+
+1. 不写一行 JS，做一个能被浏览器拦下的邮箱输入框：必填、格式自动校验、提交时先经原生验证——写出 form 与 input 的关键属性。
+
+参考答案（先自己写，再对照）：
+
+```html
+<form action="/signup" method="post">
+  <label for="email">邮箱</label>
+  <input type="email" id="email" name="email" required />
+  <button type="submit">提交</button>
+</form>
+```
+
+关键点：`type="email"` 触发格式校验、`required` 拦空值、`name` 决定提交字段名（漏了后端收不到）。原生验证在 submit 事件前自动执行，无需手写 if。
+
+2. 写一个「6 位纯数字验证码」输入框：长度与格式都交给浏览器，并解释 pattern 值的含义。
+
+参考答案（先自己写，再对照）：
+
+```html
+<input type="text" name="code" required pattern="[0-9]{6}" minlength="6" maxlength="6" inputmode="numeric" />
+```
+
+`pattern="[0-9]{6}"` 是输入格式说明书（6 个数字）；minlength/maxlength 双保险；`inputmode="numeric"` 让手机弹出数字键盘。
+
+3. 概念自问：前端校验被绕过怎么办？GET 与 POST 提交的数据各放在哪？`setCustomValidity` 的使用规则？
+
+参考答案（先自己答，再对照）：前端校验只是体验防线，可被禁 JS/直接发请求绕过，服务端必须二次校验；GET 把数据拼在 URL 查询串（有长度限制、可见），POST 放请求体（适合登录/上传）；`setCustomValidity(消息)` 让控件进入不合法状态从而拦截提交，值为空串表示恢复合法——用于两次密码一致这类跨字段规则。
+
 ## 10. 动手试试
 
 ### 入门版（必做）

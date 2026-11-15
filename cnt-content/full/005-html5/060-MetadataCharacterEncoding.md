@@ -335,6 +335,32 @@ console.log(document.characterSet); // 'UTF-8'
 console.log(document.inputEncoding);
 ```
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写一份「标准 head」：charset、viewport、description、title、外部 CSS 各就各位。
+
+参考答案（先自己写，再对照）：
+
+```html
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="一句话说清这个页面是干什么的">
+  <title>页面标题（标签页上显示的那个）</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+```
+
+2. 概念自问：`<meta charset="UTF-8">` 为什么必须放在前 1024 字节内且在 `<title>` 之前？编码声明的优先级顺序是什么？
+
+参考答案（先自己答，再对照）：浏览器是流式解析的，必须尽早知道按什么编码解码后续字节，否则先按错误编码解出的内容（含被注入的脚本）已经生效——放前面是对 UTF-7 类编码注入攻击的防线，title 等文本必须在其之后；优先级是 BOM > HTTP Content-Type 响应头 > meta charset 声明，写 meta 是给「没有响应头控制的静态页面」兜底。
+
+3. 判断题：中文页面显示成乱码（如 `ä¸­æ–‡`），最可能的两个原因是什么？
+
+参考答案（先自己判断，再对照）：文件保存编码不是 UTF-8（编辑器保存成 GBK/GBK 系），或声明与实际编码不一致（漏写/写错 charset）——「声明的编码」与「实际保存的编码」必须一致，这是乱码排查的第一直觉。
+
 ## 动手试试
 
 ### 入门版（必做）

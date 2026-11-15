@@ -62,7 +62,7 @@ HTML5 的 DOCTYPE 设计哲学是**向后兼容**与**极简主义**——它不
 
 | 模式             | 触发条件            | 特点                         |
 | ---------------- | ------------------- | ---------------------------- |
-| **标准模式**     | 存在有效的 DOCTYPE  | 按 W3C 标准渲染              |
+| **标准模式**     | 存在有效的 DOCTYPE  | 按现行 HTML 标准渲染          |
 | **怪异模式**     | 缺少 DOCTYPE 或无效 | 模拟旧浏览器行为             |
 | **几乎标准模式** | 某些过渡型 DOCTYPE  | 除表格单元格高度外按标准渲染 |
 
@@ -108,14 +108,15 @@ if (document.compatMode === 'CSS1Compat') {
 | 2020 | `loading="lazy"` 图片懒加载在各浏览器铺开                   |
 | 2022 | `<dialog>` 实现全浏览器兼容（Baseline 2022）、Container Queries、`:has()` 选择器 |
 | 2023 | `<search>` 元素进入标准、`popover` 属性首发（Chrome 114）、View Transitions API |
-| 2024 | `popover` 达成 Baseline、CSS Anchor Positioning（Chrome 125） |
-| 2025 | Invoker Commands 定名 `command`/`commandfor`（Chrome/Edge 135）、可定制 select 进入 Baseline |
+| 2025 | Invoker Commands 定名 `command`/`commandfor`（Chrome/Edge 135 起支持，2025 年 12 月起全主流浏览器可用）、可定制 select 落地 Chrome/Edge 135（Safari 27 于 2026-09 跟进，Firefox 尚未支持，不能按 Baseline 对待） |
+
+版本与支持面变化快，上表只记「哪个特性在哪年进入标准」，写生产代码前仍应到 MDN/caniuse 复核当期的 Baseline 状态。
 
 ## 3. DOCTYPE 最佳实践
 
 - 永远在文档首行声明 DOCTYPE
 - 推荐大写 `<!DOCTYPE html>`
-- 使用 W3C Markup Validation Service 验证
+- 用 Nu Html Checker（validator.w3.org/nu，W3C 现行校验器）验证标记合法性
 
 ## 4. 动手试试
 
@@ -138,10 +139,39 @@ if (document.compatMode === 'CSS1Compat') {
 
 | 问题点 | 说明 | 改进方案 |
 | --- | --- | --- |
-| DOCTYPE 前有内容 | 注释、BOM 或空行导致声明失效 | 确保 `<!DOCTYPE html>` 是文件的第一个字节序列 |
+| DOCTYPE 前有文本或元素 | 只有空白与 BOM 被解析规则容忍；出现正文内容、未闭合标签会触发怪异模式 | 确保 `<!DOCTYPE html>` 是文件里第一个可见内容（注释规范上不触发怪异模式，但老版 IE 曾误判，实践中照样不写） |
 | 使用旧版长 DOCTYPE | 冗余且可能触发几乎标准模式 | 统一使用 HTML5 极简声明 |
 | 用 `XHTML` 式自闭合 | 对 HTML5 无意义且易出错 | 按 HTML5 语法书写 |
 | 忽略怪异模式 | 同一套 CSS 在不同模式渲染不同 | 排查布局问题时先确认 `compatMode` |
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写一份最小合法 HTML5 文档骨架（含 DOCTYPE、lang、charset、title）。
+
+参考答案（先自己写，再对照）：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <title>最小骨架</title>
+  </head>
+  <body>
+    <p>hello</p>
+  </body>
+</html>
+```
+
+2. 概念自问：删掉首行 DOCTYPE 后 `document.compatMode` 返回什么？怪异模式最著名的渲染差异是什么？
+
+参考答案（先自己答，再对照）：返回 `"BackCompat"`（怪异模式）；最著名的差异是盒模型——`width` 从「内容宽」变成「内容 + padding + border」，同样设 100px 的元素实际占宽不同，布局随之错位。
+
+3. 判断题：`<!-- 头部注释 --><!DOCTYPE html>` 会触发怪异模式吗？DOCTYPE 前多几个空行呢？
+
+参考答案（先自己判断，再对照）：按现行解析规则两者都不触发——初始插入模式下注释只被插入、空白被跳过，DOCTYPE 照常生效（老版 IE 曾因注释误判，所以实践仍讲究「DOCTYPE 前不放任何东西」）；真正触发怪异模式的是 DOCTYPE 缺失、写错（如 `<!DOCTYPE HTML5>`）或前面出现正文内容。
 
 ## 7. 扩展学习
 

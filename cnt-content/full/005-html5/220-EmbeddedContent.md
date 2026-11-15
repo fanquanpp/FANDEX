@@ -134,14 +134,14 @@ HTML 4.0 同时引入 `<object>` 元素，目标是统一替代 `<img>`、`<ifra
 
 | 年份 | 特性 | 浏览器 | 意义 |
 | ---- | ---- | ------ | ---- |
-| 2013 | `<iframe srcdoc>` | Chrome 30 | 内联内容，零 HTTP 请求 |
+| 2012 | `<iframe srcdoc>` | Chrome 20 | 内联内容，零 HTTP 请求 |
 | 2017 | `allow` 属性（Permissions Policy 前身） | Chrome 60 | 精细能力控制 |
 | 2019 | `loading="lazy"` | Chrome 76 | 视口外延迟加载 |
 | 2020 | `<portal>` 元素（实验，后被 Speculation Rules 取代） | Chrome 85 | 跨文档预渲染与无缝过渡 |
 | 2020 | `sandbox="allow-downloads"` | Chrome 83 | 显式下载授权 |
-| 2021 | `credentialless` 属性（实验） | Chrome 96 | COEP 友好的凭据隔离 |
+| 2022 | `fetchpriority` 属性（取代 Chromium 私有的 `importance`） | Chrome 101 | 资源加载优先级提示 |
+| 2023 | `credentialless` 属性 | Chrome 110 | COEP 友好的凭据隔离 |
 | 2022 | `sandbox="allow-storage-access-by-user-activation"` | Safari 15.4 | 用户激活下的存储访问 |
-| 2023 | `importance` 属性 | Chrome 110 | 优先级提示 |
 | 2024 | `csp` 属性（实验） | Chrome 122 | 嵌入文档 CSP 注入 |
 
 ### 1.6 演进时间线
@@ -156,13 +156,14 @@ timeline
     2000: Flash 崛起，<embed> 用于视频/音频
     2010: WHATWG 引入 sandbox 属性
     2014: HTML5 W3C 推荐标准，<iframe> / <embed> / <object> 定稿
-    2013: srcdoc 属性可用
+    2012: srcdoc 属性可用
     2017: allow 属性（Feature Policy）
     2019: loading="lazy" for iframe
     2020: allow-downloads 令牌与 <portal> 实验
-    2021: credentialless 属性实验
+    2022: fetchpriority 属性进入 Living Standard（取代 importance）
+    2023: credentialless 属性落地（Chrome 110）
     2022: Permissions Policy 取代 Feature Policy
-    2024: csp 属性、importance 属性进入 Living Standard
+    2024: csp 属性实验落地（Chrome 122）
 ```
 
 ### 1.7 规范族谱
@@ -1951,6 +1952,35 @@ window.addEventListener('message', (event) => {
   referrerpolicy="no-referrer-when-downgrade"
 ></iframe>
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写一个「第三方视频嵌入」的安全基线配置：懒加载、无障碍标题、默认沙箱（不许脚本）、允许全屏播放。写出完整 iframe。
+
+参考答案（先自己写，再对照）：
+
+```html
+<iframe
+  src="https://player.example.com/video/42"
+  width="640" height="360"
+  title="产品演示视频"
+  loading="lazy"
+  sandbox="allow-presentation"
+  allowfullscreen
+></iframe>
+```
+
+要点：`title` 是无障碍必需；`loading="lazy"` 非首屏不抢带宽；`sandbox` 从「全禁」开始按需放令牌——注意 `allow-scripts` 与 `allow-same-origin` 同开等于沙箱失效，仅限可信内容。
+
+2. 概念自问：同源策略为什么天然挡住父页面读 iframe 内容？`postMessage` 通信必须校验什么？`<embed>`/`<object>` 与 iframe 各适合嵌入什么？
+
+参考答案（先自己答，再对照）：SOP 规定不同源的文档互不可读内部 DOM/Cookie/存储，iframe 没有豁免，跨源数据要靠对方主动 `postMessage` 送出；接收端必须校验 `event.origin` 白名单（还要校验 `event.source`），否则任意页面都能伪造消息；iframe 嵌 HTML 文档，`<object>`/`<embed>` 历史上用于插件资源（PDF 仍可用），HTML 嵌入一律优先 iframe。
+
+3. 判断题：`srcdoc` 与 `src` 能同时存在吗，谁生效？空 `sandbox=""` 意味着什么？
+
+参考答案（先自己答，再对照）：能同时写，`srcdoc` 优先——它直接内嵌 HTML 字符串，不发请求，适合沙箱小工具；空 `sandbox` 是「最严沙箱」：脚本、表单、弹窗、同源访问全部被禁，页面只能展示静态内容。
 
 ## 动手试试
 

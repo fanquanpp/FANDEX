@@ -190,7 +190,7 @@ const fence = new Geofence(31.2304, 121.4737, 500); // 场地 500 米范围
 
 1. （必做）把第 2 节示例补上 Permissions API：页面加载时查询权限，`denied` 时按钮显示"已禁用定位，点击手选城市"；
 2. （必做）用 `watchPosition` 做一个"步行里程表"：累计相邻两次定位的 Haversine 距离，显示总里程，提供"停止"按钮调用 `clearWatch`；
-3. （选做）地理围栏打卡：`watchPosition` 持续判断是否进入示例场地 500 米范围，进入时弹原生确认框（可用 `html5/430` 的 `dialog`），并保证不重复触发；
+3. （选做）地理围栏打卡：`watchPosition` 持续判断是否进入示例场地 500 米范围，进入时弹原生确认框（可用 `html5/430-HTML5DialogPopoverGuide` 的 `dialog`），并保证不重复触发；
 4. （选做）接入任一地图 JS SDK，把定位点和精度圈（`accuracy` 为半径的圆）画在地图上，直观感受定位误差。
 
 ## 8. 下一步

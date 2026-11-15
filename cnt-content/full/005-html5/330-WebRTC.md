@@ -62,7 +62,7 @@ prerequisites:
 | 2013 | Firefox 22 默认启用 WebRTC | Firefox |
 | 2014 | Chrome 移除 flag，默认启用 | Chrome |
 | 2015 | ORTC API 在 Edge 首发（WebRTC 1.0 早期替代） | Edge |
-| 2016 | Safari iOS 11 支持 WebRTC | Safari |
+| 2017 | Safari 11（含 iOS 11）支持 WebRTC | Safari |
 | 2017 | WebRTC 1.0 进入 W3C Candidate Recommendation | 全部主流 |
 | 2018 | `navigator.mediaDevices.getUserMedia` 取代旧 `navigator.getUserMedia` | 全部主流 |
 
@@ -73,9 +73,8 @@ prerequisites:
 | 2019 | `RTCRtpSender.setParameters()` 支持运行时调参 | 动态码率、分辨率 |
 | 2020 | `getDisplayMedia()` 屏幕共享标准化 | 远程协作 |
 | 2020 | COVID 推动视频会议爆发（Zoom、Meet、Teams） | 商业验证 |
-| 2021 | Insertable Streams（编码器插入流） | 端到端加密、AI 处理 |
+| 2021 | WebRTC 1.0 W3C Recommendation 正式发布（1 月 26 日）；Insertable Streams（编码器插入流） | 标准定稿、端到端加密与 AI 处理 |
 | 2022 | AV1 编解码器进入 Chrome WebRTC | 带宽节省 30%+ |
-| 2022 | WebRTC 1.0 W3C Recommendation 正式发布 | 标准定稿 |
 | 2023 | WebTransport（HTTP/3）作为 WebRTC 替代方案实验 | 极低延迟 |
 | 2024 | WebRTC NV（Next Version）API：`RTCRtpScriptTransform` | 客户端转码、AI 增强 |
 
@@ -92,19 +91,18 @@ timeline
     2012: Chrome 18 首发 WebRTC（flag）
     2013: Firefox 22 默认启用
     2014: WebRTC 1.0 Working Draft
-    2016: Safari / Edge 支持
-    2017: WebRTC 1.0 Candidate Recommendation
+    2017: Safari 11（含 iOS 11）支持 WebRTC；WebRTC 1.0 Candidate Recommendation
     2018: getUserMedia 取代旧 API
     2020: COVID 推动视频会议爆发
-    2021: Insertable Streams
-    2022: AV1 编解码器支持；WebRTC 1.0 Recommendation
+    2021: WebRTC 1.0 W3C Recommendation（1 月）；Insertable Streams
+    2022: AV1 编解码器支持
     2023: WebTransport 实验性替代
     2024: WebRTC NV（RTCRtpScriptTransform）
 ```
 
 ### 1.6 规范族谱
 
-- **W3C WebRTC 1.0**（Recommendation, 2022）：JavaScript API 权威定义。
+- **W3C WebRTC 1.0**（Recommendation, 2021 年 1 月）：JavaScript API 权威定义。
 - **W3C Media Capture and Streams**：`getUserMedia` 与 `MediaStream` 定义。
 - **W3C WebRTC Statistics**：`getStats()` API 与统计指标。
 - **IETF RFC 8825**：WebRTC 架构概述。
@@ -1928,6 +1926,36 @@ pc.close();
 - **权限查询**:`navigator.permissions.query({ name: 'camera' })` 或 `'microphone'`
 - **加密传输**:WebRTC 所有的媒体流和数据通道均强制使用 SRTP/DTLS 加密
 - **隐私保护**:摄像头/麦克风指示灯会亮起,提醒用户媒体正在被捕获
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写「拿到本地摄像头并显示」的最小代码：取流 → 排查失败 → 显示到 video 元素，并说出安全上下文要求。
+
+参考答案（先自己写，再对照）：
+
+```javascript
+async function startCamera(videoEl) {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    videoEl.srcObject = stream;
+  } catch (err) {
+    // NotAllowedError: 用户拒绝；NotFoundError: 没有摄像头；NotReadableError: 被占用
+    console.error('获取摄像头失败:', err.name, err.message);
+  }
+}
+```
+
+`getUserMedia` 只在安全上下文（HTTPS 或 localhost）可用；错误要按 `err.name` 分流提示，别吞掉。
+
+2. 概念自问：信令服务器为什么不归 WebRTC 管？ICE 在整个连接里负责什么？为什么实际场景几乎都要配 TURN？
+
+参考答案（先自己答，再对照）：WebRTC 只定义媒体与数据传输，交换 SDP/ICE 候选的「怎么送到对方手里」由你自己选 WebSocket 等实现——信令内容格式规范也不强制；ICE 负责收集并逐个测试所有可能的网络路径（host/srflx/relay），选出一条可用链路；约 15%-20% 的网络（对称 NAT 等严苛环境）无法直连，必须由 TURN 服务器中继，否则这部分用户永远连不上。
+
+3. 判断题：媒体流（`addTrack`）与数据通道（DataChannel）走的是同一条连接吗？P2P 是不是意味着流量完全不经过服务器？
+
+参考答案（先自己答，再对照）：是——同一端 RTCPeerConnection 上媒体与 DataChannel 复用同一条 DTLS 加密的传输链路；不是——信令与（必要时）TURN 中继流量都走服务器，P2P 只省掉了媒体数据的中转成本。
 
 ## 动手试试（高级）
 

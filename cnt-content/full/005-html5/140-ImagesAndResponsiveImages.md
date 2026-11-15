@@ -94,8 +94,8 @@ iPhone（2007）开启移动互联网时代。2010 年 retina 显示屏（DPR=2�
 | ---- | ------ | ------ | ------------------ | ---------- |
 | WebP | 2010 | libwebp (VP8) | -25%~ -35% | 97%+ |
 | HEIC | 2017 | HEVC | -50% | iOS/macOS only |
-| AVIF | 2019 | libavif (AV1) | -50%~-70% | 92%+ |
-| JPEG XL | 2022 | libjxl | -60% | 70%（需 feature flag） |
+| AVIF | 2019 | libavif (AV1) | -50%~-70% | 95%+（2026） |
+| JPEG XL | 2022 | libjxl | -60% | 2026 年 10 月起 Chrome 155/Firefox 158 默认支持，Safari 17+ 部分支持 |
 
 ### 1.5 演进时间线
 
@@ -116,7 +116,8 @@ timeline
     2020: Firefox 75 跟进 loading 属性
     2022: JPEG XL 1.0 发布
     2023: fetchpriority 属性进入 HTML Living Standard
-    2024: AVIF 全球支持率 >92%；JPEG XL 仍在 Chrome flag 阶段
+    2024: AVIF 全球支持率 >92%；JPEG XL 处于 Chrome flag 阶段
+    2026: Chrome 155 与 Firefox 158 默认支持 JPEG XL，三大引擎均可用
 ```
 
 ### 1.6 规范族谱
@@ -688,9 +689,9 @@ function checkFormatSupport(mimeType) {
 | PNG | 无损 | 8 bit alpha | 不支持 | 48 bit | 较低 | 100% | 图标、透明图 |
 | GIF | 无损 | 1 bit | 支持 | 8 bit | 低 | 100% | 简单动画（已过时） |
 | WebP | 有损/无损 | 8 bit alpha | 支持 | 24 bit | -30% | 97%+ | 通用替代 |
-| AVIF | 有损/无损 | 8/12 bit alpha | 支持 | 24/48 bit | -50% | 92%+ | 高压缩照片 |
+| AVIF | 有损/无损 | 8/12 bit alpha | 支持 | 24/48 bit | -50% | 95%+ | 高压缩照片 |
 | HEIC | 有损/无损 | 8 bit alpha | 支持 | 24 bit | -50% | iOS/macOS only | 苹果生态 |
-| JPEG XL | 有损/无损 | 8 bit alpha | 支持 | 24/32 bit | -60% | ~70% | 下一代格式 |
+| JPEG XL | 有损/无损 | 8 bit alpha | 支持 | 24/32 bit | -60% | 2026 年 10 月起三大引擎支持 | 下一代格式 |
 | SVG | 矢量 | 支持 | 支持 | 无限 | 无损 | 100% | 图标、Logo |
 
 ### 5.2 srcset vs picture
@@ -1319,10 +1320,10 @@ export function useResponsiveImage(sources, defaultUrl) {
 | `fetchpriority` | 101+ | 132+ | 17+ | 101+ | 87+ |
 | AVIF 格式 | 85+ | 86+ | 16.4+ | 91+ | 71+ |
 | WebP 格式 | 32+ | 65+ | 14+ | 18+ | 19+ |
-| JPEG XL（flag） | 91+ flag | 90+ flag | 不支持 | 91+ flag | 77+ flag |
+| JPEG XL | 155+ | 158+ | 17+（部分） | 155+ | 139+ |
 | `image-set()` | 21+ -webkit | 88+ | 14+ -webkit | 79+ | 15+ -webkit |
 
-数据来源：MDN Browser Compatibility Data (BCD), 2024 年 7 月更新。
+数据来源：MDN Browser Compatibility Data (BCD) 与 caniuse，2024 年 7 月基线；其中 JPEG XL 行按 2026 年 10 月 caniuse 数据更新（Chrome 155/Firefox 158 起默认支持）。
 
 ## 附录 B：术语表
 
@@ -1480,7 +1481,7 @@ console.log(img.currentSrc); // 当前加载的 URL
 | JPEG | 有损      | 不支持 | 不支持 | 中等 | 全部       |
 | PNG  | 无损      | 支持   | 不支持 | 较低 | 全部       |
 | WebP | 有损/无损 | 支持   | 支持 | 高   | 97%+       |
-| AVIF | 有损/无损 | 支持   | 支持 | 最高 | 92%+       |
+| AVIF | 有损/无损 | 支持   | 支持 | 最高 | 95%+       |
 | SVG  | 矢量      | 支持   | 支持 | —    | 全部       |
 | GIF  | 无损      | 支持   | 支持 | 低   | 全部       |
 | APNG | 无损      | 支持   | 支持 | 中等 | 95%+       |
@@ -1559,6 +1560,43 @@ console.log(img.currentSrc); // 当前加载的 URL
   <figcaption>图1:2026年上半年销售数据</figcaption>
 </figure>
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写出实现，再展开参考答案对照。
+
+1. 写一个响应式图片：三档分辨率（400/800/1200w），声明「窄屏占满全宽、600-1200px 占一半、更宽的屏幕占三分之一」，并写明它与像素密度描述符的分工。
+
+参考答案（先自己写，再对照）：
+
+```html
+<img
+  src="medium.jpg"
+  srcset="small.jpg 400w, medium.jpg 800w, large.jpg 1200w"
+  sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+  alt="文章配图"
+/>
+```
+
+`srcset` 的 `400w` 描述「这张图本身多宽」，`sizes` 描述「浏览器会把它显示多宽」，浏览器用两者（× DPR）挑最小够用的文件；`1x/2x` 密度描述符只适合「显示尺寸固定不变」的场景。
+
+2. 写一个格式协商的 picture：优先 AVIF、退 WebP、最后 JPG 兜底，并说明 `<picture>` 与 `srcset` 各管什么。
+
+参考答案（先自己写，再对照）：
+
+```html
+<picture>
+  <source srcset="photo.avif" type="image/avif" />
+  <source srcset="photo.webp" type="image/webp" />
+  <img src="photo.jpg" alt="照片" width="800" height="600" />
+</picture>
+```
+
+`<picture>` 的 `type`/`media` 是开发者显式切换（艺术指导、格式协商），`srcset`+`sizes` 是浏览器自动选择（同图不同尺寸）；兜底 `<img>` 永远要有，且写宽高防布局抖动。
+
+3. 概念自问：为什么给图片写 `width`/`height` 属性能优化 CLS？`loading="lazy"` 与 `fetchpriority` 各解决什么问题？JPEG XL 现在能用了吗？
+
+参考答案（先自己答，再对照）：浏览器拿到宽高就能在图片下载前预留布局空间，避免加载后整页跳动；`lazy` 解决「视口外不浪费带宽」（首屏图千万别用），`fetchpriority` 声明加载优先级（LCP 图片可以调高）；截至 2026 年 10 月 Chrome 155/Firefox 158 已默认支持 JPEG XL（Safari 17+ 部分支持），但 AVIF/WebP 生态更成熟，生产仍以 AVIF/WebP 为主。
 
 ## 动手试试
 
