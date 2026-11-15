@@ -1799,3 +1799,27 @@ A: struct 是值类型，赋值会发生复制，型变的"引用兼容"语义�
 
 **Q: 泛型和 `object` 性能差距多大？**
 A: 对值类型，泛型避免装箱，性能提升 5-10 倍。对引用类型，泛型避免类型转换，提升约 2 倍。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己判断 out/in 并说理由，再对照。本篇自检核心是"凭'产出到输出'还是'消费自输入'判断型变方向"。
+
+**题 1（方向判断）**：`IEnumerable<out T>`、`Action<in T>`、`Func<in T, out TResult>`、`IComparer<in T>`——各自的 out/in 为什么是那个方向？
+
+参考答案：`IEnumerable<T>` 只产出 T（返回值位置），T 可以放宽为父类型，协变 out；`Action<T>` 只消费 T（参数位置），T 可以收紧为子类型，逆变 in；`Func<T, TResult>` 两个位置都有：参数逆变 in、返回协变 out；`IComparer<T>.Compare(T, T)` 的 T 只出现在参数位（消费），逆变 in。口诀：只出不进标 out，只进不出标 in，两个位置都出现则不可型变。
+
+**题 2（编译器为什么拒绝）**：`interface IStore<in T> { T Get(int id); }` 编译报错，为什么？改到哪个方向或改签名能过？
+
+参考答案：`in T` 承诺"只能消费 T"，但 `Get` 把 T 放在返回位（产出），若允许 `IStore<Cat>` 当 `IStore<Animal>` 用，`Get` 会把猫当狗还出去，类型不安全。修法：去掉 `in`（不变）或把 T 从返回位挪走（例如改成 `void Store(T item)`）后再标 `in`；若语义就是"读出来"，改 `IStore<out T>` 并去掉参数位对 T 的消费。
+
+**题 3（数组协变陷阱）**：`object[] arr = new string[2]; arr[0] = 42;` 编译能过吗？运行时呢？泛型如何消灭这个坑？
+
+参考答案：编译能过（数组协变是 C# 1.0 无泛型时代的兼容遗产），运行时抛 `ArrayTypeMismatchException`——每次数组写入都要运行时类型检查。泛型不变性把检查提前到编译期：`List<object> l = new List<string>();` 直接编译错误，不存在运行时炸点。
+
+**题 4（委托赋值）**：`baseHandler` 是 `Action<Base>`，`baseProducer` 是 `Func<Base>`。`Action<Derived> d1 = baseHandler;` 能编译吗？`Func<Derived> f = baseProducer;` 呢？说出共同原理。
+
+参考答案：第一句能编译——`Action<Derived>` 需要"能处理任何 Derived"，能处理 Base 的方法当然能处理 Derived（逆变，参数位可以"更泛化"）。第二句不能编译——`Func<Derived>` 承诺产出 Derived，而 `Func<Base>` 只承诺产出 Base，产不出足够特化的东西（协变 out 要求"产出更特化才安全"，方向反了）。共同原理：型变安全由"输出位可以放宽协变、输入位可以收紧逆变"推出，编译器按位置逐个检查。
+
+**题 5（实战判断）**：`IEnumerable<object> objs = new List<string>();` 能编译吗？`IList<object> l = new List<string>();` 呢？各说一句理由。
+
+参考答案：前者能——`IEnumerable<out T>` 协变，字符串序列当然"是"对象序列（只会读出对象）；后者不能——`IList<T>` 的 T 同时出现在 `Add(T)`（消费）与索引器返回（产出）两个位置，型变任何方向都不安全，只能不变。

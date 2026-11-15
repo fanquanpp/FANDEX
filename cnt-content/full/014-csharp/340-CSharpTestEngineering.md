@@ -2262,3 +2262,42 @@ Intel Core i7-12700H CPU 2.30GHz, 1 CPU, 20 logical and 14 physical cores
 ---
 
 本文档遵循 MIT/Stanford/CMU 教学水准编写，涵盖 C# 测试与工程化的核心概念、形式化定义、性能分析、工程实践与案例研究。所有代码示例均经过工程化设计，可直接应用于生产环境。建议读者结合官方文档与实际项目，逐步掌握现代 .NET 工程化能力。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写测试代码或口述策略，再对照。本篇自检核心是「测什么/怎么隔离/怎么落地 CI」。
+
+**题 1（AAA 与隔离）**：写出"用户名为空时注册应抛异常"的 xUnit 测试（AAA 结构），并说出 xUnit 每个测试方法为什么天然互相隔离。
+
+参考答案：
+
+```csharp
+[Fact]
+public void Register_Throws_When_Name_Empty()
+{
+    // Arrange
+    var svc = new UserService(new FakeUserRepo());
+    // Act
+    var act = () => svc.Register(name: "", "a@b.c");
+    // Assert
+    Assert.Throws<ArgumentException>(act);
+}
+```
+
+xUnit 对每个测试方法都新建一个测试类实例（构造函数即 Setup、IDisposable.Dispose 即 Teardown），实例字段不跨测试共享——隔离由框架的对象模型保证，这也是 xUnit 弃用 `[SetUp]` 的原因。
+
+**题 2（Mock 边界）**：哪些依赖适合 Mock，哪些不适合？订单服务依赖 `IRepository` 与「汇率换算器（纯函数）」，分别怎么处理？
+
+参考答案：适合 Mock：网络、数据库、文件、时钟等"慢、脏、不可控"的边界，替换它们让测试快且确定。不适合：汇率换算这类纯逻辑——Mock 它等于把被测规则也模拟了，测了个寂寞，直接用真实现（它是确定性的）。IRepository 用接口 + Mock/内存假实现；汇率器直接实例化真类。
+
+**题 3（测试金字塔与反金字塔）**：一句话说出金字塔与测试奖杯（Testing Trophy）的核心分歧，以及"覆盖率 100% 但 bug 照样漏"的最常见原因。
+
+参考答案：金字塔主张"多而快的单元测试打底、少量集成/E2E"；奖杯主张集成测试占大头——因为单元测试常在测"类怎么实现"，集成测试测"系统行为"，重构时前者全碎、后者稳定。覆盖率虚高但漏 bug 的最常见原因：断言太弱甚至没有（只调不断言的"冒烟假测试"）+ 只测了happy path 的执行路径，覆盖率度量的是"执行过"不是"验证过"。
+
+**题 4（集成测试的真实依赖）**：WebApplicationFactory 与 Testcontainers 各解决什么？写出"用真实 SQL Server 跑一个集成测试"的关键步骤。
+
+参考答案：WebApplicationFactory 把整个 ASP.NET Core 宿主拉进内存进程（真实管道、DI、路由），可替换个别服务做夹具；Testcontainers 用 Docker 起真实依赖（数据库、消息队列）并在测试后销毁，解决"内存假实现测不出 SQL 方言/事务/约束问题"。步骤：`IAsyncLifetime` 里 `MsSqlContainer` 启动 → 用其连接字符串覆盖 `UseSqlServer` 配置 → 测试发 HTTP 或直接查库断言 → `DisposeAsync` 销毁容器。
+
+**题 5（CI 门禁）**：一条让测试在 CI 里既快又稳的配置清单（至少 4 条），并说出"测试超时"为什么必须是硬门禁。
+
+参考答案：(1) `--filter` 把单元测试与集成测试分成两个 job/阶段，快反馈优先；(2) 并行执行（xUnit collection 并行 + CI 多核）；(3) 覆盖率收集只在主分支/夜间跑（coverlet 的采集有开销）；(4) trx/日志落盘、失败自动重跑一次（区分 flaky 与确定性失败）；(5) 全局超时与每测试超时（.NET 11 起 `dotnet test` 内置超时设置）。超时必须是硬门禁：挂死的测试会占住 CI runner 直到基础设施超时，把整条流水线拖死，且 flaky 超时最容易被"Re-run"文化掩盖成永久慢性的假绿。

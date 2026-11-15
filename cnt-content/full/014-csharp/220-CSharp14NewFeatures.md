@@ -39,6 +39,9 @@ C# 14 是随 **.NET 10**（2025 年 11 月发布，LTS，支持至 2028 年 11 �
 | C# 12 | .NET 8（LTS） | 2023.11 | 主构造函数、集合表达式 |
 | C# 13 | .NET 9（STS） | 2024.11 | `params` 集合、`System.Threading.Lock` |
 | C# 14 | .NET 10（LTS） | 2025.11 | 扩展成员、`field`、null 条件赋值 |
+| C# 15 | .NET 11（STS） | 2026.11 | union 类型、封闭层次结构（closed hierarchies） |
+
+本篇聚焦已随 .NET 10 正式定稿、可在生产使用的 C# 14。2026-11-10 起随 .NET 11 发布的 C# 15 引入了 union 类型等新特性，属于下一个版本的故事，本篇不展开。
 
 C# 14 的整体主题可以概括为两句话：**把"扩展"做完整**（扩展成员统一了扩展方法的旁支语法），**把"属性"做彻底**（`field` 关键字补上了自动属性与完整属性之间的缝隙）。其余特性多是服务库作者与源生成器作者的"缝纫针脚"。
 
@@ -444,3 +447,54 @@ partial class Service
     }
 }
 ```
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码，再对照。本篇自检核心是 C# 14 八项特性中三项主力（扩展成员、field、null 条件赋值）的写出能力。
+
+**题 1（extension 块）**：给 `IEnumerable<int>` 写扩展属性 `IsEmpty` 与静态扩展 `int.DefaultValueOf<T>()` 风格的示例，说明接收者参数在块里的角色。
+
+参考答案：
+
+```csharp
+public static class Ext
+{
+    extension(IEnumerable<int> source)
+    {
+        public bool IsEmpty => !source.Any();
+    }
+    extension(int)
+    {
+        public static int MaxOf(IEnumerable<int> xs) => xs.Max();
+    }
+}
+```
+
+括号里的 `source` 是接收者参数——块内所有成员共享它，等价于旧扩展方法的第一个参数；静态扩展成员用不含参数名的 `extension(int)` 声明。C# 14 之前这两件事只能退化成静态工具类调用。
+
+**题 2（field 关键字）**：把"邮箱属性：setter 里做非空与小写归一化，getter 直接返回"写成用 `field` 的最短实现，并说出它替换掉的样板代码。
+
+参考答案：
+
+```csharp
+public string Email
+{
+    get => field;
+    set => field = value?.Trim().ToLowerInvariant()
+        ?? throw new ArgumentNullException(nameof(value));
+}
+```
+
+`field` 是编译器合成的后台字段，替换掉旧写法里"手动声明 `private string _email;`、getter/setter 各自引用它"的三行样板；注意 `field` 是上下文关键字，属性里有个叫 `field` 的字段时优先指那个字段。
+
+**题 3（null 条件赋值）**：`customer?.Address = newAddress;` 这行在 C# 14 之前要怎么写？它等价于哪种语义？
+
+参考答案：C# 14 之前只能 `if (customer is not null) customer.Address = newAddress;`。新写法语义为"接收者非空才赋值"，且整个链上的每一环都是条件求值（`a?.b?.c = x` 只有 a、b 都非空才赋）；赋值表达式本身的值也遵循同样的空值语义。
+
+**题 4（第一类 Span 转换）**：`void M(ReadOnlySpan<char> s)`，调用 `M(str)`（str 是 string）在 C# 14 与之前版本各发生什么？
+
+参考答案：C# 14 起直接编译——string 到 `ReadOnlySpan<char>` 的隐式转换成为"第一类"语言转换，参与重载决策与泛型场景，`M(str)` 无需写 `M(str.AsSpan())`；此前必须显式 `AsSpan()`。这解掉了"Span API 对调用方不友好"的最后一层摩擦，也是 BCL 逐步 Span 化的语法前提。
+
+**题 5（采用策略）**：哪些 C# 14 特性可以立即进生产？哪些属于"库作者针脚"？给出你的采用顺序理由。
+
+参考答案：立即进生产：`field`（消灭样板、零风险）、null 条件赋值（局部简化）、隐式 Span 转换（调用侧无痛）、partial 构造/事件（源生成器协作场景）；偏库作者：extension 块的全部形态（等生态沉淀设计模式再大面积用）、`nameof` 未绑定泛型、lambda 参数修饰符——它们解决的是库 API 表达力问题，业务代码收益有限。原则：跟随编译器默认 LangVersion（net10.0 即 C# 14）逐步吃到，不为语法升级强行追新。

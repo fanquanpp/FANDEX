@@ -1722,3 +1722,36 @@ public sealed class RetryingUserServiceDecorator(
 2. **中级开发者**：学习 Captive Dependency、并发安全、装饰器模式；
 3. **高级开发者**：研究 Keyed Services、AOP、多租户 DI；
 4. **架构师**：设计 DI 容器策略、性能优化、AOT 友好方案。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己画实例表或写代码，再对照。本篇自检核心是"按生命周期画出'谁和谁共享同一个实例'"。
+
+**题 1（实例共享矩阵）**：请求 R1 与请求 R2 同时进行。A 是 Singleton、B 是 Scoped、C 是 Transient，A 构造注入了 B，B 构造注入了 C。R1 和 R2 各自拿到的 A、B、C 实例有几份？画出共享关系。
+
+参考答案：A 全应用 1 份（R1、R2 共享）；B 被 A 俘虏，也只有 1 份（随 A 创建，本应是每请求一份，此即 Captive Dependency 陷阱）；C 因 B 只创建一次而跟着只有 1 份（另外 R1/R2 各自直接注入的 C 才是每请求各一份）。共享矩阵：A 共享、B 被 A 俘虏成全局、C 分裂为"直接注入的每请求一份 + A 链路里被俘虏的 1 份"。这就是"从 Singleton 往下注入更短生命周期会连坐"的完整链条。
+
+**题 2（验证方向）**：`AddScoped` 的服务被 `AddSingleton` 的服务依赖时，容器什么时候报错？为什么注册时不报、使用时才报（或可能不报）？
+
+参考答案：默认容器在解析 Singleton 且其作用域内含 Scoped 依赖时抛 `InvalidOperationException`（"Cannot consume scoped service ... from singleton"）。注册阶段容器只记录描述符不建图，无法知道这个 Singleton 未来会不会经由作用域解析 Scoped——所以是"验证 scope"在解析时触发。注意若 Singleton 在根容器一次性解析（启动时），报错会提前；若它从不触发这条链，问题被掩盖到并发事故才暴露，这正是要靠架构评审与测试补位的空档。
+
+**题 3（作用域边界）**：后台服务（IHostedService，本质 Singleton）要处理消息，每条消息需要一个独立的 DbContext。写出正确的取用骨架。
+
+参考答案：
+
+```csharp
+using var scope = scopeFactory.CreateScope();
+var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+await HandleAsync(db, msg, ct);
+// using 结束时 scope.Dispose，DbContext 连同其变更追踪一起释放
+```
+
+要点：后台任务没有天然的"请求作用域"，必须显式 `CreateScope()` 划出边界，每个消息一个 scope；直接在构造函数注入 DbContext 则退化成题 1 的俘虏陷阱。
+
+**题 4（释放责任）**：容器对它创建的 Singleton 与 Scoped 实例各在什么时机调 `Dispose`？自己 `new` 出来再注册实例（`AddSingleton(new Foo())`）的实例呢？
+
+参考答案：Scoped 实例随作用域结束（请求结束、显式 `scope.Dispose`）释放；Singleton 随容器关闭（`IHost` 停机）释放，两者都要求实现 IDisposable/IAsyncDisposable。由容器解析出来的实例归容器管；`AddSingleton(new Foo())` 这种"外来实例"容器只引用不创建，关闭时同样会尝试 Dispose 由容器注册的实例（对传入实例也会释放，因为注册表把它当作容器管理的单例），但更稳妥的约定是：谁创建谁释放，外来实例的生命周期由调用方掌控，容器关闭时释放属于附带福利而非契约——重要资源仍建议在宿主停机钩子里显式处理。
+
+**题 5（Keyed Services）**：`AddKeyedSingleton<ICache, RedisCache>("redis")` 注册后，怎么解析？它解决了哪类"多实现注册"的尴尬？
+
+参考答案：构造函数用 `[FromKeyedServices("redis")] ICache cache` 标注，或容器外 `provider.GetRequiredKeyedService<ICache>("redis")`。它解决"同一接口多个实现并存"的尴尬：旧办法是为每个实现包一层具名接口/工厂策略类，Keyed Services（.NET 8+）直接用键选择实现，策略选择从"类型体操"简化为"字符串/枚举键 + 显式标注"。

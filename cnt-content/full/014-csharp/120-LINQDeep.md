@@ -1327,3 +1327,27 @@ var top10 = orders
 - **Dapr / Orleans 与 LINQ**：分布式场景下的查询翻译。
 - **DLR（Dynamic Language Runtime）**：动态类型的 LINQ（`Dynamic LINQ` 库）。
 - **F# 查询表达式**：F# 的 `query { ... }` 计算表达式与 C# LINQ 的对比。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码或口述结论，再对照。本篇自检重点是「把业务问题翻译成 LINQ 管道」与「复杂操作符的内部语义」。
+
+**题 1（Aggregate 的表达力）**：不用 `Sum`/`Max`/`Any`，全部用 `Aggregate` 重写这三个操作符的行为（对 `IEnumerable<int>`）。
+
+参考答案：`source.Aggregate(0, (acc, x) => acc + x)`；`source.Aggregate(int.MinValue, (acc, x) => Math.Max(acc, x))`；`source.Aggregate(false, (acc, x) => acc || true)`。要点：`Aggregate` 是折叠（fold），`Sum/Max/Any` 只是特例——这也是理解 LINQ 操作符谱系的钥匙：多数聚合都能从 fold 推出。
+
+**题 2（GroupBy 到 ToLookup）**：`GroupBy(...).ToDictionary(g => g.Key)` 在键重复时会怎样？`ToLookup` 与 `GroupBy` 的关键差异是什么？
+
+参考答案：`ToDictionary` 遇到重复键直接抛异常——但 `GroupBy` 的每个分组键唯一，所以这样写不会炸；真正会炸的是对未分组的源直接 `ToDictionary`。差异：`GroupBy` 返回的是延迟查询（枚举才分组，结果要继续枚举才有意义），`ToLookup` 立即构建多值映射（一次分组、按键多次随机访问、查不存在的键返回空序列而非异常）。
+
+**题 3（Join 与 GroupJoin）**：`orders.Join(customers, o => o.CustomerId, c => c.Id, (o, c) => ...)` 与 `orders.GroupJoin(...)` 输出形状差在哪？查询语法里各自长什么样？
+
+参考答案：`Join` 输出"每一对匹配元素"的平铺投影（内连接，一对多会多行）；`GroupJoin` 输出"左元素 + 匹配组的序列"（适合"每个客户 + 订单列表"，配合 `SelectMany`/`DefaultIfEmpty` 可表达左连接）。查询语法：`from o in orders join c in customers on o.CustomerId equals c.Id select ...` 与 `join ... into g`（分组连接）。
+
+**题 4（表达式树判断）**：`Expression<Func<Order, bool>> pred = o => o.Amount > 100;` 与 `Func<Order, bool> f = o => o.Amount > 100;`——两个 lambda 的编译产物有什么本质不同？各适合被谁消费？
+
+参考答案：前者编译成表达式树（`Expression` 对象图，描述"代码长什么样"），可被 EF Core 等 Provider 检视并翻译成 SQL；后者编译成 IL 委托（"代码就是代码"），只能在内存里执行。把 `Expression<...>` 调用 `Compile()` 就得到委托；反之委托变不回表达式树——这是"远程查询必须在 IQueryable 边界内构造"的根因。
+
+**题 5（性能取舍）**：对 100 万元素的序列要"取前 10 大"，写出朴素写法与高效写法，并解释复杂度差异。
+
+参考答案：朴素：`source.OrderByDescending(x => x).Take(10)`——全排序 O(n log n)；高效：维护一个小顶堆取前 k 大（.NET 没有内置 TopK 操作符时，可 `PriorityQueue<int,int>` 扫一遍 O(n log k)），或对可比较数据用部分排序。要点：`OrderBy` 是全量物化排序，`Take` 只是截取输出，两者组合不会自动变成 TopK。

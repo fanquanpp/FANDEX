@@ -33,7 +33,7 @@ prerequisites:
 
 三件不顺手的事：字段是 `snake_case` 而你的 C# 属性是 `PascalCase`；`remark` 可能为 `null`；`created_at` 不是标准 ISO 8601 格式。本篇就沿着"把这个响应变成 C# 对象、再把请求对象发回去"这条线，把 `System.Text.Json` 的核心能力全部过一遍。
 
-（.NET 8+ 自带 `System.Text.Json`，.NET 9/10 继续增强；下文示例在 .NET 9 上可直接运行。）
+（.NET 8+ 自带 `System.Text.Json`，.NET 9/10/11 继续增强——.NET 11 起 `System.Text.Json` 还原生支持 C# union 类型与 JSON Lines 输出；下文示例在 .NET 10 上可直接运行。.NET 8/9 已于 2026-11-10 前后停止支持，学习环境建议直接用 .NET 10 LTS。）
 
 ## 动手：五分钟跑通第一次往返
 

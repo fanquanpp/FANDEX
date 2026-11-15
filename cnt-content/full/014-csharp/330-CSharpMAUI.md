@@ -1976,3 +1976,40 @@ public class SimpleViewModel : BaseViewModel
 - 在 MAUI 与其他跨平台方案间做出合理选型
 
 下一章节将深入探讨 C# 面向对象编程，作为理解 MAUI 控件继承体系与设计模式的基础。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码或画架构图，再对照。本篇自检核心是「Handler 架构」与「一套代码四端运行」的边界。
+
+**题 1（Handler 架构）**：Xamarin.Forms 用渲染器（Renderer），MAUI 改用 Handler——两者最关键的差别是什么？用 `Button` 说明 MAUI 的"属性映射器"如何工作。
+
+参考答案：Renderer 把"跨平台控件"整体继承并重写平台控件（每个控件一对类，定制点少、粒度粗）；Handler 是轻量组合：跨平台控件（`Button`）与平台视图（`Android.Widget.Button`）解耦，中间靠 `PropertyMapper` 声明"属性变化 → 平台更新动作"的映射表。映射器让开发者可以只覆盖单个属性的映射（`mapper.ModifyMapping` 或 `AppendToMapping`）而不必重写整个控件，这是可定制性与性能（按需更新、无布局递归）双赢的关键。
+
+**题 2（单项目多目标）**：MAUI 单项目里，`Platforms/Android/MainActivity.cs` 这类平台代码如何被组织？写出条件编译与部分类在其中的角色。
+
+参考答案：单项目通过多目标框架（`net10.0-android`、`net10.0-ios`、`net10.0-windows`...）编译四次；`Platforms/` 子目录下的文件被自动按目标平台过滤编译，等价于对整个项目按平台多次裁剪。条件编译（`#if ANDROID`）处理小段平台差异代码；平台入口类（如 `MainActivity`）用 partial 与生成代码拼合。要点：一套源码、多次编译、产物各端独立。
+
+**题 3（MVVM 边界）**：把"点击按钮 → 调服务 → 更新标签"写成 ViewModel 片段，并回答为什么 ViewModel 不能引用 `Button` 或 `Label`。
+
+参考答案：
+
+```csharp
+public partial class ProfileViewModel : ObservableObject
+{
+    private readonly IUserService _users;
+    [ObservableProperty] private string displayName = "";
+
+    [RelayCommand]
+    private async Task LoadAsync() => DisplayName = (await _users.GetCurrentAsync()).Name;
+}
+```
+
+XAML 里 `Button` 绑定 `LoadCommand`、`Label` 绑定 `DisplayName`。ViewModel 引用控件会破坏可测试性（单元测试无法脱离 UI 框架运行）与平台无关性（控件是平台层概念）；绑定系统（`ObservableProperty` 通知 + 命令）才是 UI 与逻辑之间唯一的通信面。
+
+**题 4（生命周期对齐）**：Android 的 Activity、iOS 的 ViewController 与 MAUI 的 `Window`/`Application` 生命周期如何对齐？写"应用进入后台时暂停定位"要挂哪个事件？
+
+参考答案：MAUI 把各端宿主（Activity/ViewController/AppDelegate）包进统一的 `Microsoft.Maui.Controls.Window` 与 `IApplication` 事件模型：`Application.Paused/Resumed`（对应 Android onPause/onResume、iOS 上后台/前台切换）。"进入后台暂停定位"就在 `Paused` 事件（或 `Window.Destroying` 清理）挂接——业务代码只写一份，框架负责翻译到各端生命周期回调。
+
+**题 5（运行时与 AOT）**：MAUI 应用在 Android/iOS 上默认分别用什么运行模式？2026 年的 .NET MAUI 11 把什么变成了默认？AOT 在 iOS 上一直是什么角色？
+
+参考答案：iOS 一直强制 AOT（App Store 政策 + JIT 限制），Android 传统默认 Mono JIT（开发期）+ IL2CPP 式 AOT 发布。.NET MAUI 11（随 .NET 11，2026-11）把 CoreCLR 变为默认运行时，统一两端基础并改善性能；iOS 的 AOT 角色不变——AOT 是 iOS 的硬约束，CoreCLR 替换的是 Android 与开发体验侧的默认。

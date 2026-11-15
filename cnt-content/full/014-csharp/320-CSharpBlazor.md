@@ -2600,10 +2600,12 @@ Blazor 作为 .NET 生态在 Web 前端的重要布局，通过 WebAssembly 与 
 | :---------- | :-------- | :------- | :------- |
 | Blazor 3.2 | .NET Core 3.2 | WASM 首个稳定版 | 已停止支持 |
 | Blazor 5 | .NET 5 | JavaScript 隔离 | 已停止支持 |
-| Blazor 6 | .NET 6 | 错误边界、DynamicComponent | LTS（2024/11 结束）|
-| Blazor 7 | .NET 7 | 自定义验证、WebAssembly 多线程 | STS（2024/5 结束）|
-| Blazor 8 | .NET 8 | Auto 渲染模式、流式渲染 | LTS（2026/11 结束）|
-| Blazor 9 | .NET 9 | 增强的 SSR、Web Components | STS（2025/5 结束）|
+| Blazor 6 | .NET 6 | 错误边界、DynamicComponent | 已停止支持（2024/11 结束）|
+| Blazor 7 | .NET 7 | 自定义验证、WebAssembly 多线程 | 已停止支持（2024/5 结束）|
+| Blazor 8 | .NET 8 | Auto 渲染模式、流式渲染 | 已停止支持（2026/11/10 结束）|
+| Blazor 9 | .NET 9 | 增强的 SSR、Web Components | 已停止支持（2026/11/10 结束）|
+| Blazor 10 | .NET 10（LTS） | 路由/状态持久化增强、QuickGrid 改进 | LTS（2028/11 结束）|
+| Blazor 11 | .NET 11（STS） | CacheView 组件、标签页空闲暂停电路、实验性 AI 组件（AG-UI） | STS（2028/11 结束）|
 
 **附录 F：常见问题 FAQ**
 
@@ -3336,3 +3338,27 @@ app.MapHealthChecks("/health");
 ---
 
 本文档遵循 MIT/Stanford/CMU 教学水准编写，涵盖 Blazor 框架的核心概念、形式化定义、性能分析、工程实践与案例研究。所有代码示例均经过工程化设计，可直接应用于生产环境。建议读者结合官方文档与实践项目，逐步掌握 Blazor 这一现代化的 Web 开发框架。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写组件或口述，再对照。本篇自检核心是「四种渲染模式的取舍」与「组件生命周期」。
+
+**题 1（渲染模式选型）**：企业内部仪表盘（内网、交互重）、面向公众的营销页（SEO 敏感、几乎无交互）、公开的复杂工具型应用（首开慢可接受）——三种场景各选 Server / SSR / WASM(Auto) 中的哪种？
+
+参考答案：仪表盘选 Blazor Server——交互重且实时，Server 模式毫秒级响应、无需下载运行时，内网对长连接友好；营销页选静态 SSR——无状态、CDN 可缓存、SEO 友好，根本不需要交互性；复杂工具型选 WASM/Auto——计算与交互都在客户端跑、无每操作一次网络往返，下载运行时的成本在长期使用中摊薄。判断维度一句话：交互密度与网络往返的比值、连接成本、SEO 三者定模式。
+
+**题 2（生命周期顺序）**：写出组件首渲染与"参数更新重渲染"两条时间线的调用顺序（同步版），并回答：为什么 JS 互操作必须放在 `OnAfterRenderAsync`？
+
+参考答案：首渲染：`SetParametersAsync` → `OnInitialized`/`OnInitializedAsync` → `OnParametersSet` → `BuildRenderTree`（渲染）→ `OnAfterRender`。参数更新（父组件重渲染传入新参数）：`SetParametersAsync` → `OnParametersSet` → 渲染 → `OnAfterRender`（不再走 OnInitialized）。JS 互操作放 `OnAfterRenderAsync`：预渲染（prerendering）阶段组件在服务器上执行时并没有真实 DOM 与浏览器，`OnInitialized` 里调 JS 会直接抛错；渲染完成后 DOM 已存在，才是互操作的安全点。
+
+**题 3（Circuit 的代价）**：Blazor Server 里一个用户开 5 个标签页，占几个 circuit？服务器重启时这些用户看到什么？.NET 11 对空闲电路做了什么改进？
+
+参考答案：5 个——每个浏览器标签页（每个 SignalR 连接）都是独立 circuit，各自持有组件树实例与 Scoped 服务作用域。服务器重启/断线，组件状态全部丢失，客户端只能重连重建（未做状态持久化时页面回初始态）。.NET 11 起引入"标签页不活动时暂停电路"——用户切走标签页时电路可暂停以省资源，回来再恢复，缓解 Server 模式每连接常驻内存的成本。
+
+**题 4（参数与级联）**：组件参数 `[Parameter]` 与级联参数 `[CascadingParameter]` 各适合传什么？父组件改了状态，子组件会自动重渲染吗？
+
+参考答案：`[Parameter]` 适合"显式、局部"的数据流——父给直接子组件传值，类型可查、重构安全；`[CascadingParameter]` 适合"环境性"数据（当前用户、主题、DI 服务）穿透多层而不必逐层转发。父组件状态改变后，Blazor 重新执行父的渲染方法，若子组件收到的参数值有变化（默认按浅比较），才触发子组件重渲染——参数不变则跳过，这就是为什么传新对象（如匿名投影）会打碎这个优化。
+
+**题 5（JS 互操作边界）**：从 C# 调 JS（`IJSRuntime.InvokeAsync`）与从 JS 调 C#（`[JSInvokable]`）各举一个场景，并说出预渲染阶段哪个方向不可用、为什么。
+
+参考答案：C# 调 JS：读 `window.innerWidth`、接入 Chart.js 等纯 JS 库；JS 调 C#：C# 持有的对象实例暴露 `[JSInvokable]` 方法给 JS 事件回调（如地图点击）。预渲染阶段 `IJSRuntime` 不可用（没有浏览器），C# 调 JS 会抛错，必须推迟到 `OnAfterRenderAsync`；反向（JS 调 C#）在预渲染时也无处发生，因为还没有 JS 环境与互操作通道。

@@ -2396,3 +2396,32 @@ LINQ 是 C# 语言演进中最具革命性的特性之一，它不仅统一了�
 - 将函数式编程范式融入 C# 工程实践
 
 下一章节将深入探讨 C# 异步编程模型，async/await 的本质也是一种 Monad 风格的组合，与本章内容存在深层联系。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码或口述结论，再对照。本篇自检重点是「查询语法与方法语法的互换」与「高阶函数思维」。
+
+**题 1（两种语法互译）**：把 `from u in users where u.Age >= 18 select u.Name` 改写成方法语法；再把 `users.GroupBy(u => u.City).Select(g => new { g.Key, N = g.Count() })` 改写成查询语法（允许借助 `let`/`into`）。
+
+参考答案：方法语法 `users.Where(u => u.Age >= 18).Select(u => u.Name);`；查询语法 `from u in users group u by u.City into g select new { Key = g.Key, N = g.Count() }`。要点：查询语法只是方法调用的语法糖，`group ... by ... into` 对应 `GroupBy` + 后续管道。
+
+**题 2（SelectMany 语义）**：不用 `SelectMany`，用嵌套 `foreach` 等价展开 `classes.SelectMany(c => c.Students)`；再说出 `SelectMany` 对应的数学名称。
+
+参考答案：`foreach (var c in classes) foreach (var s in c.Students) yield return s;`。`SelectMany` 是列表 Monad 的 bind：把"每个元素映射成一个列表，再拍平一层"，等价于笛卡尔积投影后摊平。
+
+**题 3（闭包陷阱）**：解释下面两段为什么输出不同：
+
+```csharp
+for (int i = 0; i < 3; i++) actions.Add(() => Console.Write(i));   // A 段
+foreach (var n in new[] {0,1,2}) actions2.Add(() => Console.Write(n)); // B 段
+```
+
+参考答案：两段都靠闭包捕获变量，区别是捕获的对象：A 段捕获的是循环变量 `i` 本身（一个槽），循环结束后三个 lambda 共享它，输出 `333`；B 段 foreach 的迭代变量在每次迭代中都是新变量（C# 5 起的语言规则），三个 lambda 各捕获各的，输出 `012`。在 for 循环里要按值捕获，需先 `var copy = i;` 再用 `copy`。
+
+**题 4（纯函数与副作用）**：`users.Select(u => { Console.WriteLine(u.Name); return u.Name; })` 这段"投影里打日志"的代码在什么条件下日志条数会与用户数不一致？为什么？
+
+参考答案：LINQ 惰性求值下，投影只在被枚举时执行——`q` 被枚举几次日志就打几遍；若 `q` 根本没被枚举，一条日志都没有。要"恰好一遍"就把副作用移出 lambda（先 `ToList()` 物化再处理），或显式表达"消费一次"的意图。
+
+**题 5（函数组合）**：把「过滤出成年人 → 取邮箱 → 全部转小写 → 去重」写成一条 LINQ 管道，并说明为什么中间不物化也能保证正确性。
+
+参考答案：`users.Where(u => u.Age >= 18).Select(u => u.Email).Select(e => e.ToLowerInvariant()).Distinct();`。正确性来自每个操作符都是纯的流式变换：元素逐个流过管道，不依赖"前一步全部完成"，因此无需中间集合；物化（`ToList`）只在确实需要多次枚举或脱离 LINQ 上下文时引入。

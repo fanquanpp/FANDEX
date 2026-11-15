@@ -2159,3 +2159,43 @@ await Task.WhenAll(tasks);
 ---
 
 > **本章小结**：`async/await` 是 C# 语言对状态机模式的语法糖封装。理解 `MoveNext` 状态转移、`AsyncMethodBuilder` 与 awaiter 的契约、`SynchronizationContext` 的捕获与 `ConfigureAwait` 的作用，是从"会写 async"到"写出高性能 async"的关键。在 .NET 9 时代，`ValueTask`、`IAsyncEnumerable`、`Channel` 构成了完整的异步工具箱，结合 `dotnet-trace`、`BenchmarkDotNet` 等工具，可以构建高吞吐、低延迟的企业级异步系统。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己画图/口述，再对照。本篇自检目标是"不看反编译代码，也能讲清 await 之下发生了什么"。
+
+**题 1（状态机骨架）**：一个含两个 `await` 的 async 方法，编译器会生成哪几类成员？第一次调用这个方法时，`MoveNext` 跑到第一个 `await` 之前返回了吗？
+
+参考答案：生成一个实现 `IAsyncStateMachine` 的状态机 struct（含字段：状态号、参数/局部变量提升、两个 awaiter）、方法本体改为创建状态机并调用 `AsyncTaskMethodBuilder.Start(ref sm)`、以及 `MoveNext()` 转移逻辑。第一次调用时，`MoveNext` 会同步执行到第一个未完成的 `await` 为止，注册 continuation 后返回——所以 async 方法开头这段是"同步跑完"的，这也是"async 方法开头不要做重活"的原因。
+
+**题 2（await 展开式）**：把 `var x = await FetchAsync(); Use(x);` 翻译成"不使用 await 语义糖"的等价骨架（awaiter 契约）。
+
+参考答案：
+
+```csharp
+var awaiter = FetchAsync().GetAwaiter();
+if (awaiter.IsCompleted)
+{
+    Use(awaiter.GetResult());
+}
+else
+{
+    // 状态号入栈、引用提升到状态机字段
+    awaiter.OnCompleted(stateMachine.MoveNext); // 实际由 builder 包装
+    return; // 让出，等待 continuation
+}
+```
+
+契约三件套：`GetAwaiter()` 返回 awaiter，awaiter 提供 `IsCompleted`、`OnCompleted(Action)`、`GetResult()`；未完成时挂回调后返回，完成时回调驱动 `MoveNext` 从下一个状态继续。
+
+**题 3（同步上下文）**：UI 应用里 `await button_Click` 之后访问一个 Label 会出事吗？把同一段代码搬进 ASP.NET Core 控制器再 `ConfigureAwait(false)` 呢？
+
+参考答案：UI 应用里默认捕获 UI 的 `SynchronizationContext`，continuation 会回到 UI 线程，可以安全访问 Label——所以 UI 代码不要乱加 `ConfigureAwait(false)`（会回不了 UI 线程）。ASP.NET Core 没有 `SynchronizationContext`，捕获是空操作，`ConfigureAwait(false)` 无所谓也无收益；库代码里写它只是防御"宿主有上下文"的通用习惯。
+
+**题 4（死锁复现）**：在 UI 线程写 `Task t = GetDataAsync(); t.Wait();`，`GetDataAsync` 内部 `await HttpClient...`——为什么会死锁？给出两种修复。
+
+参考答案：`GetDataAsync` 的 continuation 需要回到 UI 线程（捕获了同步上下文），而 UI 线程正被 `Wait()` 阻塞，continuation 永远排不上队，`Wait` 也因此永远等不到完成。修复：一路 `async` 到底（UI 事件处理器用 `async void`/`async Task` 并 `await`），或库内所有 `await` 加 `ConfigureAwait(false)` 使 continuation 不要求回 UI 线程。
+
+**题 5（ValueTask 与状态机）**：为什么热路径方法返回 `ValueTask<T>` 能减少分配？它的"只能消费一次"限制根源在哪？
+
+参考答案：同步完成路径下 `ValueTask<T>` 直接在 struct 里装结果，连 Task 对象都不分配；异步路径则包一个 Task。根源：`ValueTask<T>` 可能包装"同步结果"或"一次性 Task/IValueTaskSource"，多线程多次 await 无法保证语义，所以规范要求单次消费；要多次消费先 `.AsTask()`。

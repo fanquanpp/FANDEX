@@ -2868,3 +2868,27 @@ int[] a = [1, 2, 3];
 int[] b = [4, 5, 6];
 int[] combined = [..a, ..b, 7, 8];
 ```
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己先选型、先写代码，再对照。本篇的自检重点是「按场景选集合」与「按复杂度算开销」两个能力。
+
+**题 1（集合选型）**：四个场景各选一种 BCL 集合并说理由：(a) 按 ID 秒查订单；(b) 维护一份不允许重复的标签表；(c) 生产者消费者之间传消息，消费端可能偶尔离线；(d) 构建完成后只读的领域快照。
+
+参考答案：(a) `Dictionary<TKey, TValue>`——哈希查找 O(1)，是"按键取值"的标准答案；(b) `HashSet<T>`——去重 + O(1) 包含判断，如果还要保序用 `SortedSet<T>`；(c) `Channel<T>`——为生产者/消费者设计的异步队列，背压与关闭语义完备，`ConcurrentQueue` 只适合更原始的场景；(d) `ImmutableArray<T>` 或 FrozenDictionary/FrozenSet——构建期一次写入、之后高频只读，.NET 8+ 的冻结集合查询最快。
+
+**题 2（复杂度）**：`List<T>.Insert(0, item)`、`List<T>.Add(item)`、`Dictionary<K,V>` 未指定容量连续 `Add`、`LinkedList<T>.AddFirst` 的时间复杂度各是多少？据此说明为什么"往列表头插数据"通常是设计信号。
+
+参考答案：`Insert(0, ...)` 是 O(n)（后续元素全部右移）；`Add` 均摊 O(1)（容量不足时扩容拷贝一次）；`Dictionary` 未指定容量连续 `Add` 均摊 O(1)（伴随 rehash 峰值，已知规模时传容量可消掉）；`LinkedList.AddFirst` O(1)。往列表头插数据意味着每次都搬全表，出现这种写法多半说明该用 `LinkedList`/`Deque` 语义，或者更常见地——应该反转遍历方向或改用栈。
+
+**题 3（迭代器失效）**：`foreach` 一个 `List<T>` 时在循环体内 `Remove` 会发生什么？正确做法有哪三种？
+
+参考答案：抛 `InvalidOperationException`（"Collection was modified"），因为 `List<T>` 的枚举器带版本号检查。三种正确做法：倒序 `for` 循环按索引删；先收集要删的元素再统一删；或改用 `RemoveAll(predicate)` 一次完成。
+
+**题 4（泛型约束）**：写一个方法签名：要求 T 是值类型、实现了 `IComparable<T>`，并解释这两个约束各自带来什么。
+
+参考答案：`static T Max<T>(T a, T b) where T : struct, IComparable<T>`。`struct` 约束排除引用类型并隐含排除 `Nullable<T>`，配合泛型特化可避免装箱路径；`IComparable<T>` 约束让编译器允许调用 `a.CompareTo(b)`，否则 T 上没有任何可用成员。值类型 + 接口约束的组合不必担心装箱：受约束的泛型调用 `a.CompareTo(b)` 走 constrained callvirt，JIT 对值类型的 T 直接生成非装箱调用——这正是泛型约束的意义；真正的装箱点是把 T 赋给接口或 object 类型变量（如放进非泛型容器、经 `IComparable` 引用调用）。
+
+**题 5（集合表达式）**：把 `new List<int> { 1, 2, 3 }`、`int[] arr = new[] {1,2,3}`、`Span<int> s = stackalloc int[]{1,2,3}` 统一改写成 C# 12 集合表达式，并说明目标类型的角色。
+
+参考答案：目标类型决定集合表达式生成什么——`List<int> list = [1, 2, 3];`、`int[] arr = [1, 2, 3];`、`Span<int> s = [1, 2, 3];`（栈分配或由编译器选择存储）。同一套字面量语法能"落到"任意支持集合初始化器的类型上，这正是集合表达式相对集合初始化器的核心改进：类型名写一次，甚至可以配合 `var` 之外的的目标类型 new 写在参数位置。

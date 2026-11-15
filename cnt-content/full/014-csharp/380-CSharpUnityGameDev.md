@@ -2206,3 +2206,27 @@ LoadDataAsync().Forget();
 - Unity Package Manager (UPM)：<https://docs.unity3d.com/Manual/upm-ui.html>
 - OpenUPM（社区包）：<https://openupm.com/>
 - Unity Discord 社区：<https://discord.com/invite/unity>
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码或口述，再对照。本篇自检核心是「Unity 的单线程模型」与「C# 语言能力在引擎里的落地边界」。
+
+**题 1（主线程规则）**：Unity 里哪些操作只能在主线程做？把"加载场景后生成 100 个敌人"写成不阻塞主线程的正确形态。
+
+参考答案：场景操作、实例化、Destroy、所有 Object/Transform API、大多数引擎调用都只能在主线程（Unity API 非线程安全）。正确形态：`LoadSceneAsync` 配合 `await`（async 方法挂在 UnitySynchronizationContext 回到主线程），或协程 `yield return SceneManager.LoadSceneAsync(...)`，在继续执行点（仍是主线程）再 `Instantiate` 循环；纯计算才交给 `Task.Run`，回主线程后再碰引擎对象。
+
+**题 2（Mono vs IL2CPP）**：编辑器/PC 独立构建与手机发布各自的脚本后端？IL2CPP 把 C# 变成了什么？对反射与泛型的影响各说一条。
+
+参考答案：编辑器与桌面默认 Mono（JIT），移动/主机发布走 IL2CPP——先把 IL 转成 C++ 再编成原生码（AOT）。影响：反射的"运行时生成代码"不可用，`Reflection.Emit`/`Delegate.CreateDelegate` 等受限制；泛型值类型实例化靠 AOT 预生成，运行时 `MakeGenericType` 造"没被预生成过"的组合会失败——所以 IL2CPP 项目常配 `link.xml` 与 `[Preserve]` 保住动态使用的类型。
+
+**题 3（GC 压力）**：为什么 Unity 官方反复强调"避免每帧分配"？写出至少三处常见"每帧分配"代码与修法。
+
+参考答案：Mono/IL2CPP 的 Boehm GC 不是分代并发设计，堆越碎、暂停越长，60fps 预算只有 16ms，一帧分配几百字节持续累积就会周期性卡顿。典型修法：(1) `foreach (var e in enemies)` 若 enemies 是 LINQ/接口调用产生新枚举器 → 缓存集合、用 for；(2) `tag == other.tag`（属性每次分配新字符串）→ `CompareTag("Enemy")`；(3) `Debug.Log("pos" + pos)` 拼接 → 关闭发布版日志或条件编译；(4) 委托/闭包在 Update 里反复创建 → 提前持有；(5) 频繁 new 炮弹/特效 → 对象池复用。
+
+**题 4（Update 与事件）**：100 个敌人各挂一个 `Update()` 轮询状态，改成"状态机 + 事件驱动"后调用结构怎么变？说出这条优化背后的两个开销来源。
+
+参考答案：原来是引擎每帧遍历 100 个 MonoBehaviour 回调（每个都是一次托管/原生互操作 + 空转判断）；事件驱动后，多数敌人休眠（禁用 Update/协程挂起），只有状态迁移事件（受击、看见玩家）才唤醒特定对象——每帧的回调次数从 100 降到个位数。两个开销来源：Unity 的魔法方法调用本身有 native-manage 桥接开销（空 Update 也花钱）；轮询浪费的是"无变化的帧"的 CPU 时间。
+
+**题 5（C# 版本边界）**：Unity 6.x 的默认 C# 语言版本与 API 基线是什么？本模块的 record、模式匹配、Span 等特性，哪些能直接在 Unity 脚本里用？
+
+参考答案：Unity 6.x 默认 Roslyn 编译但语言版本钉在 C# 9、API 基线 .NET Standard 2.1（见 Unity 官方手册 csharp-compiler 页；CoreCLR 运行时截至 2026-11 仍处实验阶段，未正式发布）。能直接用：record、模式匹配、顶级语句（视模板）、init、`using var`；不能直接用：C# 10+ 语法（全局 using、文件范围命名空间、集合表达式）、`Span<T>` 大部分 API（依赖较新 BCL）与 `System.Text.Json` 源生成等新运行时特性——写引擎代码前先确认项目的 LangVersion 与 Api Compatibility Level。

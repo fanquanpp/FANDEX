@@ -240,6 +240,7 @@ EF Core 10.0 仅支持 .NET 10（不再向下兼容 .NET Framework），LTS 支�
 | 2023 | EF Core 8.0 LTS | Complex Types、原生集合 |
 | 2024 | EF Core 9.0 | AOT 改进、Cosmos DB 向量搜索 |
 | 2025 | EF Core 10.0 LTS | 命名查询过滤器、LeftJoin/RightJoin、复杂类型 JSON 映射 |
+| 2026 | EF Core 11.0 | 随 .NET 11（2026-11-10）发布：减少不必要 JOIN、GroupBy 翻译改进、FullJoin、实验性 SQL Server 向量搜索 |
 
 ---
 
@@ -2746,3 +2747,27 @@ public class Cat : Animal
     public bool IsIndoor { get; set; }
 }
 ```
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写命令/代码，再对照。本篇自检核心是「迁移的工程化」与「查询优化的一般套路」。
+
+**题 1（迁移命令链）**：在 CI 里为生产库生成"从任意旧版本补齐到最新"的 SQL，写出命令与关键参数。
+
+参考答案：`dotnet ef migrations script --idempotent -o migration.sql --startup-project src/App --project src/App.Infrastructure`。关键点：`--idempotent` 让脚本内嵌迁移历史检查（`IF NOT EXISTS ... INSERT INTO __EFMigrationsHistory`），从任意旧版本执行都只补差异；`-o` 落盘便于进版本库与 DBA 评审。
+
+**题 2（大表加列）**：给亿级表加一列，`ALTER TABLE ... ADD Col int NOT NULL DEFAULT 0` 在 SQL Server 上的元数据优化是什么？什么情况下优化失效？
+
+参考答案：SQL Server 2012+ 对"加可空列或带默认值的 NOT NULL 列"是元数据级操作：不改任何数据页，只改元数据并让读取时按默认值补齐，几乎瞬时完成。失效场景：默认值不是常量（如 `DEFAULT (getdate())` 或需要逐行计算的表达式）、或目标列参与需要回填数据的约束——这会退化为逐行更新。原则：迁移脚本对大表的每个 DDL 都要按"元数据操作还是数据重写"分级评审。
+
+**题 3（索引与查询形状）**：`WHERE TenantId = @t AND CreatedAt > @d ORDER BY CreatedAt DESC` 该建什么索引？为什么"TenantId 单列索引 + CreatedAt 单列索引"不是好答案？
+
+参考答案：建复合索引 `(TenantId, CreatedAt DESC) INCLUDE (需查询的覆盖列)`：等值列在前、范围/排序列在后，一个索引同时完成过滤、排序（免 Sort 运算符）与覆盖（免回表）。两个单列索引只能二选一使用，剩下一半的过滤/排序仍要扫大量行再回表——复合列序正是"等值在前、范围在后"口诀的意义。
+
+**题 4（批量写）**：把「读出 10 万行、逐行改一个字段、逐行 SaveChanges」改写成 EF Core 的批量路径，说出新旧两条路的 SQL 次数。
+
+参考答案：旧路：1 次查询 + N 次 UPDATE（每批 SaveChanges 一次事务），10 万行就是上万条 UPDATE。新路：EF Core 7+ 的 `db.Users.Where(...).ExecuteUpdate(s => s.SetProperty(u => u.Status, "archived"))`，翻译成一条 `UPDATE ... WHERE`，0 次读取 1 次写；只读删除同理用 `ExecuteDelete`。注意 ExecuteUpdate/Delete 绕过变更追踪与拦截器，先确认没有业务事件挂在这些实体上。
+
+**题 5（SplitQuery）**：`Include` 多个一对多集合时为什么会笛卡尔爆炸？`AsSplitQuery()` 换来了什么、付出了什么？
+
+参考答案：一个查询 JOIN 两个集合时，行数按 M×N 相乘展开，数据在网络与物化层都翻倍。`AsSplitQuery()` 把每个集合拆成独立 SQL（主查询 1 条 + 每个集合 1 条），消掉乘法；代价是多次往返、且各查询之间不在一个快照里（并发写入下可能读到轻微不一致的分页错位），需要在一致性要求与数据量之间权衡。

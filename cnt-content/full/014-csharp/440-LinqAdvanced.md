@@ -15,6 +15,15 @@ prerequisites:
   - 'csharp/110-CSharpLINQFunctionalProgramming'
 ---
 
+## 为什么值得进阶一查
+
+基础 LINQ（Where/Select/OrderBy）能解决七成日常查询；剩下三成——"把嵌套拍平"、"两张表按键连接"、"按组统计"、"分块批处理"——才是进阶算子的地盘。查表前立两个锚点：
+
+1. **SelectMany 是 Monad 的 bind**：每个元素映射出一个序列再拍平一层；`Join`/`GroupJoin` 都能由它推导，理解了它，连接类算子不再是背出来的；
+2. **连接与分组先想"键"**：`Join` 是内连接（两边都有才出结果），`GroupJoin` 输出"左元素 + 匹配组"（配 `DefaultIfEmpty` 即左连接），`ToLookup` 是一次分组、按键多次随机访问的立即版 GroupBy。
+
+详细推导与性能分析见 [LINQ 深度解析](/csharp/120-LINQDeep)；本篇只保证查表时知道自己在选什么。
+
 ## 投影与展开
 
 **基本写法：SelectMany 展平嵌套集合**
@@ -478,3 +487,66 @@ var fullRoster = emps.LeftJoin(
 - **记住**：`SelectMany` 展平、`Join` 内连接、`GroupBy` 分组、`ToLookup` 一对多索引。
 - **理解**：集合运算依赖相等语义；`GroupBy` 延迟与 `ToLookup` 固化的取舍；空序列聚合异常。
 - **应用**：报表类需求（分组统计、左右连接、分块批量提交）优先组合本篇算子；查询语义复杂的场景再深入[表达式树与 IQueryable](/csharp/120-LINQDeep)。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码，再对照。本篇自检核心是"进阶算子的脱表写出能力"。
+
+**题 1（拍平与配对）**：`teachers` 各带 `Courses` 列表。写两行：一行输出"所有课程名的平铺列表"；一行输出"教师与课程的笛卡尔配对字符串"。
+
+参考答案：
+
+```csharp
+var allCourses = teachers.SelectMany(t => t.Courses).Select(c => c.Name);
+var pairs = teachers.SelectMany(t => allCourses, (t, c) => $"{t.Name} teaches {c.Name}");
+```
+
+第一式是"映射出子序列再拍平"；第二式是双参版 `SelectMany`——外元素与内元素组合出投影，即受控笛卡尔积。
+
+**题 2（连接三式）**：orders 与 customers 按键连接，分别写出：内连接（输出订单 + 客户名）、左连接（无客户的订单客户名显示 "-"）、分组连接（每个客户 + 订单列表）。
+
+参考答案：
+
+```csharp
+var inner = orders.Join(customers, o => o.CustomerId, c => c.Id,
+    (o, c) => new { o.Id, Customer = c.Name });
+
+var left = orders.GroupJoin(customers, o => o.CustomerId, c => c.Id,
+    (o, cs) => new { o.Id, Customer = cs.FirstOrDefault()?.Name ?? "-" });
+
+var grouped = customers.GroupJoin(orders, c => c.Id, o => o.CustomerId,
+    (c, os) => new { Customer = c.Name, Orders = os.ToList() });
+```
+
+口诀：`Join` 出"对"，`GroupJoin` 出"组"；`GroupJoin` 在左、子序列套 `DefaultIfEmpty` 即左连接。
+
+**题 3（分组统计报表）**：一行写出"按部门统计平均薪资并降序输出前 3 名（部门名，平均薪资）"。
+
+参考答案：
+
+```csharp
+var top3 = employees.GroupBy(e => e.Department)
+    .Select(g => new { Dept = g.Key, Avg = g.Average(e => e.Salary) })
+    .OrderByDescending(x => x.Avg)
+    .Take(3)
+    .ToList();
+```
+
+要点：`GroupBy` 的输出是 `IGrouping` 序列，每个组本身可枚举——统计是在"组"上继续管道，不是在元素上。
+
+**题 4（ToLookup 的时机）**：订单表要按客户 Id 反复随机取"该客户的所有订单"，用 `GroupBy` 每次都要重新枚举吗？写出 `ToLookup` 版本。
+
+参考答案：用 `GroupBy` 得到的是延迟查询，想按键取组还得先 `ToDictionary` 化，且多值键会炸。`ToLookup` 一次构建即成多值索引：`var byCustomer = orders.ToLookup(o => o.CustomerId);` 之后 `byCustomer[42]` 直接返回该客户的订单序列——键不存在返回空序列而不是异常，天然适合"可能没有"的查询。
+
+**题 5（分块批处理）**：10 万条记录要按 500 条一批提交，写出 `Chunk` 版骨架并说出为什么不用 for 计数器手动切片。
+
+参考答案：
+
+```csharp
+foreach (var batch in records.Chunk(500))
+{
+    await repo.BulkInsertAsync(batch, ct);
+}
+```
+
+`Chunk`（.NET 6+）把序列切成定长块（末块可能不足），迭代器按需产出、不额外物化整个列表；手写 `for (i += 500)` + `Skip/Take` 每片都要重新跳过前缀元素，O(n^2) 且边界容易错。集合运算类题目同理：先想"库里有哪个算子"，再想手搓。

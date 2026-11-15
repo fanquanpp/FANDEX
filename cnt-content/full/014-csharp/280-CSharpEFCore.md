@@ -2429,7 +2429,7 @@ await retryPolicy.ExecuteAsync(async () =>
 - **EF Core 官方文档**：https://learn.microsoft.com/ef/core/ - 完整教程、API 参考、性能指南
 - **EF Core 迁移指南**：https://learn.microsoft.com/ef/core/managing-schemas/migrations/ - 迁移创建、应用、回滚
 - **EF Core 性能优化**：https://learn.microsoft.com/ef/core/performance/ - 索引、查询、上下文池化
-- **EF Core 9.0 新特性**：https://learn.microsoft.com/ef/core/what-is-new/ef-core-9.0/plan - 最新版本规划
+- **EF Core 9.0 规划**：https://learn.microsoft.com/ef/core/what-is-new/ef-core-9.0/plan - 历史版本规划（最新为 EF Core 11，随 .NET 11 于 2026-11 发布）
 
 ### 经典教材
 
@@ -2464,3 +2464,27 @@ EF Core 作为 .NET 生态的主流 ORM 框架，通过对象与关系的自动�
 6. **真实案例**：高并发电商、多租户 SaaS、事件溯源 CQRS 三个场景的深度剖析
 
 掌握 EF Core 的关键不在于记住 API，而在于理解其工作机制（翻译、追踪、并发、事务）与权衡取舍（开发效率 vs 性能、抽象 vs 控制、便捷 vs 安全）。现代 .NET 开发者应当在享受 ORM 便利的同时，保持对底层 SQL 的理解，在性能敏感场景果断切换到 Dapper 或原生 ADO.NET，构建既高效又可维护的数据访问层。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码或口述，再对照。本篇自检核心是「翻译边界」「变更追踪」「并发控制」三件事。
+
+**题 1（客户端求值）**：`db.Orders.Select(o => ParseOrderNo(o.No)).ToList()` 若 `ParseOrderNo` 是普通 C# 方法，会发生什么？哪种写法会被翻译成 SQL？
+
+参考答案：EF Core 对无法翻译的方法默认抛异常（旧版本是静默客户端求值，3.0 起改为报错），因为无法生成等价 SQL；只有可翻译的成员（内置函数、`EF.Functions.*`、数据库内置映射）能进 SQL。正确姿势：能在数据库算的在 LINQ 里用可翻译表达式写，实在不行先 `ToList()` 物化再在内存算，但要清楚这会拉全表数据。
+
+**题 2（变更追踪）**：同一个 DbContext 里 `var o = db.Orders.Find(1); o.Status = Paid; db.SaveChanges();` 不调用 Update 也会落库，靠的是什么机制？`AsNoTracking()` 查询修改实体后能保存吗？
+
+参考答案：靠快照式变更追踪：实体首次查询时留一份原始值快照，`SaveChanges` 用 DetectChanges 对比快照与当前值生成 UPDATE——所以改属性就够，无需显式 Update。`AsNoTracking()` 的查询不做追踪、不留快照，改完的实体对上下文是"陌生人"，`SaveChanges` 不会写库；要保存需 `Attach` + 标记状态或查一份 tracked 实例再赋值。
+
+**题 3（N+1 与加载策略）**：`db.Blogs.ToList()` 后遍历每个 `blog.Posts`，共发几条 SQL？三种修复各一句。
+
+参考答案：1（Blogs）+ N（每条 Blog 的 Posts 一条）= N+1 条。修复：`Include(b => b.Posts)`（预加载，一条 JOIN 或分批 SQL）；投影只取需要的列（`Select(b => new { b.Title, Posts = b.Posts.Select(p => p.Title) })`，翻译成 JOIN，不追踪）；或对确有需要的热数据用 `AsSplitQuery()` 避免 JOIN 笛卡尔爆炸。
+
+**题 4（乐观并发）**：两台机器同时读出 `RowVersion=5` 的同一行并各自改后保存，先保存的成功，后保存的会怎样？前提是什么配置？
+
+参考答案：后保存的抛 `DbUpdateConcurrencyException`，因为 UPDATE 语句的 WHERE 带上了 `RowVersion = 5` 而数据库里已是 6，影响行数为 0，EF 由此判定并发冲突；前提是实体配置了并发令牌（SQL Server 的 `rowversion` 列或 `IsConcurrencyToken()`）。处理：捕获异常后读 `Entry.GetDatabaseValues()`，决定"数据库赢/客户端赢/合并"后重试。
+
+**题 5（迁移心法）**：把「开发库加了一列 → 生产库也要加」的完整命令链写出来（含生成与应用两端），并说出为什么生产上偏爱生成脚本而不是直接 `update`。
+
+参考答案：开发机 `dotnet ef migrations add AddPhoneColumn` 生成迁移类；生产端两条路——直接应用 `dotnet ef database update`（或启动时 `context.Database.Migrate()`），或生成幂等脚本 `dotnet ef migrations script --idempotent` 交 DBA 审核执行。生产偏爱脚本：迁移可提前评审（尤其大表加列的锁风险）、可在停机窗口受控执行、脚本按"补齐到目标版本"的语义幂等，回放安全。

@@ -2444,3 +2444,27 @@ public record DatabaseService(string ConnectionString)
     }
 }
 ```
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码，再对照。本篇自检核心是「record 合成了什么、为什么」。
+
+**题 1（合成成员清单）**：`record Person(string Name, int Age);` 编译器自动合成了哪些成员？逐个说出名字与用途。
+
+参考答案：主构造函数；由主构造函数初始化的 init-only 自动属性；`Equals(object)`/`Equals(Person)`/`IEquatable<T>` 实现（逐字段比较）；`GetHashCode()`（基于每个字段的合成散列）；`==`/`!=` 运算符；`Deconstruct`（按位置解构）；`ToString()` 重写（打印类型名与各属性名值）；以及受保护的 `PrintMembers` 与复制构造函数（供 `with` 使用）。这一整套的目的是"把不可变数据对象变成一等公民"。
+
+**题 2（值相等 vs 引用相等）**：`var a = new Person("Ann", 20); var b = new Person("Ann", 20);`——`a == b`、`a.Equals(b)`、`object.ReferenceEquals(a, b)` 各是什么？换成 `class` 呢？
+
+参考答案：record 下 `a == b` 为 true、`a.Equals(b)` 为 true（合成值相等）、`ReferenceEquals` 为 false（两个实例）。换成 class：`==` 与 `Equals` 默认都是引用相等，全部 false（除非重写）。这就是"数据"与"实体"的分界线：数据按值比，实体按身份比。
+
+**题 3（with 表达式）**：基于 `a` 创建"同名但年龄加一"的副本，写出代码；说明 `with` 底层调用了什么，以及为什么要求属性是 `init`。
+
+参考答案：`var b = a with { Age = a.Age + 1 };`。底层调用合成的复制构造函数（protected 的"克隆方法"），把所有字段原样拷贝，再用对象初始化器覆盖指定的 init 属性。属性必须是 `init`（或可写）才能被覆盖；`init` 保证副本只能在构造期被定制，之后不可变。
+
+**题 4（record 继承的坑）**：`record Base(string Name); record Derived(string Name, int Age) : Base(Name);`——`new Base("A") == new Derived("A", 5)` 结果是什么？为什么 record 之间很少用继承？
+
+参考答案：false。合成相等性会比较运行时类型——`Equals` 里含 `EqualityContract`（返回 `typeof(Derived)` 等各自类型）的比较，类型不同即不等；而 `PrintMembers` 只打印自身层字段。record 之间的继承会带来相等性、`with`、解构逐层叠加的复杂度，日常建模"数据变体"更推荐封闭层次 + 模式匹配，继承留给确有"is-a"语义的场景。
+
+**题 5（record struct）**：`readonly record struct Point(int X, int Y);` 与普通 struct 的区别？小数据点选它的两个理由？
+
+参考答案：record struct 同样合成值相等、`==`、`Deconstruct`、`ToString`，`readonly` 进一步禁止方法内修改自身状态（避免防御性拷贝）。选它的理由：一是 16 字节上下的小数据走栈/内联分配，无 GC 压力；二是"纯数据"语义（值相等 + 不可变）让比较与哈希做字典键、去重都符合直觉。

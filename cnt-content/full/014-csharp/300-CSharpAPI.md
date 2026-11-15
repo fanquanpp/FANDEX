@@ -1965,3 +1965,50 @@ Minimal API 反映了 .NET 平台的几个趋势：
 - 示例：[Minimal API samples](https://github.com/dotnet/aspnetcore/tree/main/src/DefaultBuilder/samples)
 
 Minimal API 是现代 .NET Web 开发的入门首选。掌握它，你不仅能快速构建生产级 API，更能深入理解 ASP.NET Core 的中间件管道、端点路由、DI 系统等核心机制。无论你是初学者还是有经验的 .NET 开发者，Minimal API 都值得纳入你的工具箱。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码，再对照。本篇自检核心是「端点即函数」的注册模型与「参数绑定/过滤管道」。
+
+**题 1（最小骨架）**：不查文档写出：启动一个 Web 应用，注册 `GET /ping` 返回 `"pong"`，并用显式端口 8080 跑起来。
+
+参考答案：
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.MapGet("/ping", () => "pong");
+
+app.Run("http://localhost:8080");
+```
+
+要点：`WebApplication.CreateBuilder` 一次搭好配置/日志/DI，`MapGet` 把「方法 + 路径」注册成端点，`app.Run` 启动 Kestrel——整个文件没有 Controller、没有 Startup 类。
+
+**题 2（参数绑定）**：`app.MapGet("/orders/{id}", (int id, [AsParameters] PageQuery q) => ...)` 中 `id` 与 `q` 分别从哪里来？`PageQuery` 要满足什么条件才能用 `[AsParameters]`？
+
+参考答案：路由参数 `{id}` 按名字绑定到 `id`（且能自动类型转换/400 兜底）；`q` 是复杂对象，默认会尝试从 DI 容器绑定——标 `[AsParameters]` 后改为"复合绑定"：按属性名分别从路由、查询字符串等提取。条件：`PageQuery` 是有公共构造函数或属性可赋值的 POCO（record 也行），属性名与请求参数名对应，不与 DI 服务重名。
+
+**题 3（返回类型）**：`Results<Ok<Order>, NotFound>` 作为 MapPost/MapGet 的返回类型解决了什么问题？比裸返回 `order`（可能为 null）好在哪？
+
+参考答案：它把"这个端点可能返回的 HTTP 形态"写进类型与 OpenAPI：`Ok<Order>` 产生 200 + schema，`NotFound` 产生 404，文档自动正确；裸返回 null 时框架给 200 + 空 body，客户端无法区分"没有"与"空"，OpenAPI 也推不出 404 分支。配合 `TypedResults.Ok(order) / TypedResults.NotFound()` 使用，编译器保证返回集合穷尽。
+
+**题 4（过滤器管道）**：给端点加一个"校验 Authorization 头，失败短路 401"的端点过滤器，写出大致骨架并说明它与中间件的分工。
+
+参考答案：
+
+```csharp
+app.MapGet("/admin", Handler)
+   .AddEndpointFilter(async (ctx, next) =>
+   {
+       if (!ctx.HttpContext.Request.Headers.ContainsKey("Authorization"))
+           return Results.Unauthorized();
+       return await next(ctx);
+   });
+```
+
+分工：过滤器挂在单个端点（或路由组）上，能拿到端点参数、参与短路，属于"路由之后、处理之前"的细粒度横切；中间件在管道层运行于所有请求，适合认证解析、日志、异常兜底等全局关注点。
+
+**题 5（DI 与生命周期）**：端点处理方法签名里直接写 `MyDb db` 会从哪里来？把 `MyDb` 注册成 Scoped 后，一个请求内三个端点过滤器看到的 `db` 是同一个实例吗？
+
+参考答案：签名里的已知类型（非简单类型、非路由参数）由 DI 解析——前提是已注册。Scoped 实例在请求作用域内唯一，端点参数与过滤器链中解析出的 `db` 是同一实例（作用域即请求）；若写成 Singleton 则全应用共享，会踩 DbContext 并发陷阱，Transient 则每个注入点各一份。

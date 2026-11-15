@@ -4215,3 +4215,41 @@ int shifted = 1 << 4;
 ```
 
 ---
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码或口述，再对照。本篇自检核心是「Span 是什么/不是什么」与「ref struct 的边界」。
+
+**题 1（心智模型）**：`Span<T>` 与 `T[]` 的本质差别是什么？说出 Span 的三个"借来"特征。
+
+参考答案：`T[]` 是所有者（自己分配、负责回收），`Span<T>` 是视图（借用一段已存在的连续内存：数组、string、stackalloc、native 指针都可），它不拥有内存、不分配内存、不能活过被借内存的生命期。三个特征：零拷贝切片（`Slice` 只是移动指针与长度）、栈约束（ref struct）、按引用语义访问元素。
+
+**题 2（ref struct 边界）**：下列哪几个能编译？说理由：(a) `Span<int> s = arr;` 字段存进普通 class；(b) `async Task M() { Span<int> s = stackalloc int[8]; ... }`；(c) `string.ToString()` 内部用 `ReadOnlySpan<char>`；(d) `List<Span<int>>`。
+
+参考答案：(a) 不能——ref struct 不能作为普通类的字段（会随对象在堆上移动、生命周期失控）；(b) 不能——async 状态机会把局部变量提升到堆，栈内存逃逸；(c) 能——同步方法内借用栈/堆内存并在方法返回前用完，这正是 BCL 内部的标准用法；(d) 不能——`List<T>` 内部是数组字段，等于 (a)。一句话：ref struct 只能"活在一帧栈里"。
+
+**题 3（Span vs Memory）**：什么时候必须从 `Span<T>` 升级到 `Memory<T>`？写出签名对比。
+
+参考答案：需要跨方法把缓冲区存进字段、跨 `await`、或作为异步 API 参数时——`Memory<T>` 是托管堆上的正常 struct，没有 ref struct 约束，代价是每次使用要 `.Span` 解出视图（多一次检查）。签名对比：同步解析 `int Parse(ReadOnlySpan<char> input)`；异步读取 `Task<int> ReadAsync(Memory<byte> buffer, ...)`。
+
+**题 4（stackalloc）**：`Span<int> buf = n <= 128 ? stackalloc int[128] : new int[128];` 为什么条件表达式两边类型不同仍能编译？无脑 `stackalloc int[n]` 的风险是什么？
+
+参考答案：`stackalloc` 表达式在目标为 `Span<T>` 的条件中可隐式落入公共类型，编译器按"任一分支都产出 Span<int>"处理（条件 stackalloc 模式）。无脑 `stackalloc int[n]` 的风险：n 来自外部时栈溢出直接炸进程（栈只有 1MB 级别且不可恢复），所以官方模式是"小容量走栈、大容量回退堆"，再配合 `ArrayPool<T>` 归还。
+
+**题 5（池化配合）**：用 `ArrayPool<byte>.Shared` 写"租用 4KB、用完归还"的骨架，说明 `ArraySegment<byte>`/`Memory<byte>` 在其中的角色。
+
+参考答案：
+
+```csharp
+byte[] buf = ArrayPool<byte>.Shared.Rent(4096);
+try
+{
+    Process(buf.AsSpan(0, 4096));
+}
+finally
+{
+    ArrayPool<byte>.Shared.Return(buf);
+}
+```
+
+`Rent` 返回的可能大于请求数（池桶对齐），所以必须记录实际可用长度并用 `AsSpan(0, len)` 限制视图；`Return` 后数组回到池里被复用，调用方绝不能再持有它的引用——Span/Memory 只是借用期间的安全视图。

@@ -2134,3 +2134,27 @@ DI 容器维护依赖图 $G = (V, E)$，每个服务 $v \in V$ 依赖其构造�
 总复杂度 $O(V + E)$。
 
 若存在循环依赖，拓扑排序检测出环，抛 `InvalidOperationException`。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写注册代码或口述结论，再对照。本篇自检核心是「控制反转的动机」与「容器解析的行为」。
+
+**题 1（为什么反转）**：`OrderService` 里 `new SqlRepository()` 的三宗罪？改成构造函数注入后，"谁依赖谁"的方向变成了什么？
+
+参考答案：一宗罪是硬编码绑定具体实现，换 MySQL 要改订单服务的代码；二宗罪是无法替换为测试替身，单元测试必须连真库；三宗罪是生命周期由使用方管理，实例与全局状态（连接、事务）容易失控。注入后方向反转：OrderService 不再创建依赖，只声明"我需要一个 IOrderRepository"，创建与绑定的控制权移交给容器与组合根——依赖从"我造我用"变成"你给我用"。
+
+**题 2（三种生命周期）**：Singleton/Scoped/Transient 各写一行注册；说出"每个请求一个 DbContext、每个应用一个 HttpClient 工厂、每次注入一个邮件发送器"各对应哪种。
+
+参考答案：`services.AddSingleton<IConfigProvider, ConfigProvider>();`、`services.AddScoped<IUnitOfWork, UnitOfWork>();`、`services.AddTransient<IMailer, SmtpMailer>();`。DbContext 是 Scoped（请求内共享事务与变更追踪）；HttpClient 工厂（IHttpClientFactory）是 Singleton（管理连接池与处理器生命周期）；邮件发送器轻量无状态，Transient 每次新实例最安全。
+
+**题 3（Captive Dependency）**：Singleton 服务构造函数注入了 Scoped 的 DbContext，会发生什么？两种解法？
+
+参考答案：Singleton 在应用启动时创建一次，它拿到的 DbContext 从此"被俘虏"——整个应用共享这一个上下文：并发请求共用引发线程安全异常、变更追踪跨请求串味、内存越积越大。解法：(1) 注入 `IServiceScopeFactory`，用时 `CreateScope()` 在短作用域里解析 DbContext；(2) 重新设计依赖方向，让 DbContext 的消费者本身是 Scoped，Singleton 只持有无状态策略。
+
+**题 4（解析行为）**：`GetService<T>()` 与 `GetRequiredService<T>()` 的差别？`GetServices<T>()` 什么时候用？
+
+参考答案：`GetService` 未注册时返回 null（调用方自己判空），`GetRequiredService` 抛 `InvalidOperationException`——业务代码几乎总该用后者，把"忘记注册"在解析点立刻暴露而不是变成 NullReferenceException。`GetServices<T>()` 解析出所有注册（`TryAddTransient` 多次注册同一接口会有多条），典型用途是"所有 IStartupFilter 依次执行"或插件式策略集合。
+
+**题 5（组合根）**：组合根（Composition Root）是什么？为什么"业务类里随手 `IServiceProvider.GetService`"（Service Locator）被视为反模式？
+
+参考答案：组合根是应用启动时唯一进行"接口到实现绑定"的位置（ASP.NET Core 里是 `Program.cs` 的容器配置段）。散落的 `GetService` 调用让类的真实依赖隐藏在方法体内，构造函数签名不再诚实地声明依赖，编译期检查失效、测试必须搭真容器——控制反转退化成了服务定位。判断标准：容器只应该被组合根和框架管道（如控制器激活）触碰，业务类依赖一律走构造函数。
