@@ -19,7 +19,7 @@ related:
 
 读完你将获得：
 
-1. 本库 43 个模块的全景认知：它们分几类、各自回答什么问题；
+1. 本库 48 个模块的全景认知：它们分几类、各自回答什么问题；
 2. 一张按时间展开的 12 个月学习地图；
 3. "每个模块怎么学"的标准动作，以及何时算学到位。
 
@@ -29,15 +29,15 @@ related:
 
 ## 本库全景：七大类模块各司其职
 
-本仓库 43 个模块按内容性质分七大类（Web 端首页按此分组，颜色一致）：
+本仓库 48 个模块按内容性质分七大类（Web 端首页按同一套分类字段分组、颜色一致；站点分类标签叫"前端技术、后端技术、云与基础设施"，与本表名称所指相同；另有一个预留的"数学"分类暂未放入内容）：
 
 | 分类 | 模块 | 回答的问题 |
 | --- | --- | --- |
 | 工具链 | start、markdown、git、github、shell | 如何高效起步、写作、管版本、用命令行 |
 | 前端 | html5、css、javascript、typescript、vue3、react、svg、astro、vite、tailwind、nextjs | 网页与界面如何构建 |
-| 后端与语言 | java、kotlin、csharp、go、python、rust、nestjs | 服务端与系统如何编写 |
+| 后端与语言 | java、kotlin、csharp、go、python、rust、nestjs、spring-boot、mybatis、spring-cloud、bigdata | 服务端与系统如何编写 |
 | 数据库 | sql、mysql、postgresql、redis、mongodb | 数据如何存取与调优 |
-| 计算机科学 | cs-fundamentals、algorithm、c、cpp、roadmap | 底层原理与长期能力 |
+| 计算机科学 | cs-fundamentals、algorithm、c、cpp、ai-llm、roadmap | 底层原理与长期能力 |
 | 云与工程 | devops、networking、cybersecurity、cloud-computing、software-testing | 系统如何上线、稳定、安全 |
 | 游戏开发 | godot、gdscript、renpy、gode、konado | 可玩的互动世界如何构建 |
 
@@ -74,7 +74,7 @@ related:
 
 - **前端/全栈**：html5 → css → 主线框架（react 或 vue3）→ typescript → vite/tailwind；
 - **后端（Java/Go/Python/Node）**：对应后端语言进阶 → sql（必须）→ nestjs/spring 类框架 → mysql；
-- **数据/AI**：python 进阶 → sql → numpy/pandas 生态 → cs-fundamentals 数学篇；
+- **数据/AI**：python 进阶 → sql → numpy/pandas 生态 → ai-llm（AI 应用开发）→ cs-fundamentals 数学篇；
 - **移动端**：kotlin（Android 为主）→ compose → 对应后端基础；
 - **游戏**：godot → gdscript → 2D 玩法与 UI → 第一个可玩的小游戏。
 

@@ -80,7 +80,7 @@ related:
 
 ```bash
 git --version
-# 期望输出类似：git version 2.47.0
+# 期望输出类似：git version 2.56.x
 ```
 
 **首次配置**（把你的名字和邮箱写进 Git，以后每次提交都会署名）：
@@ -101,7 +101,7 @@ git config --global init.defaultBranch main
 
 ```bash
 node --version
-# 期望输出类似：v24.x.x（偶数大版本号即 LTS 系列）
+# 期望输出类似：v26.x.x（偶数大版本号即 LTS 系列）
 
 npm --version
 # 期望输出类似：11.x.x
@@ -123,7 +123,7 @@ npm --version
 ```bash
 python --version     # Windows
 python3 --version    # macOS
-# 期望输出类似：Python 3.13.x 或 3.14.x
+# 期望输出类似：Python 3.15.x 或 3.14.x
 ```
 
 如果 Windows 提示"python 不是内部或外部命令"，回到安装步骤检查 PATH 勾选；仍不行可重启电脑让环境变量生效。
@@ -153,7 +153,7 @@ python3 --version    # macOS
 | 刚装完就验证失败 | 终端是安装前打开的 | 关闭终端重开 |
 | 版本号输出但很旧 | 电脑里有旧版本占先 | `where 命令名`（Win）/ `which 命令名`（mac）定位后清理 |
 | 安装包打不开（macOS） | 系统安全拦截 | 系统设置 → 隐私与安全性 → 仍要打开 |
-| 下载速度极慢 | 网络到官网慢 | 换时间段，或使用官方镜像（如 Node 用 npmmirror，Python 用淘宝镜像） |
+| 下载速度极慢 | 网络到官网慢 | 换时间段，或使用官方镜像（如 Node 与 Python 安装包都可用 npmmirror——即原淘宝镜像——的 binaries 镜像） |
 
 ## 选学：包管理器 Homebrew 与 winget
 
@@ -205,7 +205,7 @@ git --version
 
 - `git --version` 有输出，且 `git config --global user.name` 能读回你的名字；
 - `node --version` 与 `npm --version` 都有输出；
-- `python --version`（mac 用 python3）输出 3.10 以上版本；
+- `python --version`（mac 用 python3）输出 3.12 以上版本；
 - VS Code 能打开 `my-code` 文件夹并新建、保存文件；
 - 能用自己的话解释：为什么会出现"命令找不到"，以及两个可能原因。
 
