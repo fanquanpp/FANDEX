@@ -342,3 +342,13 @@ java Main
 2. 学完 024 Lambda 与 025 Stream 后，用 `stream().filter()` 重写"查询选了某门课的所有学生"；
 3. 把选课人数统计改成按人数降序输出，练习自定义 `Comparator`；
 4. 结合 016 异常处理机制，把业务规则异常统一封装为自定义异常。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 课程系统的实体应包含哪些字段？Student 与 Course 之间用什么集合建模"选课"关系？——Student（学号、姓名）、Course（课程号、名称、容量）；学生持 Set<Course>（或注册表 Map<studentId, Set<courseId>>）表达多对多。
+2. "选课人数未超容量"这条业务规则应该写在哪个层？为什么不能只靠前端？——写在服务层（ enroll 方法内检查）；前端校验可绕过，规则属于领域不变式必须落在业务代码里。
+3. 用 Map<String, Student> 按学号索引学生，get 一个不存在的学号返回什么？如何处理？——null；调用前 containsKey 或 Optional.ofNullable 包装，避免 NPE。
+4. 两个学生同时抢最后一个名额（并发），你现在的实现安全吗？要加什么？——不安全，检查与写入非原子；需要 synchronized 块或 ConcurrentHashMap 原子操作（computeIfAbsent 等）加容量原子扣减。
+5. 验收清单里"重复选课被拒绝"怎么实现？——enroll 前检查 student.getCourses().contains(course)（Set 已天然去重），已选则返回失败原因而不是抛异常吞错。

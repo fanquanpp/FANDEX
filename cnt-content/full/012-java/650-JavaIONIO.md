@@ -1848,3 +1848,13 @@ socketChannel.write(buf);
 ---
 
 > **结语**：Java I/O 的演化史，是一部计算机系统演化的缩影——从同步阻塞到多路复用，从内核优化到语言层抽象。理解 BIO、NIO、AIO 的差异，掌握零拷贝与 Reactor 模式，是成为高性能 Java 工程师的必经之路。在虚拟线程时代，BIO 的简洁性与 NIO 的高性能并非二选一，而是各擅胜场——选对工具，方能游刃有余。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. BIO/NIO/AIO 的阻塞点分别在什么层面？——BIO 阻塞在 read/write 系统调用直到数据就绪且拷贝完成；NIO 阻塞在 selector.select()（多路等待），就绪才拷贝；AIO 由内核完成后回调，Java 侧完全异步。
+2. Selector、Channel、Buffer 三角色的协作流程说一遍。——Channel 注册到 Selector 并声明兴趣事件；select() 返回就绪键集合；根据 key 判断事件类型，从 channel 读到 buffer 或从 buffer 写到 channel。
+3. ByteBuffer 的 flip() 做了什么？limit/position/capacity 三者关系？——写转读：limit 移到当前 position，position 归 0；capacity 总容量上限，limit 当前可读写边界，position 游标。
+4. 零拷贝在 Java 侧的 API 是什么？它省掉了哪两次拷贝？——FileChannel.transferTo；省掉"内核缓冲区到用户空间"与"用户空间回内核 socket 缓冲区"两次 CPU 拷贝（数据直接在内核内转发）。
+5. 为什么说 NIO 的"就绪通知"仍可能空转？epoll 与 select 的差异在哪？——select 每次传全量 fd 且 O(n) 扫描；epoll 内核维护就绪链表 O(1) 返回，连接数上万时差异巨大。

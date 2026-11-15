@@ -110,3 +110,13 @@ ATM 实训（方法划分 + 菜单循环）与本项目共享同一副骨架：`
 ## 完成后你能做什么
 
 你会独立交付一个「带测试、可打包、有文档」的 Java 程序——这正是进入 [Spring](/java/820-SpringIoCContainerBeansAndDI) 与团队协作前的全部地基。下一步：把项目放进 GitHub，走到 [技术栈路线图](/roadmap/010-RoadmapOverview) 的 Java 后端路线阶段 2。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. todo-cli 的任务实体应该有哪些字段？哪些字段允许修改？——id、title、priority、done、createdAt；业务上允许改 done（完成/撤销）与可能 priority，title 与 id 建议不可变。
+2. "命令行参数驱动的路由"骨架怎么写？——`switch (args[0]) { case "add" -> add(args); case "list" -> list(); case "done" -> done(args[1]); default -> printUsage(); }`。
+3. 持久化选 JSON 还是对象流？各一句话理由。——JSON（Jackson）：可读、可迁移、生态标准；Java 对象流：零依赖但格式私有、版本脆弱，仅适合纯教学演示。
+4. 控制台表格对齐用 printf 的什么格式符组合？——`%-4d`（左对齐定宽整数）与 `%-20s`（左对齐定宽字符串），宽度按最长内容估。
+5. 验收标准里"空输入不崩溃"怎么实现？——入口统一 try-catch 兜底打印用法提示；参数缺失提前校验（args.length 判断），解析失败给出可读错误而非堆栈。

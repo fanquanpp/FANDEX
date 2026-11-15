@@ -1061,7 +1061,7 @@ try {
 ### 7.3 安全实践
 
 1. **限制自定义 ClassLoader**：生产环境慎用，避免加载不可信字节码。
-2. **SecurityManager**（已废弃，Java 17+）：限制 `defineClass`、`loadClass` 权限。
+2. **SecurityManager**（JDK 17 弃用 JEP 411，JDK 24 永久禁用 JEP 486——无法再启用，`System.setSecurityManager` 抛 UnsupportedOperationException，API 类保留待未来删除）：这条历史防线已成过去，隔离责任转向容器与进程级；依赖它的代码须重构。
 3. **字节码校验**：`-Xverify:all`（默认开启，生产不要关闭 `-noverify`）。
 4. **模块封装**：Java 9+ 默认强封装，反射需显式 `opens`。
 
@@ -1258,7 +1258,7 @@ c.cast(o);  // ClassCastException
 ### 9.5 开放题
 
 13. JPMS 的"模块感知双亲委派"相比传统双亲委派，带来了哪些优势与挑战？
-14. 为何 Java 17 废弃 SecurityManager？这对类加载安全性有何影响？
+14. 为何 Java 17 废弃 SecurityManager（JEP 411）、JDK 24 更进一步永久禁用（JEP 486，API 类保留待未来删除）？这对类加载安全性有何影响？
 15. 比较 JVM 类加载与 Python 模块加载的本质差异。
 16. 在云原生时代，类加载机制是否还重要？GraalVM Native Image 的"无类加载"模式是否会成为主流？
 
@@ -1394,3 +1394,13 @@ c.cast(o);  // ClassCastException
 ---
 
 > 本文基于 OpenJDK 21 源码与 Java 21 规范撰写，部分历史内容参考 JDK 1.0-17 文档。文中代码示例均在 OpenJDK 21.0.3 上验证通过，读者可在此基础上扩展至任意现代 Java 版本。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 写出双亲委派模型中 `loadClass` 的委托骨架，并说明"先缓存、再委托、再自己加载"的顺序为什么不可乱。——先 `findLoadedClass`，再 `parent.loadClass`，捕获 ClassNotFoundException 后才 `findClass` 自己加载；顺序乱掉会导致核心类（如自定义 java.lang.String）被提前加载，破坏一致性与安全。
+2. 三层加载器各自负责什么？Bootstrap 由什么实现？——Bootstrap（C++ 实现，加载 java.base 核心类）、Platform/Extension（加载平台扩展库）、Application（classpath 与模块路径，加载应用类）。
+3. 打破双亲委派的两个经典正当理由是什么？——SPI 热插拔（JDBC 驱动由 ServiceLoader 从上层加载接口的下层实现）与热部署隔离（Web 容器每个 webapp 一个加载器，互不污染）。
+4. `ClassNotFoundException` 与 `NoClassDefFoundError` 的区别各一句话。——前者是显式按名加载找不到（编译期存在、运行期缺失）；后者是已编译引用在链接/初始化时找不到或初始化失败（常见于静态块抛异常后的第二次访问）。
+5. 判断：SecurityManager 仍是类加载安全的默认防线。——不是。JDK 17 弃用（JEP 411）、JDK 24 永久禁用（JEP 486）；现在的防线是模块强封装（opens）、字节码校验与运行环境隔离。

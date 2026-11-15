@@ -356,3 +356,13 @@ for (Song s : songs) {
 - [Stream Collectors 与 groupingBy](/java/320-StreamCollectorsGroupingBy)：分组、统计、拼接的收集器全家桶；
 - [CompletableFuture 异步编排](/java/520-CompletableFutureAsync)：Supplier/Function 当异步任务传的全场景；
 - [Java 记录类](/java/450-JavaRecordClass)：Lambda 的最佳搭档——不可变数据载体。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. Lambda 的类型由什么决定？"落点"是什么意思？——由目标类型（函数式接口）决定；编译器把 Lambda 表达式匹配到"唯一抽象方法的接口"上，这个接口就是落点。
+2. 写出 Comparator 按歌曲时长降序的 Lambda 写法与等价方法引用。——`songs.sort((a, b) -> b.length() - a.length());` 方法引用需 Comparator.comparing：`Comparator.comparingInt(Song::length).reversed()`。
+3. Lambda 能改捕获的局部变量吗？能改捕获对象的字段吗？为什么？——局部变量必须 effectively final，不能改；对象字段可以改（捕获的是引用，改的是堆上对象）。
+4. `(a, b) -> a - b` 做比较器的坑是什么？正确写法？——整数下溢翻转排序结果（大负数相减溢出）；用 Integer.compare(a, b) 或 Comparator.comparingInt。
+5. 四大核心函数式接口各一句话：Function、Consumer、Supplier、Predicate。——Function 进一出变换、Consumer 消费无返回、Supplier 无参产出、Predicate 判真假。

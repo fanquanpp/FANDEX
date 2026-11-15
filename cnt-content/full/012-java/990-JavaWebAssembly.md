@@ -662,11 +662,11 @@ public class WasiFileDemo {
 
 | 维度 | Wasm 沙箱 | JVM 沙箱(SecurityManager) |
 | --- | --- | --- |
-| 默认权限 | 无(零权限) | 全权限(JDK 17 前可配置) |
+| 默认权限 | 无(零权限) | 全权限（JDK 17 前可配置） |
 | 逃逸难度 | 极高(需 Wasm 漏洞) | 中(历史多有逃逸) |
 | 内存隔离 | 强(线性内存私有) | 弱(堆共享) |
 | 系统访问 | WASI 显式授权 | Policy 文件配置 |
-| 未来 | WASI 持续增强 | JDK 17 后弃用 SecurityManager |
+| 未来 | WASI 持续增强 | SecurityManager 已被 JDK 24 永久禁用（JEP 486，API 类保留待未来删除），JVM 沙箱防线交回容器/进程隔离 |
 
 ## 常见陷阱
 
@@ -1226,3 +1226,13 @@ public byte[] computeSha256(byte[] data) {
 | 调用 | call, call_indirect | 函数调用 |
 | 转换 | i32.wrap_i64, f32.demote_f64 | 类型转换 |
 | SIMD | v128.load, i8x16.add | 128 位向量运算(2.0) |
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. Wasm 的沙箱模型与 JVM 沙箱（SecurityManager）的本质差异是什么？——Wasm 模块默认零权限，系统访问靠 WASI 显式授权（能力制）；JVM 沙箱靠可配置的权限检查（SecurityManager 已于 JDK 24 永久禁用，JEP 486，API 类保留待未来删除），防线已交回容器/进程。
+2. 字节码到 Wasm 的编译路径中，Bytecoder/CheerpJ/TeaVM 各自的定位？——Bytecoder 直接把 JVM 字节码编译成 Wasm（中量、需适配 API）；CheerpJ 带完整 JVM（兼容性极高、体积大）；TeaVM 面向 JS/Wasm 输出（体积小、需适配）。
+3. 线性内存越界的防线是什么？Java 侧感知方式？——Wasm 引擎强制边界检查（越界即 trap），Java 侧表现为异常/失败调用而非进程崩溃。
+4. 在 Spring Boot 服务里安全运行用户脚本的三个候选方案怎么选？——GraalVM JS（同 JVM、生态好、需沙箱配置）、Wasm 引擎（强沙箱、跨语言）、Nashorn（已移除，不推荐）。
+5. 判断：Wasm 会取代 JVM。——不会；两者定位不同——Wasm 是安全可移植的二进制交付目标，JVM 是带 GC、JIT 与完整生态的运行时，Java-on-Wasm 目前是补充路线（GraalWasm 等）而非替代。

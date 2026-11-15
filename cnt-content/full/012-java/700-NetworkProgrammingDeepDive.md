@@ -904,3 +904,13 @@ try (InputStream in = socket.getInputStream();
     in.transferTo(fos);
 }
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 写出 TCP 客户端连接并发送一条消息的最小骨架。——`try (Socket s = new Socket("host", 8080); var out = new PrintWriter(s.getOutputStream(), true)) { out.println("ping"); }`。
+2. 服务端 accept() 之后新连接的 IO 用主线程还是子线程处理？两种模型的取舍？——BIO 一连接一线程（简单但线程数随连接暴涨）；NIO Selector 单线程多路复用（省线程但编程复杂），或虚拟线程每连接一个（同步风格 + 高并发）。
+3. 粘包/半包的成因是什么？三种常见解决方案？——TCP 是字节流无消息边界；定长帧、分隔符（如 \n）、长度前缀头（先读 4 字节长度再读体）。
+4. read 返回 -1 与返回 0 各代表什么？——-1 表示对端关闭流（EOF），0 表示本次没有读到数据（非阻塞模式下的正常情况）。
+5. HttpClient（Java 11+）同步与异步两套 API 的返回类型与适用场景？——send 同步阻塞返回 HttpResponse；sendAsync 返回 CompletableFuture，适合并发多个请求再统一编排。

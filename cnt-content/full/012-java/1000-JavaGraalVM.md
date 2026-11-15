@@ -78,9 +78,14 @@ Go、Rust 等编译型语言以"毫秒启动、低内存"在云原生场景快�
 | GraalVM 21.x | 2021 | Spring Boot 3 原生支持立项 |
 | GraalVM 22.x | 2022 | Spring Boot 3.0 M1 支持 Native Image |
 | GraalVM 23.x | 2023 | Spring Boot 3.0 正式支持 Native Image |
-| GraalVM for JDK 21 | 2023 | 与 OpenJDK 21 同步发布 |
+| GraalVM for JDK 21 | 2023 | 与 OpenJDK 21 同步发布（LTS） |
 | GraalVM for JDK 22 | 2024 | PGO 改进、构建速度提升 |
 | GraalVM for JDK 23 | 2024 | G1 GC 稳定、启动优化 |
+| GraalVM for JDK 24 | 2025 | 与 OpenJDK 24 同步 |
+| GraalVM 25.0.0 | 2025-09 | 与 JDK 25 LTS 同步；自此官方弃用「GraalVM for JDK N」命名，改用「主版本.次版本」的 25.x 线（主版本号即 JDK 基座） |
+| GraalVM 25.x 线 | 2026 持续 | 当前唯一活跃线：25.1.3（2026-06）、25.2/25.3（2026-07/08）、25.4（2026-09）、25.5（2026-11-03） |
+
+注意两点：其一，**不存在「GraalVM for JDK 26」**——截至 2026-11，官方发布日历上没有任何以 JDK 26 为基座的版本，全部版本（含 17/21 的 CPU 补丁）都以 25 或更早的 LTS 为基座；其二，JDK 26 侧的冷启动优化（如 JEP 516 AOT 对象缓存）属于 OpenJDK/Leyden 路线的能力，不是某个 GraalVM 版本的交付项。选型建议：新项目直接对齐当前活跃的 25.x 线（JDK 25 LTS 基座），下一个基座版本以 graalvm.org/release-calendar 为准。
 
 ### 1.3 关键里程碑：Spring Boot 3 的拥抱
 
@@ -396,21 +401,21 @@ try (Context ctx = Context.create()) {
 ### 4.1 入门：安装 GraalVM
 
 ```bash
-# 方式 1：使用 SDKMAN（Linux/Mac）
-sdk install java 21.0.3-graal
-sdk use java 21.0.3-graal
+# 方式 1：使用 SDKMAN（Linux/Mac），对齐当前活跃的 25.x 线（JDK 25 LTS 基座）
+# 具体 ID 以 `sdk list java` 实时输出为准，25.x 线持续更新（25.1.3 于 2026-06，25.5 于 2026-11）
+sdk install java 25.1.3-graal
+sdk use java 25.1.3-graal
 
 # 方式 2：手动下载（Windows）
-# 从 https://www.graalvm.org/downloads/ 下载 GraalVM for JDK 21
+# 从 https://www.graalvm.org/downloads/ 下载 25.x 线发行版（JDK 25 LTS 基座）
 # 解压到 C:\Atian\GraalVM
 
 # 验证安装
 java -version
-# openjdk version "21.0.3" 2024-04-16
-# OpenJDK Runtime Environment GraalVM 21.0.3
+# openjdk version "25.1.x"（25.x 线，JDK 25 基座）
 
 native-image --version
-# native-image 21.0.3, GraalVM 21.0.3
+# native-image 25.1.x
 ```
 
 ### 4.2 基础：编译 Hello World
@@ -767,15 +772,15 @@ public class PolyglotDemo {
 
 ### 5.3 Native Image vs Project Leyden
 
-| 维度 | Native Image | Project Leyden |
+| 维度 | Native Image | Project Leyden（AOT cache 路线） |
 |------|--------------|----------------|
 | 实现方 | Oracle Labs | OpenJDK 社区 |
-| 启动时间 | 毫秒级 | 目标 0.5-1s |
+| 启动时间 | 毫秒级 | 秒级缩短（AOT 缓存：JDK 24 载入、JDK 25 命令行优化 JEP 514/515、JDK 26 AOT 对象缓存 JEP 516） |
 | 内存占用 | 极低 | 中等 |
 | 峰值吞吐 | 较低（无 JIT） | 高（JIT 兜底） |
 | 动态特性 | 受限 | 完全支持 |
-| 成熟度 | 生产可用 | 实验中 |
-| Spring Boot 支持 | 3.0+ | 暂无 |
+| 成熟度 | 生产可用 | 首批 JEP 已随 JDK 24-26 落地，仍在演进 |
+| Spring Boot 支持 | 3.0+ | 尚未有官方一键集成 |
 
 ### 5.4 Spring Boot Native vs Quarkus vs Micronaut
 
@@ -1298,6 +1303,7 @@ Class<?> clazz = Class.forName(className);
 | GraalVM for JDK 22 | 22 | PGO 改进 |
 | GraalVM for JDK 23 | 23 | 启动优化，构建加速 |
 | GraalVM for JDK 24 | 24 | 模块化改进 |
+| GraalVM 25.x（25 LTS 基座） | 25 LTS 起持续 | 2025-09 起弃用「GraalVM for JDK N」命名，改用 25.x 主次版本号；当前唯一活跃线（25.1.3 于 2026-06、25.5 于 2026-11） |
 
 ---
 
@@ -1319,3 +1325,13 @@ GraalVM 的演进仍在继续——从 PGO 到 G1 GC，从 Spring Boot 3 到 Qua
 ---
 
 > 本文基于 GraalVM for JDK 21 撰写，部分内容参考 GraalVM 官方文档与 Spring Boot 3 参考手册。文中代码示例均在 GraalVM 21.0.3 上验证通过，读者可在此基础上扩展至任意现代 GraalVM 版本。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. Native Image 为什么启动快但峰值吞吐不如 JIT？——AOT 把字节码在构建期编译成机器码，跳过类加载与解释阶段，启动毫秒级；但它没有运行时热点探测，无法像 C2 那样对热路径做激进优化，峰值吞吐靠 JIT 的应用仍占优。
+2. 反射为什么是 Native Image 的头号破坏源？定位与修复的工具链是什么？——AOT 构建时做封闭世界假设，反射的运行时目标类构建期不可见；用 native-image-agent 在 JVM 模式跑应用自动生成 reflect-config.json，或手工补 JSON 配置。
+3. PGO 解决 Native Image 的什么短板？两步流程怎么走？——弥补无 JIT 的性能差距（Profile-Guided Optimization）；先 `--pgo-instrument` 构建采样版并跑真实负载，再用 `--pgo=采样文件` 重新构建。
+4. 判断：Spring Boot 3+ 应用做 Native 化需要把反射全部改掉吗？——不需要全部改；Spring AOT 插件会在构建期生成 Bean 注册等代码替代大部分运行时反射，遗留反射由 agent 生成的配置兜底。
+5. 说出一个"该选 Native Image"与一个"不该选"的判据。——该选：冷启动敏感的 Serverless/CLI，或高密度容器常驻服务；不该选：重度依赖反射/动态代理且无配置兜底的老框架代码，或峰值吞吐优先的长跑计算型服务。

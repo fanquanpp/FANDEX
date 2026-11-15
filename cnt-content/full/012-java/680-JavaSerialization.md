@@ -715,3 +715,13 @@ u.writeTo(new FileOutputStream("u.bin"));
 // 从字节流解析 ProtoBuf 消息
 UserProto.User u = UserProto.User.parseFrom(new FileInputStream("u.bin"));
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. Serializable 接口里没有方法，它起什么作用？serialVersionUID 的两个角色？——标记接口（marker interface），JVM 检查后允许序列化；serialVersionUID 校验反序列化时类的版本兼容性，不写则由类结构自动计算（任何字段变动都会打破兼容）。
+2. transient 修饰的字段序列化时怎样？写出密码字段的标准处理。——跳过不写；`private transient String password;` 反序列化后为 null，需要时在 readObject 里重建或干脆不存。
+3. Java 原生序列化的三条安全红线是什么？生产替代方案选什么？——反序列化漏洞（任意类构造 RCE）、兼容性脆弱、体积大；生产用 JSON（Jackson）、Protobuf 等带 schema 的格式，原生序列化只在可信边界内使用。
+4. readObject 里防御"敏感对象返回内部可变引用"的手段是什么？——对集合/数组做深拷贝返回（unmodifiableList 或 new ArrayList<>(list)），防外部改内部状态。
+5. writeReplace/readResolve 的典型用途是什么？——单例/枚举语义保持：writeReplace 在写出时替换为代理对象，readResolve 在读入时替换回唯一实例，防止反序列化绕过单例。

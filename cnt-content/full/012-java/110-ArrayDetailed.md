@@ -892,3 +892,13 @@ int[][] a = {{1, 2}, {3, 4}};
 int[][] b = {{1, 2}, {3, 4}};
 boolean result = Arrays.deepEquals(a, b);
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. `int[] a = new int[3];` 之后 `a[3]` 会发生什么？数组长度能改吗？——抛 ArrayIndexOutOfBoundsException（合法下标 0-2）；长度在创建时定死，"扩容"只能新建数组再拷贝（Arrays.copyOf）。
+2. 写出数组的两种初始化写法，并说明哪种不能分开写。——`int[] a = {1, 2, 3};` 与 `int[] a = new int[]{1, 2, 3};`；花括号简写只能在声明处一次完成，`int[] a; a = {1,2,3};` 编译不过。
+3. 二维数组 `int[][] g = new int[3][];` 合法吗？内存上 g[0] 和 g[1] 必须等长吗？——合法；不必须，Java 的二维数组是"数组的数组"，每行可以各自 new 不同长度（锯齿数组）。
+4. 写出 System.arraycopy 的五个参数含义，并说出它与 Arrays.copyOf 的关系。——(src, srcPos, dest, destPos, length)；Arrays.copyOf 内部就是 new 一个新数组再 arraycopy。
+5. 遍历找最大值的骨架怎么写？为什么初始值取 a[0] 而不是 0？——`int max = a[0]; for (int x : a) if (x > max) max = x;`；取 0 在全负数组上会错答 0，取首元素才对任意值域成立。

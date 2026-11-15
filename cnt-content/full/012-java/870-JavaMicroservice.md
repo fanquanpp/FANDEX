@@ -74,20 +74,20 @@ Spring Cloud 基于 Spring Boot，版本需要匹配。在父 pom.xml 中添加�
 <parent>
   <groupId>org.springframework.boot</groupId>
   <artifactId>spring-boot-starter-parent</artifactId>
-  <version>3.2.0</version>
+  <version>4.0.0</version>  <!-- Spring Boot 4.0 GA（2025-11，Framework 7 / Jakarta EE 11） -->
 </parent>
 
 <dependencyManagement>
   <dependencies>
-    <!-- Spring Cloud 依赖管理 -->
+    <!-- Spring Cloud 依赖管理：2025.1.x（Oakwood）是配套 Boot 4.0.x/4.1.x 的官方版本列车 -->
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-dependencies</artifactId>
-      <version>2023.0.0</version>
+      <version>2025.1.2</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
-    <!-- Spring Cloud Alibaba 依赖管理 -->
+    <!-- Spring Cloud Alibaba 依赖管理：版本列车与 Boot 4 的对应关系以官方 wiki 版本表为准，勿凭记忆硬编码 -->
     <dependency>
       <groupId>com.alibaba.cloud</groupId>
       <artifactId>spring-cloud-alibaba-dependencies</artifactId>
@@ -495,3 +495,13 @@ Spring Cloud 中配置的优先级从高到低为：命令行参数 > Nacos 配�
 ### Kubernetes 部署
 
 Spring Cloud 微服务通常部署在 Kubernetes 上，利用 K8s 的服务发现、自动扩缩容、滚动更新等能力。Spring Cloud Kubernetes 提供了与 K8s 集成的支持，可以直接使用 K8s 的 Service 发现机制替代 Nacos。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 服务注册与发现解决什么问题？客户端发现与服务端发现的差别？——动态环境下实例地址不可预知，需要注册表让调用方"找得到、找得新"；客户端发现由调用方查注册表自行负载均衡（Eureka 模式），服务端发现经由统一入口代理转发（K8s Service 模式）。
+2. 熔断、限流、降级各防什么？Sentinel 或 Resilience4j 里分别对应什么概念？——熔断防止故障级联（连续失败后快速失败）、限流防止过载（QPS 阈值）、降级保底返回（fallback 链路）；对应 CircuitBreaker、RateLimiter、Fallback。
+3. 网关层的三个核心职责是什么？为什么鉴权通常放网关？——路由、横切关注点聚合（鉴权/限流/日志）、协议统一；鉴权放网关可让内部服务互信于内网，避免每个服务重复解析 JWT。
+4. 写出 Feign 声明式调用的最小骨架并说出它相对 RestTemplate 的收益。——`@FeignClient(name = "user-service") interface UserClient { @GetMapping("/users/{id}") User get(@PathVariable("id") long id); }`；收益：接口即契约、集成负载均衡与熔断、代码可读。
+5. 判断：Spring Cloud 2023.0.x 版本列车可以配 Spring Boot 4.0。——不对。Boot 4.0 需配 2025.1.x（Oakwood）列车；版本列车与 Boot 大版本是强绑定的，混配会出现自动配置缺失或 Bean 装配失败。

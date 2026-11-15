@@ -2085,3 +2085,13 @@ jcmd 12345 JFR.check
 # 停止并保存录制
 jcmd 12345 JFR.stop filename=rec.jfr
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. -Xms、-Xmx、-Xmn、-XX:MaxMetaspaceSize 各控制什么？生产上 Xms 与 Xmx 为什么建议一致？——初始堆、最大堆、新生代、元空间上限；一致可避免堆伸缩时的抖动与 OS 内存重映射成本，容量评估更稳定。
+2. 容器里堆该怎么配？为什么不能"看着宿主机内存拍脑袋"？——用 -XX:MaxRAMPercentage 配合容器内存 limit（如 70%），JVM 容器感知读取 cgroup 限制；宿主机内存与容器 limit 不同源，超配直接被 OOMKilled。
+3. G1 的 MaxGCPauseMillis 设得越小越好吗？代价是什么？——不是；目标停顿越小，每轮回收的 region 越少，混合回收跟不上分配速率反而更频繁触发 Full GC，吞吐下降。
+4. 排查"老年代持续增长不回落"的第一步工具链是什么？——-Xlog:gc*（或 GC 日志）确认增长曲线 → jmap -histo:live / jcmd GC.class_histogram 看对象直方图 → 必要时 jmap -dump + MAT 分析支配树。
+5. 说出一条"先改代码再调参"的例子并解释为什么。——缓存无上限导致老年代增长，先加容量上限/TTL 淘汰；调参只能延缓 GC 频率，分配速率的根因在应用层。

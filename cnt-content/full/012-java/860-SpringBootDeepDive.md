@@ -2113,3 +2113,13 @@ private Customer customer;
 - CMU 17-445 *Software Engineering for Web Applications*：https://cmu-17-445.github.io/
 - VMware Tanzu Tech Talk：https://tanzu.vmware.com/developer/tv/
 - Spring Developer YouTube：https://www.youtube.com/@SpringSourceDev
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. Spring Boot 启动的两大基石是什么？各解决什么问题？——起步依赖（starter 收敛版本与依赖清单）与自动配置（条件化装配默认行为），让你从"手工组装"到"约定即用"。
+2. @SpringBootApplication 的三个注解组合分别是什么？——@SpringBootConfiguration（配置类）、@EnableAutoConfiguration（开启自动装配）、@ComponentScan（扫本包及以下）。
+3. 条件装配的两个代表性注解与判断对象是什么？——@ConditionalOnClass 看 classpath 类是否存在；@ConditionalOnMissingBean 看容器 Bean 是否缺位（用户先到先得）。
+4. 外部化配置的覆盖顺序说出前三级。——命令行参数 > 环境变量 > 配置文件（jar 内 -> jar 外）。
+5. 优雅停机要做对哪两件事？——开启 server.shutdown=graceful 等 in-flight 请求收尾；关闭顺序上先摘流量（K8s preStop/readiness 失败）再停应用。

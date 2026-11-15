@@ -62,7 +62,8 @@ Java 9 时代，G1 已成为服务端主流 GC，但其在堆 > 16GB 时停顿�
 | JDK 21 | JEP 439 | 分代 ZGC 正式 GA（需 `-XX:+ZGenerational` 显式开启） | 引入分代假说 |
 | JDK 23 | JEP 474 | 分代 ZGC 成为默认模式 | 全面替代非分代 |
 | JDK 24 | JEP 490 | 移除非分代模式（旧开关一并失效） | 实现简化，只保留分代 |
-| JDK 25 | — | Generational Shenandoah | 代际假说推广到 Shenandoah |
+| JDK 25 | JEP 521 | Generational Shenandoah 正式（属 Shenandoah，非 ZGC 范畴） | 代际假说推广到 Shenandoah |
+| JDK 26 | — | 无 ZGC 独立 JEP；JEP 522 优化的是 G1，JEP 519 紧凑对象头进一步降低 GC 元数据开销 | ZGC 线进入稳定维护期 |
 
 ### 为什么需要分代 ZGC？
 
@@ -1025,3 +1026,13 @@ public final class ZgcStatsCollector {
 - **CMU 15-410 Operating Systems**：GC 屏障与并发数据结构。
 - **Berkeley CS162 Operating Systems**：现代 GC 设计讲座。
 - **Oracle University: Java Performance Tuning**：ZGC 实战培训。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 非分代 ZGC 的吞吐损失来源是什么？分代后如何缓解？——所有对象每次并发标记/转移全量参与，长寿老对象反复扫描；分代后新生代独立标记转移，老年代只在必要时参与，吞吐损失从 5-15% 降到 3-8%。
+2. 写出在 JDK 24+ 上启用分代 ZGC 的完整 JVM 参数。还需要 `-XX:+ZGenerational` 吗？——`-XX:+UseZGC` 即可；JDK 23 起分代是默认，JDK 24 移除非分代模式后该开关彻底失去意义（不再需要，也不能关闭分代）。
+3. ZGC 染色指针编码了哪些状态？读屏障的职责是什么？——Marked0/Marked1/Remapped（及 Finalizable）；读屏障在访问引用时检查颜色，发现指针指向旧地址就自愈式转发到新地址（懒更新）。
+4. 指针染色需要多大的地址空间开销？对什么平台不友好？——用指针高位位编码，需 4 倍虚拟地址空间预留（多位视图）；对 32 位平台与某些虚拟化环境不友好，这也是 ZGC 只支持 64 位的原因。
+5. 判断：Generational Shenandoah 是分代 ZGC 的一部分。——不是。它是 Shenandoah 收集器自己的分代化（JEP 521，JDK 25），与 ZGC 是两条独立实现。

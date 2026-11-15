@@ -355,3 +355,13 @@ Map<String, Long> g = songs.stream()
 1. **周榜报表**：给定一份含 20 首歌的列表，输出"每位歌姬的总销售额、最贵曲目、曲目名按票价降序拼接"三项统计。思路：三组 `groupingBy + summingInt / maxBy / mapping+joining` 分别收集，最后合并结果。
 2. **三级分组**：把门票按"城市 -> 票档 -> 是否首次购买"三级分组并计数。思路：连续两层 `groupingBy` 后接 `partitioningBy(..., counting())`，注意打印结构时用两层缩进美化输出。
 3. **踩坑实验**：故意让分类函数对某首歌返回 null，观察异常信息；再分别用过滤、`Optional.ofNullable(...).orElse("未知歌姬")` 两种方式修复，比较哪种更符合业务语义。思路：默认 key 会把脏数据藏进报表，过滤则让问题提前暴露，依数据可信度选择。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 写出"按部门分组并统计人数"的一行 collect。——`employees.stream().collect(Collectors.groupingBy(Employee::dept, Collectors.counting()))`。
+2. groupingBy 的三个重载参数分别是什么？——分类函数（classifier）、下游收集器（downstream）、Map 工厂（mapFactory）。
+3. 嵌套分组"先按城市再按年龄段统计平均工资"怎么写？——`groupingBy(e -> e.city, groupingBy(e -> e.ageBand, averagingInt(e -> e.salary)))`。
+4. partitioningBy 与 groupingBy 的差异是什么？返回的 Map 类型键是什么？——partitioningBy 用 Predicate 只分两堆，返回 Map<Boolean, List>，false 堆也存在；groupingBy 键由分类函数产生。
+5. toMap 键冲突会怎样？修复参数是什么？——直接抛 IllegalStateException（duplicate key）；给第三个参数 merge 函数 `(a, b) -> a` 指定取谁。

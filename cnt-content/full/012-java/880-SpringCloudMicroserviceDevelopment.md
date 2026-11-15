@@ -66,7 +66,7 @@ Spring Cloud 为微服务架构提供了完整的解决方案，包括服务发�
   <dependency>
   <groupId>org.springframework.cloud</groupId>
   <artifactId>spring-cloud-dependencies</artifactId>
-  <version>2023.0.0</version>
+  <version>2025.1.2</version>  <!-- Oakwood 版本列车，配套 Spring Boot 4.0.x/4.1.x -->
   <type>pom</type>
   <scope>import</scope>
   </dependency>
@@ -291,6 +291,8 @@ spring:
 
 ### 8.1 Sleuth + Zipkin
 
+背景说明：Sleuth 是 Spring Cloud 2021-2023 时代的链路追踪方案（默认传播头为 B3 的 `X-B3-TraceId` 一族）；Spring Boot 3+ 起官方推荐 Micrometer Tracing（`micrometer-tracing-bridge-brave` + `zipkin-reporter-brave`，经由 `spring-cloud-starter-observation` 接入，默认传播头为 W3C Trace Context 的 `traceparent`）。下面以 Sleuth 演示概念与流程，迁移思路不变。
+
 **添加依赖**
 
 ```xml
@@ -442,3 +444,13 @@ spec:
 5. 实现服务间通信
 6. 添加监控和容错机制
 7. 部署和测试
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 微服务架构拆分的第一原则是什么？拆得太细的代价有哪些？——按业务能力/限界上下文拆，而不是按技术层拆；代价：分布式事务复杂化、网络故障面变大、运维与链路排查成本上升。
+2. 服务雪崩是怎么发生的？在哪一层用哪种手段切断？——A 服务故障拖慢 B，B 的线程池被占满再拖垮 C，逐级放大；在调用方用熔断器快速失败 + 降级 fallback，配合舱壁隔离（独立线程池/信号量）限制影响面。
+3. 网关与 Nginx 反向代理的职责重叠与差异是什么？——都做转发与负载均衡；网关多做动态路由、鉴权、限流、聚合（应用层逻辑），Nginx 更偏传输层高效转发与静态资源。
+4. Sleuth/Zipkin 与 Micrometer Tracing 的 traceId 跨服务传递各靠什么机制？——都是 HTTP 头注入、框架 filter/interceptor 自动透传；头格式不同：Spring Cloud Sleuth 默认 B3（`X-B3-TraceId`/`X-B3-SpanId` 一族），Micrometer Tracing 默认 W3C Trace Context 的 `traceparent` 头（可配 propagation 切换）。
+5. 判断：把所有服务都注册到同一个注册表就算完成了服务化。——不对；注册发现只是起点，配置中心、熔断限流、链路追踪、灰度发布等治理能力配套到位才算可用。

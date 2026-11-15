@@ -850,3 +850,13 @@ public CommandLineRunner init(DataService service) {
 // 命令行参数 > 环境变量 > application-{profile}.yml > application.yml
 java -jar app.jar --server.port=9090
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 自动配置的触发条件注解 @ConditionalOnClass/@ConditionalOnMissingBean 各守什么？——classpath 上存在某类才生效；容器里还没有该类型 Bean 时才创建默认实现（给用户覆盖留口）。
+2. @AutoConfiguration 与老 @Configuration 的注册路径差异是什么？——@AutoConfiguration 写进 META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports 文件被加载；普通 @Configuration 由组件扫描或 import。
+3. 自定义 starter 的两个模块分工是什么？——autoconfigure 模块放配置类与条件逻辑；starter 模块只做依赖聚合（引 autoconfigure 与第三方库）。
+4. Actuator 暴露健康检查的路径是什么？生产为什么要收敛暴露面？——/actuator/health（默认开放 health 与 info）；env/heapdump 等端点泄露配置与内存，需 management.endpoints.web.exposure.include 白名单 + 网关权限隔离。
+5. 配置优先级：环境变量、application.yml、命令行参数谁压谁？——命令行参数 > 环境变量 > application.yml（外层覆盖内层，靠近启动方式者优先）。

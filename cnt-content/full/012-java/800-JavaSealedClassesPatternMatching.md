@@ -355,3 +355,13 @@ static String of(Number n) {
     };
 }
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 写出密封接口的最小声明，许可子类需要满足什么条件？——`sealed interface PayResult permits Success, SoldOut {}`；许可子类必须 extends/implements 该密封父且显式声明 final/sealed/non-sealed 三选一。
+2. record 解构在 switch 里怎么写？嵌套 record 解构的限制？——`case Success(String orderId) -> ...`；JDK 21 支持一层 record 模式，嵌套解构（record 模式里的 record 模式）同版本已支持（JEP 440 record patterns final）。
+3. when 守卫与 if 的区别是什么？同一 case 双模式怎么表达？——when 在模式匹配成功后追加条件，不满足则继续尝试后续 case；`case Integer i when i > 0 -> ...`，`case null, default` 合并空值与兜底。
+4. 密封 + record + switch 穷举组合的编译期保障是什么？——新增许可子类时，所有对其做穷举 switch 的代码编译报错，逼着调用方处理新形态（编译器当"穷举检查器"）。
+5. 判断：`case int i` 可以直接匹配 Integer。——截至 JDK 26 不能用于生产：基本类型模式仍是第 4 次预览（JEP 530），需要 --enable-preview，转正前不要依赖。

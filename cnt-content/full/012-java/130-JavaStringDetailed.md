@@ -292,3 +292,13 @@ String s2 = 42 + "";                 // 也可以，但可读性较差
 ## 12. 一句话记住
 
 > String 不可变、比较用 `equals`、拼接用 `StringBuilder`（结构化用 StringJoiner）、正则先记 `\\d` 与 `matches`、编码解码必须成对指定同一字符集。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. `String a = "hi"; String b = "hi"; a == b` 与 `String c = new String("hi"); a == c` 的结果各是什么？为什么？——true / false；字面量走字符串常量池共享同一对象，new 在堆上另造对象；内容比较一律 equals。
+2. String 的不可变性带来了哪两条工程后果？拼接大量字符串该用什么？——安全共享（可作常量池与 HashMap key）+ 每次修改都产生新对象；循环拼接用 StringBuilder，多线程共享拼接用 StringBuffer。
+3. `"a,b,c".split(",")` 与按点号 split 有什么坑？怎么修？——split 参数是正则，点号匹配任意字符；`split("\.")` 转义。
+4. 乱码排查口诀是什么？"字符表与字节序列"两层各对应什么？——口诀：编码解码用同一套字符集、排查时先看字节再看字符串；字符表（Unicode 码点）与字节序列（UTF-8/GBK 编码结果）是两层，new String(bytes, charset) 指定错字符集即乱码。
+5. 写出把 List<String> 用顿号连接的两种写法。——`String.join("、", list)` 或 `list.stream().collect(Collectors.joining("、"))`。

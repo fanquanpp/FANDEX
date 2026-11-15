@@ -94,6 +94,8 @@ JUnit 5（2017 年发布）作为 JUnit 自 2000 年诞生以来最大的一次�
 | 2022 | Mockito 5 将 InlineByteBuddyMockMaker 设为默认 |
 | 2023 | Spring Boot 3.1 引入 @ServiceConnection 简化 Testcontainers 配置 |
 | 2024 | JUnit 5.11 引入 @ClassOrderer 与 @MethodOrderer 默认策略改进 |
+| 2025 | JUnit 6.0 GA（9 月 30 日）：Jupiter 编程模型延续，平台/Jupiter/Vintage 版本号统一为 6.x，要求 Java 17+；JUnit 5 时代结束 |
+| 2025-2026 | JUnit 6.1.x 持续迭代（当前稳定线 6.1.3）；JUnit 4/Vintage 走向维护模式 |
 
 ### 1.2 设计动机
 
@@ -1700,7 +1702,7 @@ GitHub Copilot、JetBrains AI 等 IDE 工具已能根据被测代码生成测试
 
 ### 13.4 社区与生态
 
-- JUnit 官方仓库：https://github.com/junit-team/junit5
+- JUnit 官方仓库：https://github.com/junit-team/junit-framework（JUnit 6 起仓库由 junit5 更名，旧链接会重定向）
 - Mockito 官方仓库：https://github.com/mockito/mockito
 - AssertJ 官方仓库：https://github.com/assertj/assertj-core
 - Testcontainers 官方仓库：https://github.com/testcontainers/testcontainers-java
@@ -1729,17 +1731,19 @@ GitHub Copilot、JetBrains AI 等 IDE 工具已能根据被测代码生成测试
 | ArchUnit | 架构测试 | 中 | 守护架构边界 |
 ## Maven 依赖
 
-**基本写法：引入 JUnit 5**
+**基本写法：引入 JUnit 6（当前主线，2025-09 起）**
 `<artifactId>junit-jupiter</artifactId>`
 ```java
-// pom.xml 引入 JUnit 5（Jupiter 聚合包）
+// pom.xml 引入 JUnit 6（Jupiter 聚合包；6.x 起 Platform/Jupiter/Vintage 版本号统一，要求 Java 17+）
 <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter</artifactId>
-    <version>5.12.1</version>
+    <version>6.1.3</version>
     <scope>test</scope>
 </dependency>
 ```
+
+**JUnit 5 老项目怎么办**：Jupiter 编程模型在 6.x 完全延续，绝大多数 JUnit 5 测试类零改动即可通过；升级就是把版本号换成 6.x。仍在 5.x 的项目可按团队节奏跟进，5.13+ 是官方建议的迁移基线。本篇后续所有 `@Test`、断言、参数化写法在 5.x 与 6.x 上一致，无需区分学习。
 
 ---
 
@@ -2151,3 +2155,14 @@ class UserServiceTest {
     private UserService service;
 }
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. `@BeforeEach`、`@BeforeAll`、`@AfterEach` 各在什么时机执行？`@BeforeAll` 默认要求什么修饰？——每个测试方法前 / 全部测试开始前（仅一次）/ 每个测试方法后；`@BeforeAll` 默认必须 static（除非用 `@TestInstance(PER_CLASS)` 生命周期）。
+2. 写出一条参数化测试的最小骨架，要求用 `@MethodSource` 提供三组参数。——`@ParameterizedTest @MethodSource("provider") void t(int a, String b) {...}` 加 `static Stream<Arguments> provider() { return Stream.of(Arguments.of(1, "x"), Arguments.of(2, "y"), Arguments.of(3, "z")); }`。
+3. Mockito 的 `when(...).thenReturn(...)` 与 `verify` 的职责边界是什么？——when 打桩定义"调用应返回什么"，verify 断言"交互是否发生"；前者管输出，后者管行为，两者不能互相替代。
+4. 为什么说 `assertThrows` 优于 try-catch 手写异常断言？——失败路径唯一（没抛、抛错类型都会让测试失败），且不吞掉测试方法后续语句的执行意图。
+5. 判断：把项目从 JUnit 5.12 升到 JUnit 6，测试类需要重写吗？需要什么 JDK？——不需要重写（Jupiter 模型延续）；JUnit 6 要求 Java 17+，依赖坐标 org.junit.jupiter:junit-jupiter 直接升版本号即可。
+6. Spring Boot 测试切片里，`@WebMvcTest` 与 `@SpringBootTest` 的差异是什么？各适合测什么？——@WebMvcTest 只装配 MVC 层（Controller + MockMvc，依赖打桩），适合 Web 层验证；@SpringBootTest 拉起完整上下文，适合集成冒烟，但慢，不作为常规单测手段。

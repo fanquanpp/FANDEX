@@ -726,3 +726,13 @@ IntStream intStream = list.stream().mapToInt(User::getAge);
 // 获取统计信息（总和、平均、最大、最小、数量）
 IntSummaryStatistics stats = intStream.summaryStatistics();
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 中间操作与终端操作的本质区别是什么？"惰性求值"意味着什么？——中间操作返回新 Stream（filter/map/sorted）只登记不执行，终端操作（collect/forEach/reduce）才触发整条管道；没有终端操作，中间操作一行代码都不会跑。
+2. `stream.filter(x -> x % 2 == 0).map(x -> x * 2).toList()` 这条链在数据上是几趟遍历？为什么？——一趟；每个元素沿管道垂直流过所有操作（融合遍历），不是先过滤完再映射。
+3. map 与 flatMap 的区别用一句话说出。——map 一进一出保持元素数，flatMap 把每个元素展开成流再拍平（嵌套 List 场景元素数改变）。
+4. 写出把 List<String> 按长度分组的 collect 写法。——`Collectors.groupingBy(String::length)`。
+5. 并行流的适用前提是什么？什么场景反而更慢？——数据量大且操作无状态、可无序拆分，底层用 ForkJoinPool；小数据量、IO 阻塞型操作（任务排队在同一个公共池上）反而更慢甚至拖垮其他并行任务。

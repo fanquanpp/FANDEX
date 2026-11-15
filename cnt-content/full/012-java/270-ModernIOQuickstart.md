@@ -267,3 +267,13 @@ public class NotesStore {
 - `Files.lines` 是惰性流且持有文件句柄，务必 try-with-resources 或当场消费。
 - 原子写模式：写临时文件 + `Files.move(..., ATOMIC_MOVE, REPLACE_EXISTING)`，避免读方读到写了一半的内容。
 - 目录树遍历用 `Files.walk` / `Files.walkFileTree`；删除整个目录要自己递归，`Files.delete` 不删非空目录。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 用 Files.readString 一次读完文件，写出最小代码与"编码不赌默认值"的版本。——`Files.readString(Path.of("a.txt"), StandardCharsets.UTF_8)`；显式传 charset，别依赖平台默认编码。
+2. Files.write 追加写一行怎么写？——`Files.writeString(path, line + "\n", StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND)`。
+3. 老写法 `new FileReader("a.txt")` 的坑是什么？——使用平台默认编码（不同 OS/启动参数结果不同），跨平台必炸；替代是 Files.newBufferedReader(path, charset) 或显式 Charset 参数。
+4. 遍历目录下所有 .md 文件的骨架怎么写？——`try (var s = Files.walk(dir)) { s.filter(p -> p.toString().endsWith(".md")).forEach(...); }`。
+5. 逐行流式统计大文件行数，为什么选 Files.lines 而不是 readAllLines？——Files.lines 返回 Stream 惰性逐行读、内存常数级，readAllLines 把整个文件读进 List，大文件 OOM。

@@ -553,3 +553,13 @@ public Map<User, List<Post>> posts(List<User> users) {
 ### GraphQL Federation
 
 在微服务架构中，GraphQL Federation 允许多个服务各自定义 Schema 的一部分，由网关合并为统一的 Schema。Spring for GraphQL 支持 Federation 规范，适合大型微服务项目的 API 统一。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. GraphQL 与 REST 的三处范式差异是什么？——单端点按需取数（查询描述字段）、类型系统自描述（schema 即文档）、一次请求聚合多资源（免多次往返）。
+2. N+1 问题的 GraphQL 变体叫什么？DataLoader 的原理是什么？——解析器逐字段触发查询；DataLoader 批处理+请求级缓存，把同批 key 合成一次批量查询。
+3. query、mutation、subscription 各管什么语义？——查询读、变更写、订阅服务端推送。
+4. 写出 schema 里"用户带文章列表"的字段定义骨架。——`type User { id: ID! name: String posts: [Post!]! } type Post { id: ID! title: String! }`。
+5. 什么时候不该选 GraphQL？——公开简单 CRUD API（REST 更省心智）、强缓存语义依赖 HTTP 语义的场景、团队无 schema 治理经验时（N+1 与权限粒度问题容易被低估）。

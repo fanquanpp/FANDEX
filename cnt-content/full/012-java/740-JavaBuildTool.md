@@ -48,6 +48,8 @@ Java 构建工具负责管理项目的依赖、编译源码、运行测试、打
 
 Java 生态中有两个主流构建工具：Maven 和 Gradle。Maven 是老牌工具，使用 XML 配置，约定严格，社区资源丰富；Gradle 是后起之秀，使用 Groovy/Kotlin DSL 配置，更灵活，构建速度更快。新项目可以根据团队偏好选择，两者都能胜任。
 
+版本现状（2026-11 核实）：Maven 的 GA 稳定线仍是 3.9.x（当前 3.9.16）；Maven 4 引入 build/consumer POM 分离与新配置目录，历经多个 RC，截至本文仍未 GA，生产项目先别追。Gradle 当前稳定线 9.x（9.0 于 2025-07 GA），Gradle 9 要求 JDK 17+ 运行，支持到较新的 Java 版本。选型建议一句话：跟 LTS，不追大版本首发布。
+
 ## 基础概念
 
 ### 依赖管理
@@ -137,10 +139,11 @@ graph TD
     <packaging>jar</packaging>
 
     <!-- 继承 Spring Boot 父项目，获得默认配置和依赖版本管理 -->
+    <!-- 版本以 spring.io 当前稳定版为准：Spring Boot 4.0 GA（2025-11，Spring Framework 7，要求 Java 17+） -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
+        <version>4.0.0</version>
     </parent>
 
     <dependencies>
@@ -196,17 +199,17 @@ mvn dependency:tree
 
     <!-- scope 控制依赖的作用范围 -->
     <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>5.10.0</version>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>6.1.3</version>
         <scope>test</scope>  <!-- 只在测试时使用，不会打包到最终 jar -->
     </dependency>
 
     <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>javax.servlet-api</artifactId>
-        <version>4.0.1</version>
-        <scope>provided</scope>  <!-- 由运行环境提供（如 Tomcat），不打包 -->
+        <groupId>jakarta.servlet</groupId>
+        <artifactId>jakarta.servlet-api</artifactId>
+        <version>6.1.0</version>
+        <scope>provided</scope>  <!-- 由运行环境提供（如 Tomcat 11+），不打包；javax.* 坐标属 Java EE 旧时代 -->
     </dependency>
 
     <!-- 排除传递依赖 -->
@@ -299,18 +302,18 @@ mvn dependency:tree
 Gradle 的项目结构与 Maven 相同，但配置文件是 build.gradle：
 
 ```groovy
-// build.gradle
+// build.gradle（Gradle 9.x 当前稳定线，9.0 于 2025-07 GA）
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.2.0'
-    id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.springframework.boot' version '4.0.0'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'com.example'
 version = '1.0.0'
 
 java {
-    sourceCompatibility = '17'  // Java 版本
+    sourceCompatibility = '21'  // Java 版本；Spring Boot 4 要求 17+，推荐跟 LTS（21/25）
 }
 
 // 仓库配置
@@ -1078,3 +1081,13 @@ publishing {
     }
 }
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. Maven 坐标三要素是什么？依赖范围 test 的含义？——groupId（组织）、artifactId（构件名）、version（版本）；test 表示仅参与测试 classpath 与测试编译，不进最终 jar。
+2. compile 与 provided 的区别各一句话。——compile：编译和运行都需要，会打进 jar；provided：编译期可见但由运行环境（如 Servlet 容器）提供，不打包。
+3. 依赖树显示 guava 32.0 与 33.0 同时进入项目，你会用哪条命令定位冲突？解决靠哪个机制？——`mvn dependency:tree`；Maven 用"最短路径优先、先声明者胜"的 mediation 自动取一个版本，显式 `<dependencyManagement>` 或 exclusion 可强制。
+4. 同一个项目，Gradle 的 implementation 与 Maven 的哪种 scope 对应？api 呢？——implementation 对应 compile（但不传递给下游）；api 对应 Maven 没有、Gradle 特有的"编译+传递"（java-library 插件的语义）。
+5. 判断：新项目应立刻把 Maven 升到 4.0。——不对。Maven 4 截至 2026-11 仍未 GA（rc 阶段），GA 稳定线是 3.9.x；追新大版本首发布会把团队变成试验田。

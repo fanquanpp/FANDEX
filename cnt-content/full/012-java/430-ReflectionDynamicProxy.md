@@ -2155,3 +2155,13 @@ boolean isRec = Point.class.isRecord();
 // 获取 Record 的组件
 RecordComponent[] comps = Point.class.getRecordComponents();
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 写出 JDK 动态代理三要素的创建骨架。——`Proxy.newProxyInstance(classLoader, new Class[]{Service.class}, (proxy, method, args) -> { 前置; Object r = method.invoke(target, args); 后置; return r; })`。
+2. JDK 代理与 CGLib 代理的适用边界是什么？——JDK 要求目标实现接口（代理接口）；CGLib 继承目标类生成子类，final 类/方法无法代理。
+3. `method.invoke(target, args)` 抛出的异常会以什么形式传出？怎么取真实异常？——包在 InvocationTargetException 里；`e.getCause()` 取目标方法抛出的原异常。
+4. 为什么 Spring 默认在有接口时选 JDK 代理？强制 CGLib 的开关是什么？——接口代理无需生成类、更符合"面向接口"；`@EnableAspectJAutoProxy(proxyTargetClass = true)` 或 spring.aop.proxy-target-class=true。
+5. invokedynamic 让动态调用比老反射快的原因是什么？——首次链接后由 JVM 生成并缓存调用点专属的 callsite（可内联优化），后续调用接近直调，而 Method.invoke 每次都走访问检查。

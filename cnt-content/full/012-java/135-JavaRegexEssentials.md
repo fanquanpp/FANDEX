@@ -252,3 +252,13 @@ while (m.find()) {
 - `java.util.regex.Pattern` 官方 API 文档（方法语义、符号总表以此为准）：https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/util/regex/Pattern.html ；
 - Oracle Java Tutorials, Custom Networking — Regular Expressions（两步式心智模型参照）：https://docs.oracle.com/javase/tutorial/essential/regex/ （仅目录对照与链接引用，未复制正文）；
 - 校验规则样例（限定主机邮箱、6 位纯数字密码、18 位身份证 regexp 约束）取材于仓库扫描材料中的真实项目配置，已按教学目的改写；身份证末位校验码算法见 GB 11643-1999（本文仅指出其存在，未展开）。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. Pattern 与 Matcher 两步式的分工是什么？为什么复用 Pattern？——Pattern.compile 把正则编译成内部结构（可复用、线程安全）；Matcher 持有输入序列执行匹配（非线程安全）；复用编译结果省重复解析。
+2. `"a.b.c".split(".")` 为什么切不出结果？怎么修？——点号是正则元字符（匹配任意字符）；`split("\.")` 转义。
+3. Java 正则里 `\d` 要写四个反斜杠还是两个？在字符串字面量里原因是什么？——字符串里写 "\d"（源码四个字符）；Java 字符串本身转义一层，正则再转义一层。
+4. 写出"从日志里抽 IP"的捕获组骨架。——`Pattern.compile("(\d{1,3}\.){3}\d{1,3}")`；`Matcher.find()` 循环 + `m.group()` 取值。
+5. matches() 与 find() 的区别一句话。——matches 要求整串完全匹配，find 只要求子序列命中（可多次调用继续找）。

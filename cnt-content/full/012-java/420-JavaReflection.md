@@ -88,7 +88,9 @@ JDK 演进补入的结构查询一并列在此处，替代旧版散落在附录�
 
 `setAccessible(true)` 抑制的是第一道检查；第二道检查它抑制不了——JDK 16 起（JEP 396/403）强封装默认开启，对未开放包调用 `setAccessible(true)` 直接抛 `InaccessibleObjectException`。`--add-opens` JVM 参数与 `module-info.java` 中的 `opens` 是仅有的两条合法通路（详见"常见错误"实录 5）。
 
-还要注意 `setAccessible` 自身的兼容面正在收缩：Security Manager 已被 JEP 411 弃用，未来反射权限模型仍会重构；把深度反射当常规依赖的代码在每次 JDK 升级时都要重新过一遍。
+还要注意 `setAccessible` 自身的兼容面正在收缩：Security Manager 已在 JDK 17 弃用（JEP 411），并在 JDK 24 被**永久禁用**（JEP 486：无法再启用，`System.setSecurityManager` 抛 UnsupportedOperationException；API 类本身保留并继续 deprecated for removal，将在未来版本删除）；把深度反射当常规依赖的代码在每次 JDK 升级时都要重新过一遍。
+
+对 final 字段的反射写入则更早画上句点。JDK 26 的 JEP 500（Prepare to Make Final Mean Final）把"通过深度反射/`VarHandle` 修改 final 字段"正式标记为废弃——曾经靠 `Field#setAccessible(true)` 改 `String.value`、改 `Integer` 内部字段的技巧进入倒计时，后续版本将直接抛异常。同时，`record`、`HiddenClass`、值类型等新结构的字段从一开始就拒绝 final 反射写入。教训是明确的：**final 字段的语义正在从"约定"变成"物理约束"，反射写入属于迁移包袱，不是可依赖的技巧**。若确实需要不可变对象的"可变副本"，用 record 的 wither 方法或重建对象，而不是反射。
 
 ### 方法调用的完整链路：Inflation 机制
 
@@ -551,3 +553,13 @@ Jackson/Gson 序列化时按字段扫描 + 类型适配器派发，重度依赖 
 ## 总结
 
 反射的本质是"把编译期方法绑定推迟到运行期"，代价是访问检查、装箱与无法内联——Inflation 机制和 MethodHandle 是 JVM 对这份代价的两轮补偿。工程上记住四条主线：两族查找 API 的可见性边界决定你会遇到哪个 `NoSuchXxxException`；反射对象必须缓存，热点路径换 MethodHandle/LambdaMetafactory；JDK 17 强封装后深度反射需要显式 `opens`，`InaccessibleObjectException` 的报错原文就是修复说明书；`InvocationTargetException.getCause()` 是所有反射异常排查的第一步。反射是框架的基石、业务代码的红线——明确这个边界，用好反射而不被反射反噬。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. `getMethod("run")` 与 `getDeclaredMethod("run")` 的差异是什么？什么时候必须用后者？——getMethod 只查 public（含继承）；getDeclaredMethod 查本类声明的所有可见性成员。碰私有方法必须用 getDeclaredMethod，再配 setAccessible(true)。
+2. 为什么 JDK 16+ 上对 `java.util` 这类未开放包 setAccessible(true) 会抛异常？两条合法出路？——强封装默认开启（JEP 396/403），模块系统在语言级检查之上再拦一道；出路是启动参数 `--add-opens java.base/java.util=ALL-UNNAMED` 或自己的模块里写 `opens`。
+3. 说出 Inflation 机制的两级路径与默认切换阈值，以及"低频反射要不要缓存 Method"的结论。——先 native 分派（完整检查、每次都慢），同一 Method 调用超阈值（默认 15）后生成 GeneratedMethodAccessor 直调；低频反射缓存与否差别不大，高频反射务必缓存。
+4. 判断：反射可以永久用来改 final 字段。——不对。JDK 26 JEP 500 已把深度反射改 final 字段标记为废弃，后续版本将直接禁止；这是迁移信号而非可用技巧。
+5. 反射创建对象时 `Class.newInstance()` 与 `Constructor.newInstance()` 该用哪个？为什么？——用后者。Class.newInstance 已废弃，异常会被编译期检查绕开（吞掉 checked 异常），Constructor.newInstance 能正确传播 InvocationTargetException 且可带参构造。

@@ -807,3 +807,11 @@ File[] files = dir.listFiles();
 ```
 
 ---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 字节流与字符流的选择判据是什么？复制图片、读文本各选谁？——二进制（图片、音视频、压缩包）用字节流 InputStream/OutputStream；文本且关心编码用字符流 Reader/Writer。
+2. 转换流 InputStreamReader 的双重角色是什么？——它是字节到字符的桥：读字节流，按指定（或默认）字符集解码成字符。
+3. 缓冲流为什么快？写出复制大文本文件的标准骨架。——减少底层系统调用次数，按块搬运；`try (var in = new BufferedReader(new FileReader(src)); var out = new BufferedWriter(new FileWriter(dst))) { String l; while ((l = in.readLine()) != null) { out.write(l); out.newLine(); } }`。
+4. File 与 java.nio.file.Path/Files 两套 API 怎么取舍？——简单存在性判断可继续用 File，新代码优先 Path/Files（异常带原因、符号链接、walk/copy/move 等工具齐全）。
+5. 写文件时"覆盖"与"追加"分别用什么参数/类表达？——NIO 用 StandardOpenOption.WRITE/TRUNCATE_EXISTING（默认覆盖）与 APPEND；老 API 用 new FileWriter(file, true) 追加。

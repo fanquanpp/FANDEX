@@ -22,11 +22,11 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
-- 掌握「1. Swing 概述 | Swing Overview」的核心机制、典型用法与常见陷阱
-- 掌握「3. 布局管理器 | Layout Managers」的核心机制、典型用法与常见陷阱
-- 掌握「4. 事件处理 | Event Handling」的核心机制、典型用法与常见陷阱
-- 掌握「5. Swing 高级特性 | Advanced Features」的核心机制、典型用法与常见陷阱
+- 说出 Swing 为什么仍是 JVM 桌面 GUI 的默认选择（纯 Java 实现、跨平台一致外观），以及它与 AWT 的本质区别
+- 用 JFrame + 布局管理器（FlowLayout、BorderLayout、GridLayout 等）搭出一个组件位置正确的窗口
+- 理解事件驱动模型：事件源、监听器、事件对象三者的关系，能用 ActionListener 响应按钮点击
+- 知道 GUI 代码为什么必须在 EDT（事件分发线程）上执行，以及 SwingUtilities.invokeLater 的作用
+- 能把对话框、菜单、表格用进实际小应用，并守住「耗时任务不要阻塞 EDT」的实践红线
 
 
 ## 0. 本节阅读指引（先读这一节）
@@ -41,7 +41,6 @@ prerequisites:
 
 
 
-﻿# Java Switch 模式匹配 语法速查手册
 
 ---
 
@@ -67,7 +66,8 @@ Swing 是 Java 提供的一个 GUI (图形用户界面) 工具包，是 AWT (Abs
 | 外观一致性           | 依赖平台，不同平台外观不同 | 跨平台一致的外观 |
 | 组件丰富度           | 基础组件                   | 丰富的组件库     |
 | 性能                 | 通常更快                   | 可能稍慢但更灵活 |
-| ## 2. Swing 基础组件 | Basic Components           |
+
+## 2. Swing 基础组件 | Basic Components
 
 Swing 提供了丰富的 GUI 组件，以下是一些常用的基础组件：
 
@@ -75,7 +75,8 @@ Swing 提供了丰富的 GUI 组件，以下是一些常用的基础组件：
 
 - **JFrame**：主窗口，包含标题栏、最小化/最大化/关闭按钮
 - **JDialog**：对话框窗口，通常用于显示消息或获取用户输入
-- **JApplet**：小程序容器，用于在网页中运行 Java 应用
+
+注意：老资料里常与这两个并列的 **JApplet**（网页小程序容器）已不存在——Applet API 自 JDK 17 起废弃、JDK 26 中被彻底移除（JEP 504），主流浏览器也不再支持插件。今天做桌面 GUI 用 JFrame；要在浏览器里跑应用，走 Web 技术路线。
 
 ### 2.2 中间组件
 
@@ -661,3 +662,13 @@ Swing 允许通过 Look and Feel (L&F) 机制更改应用程序的外观：
 
 Swing 是 Java 提供的功能强大的 GUI 工具包，通过它可以创建跨平台的桌面应用程序。Swing 提供了丰富的组件和功能，包括各种控件、布局管理器、事件处理机制等。
 通过学习 Swing，你可以创建各种类型的桌面应用程序，从简单的计算器到复杂的文本编辑器。在实际开发中，应根据具体需求选择合适的组件和布局管理器，并遵循相关的最佳实践，以创建美观、高效、用户友好的应用程序。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 说出 Swing 与 AWT 最核心的一条区别，以及它带来的实际后果。——Swing 组件是纯 Java 模拟的轻量级组件，AWT 依赖本地平台组件；后果是同一份 Swing 程序在不同操作系统上外观一致，AWT 则随平台变化。
+2. 想让一个窗口里的组件从左到右依次排列、放不下自动换行，用哪个布局管理器？——FlowLayout，`panel.setLayout(new FlowLayout())`。
+3. 写出给按钮 `btn` 挂点击监听的最小代码骨架，并说明回调在哪个线程执行。——`btn.addActionListener(e -> System.out.println("clicked"));`；回调在事件分发线程（EDT）上执行，所以回调里不要做耗时操作。
+4. 为什么要用 `SwingUtilities.invokeLater` 启动 GUI？——main 方法不是 EDT；所有 Swing 组件的创建与更新都应在 EDT 上执行，否则可能出现竞态与绘制异常。
+5. 判断：JApplet 是学习 Swing 应该掌握的顶层容器吗？——不是。Applet API 在 JDK 17 废弃、JDK 26 移除（JEP 504），顶层容器应掌握 JFrame 与 JDialog。

@@ -1578,7 +1578,7 @@ public class MyActivator implements BundleActivator {
 
 1. **GraalVM Native Image**：AOT 编译为原生可执行文件，启动时间 45s → 0.1s，内存占用 800MB → 80MB。代价：反射需配置、动态特性受限。
 2. **CDS（Class Data Sharing）**：归档常用类元数据，加速类加载。JDK 10+ 支持 AppCDS。
-3. **CRaC（Coordinated Restore at Checkpoint）**：JDK 21+，支持快照恢复，启动时间 < 100ms。
+3. **CRaC（Coordinated Restore at Checkpoint）**：快照恢复，启动时间 < 100ms。注意：该能力不在 mainline OpenJDK 中（JEP 草案从未交付），需使用 Azul Zulu with CRaC、BellSoft Liberica with CRaC 等 CRaC 兼容发行版。
 
 ```bash
 # 生成 CDS 归档
@@ -1915,8 +1915,8 @@ public class NetworkClassLoader extends ClassLoader {
   Virtual Threads 与结构化并发的孵化项目。
 - **Project Lilliput**：https://openjdk.org/jeps/450
   减小对象头尺寸，降低内存占用。
-- **CRaC (Coordinated Restore at Checkpoint)**：https://openjdk.org/jeps/451
-  JVM 快照恢复，毫秒级启动。
+- **CRaC (Coordinated Restore at Checkpoint)**：https://openjdk.org/projects/crac/
+  JVM 快照恢复，毫秒级启动（OpenJDK 项目，能力由 Azul Zulu with CRaC 等 CRaC 兼容发行版提供；注意 JEP 451 是 Prepare to Disallow the Dynamic Loading of Agents，与此无关）。
 
 ### 11.4 开源工具
 
@@ -1940,3 +1940,11 @@ public class NetworkClassLoader extends ClassLoader {
 - **JVM TI（JVM Tool Interface）**：编写 Agent 与 Profiler 的底层接口。
 
 ---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. javac 产出什么？JVM 执行的是什么？"平台无关"的物理载体是什么？——字节码（.class）；各平台的 JVM 解释/JIT 执行同一份字节码；物理载体就是统一规范的字节码指令集（JVMS）。
+2. 解释执行与 JIT 编译的关系是什么？C1 与 C2 的分工？——解释器保证启动速度与可观测性，热点代码由 JIT 编译成机器码；C1（client）快速编译浅优化，C2（server）深度优化（内联、逃逸分析）针对热路径。
+3. 说出两条 JIT 依赖"稳定世界"的优化及其去优化（deopt）后果。——内联与锁消除/逃逸分析假设；一旦类加载打破假设（新子类、锁被竞争），JVM 回退到解释器或慢路径，性能瞬时跌落。
+4. 方法调用指令 invokevirtual、invokestatic、invokeinterface 的分派依据各是什么？——invokevirtual 按接收者实际类型虚分派；invokestatic 静态绑定；invokeinterface 同虚分派但查接口方法表（itable）。
+5. 为什么说"Java 是解释执行所以慢"是一句过时的话？——现代 JVM 对 99% 的热点做 JIT 编译，长跑稳态性能接近 C++（内存布局与 GC 除外）；瓶颈通常在 IO 与算法而非执行引擎。
