@@ -24,11 +24,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+- 能说出委托属性的本质：把 getter/setter 的调用转发给实现了 `getValue`/`setValue` 协议的委托对象
+- 能按场景选择四个标准委托：`lazy`（一次计算）、`observable`（变更监听）、`vetoable`（写入否决）、Map（动态配置）
+- 能解释 `provideDelegate` 与 `by` 的分工：创建时介入 vs 每次读写转发，以及 Kotlin 2.4 显式幕后字段能取代哪种惯用法
+- 能规避三大坑：`lazy` 默认非线程安全的误用、循环初始化死锁、把委托当成可继承状态
 
 
 ## 1. 历史动机与发展脉络
@@ -179,6 +178,7 @@ JetBrains 在设计委托属性时遵循了以下哲学：
 2022  Kotlin 1.7 — K2 预览，字节码优化
 2023  Kotlin 1.9 — Virtual Threads 集成
 2024  Kotlin 2.0 — K2 GA，委托方法内联，KProperty 复用
+2026  Kotlin 2.4 — 显式幕后字段（field =）稳定，部分「私有可空 backing property」惯用法可被直接语法取代
 ```
 
 ---
@@ -2604,262 +2604,38 @@ Kotlin 委托属性是 Kotlin 语言"组合优于继承"理念的核心体现。
 8. **跨平台一致**：JVM、JS、Native、Wasm 行为一致。
 
 掌握这些要点，开发者才能在生产环境中正确使用委托属性，构建简洁、可维护、可扩展的代码。
-## 标准委托
+## 小练习（先自己做，再展开参考实现）
 
-**基本写法：lazy 延迟初始化**
-`val <name>: <Type> by lazy { <init> }`
+**练习 1：标准委托选型**。四个需求各选一个标准委托并说理由：(a) 配置对象只在首次访问时解析 JSON；(b) 每次赋值前校验年龄范围；(c) 每次赋值后通知观察者列表；(d) 从 `Map<String, Any?>` 里按属性名读配置。
+
+参考答案：(a) `lazy`——惰性一次计算，默认 `SYNCHRONIZED` 保证多线程只算一次；(b) `vetoable`——写入前否决，非法值拒绝落盘；(c) `observable`——写入后回调；(d) Map 委托——属性名即键，适合从环境/配置表加载。
+
+**练习 2：线程安全取舍**。高并发读、极少写的缓存字段用 `lazy(LazyThreadSafetyMode.PUBLICATION)` 还是默认 `SYNCHRONIZED`？说清两种模式的差异。
+
+参考答案：`PUBLICATION` 允许多线程并发执行初始化表达式，先完成者胜出、其余丢弃结果——避免每次首次访问都在同一把锁上排队；默认 `SYNCHRONIZED` 用锁保证「只算一次」，初始化本身昂贵且必然发生时更省资源。极低频写场景两者差异小，通用默认即可；「初始化廉价但竞争激烈」才选 `PUBLICATION`。
+
+**练习 3：provideDelegate 介入时机**。写一个 `LoggingDelegate`：在**属性注册进宿主**时打一条「字段 x 已挂载」，在**每次读写**时各打一条日志。指出 `provideDelegate` 与 `getValue/setValue` 分别承担哪一条。
+
+参考实现：
+
 ```kotlin
-// lazy 首次访问时初始化
-val database: Database by lazy { Database.connect("localhost"); }
-```
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
-**基本写法：lazy 同步模式**
-`val <name>: <Type> by lazy(LazyThreadSafetyMode.<mode>) { <init> }`
-```kotlin
-// 指定 lazy 的线程安全模式
-val cache: Map<String, String> by lazy(LazyThreadSafetyMode.PUBLICATION) {
-    loadCache();
-}
-```
-
-**基本写法：observable 属性变化监听**
-`var <name>: <Type> by Delegates.observable(<init>) { <prop>, <old>, <new> -> <body> }`
-```kotlin
-// observable 属性变化时回调
-var name: String by Delegates.observable("initial") { prop, old, new ->
-    println("${prop.name} changed from $old to $new");
-}
-```
-
-**基本写法：vetoable 可否决属性变化**
-`var <name>: <Type> by Delegates.vetoable(<init>) { <prop>, <old>, <new> -> <cond> }`
-```kotlin
-// vetoable 返回 false 时拒绝修改
-var age: Int by Delegates.vetoable(0) { _, _, new -> new >= 0 };
-```
-
-**基本写法：.notNull 非空委托**
-`var <name>: <Type> by Delegates.notNull()`
-```kotlin
-// notNull 委托，未初始化前访问抛出异常
-var config: Config by Delegates.notNull();
-fun init() {
-    config = Config.load();
-}
-```
-
----
-
-## Map 委托
-
-**基本写法：只读 Map 委托**
-`val <name>: <Type> by <map>`
-```kotlin
-// 从只读 Map 中读取属性
-val map = mapOf("name" to "Alice", "age" to 25);
-val name: String by map;
-val age: Int by map;
-```
-
-**基本写法：可变 Map 委托**
-`var <name>: <Type> by <mutableMap>`
-```kotlin
-// 从可变 Map 中读写属性
-val mutableMap = mutableMapOf("name" to "Alice");
-var name: String by mutableMap;
-name = "Bob";  // 修改会同步到 map
-```
-
----
-
-## 自定义属性委托
-
-**基本写法：只读属性委托**
-`class <Delegate><T> { operator fun getValue(thisRef: Any?, property: KProperty<*>): T }`
-```kotlin
-// 只读属性委托实现
-class StringDelegate(private val value: String) {
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): String {
-        return "[$property] = $value";
+class LoggingDelegate<T>(private var value: T) {
+    operator fun provideDelegate(thisRef: Any?, prop: KProperty<*>): LoggingDelegate<T> {
+        println("字段 ${prop.name} 已挂载")     // 注册期：只在对象构造时发生一次
+        return this
     }
-}
-val greeting by StringDelegate("Hello");
-```
-
-**换行写法：可读写属性委托**
-`class <Delegate><T> { operator fun getValue(...); operator fun setValue(...) }`
-```kotlin
-// 可读写属性委托实现
-class Preference<T>(private val key: String, private val default: T) {
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        return preferences.get(key) as? T ?: default;
+    operator fun getValue(thisRef: Any?, prop: KProperty<*>): T {
+        println("读 ${prop.name}")
+        return value
     }
-    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        preferences.put(key, value);
+    operator fun setValue(thisRef: Any?, prop: KProperty<*>, v: T) {
+        println("写 ${prop.name}")
+        value = v
     }
 }
 ```
 
-**基本写法：ReadOnlyProperty 接口实现**
-`class <Delegate><T> : ReadOnlyProperty<Any?, T> { override fun getValue(...): T }`
-```kotlin
-// 实现 ReadOnlyProperty 接口
-class ConstProperty<T>(private val value: T) : ReadOnlyProperty<Any?, T> {
-    override fun getValue(thisRef: Any?, property: KProperty<*>): T = value;
-}
-```
-
-**基本写法：ReadWriteProperty 接口实现**
-`class <Delegate><T> : ReadWriteProperty<Any?, T> { override fun getValue(...); override fun setValue(...) }`
-```kotlin
-// 实现 ReadWriteProperty 接口
-class LoggingProperty<T>(private var value: T) : ReadWriteProperty<Any?, T> {
-    override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        println("Getting ${property.name}");
-        return value;
-    }
-    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        println("Setting ${property.name} to $value");
-        this.value = value;
-    }
-}
-```
-
----
-
-## 委托提供者
-
-**基本写法：提供委托（provideDelegate）**
-`operator fun <name>.provideDelegate(thisRef: Any?, property: KProperty<*>): <Delegate>`
-```kotlin
-// provideDelegate 在属性初始化时拦截
-class ConfigDelegate<T>(private val default: T) {
-    operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): ReadWriteProperty<Any?, T> {
-        return Preference(property.name, default);
-    }
-}
-```
-
-**基本写法：使用提供委托**
-`val <name>: <Type> by <DelegateProvider>(<default>)`
-```kotlin
-// 使用提供委托
-val host: String by ConfigDelegate("localhost");
-val port: Int by ConfigDelegate(8080);
-```
-
----
-
-## 局部委托属性
-
-**基本写法：局部变量 lazy 委托**
-`val <name> by lazy { <init> }`
-```kotlin
-// 局部变量使用 lazy 委托
-fun process(input: String) {
-    val parsed by lazy { parseInput(input); }
-    if (shouldProcess) {
-        println(parsed);
-    }
-}
-```
-
-**基本写法：局部变量自定义委托**
-`val <name> by <delegate>`
-```kotlin
-// 局部变量使用自定义委托
-fun example() {
-    val value by LoggingProperty("initial");
-    println(value);
-}
-```
-
----
-
-## 委托属性实战
-
-**基本写法：SharedPreferences 委托**
-`val <name>: <Type> by <Preference>(<key>, <default>)`
-```kotlin
-// SharedPreferences 委托
-class Preference<T>(private val key: String, private val default: T) {
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        val prefs = context.getSharedPreferences("app", Context.MODE_PRIVATE);
-        return when (default) {
-            is String -> prefs.getString(key, default) as T;
-            is Int -> prefs.getInt(key, default) as T;
-            is Boolean -> prefs.getBoolean(key, default) as T;
-            else -> default;
-        }
-    }
-    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        val prefs = context.getSharedPreferences("app", Context.MODE_PRIVATE);
-        val editor = prefs.edit();
-        when (value) {
-            is String -> editor.putString(key, value);
-            is Int -> editor.putInt(key, value);
-            is Boolean -> editor.putBoolean(key, value);
-        }
-        editor.apply();
-    }
-}
-```
-
-**基本写法：ObservableList 委托**
-`val <name>: List<<T>> by <ObservableList>(<init>)`
-```kotlin
-// 可观察列表委托
-class ObservableList<T>(initial: List<T>) {
-    private val items = initial.toMutableList();
-    var onChange: ((List<T>) -> Unit)? = null;
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = items.toList();
-    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: List<T>) {
-        items.clear();
-        items.addAll(value);
-        onChange?.invoke(items.toList());
-    }
-}
-```
-
----
-
-## 委托属性与验证
-
-**基本写法：带验证的属性委托**
-`var <name>: <Type> by <ValidatedDelegate>(<init>, <validator>)`
-```kotlin
-// 带验证的属性委托
-class ValidatedDelegate<T>(
-    initialValue: T,
-    private val validator: (T) -> Boolean
-) {
-    private var value = initialValue;
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): T = value;
-    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        require(validator(value)) { "验证失败: $value" };
-        this.value = value;
-    }
-}
-```
-
----
-
-## 委托属性与缓存
-
-**基本写法：带过期时间的缓存委托**
-`val <name>: <Type> by <CacheDelegate>(<ttl>) { <init> }`
-```kotlin
-// 带过期时间的缓存委托
-class CacheDelegate<T>(private val ttlMillis: Long, private val loader: () -> T) {
-    private var value: T? = null;
-    private var lastLoadTime: Long = 0;
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        val now = System.currentTimeMillis();
-        if (value == null || now - lastLoadTime > ttlMillis) {
-            value = loader();
-            lastLoadTime = now;
-        }
-        return value!!;
-    }
-}
-```
+自检问题：`provideDelegate` 返回的是谁？（答：真正承担读写的委托实例——它让「挂哪个委托」成为运行时决策，比如按 `prop.name` 换不同实现；这是它与 `getValue` 的关键分工：一个管创建，一个管转发。）

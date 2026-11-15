@@ -28,11 +28,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+- 能用「冷热」一维分类 Flow 体系：冷流（flow）每次收集独立、热流（SharedFlow/StateFlow）常驻共享
+- 能推导 `MutableStateFlow` 的行为约定：持最新值、新收集者立刻拿到当前值、同值去重（conflate 语义）
+- 能对比 SharedFlow 的 replay/extraBufferCapacity 与 StateFlow 的适用差异，说出「事件 vs 状态」选型口诀
+- 能解释 shareIn/stateIn 把冷流变热流的三参数语义（scope、started、replay）
 
 
 > 本文档对标 MIT 6.005、Stanford CS193P、CMU 15-410 教学水准，系统讲解 Kotlin Flow 体系从设计哲学到字节码实现的完整链路。内容覆盖 Kotlin Coroutines 1.3 引入 Flow、1.4 引入 StateFlow、1.5 引入 SharedFlow 的完整演进史，配套企业级生产代码、跨语言对比（RxJava、Project Reactor、Swift Combine）、形式化推导与习题解析。文档支持零基础自学，亦适合资深工程师作为参考手册。
@@ -117,7 +116,7 @@ StateFlow 解决了状态管理，但仍有两类场景无法覆盖：
 
 ### 1.7 当前状态与未来演进
 
-截至 Kotlin 2.0（2024 年发布）与 Coroutines 1.8（2024 年发布），Flow 体系已进入成熟期。当前社区关注的方向包括：
+截至 Kotlin 2.4（2026 年发布）与 kotlinx.coroutines 1.11.x（当前稳定线，1.11.0 发布于 2026 年 5 月），Flow 体系已进入成熟期。当前社区关注的方向包括：
 
 - **KMP 跨平台一致性**：Flow 在 JVM、JS、Native 平台的行为对齐，特别是 iOS 平台上的内存模型差异。
 - **Contextual Flow**：KEEP 提案中讨论的带上下文 Flow（类似 Rust Future 的 Context），用于更灵活的取消与调度。
@@ -426,18 +425,18 @@ SharedFlow 的核心实现是 `SharedFlowImpl`，它维护：
 
 ### 4.1 编译与运行环境准备
 
-本节所有示例可在 Kotlin 1.9+ 与 Coroutines 1.7+ 环境运行。最小化依赖：
+本节所有示例可在 Kotlin 2.x 与 kotlinx.coroutines 1.11.x 一线运行。最小化依赖：
 
 `build.gradle.kts`：
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "2.4.21"
     application
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 }
 
 application {
@@ -449,7 +448,7 @@ application {
 
 ```bash
 # 下载 kotlin-compiler 与 kotlinx-coroutines-core.jar
-kotlinc main.kt -cp kotlinx-coroutines-core-1.7.3.jar -include-runtime -d main.jar
+kotlinc main.kt -cp kotlinx-coroutines-core-1.11.0.jar -include-runtime -d main.jar
 java -jar main.jar
 ```
 
@@ -1937,3 +1936,27 @@ viewModelScope.launch {
 - 熟练运用 Flow、StateFlow、SharedFlow 解决工程问题。
 - 在 Android、服务端、KMP 项目中正确选择与组合 Flow 类型。
 - 排查常见陷阱，构建高性能、可维护的响应式系统。
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：冷热判别**。三个场景各选一种 Flow 并说理由：(a) 表单每个输入框的「当前值」，新进入的订阅者必须立刻看到；(b) 「点击了支付按钮」这样的一次性事件，订阅者迟到就错过；(c) 数据库变更的观察列表。
+
+参考答案：(a) `StateFlow`——状态持最新值且重放当前值给新订阅者；(b) `SharedFlow(replay = 0)`——事件不重放，错过即错过（要做补偿就走轮询或接口查询）；(c) 冷 `flow` 从 DAO 生成，每个收集者独立观察，或 `stateIn` 转热共享。口诀：状态用 StateFlow，事件用 replay=0 的 SharedFlow，查询用冷流。
+
+**练习 2：replay 的代价**。`MutableSharedFlow<Int>(replay = 5)` 连续 emit 1..10，新订阅者收到什么？哪些值被挤掉了？
+
+参考答案：新订阅者立刻收到 6..10——replay 只保留最近 5 个值，1..5 被挤出缓冲。这解释了「replay 不等于消息总线」：它是滑动窗口重放，不是持久化队列，可靠投递得用 Channel 或外部存储。
+
+**练习 3：shareIn 三参数**。把冷流 `repo.updates()` 转成热流，要求：上游在有一个订阅者时才开始收集、无订阅者即停止、不重放历史。写出完整调用。
+
+参考实现：
+
+```kotlin
+val shared = repo.updates()
+    .shareIn(
+        externalScope,                            // 独立于收集者的长生命周期作用域
+        SharingStarted.WhileSubscribed(5_000),    // 有订阅者才启动，停 5 秒后停止
+        replay = 0,                               // 不重放历史
+    )
+```
+
+自检问题：`started` 换成 `SharingStarted.Eagerly` 会怎样？（答：上游立刻开始且永不停止，直到 scope 取消——适合「进了内存就要保持新鲜」的缓存型上游，代价是无订阅者时也持续工作。）

@@ -29,10 +29,10 @@ prerequisites: []
 
 ## 学习目标
 
-- 掌握「1. JUnit 5 集成」的核心机制、典型用法与常见陷阱
-- 掌握「2. Kotest」的核心机制、典型用法与常见陷阱
-- 掌握「3. MockK」的核心机制、典型用法与常见陷阱
-- 掌握「4. Android 测试」的核心机制、典型用法与常见陷阱
+- 能为 JVM 模块搭起 JUnit 5 测试骨架（依赖 + useJUnitPlatform + 参数化测试）
+- 能按团队风格选 Kotest 或 JUnit：行为链式风格与公司既有注解风格的取舍
+- 能用 MockK 打桩普通函数、挂起函数与扩展函数，并说出「验证交互」与「验证状态」两种断言取向
+- 能识别 Android 测试的三层划分（单元/仪器/端到端）里每层的运行环境与依赖差异
 
 ## 1. JUnit 5 集成
 
@@ -44,7 +44,7 @@ JUnit 5 是 Kotlin 测试的主流框架：
 // build.gradle.kts
 dependencies {
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.14.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -145,9 +145,9 @@ Kotest 是 Kotlin 原生测试框架，提供更丰富的 DSL 风格：
 
 ```kotlin
 dependencies {
-    testImplementation("io.kotest:kotest-runner-junit5:5.9.0")
-    testImplementation("io.kotest:kotest-assertions-core:5.9.0")
-    testImplementation("io.kotest:kotest-property:5.9.0")
+    testImplementation("io.kotest:kotest-runner-junit5:6.2.0")
+    testImplementation("io.kotest:kotest-assertions-core:6.2.0")
+    testImplementation("io.kotest:kotest-property:6.2.0")
 }
 ```
 
@@ -418,6 +418,20 @@ class ReceiptParserTest(private val parser: ReceiptParser = ReceiptParser(fixedC
 `compareTo` 而非 `assertEquals` 比较 BigDecimal：`45.50` 与 `45.5` 的 equals 不相等但数值相等——金额断言的经典易错点。
 
 </details>
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：测试金字塔分层**。四个测试各放哪层（单元/仪器/端到端）：(a) `ReceiptParser` 纯函数解析；(b) Room DAO 的 SQL 正确性；(c) 首页到详情页的导航流；(d) ViewModel 状态序列。各给一句理由。
+
+参考答案：(a) 单元——纯函数零依赖，JVM 毫秒级；(b) 仪器测试（或 Robolectric）——SQLite 行为依赖 Android 运行时；(c) 端到端/UI 测试——验证的是集成后的用户路径；(d) 单元 + 协程测试（MainDispatcherRule + Turbine）——ViewModel 逻辑可在 JVM 上全量验证。原则：能下沉就下沉，越往上越慢越脆。
+
+**练习 2：验证状态还是验证交互**。测「订单提交成功后跳转」：断言导航状态变为 `Nav.Done`，还是 verify `repo.submit()` 恰好被调一次？说出两种断言各自的脆弱点。
+
+参考答案：优先断言状态——它验证用户可见的结果，内部实现重构不影响；交互验证与实现耦合，换调用路径就碎。但「必须恰好一次」的外部副作用（重复提交防护）只能用交互验证。取舍口诀：结果用状态断言，副作用频次用交互验证。
+
+**练习 3：依赖层放错的症状**。把 `mockk-android` 写进 `testImplementation` 会在哪一步出问题？单测与仪器测试的依赖配置如何区分？
+
+参考答案：本地 JVM 单测没有 Android 运行时，mockk-android 面向仪器测试的 Android classloader，放错层表现为单测运行时 `NoClassDefFoundError` 或与纯 JVM 工件冲突。区分：`testImplementation` 给本地 JVM 单测（io.mockk:mockk、kotlinx-coroutines-test），`androidTestImplementation` 给仪器测试（mockk-android、androidx.test 系列）。
 
 ## 相关阅读
 

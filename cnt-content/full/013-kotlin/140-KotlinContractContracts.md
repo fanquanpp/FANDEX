@@ -22,11 +22,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「1. 历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+- 能说出契约解决的核心问题：编译器只看函数签名，无法知道「返回 true 意味着参数非空」这类隐含事实
+- 能写出 `returns`、`returnsNotNull`、`callsInPlace` 三种效果的最小示例，并解释每种让编译器多知道了什么
+- 能解释契约必须配合 `inline` 的原因，以及为什么标准库的契约在调用处生效而自己声明的需要 `@OptIn`
+- 能识别契约被无视的边界：可变变量、多次调用 lambda、违反契约的实现——编译器只信声明不信实现
 
 
 ## 1. 历史动机与背景
@@ -123,14 +122,9 @@ Kotlin 选择编译时路线，是因为 Kotlin 的核心定位是"消除 NullPo
 | 时间          | 版本        | 里程碑                                                                                          |
 | :------------ | :---------- | :---------------------------------------------------------------------------------------------- |
 | 2018-10       | Kotlin 1.3  | 引入 `kotlin.contracts` 实验性 API，提供 `contract {}` DSL                                      |
-| 2019-04       | Kotlin 1.3.30| 契约在标准库中广泛采用：`require`、`check`、`takeIf`、`takeUnless`、`runCatching` 等          |
-| 2019-08       | Kotlin 1.3.50| 改进契约的 IDE 支持，修复多处契约解析错误                                                       |
-| 2020-08       | Kotlin 1.4  | 契约 API 稳定化讨论，引入 `Conditional effect` 概念                                              |
-| 2021-03       | Kotlin 1.4.30| 契约支持 `returnsThat`（值匹配），允许 `when` 分支后的更细致推断                                 |
-| 2022-12       | Kotlin 1.8  | 标准库契约基本稳定，但 `kotlin.contracts` 仍标记为 `@ExperimentalContracts`                      |
-| 2023-02       | Kotlin 1.8.20| 引入 `BuilderInference` 与契约的协作，重构 `callsInPlace` 的处理                                |
-| 2024-02       | Kotlin 2.0  | K2 编译器发布，契约支持暂时冻结，部分场景行为变化（见第 7 章 K2 影响）                            |
-| 2025-Q2       | Kotlin 2.1  | 重新评估契约 API 稳定化路径，提出"Effects 2.0"提案（KEEP-259）                                   |
+| 2019         | Kotlin 1.3.x | 契约在标准库中采用：`require`、`check`、`takeIf`、`takeUnless` 等                               |
+| 2024-05       | Kotlin 2.0  | K2 编译器 GA，契约语义由 K2 前端继承，仍标记 `@ExperimentalContracts`                            |
+| 2026-06       | Kotlin 2.4  | K1 移除后契约解析完全由 K2 承担；API 仍为实验状态，稳定化尚未完成                                |
 
 ---
 
@@ -1748,277 +1742,45 @@ fun demoAssertions(x: Any?, flag: Boolean) {
 
 ---
 
-## 契约基础
+## 小练习（先自己做，再展开参考实现）
 
-**基本写法：定义契约**
-`contract { <效果> }`
+**练习 1：手写 require 的契约**。给 `fun checkEmail(email: String)` 加上「返回即意味着 email 含 @」的契约效果，再回答：调用处 `checkEmail(maybeEmail)`（参数类型 `String?`）之后 `maybeEmail.length` 能编译吗？
+
+参考实现：
+
 ```kotlin
-// 在函数开头声明契约
-fun requireNonZero(x: Int) {
-    contract { returns() implies (x != 0) }
-    require(x != 0)
-}
-```
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
----
-
-## returns 契约
-
-**基本写法：返回真则条件成立**
-`returns(true) implies (<条件>)`
-```kotlin
-// 函数返回 true 时条件成立
-fun isValid(s: String?): Boolean {
-    contract { returns(true) implies (s != null) }
-    return s != null && s.isNotEmpty()
-}
-```
-
----
-
-**基本写法：返回即条件成立**
-`returns() implies (<条件>)`
-```kotlin
-// 函数正常返回时条件成立
-fun requireNotNull(x: Int?) {
-    contract { returns() implies (x != null) }
-    if (x == null) throw IllegalArgumentException()
-}
-```
-
----
-
-**基本写法：returns(false) 契约**
-`returns(false) implies (<条件>)`
-```kotlin
-// 返回 false 时的条件
-fun isBlank(s: String?): Boolean {
-    contract { returns(false) implies (s != null) }
-    return s == null || s.isEmpty()
-}
-```
-
----
-
-## callInplace 契约
-
-**基本写法：内联调用契约**
-`callsInPlace(<lambda>, <次数>)`
-```kotlin
-// lambda 仅被调用一次
-inline fun compute(block: () -> Int) {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    block()
-}
-```
-
----
-
-**基本写法：至少一次调用**
-`callsInPlace(<lambda>, InvocationKind.AT_LEAST_ONCE)`
-```kotlin
-// lambda 至少调用一次
-inline fun run(block: () -> Unit) {
-    contract { callsInPlace(block, InvocationKind.AT_LEAST_ONCE) }
-    block()
-}
-```
-
----
-
-**基本写法：至多一次调用**
-`callsInPlace(<lambda>, InvocationKind.AT_MOST_ONCE)`
-```kotlin
-// lambda 至多调用一次
-inline fun lazyInit(block: () -> T) {
-    contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
-    block()
-}
-```
-
----
-
-**基本写法：未知次数**
-`callsInPlace(<lambda>, InvocationKind.UNKNOWN)`
-```kotlin
-// 调用次数未知
-inline fun repeat(n: Int, block: () -> Unit) {
-    contract { callsInPlace(block, InvocationKind.UNKNOWN) }
-    for (i in 0 until n) block()
-}
-```
-
----
-
-## 内联函数契约
-
-**基本写法：内联函数中声明**
-`inline fun <方法>(<参数>): <返回> { contract { } }`
-```kotlin
-// 内联函数必须用契约
-inline fun checkFlag(flag: Boolean) {
-    contract { returns() implies flag }
-    if (!flag) throw IllegalStateException()
-}
-```
-
----
-
-## 标准库契约示例
-
-**基本写法：requireNotNull**
-`requireNotNull(<值>) { <返回非空> }`
-```kotlin
-// 标准库已声明契约
-val n: Int = requireNotNull(nullable) // 编译器知道非空
-```
-
----
-
-**基本写法：check**
-`check(<条件>) { <条件成立> }`
-```kotlin
-// 标准库 check 契约
-check(state == READY)
-// 此处编译器知道 state == READY
-```
-
----
-
-**基本写法：assert**
-`assert(<条件>)`
-```kotlin
-// 断言契约
-assert(x > 0)
-// 此处编译器知道 x > 0
-```
-
----
-
-## 自定义智能转换
-
-**基本写法：辅助 is 智能转换**
-`fun <方法>(x: Any?) { contract { returns() implies (x is <类型>) } }`
-```kotlin
-// 帮助编译器进行类型智能转换
-fun requireString(x: Any?) {
-    contract { returns() implies (x is String) }
-    require(x is String)
-}
-```
-
----
-
-**基本写法：非空智能转换**
-`contract { returns() implies (<值> != null) }`
-```kotlin
-// 函数返回即值非空
-fun ensureNonZero(x: Int?) {
-    contract { returns() implies (x != null) }
-    require(x != null && x != 0)
-}
-```
-
----
-
-## 契约与 when
-
-**基本写法：when 分支契约**
-`contract { returns(true) implies (<条件>) }`
-```kotlin
-// 配合 when 使用智能转换
-fun isList(x: Any): Boolean {
-    contract { returns(true) implies (x is List<*>) }
-    return x is List<*>
-}
-```
-
----
-
-## 递归契约
-
-**基本写法：契约避免递归警告**
-`contract { callsInPlace(<lambda>, EXACTLY_ONCE) }`
-```kotlin
-// 让编译器知道递归 lambda 调用次数
-inline fun recursion(block: (Int) -> Int) {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    block(0)
-}
-```
-
----
-
-## 契约与可变变量
-
-**基本写法：契约修改 var**
-`contract { returns() implies (<变量> == <值>) }`
-```kotlin
-// 契约约束变量状态
-var initialized = false
-fun init() {
-    contract { returns() implies (initialized) }
-    initialized = true
-}
-```
-
----
-
-## 契约限制
-
-**基本写法：契约仅在内联函数**
-`inline fun <方法>() { contract { } }`
-```kotlin
-// 契约必须在内联函数中声明
-inline fun doCheck(x: Int) {
-    contract { returns() implies (x > 0) }
-    require(x > 0)
-}
-```
-
----
-
-**基本写法：契约须为函数首条语句**
-`fun <方法>() { contract { }; <其他> }`
-```kotlin
-// 契约声明必须位于函数体最前
-inline fun f(x: Int) {
-    contract { returns() implies (x > 0) }
-    require(x > 0)
-    doWork()
-}
-```
-
----
-
-## 契约实验性标记
-
-**基本写法：启用实验性契约**
-`@OptIn(ExperimentalContracts::class)`
-```kotlin
-// 启用契约实验特性
 @OptIn(ExperimentalContracts::class)
-fun custom(x: Int?) {
-    contract { returns() implies (x != null) }
-    require(x != null)
+fun checkEmail(email: String) {
+    contract {
+        returns() implies (email != null)
+    }
+    require(email != null && '@' in email)
 }
 ```
 
----
+答案：调用处编译不通过——`checkEmail` 声明的是非空参数 `String`，可空值根本传不进来；契约的 `email != null` 收紧的是「函数正常返回这一事实」，对**调用方持有的引用**生效。把参数改成 `String?` 后契约才有意义：返回后智能转换为非空。
 
-## 契约与 lambda 返回类型
+**练习 2：callsInPlace 的三种计数**。分别为「恰好执行一次」「至少一次」「最多一次」各举一个标准库函数，并说出至少一次对智能转换的意义。
 
-**基本写法：捕获 lambda 返回类型**
-`contract { callsInPlace(<lambda>) }`
+参考答案：`EXACTLY_ONCE`——`with`、`use`；`AT_LEAST_ONCE`——`forEach`（对集合逐元素执行）；`AT_MOST_ONCE`——`takeIf`（谓词可能不执行返回体）。「至少一次」的意义：保证 lambda 内的赋值语句一定运行过，编译器据此把 lambda 里给局部 `val` 的初始化视为已完成，后续代码可以做智能转换。
+
+**练习 3：契约失灵排错**。解释为什么下面代码里 (a) 能智能转换而 (b) 编译报错：
+
 ```kotlin
-// 帮助推断 lambda 内 val 类型
-inline fun <T> compute(block: () -> T) {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    block()
+@OptIn(ExperimentalContracts::class)
+fun String?.valid(): Boolean {
+    contract { returns(true) implies (this@valid != null) }
+    return this != null && isNotEmpty()
 }
-fun main() {
-    val x: Int  // 类型可被推断
-    compute { x = 10 }
-    println(x)
+
+fun demo(s: String?) {
+    if (s.valid()) println(s.length)          // (a)
+    var x: String? = s
+    if (x.valid()) println(x.length)          // (b)
 }
 ```
+
+参考答案：(b) 的 `x` 是可变局部变量——契约把「返回后 `x` 非空」的事实与「`x` 之后没被改写」绑定，但编译器无法保证并发或后续赋值不会破坏它，智能转换只承诺给不可变绑定。(b) 的修复与 (a) 一致：契约声明 + 不可变接收即可。这条规则是「智能转换三前提」与契约交互的实例。

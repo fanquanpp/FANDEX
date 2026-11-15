@@ -22,11 +22,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「基础概念」的核心机制、典型用法与常见陷阱
-- 掌握「快速上手」的核心机制、典型用法与常见陷阱
-- 掌握「详细用法」的核心机制、典型用法与常见陷阱
-- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+- 能说出 WebSocket 与轮询/SSE 的差异：全双工、单连接多消息、服务端可主动推
+- 能用 Ktor 的 `install(WebSockets)` + `webSocket(...)` 路由搭出服务端会话，并解释每个连接独占一个协程
+- 能在客户端用 `webSocket` 会话收发 Frame，正确处理关闭帧与异常断开
+- 能识别高频坑：默认 ping 间隔与 Nginx/网关空闲超时的冲突、多实例部署下的会话粘性
 
 
 
@@ -51,12 +50,12 @@ Ktor 提供了完整的 WebSocket 支持，包括服务端和客户端。基于 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.ktor:ktor-server-core:2.3.7")
-    implementation("io.ktor:ktor-server-websockets:2.3.7")
-    implementation("io.ktor:ktor-server-netty:2.3.7")
+    implementation("io.ktor:ktor-server-core:3.6.1")
+    implementation("io.ktor:ktor-server-websockets:3.6.1")
+    implementation("io.ktor:ktor-server-netty:3.6.1")
     // 客户端 WebSocket
-    implementation("io.ktor:ktor-client-websockets:2.3.7")
-    implementation("io.ktor:ktor-client-cio:2.3.7")
+    implementation("io.ktor:ktor-client-websockets:3.6.1")
+    implementation("io.ktor:ktor-client-cio:3.6.1")
 }
 ```
 
@@ -488,3 +487,35 @@ private fun processData(data: ByteArray): ByteArray {
     return data.reversedArray()
 }
 ```
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：会话生命周期**。写出 Ktor 服务端把「同一用户的多条消息」串成会话的最小结构，并回答：客户端断网后服务端协程如何得知？
+
+参考实现：
+
+```kotlin
+install(WebSockets) { pingPeriod = Duration.ofSeconds(15) }
+
+routing {
+    webSocket("/chat/{roomId}") {
+        for (frame in incoming) {
+            when (frame) {
+                is Frame.Text -> broadcast(roomId, frame.readAsText())
+                is Frame.Close -> break
+                else -> {}
+            }
+        }
+    }
+}
+```
+
+答案：连接关闭（收到 Close 帧或底层 TCP 断开）时 `incoming` 通道关闭、for 循环结束，该连接独有的协程自然退出——每个 webSocket 路由调用就是一个独立协程，会话状态放局部变量即可，无需手动清理。
+
+**练习 2：网关超时配对**。服务端 `pingPeriod = 15s`，Nginx `proxy_read_timeout` 默认 60s。给出「正常使用却频繁掉线」的排查思路。
+
+参考答案：先确认链路上每一跳的空闲超时都大于 ping 间隔且留余量（ping 15s、Nginx 60s 理论够），再查是否中间还有 LB/防火墙把空闲 TCP 杀掉（部分运营商 NAT 空闲 30s 即断）；修法是缩短 ping 周期或在对端显式调大 read timeout——「谁先沉默谁先死」是长连接排障的第一原则。
+
+**练习 3：多实例广播**。两个服务实例各持有部分用户连接，实例 A 想广播消息给所有用户。为什么本地内存广播不够？给出两条解法。
+
+参考答案：用户连接分散在两个实例的内存里，A 的 MutableSharedFlow 只能触达 A 上的连接。解法一：粘性路由——网关按用户 ID 哈希把连接固定到实例，广播仍走单实例；解法二：外置总线——Redis Pub/Sub / Kafka / 每实例一个内部 Channel，广播经总线分发给所有实例，各实例推给自己持有的连接。

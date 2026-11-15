@@ -533,3 +533,41 @@ release 构建默认开启 R8（混淆 + 裁剪）。凡是「按名字找类/�
 - `launchWhenStarted` 已废弃；收集 StateFlow/SharedFlow 一律用 `repeatOnLifecycle` 或 Compose 的 `collectAsStateWithLifecycle`。
 - 权限用 `registerForActivityResult`，通知先建 Channel，存储用 DataStore（返回 Flow），后台任务用 WorkManager。
 - UI 深入见 [Kotlin 与 Compose](/kotlin/450-KotlinCompose)，工程构建见 [Kotlin 与 Gradle](/kotlin/410-KotlinGradle)。
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：生命周期安全收集**。ViewModel 暴露 `val events: StateFlow<UiEvent>`，要求在 UI 层收集且：页面退到后台不收、回前台从最新状态继续。写出收集代码并说出为什么 `lifecycleScope.launch { collect }` 不满足要求。
+
+参考实现：
+
+```kotlin
+lifecycleScope.launch {
+    repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.events.collect { render(it) }
+    }
+}
+```
+
+理由：裸 `collect` 在后台也继续收（浪费且可能在不可见状态更新 UI）；`repeatOnLifecycle(STARTED)` 在退后台时取消收集、回前台重新启动并在最新值上恢复——这正是 StateFlow「持最新值」语义与生命周期的正确组合。
+
+**练习 2：viewModelScope 与手动取消**。把下面的手动线程管理改写为 viewModelScope 协程，并说明 ViewModel 清空时协程的归宿：
+
+```kotlin
+private val executor = Executors.newSingleThreadExecutor()
+fun load() {
+    executor.execute { data = repo.fetch() }   // 回调线程写 UI 状态
+}
+```
+
+参考实现：
+
+```kotlin
+fun load() = viewModelScope.launch {
+    data = withContext(Dispatchers.IO) { repo.fetch() }
+}
+```
+
+归宿：`viewModelScope` 绑定 `ViewModel.onCleared()`——页面销毁时自动 cancel 全部子协程，`repo.fetch()` 若在挂起点会收到取消并停止，不会像 executor 那样留下一个引用已死 View 的回调。
+
+**练习 3：废弃 API 排雷**。老代码里见到 `launchWhenStarted { collect { ... } }`，解释它被废弃的原因，以及改写成 `repeatOnLifecycle` 后行为差异在哪。
+
+参考答案：`launchWhenStarted` 只是「暂停收集但不取消」——后台时协程挂起在收集中，`Channel` 类缓冲会继续堆积，回前台瞬间可能爆发式消费旧事件。`repeatOnLifecycle` 是「取消 + 重启」：后台期间不产生任何缓冲，回前台从最新值开始——事件流（SharedFlow replay=0）尤其依赖这个语义防重放。

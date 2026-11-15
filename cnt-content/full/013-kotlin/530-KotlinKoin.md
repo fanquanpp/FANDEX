@@ -36,17 +36,17 @@ Koin 是一个轻量级的 Kotlin 依赖注入框架。与 Dagger、Hilt 等基�
 
 ## 快速上手
 
-添加依赖（当前 4.x 版本线，示例以 4.1.0 为例，实际以官方发布为准）：
+添加依赖（当前 4.x 版本线，截至 2026 年 11 月稳定版为 4.2，示例以 4.2.0 为例，实际以官方发布为准；多组件版本对齐优先用 `koin-bom`）：
 
 ```kotlin
 // build.gradle.kts
 dependencies {
     // 核心库（纯 Kotlin/KMP 项目）
-    implementation("io.insert-koin:koin-core:4.1.0")
+    implementation("io.insert-koin:koin-core:4.2.0")
     // Android 项目再加
-    implementation("io.insert-koin:koin-android:4.1.0")
+    implementation("io.insert-koin:koin-android:4.2.0")
     // Ktor 服务端项目再加
-    implementation("io.insert-koin:koin-ktor:4.1.0")
+    implementation("io.insert-koin:koin-ktor:4.2.0")
 }
 ```
 
@@ -409,3 +409,53 @@ class ScopeActivity : AppCompatActivity() {
 - 运行时解析是 Koin 的舒适区也是风险区：用 `verify()`、`checkModules` 或 koin-annotations 把错误提前到测试与 CI。
 - 服务端集成 `install(Koin)`，Android 集成 `androidContext` + `by viewModel()`，测试集成 `declareMock`。
 - 更完整的测试策略见 [Kotlin 测试最佳实践](/kotlin/390-KotlinTest)；服务端容器化语境下的对比（Spring DI）见 [Kotlin 与 Spring](/kotlin/480-KotlinSpring)。
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：生命周期三兄弟**。`single`、`factory`、`scoped` 各写一行声明，并回答：ViewModel 该用哪个？为什么？
+
+参考实现：
+
+```kotlin
+val module = module {
+    single<Logger> { ConsoleLogger() }
+    factory { Session() }
+    scoped { UserSession() }
+}
+```
+
+答案：ViewModel 用 `viewModelOf<>`（构造器引用 + ViewModel 生命周期），其依赖的仓库用 `single`。ViewModel 的生命周期属于 Android 架构组件而非 Koin 作用域，用 scoped 会跟错宿主；这是「生命周期归属谁，作用域就跟谁对齐」原则的应用。
+
+**练习 2：把运行时错误提前**。下面的声明 `single { ApiClient(get()) }` 里 `ApiClient` 需要一个 `Config`，但模块没提供。两种手段把它提前到 CI：`verify()` 与 koin-annotations 的 `@Module + @Single`。写出前者。
+
+参考实现：
+
+```kotlin
+class KoinModuleCheck {
+    @Test
+    fun `verify module graph`() {
+        startKoin { modules(appModule) }
+            .verify()          // 解析全部定义，缺 Config 就在这一步炸
+    }
+}
+```
+
+自检问题：为什么 `get()` 找不到依赖不立刻报错？（答：Koin 是运行时 DI，模块 DSL 只是「声明的蓝图」，真正解析发生在首次 get——这与 KSP 系（Dagger/Hilt）编译期生成代码形成根本对比。）
+
+**练习 3：Ktor 集成**。写出 Ktor 服务端把 `userModule` 装进应用并用在路由里的最小代码。
+
+参考实现：
+
+```kotlin
+embeddedServer(Netty, port = 8080) {
+    install(Koin) { modules(userModule) }
+    routing {
+        get("/users/{id}") {
+            val service by inject<UserService>()
+            call.respond(service.find(call.parameters["id"]!!))
+        }
+    }
+}.start(wait = true)
+```
+
+`inject<T>()` 是 Koin 给 Ktor 的全局解析入口，从当前 Koin 上下文拿实例——注意它与手动构造的区别：实例由模块蓝图创建与缓存。

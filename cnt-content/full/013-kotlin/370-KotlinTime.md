@@ -22,11 +22,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「基础概念」的核心机制、典型用法与常见陷阱
-- 掌握「快速上手」的核心机制、典型用法与常见陷阱
-- 掌握「详细用法」的核心机制、典型用法与常见陷阱
-- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+- 能用 `Duration` 表达时长并说出它相对 `Long` 毫秒的两个优点：单位显式、运算与比较内建
+- 能用 `TimeSource`/`TimeMark` 做耗时测量，解释为什么它比 `System.currentTimeMillis` 更可靠（单调时钟）
+- 能区分三组概念：Instant（时刻）、DateTimePeriod（日历时段）、TimeZone（日历解释规则），并识别「加 1 天」什么时候不等于加 86400 秒
+- 能在 JVM 与多平台之间选型：java.time 直接用，跨平台用 kotlinx-datetime
 
 
 ## 概述
@@ -51,7 +50,7 @@ kotlinx-datetime 是 Kotlin 官方的跨平台日期时间库。它基于 ISO 86
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
 }
 ```
 
@@ -406,300 +405,16 @@ fun interoperability() {
     val backToDate = jDate.toKotlinLocalDate()
 }
 ```
-## Duration 时长
+## 小练习（先自己做，再展开参考实现）
 
-**基本写法：创建时长**
-`<数字>.<单位>()`
-```kotlin
-// 不同单位创建 Duration
-val d1 = 5.seconds
-val d2 = 100.milliseconds
-val d3 = 2.hours
-```
+**练习 1：Duration 单位安全**。把 `delay(1500)`（裸毫秒）改成 Duration 风格，并说出裸数字在什么场景下会变成 bug。
 
----
+参考实现：`delay(1500.milliseconds)` 或 `delay(1.5.seconds)`。裸数字的 bug 场景：接口里 `timeout: Long` 不带单位，调用方有人传 5000 当秒、有人当毫秒——`Duration` 把单位写进类型，赋错单位编译期就报。
 
-**基本写法：字面量时长**
-`<数字>.<单位>`
-```kotlin
-// Duration 字面量扩展属性
-val d = 30.minutes
-```
+**练习 2：单调时钟与墙钟**。测量一段代码耗时，用 `Clock.System.now()` 相减和 `measureTime {}` 各有什么风险？哪个能测出「系统时钟被 NTP 拨快/拨慢」的影响？
 
----
+参考答案：`Clock.System.now()` 是墙钟（可能被校时跳变），相减可能得到负值或虚高耗时；`measureTime`/`TimeSource.Monotonic` 用单调时钟，只前进不回退，测耗时必须用它。「能测出拨时影响」的是墙钟相减——这正是它不该用于测耗时的原因。
 
-**基本写法：时长运算**
-`<时长> + <时长> | <时长> * <倍数>`
-```kotlin
-// 时长加减乘除
-val sum = 1.hours + 30.minutes
-val half = 1.hours / 2
-```
+**练习 3：「加一天」什么时候不等于加 86400 秒**。在 2026-03-08 的时区里给 `Instant` 加 1 天（`DateTimePeriod(days = 1)`）与加 86400 秒，什么情况下结果不同？
 
----
-
-**基本写法：转换为单位**
-`<duration>.inWholeSeconds | inWholeMilliseconds`
-```kotlin
-// 转换为整型单位
-val s = (1.5.hours).inWholeSeconds
-val ms = (1.minutes).inWholeMilliseconds
-```
-
----
-
-**基本写法：比较时长**
-`<d1> > <d2> | <d>.compareTo(<d2>)`
-```kotlin
-// 比较时长大小
-if (d1 > d2) { }
-```
-
----
-
-## TimeMark 与测量
-
-**基本写法：获取时间标记**
-`TimeSource.Monotonic.markNow()`
-```kotlin
-// 获取单调时钟标记
-val mark = TimeSource.Monotonic.markNow()
-```
-
----
-
-**基本写法：测量经过时长**
-`<mark>.elapsedNow()`
-```kotlin
-// 测量自标记以来的时长
-val dur = mark.elapsedNow()
-```
-
----
-
-**基本写法：measureTime 测量代码**
-`measureTime { <代码> }`
-```kotlin
-// 测量代码块耗时
-val t = measureTime { doWork() }
-println(t)
-```
-
----
-
-**基本写法：测量并返回结果**
-`measureTimedValue { <代码> }`
-```kotlin
-// 同时返回结果与耗时
-val (result, time) = measureTimedValue { compute() }
-```
-
----
-
-## kotlinx-datetime 跨平台
-
-**基本写法：获取当前时刻**
-`Clock.System.now()`
-```kotlin
-// 获取当前 Instant
-val now = Clock.System.now()
-```
-
----
-
-**基本写法：当前本地日期**
-`Clock.System.todayIn(<时区>)`
-```kotlin
-// 获取指定时区当前日期
-val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-```
-
----
-
-**基本写法：创建 LocalDate**
-`LocalDate(<年>, <月>, <日>)`
-```kotlin
-// 创建指定日期
-val d = LocalDate(2025, 7, 31)
-```
-
----
-
-**基本写法：创建 LocalDateTime**
-`LocalDateTime(<日期>, <时间>)`
-```kotlin
-// 创建本地日期时间
-val dt = LocalDateTime(LocalDate(2025,7,31), LocalTime(10,30))
-```
-
----
-
-**基本写法：解析日期**
-`LocalDate.parse("<字符串>")`
-```kotlin
-// 解析 ISO 日期字符串
-val d = LocalDate.parse("2025-07-31")
-```
-
----
-
-## Instant 操作
-
-**基本写法：加时长**
-`<instant>.plus(<duration>)`
-```kotlin
-// Instant 加时长
-val later = now.plus(1.hours)
-```
-
----
-
-**基本写法：计算差值**
-`<i1>.minus(<i2>)`
-```kotlin
-// 两个 Instant 的时长差
-val dur = i1.minus(i2)
-```
-
----
-
-**基本写法：转换为时区**
-`<instant>.toLocalDateTime(<时区>)`
-```kotlin
-// 转为指定时区本地时间
-val ldt = now.toLocalDateTime(TimeZone.of("Asia/Shanghai"))
-```
-
----
-
-## Instant 与 epoch
-
-**基本写法：从 epoch 秒创建**
-`Instant.fromEpochSeconds(<秒>)`
-```kotlin
-// Unix 秒转 Instant
-val i = Instant.fromEpochSeconds(1700000000)
-```
-
----
-
-**基本写法：获取 epoch 秒**
-`<instant>.epochSeconds`
-```kotlin
-// 获取 Unix 秒数
-val s = now.epochSeconds
-```
-
----
-
-## DateTimePeriod 日期段
-
-**基本写法：创建日期段**
-`DateTimePeriod(years = <年>, months = <月>)`
-```kotlin
-// 创建年月日时段
-val p = DateTimePeriod(years = 1, months = 2)
-```
-
----
-
-**基本写法：加日期段**
-`<localDate>.plus(<period>, <时区>)`
-```kotlin
-// 日期加日期段
-val next = d.plus(p, TimeZone.UTC)
-```
-
----
-
-## TimeZone 时区
-
-**基本写法：系统默认时区**
-`TimeZone.currentSystemDefault()`
-```kotlin
-// 获取系统默认时区
-val tz = TimeZone.currentSystemDefault()
-```
-
----
-
-**基本写法：指定时区**
-`TimeZone.of("<时区ID>")`
-```kotlin
-// 按名称获取时区
-val tz = TimeZone.of("Asia/Shanghai")
-```
-
----
-
-**基本写法：UTC 时区**
-`TimeZone.UTC`
-```kotlin
-// 直接引用 UTC 时区
-val utc = TimeZone.UTC
-```
-
----
-
-## 格式化与解析
-
-**基本写法：自定义格式化**
-`LocalDate.Format { <配置> }`
-```kotlin
-// 自定义日期格式
-val fmt = LocalDate.Format {
-    year(); chars("-"); monthNumber(); chars("-"); dayOfMonth()
-}
-```
-
----
-
-**基本写法：按格式解析**
-`LocalDate.parse("<字符串>", <format>)`
-```kotlin
-// 按自定义格式解析
-val d = LocalDate.parse("2025/07/31", fmt)
-```
-
----
-
-## DayOfWeek 与 Month
-
-**基本写法：获取星期**
-`<localDate>.dayOfWeek`
-```kotlin
-// 获取星期枚举值
-val dow = d.dayOfWeek
-```
-
----
-
-**基本写法：获取月份**
-`<localDate>.month`
-```kotlin
-// 获取月份枚举值
-val m = d.month
-```
-
----
-
-## 协程中的延迟
-
-**基本写法：Duration 延迟**
-`delay(<duration>)`
-```kotlin
-// 协程中使用 Duration 延迟
-delay(500.milliseconds)
-```
-
----
-
-## 日期比较
-
-**基本写法：判断前/后**
-`<d1> < <d2> | <d1>.until(<d2>)`
-```kotlin
-// 日期前后判断
-if (d1 < d2) { }
-val until = d1.until(d2)
-```
+参考答案：跨夏令时切换（或闰秒类日历调整）时不同：`DateTimePeriod` 按目标时区的日历推进——加 1 天落回「同一天」的语义由 TimeZone 计算；86400 秒是纯物理时间。结论：与「人对日期的感知」相关的计算用日历 API（带时区），物理计时用 Instant 运算。

@@ -88,7 +88,7 @@ fun main() {
 ```kotlin
 // build.gradle.kts
 plugins {
-    kotlin("jvm") version "2.2.0"
+    kotlin("jvm") version "2.4.21"
     id("org.jetbrains.kotlinx.atomicfu") version "0.27.0"  // 版本随时间更新，查官方仓库
 }
 

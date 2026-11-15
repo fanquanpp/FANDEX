@@ -30,11 +30,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+- 能说出并发安全的四条主线：不可变优先、 confinement（限制单线程）、同步原语、消息传递（Channel/actor）
+- 能用 happens-before 关系判断一段共享状态代码是否安全，识别缺少内存屏障的可见性 bug
+- 能按场景选择 Mutex/synchronized/原子类型/StateFlow，说出各自的成本与适用边界
+- 能识别「在协程里用线程安全工具包」的过度设计，理解结构化并发本身已消除大部分竞态
 
 
 > 本文档对标 MIT 6.005 Software Construction、Stanford CS110 Principles of Computer Systems、CMU 15-440 Distributed Systems、UC Berkeley CS162 Operating Systems 等海外名校课程的教学水准，系统讲解 Kotlin 在协程与多线程环境下的并发安全（Concurrency Safety）机制，从"为什么需要并发安全"出发，逐层深入到内存模型（Memory Model）、原子操作（Atomic Operations）、互斥锁（Mutex）、CAS（Compare-And-Swap）、Actor 模型（Actor Model）、Channel、线程限制（Thread Confinement）、`@Volatile` 等核心主题。本文不假设读者熟悉 Java Memory Model 或 Go 内存模型，所有概念均由浅入深、从形式化定义到字节码实现逐层展开。完成本文学习后，读者将能够独立设计线程安全的 Kotlin 协程代码、识别与修复数据竞争（Data Race）、选择合适的并发原语并理解其在 JVM 与 Native 平台的运行时行为差异。
@@ -2657,3 +2656,16 @@ class ConcurrentExecutor(
 6. **`Mutex.isLocked`**：检查锁状态（注意：仅用于调试，不用于逻辑）。
 7. **`Channel.isClosedForSend`**：检查 Channel 是否已关闭。
 8. **`StateFlow.value`**：调试时查看当前状态值。
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：竞态现场还原**。两个协程对 `var count = 0` 各自执行 `count++` 一万次，最终值可能小于两万。写出丢失更新的交错序列，并给出两种修复（原子类型与 Mutex）。
+
+参考答案：丢失更新序列：两个协程同时读到 `count = 5`，各自加一，先后写回 6——两次自增只兑现了一次。修复一：`AtomicInteger().incrementAndGet()`，CAS 保证读改写原子；修复二：`val mutex = Mutex(); mutex.withLock { count++ }`，串行化临界区。协程场景下不要用 `synchronized`——它会阻塞线程而不是挂起协程。
+
+**练习 2：happens-before 判别**。线程 A 写 `var msg: String? = "ready"` 后置 `started = true`（普通 Boolean），线程 B 轮询 `started` 后读 `msg`。这段代码安全吗？为什么？
+
+参考答案：不安全。两个普通写读之间没有 happens-before 关系，B 看到.started == true 时可能 msg 还是 null（写重排或可见性缺失）。修复任选其一：`started` 用 `@Volatile`（写读之间建立 happens-before）、两字段一起换成 `AtomicReference<State>` 打包发布、或干脆交给协程模型用 `Channel`/`StateFlow` 传递。
+
+**练习 3：选型速判**。计数器、一次性发布的结果、状态 UI 暴露、任务队列——四种场景各选什么原语？
+
+参考答案：计数器用 `AtomicLong`/`AtomicInteger`；一次性发布用 `CompletableDeferred` 或 `AtomicReference`；状态暴露用 `StateFlow`（自带最新值 + 收集者模型）；任务队列用 `Channel`。原则：能用「专用并发抽象」就不写手搓锁——Kotlin 协程世界里大部分竞态用结构化并发 + 这些抽象就消失了。

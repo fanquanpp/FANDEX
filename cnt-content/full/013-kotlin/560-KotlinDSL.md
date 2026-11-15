@@ -22,11 +22,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「基础概念」的核心机制、典型用法与常见陷阱
-- 掌握「快速上手」的核心机制、典型用法与常见陷阱
-- 掌握「详细用法」的核心机制、典型用法与常见陷阱
-- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+- 能说出 Kotlin DSL 的三个语言支点：带接收者的 lambda、中缀调用、扩展函数/属性
+- 能读懂 Gradle Kotlin DSL 与依赖声明为什么编译期可校验（对比 Groovy 的运行时动态解析）
+- 能用中缀函数把断言/查询写成 `x shouldBe 3` 风格，并说出中缀的使用约束（单参、优先级）
+- 能判断一个场景该不该造 DSL：重复出现的配置组合才有 DSL 价值
 
 
 ### 类型安全构建器
@@ -487,156 +486,26 @@ fun main() {
 }
 ```
 
-## DSL 基础
+## 小练习（先自己做，再展开参考实现）
 
-**基本写法：带接收者的 Lambda**
-`fun <函数名>(<参数>, <块>: <接收者类型>.() -> Unit)`
+**练习 1：KTS 与 Groovy 的校验时机**。`implementation("lib:missing:1.0")` 拼错坐标时，Kotlin DSL 与 Groovy DSL 各在什么阶段报错？原因是什么？
+
+参考答案：两者其实都在构建期解析依赖（坐标错误都会在解析/构建时报错）；真正的差异在**脚本本身**：Kotlin DSL 把 build 脚本当 Kotlin 代码编译，任务名、属性、扩展写错在脚本编译期就报（IDE 立刻红线），Groovy 脚本是动态语言，`compileSdk = 35` 拼成 `compileSdkv` 要到运行阶段才炸。这就是「类型安全构建器」的价值——把配置错误前移。
+
+**练习 2：中缀函数三约束**。写一个中缀断言 `infix fun <T> T.shouldBe(expected: T)`，并说出中缀的三个语法约束。
+
+参考实现：
+
 ```kotlin
-// 定义 DSL 入口函数
-fun html(block: Html.() -> Unit): Html {
-    return Html().apply(block)
+infix fun <T> T.shouldBe(expected: T) {
+    check(this == expected) { "expected $expected but was $this" }
 }
+
+fun demo() { 2 + 2 shouldBe 4 }
 ```
 
----
+约束：只能是成员函数或扩展函数、必须恰好一个参数、参数不能有默认值（不能变参）。优先级上中缀调用低于算术运算符——`2 + 2 shouldBe 4` 解析为 `(2+2) shouldBe 4` 正是因此。
 
-**基本写法：构建器类**
-`class <类名> { fun <方法>(<参数>, <块>: <类型>.() -> Unit) }`
-```kotlin
-// 构建器模式
-class Html {
-    private val elements = mutableListOf<String>()
-    fun body(block: Body.() -> Unit) {
-        elements.add(Body().apply(block).toString())
-    }
-}
-```
+**练习 3：DSL 该不该造**。需求：团队每月都要写几十段「按固定组合配置告警规则」的 YAML。造 Kotlin DSL 还是留 YAML？给判断依据。
 
----
-
-**基本写法：@DslMarker 限制作用域**
-`@DslMarker annotation class <名称>`
-```kotlin
-// 防止外部接收者访问
-@DslMarker
-annotation class HtmlDsl
-@HtmlDsl
-class Body { fun p(text: String) { } }
-```
-
----
-
-**基本写法：invoke 约定**
-`operator fun <函数名>.invoke(<参数>): <返回类型>`
-```kotlin
-// 让对象像函数一样调用
-class Config {
-    operator fun invoke(name: String, value: String) {
-        /* 设置配置 */
-    }
-}
-```
-
----
-
-## 中缀调用
-
-**基本写法：infix 中缀函数**
-`infix fun <函数名>(<参数>): <返回类型>`
-```kotlin
-// 定义中缀函数
-infix fun Int.toPower(exp: Int): Int = Math.pow(this.toDouble(), exp.toDouble()).toInt()
-val result = 2 toPower 10
-```
-
----
-
-**基本写法：to 配对**
-`<值1> to <值2>`
-```kotlin
-// 创建 Pair
-val pair = "key" to "value"
-```
-
----
-
-**基本写法：区间操作**
-`<开始> .. <结束>`
-```kotlin
-// 创建区间
-for (i in 1..10) { }
-val range = 1 until 100
-```
-
----
-
-## 属性委托
-
-**基本写法：lazy 懒加载**
-`val <变量>: <类型> by lazy { <初始化> }`
-```kotlin
-// 懒加载属性
-val expensive by lazy { computeExpensive() }
-```
-
----
-
-**基本写法：observable 可观察**
-`var <变量>: <类型> by Delegates.observable(<初始值>) { <属性>, <旧值>, <新值> -> }`
-```kotlin
-// 监听属性变化
-var name by Delegates.observable("") { _, old, new ->
-    println("$old -> $new")
-}
-```
-
----
-
-**基本写法：vetoable 可否决**
-`var <变量>: <类型> by Delegates.vetoable(<初始值>) { <属性>, <旧值>, <新值> -> <是否允许> }`
-```kotlin
-// 可否决属性变化
-var age by Delegates.vetoable(0) { _, _, new -> new >= 0 }
-```
-
----
-
-**基本写法：map 委托**
-`val <变量>: <类型> by <map>`
-```kotlin
-// 从 Map 委托属性
-class User(map: Map<String, Any?>) {
-    val name: String by map
-    val age: Int by map
-}
-```
-
----
-
-## 自定义委托
-
-**基本写法：ReadOnlyProperty 只读委托**
-`class <类名> : ReadOnlyProperty<<所有者>, <类型>> { override fun getValue(...) }`
-```kotlin
-// 自定义只读委托
-class TrimDelegate : ReadOnlyProperty<Any?, String> {
-    override fun getValue(thisRef: Any?, property: KProperty<*>): String {
-        return property.name.trim()
-    }
-}
-```
-
----
-
-**基本写法：ReadWriteProperty 读写委托**
-`class <类名> : ReadWriteProperty<<所有者>, <类型>> { ... }`
-```kotlin
-// 自定义读写委托
-class Counter : ReadWriteProperty<Any?, Int> {
-    private var value = 0
-    override fun getValue(thisRef: Any?, property: KProperty<*>): Int = value
-    override fun setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
-        this.value = value
-    }
-}
-```
+参考答案：判断依据三条——组合是否有「非法搭配需要拦截」（有则类型安全构建器收益大）、是否需要 IDE 补全与重构（Kotlin DSL 完胜 YAML）、团队是否都在 Kotlin 工具链里（是则维护成本可控）。三条都中就造 DSL（一个带 @DslMarker 的构建器）；只有模板填空需求则 YAML + schema 校验更轻。

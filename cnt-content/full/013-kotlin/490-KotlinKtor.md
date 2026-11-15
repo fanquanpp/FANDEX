@@ -22,11 +22,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「基础概念」的核心机制、典型用法与常见陷阱
-- 掌握「快速上手」的核心机制、典型用法与常见陷阱
-- 掌握「详细用法」的核心机制、典型用法与常见陷阱
-- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+- 能说出 Ktor 的两个核心抽象：Application（模块/插件装配）与 Routing（路由 DSL），并解释「插件即函数」的扩展模型
+- 能用 embeddedServer 起一个带 ContentNegotiation 与 StatusPages 的最小服务
+- 能解释 Ktor 3 相对 2 的架构变化：底层统一到 kotlinx-io，引擎（Netty/CIO/Jetty）API 不变
+- 能选引擎并部署：Netty（性能）、CIO（纯 Kotlin）、Jetty（Servlet 兼容），以及 fat jar/容器的部署路径
 
 
 ## 概述
@@ -50,11 +49,11 @@ Ktor 适合构建微服务、REST API、WebSocket 服务等。如果你喜欢轻
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.ktor:ktor-server-core:2.3.7")
-    implementation("io.ktor:ktor-server-netty:2.3.7")    // Netty 引擎
-    implementation("io.ktor:ktor-server-content-negotiation:2.3.7")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
-    implementation("ch.qos.logback:logback-classic:1.4.14")
+    implementation("io.ktor:ktor-server-core:3.6.1")
+    implementation("io.ktor:ktor-server-netty:3.6.1")    // Netty 引擎
+    implementation("io.ktor:ktor-server-content-negotiation:3.6.1")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.6.1")
+    implementation("ch.qos.logback:logback-classic:1.5.18")
 }
 ```
 
@@ -478,315 +477,47 @@ fun Application.module() {
     println("服务启动在 $host:$port")
 }
 ```
-## 创建服务器
+## 小练习（先自己做，再展开参考实现）
 
-**基本写法：embeddedServer 启动**
-`embeddedServer(Netty, port = <端口>) { }.start(wait = true)`
+**练习 1：最小服务扩容**。给 `embeddedServer(Netty, port = 8080) { }` 补齐三件事：JSON 序列化、统一异常页、健康检查路由。写出完整模块代码。
+
+参考实现：
+
 ```kotlin
-// 启动 Ktor Netty 服务器
-embeddedServer(Netty, port = 8080) {
-    routing { get("/") { call.respondText("hello") } }
-}.start(wait = true)
-```
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.plugins.statuspages.*
+import kotlinx.serialization.Serializable
 
----
+@Serializable
+data class Health(val status: String = "ok")
 
-**基本写法：指定 host**
-`embeddedServer(Netty, port = <端口>, host = "<主机>") { }`
-```kotlin
-// 指定监听主机
-embeddedServer(Netty, port = 8080, host = "0.0.0.0") { }
-```
-
----
-
-## 路由配置
-
-**基本写法：定义 GET 路由**
-`get("<路径>") { }`
-```kotlin
-// 注册 GET 请求处理
-get("/users") { call.respond(users) }
-```
-
----
-
-**基本写法：POST 路由**
-`post("<路径>") { }`
-```kotlin
-// 注册 POST 请求处理
-post("/users") { call.respond(create()) }
-```
-
----
-
-**基本写法：路径参数**
-`get("<路径>/{<参数>}") { }`
-```kotlin
-// 获取路径参数
-get("/users/{id}") {
-    val id = call.parameters["id"]
+fun main() {
+    embeddedServer(Netty, port = 8080) {
+        install(ContentNegotiation) { json() }
+        install(StatusPages) {
+            exception<Throwable> { call, cause ->
+                call.respondText("error: ${'$'}{cause.message}")
+            }
+        }
+        routing {
+            get("/health") { call.respond(Health()) }
+        }
+    }.start(wait = true)
 }
 ```
 
----
+自检问题：`install(ContentNegotiation) { json() }` 里 json() 的作用是什么？（答：把 kotlinx.serialization 的 Json 桥进 Ktor 的内容协商管线，让 respond(Health()) 能自动序列化为 JSON 并按 Accept 头协商。）
 
-**基本写法：route 分组**
-`route("<前缀>") { }`
-```kotlin
-// 路由分组
-routing {
-    route("/api") {
-        get("/v1") { }
-        post("/v2") { }
-    }
-}
-```
+**练习 2：引擎选型**。三句话场景选引擎：内存敏感的 CLI 工具内嵌 HTTP、高并发网关、必须复用公司 Servlet 体系的旧容器。
 
----
+参考答案：CLI 内嵌用 CIO（纯 Kotlin 实现无原生依赖，体积小）；高并发网关用 Netty（成熟的事件驱动引擎，Ktor 3 起还支持实验性 HTTP/3）；Servlet 体系用 Jetty（对接 Servlet 容器生态）。判别式：先看约束（体积/吞吐/兼容），再看引擎特性。
 
-## 请求处理
+**练习 3：Ktor 2 迁移 3 的检查点**。说出 Ktor 3 相对 2 在「依赖」层面的一处关键变化，以及为什么大部分插件 API 不用改。
 
-**基本写法：接收 JSON**
-`call.receive<<类型>>()`
-```kotlin
-// 反序列化请求体
-val user = call.receive<User>()
-```
-
----
-
-**基本写法：响应 JSON**
-`call.respond(<对象>)`
-```kotlin
-// 序列化对象为 JSON 响应
-call.respond(User("Alice"))
-```
-
----
-
-**基本写法：响应纯文本**
-`call.respondText("<文本>")`
-```kotlin
-// 返回纯文本响应
-call.respondText("hello", ContentType.Text.Plain)
-```
-
----
-
-**基本写法：查询参数**
-`call.request.queryParameters["<名称>"]`
-```kotlin
-// 获取查询字符串参数
-val q = call.request.queryParameters["q"]
-```
-
----
-
-## ContentNegotiation 插件
-
-**基本写法：安装 JSON 插件**
-`install(ContentNegotiation) { json() }`
-```kotlin
-// 启用 JSON 序列化
-install(ContentNegotiation) {
-    json(Json { ignoreUnknownKeys = true })
-}
-```
-
----
-
-## StatusPages 异常处理
-
-**基本写法：异常映射**
-`install(StatusPages) { exception<异常> { } }`
-```kotlin
-// 异常转换为 HTTP 状态码
-install(StatusPages) {
-    exception<NotFoundException> { call, _ ->
-        call.respond(HttpStatusCode.NotFound)
-    }
-}
-```
-
----
-
-## Authentication 认证
-
-**基本写法：Basic 认证**
-`install(Authentication) { basic { } }`
-```kotlin
-// 启用 Basic 认证
-install(Authentication) {
-    basic("auth") {
-        realm = "api"
-        validate { cred -> if (check(cred)) UserIdPrincipal(cred.name) else null }
-    }
-}
-```
-
----
-
-**基本写法：路由应用认证**
-`authenticate("<名称>") { }`
-```kotlin
-// 路由级应用认证
-authenticate("auth") {
-    get("/me") { call.respond(user) }
-}
-```
-
----
-
-**基本写法：JWT 认证**
-`install(Authentication) { jwt { } }`
-```kotlin
-// JWT 认证配置
-install(Authentication) {
-    jwt("jwt") {
-        verifier(jwk)
-        realm = "api"
-        validate { cred -> UserIdPrincipal(cred.payload.subject) }
-    }
-}
-```
-
----
-
-## Sessions 会话
-
-**基本写法：启用会话**
-`install(Sessions) { cookie<<类型>>("<名称>") }`
-```kotlin
-// Cookie 会话
-install(Sessions) {
-    cookie<UserSession>("SESSION")
-}
-```
-
----
-
-**基本写法：设置会话**
-`call.sessions.set(<实例>)`
-```kotlin
-// 写入会话数据
-call.sessions.set(UserSession(id = "1"))
-```
-
----
-
-**基本写法：获取会话**
-`call.sessions.get<<类型>>()`
-```kotlin
-// 读取会话数据
-val s = call.sessions.get<UserSession>()
-```
-
----
-
-## 静态资源
-
-**基本写法：静态文件**
-`staticFiles("<路径>", <文件对象>)`
-```kotlin
-// 提供静态文件服务
-staticFiles("/static", File("public"))
-```
-
----
-
-**基本写法：静态默认资源**
-`defaultResource("<文件>")`
-```kotlin
-// 从资源目录提供静态文件
-staticResources("/static") {
-    defaultResource("index.html")
-}
-```
-
----
-
-## WebSockets
-
-**基本写法：启用 WebSocket**
-`install(WebSockets)`
-```kotlin
-// 安装 WebSocket 插件
-install(WebSockets)
-```
-
----
-
-**基本写法：定义 WebSocket 路由**
-`webSocket("<路径>") { }`
-```kotlin
-// WebSocket 端点
-webSocket("/chat") {
-    for (frame in incoming) {
-        val text = frame as Frame.Text
-        send(Frame.Text(text.readText()))
-    }
-}
-```
-
----
-
-**基本写法：发送消息**
-`send(Frame.Text("<消息>"))`
-```kotlin
-// 发送文本帧
-send(Frame.Text("hello"))
-```
-
----
-
-**基本写法：接收消息**
-`incoming.receive() as Frame.Text`
-```kotlin
-// 接收文本帧
-val text = (incoming.receive() as Frame.Text).readText()
-```
-
----
-
-## CORS 跨域
-
-**基本写法：启用 CORS**
-`install(CORS) { anyHost() }`
-```kotlin
-// 配置跨域
-install(CORS) {
-    anyHost()
-    allowHeader(HttpHeaders.ContentType)
-}
-```
-
----
-
-## 部署命令
-
-**基本写法：构建 FatJar**
-`./gradlew buildFatJar`
-```bash
-# 构建包含所有依赖的 FatJar
-./gradlew :app:buildFatJar
-```
-
----
-
-**基本写法：运行应用**
-`java -jar <jar>`
-```bash
-# 运行打包后的应用
-java -jar build/libs/app-all.jar
-```
-
----
-
-**基本写法：Docker 运行**
-`docker build -t <名称> .`
-```bash
-# 构建 Docker 镜像
-docker build -t ktor-app .
-docker run -p 8080:8080 ktor-app
-```
+参考答案：Ktor 3 把底层字节缓冲统一迁移到 kotlinx-io（替代过去的 ktor-io/Netty 各自的缓冲抽象），依赖树里会出现 kotlinx-io 相关 artifact；插件层（install、routing DSL、ContentNegotiation）是稳定 API，迁移主要发生在自定义引擎扩展与底层缓冲操作——普通业务路由几乎零改动。

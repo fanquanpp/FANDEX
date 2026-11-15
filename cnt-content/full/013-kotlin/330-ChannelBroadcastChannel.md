@@ -27,11 +27,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+- 能说出 Channel 的一次投递语义：每个值恰被一个接收者消费，容量决定「发在等收」还是「收在等发」
+- 能用「谁在挂起」矩阵推导 close、capacity、trySend/tryReceive 在各容量下的行为
+- 能解释 BroadcastChannel 废弃的原因（热多播该归 Flow 世界），并用 SharedFlow 重写广播场景
+- 能用 `produce`/`select` 表达「上游管道」与「多路等待」，并知道 actor 的替代写法
 
 
 > 本文档对标 MIT 6.005、Stanford CS193P、CMU 15-410 教学水准，系统讲解 Kotlin 协程中的 `Channel<T>`、`SendChannel`/`ReceiveChannel`、`BroadcastChannel`（已废弃）、`SharedFlow` 替代方案、`produce`/`actor` 构建器以及 `select` 多路复用机制。内容覆盖 CSP（Communicating Sequential Processes）理论基础、Kotlin 1.0 至 2.0 的演进、JVM 字节码实现、跨语言对比、企业级生产代码与习题解析。
@@ -1886,19 +1885,19 @@ launch {
 ```kotlin
 // build.gradle.kts
 plugins {
-    kotlin("jvm") version "2.0.0"
-    kotlin("plugin.serialization") version "2.0.0"
+    kotlin("jvm") version "2.4.21"
+    kotlin("plugin.serialization") version "2.4.21"
     application
 }
 
 dependencies {
     // 协程核心库
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     
     // 测试支持
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:2.0.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.14.4")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:2.4.21")
 }
 
 application {
@@ -1916,12 +1915,12 @@ tasks.test {
 // android/app/build.gradle.kts
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android") version "2.0.0"
+    id("org.jetbrains.kotlin.android") version "2.4.21"
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
     
     // Lifecycle scope 支持
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.0")
@@ -1934,7 +1933,7 @@ dependencies {
 ```kotlin
 // build.gradle.kts
 plugins {
-    kotlin("multiplatform") version "2.0.0"
+    kotlin("multiplatform") version "2.4.21"
 }
 
 kotlin {
@@ -1946,11 +1945,11 @@ kotlin {
     
     sourceSets {
         commonMain.dependencies {
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
         }
         
         commonTest.dependencies {
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
         }
     }
 }
@@ -3317,3 +3316,38 @@ launch {
 10. **工程实践**：优先使用 `produce`，显式关闭，正确选择容量，避免 `GlobalScope`。
 
 希望本文档能帮助学习者系统掌握 Kotlin 协程间通信的核心机制，并在工程实践中正确、高效地应用。
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：容量语义推演**。三个 Channel：`Channel(1)`、`Channel(Channel.UNLIMITED)`、`Channel(Channel.RENDEZVOUS)`。对每个回答：send 什么情况下挂起、receive 什么情况下挂起。
+
+参考答案：`Channel(1)`——缓冲里已有一个元素时 send 挂起，缓冲空时 receive 挂起；`UNLIMITED`——send 永不挂起（直到 OOM 风险），receive 空时挂起；`RENDEZVOUS`（容量 0）——send 必须等到有接收者就位才返回，receive 必须等到有发送者，握手式交接。判别式：send 看缓冲是否满，receive 看缓冲是否空，RENDEZVOUS 的缓冲永远是 0。
+
+**练习 2：广播迁移**。把废弃的 `BroadcastChannel` 用法改写成 SharedFlow：
+
+```kotlin
+val bus = BroadcastChannel<Int>(Channel.BUFFERED)
+// 发送：bus.send(1)；订阅：bus.openSubscription() { ... }
+```
+
+参考实现：
+
+```kotlin
+val bus = MutableSharedFlow<Int>(extraBufferCapacity = 64)
+// 发送：bus.emit(1)（缓冲满时挂起或 tryEmit 立刻返回）
+// 订阅：bus.collect { ... }
+```
+
+自检问题：迁移后「每个订阅者独立收全部事件」的语义还在吗？（答：在——SharedFlow 的每个收集者独立遍历 replay+缓冲的历史，这与 BroadcastChannel 的多播语义一致；变化在于 API 归并进了 Flow 世界，且 emit 在缓冲满时不再无限挂起而是可控的 tryEmit 策略。）
+
+**练习 3：select 多路复用**。两个传感器 Channel，要求「任意一个先来数据就处理」。写出 select 骨架并回答：select 会不会把没被选中的那路数据丢掉？
+
+参考实现：
+
+```kotlin
+select {
+    sensorA.onReceive { v -> handle(v) }
+    sensorB.onReceive { v -> handle(v) }
+}
+```
+
+答案：不会丢——select 只在「已就绪的分支」中选一个执行，未就绪分支的数据留在各自 Channel 缓冲里，下次 select 再见。

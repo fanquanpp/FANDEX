@@ -32,11 +32,10 @@ KMP 的架构层（expect/actual、共享策略、Compose Multiplatform）见[Ko
 
 ## 学习目标
 
-- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+- 能画出 Kotlin 四大目标的编译产物与运行模型差异（JVM 字节码 / JS 源码 / Native 二进制 / WasmGC 模块）
+- 能解释 Kotlin/Native 的新内存管理器（tracing GC）解决 1.x 时代什么问题，以及 CMS 的取舍
+- 能用 `@JsExport` 判定哪些类型能跨过 JS 边界，说出 Kotlin/JS 无类型擦除带来的泛型优势
+- 能把 Web 场景的正确目标选出来：DOM 应用用 JS，Node/容器用 Wasm/JS，未来组件模型用 Wasm
 
 
 > 本文档对标 MIT 6.005、Stanford CS193P、CMU 15-410 教学水准，系统讲解 Kotlin Multiplatform（KMP）从设计哲学到编译器后端实现的完整链路。内容覆盖 Kotlin/JVM、Kotlin/JS、Kotlin/Native、Kotlin/Wasm 四大目标平台，配套企业级生产代码、跨语言对比、形式化推导与习题解析。
@@ -219,6 +218,10 @@ JetBrains 在设计 KMP 时遵循了以下哲学：
 2023  Kotlin 1.8 — Kotlin/Wasm 实验性
 2023  Kotlin 1.9.20 — Kotlin/Wasm Alpha，KMP Beta
 2024  Kotlin 2.0 — K2 GA，KMP Stable，Compose iOS Stable，Wasm Beta
+2025  Kotlin 2.2 — -jvm-default 转正，Base64/HexFormat 稳定
+2025  Kotlin 2.2.20 — js()/npm 遗留声明进入弃用流程，Wasm 与异常处理改进
+2025  Kotlin 2.3 — x86_64 Apple 目标降为 tier 3，iOS/tvOS/watchOS 最低版本提升
+2026  Kotlin 2.4 — Native CMS GC 默认开启，Swift export 转 Alpha，JS @JsExport 支持 value class
 ```
 
 ---
@@ -634,7 +637,7 @@ KMP 的依赖解析在 Gradle 层完成：
 // commonMain 依赖
 val commonMain by getting {
     dependencies {
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     }
 }
@@ -762,6 +765,8 @@ plugins {
 
 kotlin {
     // 目标平台配置
+    // 注：Kotlin 2.3 起建议迁移到 Google 的 com.android.kotlin.multiplatform.library 插件，
+    // androidTarget() 更名为 android()；AGP 9 起内置 Kotlin 支持。
     androidTarget()
     jvm()
     js {
@@ -777,35 +782,35 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-                implementation("io.ktor:ktor-client-core:2.3.10")
+                implementation("io.ktor:ktor-client-core:3.6.1")
             }
         }
         commonTest {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
             }
         }
         androidMain {
             dependencies {
-                implementation("io.ktor:ktor-client-android:2.3.10")
+                implementation("io.ktor:ktor-client-android:3.6.1")
             }
         }
         iosMain {
             dependencies {
-                implementation("io.ktor:ktor-client-darwin:2.3.10")
+                implementation("io.ktor:ktor-client-darwin:3.6.1")
             }
         }
         jvmMain {
             dependencies {
-                implementation("io.ktor:ktor-client-java:2.3.10")
+                implementation("io.ktor:ktor-client-java:3.6.1")
             }
         }
         jsMain {
             dependencies {
-                implementation("io.ktor:ktor-client-js:2.3.10")
+                implementation("io.ktor:ktor-client-js:3.6.1")
             }
         }
     }
@@ -1453,12 +1458,12 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
             }
         }
         wasmJsMain {
             dependencies {
-                implementation("io.ktor:ktor-client-js:2.3.10")
+                implementation("io.ktor:ktor-client-js:3.6.1")
             }
         }
     }
@@ -2727,9 +2732,9 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-                implementation("io.ktor:ktor-client-core:2.3.10")
+                implementation("io.ktor:ktor-client-core:3.6.1")
                 implementation("app.cash.sqldelight:runtime:2.0.1")
                 implementation(compose.runtime)
                 implementation(compose.foundation)
@@ -3039,6 +3044,8 @@ class IosStorage(private val path: String) : Storage {
 | 1.8 | Beta | 新（默认） | IR | 实验性 | Android / Desktop / Web Stable |
 | 1.9.20 | Beta | 新 | IR | Alpha | Android / Desktop / Web / iOS Beta |
 | 2.0 | Stable | 新 | IR | Beta | Android / Desktop / Web / iOS Stable |
+| 2.2 | Stable | 新 + LLVM 19 | IR（js()/npm 遗留声明弃用启动） | Beta | 全平台稳定（1.12.x 线） |
+| 2.4 | Stable | 新 + CMS GC 默认 | IR（@JsExport value class） | Beta + 组件模型实验 | 全平台稳定 |
 
 ---
 
@@ -3163,3 +3170,17 @@ KMP 的核心价值在于：
 5. **不锁定 UI**：UI 层可选 Compose Multiplatform 或原生 UI。
 
 未来，随着 K2 编译器、Compose Multiplatform Web、Kotlin/Wasm 的成熟，KMP 将成为跨平台开发的重要选择，与 React Native、Flutter 形成三足鼎立之势。
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：四大目标产物速判**。同一份 `fun hello(): String = "hi"` 编译到 JVM/JS/Native/Wasm 后，运行宿主各是什么？哪两个目标「不需要自带垃圾回收器」？
+
+参考答案：JVM 产物是 .class 字节码，宿主是 JVM；JS 产物是 .js 文件，宿主是浏览器引擎或 Node.js（解释/JIT 执行，GC 由宿主 JS 引擎负责）；Native 产物是原生二进制（LLVM 编译，Kotlin 自带 tracing GC，2.4 起 CMS 默认）；Wasm 产物是 .wasm 模块，宿主是支持 WasmGC 的运行时，GC 依赖宿主（无需自带）。不需要自带 GC 的是 JS 与 Wasm——这正是 WasmGC 提案的意义：把内存管理交给宿主而非编译进二进制。
+
+**练习 2：@JsExport 边界**。默认情况下 Kotlin 类导出到 JS 会发生什么？`@JsExport` 打开后哪些类型仍不能直接导出，为什么？
+
+参考答案：默认导出的只是顶层函数与属性的声明访问路径，Kotlin 类默认不带 JS 可用的导出（无 mangled 名冲突防护、无法在 TS 里正确表示）；`@JsExport` 让类/函数以可预测名字导出并生成 TS 声明。仍受限的：带类型擦除语义的复杂泛型、非导出依赖的签名（2.2 起支持保留型变 in/out 到 TS 输出，2.4 起支持 value class 与嵌套 companion 导出）。判断法：顺着「TS 声明文件能否表达这个类型」想。
+
+**练习 3：目标选型**。三个 Web 需求各选什么目标：(a) 现有 React 团队想把业务逻辑层用 Kotlin 重写；(b) 新的编辑器型 Web 应用想用 Kotlin 写全部 UI；(c) 服务端工具链想跑在 CDN 边缘容器里。
+
+参考答案：(a) Kotlin/JS——业务逻辑编译成 npm 包给 React 调，UI 不动；(b) Kotlin/Wasm（配 Compose Web）或 JS——编辑器重交互重渲染，Wasm 的性能上限更高但生态成熟度以 JS 更稳，按团队接受度选；(c) Wasm/JS 或 Native——边缘容器体积敏感，Wasm 起动快、Native 二进制更小，两者都优于 JVM 冷启动。

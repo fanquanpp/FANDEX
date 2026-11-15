@@ -21,11 +21,10 @@ prerequisites: []
 
 ## 学习目标
 
-- 掌握「1. KMP 架构概述」的核心机制、典型用法与常见陷阱
-- 掌握「2. expect/actual 声明」的核心机制、典型用法与常见陷阱
-- 掌握「3. 共享代码实践」的核心机制、典型用法与常见陷阱
-- 掌握「4. Compose Multiplatform」的核心机制、典型用法与常见陷阱
-- 掌握「5. iOS 集成」的核心机制、典型用法与常见陷阱
+- 能画出 KMP 的 sourceSet 层级（commonMain → 中间层 → 平台源集），并解释依赖只能「向下引用」的原因
+- 能写出 expect/actual 三件套（expect 函数、expect 属性、expect 类）并识别「actual 必须比 expect 更具体」的约束
+- 能用 sourceSet 依赖把能力声明到正确的层级（crypto 放 commonMain，UI 放平台层）
+- 能配置 Compose Multiplatform 的多目标工程，知道 iOS 端的 Swift 入口与框架导出边界
 
 
 ## 1. KMP 架构概述
@@ -372,9 +371,9 @@ class Logger {
 ```kotlin
 // build.gradle.kts (项目根)
 plugins {
-    kotlin("multiplatform") version "2.2.0" apply false
-    id("org.jetbrains.compose") version "1.8.0" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.0" apply false
+    kotlin("multiplatform") version "2.4.21" apply false
+    id("org.jetbrains.compose") version "1.12.2" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.21" apply false
 }
 
 // build.gradle.kts (shared module)
@@ -386,10 +385,13 @@ plugins {
 
 kotlin {
     // 目标平台
+    // 注意：Kotlin 2.3 起 Android 目标迁移到 Google 的 com.android.kotlin.multiplatform.library 插件，
+    // 目标简写 androidTarget() 更名为 android()；AGP 9 起构建系统内置 Kotlin 支持，
+    // kotlin("android") 类插件不再需要。本文示例沿用 AGP 8.x + androidTarget() 写法。
     androidTarget {
         compilations.all {
-            kotlinOptions {
-                jvmTarget = "17"
+            compilerOptions.configure {
+                jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
             }
         }
     }
@@ -408,16 +410,16 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation("io.ktor:ktor-client-core:3.0.0")
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0")
-            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
         }
         androidMain.dependencies {
             implementation("io.ktor:ktor-client-okhttp:3.0.0")
@@ -438,11 +440,11 @@ kotlin {
 ```kotlin
 // gradle/libs.versions.toml
 [versions]
-kotlin = "2.2.0"
-compose = "1.8.0"
-ktor = "3.0.0"
-coroutines = "1.10.1"
-serialization = "1.7.0"
+kotlin = "2.4.21"
+compose = "1.12.2"
+ktor = "3.6.1"
+coroutines = "1.11.0"
+serialization = "1.12.0"
 
 [libraries]
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -754,3 +756,45 @@ val iosMain by creating { dependsOn(commonMain) }
 val iosX64Main by getting { dependsOn(iosMain) }
 val iosArm64Main by getting { dependsOn(iosMain) }
 ```
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：expect/actual 三层推演**。`commonMain` 声明 `expect fun platformName(): String`，写出 iOS（iosMain）与 JVM（jvmMain）两个 actual。再回答：能否只在 iOS 侧提供 actual 而让 JVM 侧留空？
+
+参考实现：
+
+```kotlin
+// commonMain
+expect fun platformName(): String
+
+// iosMain
+actual fun platformName(): String = NSProcessInfo.processInfo.operatingSystemVersionString
+
+// jvmMain
+actual fun platformName(): String = System.getProperty("os.name") ?: "JVM"
+```
+
+答案：不能——expect 的每个编译目标都必须有对应 actual，缺一个整个目标编译失败。这正是 expect/actual 与「可选依赖」的区别：它是编译期强制的契约。
+
+**练习 2：sourceSet 层级放置**。三个依赖该放哪层：Ktor client（有 ios/jvm 适配）、纯 Kotlin 加密算法、Compose UI？说明「向下引用」规则怎么决定答案。
+
+参考答案：Ktor 放 `commonMain`（官方提供全目标 artifact，其平台实现在各平台源集自动接入）；纯 Kotlin 加密放 `commonMain`；Compose UI 放对应的 UI 源集（如 `commonMain` 若全端用 Compose，或按平台拆）。规则：commonMain 只能用「所有目标都支持」的东西；任何平台特有 API 只能出现在该平台的源集或 expect/actual 内。
+
+**练习 3：版本目录与插件版本**。给多模块 KMP 工程配置版本目录，要求：Kotlin 插件版本只声明一次、子模块不重复。写出根与子模块的 plugins 块。
+
+参考实现：
+
+```kotlin
+// 根 build.gradle.kts
+plugins {
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.compose) apply false
+}
+
+// shared/build.gradle.kts
+plugins {
+    alias(libs.plugins.kotlin.multiplatform)   // 无版本号：版本只在根声明
+    alias(libs.plugins.compose)
+}
+```
+
+自检问题：子模块写 `kotlin("multiplatform") version "x"` 会怎样？（答：多模块版本漂移——两个版本号不一致时构建直接报「插件版本冲突」，apply false + 根声明是官方推荐的单点事实。）

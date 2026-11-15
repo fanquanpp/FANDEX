@@ -411,3 +411,24 @@ val safeJson = Json {
     allowComments = false
 }
 ```
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：注入的第一道墙**。两段拼接 SQL 与参数化 SQL 的代码，先指出哪段会被 `name = "x'; DROP TABLE users;--"` 攻破，再解释参数化为什么免疫：
+
+```kotlin
+// (a)
+val sql = "SELECT * FROM users WHERE name = '$name'"
+// (b)
+val sql = "SELECT * FROM users WHERE name = ?"
+execPreparedStatement(sql) { setString(1, name) }
+```
+
+参考答案：(a) 被攻破——输入被解析为 SQL 的一部分；(b) 免疫——预编译语句把参数当**数据**绑定，永不进入解析阶段。推而广之：所有「数据进代码」的通道（SQL、HTML、shell、日志模板）都要走参数化/转义，Kotlin 字符串模板的便利让拼接看起来更无害，警惕性反而要更高。
+
+**练习 2：密码存储选型**。「MD5 加盐」「SHA-256」「bcrypt」三个方案用于存登录密码，逐一判断并给理由。
+
+参考答案：MD5 加盐——错，算法早已可快速爆破且无内存硬度；SHA-256——错，它是通用哈希不是密码哈希，GPU 速率下没有抗暴力属性；bcrypt（或 Argon2id/scrypt）——对，专用密码哈希带可调成本因子与内存硬度。通用原则：密码用「慢哈希」，文件完整性用「快哈希」，两者不可互换。
+
+**练习 3：日志里的秘密**。`log.info("登录: user=$user, pwd=$pwd")` 这种模板日志的风险与两条治理手段。
+
+参考答案：风险：密码明文进日志文件/聚合系统，任何有日志读权限的人都能看到。治理：一、DTO 层脱敏——敏感字段 toString 重写为掩码或拆成独立的 Secret 类型防误打印；二、日志框架配置脱敏规则，对 `pwd|token|secret` 等键强制掩码。Kotlin 的 data class toString 会打印全部构造字段——把敏感字段排除在 data class 之外是免费的防线。

@@ -23,11 +23,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「理论推导」的核心机制、典型用法与常见陷阱
-- 掌握「代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「对比分析」的核心机制、典型用法与常见陷阱
+- 能说出 JMH 存在的理由：没有预热、DCE（死代码消除）、即时编译重排都会让「裸计时」的结论作废
+- 能按「微基准还是宏基准」判断一段代码该不该进 JMH：一次性的业务路径不适合，热点工具函数适合
+- 能配置 kotlin benchmark 插件（kotlin("jmh")/kotlinx-benchmark）并避免 Java 版 JMH 注解与 Kotlin 尾随逗号的冲突
+- 能读懂基准报告：avert、error（置信区间）、thrpt/avrt 两种模式各回答什么问题
 
 
 
@@ -280,14 +279,14 @@ $$
 ```kotlin
 // build.gradle.kts
 plugins {
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.4.21"
     // 引入 kotlinx-benchmark 插件，提供 benchmark 源集与 JMH 后端
     id("org.jetbrains.kotlinx.benchmark") version "0.4.10"
 }
 
 // 启用 kotlin-allopen 插件，让 JMH 类可继承（JMH 要求 @State 类为 open）
 plugins {
-    id("org.jetbrains.kotlin.plugin.allopen") version "2.0.0"
+    id("org.jetbrains.kotlin.plugin.allopen") version "2.4.21"
 }
 
 // 配置 allopen，对 JMH 注解类自动 open
@@ -1686,3 +1685,16 @@ MyBenchmark.test   avgt    5  1.234  ±0.370   us/op
 - Kotlin Slack #performance 频道
 - ACM SIGPLAN 性能工程兴趣组
 - Performance Engineering Devroom (FOSDEM)
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：裸计时的三宗罪**。同事用 `System.nanoTime` 包住一段解析函数，循环一亿次取平均，得出「比基准库报告快 30%」的结论。说出三个可能被裸计时漏掉的效应，并解释 JMH 如何消除。
+
+参考答案：一、死代码消除——结果没人用，编译器可能整个删掉计算，JMH 用返回值消费（Blackhole）强制保留；二、缺乏预热——JIT 未达峰值状态的前几轮被计入平均，JMH 的 warmup 轮次隔离掉；三、循环内重优化——同一段代码在紧密循环里被 JIT 特化（常量折叠、循环不变量外提），JMH 按迭代重组调用形态。结论：微基准必须交给 JMH 类框架，裸计时只适合量级判断。
+
+**练习 2：模式选型**。两个问题：(a) 「这个正则每秒能跑多少次匹配」；(b) 「这个函数平均一次调用要多久」——分别用吞吐量模式还是平均时间模式？
+
+参考答案：(a) 用 `Mode.Throughput`（thrpt，ops/time）；(b) 用 `Mode.AverageTime`（avrt，time/op）。两者可互相换算，但报告语义不同：容量规划看吞吐，延迟优化看平均时间；若关心尾延迟，JMH 微基准不直接给 p99，需要外部测量。
+
+**练习 3：Kotlin 特有配置**。在 Kotlin 项目里接入 JMH 基准，为什么官方推荐走 kotlinx-benchmark 插件而不是直接抄 Java 的注解处理器配置？说出至少一个 Kotlin 特有的坑。
+
+参考答案：kotlinx-benchmark 插件把 JMH 注解处理、fork/warmup 参数、Gradle 任务接线一次配好，且对 Kotlin 语法适配（如尾随逗号与注解处理器的兼容、suspend 函数基准的封装）。Java 风格直配常见的坑：@State 类需要显式 open（Kotlin 类默认 final），@Param 字段必须 var 且由 JMH 反射赋值——插件与模板能把这些默认处理掉。

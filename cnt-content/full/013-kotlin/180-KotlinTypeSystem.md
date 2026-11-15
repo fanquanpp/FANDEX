@@ -29,11 +29,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+- 能从「使用位置是返回值还是入参」推导出型变标注：为什么只读容器协变、可写容器必须不变
+- 能解释协变 `List<out T>` 下禁止 `add` 的原因，并把它与 Java 数组协变的运行时 `ArrayStoreException` 对比
+- 能说出星投影 `*` 的语义（「未知但安全」的读侧类型），以及它与 `out Any?` 的等价关系
+- 能推导类型擦除在 JVM 上的表现：泛型只在编译期存在、`checkcast` 交由调用点，进而理解 `reified` 为什么必须配合 `inline`
 
 
 > 本文档对标 MIT 6.005 Software Construction、Stanford CS193P、CMU 15-312 Principles of Programming Languages 等海外名校课程的教学水准，系统讲解 Kotlin 类型系统的核心机制：泛型（Generics）、型变（Variance）、星投影（Star Projection）、类型擦除（Type Erasure）、`reified` 类型参数、上下界约束（Bounds）。本文不假设读者具备 Scala 或 Haskell 的类型理论前置知识，所有概念均从"为什么需要"出发，逐步深入到 JVM 字节码与 K2 编译器实现层面。完成本文学习后，读者将能够独立设计类型安全的泛型 API、正确使用 `out`/`in`/`*` 修饰符、理解协变与逆变的本质区别，并能在 Android、KMP、Spring 等工程实践中应用类型系统理论。
@@ -2317,3 +2316,16 @@ val strings: List<String> = list.filterByType()  // ["two", "four"]
 - 空安全详解：与类型系统结合的空安全机制。
 - 协程基础：协程中的泛型（`Deferred<out T>`、`Flow<out T>`）。
 - 委托属性：泛型属性委托。
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：型变安全判别**。先遮住答案标注下面两处能不能编译：`List<Dog>` 赋给 `List<out Animal>`；`MutableList<Animal>` 赋给 `MutableList<Animal>` 之外任何参数不同的变体。
+
+参考答案：第一个能编译——`List` 协变，`List<Dog>` 是 `List<Animal>` 的子类型；第二个不能——`MutableList` 同时有 `get`（生产）与 `add`（消费），声明为不变，`MutableList<Dog>` 与 `MutableList<Animal>` 互不兼容。判别式：T 同时出现在读写两侧，类型必须不变。
+
+**练习 2：星投影降级**。`fun printAll(box: Box<*>)` 里，`box.value` 的静态类型是什么？为什么不能 `box.value = "x"`？
+
+参考答案：`box.value` 读出来是 `Any?`（星投影的读侧类型即该类协变上界的并集）；写侧完全禁止——编译器不知道 `Box<*>` 里装的到底是什么类型，任何写入都可能破坏类型安全，这与 `out Any?` 的行为一致。
+
+**练习 3：擦除现场还原**。写出 `fun <T> listOf(vararg xs: T): List<T>` 在 JVM 上编译后的方法签名，并回答：运行时能拿到调用处传的 `T` 吗？`inline reified` 为什么能？
+
+参考答案：擦除后签名是 `listOf([Ljava/lang/Object;)Ljava/util/List;`（或按上界擦除）；运行时拿不到 `T`——泛型只在编译期检查，字节码里只剩 `checkcast`。`inline reified` 的原理是把函数体复制进每个调用点，调用点的 `T` 是具体类型，于是 `T::class`、`x is T` 都有了真实类型可查。

@@ -28,11 +28,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+- 能说出 CoroutineContext 的元素模型：Job + Dispatcher + Name + ExceptionHandler 的组合与 `+` 运算
+- 能推导上下文继承规则：子协程默认继承父上下文但换掉 Job（新 Job），`Dispatchers` 不换则同源
+- 能按负载选择调度器：`Default`（CPU）、`IO`（阻塞/IO）、`Main`（UI），并解释 IO 与 Default 线程池重叠的设计取舍
+- 能用 `withContext` 做细粒度切换，识别「在协程里包一层线程池」的反模式
 
 
 ## 1. 历史动机与发展脉络
@@ -2365,7 +2364,7 @@ flowchart TD
 
 ### E.3 版本与时效
 
-基于 Kotlin 2.0 编写，覆盖至 2024 年 5 月发布的特性。
+基于 Kotlin 2.x（当前稳定版 2.4.x）与 kotlinx.coroutines 1.11.x 一线编写。
 
 ### E.4 适用读者
 
@@ -2388,269 +2387,39 @@ Kotlin 协程调度器与上下文是 Kotlin 并发模型的核心组件，通�
 5. **可观测性**：通过 `CoroutineContext` 元素支持调试与监控。
 
 未来，随着 K2 编译器（2.0 起已是默认编译器）的持续演进、Virtual Threads 的普及、WasmGC 的支持，Kotlin 协程将进一步巩固跨平台并发编程首选方案的地位，与 Go Goroutine、Java Virtual Threads、Rust async/await 形成多元化的并发编程生态。
-## 内置调度器
+## 小练习（先自己做，再展开参考实现）
 
-**基本写法：默认调度器**
-`Dispatchers.Default`
+**练习 1：上下文继承推演**。写出下面代码的输出线程，并解释第三行为什么不在父协程的调度器上：
+
 ```kotlin
-// CPU 密集任务调度器
-launch(Dispatchers.Default) { compute() }
-```
-
----
-
-**基本写法：IO 调度器**
-`Dispatchers.IO`
-```kotlin
-// 阻塞 IO 任务调度器
-launch(Dispatchers.IO) { readFile() }
-```
-
----
-
-**基本写法：主线程调度器**
-`Dispatchers.Main`
-```kotlin
-// UI 主线程调度器（需平台依赖）
-launch(Dispatchers.Main) { updateUI() }
-```
-
----
-
-**基本写法：不受限调度器**
-`Dispatchers.Unconfined`
-```kotlin
-// 在调用线程执行直到挂起
-launch(Dispatchers.Unconfined) { }
-```
-
----
-
-## 自定义调度器
-
-**基本写法：单线程调度器**
-`newSingleThreadContext("<名称>")`
-```kotlin
-// 创建单线程调度器
-val dispatcher = newSingleThreadContext("worker")
-```
-
----
-
-**基本写法：固定线程池调度器**
-`newFixedThreadPoolContext(<线程数>, "<名称>")`
-```kotlin
-// 创建固定大小线程池调度器
-val dispatcher = newFixedThreadPoolContext(4, "pool")
-```
-
----
-
-**基本写法：基于 Executor**
-`<executor>.asCoroutineDispatcher()`
-```kotlin
-// 复用现有 Executor 作为调度器
-val d = Executors.newFixedThreadPool(4).asCoroutineDispatcher()
-```
-
----
-
-## 切换调度器
-
-**基本写法：withContext 切换**
-`withContext(<dispatcher>) { }`
-```kotlin
-// 临时切换调度器
-withContext(Dispatchers.IO) { fetchData() }
-```
-
----
-
-**基本写法：launch 指定调度器**
-`launch(<dispatcher>) { }`
-```kotlin
-// 启动时指定调度器
-launch(Dispatchers.Default) { heavy() }
-```
-
----
-
-**基本写法：async 指定调度器**
-`async(<dispatcher>) { }`
-```kotlin
-// async 启动并指定调度器
-async(Dispatchers.IO) { fetch() }
-```
-
----
-
-## 限流调度器
-
-**基本写法：限制并发数**
-`<dispatcher>.limitedParallelism(<并发数>)`
-```kotlin
-// 限制调度器并发数
-val limited = Dispatchers.IO.limitedParallelism(8)
-```
-
----
-
-## CoroutineContext 元素
-
-**基本写法：获取当前上下文**
-`currentCoroutineContext()`
-```kotlin
-// 获取当前协程上下文
-val ctx = currentCoroutineContext()
-```
-
----
-
-**基本写法：从上下文取元素**
-`<context>[<Key>]`
-```kotlin
-// 获取当前调度器
-val d = currentCoroutineContext()[CoroutineDispatcher]
-```
-
----
-
-**基本写法：获取 Job**
-`coroutineContext[Job]`
-```kotlin
-// 获取当前协程 Job
-val job = coroutineContext[Job]
-```
-
----
-
-**基本写法：获取名称**
-`coroutineContext[CoroutineName]`
-```kotlin
-// 获取协程名称
-val name = coroutineContext[CoroutineName]?.name
-```
-
----
-
-## 上下文组合与传递
-
-**基本写法：组合上下文元素**
-`<ctx1> + <ctx2>`
-```kotlin
-// Job 与 Dispatcher 组合
-val ctx = Job() + Dispatchers.IO + CoroutineName("worker")
-```
-
----
-
-**基本写法：移除上下文元素**
-`<ctx>.minusKey(<Key>)`
-```kotlin
-// 移除 Job 元素
-val newCtx = ctx.minusKey(Job)
-```
-
----
-
-**基本写法：fold 遍历**
-`<ctx>.fold(<初始>) { <累加>, <元素> -> }`
-```kotlin
-// 遍历上下文所有元素
-ctx.fold(emptyList()) { acc, e -> acc + e }
-```
-
----
-
-## 自定义上下文元素
-
-**基本写法：实现 CoroutineContext.Element**
-`class <类>(val <值>) : CoroutineContext.Element { companion object Key }`
-```kotlin
-// 自定义请求 ID 上下文
-class RequestId(val id: String) : CoroutineContext.Element {
-    companion object Key : CoroutineContext.Key<RequestId>
-    override val key = Key
+fun main() = runBlocking(Dispatchers.Default) {
+    println("parent: ${'$'}{Thread.currentThread().name}")
+    launch { println("child1: ${'$'}{Thread.currentThread().name}") }
+    launch(Dispatchers.IO) { println("child2: ${'$'}{Thread.currentThread().name}") }
 }
 ```
 
----
+参考答案：parent 与 child1 都在 Default 池线程（继承父上下文）；child2 在 IO 池线程——launch 的调度器参数**替换**继承来的调度器，但 Job 仍是新建的子 Job。继承规则一句话：子拿父的上下文再换掉 Job，显式传参的元素优先。
 
-**基本写法：注入自定义元素**
-`launch(<dispatcher> + <元素>) { }`
+**练习 2：withContext 与线程池反模式**。把下面的「协程里包线程池」改写成惯用写法：
+
 ```kotlin
-// 启动时注入请求 ID
-launch(Dispatchers.Default + RequestId("r-1")) { }
-```
-
----
-
-## 线程局部变量
-
-**基本写法：CoroutineContext 存 ThreadLocal**
-`<threadLocal>.asContextElement(<值>)`
-```kotlin
-// ThreadLocal 跨挂起传递
-val tl = ThreadLocal<String>()
-launch(tl.asContextElement("ctx") + Dispatchers.IO) {
-    println(tl.get())
+val pool = Executors.newFixedThreadPool(4)
+launch {
+    pool.submit { parse(file) }.get()   // 阻塞等待
 }
 ```
 
----
+参考实现：
 
-## 调度器异常处理
-
-**基本写法：CoroutineExceptionHandler**
-`CoroutineExceptionHandler { <ctx>, <异常> -> }`
 ```kotlin
-// 自定义协程异常处理器
-val handler = CoroutineExceptionHandler { _, e ->
-    println("caught: $e")
+withContext(Dispatchers.IO) {
+    parse(file)     // 若 parse 是阻塞函数直接调用；能改 suspend 则更佳
 }
-launch(Dispatchers.Default + handler) { }
 ```
 
----
+自检问题：原写法坏在哪？（答：`.get()` 阻塞了一个协程线程去等另一个线程池的线程——双重占用；`withContext` 只做一次挂起切换，线程在等待期间被释放。）
 
-## 阻塞与挂起桥接
+**练习 3：调度器负载判别**。三段任务——图像编解码、写磁盘文件、更新 Compose 状态——各用哪个调度器？写出分配理由。
 
-**基本写法：阻塞调用转挂起**
-`<dispatcher>.runIsolated { }`
-```kotlin
-// 在调度器上运行可阻塞代码
-runBlocking(Dispatchers.IO) { blockingCall() }
-```
-
----
-
-**基本写法：runInterruptible 阻塞转可取消**
-`runInterruptible { <阻塞调用> }`
-```kotlin
-// 将阻塞代码包装为可取消挂起
-suspend fun read(): String = runInterruptible { Files.readString(path) }
-```
-
----
-
-## 调度器关闭
-
-**基本写法：关闭自定义调度器**
-`<dispatcher>.close()`
-```kotlin
-// 关闭单线程调度器释放线程
-val dispatcher = newSingleThreadContext("w")
-dispatcher.close()
-```
-
----
-
-## 父子上下文继承
-
-**基本写法：复制父上下文**
-`<parentCtx> + <新元素>`
-```kotlin
-// 子协程继承父上下文并覆盖
-val childCtx = coroutineContext + Dispatchers.IO
-launch(childCtx) { }
-```
+参考答案：图像编解码是 CPU 密集，用 `Dispatchers.Default`（核数级线程池）；写磁盘是阻塞 IO，用 `Dispatchers.IO`（可扩容线程池，64 上限弹性）；Compose 状态更新必须 `Dispatchers.Main`（UI 单线程约束）。判别口诀：看任务在忙什么——算、等、画。

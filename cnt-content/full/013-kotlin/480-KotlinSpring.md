@@ -28,11 +28,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「基础概念」的核心机制、典型用法与常见陷阱
-- 掌握「快速上手」的核心机制、典型用法与常见陷阱
-- 掌握「详细用法」的核心机制、典型用法与常见陷阱
-- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+- 能解释 Kotlin 默认 final 与 Spring 代理的冲突，并说出 kotlin-spring 插件在编译期做的事
+- 能用 kotlin-jpa 插件补齐实体类的无参构造，解释 JPA 为什么需要它而 Kotlin 编译器不生成
+- 能用构造绑定把 @ConfigurationProperties 写成不可变 data class，并利用宽松绑定处理 kebab-case 键
+- 能在 Web 层正确使用挂起函数：知道 Spring 6 起框架如何桥接 suspend，以及协程异常走 @ExceptionHandler 的路径
 
 
 
@@ -57,11 +56,11 @@ Spring Boot 是 Java 生态中最流行的应用框架，Kotlin 与 Spring Boot 
 ```kotlin
 // build.gradle.kts
 plugins {
-    kotlin("jvm") version "2.0.0"
-    kotlin("plugin.spring") version "2.0.0"
-    kotlin("plugin.jpa") version "2.0.0"
-    id("org.springframework.boot") version "3.2.0"
-    id("io.spring.dependency-management") version "1.1.4"
+    kotlin("jvm") version "2.4.21"
+    kotlin("plugin.spring") version "2.4.21"
+    kotlin("plugin.jpa") version "2.4.21"
+    id("org.springframework.boot") version "4.1.2"
+    id("io.spring.dependency-management") version "1.1.7"
 }
 
 dependencies {
@@ -281,7 +280,7 @@ data class AppProperties(
     )
 }
 
-// 注册：Boot 3.x 用 @EnableConfigurationProperties 或 @ConfigurationPropertiesScan
+// 注册：Boot 3.x/4.x 用 @EnableConfigurationProperties 或 @ConfigurationPropertiesScan
 @ConfigurationPropertiesScan
 @SpringBootApplication
 class Application
@@ -495,3 +494,16 @@ suspend fun <T> transactional(template: TransactionTemplate, block: suspend () -
     }
 }
 ```
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：final 冲突现场**。不使用 kotlin-spring 插件时，`@Service class UserService` 的 `@Cacheable` 方法为什么不生效？写出插件开启后的等价编译效果。
+
+参考答案：`@Cacheable` 依赖代理（CGLIB 生成子类并重写方法拦截调用），而 Kotlin 类默认 final，CGLIB 无法重写 final 方法——运行时报「无法代理」或缓存静默失效。`kotlin-spring`（all-open 的预配置）在编译期把带 `@Component`/`@Transactional`/`@Cacheable` 等注解的类与方法改写成 open，等价于手写 `open class UserService` + `open fun`。
+
+**练习 2：配置绑定 fail-fast**。`data class AppProperties(val name: String, val port: Int = 8080)` 绑定 `app.name` 缺失、`app.port` 缺失两种配置，启动各会发生什么？
+
+参考答案：`app.name` 缺失——启动失败（无默认值的必填构造参数无法满足，这正是想要的 fail-fast）；`app.port` 缺失——按默认值 8080 绑定成功。设计含义：把「必须由环境提供」的配置写成无默认值参数，把「有合理缺省」的写成默认值，配置错误的暴露时机从第一次运行报错提前到启动即死。
+
+**练习 3：挂起 Web 层取舍**。把 `fun getUsers(): List<User>` 的 MVC 控制器改成 `suspend fun getUsers(): List<User>`，框架替你桥接了什么？还需要 `@Async` 或 `Mono` 吗？
+
+参考答案：Spring 6 起框架自动把 suspend 处理函数桥接为异步处理（MVC 走异步 Servlet，WebFlux 对接 Reactor），调用方在请求线程挂起、线程被释放——不需要 `@Async` 也不需要 `Mono`，返回类型保持业务类型。要自己做的是：把阻塞调用放进 `Dispatchers.IO`（或直接换响应式客户端），否则「挂起」只是把阻塞换了个线程池堵住。

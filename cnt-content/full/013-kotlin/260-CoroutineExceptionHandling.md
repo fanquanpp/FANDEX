@@ -24,11 +24,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+- 能解释异常沿协程树向上传播的默认规则，以及它为什么让「子协程失败 = 全家取消」
+- 能区分 `CancellationException` 与普通异常的处理差异，说出为什么取消不该被 try-catch 吞掉
+- 能用 `SupervisorJob`/`supervisorScope` 构建局部容错，并用 `CoroutineExceptionHandler` 落日志
+- 能在 launch 与 async 两种路径上写出正确的异常捕获位置（结构化 try-catch vs await 处）
 
 
 ## 1. 历史动机与发展脉络
@@ -1189,7 +1188,7 @@ scope.launch {
 **反模式**：
 
 ```kotlin
-// 错误：async 未 await，异常被吞掉（除非父是普通 Job）
+// 陷阱：普通 Job 父下，这个未 await 的 async 一失败就立即取消 scope 并向上传播（不吞掉、不等 await）；SupervisorJob 父下异常才滞留在 Deferred 里
 scope.async {
     throw RuntimeException("error")  // 异常去哪了？
 }
@@ -2427,7 +2426,7 @@ class UserRepository(private val api: UserApi) {
 
 问题：
 1. `scope` 没有指定 `SupervisorJob`，一个 async 失败会影响其他。
-2. 没有异常处理，未 await 的 async 异常会被吞掉。
+2. 没有异常处理：scope 的 Job 是普通 Job，任一 async 失败立即取消整个 scope 并向上传播——不是被吞掉，而是连坐失败；要互不影响需 SupervisorJob 并逐个 await。
 3. `scope` 没有提供取消机制，可能泄漏。
 4. 没有超时控制，可能永久阻塞。
 
@@ -2572,256 +2571,48 @@ Kotlin 协程的异常处理机制是其"结构化并发"理念的核心体现�
 4. **CancellationException 必须重新抛出**：吞掉它会破坏结构化并发，导致协程泄漏。
 5. **try/catch 无法跨协程**：`launch` 的异常无法被外层 `try/catch` 捕获，需用 `async + await` 或在协程内部捕获。
 6. **finally 中的挂起函数需要 NonCancellable**：否则会被取消异常中断。
-7. **async 的异常延迟到 await**：未 await 的 async 异常会被吞掉，需小心处理。
+7. **async 的异常时机取决于作用域**：普通 Job 父下失败立即取消作用域并向外传播，不等 await；SupervisorJob 或根级 async 下异常滞留 `Deferred`，await 时才抛出、不 await 则无人消费。
 
 掌握这些要点，开发者才能在生产环境中正确处理协程异常，构建可靠、可观测的异步系统。
-## 异常传播机制
+## 小练习（先自己做，再展开参考实现）
 
-**基本写法：launch 异常向上抛**
-`launch { throw <异常> }`
+**练习 1：传播路径推演**。不运行代码，写出两个输出并解释差异：
+
 ```kotlin
-// launch 异常传播到父协程
-scope.launch { throw RuntimeException("fail") }
+// (a)
+fun main() = runBlocking {
+    launch { throw IllegalStateException("boom") }
+    println("after launch")
+    delay(100)
+    println("still alive?")
+}
+// (b) 在 (a) 基础上给 launch 外套 supervisorScope { }
 ```
 
----
+参考答案：(a) 打印 `after launch` 后程序直接异常终止——launch 的失败沿父子链向上传播，根协程（runBlocking）被取消，`delay` 以取消结束，「still alive?」不会打印。(b) supervisorScope 切断向上传播：子协程失败只影响自己，`still alive?` 正常打印。结论：默认规则是「一个失败全体陪葬」，容错要靠 Supervisor 显式声明。
 
-**基本写法：async 异常不立即抛**
-`async { throw <异常> }`
+**练习 2：CancellationException 的特殊身份**。下面的 catch 会造成什么问题？给正确写法。
+
 ```kotlin
-// async 在 await 时才抛异常
-val d = scope.async { throw RuntimeException("fail") }
-d.await() // 此处抛出
-```
-
----
-
-## try-catch 捕获
-
-**基本写法：捕获挂起函数异常**
-`try { <挂起调用> } catch (<异常>) { }`
-```kotlin
-// 捕获协程内异常
 try {
-    deferred.await()
+    withTimeout(1000) { doWork() }
 } catch (e: Exception) {
-    println(e)
+    log.error("failed", e)
 }
 ```
 
----
+参考答案：超时触发的是 `TimeoutCancellationException`（`CancellationException` 子类）。把它当普通异常记录，会把「正常超时」伪装成错误日志，更糟的是如果这段代码在协程树里继续吞掉取消信号，取消语义被破坏。正确写法：先单独捕获 `CancellationException` 并 rethrow：
 
-**基本写法：捕获 launch 异常需 ExceptionHandler**
-`launch(<handler>) { }`
 ```kotlin
-// launch 异常不能直接 try-catch
-val handler = CoroutineExceptionHandler { _, e -> println(e) }
-scope.launch(handler) { throw RuntimeException("fail") }
-```
-
----
-
-## CoroutineExceptionHandler
-
-**基本写法：定义异常处理器**
-`val <变量> = CoroutineExceptionHandler { <ctx>, <异常> -> }`
-```kotlin
-// 创建异常处理器
-val handler = CoroutineExceptionHandler { ctx, e ->
-    println("ctx=${ctx[CoroutineName]} err=$e")
+try {
+    withTimeout(1000) { doWork() }
+} catch (e: CancellationException) {
+    throw e
+} catch (e: Exception) {
+    log.error("failed", e)
 }
 ```
 
----
+**练习 3：async 的异常落点**。`async { throw ... }` 的异常什么时候可见？为什么在 `coroutineScope { val d = async { ... }; ... }` 里即使不 await 也可能炸掉整个作用域？
 
-**基本写法：应用于根协程**
-`launch(<dispatcher> + <handler>) { }`
-```kotlin
-// 仅根协程生效
-scope.launch(Dispatchers.Default + handler) { }
-```
-
----
-
-## SupervisorJob 容错
-
-**基本写法：SupervisorJob 隔离子协程**
-`CoroutineScope(SupervisorJob()) { }`
-```kotlin
-// 子协程失败不影响兄弟
-val scope = CoroutineScope(SupervisorJob())
-scope.launch { throw RuntimeException() }
-scope.launch { /* 仍会执行 */ }
-```
-
----
-
-**基本写法：supervisorScope**
-`supervisorScope { }`
-```kotlin
-// 作用域内子协程互不影响
-supervisorScope {
-    launch { throw RuntimeException() }
-    launch { /* 正常执行 */ }
-}
-```
-
----
-
-## CancellationException
-
-**基本写法：取消异常需重新抛出**
-`catch (e: CancellationException) { throw e }`
-```kotlin
-// 捕获取消异常必须重抛
-try { doWork() }
-catch (e: CancellationException) { throw e }
-catch (e: Exception) { handle(e) }
-```
-
----
-
-**基本写法：自定义取消消息**
-`throw CancellationException("<消息>")`
-```kotlin
-// 主动抛出取消异常
-throw CancellationException("manual cancel")
-```
-
----
-
-## finally 资源清理
-
-**基本写法：finally 清理**
-`try { } finally { <清理> }`
-```kotlin
-// 协程取消时清理资源
-try { doWork() }
-finally { closeResource() }
-```
-
----
-
-**基本写法：NonCancellable 中执行清理**
-`withContext(NonCancellable) { <清理> }`
-```kotlin
-// 不可取消上下文中执行挂起清理
-try { doWork() }
-finally {
-    withContext(NonCancellable) { delay(100); close() }
-}
-```
-
----
-
-## 异常聚合
-
-**基本写法：await 抛出首个异常**
-`try { <deferred>.await() } catch (<异常>) { }`
-```kotlin
-// async 等待异常抛出
-try { deferred.await() } catch (e: Exception) { }
-```
-
----
-
-**基本写法：多个 async 异常聚合**
-`awaitAll(<d1>, <d2>)`
-```kotlin
-// 抛出 CompositeException
-supervisorScope {
-    val d1 = async { throw IOException() }
-    val d2 = async { throw RuntimeException() }
-    try { listOf(d1, d2).awaitAll() } catch (e: Exception) { }
-}
-```
-
----
-
-## 恢复协程
-
-**基本写法：恢复挂起协程值**
-`runCatching { <挂起调用> }.getOrDefault(<默认>)`
-```kotlin
-// 异常时返回默认值
-val r = runCatching { deferred.await() }.getOrDefault("fallback")
-```
-
----
-
-## recover 异常恢复
-
-**基本写法：recoverCatching 恢复**
-`runCatching { }.recoverCatching { }`
-```kotlin
-// 捕获后转换结果
-val r = runCatching { fetch() }
-    .recoverCatching { e -> "default" }
-    .getOrThrow()
-```
-
----
-
-## 检查与断言
-
-**基本写法：抛出 IllegalStateException**
-`check(<条件>) { "<消息>" }`
-```kotlin
-// 条件不满足抛异常
-check(state == READY) { "not ready" }
-```
-
----
-
-**基本写法：参数校验**
-`require(<条件>) { "<消息>" }`
-```kotlin
-// 参数不合法抛 IllegalArgumentException
-require(id > 0) { "invalid id" }
-```
-
----
-
-## 异常处理器优先级
-
-**基本写法：父协程优先于 handler**
-`launch(<handler>) { launch { throw <异常> } }`
-```kotlin
-// 子协程异常先传播到父，父失败才走 handler
-scope.launch(handler) {
-    launch { throw RuntimeException() }
-}
-```
-
----
-
-## 取消与异常关系
-
-**基本写法：取消触发 CancellationException**
-`<job>.cancel("<原因>")`
-```kotlin
-// 带原因的取消
-job.cancel("timeout")
-```
-
----
-
-**基本写法：getCancellationCause 获取原因**
-`<job>.getCancellationCause()`
-```kotlin
-// 获取取消异常原因
-val cause = job.getCancellationCause()
-```
-
----
-
-## 异常日志记录
-
-**基本写法：记录协程异常**
-`<handler> = CoroutineExceptionHandler { _, e -> log.error("", e) }`
-```kotlin
-// 处理器中记录日志
-val handler = CoroutineExceptionHandler { ctx, e ->
-    log.error("coroutine ${ctx[CoroutineName]} failed", e)
-}
-```
+参考答案：await 时在调用点抛出；但 async 的失败同样会沿结构化并发向父作用域传播（作用域处于「失败即取消」模式），所以不 await 也会取消全家。要「失败不影响全家」用 `supervisorScope` + 逐个 await 处理，或改用 `coroutineScope` 的返回值语义把失败显式化。
