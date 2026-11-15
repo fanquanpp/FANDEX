@@ -297,3 +297,16 @@ catalog:
 pnpm why react        # 谁引入了哪几个版本
 pnpm dedupe           # 尝试收敛重复依赖
 ```
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：workspace 协议 `"@fandex/ui": "workspace:*"` 与写死 `"@fandex/ui": "^1.0.0"` 的区别是什么？后者在 monorepo 里会炸出什么问题？
+   答案：workspace 协议强制链接本地包、发版时才替换为真实版本；写死版本号会让 pnpm 从 npm 拉一份旧包——你改了 ui 的代码，应用却引用发布出去的旧版本，「改了没生效」的头号来源。
+2. **预测题**：catalog 里写 `react: ^19.3.1`，五个包各自写 `"react": "catalog:"`——这是在解决什么问题？其中一个包偷偷写死 `19.2.0` 会怎样？
+   答案：统一全仓第三方依赖版本，根治「同一个库出现三个版本」。写死的那个包可能让 pnpm 装出第二份 react（双 React = Invalid hook call），catalog 版本一升级它也升不了。
+3. **修 Bug 题**：`turbo run build` 报「cannot find dependency build output of packages/ui」，问题指向 turbo.json 的哪两个字段？
+   答案：`dependsOn: ["^build"]` 与 `outputs`——前者声明「先构建依赖包再构建自己」，后者声明产物目录让缓存能存取 dist；漏掉任一都会让任务图与缓存失效判断出错。
+4. **规则题**：为什么 dev 任务要 `cache: false` + `persistent: true`？
+   答案：dev server 是常驻进程、不产出可复用的静态产物——缓存它没有意义且会阻塞流水线；persistent 标记告诉 Turborepo 这是长期运行任务，单独处理不参与退出码判定。

@@ -239,6 +239,19 @@ export function List<T>({ items, getKey, renderItem }: ListProps<T>) {
 - React 19 类型：ref 即 prop（弃用 `forwardRef`）、`useRef` 必传参、`JSX` 命名空间移到 `React.JSX`、`RefObject.current` 可变。
 - 可辨识联合与泛型组件是把"能编译"提升到"类型即文档"的两件核心武器；工具类型（`ComponentProps`/`ReturnType`/`Awaited`）能从现有代码反推类型，避免重复手写。
 
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **预测题**：`type Props = { title: string }` 的组件想直接接 `ref`，React 19 里怎么写？React 18 里呢？
+   答案：19 里 ref 是普通 prop——`function Input({ title, ref }: Props & { ref?: React.Ref<HTMLInputElement> })` 直接解构；18 里 ref 不是普通 prop，必须用 `forwardRef<HTMLInputElement, Props>` 包一层。
+2. **修 Bug 题**：`const [user, setUser] = useState<User | null>(null)`，组件里直接 `user.name` 编译报错，改用 `user!.name` 能编译但为什么不该这么写？正确写法是什么？
+   答案：`!` 是"我保证非空"的闭嘴指令，运行时 null 照样崩——把编译期错误推迟成线上错误。正确写法：提前返回 `if (!user) return <Loading />`，或解构默认值，让类型收窄后再使用。
+3. **辨析题**：`React.ReactNode` 与 `React.JSX.Element` 的区别是什么？children 该标哪个？
+   答案：`JSX.Element` 只是"一个 JSX 元素"，`ReactNode` 涵盖元素、字符串、数字、布尔、数组、null 等所有可渲染值；children 要能接 `{cond && <X/>}` 这类写法，所以标 `ReactNode`（React 19 中全局 JSX 命名空间已移入 `React.JSX`）。
+4. **规则题**：为什么说 `as` 断言是"闭嘴指令"？哪两类位置允许它？
+   答案：`as` 不做任何运行时转换，只让编译器停止检查。允许的位置：类型系统表达不了的接口边界（API 响应、localStorage）与确需绕过字面量检查的场景（如 CSS 变量对象）；业务逻辑里成片的 `as` 说明类型设计错了。
+
 ## 速查
 
 ### ComponentProps 提取属性

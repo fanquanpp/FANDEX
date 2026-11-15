@@ -188,3 +188,16 @@ export class ListComponent {
 ## 10. 一句话记住
 
 > Angular 是全家桶版 React：装饰器组件对函数组件，signal/computed/effect 对 Hooks，input/output 对 props 与回调，DI 对 Context；数据同样单向流动。
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **对照题**：Angular 的 `signal()` 读值要显式调用（`count()`），React Hooks 读值直接写变量名——这个差别在「依赖收集」上导致什么不同体验？
+   答案：signal 的显式调用是天然的依赖追踪点（谁在读，运行时就知道，无需依赖数组）；React 靠渲染一次整体重跑 + 依赖数组声明，「漏了依赖」成为特有的 stale closure 事故面。Angular 的 zoneless/Signals 与 React Compiler 都在朝「框架自动算依赖」收敛。
+2. **辨析题**：input/output 与 props/回调是同一件事吗？模板绑定的「双向」`[(ngModel)]` 为什么不破坏单向数据流？
+   答案：是同一件事——output 就是「子组件发事件、父组件改状态」的回调。`[(ngModel)]` 是「写回调」的语法糖（banana in a box），展开后依然是「值下来、事件上去」两股单向流。
+3. **对照题**：Angular DI 与 React Context 都做「依赖注入」，差别在哪？分别适合放什么？
+   答案：Angular DI 按注入器层级（模块/组件树）解析服务类，可放逻辑服务（不止状态）；React Context 只传值、全量通知，适合低频全局值。两者都鼓励「依赖从上层来」而非模块内单例硬编码。
+4. **规则题**：什么时候选 Angular 而不是 React？迁移评估的正确姿势是什么？
+   答案：大团队、长周期、需要强约定与统一工具链的企业项目——全家桶省掉选型与拼装成本。已有 React 项目不整体迁移（模板、DI、RxJS 都是新心智），只在独立新项目里评估；两端模型快速趋同，掌握一侧概念后另一侧主要是语法翻译。

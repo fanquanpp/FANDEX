@@ -129,7 +129,7 @@ export default App;
 
 ## 4. JSX 是什么：JS 扩展，不是模板语言
 
-初见 JSX 容易以为它是「写在 JS 里的 HTML 模板」，方向反了：JSX 本身就是 JavaScript 语法的一部分，由编译器（Vite 里的 esbuild）翻译成普通函数调用，浏览器执行的根本不是 JSX。和 Vue 对照一句就清楚：Vue 的 template 是独立的模板语言，v-if、v-for 是模板自己的指令；JSX 没有指令，花括号里直接写 JS 表达式：
+初见 JSX 容易以为它是「写在 JS 里的 HTML 模板」，方向反了：JSX 本身就是 JavaScript 语法的一部分，由编译器（Vite 里的 Oxc，Vite 7 及以前是 esbuild——2026 年 3 月的 Vite 8 换了引擎，机制不变）翻译成普通函数调用，浏览器执行的根本不是 JSX。和 Vue 对照一句就清楚：Vue 的 template 是独立的模板语言，v-if、v-for 是模板自己的指令；JSX 没有指令，花括号里直接写 JS 表达式：
 
 ```jsx
 const player = { name: '阿天', score: 980 };

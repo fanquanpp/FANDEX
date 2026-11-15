@@ -248,3 +248,16 @@ const observer = new ResizeObserver(() => { setupCanvas(canvas); redrawAll(); })
 observer.observe(canvas);
 // cleanup: observer.disconnect()
 ```
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：React 管 Canvas 还是 Canvas 管 DOM——两种所有权模型各自适合什么场景？
+   答案：React 只管 `<canvas>` 容器、绘制命令全走 context，适合自己画的图形（网格、波形）；Canvas 内部再建自己的元素树并自管更新（D3/Three.js 风格），适合复杂图形库接管。混用的崩溃点都在「两套所有权重绘同一块画布」。
+2. **修 Bug 题**：高分屏上画的线条模糊发虚，代码里 `canvas.width = 500`，CSS 里 `width: 500px`，问题在哪？
+   答案：画布位图尺寸与显示尺寸 1:1，没有乘 devicePixelRatio。正确做法：`canvas.width = cssSize * dpr`，`ctx.scale(dpr, dpr)`，CSS 尺寸保持 cssSize——位图按物理像素绘制，显示层缩回 CSS 像素。
+3. **预测题**：rAF 循环里每帧 `setPositions(arr => [...arr, frameData])`，几百帧后页面卡死，原因与正确做法是什么？
+   答案：每帧 setState 触发 React 全量重渲染 + 数组无限增长。帧内数据放 ref（或直接在 ctx 上画），只把需要展示的少量终值 setState；卸载时 cancelAnimationFrame 清理。
+4. **规则题**：为什么 Canvas 内容默认对搜索引擎与读屏不可见？两件补救是什么？
+   答案：位图不是 DOM——没有元素、没有语义。补救：容器内提供 aria 标签或屏幕外的语义化 DOM 副本；提供降级文本或表格数据视图，保证「内容可被非视觉通道获取」。

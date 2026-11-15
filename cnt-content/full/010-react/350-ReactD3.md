@@ -191,3 +191,16 @@ import { scaleLinear } from 'd3-scale';      // 而非 import * as d3
 import { line } from 'd3-shape';
 import { select } from 'd3-selection';
 ```
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：路线 A 与路线 B 的「DOM 所有权」分界在哪？默认选哪个、什么时候才换？
+   答案：路线 A——D3 只算（比例尺/形状/布局），DOM 由 JSX 渲染，React diff 天然就是数据连接；路线 B——容器 ref 整体交给 selection，React 不碰内部。默认 A；只有拖拽、力导向、复杂过渡这类 D3 强项才换 B。
+2. **预测题**：`scaleLinear().domain([0, max]).range([innerH, 0])`——为什么 range 是「高度在前、0 在下」？
+   答案：SVG 的 y 轴向下增长，值越大像素 y 越小才符合直觉；比例尺就是「数据值映射为像素值」的函数，方向由 range 两端决定。
+3. **修 Bug 题**：路线 B 的图表数据更新后新圆点没有出现，`.data(points)` 少了什么？
+   答案：少了 key 函数——`.data(points, (d) => d.id)`。没有 key 时 selection 按下标对应，插入/删除会让数据身份与 DOM 错位，enter/exit 判断失准；key 函数让 D3 跟 React 的 key 概念对齐。
+4. **规则题**：为什么全量 `import * as d3 from 'd3'` 要避免？业务图表的优先选择是什么？
+   答案：D3 是几十个模块的集合，全量引入把用不到的模块拖进 bundle（可省约 80%）；按需引入 d3-scale/d3-shape/d3-selection。业务图表优先复用「路线 A + 预制组件」的库（Recharts、visx、nivo），手写 D3 留给定制需求。

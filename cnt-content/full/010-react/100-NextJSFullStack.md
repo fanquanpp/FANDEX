@@ -4,7 +4,7 @@ title: Next.js 全栈开发
 module: 'react'
 category: 前端技术
 difficulty: advanced
-description: Next.js 全栈拼图：Server Actions、中间件、API Routes、数据库集成、认证与部署。
+description: Next.js 全栈拼图：Server Actions、proxy（原 middleware）、Route Handlers、数据库集成、认证与部署。
 author: fanquanpp
 updated: '2026-10-07'
 related:
@@ -32,7 +32,7 @@ prerequisites: []
 
 - 掌握「1. Server Actions」的核心机制、典型用法与常见陷阱
 - 掌握「2. 中间件」的核心机制、典型用法与常见陷阱
-- 掌握「3. API Routes」的核心机制、典型用法与常见陷阱
+- 掌握「3. Route Handlers」的核心机制、典型用法与常见陷阱
 
 
 
@@ -104,16 +104,18 @@ export default function NewPostPage() {
 }
 ```
 
-## 2. 中间件
+## 2. 中间件（Next.js 16 起改名 proxy）
+
+Next.js 16 把这一层的文件约定从 `middleware.ts` 改名为 `proxy.ts`，导出函数也从 `middleware` 改为 `proxy`——动机是正名：它的工作是"请求到达路由前拦截、转发、改写"，与后端框架里"挂在路由处理器链上的中间件"不是一回事，旧名字长期误导。**16 里 `middleware.ts` 仍可运行但已标记弃用**（未来大版本移除，官方提供 middleware-to-proxy codemod）；新项目一律写 `proxy.ts`，读旧项目要认识旧名。
 
 ### 2.1 基本用法
 
 ```tsx
-// middleware.ts — 项目根目录
+// proxy.ts — 项目根目录（Next.js 16+；旧项目里叫 middleware.ts）
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const token = request.cookies.get('auth-token')?.value;
 
   // 保护路由
@@ -134,13 +136,13 @@ export const config = {
 };
 ```
 
-### 2.2 高级中间件
+### 2.2 高级用法
 
 ```tsx
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const response = NextResponse.next();
 
   // 添加自定义 Header
@@ -166,9 +168,11 @@ export function middleware(request: NextRequest) {
 }
 ```
 
-## 3. API Routes
+## 3. Route Handlers
 
-### 3.1 Route Handlers
+Pages Router 时代叫 API Routes（pages/api 目录）；App Router 下的现名是 Route Handlers——没有组件参与的原生 HTTP 接口。
+
+### 3.1 基本用法：route.ts 约定
 
 ```tsx
 // app/api/users/route.ts
@@ -549,3 +553,16 @@ export default nextConfig;
 | **AWS (Amplify)**    | AWS 生态集成           | 已有 AWS 基础设施  |
 | **Railway**          | 简单部署、数据库集成   | 快速原型           |
 | **Cloudflare Pages** | 全球 CDN、Workers      | 边缘计算需求       |
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：同一个「创建订单」操作，什么时候写 Server Action，什么时候写 Route Handler？
+   答案：调用方是自己的 React 组件用 Server Action（RPC 式、类型直连、自动序列化约束）；调用方是外部系统（Webhook 回调、第三方、移动端、cron）用 Route Handler——它是无组件参与的公开 HTTP 端点。
+2. **预测题**：proxy.ts（旧名 middleware.ts）里 `NextResponse.redirect(...)` 发生在渲染之前还是之后？它能看到组件树吗？
+   答案：之前——请求先过 proxy 再进路由渲染，所以它看不到组件树，只能基于 URL、cookie、headers 做重定向/改写/鉴权拦截；需要组件状态参与的判断应该在 Server Component 里做。
+3. **修 Bug 题**：Server Action 里 `await db.user.create()` 后直接 `throw new Error('创建失败')`，前端表单只看到白屏报错，正确的错误约定是什么？
+   答案：Server Action 的返回值要走结构化结果（`{ success, error }`），由 useActionState 的 state 渲染错误；action 内抛出的异常交给错误边界兜底，不会进到表单的 state 流——「错误是数据，不是异常」是 action 的约定。
+4. **规则题**：为什么「客户端写数据」绕不开服务端，即使有 Server Action 也一样？
+   答案：客户端的一切输入都可伪造——数据校验、权限判定必须发生在服务端；Server Action 只是「调用通道」，本质仍是服务端函数执行。把校验写在客户端组件里只是体验优化，安全边界永远在服务端代码里。

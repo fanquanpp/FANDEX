@@ -247,6 +247,19 @@ function GoodApp() {
 - 生产用 `react-error-boundary`：`fallbackRender` + `resetKeys` + `useErrorBoundary().showBoundary` 覆盖"局部降级、自动重置、异步错误上抛"三类需求。
 - 与监控平台的集成点是 `componentDidCatch` / `onCaughtError`，组件栈（`info.componentStack`）是定位崩溃组件的关键字段。
 
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：`getDerivedStateFromError` 与 `componentDidCatch` 各在哪个阶段执行、各自允许做什么？
+   答案：前者在渲染阶段执行，负责返回降级 UI，必须保持纯（不能副作用）；后者在提交阶段执行，负责记录与上报（可以写日志、发请求）。
+2. **预测题**：onClick 里 `fetch().then(() => { throw new Error() })` 抛出的错误，会被外层 Error Boundary 捕获吗？
+   答案：不会。错误边界只捕获子组件「渲染期间」的错误；Promise 回调（异步）与事件处理器里的错误都捕获不到。修法：`try/catch` 后把错误转入 state 主动触发降级，或用 `react-error-boundary` 的 `showBoundary` 上抛。
+3. **修 Bug 题**：图表组件偶发渲染错误把整页打白屏了，最小修复思路是什么？
+   答案：在会崩的组件外包一层错误边界并给出局部降级 UI——「保住结账页，只崩图表」。生产上用 `react-error-boundary` 的 `FallbackComponent`/`fallbackRender`，按需配 `resetKeys` 让数据变化时自动重试（如 190 篇第 4 节示例）。
+4. **规则题**：React 19 里错误「只走一次报告流程」，老的「抛两次」依赖为什么失效？
+   答案：19 移除了渲染错误的自动静默重试，同一错误不再被 boundary 捕获两次；靠重复捕获计数来触发上报的逻辑会漏报，改为在 `componentDidCatch`/`onCaughtError` 单次路径里完成上报（见 440 篇）。
+
 ## 速查
 
 **手写错误边界（最小模板）**

@@ -78,7 +78,7 @@ export default defineConfig({
 
 就一个插件，但它同时干两件事：
 
-1. **衔接 JSX 转译**：`.jsx` / `.tsx` 里的 JSX 不是浏览器认识的语法，插件把它接入 Vite 的转译管线（dev 期底层由 esbuild——Go 写的高速转译器——完成）；
+1. **衔接 JSX 转译**：`.jsx` / `.tsx` 里的 JSX 不是浏览器认识的语法，插件把它接入 Vite 的转译管线（dev 期底层由 Oxc——Rust 写的高速转译器——完成。Vite 8 于 2026 年 3 月发布，用 Rolldown + Oxc 替代了原来的 esbuild + Rollup 双引擎；读到旧文章讲 esbuild 属正常，机制结论不变）；
 2. **Fast Refresh（快速刷新）**：这才是核心价值。编辑组件时改动被局部替换到页面，组件状态（输入框里的文字、计数器数值）原样保留；没有它，每次保存都是整页刷新、状态全丢。
 
 动手感受：在 App.tsx 写一个 useState 计数器（写法见 [状态与事件](/react/030-StateEvent)），点几次按钮让数字走到 3，再改一行 JSX 文案并保存。预期：页面不刷新、数字仍是 3、文案已更新——Fast Refresh 在替你干活。
@@ -89,7 +89,7 @@ export default defineConfig({
 
 ### npm run dev
 
-输出见第 1 节。要点：dev 是「按需编译」——浏览器请求哪个模块现编译哪个，启动瞬时；react、react-dom 首次启动会经过一次 esbuild 预构建，属正常现象。
+输出见第 1 节。要点：dev 是「按需编译」——浏览器请求哪个模块现编译哪个，启动瞬时；react、react-dom 首次启动会经过一次预构建（依赖先打包成单文件再伺服，Vite 8 起由 Rolldown 完成，旧版是 esbuild），属正常现象。
 
 ### npm run build
 
@@ -166,7 +166,7 @@ VITE_APP_TITLE=React 待办本
 
 实验一：把 `server.port` 改成 3000 并加 `open: true`，预测终端输出与浏览器行为，再验证。
 
-实验二：把 plugins 数组里的 `react()` 注释掉，重启 dev。先预测两件事——页面还能不能渲染？改代码后是局部更新还是整页刷新？运行验证：esbuild 仍会转译 JSX，页面照常渲染，但 Fast Refresh 消失，保存即整页刷新、状态丢失——插件的价值就此现形。
+实验二：把 plugins 数组里的 `react()` 注释掉，重启 dev。先预测两件事——页面还能不能渲染？改代码后是局部更新还是整页刷新？运行验证：转译器（Oxc）仍会转译 JSX，页面照常渲染，但 Fast Refresh 消失，保存即整页刷新、状态丢失——插件的价值就此现形。
 
 实验三：在 `.env.development` 加一行 `TOKEN=xyz`（无前缀），组件里 `console.log(import.meta.env.TOKEN)`。先写预测再运行，并用第 4 节的白名单逻辑解释结果。
 

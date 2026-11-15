@@ -202,6 +202,19 @@ function ComposeProviders({ providers, children }: {
 - Provider 深嵌套用 `reduceRight` 组合收敛为一层；Context 精确订阅靠拆分小 Context 或 `use-context-selector`。
 - 模式是手段不是目的：先问"复用的是逻辑、结构还是状态持有权"，再对号入座。
 
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：`children` 与「props 传 ReactNode」分别对应什么插槽形态？什么时候放弃 children？
+   答案：children 是单插槽，props 传 ReactNode 是具名插槽（header/footer/actions 各归各）。一个插槽用 children，多个插槽必须具名 props——这是组合模式替代继承的全部入口。
+2. **修 Bug 题**：Switch 组件只传了 `value` 没传 `onChange`，点击毫无反应，问题出在哪？双轨接口的标准写法是什么？
+   答案：只受控不反馈 = 状态永远不变。标准双轨：`isControlled ? checked : inner`——外部传 value/onChange 就完全听外部的，否则内部 state 兜底；两条轨道都要有完整的数据回路。
+3. **预测题**：`if (need) useToggle()` 为什么必然崩溃？需要「条件启用逻辑」时怎么改写？
+   答案：Hook 按调用顺序进 Fiber 链表，条件调用使下次渲染顺序错位。改法：Hook 拆小、始终调用、在内部处理条件（如 `useToggle(enabled)` 传参控制行为），而不是条件调用 Hook 本身。
+4. **规则题**：容器/展示模式与 HOC、render props 为什么都被自定义 Hook 吸收？三者各自遗留什么？
+   答案：三者的目的都是逻辑复用，但都要嵌套组件树（包装器地狱、静态方法与 ref 丢失）；自定义 Hook 把逻辑提成函数、不产生额外组件节点，成为现代唯一答案。遗留：跨 DOM 命令式操作仍可能用 HOC/包装（如 185 篇 Portal），受控/非受控双轨仍是组件接口的通行约定。
+
 ## 速查
 
 **组合（插槽）**

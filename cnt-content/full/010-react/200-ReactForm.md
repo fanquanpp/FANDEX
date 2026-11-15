@@ -228,6 +228,19 @@ function beforeSubmit() {
 - 性能问题（键入重渲染）的解法是换数据流（非受控库），不是给受控输入加防抖。
 - 表单是组件测试的高频区：用 `getByRole('textbox', { name })` 与 `userEvent.type` 做行为断言，见[React 测试](/react/220-ReactTest)。
 
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **预测题**：`<input defaultValue={user.name} />` 组件挂载后才拿到 user 数据，输入框会更新吗？两种修法是什么？
+   答案：不会，非受控初值只在挂载时读一次。修法一：改受控（`value` + `onChange`）；修法二：数据就绪前不渲染（`user && <Form ... />`），或给容器加 `key={recordId}` 强制重建以重置初值。
+2. **修 Bug 题**：表单里的「重置」按钮一按整页表单直接提交了，最可能的原因是什么？
+   答案：`<button>` 默认 `type="submit"`，放在 form 里会触发提交。工具按钮必须显式写 `type="button"`（重置按钮写 `type="reset"`）。
+3. **辨析题**：受控与非受控的分界线是什么？文件输入为什么必须非受控？
+   答案：受控 = React state 是唯一数据源（`value` + `onChange`），适合校验与联动；非受控 = DOM 自己持有值（`defaultValue` + ref/FormData 读取），适合「只要提交值」。文件输入的值只能由用户操作设置，无法用 state 驱动，所以必须非受控。
+4. **预测题**：React 19 的 `<form action={fn}>` 里 `fn` 拿到的参数是什么？`useActionState` 相比手写 `useState(false)` 管 pending 少写了什么？
+   答案：fn 收到 FormData 实例；useActionState 把「pending 布尔、错误/结果状态、提交函数」三件套压缩成一个 Hook 返回（`[state, action, isPending]`），还自动在 transition 语义下排队提交——老写法要手动 set 三次状态（见 420 篇）。
+
 ## 速查
 
 **受控字段通用 Hook**

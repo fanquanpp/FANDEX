@@ -230,3 +230,16 @@ env:
 npx size-limit --why      # 或 size-limit / bundlesize 配置 chunk 阈值
 node scripts/check-bundle-size.mjs dist --max-gzip 300
 ```
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：CI 流水线的缓存该缓存什么？`actions/cache` 缓存 node_modules 与 pnpm 自带 store 缓存的差别是什么？
+   答案：缓存「按 lockfile 指纹可复现的依赖」。pnpm 全局 store + `cache: pnpm` 让安装近乎零拷贝；直接缓存 node_modules 目录则要整目录搬运且换锁文件版本时容易脏。结论：优先用 setup-node 的 cache 选项 + lockfile 提交进仓库。
+2. **修 Bug 题**：本地构建成功、CI 里构建报「Node 版本不支持某语法」，最直接的修法是什么？
+   答案：统一 Node 版本——package.json 写 `engines` 字段，CI 用 `actions/setup-node` 的 `node-version` 指到同一大版本（如 22），必要时加 `node-version-file: .nvmrc`；环境差异在 CI 里第一次暴露说明本地与 CI 从不同源。
+3. **预测题**：构建产物里出现了真实的 API 密钥，最有可能是哪个环节做错了？VITE_ 前缀变量为什么危险？
+   答案：把机密配置成了 VITE_ 前缀变量——Vite 会把它内联进浏览器 bundle，产物即公开。机密只能存在于服务端（Server Action/Route Handler/CI Secret），前端变量只放非机密配置；泄露后立即轮换密钥。
+4. **规则题**：包体积门禁为什么要在 CI 里卡而不是上线后人工看？
+   答案：体积劣化是渐进的——每次 PR 多塞几 KB 没人察觉，半年后首屏翻倍。门禁（size-limit 阈值）把劣化变成红灯，让「引入大依赖」的人当次就看到代价；这是「性能预算」的自动化执行。

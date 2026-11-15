@@ -313,6 +313,19 @@ React 19.2 在 react-dom 层引入了 Partial Pre-rendering 支持：静态外�
 - 水合一致性是纪律：时间、随机、浏览器 API 一律不要直接参与首次渲染
 - SSR/SSG/ISR/RSC 是工具箱里的不同工具：按页面特征选策略，而不是全站统一
 
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **预测题**：组件首帧渲染时写 `new Date().toLocaleTimeString()`，SSR 页面会出现什么现象？为什么？
+   答案：水合不匹配——服务端渲染的时刻与客户端水合的时刻不同，控制台告警且 UI 抖动。时间、随机数、浏览器专属 API 一律不要直接参与首次渲染；放到 Effect 或用 `suppressHydrationWarning` + 客户端二次填充。
+2. **辨析题**：SSR 与 RSC 各解决什么问题？为什么说两者互补而非替代？
+   答案：SSR 解决「HTML 什么时候生成」——首屏白屏与 SEO；RSC 解决「哪些组件的 JS 根本不发到浏览器」——体积与交互成本。可以叠加：Next.js App Router 默认两者同开。
+3. **预测题**：三个 Suspense 边界，其中一个数据要 3 秒才返回，用户看到的 HTML 是怎么到达的？
+   答案：流式 SSR 先发送外壳与已就绪边界的 HTML，慢边界先以 fallback 占位；数据就绪后 React 把内容 HTML 从后续响应块推下来并原位替换占位——首屏不等最慢的数据。
+4. **规则题**：为什么 React 18 后一律推荐 `renderToPipeableStream`/`renderToReadableStream` 而不是 `renderToString`？
+   答案：renderToString 是同步阻塞的——必须渲染完整棵树才返回字符串，慢数据拖住整个响应；流式 API 配合 Suspense 把树分片，先发后补，TTFB 与首屏都更快。
+
 ## 速查
 
 **renderToString 渲染为字符串**

@@ -308,6 +308,19 @@ flowchart TD
 - selector 返回新对象必须配浅比较（`useShallow`），否则精确订阅形同虚设。
 - 库版本要点以官方 README 为准：Zustand v5 移除默认导出、`useShallow` 换位置；RTK 2.x 只推荐 `createSlice` + `configureStore` 写法。
 
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **分类题**：购物车勾选态、全局主题色、文章列表数据，三类状态各自该放哪？
+   答案：本地 useState；客户端共享——低频放 Context、高频放 store（Zustand）；服务端数据不进全局 store，交给 TanStack Query/SWR 这类缓存库（075 篇），全局 store 里只留「服务端缓存的引用」而不是数据本体。
+2. **预测题**：`useSelector(s => ({ count: s.count, name: s.name }))` ——store 里任意字段变了，组件重渲染吗？为什么？怎么修？
+   答案：会。selector 每次返回新对象，引用比较永远不等，精确订阅失效。用 `useShallow`（或 reselect 的 `createSelector`）做浅比较，或把返回值改成原始值/稳定引用。
+3. **辨析题**：为什么说 Zustand/Jotai/Redux 的底层是同一件事？
+   答案：都是「React 之外的普通对象存状态 + `useSyncExternalStore` 订阅 + selector 取切片」。差异只在 API 形态与规范强度：原子（Jotai）、单 store（Zustand）、单 store + 强纪律（RTK），选型是工程决策不是模型差异。
+4. **规则题**：为什么「服务端数据默认不放进 Redux/Zustand」成了社区共识？
+   答案：服务端数据的所有者在远端，随时被别人改掉——放进 store 后要做缓存、去重、失效、重验四件事，全是缓存库已经解决的问题；store 里放服务端数据等于手写一个更差的缓存层（075 篇详解）。
+
 ## 速查
 
 **Context 创建与消费**
