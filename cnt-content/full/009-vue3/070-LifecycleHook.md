@@ -17,15 +17,17 @@ prerequisites: []
 
 ## 前置知识
 
-- [Vue3 服务端渲染](/vue3/350-Vue3SSR)：建议先完成前一篇的学习
+- [Computed 缓存与 watch 时机](/vue3/060-ComputedCacheWatchTiming)：懂 watch 的 flush 时机与 onCleanup——生命周期的钩子顺序与它们共享同一套调度队列；
+- [响应式系统](/vue3/050-ReactiveSystem)：知道 setup 在组件实例创建时执行一次。
 
 ## 学习目标
 
-- 掌握「1. 生命周期概述」的核心机制、典型用法与常见陷阱
-- 掌握「2. 各生命周期钩子详解」的核心机制、典型用法与常见陷阱
-- 掌握「3. 生命周期实战模式」的核心机制、典型用法与常见陷阱
-- 掌握「4. 服务器端渲染（SSR）注意事项」的核心机制、典型用法与常见陷阱
-- 掌握「5. 常见问题与解决方案」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
+
+- 说出 Vue3 生命周期的四个阶段及每阶段能做/不能做的事（挂载前碰不到 DOM、卸载后别再改状态）；
+- 把异步数据加载、事件监听、轮询三类实战需求落到正确的钩子上，并知道清理动作放在哪；
+- 解释 onUpdated 为什么容易写出无限循环；说出 SSR 下哪些生命周期钩子不会执行（onBeforeMount/onMounted/onBeforeUnmount/onUnmounted 均跳过），服务端专用钩子 onServerPrefetch 承担什么角色；
+- 用 onRenderTracked / onRenderTriggered 定位「谁触发了这次重渲染」。
 
 
 ## 1. 生命周期概述
@@ -440,7 +442,20 @@ onBeforeUnmount(() => {
 3. **SSR安全**：浏览器API只在onMounted中使用
 4. **使用组合函数封装**：将生命周期逻辑提取到可复用的composable中
 5. **异步操作检查挂载状态**：防止卸载后更新状态
-## 生命周期钩子总览
+
+## 自检
+
+回答不出的回对应小节。
+
+1. setup 执行时组件处于哪个阶段？为什么在 setup 同步阶段拿不到 DOM？
+2. 事件监听器应该在哪个钩子注册、哪个钩子移除？两个钩子不配对会发生什么？
+3. onUpdated 里改响应式数据为什么会无限循环？想「数据变后操作 DOM」该用什么替代？
+4. SSR 下哪些钩子不会执行？为什么轮询定时器在服务端组件里是反模式？
+5. 组件卸载后异步回调还在 setState 会怎样？用什么模式防住（onUnmounted 标记 / AbortController）？
+
+## 附录：生命周期钩子速查
+
+### 生命周期钩子总览
 
 **组合式 API 钩子对照**
 ```typescript
@@ -460,7 +475,7 @@ import {
 
 ---
 
-## 创建与挂载阶段
+### 创建与挂载阶段
 
 **onBeforeMount 挂载前**
 `onBeforeMount(<callback>);`
@@ -490,7 +505,7 @@ onMounted(() => {
 
 ---
 
-## 更新阶段
+### 更新阶段
 
 **onBeforeUpdate 更新前**
 `onBeforeUpdate(<callback>);`
@@ -513,7 +528,7 @@ onUpdated(() => {
 
 ---
 
-## 卸载阶段
+### 卸载阶段
 
 **onBeforeUnmount 卸载前**
 `onBeforeUnmount(<callback>);`
@@ -538,7 +553,7 @@ onUnmounted(() => {
 
 ---
 
-## 错误处理
+### 错误处理
 
 **onErrorCaptured 错误捕获**
 `onErrorCaptured((err, instance, info) => <boolean | void>);`
@@ -554,7 +569,7 @@ onErrorCaptured((err, instance, info) => {
 
 ---
 
-## KeepAlive 钩子
+### KeepAlive 钩子
 
 **onActivated 激活**
 `onActivated(<callback>);`
@@ -576,7 +591,7 @@ onDeactivated(() => {
 
 ---
 
-## 服务端渲染钩子
+### 服务端渲染钩子
 
 **onServerPrefetch SSR 预取**
 `onServerPrefetch(<asyncCallback>);`
@@ -590,7 +605,7 @@ onServerPrefetch(async () => {
 
 ---
 
-## 调试钩子
+### 调试钩子
 
 **onRenderTracked 渲染依赖追踪(开发)**
 `onRenderTracked((e) => {});`
@@ -614,7 +629,7 @@ onRenderTriggered((event) => {
 
 ---
 
-## 钩子注册与清理
+### 钩子注册与清理
 
 **多次注册同一钩子**
 ```typescript
@@ -652,7 +667,7 @@ function useInterval(callback: () => void, delay: number) {
 
 ---
 
-## 选项式 API 钩子对照
+### 选项式 API 钩子对照
 
 | 选项式 API | 组合式 API |
 |---|---|

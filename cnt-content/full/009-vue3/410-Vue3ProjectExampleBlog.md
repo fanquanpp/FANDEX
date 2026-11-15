@@ -667,6 +667,16 @@ npm run dev
 npm run build
 ```
 
+## 自检
+
+回答不出的回对应小节；模块题先遮住示例代码自己写，再对照。
+
+1. 主题 Composable 为什么用 provide/inject 下发而不是每个组件自己读 localStorage？刷新后主题怎么恢复？
+2. 阅读进度的两个数据（百分比与标题）分别来自什么监听？为什么用 passive 监听 scroll？
+3. 文章 Store 的 state、getters、actions 各放了什么？为什么草稿保存用 actions 而不是组件里直接改 state？
+4. 动态路由 /article/:id 的参数变化为什么不重建组件？文章内容怎么响应参数更新？
+5. ArticleCard 的 props 契约是什么？父组件传数据时哪三条规则保证单向数据流不被打破？
+
 ## 扩展方向
 
 1. **SSR/SSG** -- 使用 Nuxt3 实现服务端渲染或静态生成

@@ -40,9 +40,9 @@ timeline
     title KeepAlive 演进
     Vue 2.0 : <keep-alive> 支持动态组件缓存
     Vue 2.6 : 与 vue-router 配合的 keep-alive 模式流行
-    Vue 3.0 : <KeepAlive> 内置组件，include/exclude/max
-    Vue 3.2 : onActivated/onDeactivated 组合式 API
-    Vue 3.4 : 缓存调度优化，过渡配合更稳定
+    Vue 3.0 : <KeepAlive> 内置组件，include/exclude/max，组合式 API 提供 onActivated/onDeactivated
+    Vue 3.2.34 : script setup 组件自动以文件名推断 name（配合 include 匹配）
+    Vue 3.3 : defineOptions 宏显式声明组件 name
 ```
 
 ## 2. 形式化定义
@@ -76,7 +76,7 @@ flowchart TD
 
 ### 3.1 缓存键与匹配规则
 
-Vue 3 的 KeepAlive 使用 `getComponentName` 获取组件 name 作为匹配依据；未声明 name 的组件可以退化为组件定义对象自身。`include` 匹配采用字符串精确匹配、正则 `test` 或数组遍历。`<script setup>` 组件默认文件名即 name（Vue 3.2.34+ 支持通过 `defineOptions({ name })` 显式声明）。
+Vue 3 的 KeepAlive 使用 `getComponentName` 获取组件 name 作为匹配依据；未声明 name 的组件可以退化为组件定义对象自身。`include` 匹配采用字符串精确匹配、正则 `test` 或数组遍历。`<script setup>` 组件从 Vue 3.2.34 起自动以文件名推断 name；Vue 3.3 起可用 `defineOptions({ name })` 显式声明（内联组件或文件名不可靠时必须显式声明，否则 include 匹配不上）。
 
 ### 3.2 LRU 淘汰推导
 
@@ -352,6 +352,18 @@ KeepAlive 的本质是“实例级缓存”：缓存的是组件实例与 DOM，
 
 缓存管理三件套：`include` 控制谁缓存，`exclude` 排除谁，`max` 限制总量。动态修改 include 是清理缓存的官方途径；理解 LRU 淘汰机制可以解释 max 的行为。
 
+## 自检
+
+回答不出的回对应小节；配置题先遮住示例代码自己写，再对照。
+
+1. 被缓存的组件第二次进入页面时，依次触发哪两个钩子？created/mounted 还会执行吗？
+2. include 匹配依据是什么？`<script setup>` 组件没写 defineOptions 时靠什么拿到 name？
+3. 为什么说「关闭标签时从 include 移除组件名」是清理缓存的正规途径？直接把组件 v-if 掉行不行？
+4. KeepAlive 与路由的协作为什么要用 `RouterView v-slot="{ Component }"` 包一层？直接包 `<RouterView>` 会怎样？
+5. onActivated 里刷新数据的「间隔 30 秒才刷」模式，时间戳应该记在哪两个钩子里？
+
+## 附录：KeepAlive 速查
+
 ### 1. KeepAlive 基础
 
 #### 1.1 基本用法
@@ -383,7 +395,7 @@ KeepAlive 的本质是“实例级缓存”：缓存的是组件实例与 DOM，
 </KeepAlive>
 ```
 
-### 1. 生命周期钩子
+### 2. 生命周期钩子
 
 ```javascript
 import { onActivated, onDeactivated } from 'vue';
@@ -406,7 +418,7 @@ export default {
 | `onActivated`   | 组件从缓存激活时 |
 | `onDeactivated` | 组件被缓存停用时 |
 
-### 2. 缓存刷新
+### 3. 缓存刷新
 
 ```javascript
 // 需要刷新缓存时，移除 include 中的组件名

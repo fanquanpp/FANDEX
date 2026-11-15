@@ -24,7 +24,7 @@ prerequisites:
 
 Svelte 是一个"编译时框架"：React 与 Vue 在浏览器里做运行时 diff，Svelte 则在构建阶段完成依赖分析与更新代码生成，运行时体积小、更新路径短。
 
-Svelte 5（2024-10 发布）引入 runes（符文）语法，用 `$state`、`$derived`、`$effect` 显式声明响应式，替代旧版 `let` 自动响应式与 store 体系。当前稳定版为 Svelte 5.55.x 与 SvelteKit 2.57.x（2026-05），新项目统一使用 SvelteKit 脚手架。
+Svelte 5（2024-10 发布）引入 runes（符文）语法，用 `$state`、`$derived`、`$effect` 显式声明响应式，替代旧版 `let` 自动响应式与 store 体系。当前稳定版为 Svelte 5.57.x 与 SvelteKit 3.x（版本信息核实于 2026-11），新项目统一使用 SvelteKit 脚手架。
 
 ## 2. 五分钟跑起来
 
@@ -172,3 +172,12 @@ Svelte 最独特的卖点是"没有虚拟 DOM"，而 Vue 3.6 的 Vapor 模式正
 ## 11. 一句话记住
 
 > Svelte 是"编译时"的 Vue：`$state`、`$derived`、`$effect` 对应 `ref`、`computed`、`watchEffect`，`bind:` 对应 `v-model`，模板与单向数据流心智完全通用。
+
+## 自检
+
+回答不出的回对应小节。
+
+1. Vue 与 Svelte 追踪依赖的时机差在哪（运行时代理 vs 编译期分析）？这决定了运行时多付什么、少付什么？
+2. Svelte 5 的 runes 解决了旧版自动响应式的什么问题？与 Vue 显式 ref 的取舍点在哪？
+3. `$state` 的模块级导出与 Pinia store 在能力上差在哪一步（DevTools、插件、SSR 隔离）？
+4. Vapor 落地后「编译时 vs 运行时」为什么不再是选型分界？剩下的分界是什么？

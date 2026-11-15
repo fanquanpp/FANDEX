@@ -52,11 +52,11 @@ Web 应用的体积随功能增长而膨胀，首屏 JS 体积从 2010 年的几
 | 2015 | Webpack 1 引入 `require.ensure` 实现代码分割 |
 | 2017 | Webpack 2 支持 `import()` 动态导入语法 |
 | 2017 | React 16 引入 `React.lazy` 与 `Suspense` |
-| 2018 | Vue 2.5 支持异步组件工厂函数（`(resolve, reject) => ...` 形式） |
+| 2017 | Vue 2.3 增强异步组件工厂函数，支持 loading / error / timeout 配置 |
 | 2020 | Vue 3 重构 `defineAsyncComponent`，引入 Composition API 风格 |
 | 2020 | Vue 3 引入 `Suspense`（实验性） |
-| 2022 | Vue 3.2 增强 `Suspense`，支持嵌套与 SSR（官方仍标记为实验性） |
-| 2024 | Vite 5 优化动态导入，支持模块预加载 |
+| 2022 | Vue 3.2 增强 `Suspense`，支持嵌套与 SSR 流式渲染（官方仍标记为实验性） |
+| 2023 | Vite 5 发布，动态导入与模块预加载成为构建默认能力 |
 
 ### 1.2 Vue 2 时代的异步组件
 
@@ -151,9 +151,9 @@ Vue 3.2+ 支持嵌套 Suspense，允许局部异步依赖独立管理加载态�
 </Suspense>
 ```
 
-#### 1.3.5 SSR 流式渲染（Vue 3.3+）
+#### 1.3.5 SSR 流式渲染（Vue 3.2+）
 
-Vue 3.3+ 优化了 SSR 中的 Suspense，支持流式渲染（`renderToNodeStream`），服务端在异步依赖完成时立即输出对应 HTML，提升首屏 TTFB（Time To First Byte）。
+Vue 3.2 起 SSR 支持流式渲染（`renderToNodeStream` / `renderToWebStream`），服务端在异步依赖完成时立即输出对应 HTML，提升首屏 TTFB（Time To First Byte）。
 
 ### 1.4 Evan You 的设计哲学
 
@@ -606,7 +606,7 @@ function use(fetchPromise) {
 
 ### 3.8 SSR 流式渲染的原理
 
-Vue 3.3+ 的 SSR 支持 Suspense 流式渲染：
+Vue 3.2+ 的 SSR 支持 Suspense 流式渲染：
 
 ```javascript
 import { renderToNodeStream } from 'vue/server-renderer';
@@ -666,7 +666,7 @@ export default {
 ### 4.1 基础用法：路由懒加载
 
 ```javascript
-// router/index.ts —— Vue 3.5+ + Vue Router 5
+// router/index.ts —— Vue 3.5+ + Vue Router 4/5（v5 为过渡版本，v4 API 原样可用）
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/Home.vue'; // 首屏直接 import
 
@@ -682,12 +682,12 @@ const routes = [
   },
   {
     path: '/dashboard',
-    // 命名 chunk，便于分析与缓存
-    component: () => import(/* webpackChunkName: "dashboard" */ '../views/Dashboard.vue'),
+    // webpack 项目可用魔法注释命名 chunk：import(/* webpackChunkName: "dashboard" */ '../views/Dashboard.vue')
+    // Vite 项目不支持 webpack 魔法注释——chunk 名默认取文件路径，命名需求在 vite.config 的 rollupOptions.output 里配
+    component: () => import('../views/Dashboard.vue'),
   },
   {
     path: '/settings',
-    // Vite 风格的注释
     component: () => import('../views/Settings.vue'),
   },
 ];
@@ -2840,19 +2840,19 @@ function defineAsyncComponent(options: {
 
 | Vue 版本 | 异步组件特性 |
 |----------|--------------|
-| 2.3 | 首次引入异步组件（工厂函数） |
-| 2.5 | 支持 `import()` 语法 |
-| 3.0 | 完整重构 defineAsyncComponent，引入 Suspense |
-| 3.2 | Suspense 支持嵌套（官方仍标记为实验性） |
-| 3.3 | SSR 流式渲染优化 |
-| 3.4 | 性能优化，内部实现改进 |
-| 3.5 | 懒水合与 data-allow-mismatch 等 SSR 增强 |
+| 2.3 | 异步组件工厂函数增强，支持 loading / error / timeout 配置 |
+| 2.x | 配合打包器动态 `import()` 做代码分割（能力来自打包器，非框架内置） |
+| 3.0 | 完整重构 defineAsyncComponent，引入 Suspense（实验性） |
+| 3.2 | Suspense 支持嵌套；SSR 流式渲染（renderToNodeStream / renderToWebStream）落地（官方仍标记为实验性） |
+| 3.3 | async setup 的 SSR 处理改进 |
+| 3.4 | 内部实现性能优化 |
+| 3.5 | 懒水合（lazy hydration）与 data-allow-mismatch 等 SSR 增强 |
 
 **升级建议**：
 
 - Vue 2 项目升级：异步组件 API 变化较大，需重构。
 - Vue 3 项目：建议使用 `defineAsyncComponent` 完整配置，配合 Suspense。
-- SSR 项目：Vue 3.3+ 的流式渲染显著提升性能，推荐升级。
+- SSR 项目：Vue 3.2+ 的流式渲染显著提升性能，推荐使用。
 
 ---
 
@@ -2871,7 +2871,21 @@ function defineAsyncComponent(options: {
 7. **最佳实践**：合理使用 delay 避免闪烁、错误边界捕获异常、预加载关键路由、chunk 分析优化。
 
 掌握异步组件与 Suspense 的原理与最佳实践，是构建大型 Vue 应用的关键能力。在实际项目中，应根据场景灵活选择路由懒加载、组件懒加载、Suspense 协调等策略，平衡性能、用户体验与开发成本。
-## defineAsyncComponent 基础
+
+## 自检
+
+回答不出的回对应小节。
+
+1. `import('./Comp.vue')` 让组件延迟加载的收益是什么？打包器在这个过程里做了哪两件事（拆 chunk + 按需请求）？
+2. defineAsyncComponent 的 loading / delay / error / timeout 四个配置各自防什么现象？delay 默认 200ms 防的是什么？
+3. Suspense 等待的是什么？async setup 组件没有 Suspense 祖先会怎样？
+4. defineAsyncComponent 与 Suspense 的分工边界是什么？路由懒加载该用哪个？
+5. SSR 流式渲染解决了什么等待问题？TTFB 为什么会显著降低？
+6. 重试加载失败的 chunk 用哪个配置？指数退避为什么要设上限？
+
+## 附录 D：异步组件用法速查
+
+### defineAsyncComponent 基础
 
 **简单异步组件**
 `const <comp> = defineAsyncComponent(<loader>);`
@@ -2919,7 +2933,7 @@ const AsyncComp = defineAsyncComponent(() =>
 
 ---
 
-## 异步组件使用
+### 异步组件使用
 
 **模板中使用**
 ```vue
@@ -2969,7 +2983,7 @@ const router = createRouter({
 
 ---
 
-## 配合 Suspense
+### 配合 Suspense
 
 **Suspense 包裹异步组件**
 ```vue
@@ -3029,7 +3043,7 @@ const data = await fetch('/api/data').then(r => r.json());
 
 ---
 
-## 异步组件配置选项
+### 异步组件配置选项
 
 **loader 加载器**
 ```typescript
@@ -3078,7 +3092,7 @@ const AsyncComp = defineAsyncComponent({
 
 ---
 
-## 错误处理
+### 错误处理
 
 **onError 重试机制**
 ```typescript
@@ -3128,7 +3142,7 @@ onErrorCaptured((err) => {
 
 ---
 
-## 高级用法
+### 高级用法
 
 **工厂函数返回组件**
 ```typescript
@@ -3168,7 +3182,7 @@ const AsyncComp = defineAsyncComponent(loader);
 
 ---
 
-## 异步组件 + 路由
+### 异步组件 + 路由
 
 **路由懒加载完整示例**
 ```typescript
@@ -3222,7 +3236,7 @@ export default createRouter({
 
 ---
 
-## 综合应用
+### 综合应用
 
 **分组加载**
 ```vue

@@ -450,7 +450,20 @@ app.use(formPlugin); // form插件可能依赖i18n
 3. **自动注册组件**：使用 `import.meta.glob` 批量注册
 4. **清理副作用**：插件创建的全局监听器需提供清理方法
 5. **文档化**：说明插件的配置选项和使用方式
-## 插件结构
+
+## 自检
+
+回答不出的回对应小节；插件题先遮住示例代码自己写，再对照。
+
+1. 插件对象与安装函数两种形态的 install 签名各是什么？app.use 传的第二个参数去了哪？
+2. 为什么官方建议 provide/inject 优先于 globalProperties？globalProperties 有哪两个代价？
+3. Module Augmentation 扩展类型时，声明要写在哪个环境里（declare module 'vue'）？
+4. 插件注册顺序为什么重要？会互相覆盖的全局属性该怎么协调？
+5. 插件创建的全局监听（如 resize）在卸载时谁来清理？设计插件时怎么暴露清理入口？
+
+## 附录：插件开发速查
+
+### 插件结构
 
 **插件对象形式**
 ```typescript
@@ -484,7 +497,7 @@ export default function MyPlugin(app: App, options?: PluginOptions) {
 
 ---
 
-## 插件安装
+### 插件安装
 
 **app.use 安装插件**
 `app.use(<plugin>, [options]);`
@@ -513,7 +526,7 @@ createApp(App)
 
 ---
 
-## 插件能力
+### 插件能力
 
 **注册全局组件**
 ```typescript
@@ -620,7 +633,7 @@ export function useToast() {
 
 ---
 
-## 插件配置
+### 插件配置
 
 **默认配置合并**
 ```typescript
@@ -663,7 +676,7 @@ export default {
 
 ---
 
-## Pinia 插件
+### Pinia 插件
 
 **Pinia 插件结构**
 ```typescript
@@ -699,7 +712,7 @@ app.use(pinia);
 
 ---
 
-## Router 插件
+### Router 插件
 
 **Router 拦截插件**
 ```typescript
@@ -736,7 +749,7 @@ app.use(createAuthPlugin(router));
 
 ---
 
-## 完整插件示例
+### 完整插件示例
 
 **Toast 插件**
 ```typescript

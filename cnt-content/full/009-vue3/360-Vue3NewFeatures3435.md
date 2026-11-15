@@ -306,7 +306,7 @@ Teleport、KeepAlive 等内置组件在 3.4 已稳定；Suspense 保持实验性
 
 ## 九、3.6 与 Vapor：现在的状态和你的升级策略
 
-截至 2026-09（以 npm dist-tags 为准）：Vue 稳定线是 3.5.x，3.6 处于 RC 阶段，核心特性即 [Vapor 模式](/vue3/370-VaporMode)——编译期直接生成定向 DOM 操作，跳过虚拟 DOM。组件 API 不变，是编译策略的变化。
+截至 2026-11（以 npm dist-tags 为准）：Vue 稳定线是 3.5.x（当前 patch 3.5.45），3.6 处于 RC 阶段（dist-tag `rc` 为 3.6.0-rc.15），核心特性即 [Vapor 模式](/vue3/370-VaporMode)——编译期直接生成定向 DOM 操作，跳过虚拟 DOM。组件 API 不变，是编译策略的变化。
 
 生产策略三句话：
 
