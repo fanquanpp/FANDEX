@@ -295,6 +295,38 @@ x-ratelimit-remaining: 4999
 
 ---
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：写出三条读操作——（a）查当前登录用户；（b）在仓库目录内用占位符查本仓库信息；（c）查询参数版列出开放 Issue（注意显式声明 GET 的原因）。
+
+**任务二**：创建 Issue 的 API 调用（标题 `Hi`、正文 `Body`），并从返回 JSON 里只提取 `number` 字段。写两条等价写法（`-f` 与 `-F` 各一）。
+
+**任务三**：判断——（a）`gh api xxx -f a=1` 的请求方法是什么？为什么？（b）`-F count=5` 与 `-f count=5` 传出去的 JSON 有什么差别？（c）GraphQL 怎么调？
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 任务一
+gh api user
+gh api repos/{owner}/{repo}
+gh api -X GET repos/{owner}/{repo}/issues -f state=open
+# 显式 -X GET 的原因：只要带 -f/-F 参数，gh 默认就把方法升级为 POST。
+
+# 任务二
+gh api repos/{owner}/{repo}/issues -f title=Hi -f body=Body --jq '.number'
+gh api repos/{owner}/{repo}/issues -F title=Hi -F body=Body --jq '.number'
+
+# 任务三
+# (a) POST——-f/-F 的出现意味着「带请求体」，gh 自动用 POST；
+# (b) -F 会做类型转换：count 传出去是数字 5；-f 永远是字符串 "5"；
+# (c) gh api graphql -f query='...' —— 单一入口，查询语句放
+#     query 参数里。
+```
+
+要点自查：`gh api` 的三大自动行为——自动认证、加 `-f/-F` 即 POST、`--jq` 直出字段——记住它们能解释 80% 的意外行为；`{owner}/{repo}` 占位符让同一命令在仓库目录内免写全名；想发真正带参数的 GET 必须 `--method GET` 显式声明。
+
 ## 一句话记忆
 
 **gh api 是带认证的"万能遥控器"：路径是 REST、`graphql` 是 v4，加 `-f` 自动变 POST，`-F` 自动转类型，`--jq` 裁剪输出，`--paginate` 翻页——一切以官方 API 手册为准。**

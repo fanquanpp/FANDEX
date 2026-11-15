@@ -76,8 +76,8 @@ jobs:
     outputs:
       version: ${{ steps.meta.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ inputs.node-version }}
       - run: npm ci && npm run build
@@ -164,7 +164,7 @@ runs:
     - uses: pnpm/action-setup@v4
       with:
         version: 9
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v7
       with:
         node-version: ${{ inputs.node-version }}
         cache: 'pnpm'
@@ -182,7 +182,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/pnpm-setup     # 同仓库相对路径，无需 ref
       - run: pnpm build
       - run: echo "store=${{ steps.env.outputs.pnpm-store }}"   # 输出经 action 输出名读取
@@ -222,7 +222,7 @@ jobs:
 
 ```yaml
 # 风险写法：tag 可被移动
-- uses: actions/checkout@v4
+- uses: actions/checkout@v7
 
 # 安全写法：固定到完整提交 SHA，注释保留版本语义
 - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2

@@ -101,11 +101,11 @@ jobs:
 ```bash
 # 1. 下载运行器应用（以 Linux x64 为例，版本号以页面提示为准）
 mkdir actions-runner && cd actions-runner
-curl -o actions-runner-linux-x64-2.311.0.tar.gz -L \
-  https://github.com/actions/runner/releases/download/v2.311.0/actions-runner-linux-x64-2.311.0.tar.gz
+curl -o actions-runner-linux-x64-2.338.2.tar.gz -L \
+  https://github.com/actions/runner/releases/download/v2.338.2/actions-runner-linux-x64-2.338.2.tar.gz
 
 # 2. 解压
-tar xzf ./actions-runner-linux-x64-2.311.0.tar.gz
+tar xzf ./actions-runner-linux-x64-2.338.2.tar.gz
 
 # 3. 配置并注册（--token 为页面生成的限时令牌，约 1 小时后过期，过期需重新生成）
 ./config.sh --url https://github.com/OWNER/REPO --token ABC123
@@ -375,6 +375,42 @@ Online（在线空闲）→ Running（执行中）→ Idle → ...
 | 运行器被前一个任务"污染" | 任务结果不稳定 | 持久环境残留文件/环境变量 | 任务里做清理，或使用 ephemeral 运行器 |
 | 60 秒未接单导致重派 | job 在运行器间反复跳转 | 运行器启动慢或网络抖动 | 检查运行器资源与网络，确保及时接单 |
 | 队列超 24 小时 | job 直接失败 | 一直没有匹配运行器在线 | 监控运行器在线率，必要时上 ARC 自动扩展 |
+
+## 9. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考答案自己写，写完再对照。
+
+**任务一**：自托管运行器相对托管运行器的三个核心优势与一个核心风险各是什么？
+
+**任务二**：默写注册自托管运行器的四步命令骨架（下载、解压、配置、启动），并说出注册令牌（--token）的有效期。
+
+**任务三**：判断——（a）官方强烈建议自托管运行器只配给哪种仓库？为什么？（b）工作流里 `runs-on: [self-hosted, gpu]` 是怎么把任务派到指定机器的？（c）上一任务留下的 `node_modules` 会让下个任务更快，但这暴露了什么问题？
+
+**参考答案**（先自己写完再看）：
+
+```text
+任务一：
+优势——可访问内网资源、可配 GPU/特殊硬件、长任务不限时且
+省按分钟计费的成本；
+风险——环境持久（非一次性），恶意工作流可留下后门或读到
+上次任务的残留数据，必须自行加固。
+
+任务二：
+mkdir actions-runner && cd actions-runner
+curl -o actions-runner-linux-x64-2.338.2.tar.gz -L <releases 下载地址>
+tar xzf ./actions-runner-linux-x64-2.338.2.tar.gz
+./config.sh --url https://github.com/OWNER/REPO --token ABC123
+./run.sh
+注册令牌约 1 小时过期，过期重新生成即可（不影响已注册运行器）。
+
+任务三：(a) 私有仓库——公开仓库的 fork PR 可让任意代码跑在你的
+机器上，等于把服务器执行权交给陌生人；(b) 靠标签路由——注册时
+或后台给运行器打标签，runs-on 按标签匹配派单；(c) 暴露「环境不
+洁净」问题：持久环境既是优势也是坑，关键流程要做清理步骤或
+用容器 job 保证可复现。
+```
+
+要点自查：托管运行器是「用完即毁的一次性客房」，自托管是「自己家的常住房」——省钱省心但卫生自理；私有仓库专用是官方红线；标签（labels）是任务派发的路由键；生产用法把 run.sh 挂成系统服务而不是终端里跑。
 
 ## 10. 一句话记忆
 

@@ -85,8 +85,8 @@ GitHub Codespaces 改变了这个体验——它相当于**一台放在云端的
 // .devcontainer/devcontainer.json
 {
   "name": "My Node Dev Environment",
-  // 使用官方预构建镜像（Node 20）
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  // 使用官方预构建镜像（Node 22 LTS）
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
   // 附加特性：安装 git 与 GitHub CLI
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
@@ -115,7 +115,7 @@ GitHub Codespaces 改变了这个体验——它相当于**一台放在云端的
 
 ```dockerfile
 # .devcontainer/Dockerfile
-FROM mcr.microsoft.com/devcontainers/javascript-node:20
+FROM mcr.microsoft.com/devcontainers/javascript-node:22
 
 # 安装项目需要的系统级工具
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
@@ -215,6 +215,38 @@ gh codespace ports visibility 3000:public
 | 改配置不生效 | 新代码不出现在环境里 | devcontainer 未重建 | VS Code 命令面板执行 Rebuild Container 或 `gh codespace rebuild` |
 | 额度耗尽 | 提示超出配额 | 未及时停止/删除不用的 codespace | 习惯性 `gh codespace stop`；删除陈旧 codespace；必要时升级套餐 |
 | 权限/密钥问题 | 推送被拒或拉私有依赖失败 | 容器内未配置凭据 | 在 Settings → Codespaces secrets 配置仓库级密钥；或重新登录 gh |
+
+## 7. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考答案自己写，写完再对照。
+
+**任务一**：Codespaces 的三层结构是什么？「新人克隆仓库环境就坏了」的问题为什么被它根治？
+
+**任务二**：写出 `devcontainer.json` 里五个高频配置项的名字与作用（基础镜像、附加能力、端口转发、创建后命令、编辑器扩展）。
+
+**任务三**：判断——（a）改了 `devcontainer.json` 没生效，要做什么？（b）月初额度告急，最省额度的两个习惯是什么？（c）仓库没有 `.devcontainer` 目录时，创建 codespace 会失败吗？
+
+**参考答案**（先自己写完再看）：
+
+```text
+任务一：客户端（浏览器/VS Code 遥控界面）→ 云端虚拟机（专属
+Linux 机器）→ 开发容器（dev container，环境全打包在 Docker 里）。
+环境配置文件随仓库走，任何人、任何机器创建的 codespace 环境一致。
+
+任务二：
+image            —— 基础镜像（如 devcontainers/javascript-node:22）
+features         —— 附加能力（装 git、gh 等，声明式拼接）
+forwardPorts     —— 自动转发的端口（本地 localhost 直达容器服务）
+postCreateCommand—— 容器创建完成后的命令（如 npm install）
+customizations.vscode.extensions —— 自动安装的编辑器扩展
+
+任务三：(a) 重建容器（Rebuild Container / gh codespace rebuild）；
+(b) 用完即停（stop）与定期删除不用的 codespace——计费按
+核心数 x 使用小时 + 存储占用；(c) 不会失败，会退回官方默认
+容器配置（含多种语言运行时）。
+```
+
+要点自查：Codespaces 的本质是「环境即配置」——`devcontainer.json` 让环境像代码一样进版本控制、可评审可复现；改配置不重建等于白改；额度账 = 计算小时 + 存储，停机不断存储，删除才释放存储。
 
 ## 8. 一句话记忆
 

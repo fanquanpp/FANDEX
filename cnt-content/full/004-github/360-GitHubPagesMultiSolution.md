@@ -167,45 +167,45 @@ flowchart TD
 `.github/workflows/jekyll.yml`：
 
 ```yaml
- name: Deploy Jekyll site to Pages
- on:
+name: Deploy Jekyll site to Pages
+on:
   push:
-  branches: [main]
+    branches: [main]
   workflow_dispatch:
- permissions:
+permissions:
   contents: read
   pages: write
   id-token: write
- concurrency:
+concurrency:
   group: "pages"
-  cancel-in-progress:
- jobs:
+  cancel-in-progress: false
+jobs:
   build:
-  runs-on: ubuntu-latest
-  steps:
-  - name: Checkout
-  uses: actions/checkout@v6
-  - name: Setup Ruby
-  uses: ruby/setup-ruby@v1
-  with:
-  ruby-version: '3.1'
-  bundler-cache:
-  - name: Build with Jekyll
-  run: bundle exec jekyll build
-  env:
-  JEKYLL_ENV: production
-  - name: Upload artifact
-  uses: actions/upload-pages-artifact@v2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+      - name: Build with Jekyll
+        run: bundle exec jekyll build
+        env:
+          JEKYLL_ENV: production
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
   deploy:
-  needs: build
-  runs-on: ubuntu-latest
-  environment:
-  name: github-pages
-  url: ${{ steps.deployment.outputs.page_url }}
-  steps:
-  - name: Deploy to GitHub Pages
-  id: deployment
-  uses: actions/deploy-pages@v4
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
 ```
 
 ## 6. 方案 B：VitePress
@@ -292,49 +292,49 @@ flowchart TD
 `.github/workflows/vitepress.yml`：
 
 ```yaml
- name: Deploy VitePress site to Pages
- on:
+name: Deploy VitePress site to Pages
+on:
   push:
-  branches: [main]
+    branches: [main]
   workflow_dispatch:
- permissions:
+permissions:
   contents: read
   pages: write
   id-token: write
- concurrency:
+concurrency:
   group: "pages"
-  cancel-in-progress:
- jobs:
+  cancel-in-progress: false
+jobs:
   build:
-  runs-on: ubuntu-latest
-  steps:
-  - name: Checkout
-  uses: actions/checkout@v6
-  with:
-  fetch-depth: 0
-  - name: Setup Node.js
-  uses: actions/setup-node@v6
-  with:
-  node-version: '18'
-  cache: npm
-  - name: Install dependencies
-  run: npm ci
-  - name: Build
-  run: npm run docs:build
-  - name: Upload artifact
-  uses: actions/upload-pages-artifact@v2
-  with:
-  path: docs/.vitepress/dist
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run docs:build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs/.vitepress/dist
   deploy:
-  needs: build
-  runs-on: ubuntu-latest
-  environment:
-  name: github-pages
-  url: ${{ steps.deployment.outputs.page_url }}
-  steps:
-  - name: Deploy to GitHub Pages
-  id: deployment
-  uses: actions/deploy-pages@v4
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
 ```
 
 ## 7. 方案 C：Hugo
@@ -419,46 +419,46 @@ flowchart TD
 `.github/workflows/hugo.yml`：
 
 ```yaml
- name: Deploy Hugo site to Pages
- on:
+name: Deploy Hugo site to Pages
+on:
   push:
-  branches: [main]
+    branches: [main]
   workflow_dispatch:
- permissions:
+permissions:
   contents: read
   pages: write
   id-token: write
- concurrency:
+concurrency:
   group: "pages"
-  cancel-in-progress:
- jobs:
+  cancel-in-progress: false
+jobs:
   build:
-  runs-on: ubuntu-latest
-  steps:
-  - name: Checkout
-  uses: actions/checkout@v6
-  with:
-  submodules:
-  fetch-depth: 0
-  - name: Setup Hugo
-  uses: peaceiris/actions-hugo@v2
-  with:
-  hugo-version: 'latest'
-  extended:
-  - name: Build
-  run: hugo --minify
-  - name: Upload artifact
-  uses: actions/upload-pages-artifact@v2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: true
+          fetch-depth: 0
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 'latest'
+          extended: true
+      - name: Build
+        run: hugo --minify
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
   deploy:
-  needs: build
-  runs-on: ubuntu-latest
-  environment:
-  name: github-pages
-  url: ${{ steps.deployment.outputs.page_url }}
-  steps:
-  - name: Deploy to GitHub Pages
-  id: deployment
-  uses: actions/deploy-pages@v4
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
 ```
 
 ## 8. 自定义域名设置
@@ -598,7 +598,7 @@ flowchart TD
 ## Actions 部署 Pages
 
 **基本用法:部署静态站点**
-`uses: actions/deploy-pages@v4`
+`uses: actions/deploy-pages@v5`
 
 ```yaml
 name: Deploy Pages
@@ -616,9 +616,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: npm ci && npm run build
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
@@ -630,7 +630,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 ```
 
 ---
@@ -694,3 +694,40 @@ npx gh-pages -d dist
 # 指定分支与消息
 npx gh-pages -d dist -b gh-pages -m "deploy [skip ci]"
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考答案自己写，写完再对照。
+
+**任务一**：Pages 的两种部署来源（Source）分别是什么？各自适合什么项目？用 Actions 部署时，「构建」与「发布」分别是哪个官方 Action 的职责？
+
+**任务二**：默写 Actions 部署 workflow 的三步骨架（从检出代码到站点上线），不必写完整 YAML，说出每步用什么 action、需要什么权限。
+
+**任务三**：判断——（a）`docs.example.com` 想指向 Pages 站点，仓库里放什么文件、DNS 怎么配？（b）Jekyll 项目里不想让 Jekyll 处理某个目录，用什么文件排除？（c）静态站点的三类候选生成器（Jekyll/VitePress/Hugo）分别基于什么技术栈？
+
+**参考答案**（先自己写完再看）：
+
+```text
+任务一：
+- Deploy from a branch：纯静态或 Jekyll 项目，推送分支即自动构建，
+零配置但构建环境受限（官方固定版本的 Jekyll）；
+- GitHub Actions：现代前端框架/任意生成器，构建过程自己控制。
+构建 = actions/upload-pages-artifact（把产物打包成 Pages 制品），
+发布 = actions/deploy-pages（把制品部署到站点）。
+
+任务二三步骨架：
+1. actions/checkout@v7 检出代码；
+2. 跑构建（npm run docs:build 等）后用
+   actions/upload-pages-artifact 上传产物（path 指向输出目录）；
+3. actions/deploy-pages 发布（整个 workflow 声明
+   permissions: pages: write + id-token: write，
+   environment 指向 github-pages）。
+
+任务三：(a) 仓库放 CNAME 文件（内容为域名），DNS 把域名
+CNAME 到 <user>.github.io；(b) 在源目录放 .nojekyll 之外的
+排除用 Jekyll 配置；纯前端产物建议放 .nojekyll 跳过 Jekyll 处理；
+(c) Jekyll 基于 Ruby（Pages 原生支持）、VitePress 基于
+Node/Vite（Vue 生态）、Hugo 基于 Go（单二进制、构建最快）。
+```
+
+要点自查：选型分水岭是「构建过程要不要自己控制」——要就选 Actions 部署，不要就分支部署；Actions 方案的 id-token 与 pages: write 是安全模型的一部分，缺权限会 403；`.nojekyll` 让构建产物跳过 Jekyll 的下划线目录过滤。

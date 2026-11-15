@@ -167,6 +167,40 @@ git checkout -b fix/typo && git commit -am "docs: fix typo" && git push -u origi
 gh pr create --fill
 ```
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：本地目录 `my-local-project` 已是 git 仓库，写出「建私有远程仓库 + 关联 origin + 首次推送」的一条 gh 命令，并说出这三个动作分别由哪个参数承担。
+
+**任务二**：写出三条查询命令——（a）克隆 `owner/repo`（用缩写）；（b）浏览器打开仓库主页；（c）列出某账户下所有 Python 仓库。
+
+**任务三**：判断——（a）`gh repo fork upstream/repo --clone` 比 `git clone` 多做了什么？（b）项目不维护了，归档和删除怎么选？各写一条命令。
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 任务一
+gh repo create myproject --private --source=. --remote=origin --push
+# 建仓 = create + 可见性参数；关联 remote = --source=. --remote=origin；
+# 推送 = --push。
+
+# 任务二
+gh repo clone owner/repo
+gh repo view owner/repo --web
+gh repo list owner --language python
+
+# 任务三
+# (a) 额外做了三件事：在 GitHub 上创建 fork、克隆你的 fork 到本地、
+#     自动把 upstream（上游）配成第二个远程——开源贡献的第一步一步到位。
+# (b) 先归档（只读保留，可随时恢复）：
+gh repo archive owner/repo --yes
+#     确认彻底不要再删除（不可逆，删除前先镜像备份）：
+gh repo delete owner/repo --yes
+```
+
+要点自查：`gh repo create --source=. --push` 是「本地项目上 GitHub」的最短路径；`owner/repo` 缩写是 gh 对 git clone 的核心增值；归档是可逆的只读、删除是不可逆的销毁——生命周期管理永远先归档再考虑删除。
+
 ## 10. 小结
 
 **初学者要点**

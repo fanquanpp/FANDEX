@@ -260,6 +260,35 @@ jobs:
 | 里程碑进度不准 | 完成百分比与实情不符 | 部分 Issue 未关联里程碑或状态未更新 | 把所有相关 Issue 关联到里程碑；及时关闭已解决的 Issue |
 | Actions 自动化失败 | 打标签/分配任务工作流报错 | GITHUB_TOKEN 权限不足或 workflow 语法错误 | 检查 `permissions` 字段；查看 Actions 日志定位语法问题 |
 
+## 7. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：给仓库搭 Issue 模板的最小目录：写出目录结构里两个关键文件的路径与用途（一个 Bug 模板 + 一个配置），并在配置里实现「禁止空白 Issue + 引导一般问题去 Discussions」。
+
+**任务二**：PR 描述里写哪句关键词能把 Issue #42 在合并到 main 时自动关闭？这个自动关闭在合并到非默认分支时生效吗？
+
+**任务三**：标签体系四类维度各写一个标签示例，并说出 `good first issue` 的特殊作用。
+
+**参考实现**（先自己写完再看）：
+
+```text
+任务一：
+.github/ISSUE_TEMPLATE/bug_report.md   —— Bug 报告模板（frontmatter 声明 name/labels/title）
+.github/ISSUE_TEMPLATE/config.yml      —— blank_issues_enabled: false
+                                          + contact_links 指向 Discussions
+
+任务二：PR 描述写 Fixes #42（Closes/Resolves 亦可）。
+只有合并到默认分支才触发自动关闭，合到其他分支不会关。
+
+任务三：
+类型 bug / 优先级 priority:high / 状态 needs-triage / 难度 good-first-issue
+good-first-issue 会让 Issue 出现在官方的 "Good first issues" 筛选器里，
+是开源项目吸引新手贡献者的入口标签。
+```
+
+要点自查：模板的 frontmatter 预填标题前缀与标签，正文用「复现步骤/期望/实际」三段降低来回追问；`Fixes #N` 是 PR 与 Issue 的交付闭环，漏写 Issue 就要手动关；安全漏洞**永远不走公开 Issue**，走 Security advisories。
+
 ## 8. 一句话记忆
 
 **Issue 是"工单"，模板保证工单填得全，标签让工单分得清，里程碑让目标看得见，Actions 让流转自动化——四件套齐了，问题跟踪不再靠吼。**

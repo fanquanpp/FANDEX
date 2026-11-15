@@ -32,10 +32,10 @@ GitHub Actions 的**依赖缓存**就是 CI 世界的"厨房储物柜"：把 npm
 
 ```yaml
 steps:
-  - uses: actions/checkout@v6
-  - uses: actions/setup-node@v6
+  - uses: actions/checkout@v7
+  - uses: actions/setup-node@v7
     with:
-      node-version: 20
+      node-version: 22
   - run: npm ci          # 每次都从 npm 源下载几百 MB 依赖，耗时数分钟
   - run: npm test
 ```
@@ -89,7 +89,7 @@ flowchart TD
 | 仓库总缓存 | 最大 10 GB | 超限按最久未访问自动清理 |
 | 缓存保留 | 7 天未访问自动删除 | 与 Artifacts 的保留策略不同 |
 | 跨分支访问 | 当前分支 + 默认分支 | PR 还能访问 base 分支（目标分支）的缓存 |
-| 缓存内容 | 禁止存放敏感信息 | 官方明确建议不要缓存 Token、凭据等 |
+| 缓存内容 | 不应存放敏感信息 | 官方明确告诫不要缓存 Token、凭据等（强烈告诫而非硬性禁止） |
 
 补充说明（官方文档）：PR 触发时创建的缓存会挂在 `refs/pull/.../merge` 下，通常只适合该 PR 自己重跑时使用；兄弟分支、不同 tag 之间不能随意互相读取缓存。
 
@@ -99,7 +99,7 @@ flowchart TD
 
 ```yaml
 steps:
-  - uses: actions/cache@v5
+  - uses: actions/cache@v6
     with:
       path: |                    # 要缓存/恢复的路径（支持多行、glob）
         ~/.npm
@@ -123,7 +123,7 @@ steps:
 **Node.js / npm**（缓存 npm 全局缓存目录，而非 node_modules）：
 
 ```yaml
-- uses: actions/cache@v5
+- uses: actions/cache@v6
   with:
     path: ~/.npm
     key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -135,7 +135,7 @@ steps:
 **Python / pip**：
 
 ```yaml
-- uses: actions/cache@v5
+- uses: actions/cache@v6
   with:
     path: ~/.cache/pip
     key: pip-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
@@ -147,7 +147,7 @@ steps:
 **Go**：
 
 ```yaml
-- uses: actions/cache@v5
+- uses: actions/cache@v6
   with:
     path: |
       ~/go/pkg/mod
@@ -161,7 +161,7 @@ steps:
 **Java / Gradle**：
 
 ```yaml
-- uses: actions/cache@v5
+- uses: actions/cache@v6
   with:
     path: |
       ~/.gradle/caches
@@ -173,7 +173,7 @@ steps:
 **Rust / Cargo**：
 
 ```yaml
-- uses: actions/cache@v5
+- uses: actions/cache@v6
   with:
     path: |
       ~/.cargo/registry
@@ -188,9 +188,9 @@ steps:
 对主流语言，`setup-node`、`setup-python` 等官方 Action 已经内置缓存能力，**一行配置即可**，不必手写 actions/cache：
 
 ```yaml
-- uses: actions/setup-node@v6
+- uses: actions/setup-node@v7
   with:
-    node-version: 20
+    node-version: 22
     cache: npm                     # 自动缓存 npm 全局缓存目录
     cache-dependency-path: package-lock.json   # monorepo 场景指定锁文件位置
 ```
@@ -235,7 +235,7 @@ restore-keys: |
 通过 `cache-hit` 输出可以精确控制后续步骤（比如命中时用离线安装，未命中时全量安装）：
 
 ```yaml
-- uses: actions/cache@v5
+- uses: actions/cache@v6
   id: cache-npm
   with:
     path: ~/.npm
@@ -253,7 +253,7 @@ restore-keys: |
 ### 4.5 条件缓存：只在需要的分支保存
 
 ```yaml
-- uses: actions/cache@v5
+- uses: actions/cache@v6
   if: github.ref == 'refs/heads/main'   # 仅 main 分支保存新缓存，PR 只恢复不保存
   with:
     path: ~/.npm
@@ -305,6 +305,39 @@ gh api repos/OWNER/REPO/actions/caches \
 | 缓存里混入敏感文件 | 凭据泄露风险 | 把含 Token 的文件一起缓存了 | 官方明确建议：缓存中不要存放访问令牌、登录凭据等敏感信息 |
 | 分支间互相读不到缓存 | 缓存命中率低 | 不了解缓存范围：兄弟分支、不同 tag 之间不能互读 | 依赖"当前分支 + 默认分支"的缓存规则设计 key 与恢复策略 |
 | 缓存策略变更后旧缓存干扰 | 出现奇怪构建结果 | 新逻辑与旧缓存内容不兼容 | 在 key 中加手动版本号（v2 → v3），自然淘汰旧缓存 |
+
+## 7. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：默写 `actions/cache` 的三个必填/常用参数与作用（缓存谁、按什么找、兜底怎么找）。
+
+**任务二**：为一个 Node 项目设计科学依赖缓存：写出 key 的组成（锁文件 hash + 固定版本段），说明两个 key 段各起什么作用。
+
+**任务三**：判断——（a）缓存命中后还需要跑 `npm ci` 吗？（b）仓库缓存超 10 GB 后会怎样？（c）能不能把 `.env` 缓存起来省配置？
+
+**参考实现**（先自己写完再看）：
+
+```yaml
+- uses: actions/cache@v6
+  with:
+    path: ~/.npm                 # 缓存谁：要复用的文件目录
+    key: node-deps-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+    restore-keys: |
+      node-deps-${{ runner.os }}- # 兜底：key 没精确命中时按此前缀取最近缓存
+
+# 任务二：hashFiles 段保证「锁文件一变 key 必变」，杜绝用过期依赖；
+# 固定版本段（v1）是人为开关——依赖策略变了改一下就能整体换缓存。
+
+# 任务三：
+# (a) 要——缓存只是「快」，npm ci 仍要执行（它会校验并按锁文件
+#     原样安装，还能把下载指向本地缓存）；
+# (b) 按「最久未访问」自动清理旧缓存，不需要手动干预；
+# (c) 不应——官方明确告诫不要在缓存中存放敏感信息（强烈告诫
+#     而非硬性禁止），且缓存可被同仓库多个分支读到，泄露面更大。
+```
+
+要点自查：缓存未命中时 job 成功结束会自动保存新缓存，保存后不可修改只能换 key；`restore-keys` 的价值是「锁文件变了也不必从零开始」；缓存（可复用的输入）与制品（交付用的输出）要分清，互相当对方用是常见错误。
 
 ## 8. 一句话记忆
 

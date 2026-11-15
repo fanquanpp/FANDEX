@@ -198,6 +198,39 @@ gh issue develop 42 -b fix/login-500 --checkout
 | 批量误操作 | 一批 Issue 被错误关闭 | 过滤条件过宽就跑了 xargs | 先跑 `gh issue list ...` 不接管道确认清单，再接管道 |
 | milestone 不生效 | --milestone 报找不到 | 里程碑名称与仓库中的不完全一致 | 名称需精确匹配（区分大小写），或使用网页端核对 |
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：一行命令创建 Issue：标题「API 限流误伤合法请求」、正文从文件 `docs/report.md` 读、标签 `bug` 与 `priority:high`、指派给自己。写出命令。
+
+**任务二**：写出三条检索命令——（a）分给我的开放 Issue；（b）看 #42 的完整内容含评论；（c）给 #42 追加一条评论「已定位，明天提 PR」。
+
+**任务三**：判断——（a）Issue 修好了，除了 `gh issue close` 还有什么「合并即关闭」的路子？（b）`gh issue develop 42` 干的是什么？
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 任务一
+gh issue create \
+  --title "API 限流误伤合法请求" \
+  --body-file docs/report.md \
+  --label "bug,priority:high" \
+  --assignee @me
+
+# 任务二
+gh issue list --assignee @me --state open
+gh issue view 42 --comments
+gh issue comment 42 --body "已定位，明天提 PR"
+
+# 任务三
+# (a) 在 PR 描述里写 Fixes #42，合并到默认分支时自动关闭；
+# (b) 从 Issue #42 派生一个关联的开发分支（名字自动带上
+#     Issue 编号），把「账本条目」和「代码线」接起来。
+```
+
+要点自查：`@me` 是当前登录用户的占位符，多值参数用逗号分隔；`view --comments` 与网页体验对齐；关闭 Issue 有手动与「Fixes #N 合并自动关」两条路，后者才是交付闭环；close 不是终点，`reopen` 允许问题复活。
+
 ## 9. 小结
 
 **初学者要点**

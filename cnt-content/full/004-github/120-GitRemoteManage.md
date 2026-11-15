@@ -264,6 +264,30 @@ git config --global credential.helper osxkeychain
 
 ---
 
+## 九、动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务**：本地 `git init` 的项目要推上 GitHub 空仓库（SSH 方式）。遮住参考实现，写出：添加远程并验证、首次推送的命令；仓库后来改名为 `new-repo`，写出只改地址不动跟踪关系的命令；参与 fork 协作时第二个远程通常叫什么、用来干什么；最后把不再用的 `backup` 远程删掉。
+
+**提示**：首次推送的 `-u` 是关键；改地址考 `set-url`；fork 协作的第二个远程名是惯例词，中文叫「上游」。
+
+**参考实现**（先自己写完再看）：
+
+```bash
+git remote add origin git@github.com:yourname/new-repo.git
+git remote -v                        # 验证：fetch 与 push 两行
+git push -u origin main              # -u 建立上游追踪
+
+git remote set-url origin git@github.com:yourname/new-repo2.git   # 改地址（改名/换协议都用它）
+git remote get-url origin            # 验证
+
+git remote add upstream https://github.com/original/repo.git      # fork 的上游，用来同步原作者更新
+git remote remove backup
+```
+
+要点自查：`remote add` 只登记地址，代码要靠 push 送上去；`-u` 让本地分支记住自己的上游，之后裸 `git push`/`git pull` 即可；改地址用 `set-url` 而不是删了重加（后者丢跟踪关系）；多远程各起各的名，fork 工作流里 `origin` 是你的副本、`upstream` 是原作者。
+
 ## 十、一句话记忆
 
 **远程是"云端"、origin 是默认关联：`add` 添加、`-v` 查看、`set-url` 改地址（不要删了重加）、`remove` 删除（只删本地关联不删云端）、fork 场景加 upstream 定期同步、凭证用 manager 或换 SSH——多设备协作从此无缝衔接。**

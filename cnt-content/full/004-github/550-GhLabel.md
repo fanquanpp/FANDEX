@@ -262,6 +262,40 @@ gh label list --search "type:"
 
 ---
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：写出标签治理的完整五步命令骨架（查看现状 → 创建 → 编辑 → 克隆 → 删除），每步给出核心子命令与一个关键参数。
+
+**任务二**：一行命令在 `owner/repo` 创建命名空间标签 `priority:high`（红色 B60205、描述「高优先级」），并解释为什么颜色不带 `#`。
+
+**任务三**：判断——（a）创建时标签已存在会怎样？想「存在即更新」怎么办？（b）想在新仓库快速复制老仓库的一整套标签体系，用什么？
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 任务一
+gh label list                      # 盘点：避免重复、发现命名不一致
+gh label create "type:bug" --color D73A4A --description "Bug"
+gh label edit bug --description "可复现的缺陷"
+gh label clone -R owner/template-repo   # 从模板仓库整套复制
+gh label delete old-label --yes
+
+# 任务二
+gh label create "priority:high" -R owner/repo \
+  --color B60205 --description "高优先级"
+# 颜色是 6 位十六进制 RGB 值（不带 #）：# 在 shell 里有歧义
+# 且 GitHub API 只收裸十六进制，带 # 反而报错。
+
+# 任务三
+# (a) 默认报错已存在；加 --force 变成「存在就更新」；
+# (b) gh label clone -R owner/老仓库 —— 一次性把整套标签
+#     （名称/颜色/描述）搬到当前仓库，新仓库初始化标配。
+```
+
+要点自查：标签是 Issue/PR 的检索维度，治理原则是「命名空间前缀（type:/priority:）+ 数量克制（20-30 个）+ 同类同色」；clone 是从零搭体系的捷径；delete 对已挂在 Issue 上的标签同样生效（Issue 上自动摘除），`--yes` 跳过确认。
+
 ## 一句话记忆
 
 **Label 是 Issue 的"彩色贴纸"：`list` 盘点、`create` 贴新、`edit` 改色改名、`delete` 撕掉、`clone` 一键复制整套——命名用"分类:名称"格式，团队协作才不乱。**

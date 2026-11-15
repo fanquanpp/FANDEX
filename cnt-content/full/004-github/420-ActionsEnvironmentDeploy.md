@@ -119,9 +119,9 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: pnpm install --frozen-lockfile && pnpm build:all
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: build-output
           path: dist/
@@ -131,7 +131,7 @@ jobs:
     environment: staging
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { name: build-output, path: dist/ }
       - run: ./deploy.sh staging
 
@@ -140,7 +140,7 @@ jobs:
     environment: production          # 停下等审批
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { name: build-output, path: dist/ }
       - run: ./deploy.sh production
 ```

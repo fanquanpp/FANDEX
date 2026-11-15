@@ -263,6 +263,34 @@ gh search repos --language=python --sort=stars --limit 5 --json fullName --jq '.
 
 ---
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：五个 `gh search` 子命令与五种「馆藏」配对——仓库、代码、Issue、PR、提交记录各用哪个？
+
+**任务二**：写出三条搜索——（a）Go 语言且 star 超 1000 的仓库；（b）搜仓库名含 chatgpt 的项目（只匹配名称）；（c）找 microsoft 名下排除已归档的公开仓库。
+
+**任务三**：判断——（a）限定符的两种写法是什么？新手先用哪种？（b）`--stars=">1000"` 的引号能去掉吗？为什么？
+
+**参考实现**（先自己写完再看）：
+
+```text
+任务一：gh search repos / code / issues / prs / commits。
+
+任务二：
+gh search repos --language=go --stars=">1000"
+gh search repos --match=name "chatgpt"
+gh search repos --owner=microsoft --visibility=public --archived=false
+
+任务三：
+(a) 旗标写法（--language=go）与语法写法（language:go），
+    语法写法与网页搜索框一致；新手先用旗标（好读不易错）；
+(b) 不能去掉——> 是 shell 的重定向符，加引号才能原样传给 gh。
+```
+
+要点自查：`gh search` 与 `gh issue list` 的分界是**范围**——前者搜全站，后者只搜当前仓库；多个关键词之间是「与」关系；数字比较条件（stars、good-first-issues）的引号是 shell 语义不是 gh 语法；`--match=name` 把搜索范围收窄到仓库名，精度立刻上升。
+
 ## 一句话记忆
 
 **`gh search` 是 GitHub 的"检索台"：找库用 `repos`，找代码用 `code`，找讨论用 `issues/prs`，找历史用 `commits`；记住"关键词 + 限定符 + `--` 排除 + `--json` 输出"四板斧，检索又快又准。**

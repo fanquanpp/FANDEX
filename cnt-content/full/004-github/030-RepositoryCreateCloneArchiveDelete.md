@@ -284,6 +284,34 @@ gh repo create ORG/repo-a --public --description "desc"
 | 推送到 main 失败 | `protected branch` | 分支启用了保护规则 | 按保护规则走 PR 流程合并，或由管理员临时调整规则 |
 | 找不到删除/归档按钮 | Danger Zone 无选项 | 不是仓库 Owner/Admin | 只有 Owner 或 Admin 角色才能归档/删除；组织仓库需组织管理员授权 |
 
+## 7. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务**：你有一个写了一半的本地项目 `existing-project`（还没进 Git），同事已在 GitHub 上建好**空仓库** `OWNER/REPO`（没有 README）。遮住参考实现，默写把它推上去的完整命令链，再回答三个判断题。
+
+**提示**：命令链共 7 步——进目录、初始化、暂存、提交、统一分支名、关联远程、推送并设上游；判断题考「归档和删除的差别」「fork 和模板的差别」「转移后旧 URL 还能用吗」。
+
+**参考实现**（先自己写完再看）：
+
+```bash
+cd existing-project
+git init
+git add .
+git commit -m "chore: initial commit"
+git branch -M main
+git remote add origin https://github.com/OWNER/REPO.git
+git push -u origin main
+```
+
+判断题参考答案：
+
+1. 归档后仓库变**只读**（不能推提交、不能开 Issue/PR），但仍可克隆/fork，且可随时取消归档；删除则连历史带 Issue 全部销毁，不可逆——所以先归档观察再删。
+2. Fork 保留与源仓库的 fork 关系和 PR 通道（用于贡献回去）；模板生成的是**无关联的独立仓库**（用于复制起步）。
+3. 能用——转移后旧地址自动重定向，但同名仓库被重建后重定向失效，所以本地 remote 还是要尽快 `git remote set-url` 更新。
+
+要点自查：`git push -u` 的 `-u` 建立上游追踪，之后 `git push` 不用再写 `origin main`；空仓库和带 README 的仓库走的是两条不同的路（带 README 的直接 clone）。
+
 ## 8. 一句话记忆
 
 **仓库生命周期四步走：创建（开店）→ 克隆（开分店）→ 归档（挂牌歇业，随时复业）→ 删除（注销店铺，不可恢复，务必先备份）。**

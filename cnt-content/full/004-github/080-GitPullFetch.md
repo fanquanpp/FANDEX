@@ -250,6 +250,27 @@ git remote show origin | grep "HEAD branch"
 
 ---
 
+## 八、动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务**：早上到岗，你要同步远程更新但**先不合并**：写出「侦查」命令链（取回更新 → 看远程多了哪些提交 → 看代码差异 → 确认后以 rebase 方式并进来）。再补一问：`git branch -r` 里出现了远程早已删除的分支，怎么清掉？
+
+**提示**：侦查用 fetch；「多出来的提交」用两点区间的 log；「差异」用 diff；并进来选 `pull --rebase` 或 rebase origin/main 都行，写一条即可；清幽灵分支的参数以 prune 为核心。
+
+**参考实现**（先自己写完再看）：
+
+```bash
+git fetch origin
+git log --oneline main..origin/main    # 远程比你多出的提交
+git diff origin/main                   # 逐行看改动
+git pull --rebase origin main          # 确认后整合（历史保持线性）
+
+git fetch --prune                      # 清理远程已删除分支的本地引用
+```
+
+要点自查：fetch 之后你的本地分支和工作区**纹丝不动**，只有 merge/rebase/pull 才会让代码前进；`main..origin/main` 读作「在 origin/main 有、在 main 没有」；rebase 方式整合避免多余的合并提交，适合个人分支；prune 清的是本地缓存引用，远程仓库本身不受影响。
+
 ## 九、一句话记忆
 
 **`git fetch` 只更新远程"分身"（origin/main）不碰你的代码，`git pull` 是 fetch 加 merge（或 rebase）一步到位——先侦查用 fetch，快同步用 pull，冲突了记得 abort 或 continue。**

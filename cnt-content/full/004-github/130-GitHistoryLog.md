@@ -334,6 +334,28 @@ git log --left-right --oneline main...feature
 
 ---
 
+## 八、动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务**：四个排查场景各写一条命令——（a）看 `src/index.js` 的修改历史，且文件中途被重命名过也要能接上前史；（b）找出「添加或删除过字符串 `console.log`」的提交；（c）push 前确认本地比远程多出哪些提交；（d）上周 `reset --hard` 扔掉的一个提交想找回来。另加一问： blame 与 log 的分工一句话是什么？
+
+**提示**：重命名跟踪是 `--follow`；按内容变化找提交是 Pickaxe 的 `-S`；「本地比远程多」用双点区间；找回提交靠 reflog 而不是 log。
+
+**参考实现**（先自己写完再看）：
+
+```bash
+git log --follow -- src/index.js       # (a) 接上重命名前的历史
+git log -S "console.log"               # (b) 该字符串出现次数变化的提交
+git log origin/main..HEAD              # (c) 待推送的提交
+git reflog                             # (d) 找到 reset 前的 HEAD 位置
+git reset --hard HEAD@{2}              #     回到那个提交（或建分支接住它）
+```
+
+blame 与 log 的分工：blame 回答「这一行最后一次是谁、在哪个提交改的」（空间维度），log 回答「这个文件/仓库按时间都有哪些提交」（时间维度）。
+
+要点自查：`git diff` 默认比工作区与暂存区，`--staged` 比暂存区与上次提交；`main..feature` 读作「feature 独有」；reflog 记录的是 HEAD 的移动史，reset 后的提交在 GC 前都能从这里捞回——先建分支再操作更稳妥。
+
 ## 九、一句话记忆
 
 **查历史像破案：`git log` 看总览（--oneline 精简、--graph 画图），`--author/--since/-S` 筛线索，`git diff` 对现场，`git show` 看单份案卷，`git blame` 追每行来源，`git reflog` 是最后保险丝——误删别慌，reflog 里找回来。**
