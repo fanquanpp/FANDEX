@@ -1397,3 +1397,53 @@ Uber 工程团队分享的 zap 使用经验：
 - Beyer, B., et al. (2016). *Site Reliability Engineering: How Google Runs Production Systems*. O'Reilly Media.（第 6 章：Monitoring）
 - Sigelman, B. H., et al. (2010). *Dapper, a Large-Scale Distributed Systems Tracing Infrastructure*. Google Technical Report.
 - Majors, C., & Fong-Jones, L. (2022). *Observability Engineering*. O'Reilly Media.
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（slog 的三要素）**：用 slog 记一条"订单创建成功"的 Info 日志，带上 order_id（字符串）、amount（浮点）、repeated（布尔）三个结构化字段。写出 JSON handler 的初始化与打点。
+
+参考实现：
+
+```go
+logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+    Level: slog.LevelInfo,
+}))
+slog.SetDefault(logger)
+
+slog.Info("order created",
+    slog.String("order_id", oid),
+    slog.Float64("amount", amt),
+    slog.Bool("repeated", repeated),
+)
+```
+
+要点：字段用强类型的 Attr（String/Int/Float64/Bool/Time）而不是 `"...": x` 的 any 快捷形式——快捷形式每字段一次装箱，热路径用类型化 Attr 省分配；"消息 + 字段"的二分是结构化日志的骨架，采集系统按字段名索引而不是解析消息文本。
+
+**题 2（上下文注入 trace_id）**：中间件里生成了 requestID 存进 context，业务代码深处 `slog.Info("db slow", ...)` 如何自动带上它？写出 handler 注入的关键代码。
+
+参考实现：
+
+```go
+type ctxHandler struct {
+    slog.Handler
+}
+
+func (h ctxHandler) Handle(ctx context.Context, r slog.Record) error {
+    if reqID, ok := ctx.Value(requestIDKey).(string); ok {
+        r.AddAttrs(slog.String("request_id", reqID))
+    }
+    return h.Handler.Handle(ctx, r)
+}
+
+// 中间件里：logger = slog.New(ctxHandler{base})
+```
+
+要点：日志跟随 context 而不是靠参数层层透传——自定义 Handler 在 Handle 里从 ctx 取公共字段追加，业务打点零改动。这是"横切字段进 handler、业务字段进打点"的分层。
+
+**题 3（日志级别的生产纪律）**：线上服务的日志分级给出使用判据：什么进 Error、什么进 Warn、什么进 Info、什么进 Debug？噪音过多时先调哪个旋钮？
+
+参考答案：Error——需要人介入的失败（依赖不可用、数据不一致），必须可告警；Warn——自愈了但值得留意的异常（重试成功、降级触发、接近水位）；Info——业务事件流（订单创建、任务完成），每条都该有业务含义；Debug——排查期细节（参数、中间状态），生产默认关闭。噪音多时先调 Level 旋钮（JSONHandler 的 Level 选项支持动态 AdjustFunc），其次才是改打点；"先删 Info"是反向操作——Info 是业务审计的底座。

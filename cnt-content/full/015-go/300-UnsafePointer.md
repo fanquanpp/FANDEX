@@ -1780,3 +1780,58 @@ fmt.Println(s); // [10 20 30]
 // 仅用于临时指针运算
 addr := uintptr(unsafe.Pointer(&x));
 ```
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（unsafe.Pointer 的合法性清单）**：从 `*T1` 转到 `*T2` 的转换链 `(*T2)(unsafe.Pointer(&x))` 合法吗？写出官方允许的六种模式中与"同一变量、不同视图"相关的两种，并各给一个例子。
+
+参考答案：合法（前提：T1 与 T2 内存布局兼容、无未定义对齐问题）。六种官方模式中与本主题相关的两种：
+
+```go
+// 模式一：*T1 -> *T2（含 via unsafe.Pointer），视图重解释
+type T1 struct{ x int64 }
+type T2 struct{ y int64 }
+var t1 T1
+t2 := (*T2)(unsafe.Pointer(&t1)) // 只要布局等价即合法
+
+// 模式二：*T1 -> *byte（或底层布局等价的切片视图）
+b := unsafe.Slice((*byte)(unsafe.Pointer(&t1)), unsafe.Sizeof(t1))
+```
+
+要点：重解释的合法性由"内存布局等价"背书，跨布局是未定义行为；`unsafe.Slice` 把任意对象变成字节视图，是网络协议、序列化里最常见的合法用法。
+
+**题 2（uintptr 的红线）**：下面两段代码，哪段是 bug？为什么？
+
+```go
+// A
+p := uintptr(unsafe.Pointer(&x))
+q := unsafe.Pointer(p)
+_ = q
+
+// B
+tmp := uintptr(unsafe.Pointer(&x)) + offset
+_ = tmp
+```
+
+参考答案：A 是 bug——uintptr 只是普通整数，转换发生的那一瞬间 unsafe.Pointer 的"GC 追踪契约"就断了：GC 可能在两步之间移动或回收对象（尤其是写屏障存在的场景），p 里的数字指向已失效的地址。B 侥幸"能用"但同样违规——正确的指针运算必须一步完成：`unsafe.Pointer(uintptr(unsafe.Pointer(&x)) + offset)`，转换链里 uintptr 只作为表达式中间值存在，不得赋给变量。红线一句话：uintptr 离开表达式的那一刻，GC 就不再认识它。
+
+**题 3（unsafe 的替代品）**：需求是"把 []float32 转成 []byte 发到网络"。分别写出 unsafe 版与安全版（binary 编码），并说出两者取舍。
+
+参考实现：
+
+```go
+// unsafe 版：零拷贝，直接视图
+bs := unsafe.Slice((*byte)(unsafe.Pointer(&f32[0])), len(f32)*4)
+
+// 安全版：逐元素编码，一次分配
+buf := make([]byte, len(f32)*4)
+for i, f := range f32 {
+    binary.LittleEndian.PutUint32(buf[i*4:], math.Float32bits(f))
+}
+```
+
+取舍：unsafe 版 O(1)、无分配，但绑定主机字节序（little-endian x86/arm），跨平台交换要显式处理；binary 版慢 10-100 倍但字节序明确、可移植。协议固定在"本机字节序 + 校验"时 unsafe 版是正当选择；公开协议一律 binary 或 encoding/binary.Append。

@@ -182,6 +182,8 @@ Timer 的触发流程：
 - 停止 Timer：$O(\log n)$（堆删除）。
 - 触发 Timer：$O(\log n)$（堆顶弹出）。
 
+**Go 1.23 起的语义变化（1.27 收尾）：Timer/Ticker 的 channel 恒为无缓冲。** 历史上 `Timer.C` 是容量为 1 的缓冲 channel——到期值可以"先存进 channel 再等消费"，于是 `Stop()` 之后 channel 里可能残留一次旧投递，`Reset()` 的正确姿势也因此背上"先 Stop 再排水再 Reset"的复杂约定。**go.mod 声明 1.23 及以上时，无缓冲语义即为默认**；旧行为的回退开关是 `GODEBUG=asynctimerchan=1`。Go 1.27 的动作是永久移除这个 GODEBUG 设置——回退通道关闭，无缓冲成为唯一语义。对新代码的影响是正面的：`Stop()` 返回 false 之后不必再担心 channel 里藏着旧值，`Reset` 的心智模型变简单——"重设堆里的到期时间"与"channel 投递"变成同步的。唯一需要留意的反模式是先 `time.After` 再立即 `Stop` 的写法本来就无法回收 timer，与本次变化无关（`time.After` 在 1.23 前会泄漏到触发为止，1.23 起未触发的 After 定时器可被 GC 回收）。
+
 ### 3.4 时区数据库的内存占用
 
 完整加载 IANA tzdata（约 450 个时区）大约消耗 1-2 MB 内存。Go 默认从系统读取 tzdata（Linux 在 `/usr/share/zoneinfo`，Windows 需单独安装）。
@@ -1841,3 +1843,46 @@ fmt.Println(time.Since(start))
 // Now 内含单调时钟读数，Sub/Before/After 仅比较单调部分
 // 不受系统时间回拨影响
 ```
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（参照布局的解析）**：解析 `"2026-11-11 08:30:00 +08:00"` 为时间，并转换成 UTC 存储。写出参照日期常量的正确写法，并解释为什么 Go 用这个"魔法日期"而不是格式串。
+
+参考实现：
+
+```go
+const layout = "2006-01-02 15:04:05 -07:00"
+t, err := time.Parse(layout, "2026-11-11 08:30:00 +08:00")
+utc := t.UTC()
+```
+
+要点：参照布局是 `01/02 03:04:05PM '06 -0700`（1 月 2 日下午 3 点 4 分 5 秒 06 年，记忆口诀 1234567），每个数字段位对应一个时间组件——它把"格式"统一成"用真实时间值当模板"，避免 "%Y-%m-%d" 与 C strftime 的第二套迷你语言。写错一位（比如把 01 写成 1）解析结果就错，这是 time 包最高频的坑。
+
+**题 2（单调时钟）**：用 `time.Now()` 计算一段代码耗时，系统在这期间 NTP 校时回拨了 5 秒。用 `time.Since(start)` 结果会错吗？为什么 Sub 特意只用单调时钟？
+
+参考答案：不会错。`time.Now()` 同时取墙钟与单调钟读数；`Sub`/`Since`/`Before`/`After` 只比较单调部分——单调时钟只进不退，不受 NTP/手动改时影响。墙钟（Wall）用于人类语义（显示、存储、定时到期），单调钟（Monotonic）用于测量流逝。注意 `t.Round(0)`/序列化会剥掉单调读数——跨进程传递后再 Sub 就退化为墙钟比较。
+
+**题 3（Ticker 的生命周期）**：写一个每 5 秒上报心跳的 goroutine，要求服务退出时 ticker 被正确释放。写出代码并指出漏掉 Stop 的后果。
+
+参考实现：
+
+```go
+func heartbeat(ctx context.Context) {
+    t := time.NewTicker(5 * time.Second)
+    defer t.Stop() // 必须显式释放
+    for {
+        select {
+        case <-t.C:
+            report()
+        case <-ctx.Done():
+            return
+        }
+    }
+}
+```
+
+要点：Ticker 不 Stop 的话 runtime 定时器一直挂在堆上（1.23 起不再被引用可回收，但引用还在循环里就不算），并且 channel 持续收值。1.27 起 Ticker.C 无缓冲化，select 语义更同步——漏消费的 tick 不再堆积在缓冲里，"处理慢于 tick 频率"的漂移问题会在周期设计时暴露而不是被缓冲掩盖。

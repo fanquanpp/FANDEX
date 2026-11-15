@@ -1630,3 +1630,41 @@ Linux 内核对 PID 1 的特殊保护：
 > **文档版本**：v2.0 (2026-06-14)
 > **审阅状态**：金标准教学版
 > **适用 Go 版本**：1.0 - 1.24+
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（优雅退出的完整链路）**：服务收到 SIGTERM 后要：停止接受新请求、等待在途请求完成（最多 10 秒）、关闭 DB 连接、退出。写出完整骨架，并指出哪一步漏掉会让 K8s 一定强杀。
+
+参考实现：
+
+```go
+ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
+defer stop()
+
+srv := &http.Server{Addr: ":8080"}
+go srv.ListenAndServe()
+
+<-ctx.Done() // 等第一个信号
+stop()       // 解除注册，第二次 Ctrl-C 直接终止（逃生门）
+
+shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+defer cancel()
+if err := srv.Shutdown(shutdownCtx); err != nil {
+    log.Printf("forced shutdown: %v", err) // 在途请求超时，Shutdown 返回
+}
+db.Close()
+```
+
+要点：K8s 的 terminationGracePeriodSeconds（默认 30s）内必须完成退出，漏掉超时上限的 Shutdown 会让在途慢请求挂着不退，最后被 SIGKILL（连接复位、无清理）。`NotifyContext` 把"信号 → channel"的样板收进 context。
+
+**题 2（哪些信号不能拦）**：SIGKILL 与 SIGTERM 的本质区别是什么？既然 SIGKILL 拦不住，容器里的服务靠什么保证数据不丢？
+
+参考答案：SIGTERM 是"请求退出"（进程可捕获处理，可优雅可拒绝），SIGKILL 是内核直接终止（进程根本收不到，无任何 handler 执行机会）。对策是把"关键数据不丢"的责任从退出时点挪出去——WAL/fsync（每笔写先落盘）、幂等重放（重启后恢复未完成事务）、外部协调者（锁租约超时自动接管）。要点：退出处理只能优化"可丢失窗口"的上界，不能提供正确性保证。
+
+**题 3（信号与 goroutine 的边界）**：`signal.Notify` 的 handler 回调运行在哪个 goroutine？在回调里直接做清理行不行？
+
+参考答案：runtime 把信号递送到一个专门的内部 goroutine，再转发到 Notify 注册的 channel——接收方是你自己的 goroutine，没有"信号 handler 回调"这种异步中断语义（与 C 不同，Go 里信号处理不能中断任意代码）。所以清理逻辑写在你接收 channel 的地方，串行、安全、可用全部 Go 代码。要点：Go 把 Unix 的异步信号模型驯化成同步的 channel 消息，这是它比 C 信号安全的核心。

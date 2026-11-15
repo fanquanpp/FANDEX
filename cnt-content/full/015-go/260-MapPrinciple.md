@@ -1512,3 +1512,34 @@ func main() {
 > **文档版本**：v2.0 (2026-06-14)
 > **审阅状态**：金标准教学版
 > **适用 Go 版本**：1.0 - 1.24+
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（Swiss Table 为什么快）**：老 bucket 版 map 每个桶只放 8 个键值对、查找要逐个比较 key；Swiss Table 用什么结构把"比较"压缩到一步？写出它在一组 8 槽里的查找流程。
+
+参考答案：Swiss Table 在每组（group of 8 slots）前放一个 64-bit control word，每 8 位存对应槽的哈希**高 7 位**（h2）与占用/删除标记（h1 用于定位组）。查找时：用 h1 定位起始组，一条 SIMD 指令把 control word 的 8 个 h2 与目标 h2 并行比较得到位掩码，再只对掩码命中的槽比较完整 key。要点：8 次 key 比较变成 1 次 SIMD 比较加至多 8 次槽位访问。量化收益按官方口径：1.24 的 runtime 整体改进（Swiss Table map、更小对象的分配器、互斥锁优化）合计平均降低约 2-3% 的 CPU 开销，map 密集型负载高于均值——单个数字别脱离 workload 语境引用。
+
+**题 2（nil map 与遍历随机性）**：`var m map[string]int` 能 `for range` 吗？写一个程序验证"两次遍历顺序不同"，并说明这保证的是语言契约里的哪一条。
+
+参考实现：
+
+```go
+m := map[string]int{"a": 1, "b": 2, "c": 3}
+for k := range m { // nil map 遍历零次，不 panic
+    fmt.Println(k)
+}
+
+for k := range m {
+    fmt.Print(k) // 每次运行的起点随机化
+}
+```
+
+要点：nil map 可读可遍历（都为零值/零次）、不可写。遍历顺序随机化是**故意的**——防止程序依赖 map 顺序（语言规范明确不保证顺序），1.24 前靠起点随机、Swiss 版遍历顺序同样被打散。需要稳定顺序就先排序 keys。
+
+**题 3（并发安全的正确姿势）**：并发读写 map 会直接 panic（fatal error: concurrent map writes，注意不是可 recover 的 panic）。写出三种常见解法并说出各自的适用规模。
+
+参考答案：(1) `sync.RWMutex` 包住 map——读多写少的中低并发，实现最直观；(2) `sync.Map`——官方注明适用两类场景：key 集合基本不变（读多写少的配置类）与多个 goroutine 读写不相交的 key 集合，否则普通 map+锁更快；(3) 分片（把 key 哈希到 N 个 map，每个一把锁）——高并发写入时的主流方案，把锁争用除以 N。fatal error 不可 recover 是运行时层的完整性保护，连 recover 都救不回来，所以并发安全要在写代码时设计好。

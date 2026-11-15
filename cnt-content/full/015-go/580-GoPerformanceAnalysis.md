@@ -1802,3 +1802,30 @@ go test -run XXX -bench "AllocOnly|AllocFixed" -benchmem
 就是本篇全部内容的实践形态。
 
 </details>
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考命令，按题目自己写一遍，再对照。
+
+**题 1（pprof 的取样原理）**：CPU profile 默认采样间隔是多少？一个只跑 10ms 的函数在 30 秒采样里大约占多少样本？这说明采样型剖析的盲区是什么？
+
+参考答案：默认 100Hz（10ms 一次），10ms 的函数平均每次采样命中 1 个样本，30 秒约 3 个样本——样本太少置信度低。盲区：低于采样间隔的单次开销被低估或漏采，短生命周期但高频的分配要靠 allocs profile（采样型，按分配速率采样）而不是 CPU profile。要点：pprof 回答"时间花在哪"，要回答"内存去哪了"换 heap/allocs，"锁等谁"换 mutex/block——先选对 profile 再谈优化。
+
+**题 2（benchstat 的正确用法）**：写出一个优化的 A/B 验证流程：从保存旧代码的基准结果到声明"显著变快"。为什么"跑一次对比一次"不可信？
+
+参考流程：
+
+```bash
+go test -bench=BenchmarkX -count=10 . > old.txt
+# 应用优化
+go test -bench=BenchmarkX -count=10 . > new.txt
+benchstat old.txt new.txt
+```
+
+判读 benchstat 输出：看变化百分比与 p 值（p<0.05 才算统计显著），样本数 10 起步（系统噪声在个位数百分点量级，单次运行完全被噪声淹没）。要点：性能结论是统计结论——没有 count 与显著性检验的"快了 20%"大概率是噪声；同时 `-benchtime` 要足够长让目标函数进入稳态。
+
+**题 3（trace 与 profile 的分工）**：CPU profile 显示热点在 runtime.netpoll，服务 QPS 却掉了一半。这时应该看 profile 还是 trace？说出 trace 能回答而 profile 不能的三个问题。
+
+参考答案：换 trace（`go tool trace`）。trace 能回答：延迟去哪了——单请求时间线上 GC STW 段、调度等待（goroutine 就绪到实际运行的 gap）、系统调用阻塞各占多少；并发行为——P 的利用率与抢占事件、goroutine 生命周期；因果——GC 前后请求延迟的相关性。profile 只有聚合的栈样本，没有时间轴与因果。要点：profile 回答"哪里慢"，trace 回答"为什么这一刻慢"；调延迟（P99）问题优先 trace。

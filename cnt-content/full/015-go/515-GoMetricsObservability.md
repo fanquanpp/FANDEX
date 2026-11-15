@@ -365,3 +365,28 @@ func main() {
   （https://prometheus.io/docs/ ，Apache-2.0 许可）
 - 场景素材：本仓库 500-GoRateLimiting 限流服务与 470-GoHTTP 服务端
   的既有场景续作
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（四类指标的选择）**：把下列观测点映射到 Prometheus 四类指标（Counter/Gauge/Histogram/Summary）并说明理由：请求总数、队列当前长度、请求延迟分布、CPU 使用率。
+
+参考答案：请求总数 Counter（只增不减，rate() 求速率）；队列长度 Gauge（可升可降的瞬时值）；延迟分布 Histogram（服务端可聚合分位数，bucket 划分是关键决策）；CPU 使用率 Gauge（或 Counter 的 rate 差分）。要点：选错类型是最常见错误——用 Gauge 存累计值（重置后图表跳变），用 Counter 存瞬时值（rate 后无意义）；判据是"值随时间怎么变"：只增、瞬时、分布。
+
+**题 2（低基数红线）**：给 HTTP 指标加 label，以下哪个 label 设计会打爆 Prometheus？`method`、`path`、`status`、`user_id`。写出安全的 path 处理方式。
+
+参考实现：
+
+```go
+httpRequestsTotal.WithLabelValues("POST", "/orders", "200").Inc()
+// path 用路由模板，而不是 r.URL.Path
+```
+
+要点：`user_id` 是无界基数——每个用户一组时间序列，百万用户=百万序列=内存爆炸+查询超时。`r.URL.Path` 同理（路径参数、随机后缀都是无界值）。必须先归一化到路由模式（`/orders/:id`）。label 组合的空间是乘积，每个 label 都要做"枚举值有界"审查。
+
+**题 3（RED 与 USE 的分工）**：RED（Rate/Errors/Duration）与 USE（Utilization/Saturation/Errors）分别问谁的问题？给"数据库连接池"设计一组 USE 指标。
+
+参考答案：RED 问"服务对调用方的表现"（流量、错误率、延迟），面向请求驱动组件；USE 问"资源本身的状态"（使用率、饱和度、错误），面向一切资源。连接池的 USE：使用率——`in_use / max_open`（Gauge）；饱和度——等待获取连接的排队数与等待时长（Histogram）；错误——获取连接超时计数（Counter）。要点：一个生产服务两者都要——RED 看用户视角的 SLO，USE 看容量视角的瓶颈，告警分属两套面板。

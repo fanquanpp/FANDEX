@@ -3067,7 +3067,7 @@ deviceURL := "https://github.com/login/device/code"
 
 ### 进阶主题
 
-- **OAuth 2.1 草案**：[draft-ietf-oauth-v2-1](https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/)
+- **OAuth 2.1 草案**：[draft-ietf-oauth-v2-1](https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/)（截至 2026-11 仍是工作组草案，最新为 2026-10-31 的 revision -17；已正式发布的配套 RFC：RFC 9700 OAuth 2.0 Security BCP（2025）、RFC 9728 Protected Resource Metadata（2025））
 - **Token Binding**：[RFC 8471](https://www.rfc-editor.org/rfc/rfc8471)
 - **Token Introspection**：[RFC 7662](https://www.rfc-editor.org/rfc/rfc7662)
 - **Token Revocation**：[RFC 7009](https://www.rfc-editor.org/rfc/rfc7009)
@@ -3120,3 +3120,45 @@ OAuth 2.0 与 JWT 是现代分布式系统身份认证与授权的基石。掌�
 8. **撤销机制**：黑名单 + 短时效 + Refresh 轮换
 
 通过本章节的学习，读者应能够独立设计并实现生产级的身份认证与授权系统，对标 MIT 6.5840、Stanford CS155、CMU 15-440 的教学水准。下一章节将探讨 Go 在加密领域的应用，包括 AES、RSA、ECDSA、Ed25519 等算法的工程实践。
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（PKCE 的必要性）**：为什么 OAuth 2.1 要求所有授权码流程（包括机密客户端）都必须 PKCE？写出 code_verifier/code_challenge 的生成与校验链路。
+
+参考实现：
+
+```go
+import (
+    "crypto/rand"
+    "crypto/sha256"
+    "encoding/base64"
+)
+
+// 客户端：生成 verifier 与 challenge
+// RFC 7636 §4.1：code_verifier 必须是 43-128 字符的 [A-Za-z0-9-._~]。
+// 取 32 字节（256 位）随机数经 base64url 编码正好 43 字符，压着下限：
+raw := make([]byte, 32)
+if _, err := rand.Read(raw); err != nil {
+    return err
+}
+verifier := base64.RawURLEncoding.EncodeToString(raw) // 43 字符
+sum := sha256.Sum256([]byte(verifier))
+challenge := base64.RawURLEncoding.EncodeToString(sum[:]) // S256 方法
+
+// 授权请求带 challenge；回调后换 token 时带 verifier
+// 服务端：sha256(verifier) == challenge 才发 token
+```
+
+要点：verifier 的长度下限（43 字符）是 RFC 硬性要求，`crypto/rand.Text` 的输出（base32、约 26 字符）不满足，必须显式生成再编码；没有 PKCE 时，授权码在重定向中被中间人/恶意应用截获即可换 token；PKCE 让"截到授权码的人"还需要拿到只存在于客户端内存的 verifier。2.1 连机密客户端也强制 PKCE，是因为"客户端密钥泄露"与"重定向劫持"是两条独立的攻击面。
+
+**题 2（隐式流的死亡）**：为什么 Implicit 流（response_type=token，token 直接经前端重定向返回）在 2.1 中被彻底移除？它留下的场景（SPA 无后端）现在用什么替代？
+
+参考答案：token 经 URL fragment 回传——浏览器历史、Referer 头、日志系统都可能留痕，且无法用 client_secret 校验（前端无密钥）、无 refresh 语义。替代：SPA 走"Authorization Code + PKCE"，token 通过后端/edge 的 token 交换获得，前端只拿短期 access token 或干脆维持 HttpOnly cookie 会话。要点：一个授权模式的存废判断标准是"凭据暴露面"与"能否防御重定向篡改"，2.1 的所有变化都沿这条线。
+
+**题 3（JWT 的注销难题）**：无状态的 JWT access token（15 分钟）签出后用户点"退出登录"，token 仍然有效——写出三层缓解并说明各自的成本。
+
+参考答案：三层——(1) 缩短 access token 时效（15 分钟内自然过期，零状态成本，但窗口内仍可用）；(2) refresh token 轮换 + 服务端撤销：refresh 是有状态的，撤销 refresh 就断掉续期（成本是每次刷新一次存储查询）；(3) 关键操作实时校验：高敏接口在 token 校验后查黑名单/版本号（成本是失去纯无状态性，多一次查询）。要点：无状态是有价资产——"纯 JWT 无需查库"在生产里通常只对低敏读接口成立，认证系统最终都是"短 JWT + 有状态 refresh"的混合。

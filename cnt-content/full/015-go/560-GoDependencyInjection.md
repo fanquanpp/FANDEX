@@ -1586,3 +1586,62 @@ func NewB(a *A) *B { return &B{a: a} }
 - 场景 A:手动注入。组件少,无需框架,启动最快。
 - 场景 B:Wire。组件多,编译期安全重要,运行时开销零。生命周期可通过 `OnStart`/`OnStop` 模式手动管理,或借助 fx 但牺牲编译期检查。
 - 场景 C:fx 或 dig。运行时动态注册是硬需求,Wire 无法应对。fx 提供更好的生命周期管理。
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（构造函数注入的最小形态）**：`OrderService` 依赖 `DB` 与 `Notifier` 两个接口。写出手工注入的 main 装配代码，并解释为什么依赖用接口类型声明而注入的是具体类型。
+
+参考实现：
+
+```go
+type OrderService struct {
+    db       DB       // 接口：消费侧声明的最小依赖
+    notifier Notifier
+}
+
+func NewOrderService(db DB, n Notifier) *OrderService {
+    return &OrderService{db: db, notifier: n}
+}
+
+func main() {
+    db := NewPostgres(dsn)      // 具体类型
+    svc := NewOrderService(db, NewSlackNotifier(db))
+    _ = svc
+}
+```
+
+要点：接口声明在消费者一侧（Go 惯例），生产者具体类型自然满足；main 是唯一知道全部具体类型的"装配根"——这使依赖图在编译期显式可见。手工注入是 Go 的默认答案，框架解决的是"装配根膨胀到上百行"之后的问题。
+
+**题 2（Wire 的编译期检查）**：Wire 与运行时 DI（fx/dig）的本质差异是什么？写出 `wire.Build` 出错时的反馈形态，并说明什么场景必须放弃 Wire。
+
+参考答案：Wire 在**编译期**做依赖图解析——生成 `wire_gen.go`，缺依赖/循环依赖是构建错误；fx/dig 在**运行时**用反射解析——缺依赖是启动 panic。Wire 出错形态：`wire: missing provider for X` 指名道姓。必须放弃 Wire 的场景：插件化动态注册（服务在运行时才知道有哪些组件）、按配置分支装配大量可选组件——静态图表达不了运行时才确定的形状。要点：能静态就静态（Go 的类型系统哲学），动态是必要时才付的成本。
+
+**题 3（生命周期的正确关闭顺序）**：服务启动顺序是 db -> cache -> http server，关闭时应该什么顺序？写出 stop 栈的实现骨架。
+
+参考实现：
+
+```go
+var stopStack []func() error
+
+func deferStop(f func() error) { stopStack = append(stopStack, f) }
+
+func main() {
+    db := openDB();    deferStop(db.Close)
+    cache := newCache(db); deferStop(cache.Flush)
+    srv := startHTTP(cache); deferStop(func() error { return srv.Shutdown(ctx) })
+
+    waitSignal()
+    // 逆序关闭：先 http（停止新流量）再 cache 再 db
+    for i := len(stopStack) - 1; i >= 0; i-- {
+        if err := stopStack[i](); err != nil {
+            log.Printf("stop: %v", err)
+        }
+    }
+}
+```
+
+要点：逆序关闭与栈帧释放同理——后启动的组件依赖先启动的，先关"入口"（HTTP）让新请求停止，再一层层把依赖断开；http server 必须先于 db 关闭，否则关闭中的请求还在用连接池。

@@ -1629,3 +1629,35 @@ flowchart TD
 > **文档版本**：v2.0 (2026-06-14)
 > **审阅状态**：金标准教学版
 > **适用 Go 版本**：1.7 - 1.22+
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（取消的传播边界）**：`handler` 起了两个 goroutine 分别查库存与查价格，ctx 在请求结束时取消。写出这段代码，并指出"ctx 取消能传到哪、传不到哪"——即哪类函数需要显式检查 `ctx.Err()`。
+
+参考实现：
+
+```go
+func handler(ctx context.Context) error {
+    ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+    defer cancel()
+
+    g, gctx := errgroup.WithContext(ctx)
+    g.Go(func() error { return fetchStock(gctx, sku) })  // 传入 ctx 的函数链能感知取消
+    g.Go(func() error { return fetchPrice(gctx, sku) })
+    return g.Wait()
+}
+```
+
+要点：取消靠"ctx 沿调用链传递"传播——凡是收 ctx 的库函数（database/sql、net/http）内部会检查；**自己写的纯计算循环不会自动取消**，长循环要显式插 `if ctx.Err() != nil { return ctx.Err() }`。ctx 不传给 goroutine、不存进结构体字段，是它传播失效的两大根因。
+
+**题 2（WithTimeout 的 cancel 泄漏）**：`ctx, cancel := context.WithTimeout(ctx, 2*time.Second)` 之后不调用 cancel 会怎样？为什么 vet 会对 `defer cancel()` 缺失报警？
+
+参考答案：不会立刻出错，但父 context 的取消树里会一直挂着这个子节点——计时器与子节点在 2 秒超时触发前（若父先取消则会更早）都保持存活，短暂泄漏内存与定时器。`lostcancel` vet 检查强制 cancel 被调用或 defer，正是把这个约定变成编译期纪律。规范：`defer cancel()` 紧跟创建语句，宁可多调（幂等）不可漏调。
+
+**题 3（value 的使用边界）**：把 `*sql.DB`、用户 ID、请求 ID 分别放进 context value 合不合适？
+
+参考答案：请求 ID（跨 API 边界的请求范围数据）合适——这正是官方文档说的典型用途；用户 ID 可以放（属于请求范围元数据），但要在文档里注明键与类型；`*sql.DB` 不合适——它是服务级长生命周期依赖，应通过构造函数注入，放 value 里会掩盖依赖关系、破坏类型安全（取出时 any 断言）。判据：随请求生灭的横切元数据进 value，稳定的依赖走参数与结构体字段。

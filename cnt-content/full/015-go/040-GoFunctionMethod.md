@@ -689,3 +689,68 @@ func LoggingMiddleware(next Handler) Handler {
     };
 }
 ```
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。写完的判据是"能向别人解释每行为什么这么写"，不是"能跑就行"。
+
+**题 1（值传递与方法集）**：定义 `Counter` 类型与 `Inc` 方法，要求 `Inc` 能真正修改调用者的计数器。写出两种可行方案（指针接收者方法；或者用函数收值再返回新值），并解释为什么值接收者版本做不到。
+
+参考实现：
+
+```go
+type Counter struct{ n int }
+
+// 方案一：指针接收者，方法拿到原变量的地址
+func (c *Counter) Inc() { c.n++ }
+
+// 方案二：值语义，显式返回新值
+func IncVal(c Counter) Counter { c.n++; return c }
+```
+
+要点：Go 的方法接收者也是值拷贝；值接收者拿到的是副本，改副本不影响原值。这也是方法集规则（值类型只有值接收者方法在集合里）的来源。
+
+**题 2（闭包）**：写一个 `func Counter() func() int`，每次调用返回值递增（1, 2, 3...），并解释闭包捕获的是什么。
+
+参考实现：
+
+```go
+func Counter() func() int {
+    n := 0
+    return func() int {
+        n++
+        return n
+    }
+}
+```
+
+要点：闭包捕获的是变量本身（引用环境），不是调用那一刻的值拷贝；两个 `Counter()` 返回的闭包各自持有独立的 `n`。
+
+**题 3（函数选项模式）**：写 `NewServer(addr string, opts ...Option) *Server`，支持 `WithTimeout`、`WithLogger` 两个选项，未传时用默认值。
+
+参考实现：
+
+```go
+type Server struct {
+    addr    string
+    timeout time.Duration
+    logger  *log.Logger
+}
+
+type Option func(*Server)
+
+func WithTimeout(d time.Duration) Option { return func(s *Server) { s.timeout = d } }
+func WithLogger(l *log.Logger) Option    { return func(s *Server) { s.logger = l } }
+
+func NewServer(addr string, opts ...Option) *Server {
+    s := &Server{addr: addr, timeout: 5 * time.Second, logger: log.Default()}
+    for _, opt := range opts {
+        opt(s)
+    }
+    return s
+}
+```
+
+要点：选项模式的价值在"新增选项不改已有调用方"，默认值集中在构造函数里，可选参数越多越能体现。
