@@ -312,3 +312,12 @@ wrk -t4 -c100 -d30s -s post.lua http://target/
 | P99 延迟 | <50ms  | <200ms | >500ms |
 | 错误率   | <0.01% | <0.1%  | >1%    |
 | QPS      | >10000 | >1000  | <100   |
+
+## 自检
+
+- USE 方法默写：Utilization/Saturation/Errors 对 CPU 各看什么指标？（使用率、load 与运行队列、硬软中断错误）
+- 阿姆达尔定律口算：可优化部分占 60%，那部分优化 3 倍，整体加速比是多少？这个公式为什么让人先优化占比最大的部分？
+- CPU 高但应用慢的两条岔路：us 高看应用（profile/flamegraph），si 高看网络中断（RSS/网卡）——iowait 高又该往哪层去？
+- 内存三问：available 与 free 的区别；cache/buffer 被回收的优先级；swap si/so 持续非零说明什么？
+- 磁盘 IOPS 与吞吐哪个是瓶颈怎么判？iostat 里 %util 与 await 各代表什么？
+- 压测纪律自查：为什么"只压出 QPS 数字"没有意义——基准、梯度、监控对齐三件事各防什么？

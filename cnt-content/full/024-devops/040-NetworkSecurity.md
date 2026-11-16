@@ -16,6 +16,8 @@ prerequisites: []
 
 ## 1. TCP/IP 协议栈
 
+先建立分层直觉再记命令：排障时"从底层往上走"的顺序（线通吗 → IP 通吗 → 端口通吗 → 应用答吗）之所以有效，正是因为每一层只依赖下一层——应用层连不上时，先排除传输层与网络层，就能把一半的嫌疑直接划掉。
+
 ### 1.1 OSI 七层 vs TCP/IP 四层
 
 | OSI        | TCP/IP     | 协议                | 数据单元  |
@@ -30,29 +32,21 @@ prerequisites: []
 
 ### 1.2 TCP 三次握手与四次挥手
 
+三次握手回答"双方收发能力都正常吗"：客户端发起、服务端确认并反向发起、客户端再确认——缺一次都有一方的收或发能力未被验证。四次挥手回答"双方都同意挂断吗"：因为连接是双向的，每个方向各关一次（FIN/ACK 两次），中间服务端还可以把没发完的数据发完。
+
 ```mermaid
-flowchart TD
-    T0["三次握手:"]
-    T1["Client          Server"]
-    T2["SYN"]
-    T3["SYN+ACK"]
-    T4["ACK"]
-    T5["四次挥手:"]
-    T6["Client          Server"]
-    T7["FIN"]
-    T8["ACK"]
-    T9["FIN"]
-    T10["ACK"]
-    T0 --> T1
-    T1 --> T2
-    T1 --> T3
-    T1 --> T4
-    T4 --> T5
-    T5 --> T6
-    T6 --> T7
-    T6 --> T8
-    T6 --> T9
-    T6 --> T10
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+    Note over C,S: 三次握手（建立连接）
+    C->>S: SYN
+    S-->>C: SYN+ACK
+    C->>S: ACK
+    Note over C,S: 四次挥手（关闭连接）
+    C->>S: FIN
+    S-->>C: ACK
+    S-->>C: FIN
+    C->>S: ACK
 ```
 
 ### 1.3 常用端口
@@ -109,7 +103,8 @@ dig -x 93.184.216.34
 dig +trace example.com
 
 # DNS 缓存清理
-sudo systemd-resolve --flush-caches    # systemd-resolved
+sudo resolvectl flush-caches           # systemd-resolved（新命令）
+sudo systemd-resolve --flush-caches    # systemd-resolved（旧兼容写法）
 sudo rndc flush                         # BIND
 ```
 
@@ -406,7 +401,55 @@ netstat -an | grep :80 | wc -l       # 80 端口连接数
 | 连接重置     | 防火墙/应用崩溃   | `tcpdump`, 应用日志            |
 | 间歇性超时   | 网络拥塞/MTU      | `mtr`, `ping -M do -s 1472`    |
 
-## 8. 小结
+## 8. 容器网络速查（docker network）
+
+容器网络是本篇前面所有概念（IP、端口、DNS、防火墙）的叠加应用：每个容器是一台有独立 IP 的迷你主机，容器网络子系统回答三个问题——**容器怎么组网**（network）、**外面怎么进来**（-p 端口映射）、**容器之间怎么互相找到**（自定义网络里的 DNS 名称解析）。
+
+### 8.1 网络的创建与查看
+
+| 命令 | 作用 |
+| :--- | :--- |
+| `docker network create mynet` | 创建桥接网络 |
+| `docker network create --subnet 172.20.0.0/16 mynet` | 指定子网创建 |
+| `docker network create -d overlay myoverlay` | 创建跨主机 overlay 网络 |
+| `docker network ls` | 列出所有网络（`--filter driver=bridge` 过滤） |
+| `docker network inspect mynet` | 看网络详情与已接入容器 |
+| `docker network inspect --format '{{range .Containers}}{{.Name}} {{end}}' mynet` | 只列出网络中的容器名 |
+
+### 8.2 容器接入与退出
+
+| 命令 | 作用 |
+| :--- | :--- |
+| `docker network connect mynet web` | 把运行中的 web 容器接入 mynet |
+| `docker network connect --ip 172.20.0.5 mynet web` | 指定 IP 接入 |
+| `docker network connect --alias dbhost mynet web` | 接入并设别名 |
+| `docker network disconnect mynet web` | 断开（`-f` 强制） |
+| `docker network rm mynet` | 删除网络 |
+| `docker network prune -f` | 清理所有未使用的网络 |
+
+### 8.3 启动时指定网络与端口映射
+
+| 写法 | 说明 |
+| :--- | :--- |
+| `docker run -d --name web --network mynet nginx` | 启动即入网 |
+| `docker run -p 8080:80 nginx` | 端口映射：宿主 8080 → 容器 80 |
+| `docker run -p 127.0.0.1:8080:80 nginx` | 只绑定本机回环（比暴露全网卡安全） |
+| `docker run -P nginx` | 随机映射镜像声明的所有端口 |
+| `docker run --network host nginx` | host 网络：无隔离，直接用主机栈 |
+| `docker run --network none alpine` | 无网络（跑离线批处理用） |
+
+### 8.4 DNS 与服务发现
+
+同一**自定义**网络里，容器名就是 DNS 名——`--name db` 之后，同网络的 web 容器直接 `ping db` 可通。这是 Compose 服务互访的底层机制；默认 bridge 网络没有这个能力（历史兼容原因），所以"容器互访要用自定义网络"不是教条而是机制使然。相关命令：
+
+```bash
+docker run --dns 8.8.8.8 nginx                                    # 指定容器 DNS
+docker inspect --format '{{json .NetworkSettings.Networks}}' web  # 看容器的网络配置
+docker exec web ping db                                           # 测容器间连通
+docker port web                                                   # 看端口映射
+```
+
+## 9. 小结
 
 网络与安全是运维的核心能力：
 
@@ -416,242 +459,13 @@ netstat -an | grep :80 | wc -l       # 80 端口连接数
 4. **防火墙**配置需遵循最小权限原则，默认拒绝、按需开放
 5. **SSH 加固**是服务器安全的第一道防线，必须禁用密码登录
 6. **网络排查**遵循从底层到高层的思路，逐步缩小问题范围
-## docker network create 创建网络
+7. **容器网络**把上述概念再叠加一层：自定义网络提供 DNS 服务发现，端口映射控制边界
 
-**基本写法：创建桥接网络**
-`docker network create <网络名>`
-```bash
-# 创建自定义桥接网络
-docker network create mynet
-```
+## 自检
 
-**基本写法：指定子网创建网络**
-`docker network create --subnet <CIDR> <网络名>`
-```bash
-# 创建指定子网的网络
-docker network create --subnet 172.20.0.0/16 mynet
-```
+- 遮住握手时序图，自己画三次握手与四次挥手：为什么握手三次就够、挥手却要四次？（提示：关闭是两个单向通道各关一次）
+- 排障顺序口述：应用连不上时，从底层到应用层你依次跑哪几条命令？遮住 7.2 的命令块自查遗漏。
+- 防火墙三件套（iptables/firewalld/ufw）遮住命令块后，各自说一条"开放 80/443 并永久生效"的写法；firewalld 为什么必须 `--reload`？
+- 容器互访：为什么默认 bridge 里 `ping 容器名` 不通、自定义网络里通？说不出机制就回 8.4。
+- SSH 加固清单默写：sshd_config 至少改哪四项才能做到"仅密钥登录、禁 root"？
 
-**基本写法：创建 overlay 网络**
-`docker network create -d overlay <网络名>`
-```bash
-# 创建跨主机 overlay 网络
-docker network create -d overlay myoverlay
-```
-
----
-
-## docker network ls 查看网络
-
-**基本写法：列出所有网络**
-`docker network ls`
-```bash
-# 列出所有 Docker 网络
-docker network ls
-```
-
-**基本写法：过滤网络**
-`docker network ls --filter driver=<驱动>`
-```bash
-# 只列出桥接网络
-docker network ls --filter driver=bridge
-```
-
----
-
-## docker network inspect 查看网络详情
-
-**基本写法：查看网络详情**
-`docker network inspect <网络名>`
-```bash
-# 查看 mynet 网络的详细信息
-docker network inspect mynet
-```
-
-**基本写法：查看网络中的容器**
-`docker network inspect --format '{{range .Containers}}{{.Name}} {{end}}' <网络名>`
-```bash
-# 列出网络中的所有容器
-docker network inspect --format '{{range .Containers}}{{.Name}} {{end}}' mynet
-```
-
----
-
-## docker network connect 连接容器到网络
-
-**基本写法：连接容器到网络**
-`docker network connect <网络名> <容器>`
-```bash
-# 将 web 容器连接到 mynet 网络
-docker network connect mynet web
-```
-
-**基本写法：指定 IP 连接**
-`docker network connect --ip <IP> <网络名> <容器>`
-```bash
-# 指定 IP 连接容器到网络
-docker network connect --ip 172.20.0.5 mynet web
-```
-
-**基本写法：使用别名连接**
-`docker network connect --alias <别名> <网络名> <容器>`
-```bash
-# 给容器设置网络别名
-docker network connect --alias dbhost mynet web
-```
-
----
-
-## docker network disconnect 断开网络
-
-**基本写法：断开容器与网络连接**
-`docker network disconnect <网络名> <容器>`
-```bash
-# 将 web 容器从 mynet 断开
-docker network disconnect mynet web
-```
-
-**基本写法：强制断开**
-`docker network disconnect -f <网络名> <容器>`
-```bash
-# 强制断开容器网络
-docker network disconnect -f mynet web
-```
-
----
-
-## docker network rm/prune 删除网络
-
-**基本写法：删除网络**
-`docker network rm <网络名>`
-```bash
-# 删除 mynet 网络
-docker network rm mynet
-```
-
-**基本写法：删除所有未使用网络**
-`docker network prune`
-```bash
-# 清理所有未使用的网络
-docker network prune -f
-```
-
----
-
-## 容器使用自定义网络
-
-**基本写法：启动容器时指定网络**
-`docker run --network <网络名> <镜像>`
-```bash
-# 启动容器并加入 mynet 网络
-docker run -d --name web --network mynet nginx
-```
-
-**基本写法：指定网络别名**
-`docker run --network <网络名> --network-alias <别名> <镜像>`
-```bash
-# 给容器设置网络别名
-docker run -d --name app --network mynet --network-alias api node
-```
-
----
-
-## 网络驱动类型
-
-**基本写法：bridge 桥接网络**
-`docker network create -d bridge <网络名>`
-```bash
-# 创建默认桥接网络
-docker network create -d bridge mybridge
-```
-
-**基本写法：host 主机网络**
-`docker run --network host <镜像>`
-```bash
-# 容器使用主机网络
-docker run --network host nginx
-```
-
-**基本写法：none 无网络**
-`docker run --network none <镜像>`
-```bash
-# 启动无网络的容器
-docker run --network none alpine
-```
-
----
-
-## 端口映射
-
-**基本写法：映射单个端口**
-`docker run -p <宿主端口>:<容器端口> <镜像>`
-```bash
-# 映射 8080 到容器 80
-docker run -p 8080:80 nginx
-```
-
-**基本写法：映射多个端口**
-`docker run -p <端口1>:<端口1> -p <端口2>:<端口2> <镜像>`
-```bash
-# 映射多个端口
-docker run -p 80:80 -p 443:443 nginx
-```
-
-**基本写法：绑定指定 IP**
-`docker run -p <IP>:<宿主端口>:<容器端口> <镜像>`
-```bash
-# 绑定到指定 IP
-docker run -p 127.0.0.1:8080:80 nginx
-```
-
-**基本写法：随机端口映射**
-`docker run -P <镜像>`
-```bash
-# 随机映射到宿主机端口
-docker run -P nginx
-```
-
----
-
-## DNS 与服务发现
-
-**基本写法：容器间通过名称访问**
-`docker run --name <容器名> --network <网络名> <镜像>`
-```bash
-# 在同一网络中通过容器名访问
-docker run -d --name db --network mynet mysql
-docker run -d --name web --network mynet nginx
-# web 容器可通过 db 名称访问 mysql
-```
-
-**基本写法：自定义 DNS 服务器**
-`docker run --dns <DNS服务器> <镜像>`
-```bash
-# 指定 DNS 服务器
-docker run --dns 8.8.8.8 nginx
-```
-
----
-
-## 网络问题排查
-
-**基本写法：查看容器网络配置**
-`docker inspect --format '{{.NetworkSettings}}' <容器>`
-```bash
-# 查看容器网络设置
-docker inspect --format '{{json .NetworkSettings.Networks}}' web
-```
-
-**基本写法：测试容器间连通性**
-`docker exec <容器> ping <目标容器>`
-```bash
-# 测试 web 到 db 的连通性
-docker exec web ping db
-```
-
-**基本写法：查看容器端口映射**
-`docker port <容器>`
-```bash
-# 查看 web 容器的端口映射
-docker port web
-```

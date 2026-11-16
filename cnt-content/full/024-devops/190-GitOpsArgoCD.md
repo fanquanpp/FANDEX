@@ -210,6 +210,18 @@ spec:
 2. App of Apps 引导集群、ApplicationSet 管多集群，两者组合支撑规模化。
 3. 渐进式发布（金丝雀）由 Argo Rollouts/Flagger 补位，见持续交付篇。
 
+## 自检
+
+- 遮住四原则，复述 GitOps 与"CI 里顺手 kubectl apply"的本质区别：声明式、版本化、自动拉取、持续协调各自防什么事故？
+- Synced 与 Healthy 是两个独立维度——举一个"Synced 但不 Healthy"的具体例子，再举一个"OutOfSync 但 Healthy"的例子。
+- 三种同步策略（手动/自动/prune+selfHeal 全开）各适合什么环境？生产敢开自动同步的前提是什么？
+- App of Apps 与 ApplicationSet 各解决什么规模的问题？遮住 5.1，说出应用仓/配置仓分离后 CI 与 ArgoCD 的分工边界。
+- 事故演练：有人直接在集群里改了资源，Git 里没有——GitOps 体系里这个改动叫什么、会被谁、以什么方式处理掉？
+
+## 附录：argocd CLI 速查
+
+以下按"应用的一生"组织 ArgoCD 命令行参考：管理（创建/查看）、同步、配置、仓库与项目、集群、账户、ApplicationSet、通知钩子、排障。UI 能做的一切都能用这套 CLI 脚本化——这也是 GitOps 自动化（如 CI 触发同步）的基础。
+
 ## 应用管理
 
 **基本用法:创建应用**

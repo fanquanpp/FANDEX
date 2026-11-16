@@ -181,3 +181,11 @@ helm pull bitnami/nginx --untar --untardir ./charts
 1. `--atomic`/`--wait` 是升级保险，`helm diff`（插件）是升级前评审工具，两者配合构成变更安全网。
 2. `helm get manifest <release>` 能看 Release 实际渲染出的完整清单——排查"线上到底是什么配置"的最终答案。
 3. 多环境规模化后，Helm 命令行退居调试位，渲染与发布交给 ArgoCD/Flux（见 [GitOps ArgoCD](/devops/190-GitOpsArgoCD)）。
+
+## 自检
+
+- 遮住命令块，按"一个应用的一生"默写七步命令：search/repo → show → install → status → upgrade → rollback → uninstall，每步写出至少一条。
+- `helm repo add` 之后为什么要紧跟 `repo update`？`search hub` 与 `search repo` 的区别是什么？
+- install 前该跑哪条命令看可调参数？为什么"生产差异一律 -f 文件"——`--set` 的问题在追溯性还是安全性？
+- `--install` 后缀改变了 upgrade 的什么行为？`--atomic` 在升级失败时做什么？两个一起为什么是 CI 标配？
+- uninstall 时想保留回滚能力，加哪个参数？helm 的修订号（revision）在什么动作时递增？

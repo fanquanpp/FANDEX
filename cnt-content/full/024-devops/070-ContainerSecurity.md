@@ -18,6 +18,8 @@ prerequisites:
 
 ## 1. 容器安全概述
 
+先立一个总纲再谈工具：容器没有"一劳永逸的安全开关"，安全是在**四层**上分别做减法——每一层缩小的攻击面，都会被上一层依赖、被下一层兜底。判断一个安全措施属于哪一层、缺了哪一层，是比记住任何单个工具更重要的能力。
+
 ### 1.1 容器安全四层模型
 
 ```
@@ -324,3 +326,11 @@ kube-bench run --benchmark cis-1.8
 - 访问控制和审计
 - 加密传输和存储
 - 变更管理流程
+
+## 自检
+
+- 遮住四层模型，自上而下默写：应用代码、镜像、运行时、宿主机——每层说出一个对应的工具或机制（如 Trivy、securityContext、Falco）。
+- 遮住 Pod 安全策略 YAML，默写 Restricted 级别的四个核心字段：`runAsNonRoot`、`readOnlyRootFilesystem`、`allowPrivilegeEscalation: false`、`capabilities.drop: [ALL]`——各防什么攻击？
+- 2.2 的签名验证链条口述：cosign 签了什么、Kyverno 在哪个环节拦什么？只有签名没有准入拦截，攻击者绕过哪里？
+- 为什么"扫描出 HIGH 就该修"在 CI 里是门禁而在生产是告警？说出测试左移在安全上的含义。
+- NetworkPolicy 默认是什么状态（放行还是拒绝）？"deny-all 起步"改的是什么默认值？

@@ -233,6 +233,14 @@ ls /tmp/rot/                        # x.log x.log.1 x.log.2 ...（.gz）
 - 能写一份 logrotate 配置并解释 postrotate 通知的必要性（含 endscript 拼写）；
 - 能设计热温冷三层留存并说出采样与脱敏的落点。
 
+## 自检
+
+- 三段生命周期默写：生产（级别纪律/结构化）→ 采集（agent/sidecar/直发）→ 存储（轮转/留存）——遮住图自己补一遍，每段说一个典型事故。
+- 六个级别使用纪律口述：为什么"ERROR 必须可行动"？把"配置加载失败"和"用户传参不合法"分别放进哪个级别？
+- 结构化 JSON 四字段默写（ts/level/svc/traceId），并解释非结构化日志在"按服务过滤 + 聚合统计"两件事上各贵多少倍。
+- 应用为什么写 stdout 而不是自己写文件？说清容器日志从 stdout 到 /var/log/containers 的流向，以及这条流向如何决定采集器的挂载。
+- logrotate 三要素默写：轮转周期、保留份数、postrotate 通知——没有 postrotate 通知时应用会发生什么？
+
 ## 下一步
 
 - [ELK Stack 日志分析](/devops/280-ELKStackLogAnalysis)：集中后端的索引与检索实操；

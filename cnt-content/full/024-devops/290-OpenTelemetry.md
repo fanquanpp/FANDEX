@@ -290,3 +290,16 @@ logging.info("payment failed", extra={
 2. 采样是成本控制核心：头部采样省资源，尾部采样保关键链路。
 3. Profiles（性能剖析）信号仍在发展中，采用前关注官方状态，勿当作稳定能力宣传。
 4. OTel 不做存储与可视化——后端（Prometheus/Jaeger/Loki 等）依然需要，OTel 只统一"进"的一侧。
+
+## 自检
+
+- "USB-C 类比"自查：OTel 统一的是哪一段（埋点进），不管哪一段（存储/展示）？换后端要不要重新埋点？
+- Span 与 Trace 的关系一句话；trace_id 如何把指标-链路-日志三支柱串起来？日志里丢了 trace_id 会退化成什么样？
+- Collector 两级部署默写：Agent（DaemonSet）与 Gateway（Deployment）各自负责什么？为什么应用只管发 OTLP？
+- 头部采样与尾部采样的取舍：省成本选哪个、保错误链路选哪个？`tail_sampling` 按 trace_id 保留失败链路的机制说一遍。
+- 信号稳定度现状（2026-11）：Trace、Logs 与 Metrics 的 API/协议规范均已 Stable（状态页生命周期只有 Draft/Experimental/Stable/Deprecated/Removed，没有 RC 档；Metrics 仅个别语言 SDK 未齐，Go 的 Logs API/SDK 也是 2026-08 才到 RC——那是语言实现进度，不是规范状态），Profiles 仍在发展——向团队推介 OTel 时哪句话不能说满？
+
+## 参考与致谢
+
+- OpenTelemetry 官方文档与规范状态页（Apache-2.0 / CC BY 4.0）：<https://opentelemetry.io/docs/specs/status/>
+- OTel Collector 官方文档（Apache-2.0）：<https://opentelemetry.io/docs/collector/>

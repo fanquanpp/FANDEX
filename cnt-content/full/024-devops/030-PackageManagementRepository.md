@@ -16,6 +16,17 @@ prerequisites:
   - 'devops/010-OverviewLinuxBasics'
 ---
 
+## 为什么需要包管理与仓库
+
+拿到一个软件，为什么不能"下载一个文件运行就完了"？三个问题逼出了包管理这套体系：
+
+- **依赖问题**：软件依赖几十个库，每个库又依赖别的库——手工装等于手工解一张依赖图，升级一个包可能弄坏另一个。包管理器把依赖图交给机器解；
+- **一致性问题**：十台服务器要装"完全相同"的一套东西，手工装必然漂移。包是原子单元：装、升、卸、查都走同一条路，机器上"装了什么"永远可查询（`rpm -qa` / `dpkg -l`）；
+- **信任问题**：从网上下载的二进制可能被篡改。包自带 GPG 签名与校验和，仓库是你信任的源——`gpgcheck=1` 拦住的就是"半路被换过的包"。
+
+而**仓库（repository）**回答的是"从哪拿"：官方源、自建源（内网加速与合规）、企业制品库（Artifactory/Nexus，把 RPM/DEB/Maven/Docker 镜像统一管起来，供 CI/CD 产出与消费）。心智模型一句话：**包是原子单元，仓库是分发渠道，包管理器是依赖求解器**。
+
+本篇命令偏多，但别背命令——先记住"每个命令回答哪个问题"：装/卸（变更系统状态）、查询（这台机器上有什么）、仓库配置（从哪拿、信不信）。
 
 ## 1. RPM 包管理
 
@@ -57,20 +68,28 @@ package-name-version-release.architecture.rpm
 架构: x86_64
 ```
 
-RPM 包内部结构：
+RPM 包内部结构（一个 .rpm = HEADER 元数据 + PAYLOAD 文件负载两部分）：
 
 ```mermaid
 flowchart TD
-    T0["HEADER（元数据）"]
-    T1["名称、版本、描述"]
-    T2["依赖关系"]
-    T3["安装/卸载脚本"]
-    T4["文件列表和校验和"]
-    T5["PAYLOAD（cpio 归档 + gzip）"]
-    T6["实际文件"]
-    T4 --> T5
-    T5 --> T6
+    T0["package.rpm"]
+    T1["HEADER（元数据）"]
+    T2["名称、版本、描述"]
+    T3["依赖关系"]
+    T4["安装/卸载脚本"]
+    T5["文件列表和校验和"]
+    T6["PAYLOAD（cpio 归档 + gzip）"]
+    T7["实际文件"]
+    T0 --> T1
+    T0 --> T6
+    T1 --> T2
+    T1 --> T3
+    T1 --> T4
+    T1 --> T5
+    T6 --> T7
 ```
+
+这个结构解释了 rpm 命令为什么快：`-q` 查询只读 HEADER 不解压 PAYLOAD，所以"查这台机器装了什么"是元数据操作，与文件大小无关。
 
 ### 1.3 SPEC 文件
 
@@ -136,17 +155,18 @@ dpkg -s package           # 查看包详细信息
 ```mermaid
 flowchart TD
     T0["package.deb"]
-    T1["debian-binary        # 版本信息"]
-    T2["control.tar.gz       # 控制信息"]
-    T3["control          # 包元数据"]
-    T4["preinst          # 安装前脚本"]
-    T5["postinst         # 安装后脚本"]
-    T6["prerm            # 卸载前脚本"]
-    T7["postrm           # 卸载后脚本"]
-    T8["data.tar.gz          # 实际文件"]
+    T1["debian-binary（版本信息）"]
+    T2["control.tar.gz（控制信息）"]
+    T3["control：包元数据"]
+    T4["preinst / postinst：安装前后脚本"]
+    T5["prerm / postrm：卸载前后脚本"]
+    T6["data.tar.gz（实际文件）"]
     T0 --> T1
     T0 --> T2
-    T7 --> T8
+    T0 --> T6
+    T2 --> T3
+    T2 --> T4
+    T2 --> T5
 ```
 
 **control 文件**：
@@ -162,6 +182,8 @@ Depends: libc6 (>= 2.31), libssl3
 ```
 
 ## 3. YUM/DNF 仓库
+
+rpm 只管"手里这个包"，不解决依赖——依赖求解是 DNF 的活。现代 Red Hat 系（EL 9+）一律用 `dnf`（yum 是它的兼容别名），日常心智：install/remove 变更，search/info 查询，仓库配置决定它能看见什么。
 
 ### 3.1 YUM/DNF 基础
 
@@ -205,19 +227,21 @@ priority=1
 ### 3.3 创建本地仓库
 
 ```bash
-# 安装工具
-dnf install createrepo
+# 安装工具（EL 9+ 的实现名是 createrepo_c）
+dnf install createrepo_c
 
 # 创建仓库
 mkdir -p /repo/rpms
 cp *.rpm /repo/rpms/
-createrepo /repo/rpms/
+createrepo_c /repo/rpms/
 
 # 更新仓库
-createrepo --update /repo/rpms/
+createrepo_c --update /repo/rpms/
 ```
 
 ## 4. APT 仓库
+
+Debian 系的分层与 Red Hat 系一一对应：dpkg 管"手里这个包"（不管依赖），apt 负责依赖求解与仓库。`apt update` 与 `apt upgrade` 的区别是高频困惑：前者只刷新"有什么可装"的索引（不装任何东西），后者才真正变更系统——所以"改了 sources.list 生效"靠 update。
 
 ### 4.1 APT 基础
 
@@ -245,13 +269,15 @@ apt clean
 ### 4.2 配置源
 
 ```bash
-# /etc/apt/sources.list
-deb https://mirrors.aliyun.com/ubuntu/ jammy main restricted
-deb https://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted
-deb https://mirrors.aliyun.com/ubuntu/ jammy-security main restricted
+# /etc/apt/sources.list（传统一行式格式）
+deb https://mirrors.aliyun.com/ubuntu/ noble main restricted
+deb https://mirrors.aliyun.com/ubuntu/ noble-updates main restricted
+deb https://mirrors.aliyun.com/ubuntu/ noble-security main restricted
 ```
 
-格式：`deb URL distribution component`
+格式：`deb URL distribution component`（示例用 24.04 LTS 的代号 noble）。
+
+注意：Ubuntu 24.04 起默认改用 deb822 格式（`/etc/apt/sources.list.d/ubuntu.sources`，字段化的多行格式），两种格式并存可用，但同一发行版别在两处重复配置。
 
 ### 4.3 创建 APT 仓库
 
@@ -267,6 +293,8 @@ dpkg-scanpackages debs / | gzip > debs/Packages.gz
 ```
 
 ## 5. 制品仓库管理
+
+系统包管理之外，还有一层更贴近 DevOps 日常的仓库：**制品仓库**。区别在"谁在消费"——系统包仓库面向服务器运维，制品仓库面向 CI/CD：流水线构建出 jar/war/镜像/Helm chart，推进 Local 仓库；下游部署从 Virtual 仓库拉。Local/Remote/Virtual 三分是 Artifactory 的核心心智模型，Nexus 里对应 hosted/proxy/group，概念同构。
 
 ### 5.1 Artifactory
 
@@ -340,3 +368,11 @@ dpkg-sig -s builder -k KEYID package.deb
 - 使用 HTTPS 传输
 - 定期轮换签名密钥
 - 实施访问控制策略
+
+## 自检
+
+- 遮住开头，用三句话回答为什么需要包管理：依赖、一致性、信任各对应哪条命令或配置？（提示：依赖求解、`rpm -qa` 可查询、`gpgcheck=1`）
+- 遮住 RPM 结构图，画出 .rpm 两大组成与 HEADER 里的四类元数据；再解释 `rpm -q` 为什么不用解压 PAYLOAD。
+- 不看正文说出两对区别：`apt update` 与 `apt upgrade`；dpkg 与 apt、rpm 与 dnf 的分工边界各在哪一层？
+- Artifactory 的 Local/Remote/Virtual 各解决什么问题？遮住表格，用自己的话把"CI 产出推哪、部署从哪拉、外部依赖从哪省流量"三个场景对应到三种仓库类型。
+- 版本范围口算：`^1.2.3` 与 `~1.2.3` 各允许装到哪个上限版本？说不出 MAJOR/MINOR/PATCH 各自的兼容性承诺就回第 5.3 节。

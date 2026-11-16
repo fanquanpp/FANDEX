@@ -11,6 +11,20 @@ related: []
 prerequisites: []
 ---
 
+## 先立骨架：GitLab CI 的心智模型
+
+GitLab CI 的全部配置都在仓库根的 `.gitlab-ci.yml`：**每个作业（job）= 一台 runner 容器 + 一段 script**，同一 `stage` 的作业并行跑、不同 `stage` 按序跑，上一 stage 全绿才进下一 stage。心智地图按"四个问题"组织：
+
+```text
+跑什么？      script（+ before/after_script 包夹）
+在哪跑？      image（作业容器）+ services（旁挂的 DB/Redis 等）
+什么时候跑？  stages 决定顺序，rules 决定这个作业要不要进本次流水线
+东西怎么传？  cache 是"给下次构建提速的依赖缓存"，artifacts 是"给下游作业
+              与人取用的产物"——两者的生命周期与消费者完全不同
+```
+
+最易混的一组概念就是 cache 与 artifacts：cache 面向**速度**（node_modules 装得快），丢了能重建；artifacts 面向**传递**（build 出的 dist 要给 deploy 作业用），是流水线的"接力棒"。选型与流水线设计原则见 [CI/CD 流水线](/devops/140-CICDPipeline)；本篇按配置块逐个给写法。
+
 ## .gitlab-ci.yml 基本结构
 
 **基本写法：定义流水线**
@@ -558,3 +572,11 @@ deploy:
   script:
     - deploy.sh
 ```
+
+## 自检
+
+- 遮住骨架段，回答四问：跑什么、在哪跑、什么时候跑、东西怎么传——每问写出对应的关键字。
+- cache 与 artifacts 的区别是本篇第一考点：面向速度还是传递？下游作业怎么拿到上游产物？`needs` 对取产物有什么影响（提前启动 + 精确依赖）？
+- rules 与 only/except 谁是新写法？把 `only: [main]` 换算成 rules 的 if 表达式。
+- services 解决什么问题：为什么集成测试要连数据库时用 services 而不是在 script 里手动起一个？（提示：作业生命周期与端口可达）
+- retry 的 `when` 该怎么选：网络抖动用 `runner_system_failure`，测试失败该重试吗——为什么"测试红了重试"是坏味道？

@@ -434,3 +434,11 @@ curl -X POST 'https://oapi.dingtalk.com/robot/send?access_token=xxx' \
     }
   }'
 ```
+
+## 自检
+
+- 遮住第 1 节，用"通往生产要不要人批准"一条线说清 CI、持续交付、持续部署三者——反例：FANDEX 属于哪一类，为什么？
+- 遮住第 3 节的配置块，凭记忆说出至少五个"每块配置防什么事故"：paths、permissions、concurrency、timeout-minutes、--frozen-lockfile、needs、environment。
+- 快速失败原则口述：为什么 lint 排在 build 前？让你重排 build 作业的步骤顺序，依据是什么？
+- 密钥三问：密钥放哪、YAML 里怎么引用、为什么"进过一次 commit 历史就必须作废重发"？短时凭证（OIDC）比长期密钥好在哪？
+- 遮住第 2 节的最小流水线，自己从零写一遍：触发器、runner、steps、版本锁定四要素不缺，再对照检查你是否忘了锁 Action 版本。

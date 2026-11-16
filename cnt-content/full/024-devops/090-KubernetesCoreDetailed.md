@@ -22,8 +22,9 @@ prerequisites:
 > 路由，ConfigMap/Secret 管配置，StatefulSet/HPA 处理有状态与弹性。
 > 本文是对这些对象的"为什么这样设计 + 怎么用好"的详解。
 
-前置说明：本文示例以 Kubernetes 1.33/1.34 为基准（2025 年的当前版本线），
-API 全部为 GA 稳定版本；升级集群时以官方 API 参考为准。
+前置说明：本文示例以 Kubernetes 1.36/1.37 为基准（2026 年的当前版本线，
+1.37 于 2026-08 发布，1.38 预计 2026-12），API 全部为 GA 稳定版本；
+升级集群时以官方 API 参考为准。
 
 ## 1. Pod：最小调度单元
 
@@ -411,3 +412,11 @@ CRD 只是"登记新类型"（校验规则都写在 schema 里），真正干活
 2. 有状态服务先评估"外置托管"，确需 StatefulSet 时理解有序性与 PVC 绑定语义。
 3. HPA 的前提是 requests 准确；用量长期贴 limit 的应用先扩 limit 再谈自动扩缩。
 4. Ingress 的继任者 Gateway API 适合多团队/复杂路由场景，新集群可提前规划。
+
+## 自检
+
+- 遮住所有 YAML，说出四件套各自解决什么"Pod 易逝"带来的问题：Deployment 管什么、Service 管什么、Ingress 管什么、ConfigMap/Secret 管什么？
+- 零停机滚动更新三要素默写：`maxUnavailable: 0`、readinessProbe、优雅终止（SIGTERM + `terminationGracePeriodSeconds`）——缺一个各会发生什么？
+- livenessProbe 与 readinessProbe 失败的后果差在哪？startupProbe 给谁用？探针里为什么不能查数据库？
+- 判断题并说理由：MySQL 该用 Deployment 还是 StatefulSet？无状态 API 服务呢？你的判断标准是哪三条差异？
+- HPA 不工作的两个经典原因是什么？（提示：requests 没配；Metrics Server 没装）缩容为什么要配冷静期？

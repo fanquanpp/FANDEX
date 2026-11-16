@@ -33,8 +33,7 @@ prerequisites:
 | Release | Chart + 参数的一次安装 | node_modules 里的一次安装 |
 | Repository | Chart 仓库 | npm registry |
 
-Helm 3（当前 3.x 主线）相比 Helm 2 的关键变化：去掉服务端组件 Tiller，
-直接用 kubeconfig 权限操作——这也是今天大家敢用它的前提。
+Helm 3 相比 Helm 2 的关键变化：去掉服务端组件 Tiller，直接用 kubeconfig 权限操作——这也是今天大家敢用它的前提。版本现状（2026-11）：**Helm 4 是当前主线**（2025-11 发布，新特性为 WASM 插件与 Server-Side Apply），Helm 3.x 仍在维护期；Chart 的 `apiVersion: v2` 格式两者通用，本篇内容在 3.x 与 4.x 上均适用。
 
 ## 2. Chart 目录结构
 
@@ -209,3 +208,11 @@ helm uninstall myapp                     # 卸载
 2. OCI 仓库让 Chart 与镜像同仓管理；library Chart 用于多团队共享模板片段。
 3. 复杂多环境管理（几千个 Release）交给 ArgoCD/Flux 渲染 Chart（见 GitOps 篇），
    Helm 命令行退居调试位。
+
+## 自检
+
+- 遮住概念表，用 npm 类比复述：Chart/Values/Release/Repository 各对应什么？为什么说"Release 是一次安装实例"——同一个 Chart 装两次得到几个 Release？
+- Chart.yaml 里 `version` 与 `appVersion` 谁必须递增、谁面向谁？遮住注释自己写一遍。
+- 默写覆盖优先级链（低到高）：chart 自带 values、`-f` 文件、`--set`——并说出"生产差异为什么不用 --set"。
+- 模板排错三连是什么顺序？`{{- -}}` 与 `| nindent` 各解决什么问题？
+- 升级安全两道保险是哪两个机制？`--atomic` 失败后会发生什么？

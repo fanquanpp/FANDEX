@@ -204,6 +204,14 @@ kubectl scale deploy/web --replicas=2
 - 能走完节点 NotReady 的"止损（cordon/drain）→ 修复"路径；
 - 能区分"容器被杀"（OOMKilled）与"没节点收"（FailedScheduling）两层资源问题。
 
+## 自检
+
+- 遮住状态机图，画 Pod 从提交到 Ready 的路径：三个分叉点（调度、拉镜像、运行）各对应哪个异常状态？第一反应命令分别是什么？
+- describe/events/logs 三层信息各在什么情况下用？CrashLoopBackOff 时为什么必须看 `--previous`——不看会漏掉什么？
+- 口述排查十连里的三条：找出所有异常 Pod、看 Service 有没有后端、看发布卡在哪——遮住命令块默写。
+- distroless 镜像 exec 不进去，用什么命令把工具"打进去"？`--target` 参数让临时容器共享了目标容器的什么？
+- 生产节点 NotReady，先止损还是先修？说出止损两条命令与常见三因。
+
 ## 下一步
 
 - [排障方法论](/devops/330-Troubleshooting)：CPU/内存/磁盘/网络的通用排查命令与判读；

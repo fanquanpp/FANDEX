@@ -262,6 +262,13 @@ journalctl -u heartbeat -p err    # Permission denied / status=203/EXEC
 - 能从零写一个含降权与安全加固的 systemd 单元，并区分 enable/start、simple/forking、on-failure/always；
 - 会用 journalctl 排障并处理 journal 磁盘占用。
 
+## 自检
+
+- 遮住上面所有命令块，只看四个圈层模型：给一台陌生服务器摸底，资源层的五条命令你能默写几条？load 6 在 8 核机器上该判"忙而可控"还是"过载"，为什么？
+- 遮住 sudoers 示例，自己写一行"deploy 用户仅可免密重启 myapp"；写完对照逐段解释——`(ALL)`、`NOPASSWD`、命令路径各起什么作用？换成 `NOPASSWD:ALL` 会发生什么？
+- 遮住服务单元模板，凭记忆写出 [Unit]/[Service]/[Install] 三段的最小骨架：降权用什么键、崩了自动拉起用什么键组合、改完单元文件后必须执行哪条命令 systemd 才认识新定义？
+- 三个高频谜题自测："服务日志去哪了""journal 占满磁盘怎么办""重启后日志没了"——不看正文各说出一句话答案，卡住就回 journalctl 一节。
+
 ## 下一步
 
 - [Shell 脚本编程](/devops/020-ShellScriptProgramming)：把本篇的命令串成自动化脚本；

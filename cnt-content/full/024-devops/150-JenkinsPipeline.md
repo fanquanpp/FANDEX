@@ -11,6 +11,25 @@ related: []
 prerequisites: []
 ---
 
+## 先立骨架：Jenkinsfile 的心智模型
+
+为什么要用 Pipeline 而不是在 Jenkins 网页上点配置？因为流水线一旦写成 `Jenkinsfile` 进 Git，它就获得了与代码同等的待遇：**可评审（改流水线要过 PR）、可重放（任何历史版本都能重跑）、可追溯（谁改的、为什么改，git log 说了算）**。网页配置做不到这三条，这也是"Pipeline as Code"成为 Jenkins 事实标准的原因。
+
+声明式 Pipeline 的骨架只有六块，读任何 Jenkinsfile 都按这个地图走：
+
+```text
+pipeline {
+  agent         在哪跑（节点/容器）
+  environment   环境变量与凭据注入
+  parameters    构建参数（手动触发时可输入）
+  triggers      自动触发（cron/上游）
+  stages        做什么（有序阶段 → 步骤，可 when 条件、可 parallel 并行）
+  post          结束后做什么（成功/失败通知、清理、归档）
+}
+```
+
+结构化心智：`stages` 是**主路**（业务步骤按失败代价排序），`post` 是** 无论成败都走的地毯**（通知与清理最该写在这里而不是最后一个 stage），`when`/`parallel` 是主路上的**岔口**。本篇按指令逐个给写法；概念与选型对比（Jenkins 与托管 CI 的取舍）见 [CI/CD 流水线](/devops/140-CICDPipeline)。版本现状（2026-11）：Jenkins 2.5xx LTS 为当前线（每 12 周一个 LTS，4 周一个补丁），声明式 Pipeline 语法多年稳定，本篇写法长期适用。
+
 ## pipeline 声明式流水线
 
 **基本写法：定义声明式 pipeline**
@@ -482,3 +501,11 @@ triggers {
     upstream(upstreamProjects: 'my-app-build', threshold: hudson.model.Result.SUCCESS)
 }
 ```
+
+## 自检
+
+- 遮住骨架图，默写声明式 pipeline 六大块及各自职责：agent/environment/parameters/triggers/stages/post——哪块是"无论成败都走的地毯"？
+- 凭据注入怎么写：遮住 environment 的 credentials 示例，说出 `credentials('db-password')` 与直接写密码的区别、变量在日志里会不会被打码。
+- when 与 parallel 各解决什么问题？给"master 分支才部署 + 单测/集测并行"写出 stage 骨架再对照。
+- post 里 success/failure/always 三种条件各放什么？为什么清理逻辑不该放在最后一个 stage？
+- 定时触发的 cron 写法为什么推荐 `H 2 * * *` 而不是 `0 2 * * *`？（提示：所有任务都在整点挤爆 Jenkins）

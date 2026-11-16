@@ -351,3 +351,11 @@ P99 超标自动回滚，配合 expand-contract 保证 schema 兼容；营销页
   [监控告警体系](/devops/240-MonitorAndObservability)；
 - 把放量清单放进 Git、由 ArgoCD 驱动的完整闭环见 [GitOps 与 ArgoCD](/devops/190-GitOpsArgoCD)；
 - 发布失败后的应急与复盘流程见 [OnCall 实践](/devops/310-OnCallPractice)。
+
+## 自检
+
+- 部署与发布的区别一句话；遮住四种策略的对比表，按"解耦程度从低到高"排序并说出各自的回滚动作。
+- maxSurge 与 maxUnavailable 各管"快"还是"稳"？没有 readinessProbe 时滚动更新为什么是"故障放大器"？
+- 金丝雀与滚动更新的本质区别在观察与决策权——说出 AnalysisTemplate 三要素（指标、断言、失败阈值）如何把"人肉看监控"变成自动决策。
+- expand-contract 三步默写：为什么"直接改列名"会让蓝绿的秒级回滚变成幻觉？"破坏性变更滞后两个版本"滞后的是什么？
+- 开关债是什么？发布开关的清理时限与命名约定各是什么？想不起就回特性开关一节。

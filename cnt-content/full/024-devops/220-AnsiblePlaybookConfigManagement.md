@@ -122,6 +122,7 @@ roles/nginx/
 ├── templates/          # Jinja2 模板（.j2）
 ├── files/              # 直接拷贝的静态文件
 ├── defaults/main.yml   # 默认变量（优先级最低，可被覆盖）
+├── vars/main.yml       # 角色变量（优先级高于 defaults，不被普通覆盖）
 └── meta/main.yml       # 依赖与其他元数据
 ```
 
@@ -200,6 +201,18 @@ ansible-playbook site.yml --vault-password-file ~/.vault-pass
 1. `--check --diff` 是 Ansible 的"plan"，生产变更前必跑。
 2. 持续纠偏要靠定时/事件驱动重跑（AWX、CI 定时任务），Ansible 本身没有常驻控制循环。
 3. 大规模场景调 forks、用动态 inventory 与 fact 缓存（`gather_facts: smart`）。
+
+## 自检
+
+- 无 Agent、SSH 推送、YAML 声明、幂等执行——四盘各防什么痛点？与需要装 Agent 的 SaltStack/Puppet 对比运维成本差在哪？
+- Inventory 定什么、Playbook 定什么、Role 管什么？遮住结构图默写 Role 的七目录（tasks/handlers/templates/files/defaults/vars/meta），并说出 defaults 与 vars 两个变量目录的优先级差别。
+- 幂等从哪来：module 的 check-then-act 与 shell 模块的差异？什么时候才该用 `command/shell`，为什么放在最后？
+- Vault 三问：加密的是什么、`--ask-vault-pass` 在 CI 里怎么过、Vault 密钥本身怎么管？
+- `--check --diff` 对应 Terraform 的哪个动作？说出生产变更前跑它的三条理由。
+
+## 附录：ansible CLI 与模块速查
+
+以下按使用频率组织命令参考：ad-hoc 命令、playbook 执行、核心模块、Role 编写、galaxy、inventory 写法、vault、调试排查、配置。教学主线在上面十节；这里收命令细节，用时查。
 
 ## ansible 命令
 
