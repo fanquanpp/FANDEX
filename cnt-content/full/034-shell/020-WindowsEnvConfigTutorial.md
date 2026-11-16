@@ -20,18 +20,11 @@ prerequisites:
 
 - [开发环境搭建](/shell/010-DevEnvSetup)
 
-## 0. 快速开始：一键脚本与完整教程
+## 0. 本篇怎么用
 
-想跳过繁琐步骤？本模块提供一键脚本，以管理员身份打开 PowerShell 执行：
+本篇是 Windows 平台的完整配置教程：先装 WSL2 获得 Linux 环境，再按需安装包管理器、语言工具链与 VS Code。每一步都附带验证命令，装完即验；单点问题查 `shell/120-TroubleshootingGuide`，全部装完用 `shell/110-EnvVerificationChecklist` 做整体验收。
 
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-.\cnt-content\full\001-getting-started\scripts\setup-windows.ps1
-```
-
-脚本会自动安装 VS Code、Git、Node.js LTS、Python，并配置 npm/pip 国内镜像。装完后用 `shell/110-EnvVerificationChecklist` 验证，卡住查 `shell/120-TroubleshootingGuide`。
-
-想理解每一步在做什么，或需要 WSL2、Docker 等进阶配置，继续阅读本篇完整教程。
+学习路径建议：初学者按 1 → 2 → 4 → 5 → 6 的顺序走（WSL2、Chocolatey、环境变量、Git、Node.js），Scoop、Python、Java、Docker、VS Code 按实际需求选读。
 
 ## 1. WSL2 安装与配置
 
@@ -133,8 +126,12 @@ choco install nodejs-lts -y
 # 升级已安装的包
 choco upgrade all -y
 
-# 查看已安装的包
-choco list --local-only
+# 查看已安装的包（Chocolatey 2.0 起 choco list 默认只列本地包，
+# 旧版的 --local-only 参数已移除，加了会直接报错）
+choco list
+
+# 搜索远程仓库的包
+choco search nodejs
 
 # 卸载软件包
 choco uninstall nodejs -y
@@ -312,14 +309,14 @@ fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
 fnm install --lts
 
 # 安装指定版本
-fnm install 20
-fnm install 22
+fnm install 24
+fnm install 26
 
 # 切换版本
-fnm use 20
+fnm use 24
 
 # 设置默认版本
-fnm default 20
+fnm default 24
 
 # 查看已安装版本
 fnm list
@@ -476,13 +473,13 @@ winget install Docker.DockerDesktop
 
 ### 9.4 配置镜像加速
 
-在 Docker Desktop → Settings → Docker Engine 中添加：
+Docker Desktop → Settings → Docker Engine 中可以配置 `registry-mirrors` 加速地址。但要注意现状：**2024 年起国内公共 Docker Hub 镜像加速器大面积停服**（中科大、网易、七牛等地址已不可用；`mirror.ccs.tencentyun.com` 仅腾讯云内网主机可用，公网无效）。
 
-```json
-{
-  "registry-mirrors": ["https://mirror.ccs.tencentyun.com", "https://docker.mirrors.ustc.edu.cn"]
-}
-```
+可行的替代方案，按推荐顺序：
+
+1. 阿里云容器镜像服务控制台按账号生成的**专属加速地址**（个人版免费）；
+2. Docker daemon 配置 HTTP 代理（Settings → Resources → Proxies）；
+3. 依赖公司/团队自建的镜像仓库（Harbor 等加速地址随时可能失效，配置前先在浏览器里验证一次）。
 
 ### 9.5 验证安装
 
@@ -604,3 +601,21 @@ code --diff a.txt b.txt  # 对比两个文件
 
 > [!tip] 配置同步
 > VS Code 支持 Settings Sync，通过 GitHub 或 Microsoft 账号同步你的设置、插件和快捷键到云端，换设备时一键恢复。
+
+## 11. 动手自检：遮住命令，说出每一步
+
+先遮住参考答案，按题干自己写出验证步骤，再对照。
+
+1. `wsl --install` 装完重启后，用什么命令确认 WSL2（而不是 WSL1）在跑、默认发行版是哪个？
+2. Chocolatey 2.0 之后，「列出本机已安装的包」和「搜索远程仓库的包」分别是哪两条命令？
+3. 在 PowerShell 里永久设置用户级 JAVA_HOME，写出完整命令；为什么 `$env:JAVA_HOME = "..."` 达不到这个效果？
+4. fnm 装好 Node LTS 后新终端里 `node` 找不到，说出三个最可能的排查点。
+
+<details>
+<summary>参考答案</summary>
+
+1. `wsl --list --verbose`：看每一行的 STATE 与 VERSION 列，VERSION 应为 2；确认默认发行版看带星号 `*` 的那一行。设置默认用 `wsl --set-default <发行版名>`。
+2. `choco list`（2.0 起默认只列本地，`--local-only` 已移除）；`choco search <关键词>` 查远程仓库。
+3. `[Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Program Files\Java\jdk-21", "User")`。`$env:JAVA_HOME = "..."` 只改当前会话进程的环境块，终端一关就没了——它对应「临时设置」。
+4. 三个排查点：fnm 的 Shell 集成行是否已写入 PowerShell 配置文件并重开终端（fnm 靠环境注入工作）；`fnm default` 是否设置过；重开的终端是否是同一份配置文件（如同时用了 PowerShell 5 与 7 的不同 profile）。
+</details>

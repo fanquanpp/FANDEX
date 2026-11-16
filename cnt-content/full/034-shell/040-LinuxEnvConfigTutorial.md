@@ -111,6 +111,9 @@ sudo sed -i 's|security.ubuntu.com|mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sour
 sudo apt update
 ```
 
+> [!note] Ubuntu 24.04 起的格式变化
+> Ubuntu 24.04 起新装系统默认使用 deb822 格式，源文件在 `/etc/apt/sources.list.d/ubuntu.sources`，上面的 sed 对传统路径不生效。对 deb822 文件执行同样的域名替换（`archive.ubuntu.com` -> `mirrors.tuna.tsinghua.edu.cn`）即可，改完同样 `sudo apt update` 验证。Ubuntu 22.04 及更早版本仍用传统路径。
+
 **Fedora（清华镜像）**：
 
 ```bash
@@ -231,10 +234,10 @@ git config --global credential.helper /usr/share/doc/git/contrib/credential/libs
 ### 4.1 安装 nvm
 
 ```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.41.0/install.sh | bash
 
 # 或使用 wget
-wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.41.0/install.sh | bash
 ```
 
 加载 nvm：
@@ -251,14 +254,14 @@ source ~/.zshrc     # Zsh 用户
 nvm install --lts
 
 # 安装指定版本
-nvm install 20
-nvm install 22
+nvm install 24
+nvm install 26
 
 # 切换版本
-nvm use 20
+nvm use 24
 
 # 设置默认版本
-nvm alias default 20
+nvm alias default 24
 
 # 查看已安装版本
 nvm list
@@ -269,7 +272,7 @@ nvm list
 在项目根目录创建 `.nvmrc`：
 
 ```bash
-echo "20" > .nvmrc
+echo "24" > .nvmrc
 ```
 
 进入项目时自动切换版本（需在 shell 配置中添加）：
@@ -509,22 +512,13 @@ docker run hello-world
 
 ### 7.6 配置镜像加速
 
-创建或编辑 `/etc/docker/daemon.json`：
+`/etc/docker/daemon.json` 的 `registry-mirrors` 字段可配置加速地址，但注意现状：**2024 年起国内公共 Docker Hub 镜像加速器大面积停服**（中科大 `docker.mirrors.ustc.edu.cn` 已停止解析；`mirror.ccs.tencentyun.com` 仅腾讯云内网主机可用）。
 
-```bash
-sudo tee /etc/docker/daemon.json <<EOF
-{
-  "registry-mirrors": [
-    "https://mirror.ccs.tencentyun.com",
-    "https://docker.mirrors.ustc.edu.cn"
-  ]
-}
-EOF
+可行的替代方案，按推荐顺序：
 
-# 重启 Docker
-sudo systemctl daemon-reload
-sudo systemctl restart docker
-```
+1. 阿里云容器镜像服务控制台按账号生成的**专属加速地址**（写入 daemon.json 后 `sudo systemctl restart docker` 生效）；
+2. 给 dockerd 配 HTTP 代理（`/etc/systemd/system/docker.service.d/http-proxy.conf`）；
+3. 依赖公司自建镜像仓库。加速地址随时可能失效，配置前先在浏览器里验证一次。
 
 ## 8. VS Code 安装
 
@@ -678,3 +672,21 @@ echo 'export LANG=zh_CN.UTF-8' >> ~/.bashrc
 
 > [!tip] 远程开发
 > 如果你的开发环境在远程 Linux 服务器上，推荐使用 VS Code 的 **Remote - SSH** 扩展。本地 VS Code 通过 SSH 连接远程服务器，获得与本地开发相同的体验，而代码编译运行都在服务器端完成。
+
+## 10. 动手自检：遮住命令，说出每一步
+
+先遮住参考答案，按题干自己写出验证步骤，再对照。
+
+1. 你不知道自己的发行版是 Debian 系还是 Fedora 系，用哪条命令最快确认？确认后「安装编译工具链」分别是什么命令？
+2. `sudo apt install docker-ce` 报 `Unable to locate package`，结合第 7.1 节说出最可能缺的三步中的哪两步。
+3. 把自己加入 docker 组后 `docker ps` 仍报 permission denied，为什么？怎么立即生效？
+4. nvm 安装命令里 `| bash` 这段管道做了什么？它的风险是什么、为什么教程仍普遍这么写？
+
+<details>
+<summary>参考答案</summary>
+
+1. `cat /etc/os-release`（ID 字段直接给发行版名）。Debian/Ubuntu 用 `sudo apt install build-essential -y`，Fedora/RHEL 用 `sudo dnf groupinstall "Development Tools" -y`，Arch 用 `sudo pacman -S base-devel`（第 2 节）。
+2. 最可能缺：添加 Docker 官方 GPG 密钥、添加 apt 仓库（这两个是 `apt update` 后能找到 docker-ce 的前提）；另一环是 `sudo apt update` 本身没跑。
+3. 组成员关系在登录会话建立时写入进程凭证，当前 shell 不会自动更新。`newgrp docker` 立即生效或退出重新登录（第 7.4 节）。
+4. `curl -o- URL | bash` 把远端脚本经标准输入交给 bash 执行。风险是「下载即执行任意代码」，防御姿势是先 `curl -o- URL`（不带管道）人工审一遍再执行；教程普遍这么写是因为脚本内容稳定且官方仓库托管，但对来路不明的脚本绝不能照抄。
+</details>

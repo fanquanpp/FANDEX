@@ -190,3 +190,21 @@ PowerShell 没有 Unix 信号体系，`Stop-Process` 直接终止（等价 SIGKI
 - `jobs` 只看得到本 Shell 的作业，跨终端找进程一律 `ps`/`pgrep`
 - 内存判断看 `free -h` 的 available 列；磁盘排查沿 `df` -> `du` 链路下钻
 - 生产环境的长驻进程建议交给 systemd 或终端复用器管理，裸 nohup 只适合临时任务
+
+## 8. 自检：速查前的三道关
+
+遮住本文回答，答不上再回对应节。
+
+1. 终止进程的「升级纪律」是什么？`kill -9` 跳过了什么、留下什么？
+2. `Ctrl+Z` 与 `kill -STOP` 都能让进程停下，本质区别是什么？恢复分别用什么？
+3. 关掉终端后后台任务死掉——nohup、disown、setsid 三种方案分别适合什么时机？
+4. `ps aux | grep nginx` 输出里混进 grep 自己，两种排除写法？
+
+<details>
+<summary>参考答案</summary>
+
+1. 先 SIGTERM（默认 `kill`，给程序清理机会：释放端口、落盘）等几秒，无效再 SIGKILL。-9 跳过清理，留下锁文件、脏数据——故障隐患而非捷径（第 2 节升级纪律）。
+2. Ctrl+Z 发 SIGTSTP（20），可捕获，程序有机会善后；SIGSTOP（19）不可捕获，进程被硬性冻住。两者都用 SIGCONT（`fg`/`bg` 或 `kill -CONT`）恢复（第 2 节信号表）。
+3. nohup 在启动时用（简单直接，注意重定向输出）；disown 用于已在跑的作业补救；setsid 在启动时彻底脱离终端。长期服务交给 systemd，交互式长任务用 tmux（第 4 节对照表）。
+4. `ps aux | grep "[n]ginx"`（字符集让模式匹配不到自身）或 `pgrep -af nginx`（第 1 节）。
+</details>

@@ -119,7 +119,7 @@ Bash 的 `${}` 扩展提供了默认值、必填校验等能力，**是脚本健
 PORT="${PORT:-8080}"           # 未传环境变量时默认 8080
 CONFIG="${CONFIG_FILE:?必须设置 CONFIG_FILE}"
 name="FANDEX"
-echo "${#name}"                # 5
+echo "${#name}"                # 6（FANDEX 六个字符）
 echo "${name/DEX/dev}"         # FANdev（只替换第一处）
 ```
 
@@ -179,3 +179,21 @@ set -a; source .env; set +a
 **陷阱三：引号内不展开。** `echo '$HOME'` 输出字面量 `$HOME`，单引号内不做变量展开。
 
 **陷阱四：修改配置文件不生效。** 改了 `~/.bashrc` 后未 `source` 也未重开终端。
+
+## 9. 动手自检：遮住命令，说出每一步
+
+先遮住参考答案，按题干自己写出，再对照。
+
+1. 终端里执行 `export APP_ENV=prod` 后再开一个新标签页，新标签页里 `echo $APP_ENV` 输出什么？为什么？
+2. 写出「PORT 未设置时默认 8080」「CONFIG_FILE 未设置时报错退出」两个参数扩展，并各给一个使用场景。
+3. Shell 变量与环境变量的分界线是什么？`export NAME=alice` 和 `NAME=alice ./app.js` 有什么本质不同？
+4. 脚本读取 `.env` 文件并让其中变量自动 export，需要哪两条命令夹住 source？`.env` 为什么必须进 `.gitignore`？
+
+<details>
+<summary>参考答案</summary>
+
+1. 空输出。`export` 只影响当前 Shell 及其子进程，新标签页是与原终端平行的进程，拿不到它的环境块——「永久生效」必须写进配置文件（第 2、6 节）。
+2. `${PORT:-8080}`：脚本被调度系统调用时允许环境覆盖端口；`${CONFIG_FILE:?必须设置 CONFIG_FILE}`：缺了就无法工作的必填参数，宁可早失败也别带空值跑（第 5 节）。
+3. 分界线是「是否被 export 进进程环境、从而被子进程继承」。`NAME=alice ./app.js` 是前缀赋值——变量只存在于这一次调用的环境里，调用结束即消失，也不污染当前 Shell；`export` 则持久留在当前 Shell 会话里。
+4. `set -a`（此后 source 的变量自动 export）与 `set +a`（恢复）。`.env` 通常含密钥与连接串，一旦提交进版本库，从历史里清除的代价远大于新建文件——所以模板用不含真实值的 `.env.example` 提交（第 7 节方案四）。
+</details>

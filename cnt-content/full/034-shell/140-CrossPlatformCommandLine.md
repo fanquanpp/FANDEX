@@ -262,7 +262,7 @@ journalctl -u nginx -f    # 实时查看 nginx 日志
 
 ## 5. 管道与重定向
 
-### 6.1 重定向
+### 5.1 重定向
 
 ```bash
 echo "hello" > file.txt       # 覆盖写入
@@ -275,7 +275,7 @@ command > all.log 2>&1        # 输出与错误都进 all.log
 command &> all.log            # 同上（bash 简写）
 ```
 
-### 6.2 管道
+### 5.2 管道
 
 管道把前一个命令的**标准输出**接到后一个命令的**标准输入**，是命令行"组合思维"的核心：
 
@@ -290,7 +290,7 @@ history | awk '{print $2}' | sort | uniq -c | sort -rn | head  # 最常用命令
 
 ## 6. Shell 脚本入门
 
-### 7.1 基本结构
+### 6.1 基本结构
 
 ```bash
 #!/bin/bash
@@ -323,7 +323,7 @@ greet "Developer"
 
 保存为 `hello.sh` 后 `chmod +x hello.sh && ./hello.sh` 运行。语法、控制流与函数的完整讲解见《Shell 脚本编程基础》。
 
-### 7.2 实用脚本示例
+### 6.2 实用脚本示例
 
 ```bash
 #!/bin/bash
@@ -375,3 +375,21 @@ echo "=== Deploy complete ==="
 - 管道组合是命令行的灵魂，后续《文本处理三剑客》《管道与重定向》会展开
 - 网络诊断命令（ping/dig/ss/lsof/curl/ufw 及跨平台对照）已独立成篇，见《网络诊断工具》（shell/145-NetworkDiagnosticsTools）
 - 本篇是"全景图"，每个主题的深入版本都在本模块后续文档中
+
+## 9. 动手自检：遮住表格，说出对照
+
+先遮住第 3.4 节对照表与参考答案，按题干自己写出，再对照。
+
+1. 三平台对照：列出目录（含隐藏）、递归搜内容、清屏，写出 Linux/macOS、CMD、PowerShell 三列。
+2. `ps aux | grep node` 的输出为什么总多一条 grep 自己？两种排除写法是什么？
+3. 脚本传到服务器执行报 `Permission denied`，最小修复是什么？数字权限 `755` 对应 `rwxr-xr-x` 的换算规则？
+4. 在 bash（含 Git Bash）里执行 `cd C:\Projects\myapp` 会发生什么？两种正确写法？
+
+<details>
+<summary>参考答案</summary>
+
+1. `ls -la` / `dir` / `Get-ChildItem -Force`；`grep -r "TODO" src` / `findstr /s "TODO" *.js` / `Select-String -Pattern "TODO"`；`clear` / `cls` / `Clear-Host`。
+2. grep 进程自己的命令行里含 "node" 字样，被自己的模式命中。排除法：`ps aux | grep "[n]ode"`（字符集让模式匹配不到自身）或 `pgrep -af node`。
+3. `chmod +x script.sh` 补执行位；换算规则 r=4、w=2、x=1 相加，7=4+2+1（rwx）、5=4+0+1（r-x），所以 755 = 属主 rwx、组 r-x、其他 r-x（第 3.5 节）。
+4. bash 把 `\P` 当转义符，路径被破坏而报错或进错目录。正确写法：`cd /c/Projects/myapp`（Git Bash 的 POSIX 路径）或 `cd "C:\Projects\myapp"`（引号保护；PowerShell/CMD 里反斜杠才原样生效）。
+</details>

@@ -53,7 +53,7 @@ dig google.com +short                     # 当前解析结果
 dig @8.8.8.8 google.com +short            # 指定 DNS 服务器对比（绕过本地缓存）
 ipconfig /displaydns                      # Windows：查看本机 DNS 缓存
 ipconfig /flushdns                        # Windows：清空 DNS 缓存
-sudo systemd-resolve --flush-caches       # Linux (systemd)：清空缓存
+sudo resolvectl flush-caches              # Linux (systemd)：清空缓存（新写法；systemd-resolve 命令已废弃）
 ```
 
 「改了 hosts 不生效」九成是缓存：浏览器自己的 DNS 缓存、系统缓存、nscd/systemd-resolved 三层都可能留旧值——按「浏览器重启 → 系统清缓存」顺序逐层排除，原理见 networking/110-DigNslookup。

@@ -122,14 +122,14 @@ IntelliJ IDEA 是 JetBrains 开发的商业 IDE，以**智能代码分析**著�
 
 | 特性                  | Community（免费） | Ultimate（付费） |
 | :-------------------- | :---------------- | :--------------- |
-| Java/Kotlin 开发      |                   |                  |
-| Maven/Gradle          |                   |                  |
-| Git 集成              |                   |                  |
-| Spring Boot           |                   |                  |
-| Web 前端（JS/TS/CSS） |                   |                  |
-| 数据库工具            |                   |                  |
-| HTTP 客户端           |                   |                  |
-| 性能分析              |                   |                  |
+| Java/Kotlin 开发      | 支持              | 支持             |
+| Maven/Gradle          | 支持              | 支持             |
+| Git 集成              | 支持              | 支持             |
+| Spring Boot           | 基础支持（IDEA 2021.3 起社区版内置） | 完整支持（专用向导、运行配置与框架检查） |
+| Web 前端（JS/TS/CSS） | 基础语法高亮与补全 | 深度支持（框架感知、调试器、专用重构） |
+| 数据库工具            | 不含              | 内置             |
+| HTTP 客户端           | 不含              | 内置             |
+| 性能分析              | 不含              | 内置             |
 
 ### 3.3 JetBrains 全家桶
 
@@ -199,7 +199,7 @@ require("lazy").setup({
 | 平台                  | 特点           | 免费额度          | 适用场景     |
 | :-------------------- | :------------- | :---------------- | :----------- |
 | **GitHub Codespaces** | VS Code 云端版 | 每月 120 核心小时 | 仓库快速开发 |
-| **Gitpod**            | 开源云端 IDE   | 每月 50 小时      | 开源项目贡献 |
+| **Ona（原 Gitpod）**  | 云端开发环境，2025-09 由 Gitpod 更名转型 | 经典 Gitpod SaaS 已于 2024-2026 年逐步停运 | 了解演变即可；同类需求改用 Codespaces 或自托管 Coder |
 | **Replit**            | 多语言在线 IDE | 基础版免费        | 学习与原型   |
 | **CodeSandbox**       | 前端在线开发   | 公开项目免费      | 前端原型演示 |
 
@@ -243,3 +243,19 @@ require("lazy").setup({
 | **Go 微服务**   | VS Code / GoLand        | GoLand 重构更强        |
 | **C/C++**       | VS Code + CMake / CLion | CLion 调试体验更好     |
 | **远程开发**    | VS Code Remote / Vim    | 网络延迟敏感场景用 Vim |
+
+## 7. 动手自检：遮住表格，说出选型理由
+
+先遮住参考答案，再对照。
+
+1. 只做 Java/Spring 企业开发，Community 与 Ultimate 怎么选？说出两个 Ultimate 独有的决定性功能。
+2. 服务器上只有 SSH 终端，改一个 nginx 配置文件，为什么临时用 vim 比远程 IDE 更合适？
+3. 编辑器与 IDE 的核心区别是什么？「VS Code 是编辑器还是 IDE」为什么是个伪问题？
+
+<details>
+<summary>参考答案</summary>
+
+1. 预算允许选 Ultimate：内置数据库工具（Community 不含）与完整 Spring 支持是两个决定性差异；预算紧张时 Community 的 Java/Kotlin + Maven/Gradle + Git 已够写业务，2021.3 起也有基础 Spring 支持。
+2. vim 每台 Linux 服务器都有、启动零成本、不需要装任何东西；远程 IDE 要先装服务端组件再走网络同步——一次性小改动用 vim 的总成本最低，这正是第 4.3 节「快速修改」场景。
+3. 核心区别在「内置功能完整度」：IDE 开箱即有调试、重构、构建工具链；编辑器靠插件补齐。VS Code 本体是编辑器，装齐插件后工作流已是 IDE 级——它的能力边界由插件生态决定，所以争论「是编辑器还是 IDE」没有意义，第 1.1 节的对比表强调的是默认状态。
+</details>

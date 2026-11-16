@@ -83,7 +83,7 @@ wsl --install
 ```bash
 code --version
 # 预期输出类似：
-# 1.9x.x
+# 1.14x.x
 # 488a1f239235055e34e673291fb8d8c810886f81
 # x64
 ```
@@ -117,7 +117,7 @@ code --version
 
 ```bash
 git --version
-# 预期输出：git version 2.4x.x
+# 预期输出：git version 2.5x.x
 
 # 首次使用先声明身份（提交记录的署名）
 git config --global user.name "你的名字"
@@ -130,7 +130,7 @@ git config --global user.name   # 回显刚配置的值即成功
 按你要学的语言选装，**每个都装的话逐个验证**：
 
 ```bash
-node --version      # Node.js（前端/后端 JS 运行时），预期 v22+（LTS）
+node --version      # Node.js（前端/后端 JS 运行时），预期 v24/v26 等 LTS 线
 npm --version       # Node 随附的包管理器
 python3 --version   # Python（Windows 试 python 或 py），预期 3.1x+
 pip --version       # Python 包管理器（或 python3 -m pip --version）
@@ -141,7 +141,7 @@ docker --version    # Docker（容器，可选）
 ```text
 预期输出示例：
 $ node --version
-v22.11.0
+v24.x.x
 $ python3 --version
 Python 3.12.3
 ```
@@ -177,7 +177,23 @@ Get-ChildItem Env:                  # PowerShell 列出全部环境变量
 
 最后一条最容易漏：PATH 修改只对新终端生效，验证时务必重开一个窗口。
 
-## 9. 下一步
+## 9. 动手自检：遮住命令，说出每一步
+
+先遮住下面的参考答案，按题干自己写出验证步骤，再对照。
+
+1. 你刚在一台新电脑上装完 Git，写出「确认装好 + 确认 PATH 对新终端生效」的两步验证，并说明为什么第二步必须新开终端窗口。
+2. `node --version` 报 `command not found`，按三步定位法说出你的前两个动作。
+3. 不查文档，说出 `code --version` 预期输出的三行分别是什么、整段输出能证明什么。
+
+<details>
+<summary>参考答案</summary>
+
+1. 先 `git --version` 确认已安装；再**新开一个终端窗口**重跑一次同一条命令，确认 PATH 持久生效。重开的原因：PATH 修改写入的是配置文件或注册表，已打开的终端不会重新读取——第 8 节验收清单最容易漏的就是这一条。
+2. 第一步看报错原文，区分「没装」还是「没找到」：`command not found` 属于后者，重点查 PATH；第二步在新开终端里重跑一次排除「没重开终端」，仍失败再查 PATH 是否包含 Node 安装目录。
+3. 三行依次是版本号（当前为 1.14x.x 形态）、构建提交哈希、目标架构（x64/arm64）。能输出三行即证明可执行文件存在且 PATH 解析正确——记不熟版本号没关系，重点是知道这个输出本身就是体检结果。
+</details>
+
+## 10. 下一步
 
 环境就绪后建议按以下顺序开始学习：
 
