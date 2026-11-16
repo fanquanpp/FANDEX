@@ -1760,7 +1760,7 @@ class ShardedBloomFilter:
 
 ### 9.3 案例 3：Bitcoin SPV 轻客户端（BIP 37）
 
-**背景**：Bitcoin 全节点需要存储完整区块链（截至 2026 年约 600 GB），普通用户设备无法承载。SPV（Simplified Payment Verification）轻客户端只需验证与自己相关的交易，无需下载完整区块链。
+**背景**：Bitcoin 全节点需要存储完整区块链（2026 年归档节点的区块数据已达约 750 GB 且每年继续增长数十 GB，还不含 UTXO 集的 chainstate），普通用户设备无法承载。SPV（Simplified Payment Verification）轻客户端只需验证与自己相关的交易，无需下载完整区块链。
 
 **设计决策**（BIP 37: Bloom Filter P2P Messages）：
 
