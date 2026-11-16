@@ -35,6 +35,8 @@ Tailwind CSS v4 就是一次"**换代级改款**"。2025 年 1 月 22 日，Tail
 | 2026-02-18 | v4.2 | 新增 mauve/olive/mist/taupe 四个中性色板、官方 Webpack 插件、逻辑属性工具类补全 |
 | 2026-05-08 | v4.3 | 内置滚动条样式（`scrollbar-*`）、`@container-size` 尺寸容器、`zoom-*` 与 `tab-*` 工具类、`@variant` 组合增强 |
 
+时间线之外有一条团队动态需要知道：2026-09-09，Tailwind Labs 宣布加入 Shopify，框架继续以 MIT 许可开源维护，v4.3 线保持常规补丁更新（npm `latest` 截至 2026-11 为 v4.3.5）；其付费产品 Tailwind Plus 同时停止接受新客户。对日常写法零影响，但检索资料时会看到旧文里作为卖点出现的 Plus，它不再是学习资料的来源。
+
 对学习者最有意义的对照是 **v3 与 v4 的架构对比**：
 
 | 特性 | v3 | v4 |
@@ -334,6 +336,46 @@ npx @tailwindcss/upgrade
 | 拼接类名 `bg-${color}-500` | 样式缺失且无报错 | 扫描器只识别源码中的完整类名 | 用完整类名或映射表 |
 | v3 插件在 v4 中报错 | 插件加载失败 | 部分 v3 插件尚未适配 v4 | 查插件文档；用 `@utility`/`@custom-variant` 原生替代 |
 
-## 12. 一句话记忆
+## 12. 动手实践与教学自检
+
+迁移类知识只有亲手"翻译"一遍才会内化。下面三个任务都按遮码自检法设计：先遮住参考代码自己写或自己判断，再展开对照——对照的目的不是抄答案，而是找出自己心智模型里缺的那一块。
+
+**任务一：v3 工程改写为 v4（遮码自检）。** 遮住第 10 节的迁移示例，把这份 v3 工程翻译成 v4 等价物：入口 CSS 是三行 `@tailwind` 指令；`tailwind.config.js` 里有 `content` 数组、`darkMode: 'class'`、`theme.extend.colors.brand-500: '#1677ff'`。写完展开核对，特别确认三样东西的去向：content 数组、darkMode、颜色令牌。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现（v3 配置到 v4 的三处去向）</summary>
+
+```css
+/* src/styles/global.css —— 配置与入口合进同一个文件 */
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand-500: #1677ff;
+}
+```
+
+三处去向对应三个设计决策：`content` 数组**整个删除**——Oxide 自动扫描模板文件，扫描范围外的目录才需要 `@source` 补一句（见第 4 节）；`darkMode: 'class'` 变成 `@custom-variant dark (...)`——dark: 的选择器策略从配置项变成 CSS 里的变体定义；`theme.extend.colors` 逐项搬进 `@theme`，且键名换成 `--color-brand-500` 形态——每个 `--var` 既是 CSS 变量又自动生成 `bg-brand-500` 等工具类。翻译完检查 `tailwind.config.js` 是否可以整个删除：多数项目答案是"是"，留着的唯一理由是 `@config` 过渡期兼容。
+</details>
+
+**任务二：破坏性变化预判（遮码自检）。** 遮住 10.4 节清单，对 `<div class="border shadow rounded ring">` 这行 v3 代码写下"升级到 v4 后每个类的视觉会发生什么变化、怎么改回原样"的预测，再展开对照。
+
+<details>
+<summary>任务二参考答案（四类的视觉漂移与还原写法）</summary>
+
+- `border`：默认边框色从 v3 的 gray-200 变为 `currentColor`——边框会变成文字的颜色。还原：显式写 `border-gray-200`；
+- `shadow`：档位整体降一档——v4 的裸 `shadow` 渲染的是 v3 `shadow-sm` 的视觉。还原：改写为 `shadow-sm`（对应 v3 裸 `shadow`）；
+- `rounded`：同理降一档——v4 的裸 `rounded` 相当于 v3 的 `rounded-sm`。还原：改写为 `rounded-sm`；
+- `ring`：默认宽度从 3px 变 1px、默认颜色从 blue-500 变 `currentColor`。还原：改写为 `ring-3 ring-blue-500`（宽度与颜色都要显式化）。
+
+预判的通用规律：这次重命名是"整体降一档 + 默认值显式化"，所以升级后**每个"裸类"都值得逐个过一遍**，视觉验证的重点页面是边框、阴影、圆角密集的卡片与表单。`::placeholder` 颜色变化同理——表单页迁移后务必目检一次。
+</details>
+
+**任务三：架构对照默写。** 遮住第 1 节的 v3/v4 对照表，逐行默写七项差异（构建引擎、配置方式、内容扫描、安装集成、暗色模式、容器查询、色彩空间）；写不出的行回到对应章节把"为什么变"读一遍——记住动机比记住结论更容易复现结论。
+
+## 13. 一句话记忆
 
 **v4 = 换发动机（Rust 的 Oxide，快 100 倍）+ 换中控（配置搬进 CSS 的 @theme）+ 全系标配（容器查询、OKLCH、新语法全家桶）——"改款"之后，功能更强、上手更简单。**

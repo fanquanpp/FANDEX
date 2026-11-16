@@ -167,14 +167,14 @@ Banner 图上叠标题，可读性靠"压暗"实现。两种手段分工不同�
 <!-- 方案二：渐变遮罩只压文字一侧，图片下半暗、上半亮 -->
 <figure class="relative">
   <img src="/campus.png" alt="校园" class="h-64 w-full object-cover" />
-  <figcaption class="absolute inset-0 flex items-end bg-gradient-to-t from-black/70 to-transparent p-6
+  <figcaption class="absolute inset-0 flex items-end bg-linear-to-t from-black/70 to-transparent p-6
                      text-2xl font-bold text-white">
     新学期选课指南
   </figcaption>
 </figure>
 ```
 
-讲解：方案一简单粗暴，图片整体变暗、氛围压抑，适合全屏 Hero；方案二用 `bg-gradient-to-t from-black/70 to-transparent`（从底部向上渐变的黑色遮罩）只垫住文字落点，图片亮部得以保留，是资讯类 App 列表卡的主流做法。两种都优于"给文字加 text-shadow 硬扛"——明度差才是可读性的根本，阴影只是补丁。
+讲解：方案一简单粗暴，图片整体变暗、氛围压抑，适合全屏 Hero；方案二用 `bg-linear-to-t from-black/70 to-transparent`（从底部向上渐变的黑色遮罩）只垫住文字落点，图片亮部得以保留，是资讯类 App 列表卡的主流做法。类名用的是 v4 的 `bg-linear-*` 前缀——旧教程里的 `bg-gradient-to-t` 是改名前的写法，v4 官方文档只列 `bg-linear-*`，见到旧名直接对照替换。两种都优于"给文字加 text-shadow 硬扛"——明度差才是可读性的根本，阴影只是补丁。
 
 ## 6. mask 遮罩：v4.1 的组合式遮罩家族
 
