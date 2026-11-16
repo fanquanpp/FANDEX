@@ -174,6 +174,8 @@ client = OpenAI(
 
 厂商原生的 SDK（如 Anthropic SDK）会提供一些独家能力与更地道的封装，值得在深度使用某家时学习；但接口形状的标准化的价值在于：**你的应用不必绑死任何一家**——这正是 [模型版图与选型](/ai-llm/020-ModelLandscapeSelection) 里「用评估集随时替换候选模型」在代码层的可行性来源。
 
+一个 2026 年的现状备注要补上：**OpenAI 自家的新项目，官方推荐用 Responses API**（2025 年推出，把文本生成、工具调用与内置工具收进一个统一接口，各家的新能力主要落在这一侧；Chat Completions 仍长期支持，但定位是维护既有生态）。本篇与后续各篇仍以 chat.completions 形状为基线，原因正是上面那句「行业事实标准」：各家兼容端点与本地推理框架（Ollama、vLLM 等）实现的都是这个形状——学会一次，跨厂商处处通用；等你用到 OpenAI 独有的内置工具与有状态会话时，再按官方迁移指南换到 Responses API，概念是一套的，只是信封换了形状。
+
 ## 9. 常见报错与计费意识
 
 ```mermaid
@@ -211,7 +213,7 @@ import os
 from openai import OpenAI
 
 client = OpenAI()  # 默认读取环境变量 OPENAI_API_KEY
-MODEL = "gpt-4o-mini"  # 示例型号,替换为你实际选用的模型
+MODEL = "gpt-6.1-terra"  # 示例型号,替换为你实际选用的模型(选型方法见 020 篇;型号会被厂商弃用,用前查官方 Deprecations 页)
 
 messages = [
     {"role": "system", "content": "你是一名简洁的 Python 助手,回答不超过一句话"},
@@ -276,7 +278,7 @@ for chunk in stream:
 
 ## 本章总结
 
-API 调用是把模型从玩具变成生产线的一步：一封信（key + messages + 参数）寄给补全服务，换回回答与 usage。key 是身份加钱包，永远住在环境变量里；messages 是一场剧本早已写好开头的轮流发言，模型永远接 assistant 这一棒且服务端零记忆；temperature 削尖或拉平整条概率分布、top_p 圈定头部候选名单，temperature=0 也敌不过并行计算的非确定性；max_tokens 是硬刹车，stop 是路标，结束原因字段是诊断截断的入口；流式输出不缩短总时长，它压缩首字延迟。OpenAI SDK 的接口形状已成事实标准，换厂商等价于换 base_url 加 key。而所有 token 都是钱——输入输出分开计价、输出更贵，usage 字段就是你的成本仪表盘。
+API 调用是把模型从玩具变成生产线的一步：一封信（key + messages + 参数）寄给补全服务，换回回答与 usage。key 是身份加钱包，永远住在环境变量里；messages 是一场剧本早已写好开头的轮流发言，模型永远接 assistant 这一棒且服务端零记忆；temperature 削尖或拉平整条概率分布、top_p 圈定头部候选名单，temperature=0 也敌不过并行计算的非确定性；max_tokens 是硬刹车，stop 是路标，结束原因字段是诊断截断的入口；流式输出不缩短总时长，它压缩首字延迟。OpenAI SDK 的 chat.completions 形状仍是兼容生态的事实标准（OpenAI 自家新项目则官方推荐 Responses API），换厂商等价于换 base_url 加 key。而所有 token 都是钱——输入输出分开计价、输出更贵，usage 字段就是你的成本仪表盘。
 
 ## 下一步
 

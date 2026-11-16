@@ -16,7 +16,7 @@ prerequisites:
 
 ## 前置知识
 
-- 读过 [模型版图与选型](/ai-llm/020-ModelLandscapeSelection)：知道「调 API、本地部署、微调定制」三种获取形态，知道 GPT 系列、Claude 系列、Gemini 系列、GLM 系列与 Llama、Qwen、DeepSeek 这些开放权重系列的存在——本文把「本地部署」这一形态落成可操作的现实。
+- 读过 [模型版图与选型](/ai-llm/020-ModelLandscapeSelection)：知道「调 API、本地部署、微调定制」三种获取形态，知道 GPT、Claude、Gemini 这些闭源 API 系列与 Llama、Qwen、DeepSeek、GLM 这些开放权重系列的存在——本文把「本地部署」这一形态落成可操作的现实。
 
 没读过也可以，本文会带上需要的部分：只需知道「有一类模型公开了权重、可以下载到自己机器上跑」这个事实，10 分钟可补齐。
 
