@@ -620,9 +620,13 @@ void bad() {
           while (!h.done()) { h.resume(); }（由 RAII 类执行 destroy）。
 问题 (C)：unhandled_exception 提供了空实现 => 协程内抛出的异常在这里被捕获
           后就地丢弃，调用方既看不到异常也拿不到结果——比崩溃更难排查。
-          对照语义（务必分清）：promise 缺失 unhandled_exception 成员时，
-          异常不会被捕获，而是直接从 resume() 抛给恢复方；std::terminate
-          只在 unhandled_exception 自身再抛出等场景发生。
+          对照语义（务必分清）：标准把协程函数体的替换代码包进
+          try/catch(...)，catch 无条件调用 promise.unhandled_exception()
+          ——所以「缺了这个成员」不是异常绕过它传播，而是协程实例化时
+          直接编译失败（promise_type 不满足要求）；另外，若
+          unhandled_exception() 自身再抛出异常，按 CWG 2451（溯及 C++20）
+          协程视为已挂在 final suspend 点（不再执行 final_suspend），
+          该异常直接传播给 caller/resumer，也不是 std::terminate。
           修法：std::current_exception() 存进 promise，由调用方 get/rethrow。
 ```
 
