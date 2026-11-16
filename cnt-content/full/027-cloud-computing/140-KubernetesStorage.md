@@ -240,6 +240,31 @@ K8s 1.27+ 还提供了通用的 **VolumeSnapshot**（基于 CSI）：像 PV 一�
 `VolumeSnapshot` 对象对 PVC 打快照，配合定时策略形成数据库类负载的
 基础备份方案。
 
+## 教学自检
+
+遮住上面的 YAML 与架构图，先口头回答，再展开对照。答不出的回到对应小节重读：
+
+1. PV、PVC、StorageClass 三者的分工与绑定流程是什么？开发侧只需要声明哪一个对象？
+2. RWO 限制的是 Pod 还是节点？云盘只支持哪种访问模式？多 Pod 并发写怎么办？
+3. Delete 与 Retain 回收策略的差别是什么？重要数据应该配哪个，为什么？
+4. 多可用区集群里 Immediate 绑定模式的经典故障是什么？StorageClass 该怎么配？
+5. emptyDir 随什么生死？容器崩溃重启后里面的数据还在吗？medium: Memory 有什么代价？
+6. hostPath 的两大问题是什么？它还剩哪些合理用武之地？
+7. 卷为什么只能扩不能缩？在线扩容的前提条件是什么？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. PVC 是应用提的「需求单」（多大、什么访问模式），PV 是集群里的「实际库房」，StorageClass 是「模具」（谁造卷、什么规格、什么回收策略）。流程：PVC 创建后按容量/访问模式/StorageClass 匹配 PV，或触发动态供给。开发侧只声明 PVC，应用始终只引用 PVC。
+2. RWO 限制的是节点不是 Pod——同一节点上多个 Pod 可共用一块 RWO 卷。云盘（EBS/Azure Disk/PD）只支持 RWO；多节点并发写（RWX）要用文件存储（EFS/Azure Files/NFS/CephFS）。
+3. Delete 在删 PVC 时联动删除后端卷，Retain 保留数据需手动清理。重要数据配 Retain，防止误删 PVC 连坐把云盘一起删掉——数据安全的底线。
+4. Immediate 在 PVC 创建时就造卷，卷可能落在与 Pod 不同的 AZ，云盘不能跨区挂载，Pod 挂载失败且换区无解。多 AZ 集群一律 `volumeBindingMode: WaitForFirstConsumer`，等 Pod 调度确定节点后再在同区造卷。
+5. emptyDir 随 Pod 生死（Pod 删除即清空）。容器崩溃重启不清空——卷属于 Pod 而不是容器。medium: Memory 用 tmpfs，读写快但占用计入容器内存限额，必须设 sizeLimit 防止吃光节点内存。
+6. 调度不感知（Pod 漂到别的节点数据就「丢」了）与安全风险（挂根目录等于交出节点）。合理场景基本只剩 DaemonSet 形态的节点级组件（日志/监控采集器）；普通应用持久化走 PVC。
+7. K8s 卷体系不支持缩容，缩容会带来数据丢失风险所以干脆禁止。扩容前提：StorageClass 设了 `allowVolumeExpansion: true`，然后直接改 PVC 的 storage 请求。所以规划宁可先小后扩。
+
+</details>
+
 ## 小结
 
 - 初学者要点：临时数据用 emptyDir，持久数据用 PVC；PVC 是需求单、PV

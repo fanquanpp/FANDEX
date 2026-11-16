@@ -391,6 +391,31 @@ kubectl get pod <pod> -o yaml   # 3. 看最终生效的完整配置（diff 掉�
 3. **镜像一律固定标签**：`latest` 在拉取策略 `IfNotPresent` 下会长期复用旧镜像，
    出了问题「两台节点行为不一致」极难排查。
 
+## 教学自检
+
+遮住上面的 YAML 与命令示例，先自己写/答，再展开对照。答不出的回到对应小节重读：
+
+1. 默写 Deployment → ReplicaSet → Pod 的层级关系图：日常改谁的 YAML？谁负责「副本数不变」的承诺？滚动更新本质是什么过程？
+2. 无状态应用、有状态应用（需要稳定 DNS 与独立存储）、每节点一个的守护进程、跑完即走的迁移任务——四种场景分别选哪种工作负载资源？
+3. livenessProbe、readinessProbe、startupProbe 失败动作分别是什么？为什么说「探针配错比不配更危险」？
+4. 滚动更新做到「零中断」需要哪两个配置配合？（提示：一个在 strategy 里，一个是探针。）
+5. Service 的 selector 与 Pod 标签不匹配时，怎么用一条命令确认？Service 四种类型各自的访问范围是什么？
+6. ConfigMap 用环境变量注入改了不生效，为什么？两种注入方式的更新行为差异是什么？
+7. Pod 出现 CrashLoopBackOff，用「三板斧」说出前三步排查动作。
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. Deployment 声明期望（改它的 YAML），ReplicaSet 维持副本数承诺，Pod 才是被调度的实体；滚动更新是新旧两代 ReplicaSet 的交接——新版 RS 逐步扩容、旧版 RS 逐步缩容。
+2. Deployment（无状态）、StatefulSet（有状态，稳定编号 DNS + 独立 PVC）、DaemonSet（每节点一个）、Job/CronJob（一次性/定时）。
+3. liveness 失败重启容器；readiness 失败移出 Service 不接流量；startupProbe 在成功前屏蔽其他探针。配错的危险性：liveness 误判会把健康容器反复重启引发雪崩——读路径务必先上 readiness，慢启动应用先加 startupProbe。
+4. `maxUnavailable: 0`（滚动期间可用副本数不减）+ readinessProbe（新 Pod 就绪才算「可用」，旧 Pod 才被替换）。只有其一都会在滚动中出现容量缺口。
+5. `kubectl get endpoints <svc>`：输出为空即 selector 不匹配。ClusterIP 集群内；NodePort 节点端口（集群外）；LoadBalancer 云 LB（互联网）；ExternalName DNS CNAME。
+6. 环境变量在容器启动时注入一次，改 ConfigMap 不会更新运行中进程；卷挂载方式文件会被同步更新（应用需支持热加载）。环境变量方式要生效需重启 Pod（`rollout restart`）。
+7. `kubectl describe pod`（看 Events：镜像？调度？探针？）→ `kubectl logs --previous`（看上次崩溃前日志，常见是配置缺失或启动即崩）→ `kubectl get pod -o yaml`（核对最终生效配置）。90% 的问题止步于前两步。
+
+</details>
+
 ## 小结
 
 - **初学者要点**：Deployment 管 3 件事——副本数、滚动更新、回滚；Pod 是最小调度单元；

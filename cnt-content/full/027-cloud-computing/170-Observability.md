@@ -353,6 +353,33 @@ Datadog      Datadog   Datadog  Monitor PagerDuty
 
 选型直觉：全套自建（Prometheus + Grafana + Alertmanager）适合有平台团队、多云或有合规自治要求的组织；托管全家桶（CloudWatch/Azure Monitor/Datadog）用付费换运维。混合很常见——业务指标进自建 Prometheus，云资源指标留在 CloudWatch，Grafana 双数据源统一出图。
 
+## 教学自检
+
+遮住上面的配置与代码示例，先口头回答，再展开对照。答不出的回到对应小节重读：
+
+1. 三大支柱各回答什么问题？把它们串成一次完整排错的「线索」是什么？
+2. Counter、Gauge、Histogram、Summary 四类指标分别长什么样？`rate()` 能用在 Gauge 上吗，为什么？
+3. 延迟为什么看 P95/P99 而不是平均值？平均值会掩盖什么？
+4. RED 与 USE 分别站在什么视角？四大黄金信号是什么，通常用在哪一层？
+5. 告警规则里的 `for: 5m` 起什么作用？「每个告警都应有明确动作」这条原则筛掉什么样的告警？
+6. OpenTelemetry 的标准架构是什么？它解决的最大痛点是什么（提示：厂商绑定）？
+7. 「注解即订阅」的抓取模式为什么比静态 targets 列表更适合 K8s？
+8. 高流量系统为什么用尾部采样而不是头部采样？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 日志答「发生了什么」（离散事件）、指标答「现在什么状态」（聚合数值）、追踪答「请求经过了哪里」（链路）。线索是 trace_id：指标定位到异常时段 → trace 找到慢/错请求 → 日志看具体上下文。
+2. Counter 单调递增（请求总数）；Gauge 可增可减（当前连接数）；Histogram 分布统计（延迟桶）；Summary 客户端预聚合分位数。`rate()` 是「区间内每秒平均增量」，只对单调递增的 Counter 有意义；对 Gauge 算 rate 得到无意义的差值序列（Gauge 用 `avg_over_time`/`max_over_time`）。
+3. 分位数反映尾部体验。平均值会被大量快请求稀释——99% 的请求 20ms、1% 的请求 2s，平均可能只有 40ms，但那 1% 恰恰是用户在投诉的部分。
+4. RED 站在服务/请求视角（Rate/Errors/Duration）；USE 站在资源/基础设施视角（Utilization/Saturation/Errors）。四大黄金信号（延迟、流量、错误、饱和度）是给服务定告警 SLI 的骨架。
+5. `for: 5m` 要求条件持续 5 分钟才触发，过滤瞬时抖动（单次超时不再拉响 P0）。能被筛掉的是「看到后不知道该做什么」的告警——没有对应处置动作的告警只会训练团队无视告警。
+6. 应用 → OTel SDK → OTel Collector → 任意后端。它统一了指标/日志/追踪的采集与传输协议（OTLP），后端可换（Jaeger/Tempo/商业 APM），避免被单一厂商的 SDK 绑定。
+7. K8s 里 Pod 随扩缩容与发布动态增减，静态 targets 要人肉维护；给部署清单加 `prometheus.io/scrape: "true"` 注解后，Prometheus 通过服务发现自动开始/停止抓取，发布与扩容零配置改动。
+8. 头部采样按固定比例丢弃，可能恰好丢掉那条出问题的慢请求；尾部采样等整条 trace 完成后再决定，保留慢/错/高延迟请求——排错价值最高的样本全都在，成本随正常流量下降。
+
+</details>
+
 ## 小结
 
 - 初学者要点：三支柱各答一个问题，trace_id 是串联三者的线索；指标

@@ -258,6 +258,33 @@ aws sts get-caller-identity --profile production
 # arn:aws:sts::987654321098:assumed-role/OpsRole/...
 ```
 
+## 教学自检
+
+遮住上面的命令与配置示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. 怎么判断装的是 v1 还是 v2？`pip install awscli` 装的是什么，为什么新环境不要用？
+2. `aws configure` 写了哪两个文件？各自存什么？文件权限应该怎么设？
+3. 凭证查找顺序默写前五级。「明明改了配置文件却没生效」最常见的原因是什么？
+4. `~/.aws/credentials` 与 `~/.aws/config` 里，命名 Profile 的段落写法有什么不同？
+5. 任何配置改动后第一条验证命令是什么？它能确认哪三件事？
+6. v2 的「命令卡住」问题是什么原因？脚本环境两种解法？
+7. 从 `aws ec2 describe-instances` 输出里只取 InstanceId 与状态，用什么参数组合？
+8. 跨账号角色的配置里，`role_arn` 与 `source_profile` 各是什么含义？为什么比复制密钥好？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. `aws --version` 输出 `aws-cli/2.x.x` 即 v2。pip 装的是 v1（官方已宣布停止支持，无新特性），新环境一律用官方安装包。
+2. `~/.aws/credentials`（存密钥，权限 600）与 `~/.aws/config`（存 region/output 等非敏感配置）。
+3. 命令行参数 → 环境变量 → 容器/EC2 角色凭证（IMDS）→ 命名 Profile → IAM Identity Center。最常见原因：环境变量优先级高于配置文件，`env | grep AWS` 查残留变量。
+4. credentials 里直接 `[production]`；config 里必须写 `[profile production]`——漏掉 `profile` 前缀是最高频配置错误。
+5. `aws sts get-caller-identity`。确认：当前用的哪个账号（Account）、什么身份（user/assumed-role 的 Arn）、配置是否生效。
+6. v2 默认启用分页器，长输出停在交互界面、脚本里表现为卡住。解法：命令加 `--no-cli-pager`，或 `export AWS_PAGER=""`。
+7. `--query 'Reservations[].Instances[].[InstanceId,State.Name]' --output text`（JMESPath 客户端过滤 + text 供 shell 消费）。
+8. `source_profile` 是用来换取临时凭证的基础凭证（base），`role_arn` 是要扮演的目标角色。好处：CLI 自动 assume-role 并自动续期临时凭证，密钥只存在一处（base），没有「把生产密钥复制到本机」的泄露面。
+
+</details>
+
 ## 小结
 
 - 初学者要点：用**官方安装包装 v2**（`pip install awscli` 是已停更的 v1）；

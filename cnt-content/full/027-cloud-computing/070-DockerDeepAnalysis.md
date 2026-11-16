@@ -71,8 +71,8 @@ RUN --mount=type=secret,id=npm_token \
 ```
 
 配套产物能力：`docker buildx build --sbom=true --provenance=true` 可同时
-生成软件物料清单（SBOM）与构建来源证明，是供应链安全（对应 054 的
-Harbor 验签链路）的基础数据。
+生成软件物料清单（SBOM）与构建来源证明，是供应链安全（对应 `540-HarborRegistry`
+的 Harbor 验签链路）的基础数据。
 
 ### 1.3 层缓存原理与排序
 
@@ -266,6 +266,31 @@ docker run --security-opt=no-new-privileges nginx           # 禁提权
 | 优雅关闭         | 处理 SIGTERM，做完收尾再退出 |
 | 配置外部化       | 环境变量注入，不烧进镜像 |
 | 构建可复现       | 锁基础镜像 digest，用 BuildKit 缓存 |
+
+## 教学自检
+
+遮住上面的 Dockerfile 与命令示例，先自己写/说，再展开对照。答不出的回到对应小节重读：
+
+1. 默写一个两阶段 Node.js Dockerfile 骨架：builder 阶段装依赖并构建，runner 阶段只拷产物。为什么 runner 阶段不装 devDependencies？
+2. `COPY package*.json` + `RUN npm ci` 放在 `COPY . .` 之前，缓存收益从何而来？排序的总原则是什么？
+3. 构建时需要一个 npm token：用 `--mount=type=secret` 与用 `ARG`/`ENV` 的本质区别是什么？
+4. 两个容器分别在默认 bridge 网络里，为什么互相 ping 不通容器名？怎么解决？
+5. 数据库数据该用 Volume、Bind Mount 还是 tmpfs？三种挂载的生命周期各是什么？
+6. 容器安全的「黄金法则」是哪条运行时参数组合？为什么 root 容器默认危险？
+7. Compose 里「应用先于数据库启动」的竞态怎么解？`depends_on` 默认行为差在哪？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 骨架：`FROM node:22-alpine AS builder` 装 `npm ci`、`npm run build`；`FROM node:22-alpine AS runner` 只 `COPY --from=builder dist 与生产 node_modules`，`USER node`。runner 不装 devDependencies 是因为编译/测试工具链只服务于构建，装了既变大镜像又扩大攻击面——最终镜像只含 runner 阶段内容。
+2. 层缓存规则是「某层失效其后所有层失效」。依赖清单很少变，源码常变：把低频变化放前面，改一行源码时 `npm ci` 那层仍命中缓存，不用重下依赖。
+3. ARG/ENV 的值会被写进镜像层历史，任何人 `docker history` 都能翻出来；secret 挂载只在构建那一瞬间存在，不落任何层——本质是「留不留进镜像」的区别。
+4. 默认 bridge 没有容器名 DNS（旧的 `--link` 已废弃）。建自定义网络 `docker network create`，让两个容器都 `--network mynet`，同一自定义网络内容器名即主机名。
+5. 数据库用 Volume（Docker 管理、独立于容器）。Bind Mount 跟随宿主文件（开发热载用），tmpfs 容器停止即失（敏感临时文件用）。
+6. `--cap-drop=ALL` 再按需 `--cap-add`。root 容器默认携带一批危险内核能力，逃逸路径多与它们相关；先全去掉再最小授予，把误配置的面压到最小。
+7. 给 db 配 `healthcheck`，web 的 `depends_on` 写 `condition: service_healthy`。默认的 `depends_on` 只保证「启动顺序」（容器进程起来了），不保证服务真正可用。
+
+</details>
 
 ## 小结
 

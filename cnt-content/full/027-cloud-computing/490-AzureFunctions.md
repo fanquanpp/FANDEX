@@ -623,3 +623,32 @@ az functionapp keys set \
 # 通过 URL 查询参数传递密钥调用 HTTP 函数
 curl "https://my-func-app.azurewebsites.net/api/HttpExample?code=MySecretValue123"
 ```
+
+---
+
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. Azure Functions 的 Core Tools（func）与 Azure CLI（az）各管哪一段？部署一条命令是什么？
+2. 创建项目的命令与运行时选择参数是什么？本地调试怎么跑？
+3. 消费计划（Consumption）与专用计划（Premium/Dedicated）的差异是什么？「缩到 0」对冷启动意味着什么？
+4. 应用设置（App Settings）怎么增删？它们对函数运行时的呈现形式是什么（环境变量）？
+5. 定时触发器（Timer trigger）的 cron 格式与 Linux/Windows 差异是什么？
+6. 部署槽（slot）解决什么问题？蓝绿发布的标准动作是什么？
+7. 函数密钥（function key）与主机密钥的作用范围差异是什么？URL 里传 `code=` 有什么风险？
+8. Durable Functions 解决什么问题？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. func 管本地开发/调试（init/new/start），az 管云端资源（functionapp 创建、配置、日志）。部署：`func azure functionapp publish <应用名>`。
+2. `func init`（选 worker runtime，如 python/node/dotnet）+ `func new`（按模板建函数）；本地 `func start` 起模拟运行时。
+3. 消费计划按执行秒数计费、空闲缩到 0（免闲置费）但冷启动明显；Premium 预热实例、VNet 集成、无冷启动，代价是常驻最低费用。
+4. `az functionapp config appsettings set --settings KEY=VALUE`（删除用 `--settings KEY=""` 或 slot settings 管理）。运行时通过标准环境变量读取——本地 local.settings.json 与线上 appsettings 对应。
+5. NCRONTAB 支持 5 段（`{分} {时} {日} {月} {星期}`）与 6 段（`{秒} {分} {时} {日} {月} {星期}`，比传统 cron 多秒位）两种格式。注意表达式中的 `%...%` 是应用设置占位符（如 `%MySchedule%` 会被替换为同名应用设置的值）——字面百分号可能被静默替换导致调度不生效，不要在 cron 表达式里随手使用 `%`。
+6. 部署到 staging 槽验证 → `az functionapp deployment slot swap` 交换到生产。蓝绿发布：流量切换是元数据操作，回滚 = 再 swap 回来。
+7. 函数级密钥只授权单个函数，主机密钥（masterKey/functionKeys）授权整个应用。URL 传 `code=` 会把密钥带进访问日志与浏览器历史——生产用 Header（`x-functions-key`）并优先考虑 Entra ID 鉴权。
+8. 有状态的函数编排：链式、扇出/聚合、人机交互等待（可持久化等待几天）——普通函数是无状态单次执行。
+
+</details>

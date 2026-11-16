@@ -192,6 +192,31 @@ CI 流水线（构建-测试-推送镜像）的完整链路属持续集成主题
 
 </details>
 
+## 教学自检
+
+遮住上面的 YAML 与仓库结构图，先口头回答，再展开对照。答不出的回到对应小节重读：
+
+1. GitOps 把传统 CD 的「推模型」反转为「拉模型」，三个红利是什么？代价是什么？
+2. 四条核心原则是什么？「部署即回滚」具体指什么操作？
+3. `selfHeal: true` 打开后，运维 `kubectl edit` 的紧急热修会怎样？正确做法是什么？
+4. `prune: true` 与 `allowEmpty: false` 分别防什么事故？
+5. 密钥为什么不能明文进 Git？两种配套方案是什么？
+6. CI 与 GitOps Agent 的分工边界在哪条线？（提示：谁写镜像标签、谁应用它）
+7. 多环境（dev/staging/production）的仓库结构惯例是什么？晋升（promotion）怎么做？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 红利：集群凭据不外泄（CI 不需要 kubeconfig）、部署即回滚（revert commit 即收敛）、漂移自愈（手改被拉回 Git 声明）。代价：发布「合入 + Agent 同步后生效」，需盯同步状态；密钥要配套方案才能进 Git。
+2. 声明式描述、Git 唯一信源、自动拉取、持续协调。部署即回滚 = `git revert` 那次变更提交，Agent 自动把集群收敛回上一版本——回滚是 Git 操作不是流水线重跑。
+3. 几十秒内被 Agent 回滚（拉回 Git 声明）——你以为修好了实际早被拉回去。热修必须走仓库提交；确实需要绕过时临时调整同步策略，事后立刻补回 Git。
+4. prune 处理「Git 里删掉的资源，集群里也删掉」（删资源靠它）；allowEmpty 拒绝同步「源目录为空」的仓库，防止仓库被误清空时 Agent 把整个命名空间清光。
+5. Git 是所有人可读的历史（含被泄露的历史提交）。配套：Sealed Secrets（加密后可安全入 Git，集群内解密）或 External Secrets Operator（引用外部密管如 Vault/云 KMS，Git 里只存引用）。
+6. CI 负责「构建与验证镜像、更新仓库中的镜像标签」（产出与登记），GitOps Agent 负责「把仓库声明的状态应用到集群」（应用与协调）——CI 不再持有集群凭据、不直接触碰集群。
+7. base/ 放通用清单，overlays/dev|staging|production 放差异补丁（Kustomize overlays）。晋升 = 把 staging 验证过的变更（镜像标签/配置）通过提交或自动化 PR 流到下一环境的 overlay，每步都有 Git 审计；回滚即 revert 对应环境的提交。
+
+</details>
+
 ## 常见陷阱
 
 1. **密钥明文进 Git**：GitOps 仓库是「唯一信源」也是最大攻击面；用 Sealed Secrets/External Secrets/SOPS，审查流程加 secret 扫描。

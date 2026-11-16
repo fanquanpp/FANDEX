@@ -306,6 +306,33 @@ def cleanup_unused_resources(dry_run: bool = True):
 
 首次开机 vs 持续配置：cloud-init（见 [cloud-init 命令](/cloud-computing/550-CloudInitCommands)）只在机器**第一次**启动时跑一次——装基础包、注入 SSH key、写 hostname；Ansible 管**生命周期内**的所有变更。判断标准：这条配置「新机器开出来就该有」还是「随时间会变」——前者 cloud-init/镜像，后者 Ansible。把频繁变更的配置塞进 cloud-init，改一次要重建一台机器，是常见的架构误用。
 
+## 教学自检
+
+遮住上面的 inventory/playbook/模板示例，先口头回答或默写骨架，再展开对照。答不出的回到对应小节重读：
+
+1. Ansible 的三个设计决定是什么？「幂等模块」与裸脚本的本质区别是什么？
+2. Terraform 与 Ansible 的分工边界在哪？镜像预装（Packer/cloud-init）与 Ansible 的分工又是什么？
+3. inventory 分组名为什么要按角色而不是按位置？`[组:children]` 与 `[组:vars]` 各是什么？
+4. Ubuntu 20+ 上新人第一个 Ansible 报错多半是什么？怎么修？
+5. 默写一个最小任务骨架：保证 Nginx 装着、配置模板下发、改了配置才重启服务。
+6. handler 的执行时机与两条铁律是什么？
+7. 第二次运行 playbook 仍有 changed，最常见的原因是什么？
+8. `serial: 1` 实现的是什么能力？配合什么命令先干跑看 diff？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 无代理（目标机只要 SSH + Python）、幂等模块（描述期望状态，已满足则跳过）、声明式分工（Terraform 管资源、Ansible 管资源内部）。区别：幂等是「重复执行结果不变」，脚本重跑会重复执行动作（重复装、重复重启）。
+2. Terraform 管资源生命周期（VPC/实例/DNS），Ansible 管资源内部（软件/配置/服务）。镜像预装解决「开机即用」，Ansible 只管持续配置——把所有配置堆进镜像/开机脚本，改一行就要重建机器。
+3. 角色变了只改 inventory 不改 playbook（playbook 按角色选目标）。children 组合成父组，vars 给整组定义变量（用户、密钥、解释器路径）。
+4. 找不到 `/usr/bin/python` 解释器。修：组变量里显式 `ansible_python_interpreter=/usr/bin/python3`。
+5. `apt: name=nginx state=present` → `template: src=nginx.conf.j2 dest=... notify: reload nginx`（带 validate）→ `service: name=nginx state=started enabled=true`。
+6. handler 在所有任务结束后只执行一次（多个任务 notify 同一个 handler 也只跑一次）。铁律：handler 名全局唯一；notify 写错名静默不报错。
+7. 某任务用了 `command`/`shell` 模块（永远 changed）。换成对应状态模块，或加 `changed_when`。
+8. 滚动发布（一台成功再下一台，失败即中止）。`ansible-playbook ... --check --diff` 先干跑看将要改什么。
+
+</details>
+
 ## 动手实践
 
 **任务**：写一个 role `myapp`，把第 3 节的 playbook 重构为可复用形态，并在两台本机容器（如 `geerlingguy/docker-ubuntu2204-ansible`）上验证幂等性：

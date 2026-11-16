@@ -400,6 +400,31 @@ $$
 - **IOThread**：QEMU 将 I/O 处理移至独立线程
 - **AIO/IO_uring**：Linux 异步 I/O 后端，io_uring 性能更优
 
+## 教学自检
+
+遮住上面的图表与代码，先口头回答，再展开对照。答不出的回到对应小节重读：
+
+1. Type 1 与 Type 2 Hypervisor 的区别是什么？各举两个代表产品。
+2. x86 虚拟化的根本难题是什么（提示：Guest OS 想要 Ring 0）？VT-x 用哪两种模式解决？
+3. 影子页表与 EPT 的地址翻译路径差在哪一步？EPT 为什么把「Guest 改页表」变成无 VM-Exit？
+4. 设备模拟（QEMU）与 virtio 的 I/O 路径差异是什么？virtio 快在哪里？
+5. SR-IOV 直通换来什么、牺牲什么？什么负载值得用它？
+6. 容器与 VM 的隔离机制差在哪一层？容器靠哪三种内核机制实现隔离？
+7. 热迁移 Pre-copy 的停机时间由什么决定？为什么迭代拷贝到「脏页率低于阈值」才停机？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. Type 1 直接跑在物理硬件上（ESXi、Hyper-V、KVM），Type 2 寄生在宿主 OS 上（VMware Workstation、VirtualBox、Parallels）。Type 1 是数据中心形态，Type 2 是桌面形态。
+2. Guest OS 假定自己独占最高特权（Ring 0），敏感指令与特权指令必须落入 Hypervisor 手里。VT-x 引入 VMX Root（Hypervisor）与 VMX Non-Root（Guest）两种模式：Guest 跑在 Non-Root，执行敏感操作触发 VM-Exit 陷入 Root 模式处理，Guest 无需修改内核。
+3. 影子页表要经过「Guest 页表 + Hypervisor 合成的影子页表」两级软件维护，Guest 每次改页表都要 VM-Exit 同步；EPT 是硬件两级翻译（GVA→GPA→HPA），Guest 改自己的页表不再陷入，地址翻译由硬件完成——代价是 TLB miss 时的 EPT walk，所以大页很关键。
+4. 设备模拟每次 I/O 都要 VM-Exit 陷入 QEMU 用户态进程，路径长性能差；virtio 用共享内存环形缓冲区（vring）前后端直通，约定好协议后大部分 I/O 不再陷入，vhost 再把后端下沉内核态进一步省开销。
+5. 换来接近物理机的延迟与吞吐（DMA 直达虚拟功能，绕过 Hypervisor），牺牲在线迁移灵活性（VF 与具体物理网卡绑定）。网络敏感型负载（低延迟交易、NFV）值得用。
+6. VM 隔离在硬件层（独立内核 + Hypervisor），容器隔离在操作系统层（共享内核）。容器靠 Namespace（视图隔离：PID/网络/挂载点等）、Cgroup（资源上限：CPU/内存/IO）、UnionFS（镜像分层）实现。
+7. 停机时间 = 最终脏页数据量 / 网络带宽 + 状态切换时间。脏页率高时拷贝追不上修改，永远迁不完；等迭代拷贝把脏页率压到阈值以下，最后一轮停机拷贝的数据量才足够小，用户感知的停机才短。
+
+</details>
+
 ## 小结
 
 - **初学者要点**：Type 1 Hypervisor 直接跑在硬件上（ESXi/KVM），Type 2 寄生在

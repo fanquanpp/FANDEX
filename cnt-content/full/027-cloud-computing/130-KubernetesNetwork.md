@@ -280,6 +280,33 @@ spec:
 > 前提：NetworkPolicy 需要 CNI 支持（Calico/Cilium/Antrea 均支持，
 > **Flannel 不支持**）。装了策略但不生效，先确认 CNI。
 
+## 教学自检
+
+遮住上面的 YAML 与规则示例，先口头回答，再展开对照。答不出的回到对应小节重读：
+
+1. K8s 网络模型的三条基本要求是什么？「每个 Pod 一个 IP」带来哪些运维上的好处？
+2. `ping` Service 的 ClusterIP 不通，但 `curl` 它的端口却通——为什么？这说明 Service IP 的本质是什么？
+3. CNI 插件与 kube-proxy 的分工是什么？（提示：一个管 Pod 到 Pod，一个管 Service 转发。）Flannel 为什么不能跑 NetworkPolicy？
+4. Overlay 与路由两种组网思路各适合什么环境？「小包通、大包挂」是什么故障，根因是什么？
+5. Pause 容器在网络里扮演什么角色？为什么业务容器崩溃重启后 Pod IP 不变？
+6. 新装集群里 Ingress 资源建了却不通，最常见的原因是什么？Ingress 资源本身承担什么职责？
+7. NetworkPolicy 的核心心智模型是什么？写出「默认拒绝所有入站」的最小 YAML 骨架；漏放行哪条规则会导致服务名解析失败？
+8. `from` 数组里两个元素（namespaceSelector 与 podSelector 分开写）与写在同一元素内，语义差别是什么？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. Pod 间直接通信不经 NAT、节点与 Pod 互通无 NAT、每个 Pod 拥有集群内唯一 IP。好处：Pod 内部视图就是一台普通主机（容器间 localhost、传统网络工具直接可用），没有端口映射心智负担。
+2. ClusterIP 是虚拟 IP，没有任何接口持有它，只存在于 kube-proxy 写入的转发规则里；ICMP 不会被代理，所以 ping 不通而 TCP 可达。本质：一段由转发规则实现的虚拟地址空间。
+3. CNI 负责给 Pod 挂网、实现 Pod 到 Pod 的底层连通（veth/路由/封装）；kube-proxy 只负责 Service 的虚拟 IP 转发规则。Flannel 没有 NetworkPolicy 的策略执行数据面，所以装了策略也不生效。
+4. Overlay（VXLAN/IPIP）适合二层不通的底层网络与公有云 VPC；路由（BGP/host-gw）适合自建可控网络、性能敏感场景。故障是 MTU 错配：Overlay 占约 50 字节包头，Pod 网络 MTU 没相应调小，大包超过链路 MTU 被丢弃，小包（握手）却通。
+5. Pause 是 Pod 网络命名空间的持有者，业务容器加入它的网络栈共享 IP；业务容器崩溃重启时 Pause 保持网络栈存活，IP 也就不变。
+6. 九成是没装 Ingress Controller——Ingress 资源只是路由规则，自己不做任何转发，必须有 Controller（Nginx/Traefik/Envoy 等）消费规则实际代理。
+7. 白名单：被任何策略选中的 Pod 立即进入「未明确允许即拒绝」。骨架：`podSelector: {}` + `policyTypes: [Ingress]` 无 rules。DNS 出站（UDP 53 到 kube-system）最常被漏，表现为服务名解析失败。
+8. 分开写在数组里是「或」（任一来源都放行，范围变宽）；写在同一元素内才是「与」（既是该命名空间又带该标签）——放得过宽的常见原因就是把「与」写成了「或」。
+
+</details>
+
 ## 小结
 
 - 初学者要点：网络模型三要求（Pod IP 直通无 NAT）；Service IP 是虚拟

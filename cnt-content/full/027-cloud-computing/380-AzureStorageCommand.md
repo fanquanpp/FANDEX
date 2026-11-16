@@ -218,6 +218,29 @@ az storage message get --queue-name my-queue --account-name storage134
 
 ---
 
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. 存储账户下有哪四类数据服务？SKU 后缀 LRS/ZRS/GRS 分别是什么冗余级别？
+2. 存储账户命名的两条硬规则是什么？
+3. 数据面命令的两种鉴权方式是什么？生产推荐哪种，为什么账户密钥危险？
+4. 上传与下载 Blob 的命令骨架是什么？容器默认是公开还是私有？
+5. SAS 令牌相对账户密钥的优势是什么？
+6. 队列消息取出后不删除会发生什么？这对消费代码提出什么要求？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. Blob（容器/对象）、File（文件共享）、Queue（队列）、Table（表）。LRS 本地三副本；ZRS 同区域跨可用区；GRS 跨区域冗余。
+2. 全局唯一；3-24 字符、只能小写字母与数字。
+3. 账户密钥（`--account-key`）与 Entra ID（`--auth-mode login`）。生产推荐 Entra ID——账户密钥是「上帝钥匙」（全权限、不可细粒度、泄露即沦陷），Entra ID 可走 RBAC 最小权限与临时凭证。
+4. `az storage blob upload --container-name <容器> --name <名> --file <本地路径> --account-name <账户> --auth-mode login`；下载把 upload 换成 download。容器默认私有，公开访问需显式设置。
+5. 细粒度（限服务/对象/权限）与可过期——泄露的爆炸半径与时效都可控；账户密钥只有「轮换」这一种补救。
+6. 在不可见窗口（visibility timeout）结束后重新出现、再次投递。消费逻辑必须幂等（同一消息可能被处理多次）。
+
+</details>
+
 ## 小结
 
 - 初学者要点：存储账户名全局唯一（小写字母数字，3-24 字符）；SKU 按

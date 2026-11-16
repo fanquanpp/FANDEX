@@ -395,11 +395,26 @@ az aks delete --name my-aks --resource-group my-rg --yes --no-wait
 | 只升控制面不升节点池 | 版本偏差过大，新版 API 不可用 | 控制面升级后尽快跟进节点池升级 |
 | 开了一堆附加组件不看账单 | 月底费用超预期 | 每个附加组件评估必要性，Log Analytics 按量收费要盯 |
 
-## 自检
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
 
 1. `kubectl get nodes` 能看到节点，但 `kubectl get pods` 报 Forbidden——最可能少了哪一步？（提示：Azure RBAC 角色分配）
 2. Pod 一直 Pending，集群自动伸缩器却没有加节点，先检查什么？（提示：min/max 配置与配额）
 3. `az aks stop` 之后，ACR 里的镜像还计费吗？
+4. 默写：创建并获取 AKS 凭证到本地 kubeconfig 的两条命令。
+5. 升级前为什么要确认副本数 >= 2 且配了 PodDisruptionBudget？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 少了 Azure RBAC 角色分配。启用 Azure RBAC 的集群上，登录身份需要被授予 Azure Kubernetes Service RBAC 系列角色（如 RBAC Cluster Admin/Reader）——能看到节点通常靠订阅级权限，Pod 级操作走 Kubernetes API 授权，用 `az role assignment create` 补角色。
+2. 先查两件事：节点池自动伸缩的 min/max 是否已到上限（max-count 满，加不了节点）；订阅在目标区域的 vCPU 配额是否耗尽。再排除 Pod 本身不是因污点/亲和性不匹配而 Pending。
+3. 计费。`az aks stop` 停的是集群计算（API Server 与节点 VM），ACR 是独立服务，镜像存储按 GB 持续计费，与集群启停无关。
+4. `az aks create --name my-aks --resource-group my-rg --node-count 2 --generate-ssh-keys`；`az aks get-credentials --resource-group my-rg --name my-aks`。
+5. 升级 = 节点滚动替换：单副本 Pod 所在节点被排空时没有其他副本承接流量，直接中断；PDB 约束「同一时刻最多驱逐多少副本」，保证滚动期间始终有存活副本——两者合起来才不会在升级时甩掉服务。
+
+</details>
 
 ## 练习
 

@@ -388,11 +388,26 @@ gcloud container clusters delete my-gke --region us-central1
 | 自动升级撞上大促 | 升级引发的滚动重启影响线上 | 提前配 maintenance exclusion |
 | 节点池缩 0 当"停机" | 控制面与负载均衡仍在计费 | 想省钱要缩 0 + 删 Service（或干脆删集群） |
 
-## 自检
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
 
 1. 你的负载需要特权容器和自定内核参数，选 Autopilot 还是标准模式？为什么？
 2. 升级到一半发现新版本有兼容问题，已经升级的节点会回滚吗？怎么止损？
 3. Pod 里的程序读 GCS 报权限错误，按 Workload Identity 的三步依次检查什么？
+4. 默写：创建标准集群并获取凭证的两条命令。
+5. 节点池「缩到 0」为什么不能当停机省钱？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 选标准模式。Autopilot 对 Pod 的安全上下文限制严格（不允许 privileged 容器、部分 sysctl 不可设）——需要特权容器与自定义内核参数的负载超出 Autopilot 的安全边界，只能用标准节点池自己管节点。
+2. 不会自动回滚——GKE 节点升级后无法回退到旧节点版本。止损：工作负载层 `kubectl rollout undo` 回滚应用版本；节点池层面的根治办法是升级前用蓝绿（创建新池迁移）或 surge 升级控制节奏，并给升级配 maintenance exclusion 避开业务高峰。
+3. 三步：集群/节点池启用了 Workload Identity（workload pool 已绑定）；K8s ServiceAccount 加了 `iam.gke.io/gcp-service-account=<GSA>` 注解且 Pod 用了这个 SA；Google SA 有 `roles/iam.workloadIdentityUser` 绑定，member 形如 `serviceAccount:<PROJECT>.svc.id.goog[<namespace>/<k8s-sa>]`。三样缺一即报权限错误。
+4. `gcloud container clusters create my-cluster --region asia-east1`；`gcloud container clusters get-credentials my-cluster --region asia-east1`。
+5. 缩 0 只停了节点（计算费），控制面费与挂着的负载均衡/转发规则照常计费——想真正省钱要缩 0 并删掉 Service（LoadBalancer 资源），或直接删集群。
+
+</details>
 
 ## 练习
 

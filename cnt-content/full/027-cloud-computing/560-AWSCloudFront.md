@@ -642,3 +642,32 @@ for dist in $(aws cloudfront list-distributions --query 'DistributionList.Items[
     --resource arn:aws:cloudfront::123456789012:distribution/$dist
 done
 ```
+
+---
+
+## 教学自检
+
+遮住上面的命令与 JSON 示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. 分配（Distribution）是什么？边缘站点与源站的关系是什么？
+2. S3 源站为什么配 OAC？OAI 与 OAC 什么关系？
+3. 默写：刷新首页与 images 目录缓存的命令。「/*」全量失效的代价是什么？
+4. 缓存策略里 Headers/Cookies/QueryStrings 的默认行为（none）意味着什么？为什么「全部进缓存键」会伤命中率？
+5. 自定义域名配 HTTPS 时，ACM 证书必须在哪个区域创建？为什么？
+6. TLS 版本策略该怎么选（MinimumProtocolVersion）？
+7. CloudFront Functions 与 Lambda@Edge 怎么选？
+8. 静态站发布脚本的标准组合是什么（sync + invalidation 的分工）？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 分配是 CDN 的配置实体：定义源站、缓存行为、证书与域名，全球边缘站点按它缓存并就近服务——用户连边缘，边缘回源。
+2. 让 S3 桶保持私有、只接受来自该分配的请求（边缘代持凭证访问）。OAI 是旧机制，OAC 是其继任者（支持更细的签名与安全头），新配置一律用 OAC。
+3. `aws cloudfront create-invalidation --distribution-id E1A2B3C4D5E6F7 --paths "/index.html" "/images/*"`。全量失效丢弃全部边缘缓存，回源流量与延迟尖峰随之而来——只对内容会变的入口文件用。
+4. none 意味着这些请求特征不进缓存键、也不转发参与缓存判定——同 URL 全部命中同一份缓存。把 Header/Cookie 全放进键等于按用户碎片化缓存，命中率崩塌（应该按需白名单）。
+5. us-east-1（弗吉尼亚北部）。CloudFront 的证书管理 API 只在 us-east-1 提供全局证书——证书在其他区域创建会选不到。
+6. 生产最低 TLSv1.2（当前协议档为 TLSv1.2_2021），配套 `SSLSupportMethod: sni-only`；TLS 1.0/1.1 已不安全，除非有极老客户端兼容需求。
+7. CloudFront Functions：轻量（<1ms）、运行在边缘查看请求/响应、适合改头与 URL 重写；Lambda@Edge：更重（多区域执行、可达秒级）、适合需要更长计算或访问外部服务的逻辑。
+8. `aws s3 sync ./dist s3://桶 --delete`（对象更新，哈希命名资源自动换新 URL）+ 对入口 HTML 单独 `create-invalidation`。全量 `/*` 失效是哈希命名没做彻底的补丁。
+
+</details>

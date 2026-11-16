@@ -16,8 +16,8 @@ prerequisites: []
 **基本写法：下载 Harbor 安装包**
 `curl -fsSL https://github.com/goharbor/harbor/releases/download/v<版本>/harbor-offline-installer-v<版本>.tgz -o harbor.tgz`
 ```bash
-# 下载 Harbor 2.11 离线安装包
-curl -fsSL https://github.com/goharbor/harbor/releases/download/v2.11.0/harbor-offline-installer-v2.11.0.tgz -o harbor.tgz
+# 下载 Harbor 离线安装包（撰写时稳定主线为 2.16.x，v2.16.0 发布于 2026-11；版本号以 releases 页为准）
+curl -fsSL https://github.com/goharbor/harbor/releases/download/v2.16.0/harbor-offline-installer-v2.16.0.tgz -o harbor.tgz
 ```
 
 ---
@@ -50,11 +50,17 @@ sudo ./install.sh
 
 ---
 
-**基本写法：启用 Notary 验证**
-`sudo install.sh --with-notary`
+**基本写法：用 Cosign 签名镜像（现行签名方案）**
 ```bash
-# 安装并启用镜像签名功能
-sudo ./install.sh --with-notary
+# 注意：Harbor 自 v2.9.0 弃用 Notary v1（官方 wiki：Harbor Deprecates Notary
+# v1 Support in v2.9.0），推荐迁移到 Cosign（支持自 2.5 引入）或 Notation；
+# 现行版本官方文档只提供 Cosign/Notation 签名方案，不再使用 --with-notary
+# 安装 Notary。cosign 签名结果以 artifact 形式存于仓库
+cosign generate-key-pair
+cosign sign --key cosign.key harbor.example.com/myproject/app:v1.0.0
+
+# 验证签名（CI 部署前强制执行）
+cosign verify --key cosign.pub harbor.example.com/myproject/app:v1.0.0
 ```
 
 ---
@@ -460,24 +466,24 @@ docker-compose -f docker-compose.yml stop
 ---
 
 **基本写法：执行 GC**
-`docker run -it --name gc --rm --volumes-from registry-core vmware/harbor-registryctl:2.11.0 garbage-collect --dry-run /etc/registry/config.yml`
+`docker run -it --name gc --rm --volumes-from registry-core goharbor/registry-photon:v2.16.0 garbage-collect --dry-run /etc/registry/config.yml`
 ```bash
 # 干运行查看 GC 影响
 docker run -it --name gc --rm \
   --volumes-from registry-core \
-  goharbor/registry-photon:v2.11.0 \
+  goharbor/registry-photon:v2.16.0 \
   garbage-collect --dry-run /etc/registry/config.yml
 ```
 
 ---
 
 **基本写法：实际执行 GC**
-`docker run -it --name gc --rm --volumes-from registry-core goharbor/registry-photon:v2.11.0 garbage-collect /etc/registry/config.yml`
+`docker run -it --name gc --rm --volumes-from registry-core goharbor/registry-photon:v2.16.0 garbage-collect /etc/registry/config.yml`
 ```bash
 # 实际执行垃圾回收(需停止 Harbor)
 docker run -it --name gc --rm \
   --volumes-from registry-core \
-  goharbor/registry-photon:v2.11.0 \
+  goharbor/registry-photon:v2.16.0 \
   garbage-collect /etc/registry/config.yml
 ```
 
@@ -559,7 +565,8 @@ helm repo update
 
 **基本写法：配置 values.yaml**
 ```yaml
-# values.yaml 关键配置
+# values.yaml 关键配置（Notary v1 已弃用并移出主线，签名验证走
+# Cosign/Notation；notary 相关配置项是否存在于所装图表，以对应版本文档为准）
 expose:
   type: ingress
   tls:
@@ -567,7 +574,6 @@ expose:
     certSource: secret
     secret:
       secretName: harbor-tls
-      notarySecretName: notary-tls
 externalURL: https://harbor.example.com
 harborAdminPassword: "Harbor12345"
 persistence:
@@ -668,3 +674,32 @@ curl -X PUT -u admin:Harbor12345 \
   https://harbor.example.com/api/v2.0/projects/1 \
   -d '{"metadata": {"storage_limit": "53687091200"}}'
 ```
+
+---
+
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. Harbor 与 Docker Hub 的定位差别是什么？为什么私有仓库还要自己搭 Harbor？
+2. 默写：推送一个镜像到 Harbor 项目（三步：tag → login → push）。
+3. CI 里 docker login 为什么用 `--password-stdin` 而不是 `-p`？
+4. HTTP 部署的 Harbor 需要在客户端配什么？正确的生产姿势是什么？
+5. 镜像签名为什么从 Notary 迁到 Cosign？部署前怎么强制验签？
+6. Trivy 扫描的高危结果该怎么处置？`ignore_unfixed` 打开意味着什么？
+7. 垃圾回收为什么必须先停 Harbor？`delete_untagged: true` 回收的是什么？
+8. 跨 Harbor/云仓库的镜像复制用什么功能配置？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. Docker Hub 是公共托管仓库；Harbor 是自建企业级仓库：项目/用户/RBAC、漏洞扫描、签名验证、跨仓库复制、配额审计——镜像供应链的治理能力都在自己手里。
+2. `docker tag app:v1.0.0 harbor.example.com/myproject/app:v1.0.0`（地址里必须带项目名）→ `docker login harbor.example.com` → `docker push harbor.example.com/myproject/app:v1.0.0`。项目不存在时推送被拒。
+3. `-p` 会把密码写进 shell 历史与进程列表；`--password-stdin` 从管道读入，凭证不落历史。
+4. daemon.json 的 `insecure-registries`（禁 TLS 校验）只用于内网试验；生产必须 HTTPS（cert 或信任自有 CA），否则镜像层明文传输且可被中间人替换。
+5. Notary v1 生态停滞，Harbor 自 v2.9.0 官方弃用（推荐迁移 Cosign/Notation，Cosign 支持自 2.5 引入），现行版本文档只提供 Cosign/Notation 方案；Cosign 把签名作为 artifact 直接存仓库，验证只需公钥。CI 部署前跑 `cosign verify --key cosign.pub <镜像>`，失败即拒绝部署。
+6. 按严重级别阻断（项目策略可设「禁止高危镜像拉取/部署」），先修镜像（升级基础镜像）再重推。`ignore_unfixed: true` 表示忽略没有官方修复版本的 CVE——它们无法通过升级消除。
+7. GC 直接删除存储层的 blob，在线删除会造成数据竞争；先停服务保证没有并发读写。untagged = 失去所有 tag 引用的 artifact，GC 清掉它们才真正释放空间。
+8. 复制策略（Replication）：配置远程仓库目标 + 规则（按项目/过滤）+ 触发方式（手动/定时/事件驱动），支持 Harbor 之间及 Harbor 到云仓库。
+
+</details>

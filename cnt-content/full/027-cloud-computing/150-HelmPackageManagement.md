@@ -23,8 +23,16 @@ Helm 是 Kubernetes 的包管理器。K8s 原生清单文件是静态 YAML：部
 实例，values 是安装参数**，升级与回滚都有版本记录。
 
 版本现状：Helm 3（2019 年起，移除 Tiller）是长期主流；Helm 4 已于
-2025 年底发布，撰写时 4.x 为现行主线，核心概念（Chart/Release/Values）
-与工作流延续 3.x，本文内容对两者基本通用。
+2025 年 11 月发布（时隔 6 年的首个大版本），撰写时 4.x 为现行主线，
+核心概念（Chart/Release/Values）与工作流延续 3.x，本文内容对两者基本
+通用。迁移窗口要留意（官方口径见 helm-v3-end-of-life 公告）：Helm 3
+的最终特性版为 2026 年 9 月 9 日（此后仅随新 Kubernetes 版本更新客户端
+库），安全补丁维护已由原计划的 2026 年 11 月延长三个月至 2027 年
+2 月 10 日——此后不再有任何形式的 Helm 3 发布。因此新装一律从 4.x
+开始，存量 3.x 在维护窗口内规划升级（破坏性变更集中在插件系统与
+server-side apply 等实现层，学习本文的概念与工作流不受影响；另注意
+4.x 已将 `--atomic` 更名为 `--rollback-on-failure`，旧旗标保留为弃用
+别名，行为不变）。
 
 完成本文后，你应当能够：读懂并修改任意第三方 Chart；用 values 覆盖链
 管理多环境；用 `--dry-run`/`template` 安全调试模板；处理依赖 Chart。
@@ -200,7 +208,9 @@ helm upgrade --install my-release bitnami/nginx -f values-prod.yaml \
   --atomic --timeout 5m
 ```
 
-`--atomic` 让失败时自动回滚到上一版本，是生产升级的保险丝。
+`--atomic` 让失败时自动回滚到上一版本，是生产升级的保险丝。Helm 4
+已将该旗标更名为 `--rollback-on-failure`（旧名保留为弃用别名，行为
+一致）：本文命令在 3.x/4.x 均可运行，新写的脚本建议直接用新名。
 
 ### 4.3 管理与调试
 
@@ -257,7 +267,7 @@ helm dependency build       # 按 Chart.lock 精确重建（CI 用）
 | -------- | -------------------------------------------- |
 | 版本控制 | Chart 与各环境 values 全部进 Git             |
 | 环境分离 | values-{dev,prod}.yaml，禁止散落 --set       |
-| 幂等发布 | CI 统一 `helm upgrade --install --atomic`    |
+| 幂等发布 | CI 统一 `helm upgrade --install` + `--atomic`（4.x 写 `--rollback-on-failure`） |
 | 锁依赖   | dependency build + Chart.lock 提交入库       |
 | 资源限制 | Chart 内始终给出 resources 默认值            |
 | 不用 latest | 镜像 tag 显式化，tag 与 appVersion 对应   |
@@ -273,9 +283,42 @@ Kustomize 的分工：Helm 管「参数化整包」，Kustomize 管「在既有�
 ## 小结
 
 - 初学者要点：Chart/Release/Values 三概念；安装升级走
-  `helm upgrade --install --atomic`；调试先 `helm template`；Release
-  元数据按命名空间隔离存储；依赖改版本后要 `dependency update`。
+  `helm upgrade --install` 配 `--atomic`（4.x 更名 `--rollback-on-failure`）；
+  调试先 `helm template`；Release 元数据按命名空间隔离存储；依赖改版本后
+  要 `dependency update`。
 - 进阶注意：values 是 Chart 的公开 API，保持模板只引用声明过的键；
   `--set` 适合临时实验、不适合生产流水线；version 与 appVersion 语义
-  分开；Helm 4 已发布但概念延续 3.x，历史资料中的 Tiller 内容一律
-  过时；规模化的下一步通常是 Argo CD/Flux GitOps 化，见 [GitOps 持续交付](/cloud-computing/155-GitOpsContinuousDelivery)。
+  分开；Helm 3 安全补丁维护延至 2027 年 2 月 10 日，新装一律 4.x、存量
+  在窗口内规划升级，历史资料中的 Tiller 内容一律过时；规模化的下一步
+  通常是 Argo CD/Flux GitOps 化，见 [GitOps 持续交付](/cloud-computing/155-GitOpsContinuousDelivery)。
+
+## 教学自检
+
+遮住上面的 YAML 与命令示例，先口头回答，再展开对照。答不出的回到对应小节重读：
+
+1. Chart、Release、Repository、Values 四个概念各类比什么？「同一个 Chart 装出两个 Release」意味着什么？
+2. version 与 appVersion 有什么区别？各自在什么时候递增？混用会破坏什么？
+3. values 覆盖链的顺序是什么？为什么生产脚本要避免散落的 `--set`？
+4. `helm upgrade --install --atomic` 这条 CI 标准命令里，每个参数解决什么问题？Helm 4 对 `--atomic` 做了什么变更？
+5. 模板渲染失败的常见根因是什么（除了语法）？两大调试命令是什么？
+6. 改了 Chart.yaml 的依赖版本后直接 upgrade，会发生什么？正确流程是什么？
+7. helm init/tiller 相关的资料为什么全部过时？Helm 3 起安全模型变成了什么？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. Chart ≈ apt 的 .deb（应用包），Release ≈ 一次安装实例，Repository ≈ apt 源，Values ≈ 安装向导选项。同一个 Chart 装两个 Release（app-a/app-b）互不影响，靠 Release 名 + 命名空间区分——这是「一套模板、多环境多实例」的基础。
+2. version 是 Chart 自身的版本（语义化，改模板就递增）；appVersion 是所含应用的版本（仅元信息，升级软件时递增）。混用会让修订历史与回滚失去意义——helm rollback 靠 version 记录差异。
+3. 顺序：chart 自带 values.yaml 为起点，`-f` 环境文件逐层覆盖，`--set` 最后覆盖。`--set` 不支持复杂结构、类型易错（数字变字符串）、散落在命令里不进 Git，审计与复现都断——生产统一走 values 文件。
+4. `--install`：不存在则安装、存在则升级，命令幂等（CI 可重跑）；`--atomic`：升级失败自动回滚到上一修订，是生产保险丝（通常再配 `--timeout`）。Helm 4 将 `--atomic` 更名为 `--rollback-on-failure`，旧名保留为弃用别名（行为一致），新脚本用新名。
+5. 空白符：`{{-` 与 `- }}` 是否裁剪空格决定 YAML 缩进是否被破坏。调试认准 `helm template`（只渲染输出最终 YAML）与 `helm install --dry-run`（模拟安装并校验）。
+6. Helm 不会自动更新已装依赖子 Chart——upgrade 仍用 `charts/` 里的旧包，改动等于没生效。正确流程：改 Chart.yaml 后先 `helm dependency update`（CI 用 `dependency build` 按 Chart.lock 精确重建）再 upgrade。
+7. Tiller 是 Helm 2 的服务端组件，持集群管理员权限，是著名安全短板，Helm 3 已移除。安全模型变为客户端直连 API Server，权限跟随操作者的 kubeconfig——`helm init`/`tiller` 在 3.x/4.x 里根本不存在。
+
+</details>
+
+## 参考与致谢
+
+- Helm 4 发布公告（2025-11-12，含 server-side apply 与旗标更名等变更）：https://helm.sh/blog/helm-4-released
+- Helm 3 生命周期（最终特性版 2026-09-09；安全补丁延至 2027-02-10）：https://helm.sh/blog/helm-v3-end-of-life
+- 本文命令与概念依据 Helm 官方文档（https://helm.sh/docs/ ）整理重写。

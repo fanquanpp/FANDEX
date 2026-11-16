@@ -231,6 +231,31 @@ aws iam get-account-summary --query 'SummaryMap.AccountAccessKeysPresent'
 > IAM 报错规律：没有显式 Allow 即默认拒绝；同一账号内显式 Deny 永远
 > 赢过 Allow；跨账号访问需要「双方授权」（本方允许 + 对方信任）。
 
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. 用户、组、角色、策略四个对象的分工是什么？「用户给人、角色给机器」的道理是什么？
+2. Secret Access Key 什么时候可见？密钥轮换的五步是什么？
+3. 每个用户最多几个密钥？为什么留 2 个而不是 1 个？
+4. 附加策略（attach）与内联策略（inline）的差别是什么？组为什么是权限分配的首选载体？
+5. 角色可用的前提是什么？跨账号扮演需要「双方授权」分别指什么？
+6. 用户反馈「没有权限」，用什么命令验证而不是猜？
+7. 账号级体检的两条红线是什么（提示：根账号）？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 用户/组管人类身份（登录与密钥），角色给机器与服务（EC2/Lambda/CI 扮演拿临时凭证），策略是权限 JSON 文档。道理：机器用角色可自动轮换临时凭证、无需落盘密钥；人需要稳定的登录身份，才建用户——现代实践优先 Identity Center（SSO）。
+2. 只在 `create-access-key` 的响应里出现这一次，当场保存。五步：先建新 → 改配置 → 停旧（Inactive）→ 观察 → 删旧。
+3. 2 个。留 2 个是为了零停机轮换：新密钥先生效、旧密钥停用观察期，服务不断线。
+4. 附加策略是独立对象（可挂到多个用户/组/角色、可统一版本管理）；内联策略嵌死在单个对象里，难审计难复用。组是首选：用户入组、权限挂组，人员变动只动组成员关系。
+5. 角色要有信任策略（trust policy）声明谁可以扮演。跨账号：本方策略允许 `sts:AssumeRole` 到对方 ARN，对方的角色信任策略要信任本方身份——缺任何一侧都报 AccessDenied。
+6. `aws iam simulate-principal-policy --policy-source-arn <主体ARN> --action-names s3:PutObject --resource-arns ...`——直接模拟判断结果，还能定位是哪条语句缺 Allow。
+7. 根账号不持有访问密钥（`AccountAccessKeysPresent` 应为 0），根账号启用 MFA。日常操作绝不使用根账号。
+
+</details>
+
 ## 小结
 
 - 初学者要点：用户给人、角色给机器；策略是 JSON 文档、附加（attach）

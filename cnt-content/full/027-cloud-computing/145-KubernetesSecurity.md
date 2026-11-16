@@ -212,6 +212,29 @@ spec:
 
 </details>
 
+## 教学自检
+
+遮住上面的 YAML 与命令示例，先口头回答或默写命令，再展开对照。答不出的回到对应小节重读：
+
+1. Pod Security Admission 的三个递进等级是什么？「先 audit/warn 再 enforce」为什么是推荐路径？
+2. RBAC 四对象（Role/ClusterRole/RoleBinding/ClusterRoleBinding）的作用域怎么区分？给 CI 的 ServiceAccount 收权的完整三步是什么？
+3. 验证某身份实际权限的命令是什么？它比「看 Role YAML」好在哪？
+4. Secret 的三层保护是什么？「Base64 不算加密」的理由是什么？
+5. 镜像供应链的三件套是什么？固定摘要（digest）解决了什么问题？
+6. restricted 等级下 Pod 起来就 CrashLoopBackOff、日志显示写盘失败，最可能缺什么配置？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. privilege/escalated（宽松）、baseline（禁止已知特权能力）、restricted（最小化，runAsNonRoot、drop capabilities、seccompProfile 等）。直接 enforce 会让存量应用一夜无法发布——先 audit（只记不拦）与 warn（提示不拦）跑观察期，确认无违规再 enforce。
+2. Role/RoleBinding 限于命名空间，ClusterRole/ClusterRoleBinding 全集群。给 CI 收权：建 ServiceAccount → 建 Role（只列必需的 verbs）→ RoleBinding 把 Role 绑给该 SA；最后用 `kubectl auth can-i --list --as=system:serviceaccount:<ns>:<sa>` 验证权限矩阵。
+3. `kubectl auth can-i <动作> <资源> --as=<主体>`。它算的是「实际生效的合并权限」（含所有绑定与聚合），比人肉读 Role YAML 可靠——尤其多重绑定时。
+4. etcd 加密（静态加密 Secret 数据）、RBAC 收权（谁能读 Secret）、外部密钥管理（Vault/External Secrets，Secret 里只存引用）。Base64 是可逆编码不是加密——`get secret -o yaml` 一秒还原明文。
+5. 签名（cosign 等）、漏洞扫描（Trivy 类进 CI）、固定版本/摘要。固定 digest 让「两台节点跑不同内容」不可能发生，也防镜像被篡改后同名替换——回滚与审计都建立在「内容可寻址」上。
+6. `readOnlyRootFilesystem: true` 但没给可写路径——挂一个 `/tmp` 的 emptyDir 即可；这不是镜像坏了，是 restricted 标准的最小文件系统要求。
+
+</details>
+
 ## 常见陷阱
 
 1. **`verbs: ["*"]` 一把梭**：CI 与应用的 ServiceAccount 全量权限，泄露即沦陷；按动作拆 Role。

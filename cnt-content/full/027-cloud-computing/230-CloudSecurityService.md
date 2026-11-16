@@ -366,6 +366,31 @@ flowchart LR
 - [ ] GuardDuty 启用
 - [ ] 安全告警通知配置
 
+## 教学自检
+
+遮住上面的 JSON、表格与架构图，先口头回答，再展开对照。答不出的回到对应小节重读：
+
+1. 共享责任模型里「操作系统补丁」在 IaaS 与 PaaS 下分别归谁？桶配公开泄露属于谁的责任区？
+2. IAM 三问对应哪三件事？一条 IAM 策略的 Effect/Action/Resource/Condition 四要素分别控制什么？
+3. 最小权限的五个实施工具（默认拒绝/Access Analyzer/权限边界/SCP/会话策略）各在哪一层收口？
+4. 信封加密为什么把 KMS 调用次数从「每 4KB 一次」降到 1 次？数据密钥的明文什么时候必须销毁？
+5. Interface Endpoint（PrivateLink）与 Gateway Endpoint 的差异是什么？哪些服务有 Gateway Endpoint？
+6. Shield Standard 与 Shield Advanced 的差别是什么？L7 的 HTTP Flood 该由哪层服务接？
+7. GuardDuty 能检测出哪些真实威胁（举三种）？自动化响应链路经过哪三个组件？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. IaaS 下 OS 是客户责任，PaaS 下 OS 由云厂商托管——客户只管代码与数据。桶配公开是客户责任区的经典案例：云商保证「云本身安全」，配置错误在「云上安全」一侧。
+2. 认证（你是谁）、授权（你能做什么）、审计（你做了什么）。Effect 决定允许/拒绝，Action 限定可调用的 API，Resource 用 ARN 限定对象范围，Condition 加条件（来源 IP、要求 KMS 加密头等）。
+3. 默认拒绝是起点姿态；Access Analyzer 发现存量过度权限（账户内）；Permissions Boundary 给单个角色设权限上限；SCP 在组织层封顶（管住所有账户）；会话策略在临时会话里进一步缩小——从组织到账户到角色到会话逐层收口。
+4. 信封加密用数据密钥（DK）加密数据、KMS 只处理 DK：加密前调一次 GenerateDataKey，解密时每份密文调一次「解密 DK」，数据加解密都在本地完成——把昂贵的 KMS 调用与数据量解耦。加密完成后明文 DK 立即丢弃，只存密文 DK + 密文数据。
+5. Interface Endpoint 走 ENI + PrivateLink，按小时与流量收费，支持大多数服务；Gateway Endpoint 写进路由表、免费，但只有 S3 与 DynamoDB。
+6. Standard 自动免费、只覆盖 L3/L4；Advanced 付费（$3000/月量级）、加 L7、配 DDoS 响应团队与费用保护。HTTP Flood 要 WAF 速率限制（配合 CloudFront 分布式吸收流量）。
+7. 异常地域 API 调用、GitHub 泄露凭证的使用、异常挖矿行为（还可答恶意 IP 交互/暴力破解/权限提升）。链路：GuardDuty 发现 → EventBridge 路由 → Lambda 执行（撤销凭证/隔离实例/封 IP/通知）。
+
+</details>
+
 ## 小结
 
 - **初学者要点**：共享责任模型决定了"哪些事云厂商不管"；IAM 三问（你是谁/能做什么/

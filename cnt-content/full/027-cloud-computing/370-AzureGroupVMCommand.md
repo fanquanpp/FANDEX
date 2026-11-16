@@ -230,6 +230,29 @@ az vm disk attach --resource-group MyResourceGroup --vm-name my-vm --name my-dis
 
 ---
 
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. 资源组的双重属性是什么（为什么说它既是清理利器又是最大风险）？
+2. `az vm create` 一条命令连带创建了哪些资源？
+3. Azure 的 `stop` 与 `deallocate` 有什么本质差异？测试机要省计算费用哪个？
+4. 取 VM 公网 IP 用什么命令与参数组合？为什么不能用普通 `az vm show`？
+5. `run-command invoke` 解决什么问题？比 SSH 好在哪？
+6. Managed Disk 与 VM 的生命周期关系是什么？删除 VM 后它有什么行为？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 它是资源的最小管理单元：同生命周期的资源放一起，`az group delete` 一条命令删光组内全部资源——清理利器，同时一条命令误删全部也是最大风险。
+2. VM 本体 + 网卡（NIC）+ 公网 IP + 网络安全组（NSG）+ 虚拟网络/子网（缺省复用或新建）+ OS 磁盘。
+3. `stop` 只是把 OS 关机，VM 仍占用宿主机资源、继续计费；`deallocate` 释放宿主机分配、停收计算费（磁盘仍计费）。测试机省费用 deallocate（或配自动关闭）。
+4. `az vm show -d --query publicIps -o tsv`。`-d`（--show-details）才会把实例视图里的公网 IP 等运行时信息带出来，普通 show 只有配置。
+5. 在 VM 内远程执行命令而无需开放 SSH 端口/管理密钥——走 Azure 结构化通道。适合批量运维与排障，攻击面比全网开放 22 端口小。
+6. 磁盘独立于 VM 生命周期：删除 VM 不删除 Managed Disk，会按 GB 持续计费。删 VM 后要按需 `az disk delete` 清理。
+
+</details>
+
 ## 小结
 
 - 初学者要点：一切资源属于资源组，删除组等于删全部资源（清理利器，

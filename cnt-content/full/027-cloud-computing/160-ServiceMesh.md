@@ -11,7 +11,7 @@ related:
   - 'cloud-computing/130-KubernetesNetwork'
   - 'cloud-computing/100-MicroserviceArchitecture'
   - 'cloud-computing/170-Observability'
-  - 'cloud-computing/480-AWSDynamoDB'
+  - 'cloud-computing/155-GitOpsContinuousDelivery'
 prerequisites:
   - 'cloud-computing/100-MicroserviceArchitecture'
 ---
@@ -59,7 +59,7 @@ flowchart TD
 
 ## 2. Istio
 
-Istio 是事实上的主流方案（撰写时最新为 1.3x 系列，约每季度一个次版本）。
+Istio 是事实上的主流方案（撰写时最新为 1.32 系列，2026-11-09 发布，约每季度一个次版本）。
 
 ### 2.1 两种数据面：Sidecar 与 ambient
 
@@ -272,6 +272,31 @@ spec:
 
 务实的演进路径：先用 K8s 原生能力，等服务间治理需求（统一 mTLS、
 精细化灰度、全链路策略）真实出现时，再以 ambient 或 Linkerd 低成本接入。
+
+## 教学自检
+
+遮住上面的 YAML 与表格，先口头回答，再展开对照。答不出的回到对应小节重读：
+
+1. 服务网格把哪三类逻辑从应用代码下沉到基础设施？「小区统一安保」类比对应的 SDK 方案是什么？
+2. Sidecar 与 ambient 两种数据面的资源与升级成本差异是什么？ztunnel 与 waypoint 各管哪一层？
+3. VirtualService 与 DestinationRule 的分工是什么？金丝雀发布的 weight 写在哪一个里，subset 又定义在哪一个里？
+4. PeerAuthentication STRICT 模式下明文流量会怎样？mTLS 证书的身份绑定到什么（网络位置还是服务账号）？
+5. 重试配置为什么要同时设 perTryTimeout 与整体 timeout？不保证幂等的接口开重试会出什么事？
+6. 故障注入用来验证什么？10% 注入 500ms 延迟的上游会看到什么现象？
+7. 哪些信号说明你还不需要服务网格？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 重试/超时/熔断等流量治理、服务间 mTLS 加密、调用链追踪。SDK 方案（如 Spring Cloud）等于每家自己雇保安——多语言团队要维护 N 份实现，库升级要推动 N 个应用重发版；网格是小区统一安保，应用零改动。
+2. Sidecar 每 Pod 一份代理（0.1-0.5 核量级内存开销），升级网格要重启全部业务 Pod；ambient 代理下沉节点级共享，成本显著更低，命名空间打标签即接入。ztunnel（每节点一个的 Rust 隧道）管 L4 mTLS 与 TCP 路由；waypoint 按需部署，只服务需要 L7 策略（HTTP 路由/鉴权）的命名空间。
+3. VirtualService 管「怎么路由」（匹配规则、权重分流），DestinationRule 管「目标长什么样」（子集、负载均衡、熔断）。金丝雀的 weight 90/10 写在 VirtualService 的 route 里；v1/v2 subset 定义在 DestinationRule 里（对应 Pod 标签）。
+4. 明文流量被直接拒绝。身份绑定到服务账号（SPIFFE 身份，如 cluster.local/ns/default/sa/web）而非 IP——证书签发与轮换全自动，这是零信任的落地形态。
+5. 重试会放大流量（3 次重试最坏 4 倍请求）：perTryTimeout 控制单次尝试上限，整体 timeout 是预算上限，防止重试把延迟雪球滚大。不幂等的接口重试会产生重复写入（重复扣款）——先幂等化再开重试。
+6. 验证上游的超时与降级是否真的生效（混沌工程）。上游会观测到 10% 的请求多耗 500ms——如果没配超时/降级，这些请求会拖慢整条调用链。
+7. 服务数少于约 10 个或单体为主；只想要 mTLS 或只想要金丝雀（分别可用 Cilium/Ingress 权重 + Argo Rollouts 更轻地解决）；团队没有专职平台人员（真需要网格先看 Linkerd）。等「统一 mTLS、精细灰度、全链路策略」需求真实出现再接入。
+
+</details>
 
 ## 小结
 
