@@ -105,7 +105,7 @@ SLOWLOG RESET
 
 1. **KEYS ***：代码检索 + 审计日志双管齐下；修复后用 `rename-command KEYS ""` 从协议层废掉（见 redis/315-SecurityAclAndTls 的最小权限清单）。
 2. **大 Key**：先跑 `redis-cli --bigkeys` 摸底（见 4.1）；DEL 一个百万元素的 Hash 会同步释放内存阻塞主线程，用 `UNLINK`（异步删除）替代。
-3. **复杂聚合**：SORT 的 BY/GET 组合在百万级上是 O(N log N)+O(M)；集合聚合改用 `*STORE` 落临时键 + 低峰消费（见 redis/040-ListSetCommands 的同款建议）。
+3. **复杂聚合**：SORT 的 BY/GET 组合在百万级上是 O(N log N)+O(M)；集合聚合改用 `*STORE` 落临时键 + 低峰消费（见 redis/042-SetTypeAndSetOperations 的同款建议）。
 4. **全量获取**：HGETALL/SMEMBERS/LRANGE 0 -1 三个惯犯，一律改 SCAN 类分批。
 5. **短连接**：SLOWLOG 里看不到它本身，但 `INFO stats` 的 `total_connections_received` 每秒数百万就是证据；修法是连接池常驻（见 redis/305-RespProtocolAndClientConnections 的连接池参数一节）。
 6. **AOF fsync**：`appendfsync always` 下每条写命令都等磁盘；改 everysec。注意它还会以另一种面目出现——AOF 重写 fork 时的写时复制放大。

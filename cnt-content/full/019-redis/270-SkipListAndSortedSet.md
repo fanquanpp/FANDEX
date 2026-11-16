@@ -20,7 +20,7 @@ prerequisites:
 - **解决什么问题**：让「按分数排序 + 范围查询 + 排名」三类需求都以 $O(\log n)$ 完成且范围查询退化良好；解释排行榜/延迟队列/时间线这些业务结构为什么在 Redis 上又快又省。
 - **什么时候用到**：排行榜（ZRANK/ZREVRANGE）、延时队列（score 存执行时间）、按分数检索（ZREVRANGEBYSCORE）；排查 ZSet 内存与延迟问题时需要理解编码切换。
 
-前置：了解 List/Set 的基本操作（redis/040-ListSetCommands）；哈希表查找的概念。
+前置：了解 List/Set 的基本操作（redis/040-ListTypeAndCommands）；哈希表查找的概念。
 
 ## 1. 跳表原理
 
@@ -302,8 +302,8 @@ ZMPOP 2 queue:job:high queue:job:low MIN COUNT 3
 ZINTERCARD 2 leaderboard:day1 leaderboard:day2 LIMIT 50
 
 # ZRANGESTORE（6.2+）：把范围查询结果存进新键，查询与落库一条命令
-ZRANGESTORE top:hot leaderboard 0 9 REV          # 按排名取前 10 存入
-ZRANGESTORE near:user1 geo:drivers (1000 1000 BYSCORE   # 按分数范围存入
+ZRANGESTORE top:hot leaderboard 0 9 REV              # 按排名取前 10 存入
+ZRANGESTORE near:user1 geo:drivers (1000 +inf BYSCORE   # 按分数范围存入（score > 1000）
 # 每小时把榜单 ZRANGESTORE 成快照键，前端读快照而不是实时算大榜
 ```
 

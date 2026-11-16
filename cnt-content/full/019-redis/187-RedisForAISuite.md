@@ -43,17 +43,19 @@ flowchart LR
 向量集合（Vector Set）的创建与 KNN 检索命令完整语义、参数与 API 边界统一见《向量集合》（redis/100-VectorSet），此处只给套件语境下的最小骨架：
 
 ```bash
-# 创建向量集合
-VSET products:vec item1 0.1 0.2 ... 0.768
-VSET products:vec item2 0.2 0.3 ... 0.768
+# 添加向量（VALUES 后先写维度，再跟维度个数的浮点值，最后是元素名）
+VADD products:vec VALUES 768 0.1 0.2 ... 0.768 item1
+VADD products:vec VALUES 768 0.2 0.3 ... 0.768 item2
 
-# KNN 搜索
-VSEARCH products:vec 0.1 0.15 ... 0.76 COUNT 10
+# KNN 搜索（VSIM：与给定向量的相似检索）
+VSIM products:vec VALUES 768 0.1 0.15 ... 0.768 COUNT 10
 
-# 带元数据过滤
-VSET products:vec item1 0.1 0.2 ... 0.768 META category "electronics" price 299
-VSEARCH products:vec 0.1 0.15 ... 0.76 COUNT 10 FILTER category == "electronics"
+# 带属性过滤：属性以 JSON 挂在元素上（SETATTR），检索用 FILTER 表达式
+VADD products:vec VALUES 768 0.1 0.2 ... 0.768 item1 SETATTR '{"category":"electronics","price":299}'
+VSIM products:vec VALUES 768 0.1 0.15 ... 0.768 COUNT 10 FILTER '.category == "electronics"'
 ```
+
+> 命令名提醒：网上旧教程出现的 `VSET`/`VSEARCH`/`VGET` 都不是真实命令——入库用 VADD、检索用 VSIM、取向量用 VEMB、删除用 VREM，完整命令面见《向量集》（redis/100-VectorSet）。
 
 与独立向量数据库（Milvus、Qdrant）相比，Redis 向量能力的取舍：优势是与业务数据同库同事务、延迟更低、运维面收敛；劣势是数据规模与索引类型的灵活性弱于专业产品。百万级向量以内、且向量与业务键强关联的场景（商品推荐、知识库 chunk 检索）值得首选 Redis。
 
@@ -78,9 +80,9 @@ SET llm:cache:sha256:abc123 "response text here" EX 3600
 
 ```bash
 # 1. 将 prompt 转为向量
-# 2. 在 Vector Set 中搜索相似 prompt
+# 2. 在 Vector Set 中搜索相似 prompt（VSIM 取最近邻）
 # 3. 相似度超过阈值则返回缓存结果
-VSEARCH prompts:vec <prompt_vector> COUNT 1
+VSIM prompts:vec VALUES 768 <prompt_vector...> COUNT 1
 
 # 命中缓存则直接返回，否则调用 LLM 并缓存结果
 ```
@@ -141,23 +143,25 @@ import hashlib
 def ask_llm_with_cache(prompt):
     prompt_vec = embed(prompt)               # 调 embedding 模型
     hits = r.execute_command(
-        "VSEARCH", "prompts:vec", *prompt_vec, "COUNT", "1")
-    if hits and cosine_sim(prompt_vec, hits[0].vec) >= 0.95:
+        "VSIM", "prompts:vec", "VALUES", str(len(prompt_vec)),
+        *[str(v) for v in prompt_vec], "COUNT", "1", "WITHSCORES")
+    if hits and float(hits[1]) >= 0.95:
         # 语义命中：直接返回缓存回答，token 成本为零
-        return r.get(f"llm:cache:sha256:{hits[0].hash}")
+        return r.get(f"llm:cache:sha256:{hits[0]}")
 
     # 未命中：调用大模型并写两级缓存
     answer = call_llm(prompt)
     h = hashlib.sha256(prompt.encode()).hexdigest()
     r.set(f"llm:cache:sha256:{h}", answer, ex=86400)
-    r.execute_command("VSET", "prompts:vec", h, *prompt_vec)
+    r.execute_command("VADD", "prompts:vec", "VALUES", str(len(prompt_vec)),
+                      *[str(v) for v in prompt_vec], h)
     return answer
 ```
 
 逐段讲为什么这样写：
 
 - **相似度阈值 0.95** 是「宁可少命中不可答非所问」的保守起点，上线后按人工抽检的错答率调低阈值换命中率——阈值是运营参数不是技术常量，它该由错答率的容忍度反推；
-- **缓存键用 prompt 的哈希而非自增 ID**，让「精确推理缓存」与「语义索引」共享同一套键：`VSET` 的成员名就是 `llm:cache:sha256:*` 的键名，回滚清理都简单。换成自增 ID 会多出一张「ID 到 prompt」的映射表，两个命名空间要同步清理；
+- **缓存键用 prompt 的哈希而非自增 ID**，让「精确推理缓存」与「语义索引」共享同一套键：`VADD` 写入的元素名就是 `llm:cache:sha256:*` 的键名，回滚清理都简单。换成自增 ID 会多出一张「ID 到 prompt」的映射表，两个命名空间要同步清理；
 - **`EX 86400` 一天过期**：商品政策类答案有保鲜期，过期后重新生成——AI 缓存的 TTL 要跟「答案的有效期」走，不是跟访问频率走。政策类一天、闲聊类可以更短，按答案类别分 TTL 是进阶做法。
 
 收益估算方法：上线一周统计 `llm:cache:sha256:*` 的命中次数 × 单次回答的平均 token 费用，即节省额；再与 embedding 调用成本相减。客服类场景实测命中率 30%~60%，是这类套件最直接回本的应用。
@@ -192,7 +196,7 @@ RAG 应用每次提问都要对知识库 chunk 做 KNN 检索，知识库 200 �
 
 ## 7. 下一步与延伸阅读
 
-- 《向量集合》（redis/100-VectorSet）：本篇指向的完整命令手册（VSET/VSEARCH 全参数）；
+- 《向量集合》（redis/100-VectorSet）：本篇指向的完整命令手册（VADD/VSIM 全参数）；
 - 《发布订阅与客户端缓存》（redis/115-PubSubAndClientCaching）：语义缓存主动失效广播的机制基础；
 - 《缓存穿透击穿雪崩》（redis/120-CachePenetrationBreakdownAvalanche）：语义缓存误答风险的防护框架；
 - 《Redis Flex 分层存储》（redis/186-RedisFlexTieredStorage）：向量集超内存预算时的平台层方案。

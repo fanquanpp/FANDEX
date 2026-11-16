@@ -183,6 +183,7 @@ cmsgpack.unpack()         -- MessagePack 解码
 ```redis
 -- Lua 脚本最大执行时间（毫秒），0=无限制
 lua-time-limit 5000
+-- 该配置的新名字是 busy-reply-threshold（7.0+），旧名仍是别名、两者等价
 
 -- 超时后:
 -- 1. 其他客户端收到 BUSY 错误
@@ -190,19 +191,26 @@ lua-time-limit 5000
 -- 3. 如果脚本正在写入，只能 shutdown nosave
 ```
 
-### 4.3 确定性限制（Redis 7.0+）
+### 4.3 复制模式：效果复制（5.0 默认，7.0 起唯一模式）
 
-Redis 7.0 引入**效果复制**（effect replication），脚本默认必须确定性：
+脚本在主库执行后怎么同步到从库/AOF？两种历史模式：
+
+- **逐字复制**（verbatim，老模式）：把整个脚本原文发过去，从库再执行一遍——要求脚本本身确定性，非确定命令会让主从结果不一致；
+- **效果复制**（effect replication）：只把脚本**实际产生的写命令**复制过去——`TIME`、`SRANDMEMBER`、`math.random()` 这类非确定命令的返回值在主库落定后，变成一条条确定的写命令同步出去。
+
+变迁时间线：3.2 引入效果复制（需显式调 `redis.replicate_commands()`）→ 5.0 起默认开启 → 7.0 移除逐字复制，效果复制成为**唯一模式**。所以「脚本里不能调 TIME/random」是逐字复制时代的老约束，7.0+ 已不存在：
 
 ```lua
--- 非确定性脚本（每次执行结果不同）
-math.random()              -- 禁止
-redis.call('TIME')         -- 禁止
-redis.call('SRANDMEMBER')  -- 禁止
+-- 7.0+ 这些都是合法的（老教程标「禁止」的写法已过时）
+redis.call('TIME')
+redis.call('SRANDMEMBER', 'myset')
+math.random()
 
--- 如果需要非确定性，使用 redis.set_repl()
-redis.set_repl(redis.REPL_ALL)  -- 默认，复制所有写命令
-redis.set_repl(redis.REPL_NONE) -- 不复制
+-- 剩下可控的是「效果要不要复制」：
+redis.set_repl(redis.REPL_ALL)   -- 默认：复制给从库并写 AOF
+redis.set_repl(redis.REPL_REPLICA) -- 只复制给从库、不写 AOF
+redis.set_repl(redis.REPL_AOF)   -- 只写 AOF、不复制给从库
+redis.set_repl(redis.REPL_NONE)  -- 不复制任何效果
 ```
 
 ## 5. 实战模式
@@ -259,6 +267,31 @@ redis.call('DECRBY', stock_key, quantity)
 redis.call('SADD', user_key, user_id)
 return 1  -- 成功
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：Lua 脚本的原子性从哪来？它与「执行很快」是不是一回事？
+
+参考答案（先自己答，再对照）：原子性来自 Redis 单线程命令执行——脚本作为一条命令排队，执行期间不会插入其他客户端的命令，脚本内的多次读写对外是「一步」。它与「快」无关：脚本里跑 10 秒的循环，这 10 秒所有其他请求都在等（超过 busy-reply-threshold 后其他客户端收到 BUSY）——原子但不快，是脚本最常见的滥用。
+
+2. 动手自问：EVAL 与 EVALSHA 的分工是什么？客户端的「NOSCRIPT 回落」具体在回落什么？
+
+参考答案（先自己答，再对照）：EVAL 每次传脚本全文（首次执行顺便缓存，返回 SHA1）；EVALSHA 只传 SHA1，省传输——前提是脚本已在服务端缓存。脚本缓存是纯内存的，主库重启或 SCRIPT FLUSH 后全部失效：客户端调 EVALSHA 收到 NOSCRIPT 错误，就回落用 EVAL 重发全文（顺便重新缓存）。redis-py 的 register_script 把这套降级封装好了。
+
+3. 判断题：Redis 7+ 的脚本里不能调用 TIME 和 math.random。
+
+参考答案（先自己答，再对照）：错，这是逐字复制时代的老约束。5.0 起默认效果复制、7.0 起逐字复制被移除——脚本复制的是「实际产生的写命令」，非确定命令的结果在主库落定后原样同步，所以 TIME/SRANDMEMBER/math.random 都合法。剩下可控的是 redis.set_repl() 决定效果复制给谁（从库/AOF/都不）。
+
+4. 概念自问：redis.call 与 redis.pcall 的选择标准是什么？错误处理分别长什么样？
+
+参考答案（先自己答，再对照）：redis.call 遇到命令错误直接终止脚本并把错误返回给调用方——用于「错就是错」的路径；redis.pcall 返回错误表（{err=...}）让脚本继续执行——用于「想兜住某些预期内的失败」（比如探测键类型再分支）。标准：错误是否是业务逻辑的一部分，是则 pcall 接住处理，否则让它终止。
+
+5. 动手自问：写出「检查库存并扣减、扣完返回 0、重复购买返回 -1」的原子脚本骨架，并说出它在集群模式下对 KEYS 的约束。
+
+参考答案（先自己答，再对照）：`local stock = tonumber(redis.call('GET', KEYS[1]))` 判断，不足返回 0；`redis.call('SISMEMBER', KEYS[2], ARGV[1])` 为 1 返回 -1；否则 DECRBY + SADD 返回 1。集群约束：脚本涉及的所有键必须落在同一槽——KEYS[1]/KEYS[2] 要用同一个哈希标签（如 `stock:{item1}` 与 `users:{item1}`），否则报 CROSSSLOT；键一律从 KEYS[] 取、参数从 ARGV[] 取，不要把键名硬编码进脚本正文（这会让集群与 ACL 分析失效）。
+
 ## EVAL 命令
 
 **基本写法：执行 Lua 脚本**

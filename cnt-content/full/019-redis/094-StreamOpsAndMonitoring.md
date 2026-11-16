@@ -1129,9 +1129,9 @@ appendfsync everysec
 auto-aof-rewrite-percentage 100
 auto-aof-rewrite-min-size 64mb
 
-# 同时保留 RDB 作为备份
-save 900 1
-save 300 10
+# 同时保留 RDB 作为备份（7.0+ 官方默认三档；6.x 及更早为 900 1 / 300 10 / 60 10000）
+save 3600 1
+save 300 100
 save 60 10000
 
 # 如果可靠性要求极高，考虑 appendfsync always
@@ -1481,3 +1481,27 @@ XINFO CONSUMERS mystream mygroup
 本篇覆盖 Stream 的运维闭环：修剪策略控制内存（第 1 章）、XINFO 观测（第 2 章）、内存与阻塞诊断（第 3 章）、集群与安全（第 4、6 章）、性能基准与容量规划（第 5 章）、持久化配置（第 7 章）、故障排查清单（第 8 章）。与另外两篇的分工：数据模型与基础命令见[核心篇](/redis/090-Stream)，消费者组机制见[消费者组篇](/redis/092-StreamConsumerGroups)。
 
 建议把第 8 章的清单落成 runbook：每次线上 Stream 告警，按"XLEN → XINFO GROUPS（看 lag）→ XPENDING（看 PEL）→ XINFO CONSUMERS（看 idle）→ SLOWLOG / MEMORY USAGE"的顺序走一遍，绝大多数问题能在五分钟内定位。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：XINFO GROUPS 输出里的 lag 字段是什么？7.0 之前版本看它会怎样，监控脚本要怎么兼容？
+
+参考答案（先自己答，再对照）：lag 是「消费滞后多少条」——组的 last-delivered-id 落后于流 last-entry-id 的条目数，7.0 起现成给出（顺带 entries-read）。7.0 之前输出里没有这两个字段，老版本会报错或缺字段；监控脚本要做存在性判断（解析不到 lag 就回退用 XLEN 与 last-delivered-id 差值估算），不能假设字段永远在。
+
+2. 动手自问：「消息队列场景」的持久化配置怎么定？appendfsync 三个值的取舍依据是什么？
+
+参考答案（先自己答，再对照）：消息队列场景开 AOF（`appendonly yes`）+ `appendfsync everysec`：最多丢 1 秒已 ACK/未 ACK 的消息，写性能可接受；要求「消息零丢失」就上 always（代价是吞吐降一个量级），纯日志流可用 no。配合 XTRIM 控制流长度，避免「持久化救了数据、内存救不回来」。
+
+3. 判断题：Stream 的大 key 排查可以直接用 DEL 清理。
+
+参考答案（先自己答，再对照）：错。Stream 是大键高危户，DEL 百万条目的流会同步释放内存、独占单线程秒级不可用；用 UNLINK（异步释放）或 XTRIM 分批剪。排查工具按顺序走：`MEMORY USAGE <key>` 看单键占用，`XLEN` + `XINFO GROUPS` 看条目与组积压，再决定修剪策略（MAXLEN 按条数 / MINID 按时间）。
+
+4. 概念自问：6.2 与 7.0 两次版本升级分别给 Stream 运维加了什么？各自解决了什么老痛点？
+
+参考答案（先自己答，再对照）：6.2 加 XAUTOCLAIM（自动认领空闲消息）、XADD NOMKSTREAM（流不存在时不建）、XPENDING 的 IDLE 过滤——把「宕机恢复认领」从脚本轮询变成一条命令；7.0 加 XINFO 的 lag/entries-read 字段、XINFO CONSUMERS 的 inactive 字段（区分「有连接但没读」与「彻底失联」）、XGROUP CREATECONSUMER、XAUTOCLAIM 返回值第三段（被 XDEL 的墓碑 ID 列表）——把「滞后多少、消费者健康、PEL 墓碑清理」三个运维盲区变成可观测输出。
+
+5. 动手自问：8.6 的 Stream 幂等写入解决什么问题？写出基本用法，并说出它的一个已知限制。
+
+参考答案（先自己答，再对照）：解决「生产者重试导致同一条业务消息写两次」——重试方不必自己维护「已写过」的标记。用法：`XADD mystream IDMP <幂等键> * field value`（自定键）或 `IDMPAUTO`（服务端自动生成），相同幂等键的重试不会产生重复条目。已知限制：官方文档标注在 `appendonly yes` 且 `aof-use-rdb-preamble no`（非默认 AOF 配置）下不要使用 IDMP/IDMPAUTO——混合持久化默认配置下无此问题。
