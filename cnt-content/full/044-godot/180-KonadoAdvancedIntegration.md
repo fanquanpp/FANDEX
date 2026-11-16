@@ -221,6 +221,14 @@ Konado 的错误码是稳定编号，按模块前缀划分：AC（表演与舞�
 - 本地化按 chapter.ks 加语言后缀命名文件，指令类型、控制流与稳定指令 ID 必须与基础一致；设置、成就各有 Autoload 单例与信号；C# 走 Konado.NET，Web 导出配 WebTool；
 - 出问题先看 user://konado_log.log 与错误码模块前缀，发布版可用 enable_overlay_log 关闭覆盖层日志。
 
+## 自检
+
+- 遮住"六个主要信号"一节，凭记忆说出剧本侧向游戏通知事件、游戏侧向剧本回传数据各走哪条通道，再对照（答案：custom_signal 一去，waitsignal/emit_wait_signal 一回）。
+- 口头推演：save_game 返回 false 时该按什么顺序排查？（提示：槽位是否占用、存档校验——格式、编译器 ABI、剧本指纹与指令标识。）
+- 不翻正文回答：存档文件放在哪个目录、扩展名是什么？为什么说它防损坏而不防解密？（答案：user://konado_saves/ 下的 .kns；有 SHA-256 校验但未加密。）
+- 本地化硬约束是哪句话？为什么违反它会破坏存档与回退？（答案：指令类型、控制流与稳定指令 ID 必须与基础剧本一致，否则按行号回退会错位。）
+- 看到一个 CP 开头的错误码，第一步先做什么？（答案：看模块前缀判断问题层级——CP 是编译与链接。）
+
 ## 参考链接
 
 - [Konado 官方文档（中文主页，核心概念与错误码详见 tutorial/core 章节）](https://godothub.com/oss/konado/zh/latest/)

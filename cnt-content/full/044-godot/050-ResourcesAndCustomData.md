@@ -189,6 +189,13 @@ func _ready():
 
 资源是纯数据容器，节点消费数据做事；.tscn 场景本身也是资源（PackedScene）。资源默认全局共享一份，改一处会影响所有引用者，需要独立时用 duplicate() 或 Make Unique。preload 在编译期加载且仅限常量路径，load 在运行期加载。自定义资源用 class_name + extends Resource + @export，保存为利于版本控制的 .tres——真实项目里它就是"数据与代码分离"的配置表方案。跨场景存活的运行时状态不属于资源，答案在 [Autoload 单例与场景切换管理](/godot/055-AutoloadAndSceneManagement)。
 
+## 自检
+
+- 遮住第 1、3 节的结论自己复述：资源与节点分别负责什么？为什么"两个 Bot 共用一份 BotStats 时改 A 动 B"？想让某个实例独享数据用哪两个手段？（答案：duplicate() 或 Make Unique。）
+- 遮住第 4 节默写：preload 与 load 的差别是什么？哪条纪律说明"运行时才知道的武器路径"必须用 load？
+- 口头拼出自定义资源的最小骨架：class_name、extends、@export 三件套缺一不可——缺了 @export 会怎样？（提示：字段不会出现在 Inspector 里。）
+- 想一想：跨场景存活的运行时状态该用资源吗？为什么？（答案：不该，资源是纯数据容器且默认共享，运行时状态归 Autoload。）
+
 ## 参考链接
 
 - 资源（Resources）官方教程：https://docs.godotengine.org/en/stable/getting_started/step_by_step/resources.html

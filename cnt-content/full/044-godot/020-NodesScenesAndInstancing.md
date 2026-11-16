@@ -184,6 +184,13 @@ await 的完整语法在 gdscript 模块展开，这里只需理解：这一行�
 
 节点是游戏的积木：有名称、有属性、每帧有回调、可扩展、可嵌套成树。场景是带根节点的节点组合，保存为 `.tscn`，可以被任意多次实例化，并在编辑器中表现为一种新节点类型。划分场景遵循官方建议：以玩家可见元素为单位，房间组成房屋、房屋组成城堡、城堡组成世界。实例化有编辑器（拖拽、链接图标、Ctrl+D）与代码（load/preload 加 instantiate() 加 add_child()）两条路；引用节点用 get_node、$、% 与 @onready；释放节点优先 queue_free()。SceneTree 是这一切的运行时骨架：root 是不可触碰的树根，current_scene 要用 change_scene_to_file() 这类方法来切换，create_timer 提供延时，paused 与 process_mode 支撑暂停系统，node_added、scene_changed 等信号让你观察树的变迁。掌握这些，你就掌握了 Godot 项目组织的基本语法。
 
+## 自检
+
+- 遮住"在代码中实例化场景"一节的示例，自己写一遍"把 res://enemy.tscn 生成进场景"的最小代码，再对照——写出来了才算掌握 preload、instantiate()、add_child() 三步各做了什么。
+- 口头推演：在成员变量定义处直接写 `var sprite = get_node("Sprite2D")` 会发生什么？为什么 `@onready` 能解决？（提示：初始化链中成员初始化器执行得太早。）
+- 不翻正文回答：queue_free() 与 free() 的差别是什么？为什么官方推荐前者？释放父节点时子节点会怎样？（答案：队列延迟到帧末安全释放 vs 立即销毁使引用失效；子节点被连带释放。）
+- 有人对 `current_scene` 直接赋值想"切换场景"，错在哪？正确做法用哪个方法？
+
 ## 参考链接
 
 - [节点与场景（官方入门教程）](https://docs.godotengine.org/en/stable/getting_started/step_by_step/nodes_and_scenes.html)

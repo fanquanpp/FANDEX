@@ -211,6 +211,13 @@ dialogue.start_dialogue()
 - 剧本不是运行时解释，而是导入/保存时编译为 KonadoProgram，由 Shot 装载、虚拟机执行；
 - CanvasLayer 图层约定：1 舞台、10 对话框、50 存档、100 模态面板、110 通知、120 错误提示，自定义界面不要占用 120 及以上。
 
+## 自检
+
+- 遮住"版本线"一节回答：新项目该认准哪条版本线？2.4 时代的 KND_DialogueManager 在 2.8 里叫什么？为什么旧项目不能直接装新插件就跑？（答案：2.8.x 正式版；KonadoDialogueManager；KND_ 前缀类名全部更名，API 不兼容。）
+- 遮住"安装四步"，自己默写四步，再对照——重点核对第三步解压后应得到的目录形态（addons/konado/）与第四步之后的动作（重载项目）。
+- 口头回答：接入对话模板的最小三件事是什么？为什么 `if dialogue_manager:` 判空值得保留？（答案：实例化 dialogue_runtime.tscn、导出变量绑定管理器、装载起始镜头；忘了绑定时不崩溃、可排查。）
+- 不翻正文复述 CanvasLayer 图层约定：自定义界面能占用哪一档层级？为什么？（答案：120 以上留给运行时错误提示，不能占用。）
+
 ## 参考链接
 
 - [Konado 官方文档（中文主页）](https://godothub.com/oss/konado/zh/latest/)

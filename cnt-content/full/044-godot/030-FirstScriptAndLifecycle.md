@@ -147,6 +147,13 @@ func _ready():
 
 本篇完成了从"场景骨架"到"活的游戏对象"的跨越：脚本通过 extends 扩展节点类型，保存在 res:// 之下；引擎在明确时机调用明确回调——对象创建时 _init()，节点及子节点就绪时 _ready()（每节点一次、子先于父、重挂不再触发），每帧 _process(delta)，每个物理步之前 _physics_process(delta)。delta 是距上一帧的秒数，一切运动代码都应写成"每秒变化量乘以 delta"，不假设帧率、不忽略 delta、不用它精确计时。set_process 与 set_physics_process 提供运行时开关，is_processing() 负责查询。成员初始化遵循"默认值 -> 按脚本顺序赋值 -> _init -> 导出值 -> @onready -> _ready"的固定链条。命名上记住三件事：检查器 Title Case 对应代码 snake_case，引擎虚方法以 _ 开头，缩进即语法。语言层面的更多细节——类型系统、函数、match、协程——将在 gdscript 模块展开；下一篇我们学习让节点之间说话的机制：信号。
 
+## 自检
+
+- 遮住官方第一个脚本，自己写出"精灵每秒自转半圈、沿自身朝向每秒前进 300 像素"的完整 `_process`，再对照——重点核对每处 `* delta` 是否都写了。
+- 口头复述四个回调的时机：_init、_ready、_process、_physics_process 各在什么时候被调用？与物理相关的移动代码必须放哪个？
+- 不看链条默写成员初始化顺序，并解释：为什么检查器里改的 @export 值总能覆盖代码里的默认值？（答案：导出值在成员初始化器与 _init 之后才从场景数据写入。）
+- 为什么"在别人的电脑上游戏变快或变慢"多半是忘了乘 delta？哪条纪律要求计时不要用 delta 精确测量？
+
 ## 参考链接
 
 - [编写第一个脚本（官方入门教程）](https://docs.godotengine.org/en/stable/getting_started/step_by_step/scripting_first_script.html)
