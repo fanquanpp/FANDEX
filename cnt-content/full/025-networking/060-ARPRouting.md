@@ -14,6 +14,18 @@ related:
 prerequisites: []
 ---
 
+## 为什么要同时认识两套命令
+
+本篇出现 arp/route（net-tools 家族）与 ip neigh/ip route（iproute2）两套语法，原因是真实
+世界两套并存：网络设备厂商文档、老教材、嵌入式系统用前者，所有现代 Linux 与容器环境用
+后者。net-tools 已长期无维护，ARP 表和路由表在 iproute2 下统一叫「邻居表」和「路由」，内核
+状态是同一份——所以两套命令看到的数据一致，只是视图不同。新学习投入放在 ip 语法上，
+arp/route 用于读懂旧系统（对照关系：`arp -a` ≈ `ip neigh`，`route -n` ≈ `ip route`）。
+
+排障心法（本篇最高频的使用场景）：二层通不通看 ARP（`ip neigh` 里有 REACHABLE 才有二层），
+三层通不通看路由（`ip route get` 直接回答「这个包会怎么走」）。ping 不通时先分清是哪一层
+的问题，再决定看邻居表还是路由表。
+
 ## arp 命令
 
 **基本写法：查看 ARP 缓存**
@@ -396,3 +408,16 @@ tcpdump -i eth0 arp
 # 统计 ARP 表条目数
 ip neigh | wc -l
 ```
+
+## 教学自检
+
+按遮码自检法：遮住上文代码块，先自己写命令或推演答案，再对照。
+
+- ping 一个同网段 IP 收到 Destination Host Unreachable，`ip neigh` 里它显示 FAILED——
+  问题在二层还是三层？下一步查什么？（提示：ARP 学不到 MAC，查链路与对端）
+- 静态 ARP 绑定防的是哪类攻击？为什么全网段都做绑定不现实？
+- `ip route add ... via` 与 `... dev` 两种写法有什么区别？什么场景只能用 dev 写法？
+  （提示：直连网段没有网关概念）
+- 策略路由三步缺一不可：rule、表内路由、（可选）持久化。只加 rule 不加表路由会发生什么？
+- `ip route change` 与 `ip route replace` 的语义差别是什么？写脚本该用哪个？
+- `ip route get 8.8.8.8 from 192.168.1.100` 回答的是哪类问题？为什么排多网卡主机必用？

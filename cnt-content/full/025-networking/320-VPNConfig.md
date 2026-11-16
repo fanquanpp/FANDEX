@@ -15,6 +15,24 @@ prerequisites:
   - 'networking/310-Tunneling'
 ---
 
+## 三种 VPN 怎么选
+
+本篇命令覆盖三条技术路线，先建立选型的心智模型再抄命令：
+
+- **WireGuard**：内核 5.6 起主线内置，代码量小、无协商开销、握手快，配置就是一对密钥加
+  `AllowedIPs`——新部署的点对点与远程接入首选；
+- **OpenVPN**：用户态守护进程，TLS 生态兼容性最好（穿透各种代理与防火墙），性能低于
+  WireGuard，2026 年的主线版本是 2.7.x（支持内核 ovpn 加速驱动；配合 OpenSSL 3.5+ 构建
+  时默认走抗量子混合密钥交换）；
+- **IPsec/strongSwan**：站点到站点互联的传统标准，企业防火墙/路由器设备互通必选。
+  strongSwan 6.x（6.0.0 于 2024 年底发布起）已把 `ipsec` 命令与 `ipsec.conf` 官方标记为
+  废弃，新部署推荐 `swanctl`/`swanctl.conf`；本篇保留 `ipsec` 写法是因为存量设备与教程
+  仍是这套语法，但要清楚它是过渡态。
+
+一个所有路线通用的排错概念：VPN 配置失败绝大多数不是 VPN 本身的问题，而是转发（ip_forward）、
+NAT、防火墙三者没有配合好，排查方法见本篇最后与
+[防火墙](networking/230-IptablesFirewall)。
+
 ## OpenVPN 服务端配置
 
 **基本写法:初始化 PKI 证书目录**
@@ -59,6 +77,8 @@ cd /etc/openvpn/easy-rsa
 # 生成 tls-auth 共享密钥增强安全性
 openvpn --genkey --secret /etc/openvpn/ta.key
 ```
+演进提示：`tls-auth` 只做 HMAC 认证，2.4+ 的 `tls-crypt` 在同一密钥上额外加密 TLS 控制信道，
+能隐藏握手元数据并抵御 DoS 探测，新部署优先用它；生成命令同一条。
 
 ---
 
@@ -103,6 +123,12 @@ openvpn --config /etc/openvpn/server.conf
 systemctl start openvpn@server
 systemctl enable openvpn@server
 ```
+版本注意：OpenVPN 2.5+（Debian 11+/RHEL 9+）服务端配置统一放在 `/etc/openvpn/server/*.conf`，
+对应的服务单元是 **`openvpn-server@server.service`**；`openvpn@` 单元只对应 `/etc/openvpn/client/`
+下的客户端配置。老教程里 `systemctl start openvpn@server` 跑服务端是旧布局，在新发行版上
+要么不生效要么行为不同。另外，OpenVPN 2.5+ 用 `data-ciphers` 协商数据加密算法，上面配置里的
+`cipher` 行只用于兼容 2.3 时代的老客户端；`dh dh.pem` 在走 ECDH 的现代客户端连接下也不再是
+必需品。
 
 **基本写法:启用 IP 转发**
 `sysctl -w net.ipv4.ip_forward=1`
@@ -403,6 +429,13 @@ wg-quick save wg0
 
 ## IPsec strongSwan 配置
 
+接口演进：`ipsec` 命令与 `ipsec.conf` 在 strongSwan 6.x 中已官方废弃，新部署推荐
+`swanctl`（配置写 `/etc/swanctl/conf/swanctl.conf`，用 `swanctl --load-conns` 加载，
+`swanctl --list-sas` 查状态）。下面的 stroke 写法仍在所有发行版可用、存量资料也用它，
+迁移时逐条映射即可。
+
+
+
 **基本写法:安装 strongSwan**
 `apt install strongswan`
 ```bash
@@ -598,3 +631,18 @@ nslookup example.com 8.8.8.8
 tcpdump -i tun0 -n
 tcpdump -i wg0 -n udp port 51820
 ```
+
+## 教学自检
+
+按遮码自检法：遮住上文代码块，先自己写配置或推演，再对照。
+
+- WireGuard 的 `AllowedIPs` 在服务端和客户端两侧各起什么作用？（提示：一边是路由表，一边
+  是路由表加数据面过滤器——所以它同时决定「往哪发」和「收什么」，改错一侧症状不同）
+- 为什么客户端 `AllowedIPs = 0.0.0.0/0` 时要配 `PersistentKeepalive`？不配的话什么场景会
+  断流？
+- 客户端能 ping 通 VPN 网关但上不了外网，按「转发-防火墙-NAT」三步各查什么？
+  （sysctl 的 ip_forward、iptables 的 FORWARD 链、nat 表 MASQUERADE）
+- OpenVPN 服务端在 Debian 12 上应该用哪个 systemd 单元名？配置文件放哪个目录？
+- `tls-auth` 与 `tls-crypt` 的区别是什么？后者多提供了哪一层保护？
+- IPsec 建立隧道失败，先查哪个端口是否可达？NAT 环境下为什么必须能通 UDP 4500？
+- strongSwan 6.x 中 `ipsec.conf` 处于什么状态？对应的现代替代接口叫什么？

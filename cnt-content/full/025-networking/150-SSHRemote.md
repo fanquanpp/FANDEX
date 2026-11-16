@@ -14,6 +14,28 @@ related:
 prerequisites: []
 ---
 
+## SSH 为什么是远程管理的基石
+
+SSH 解决的是「在不安全网络上安全地操作远程主机」这一件事，并把认证（谁有资格连）、加密
+（内容不泄露）、完整性（不被篡改）、通道复用（端口转发/SFTP/SCP 全走同一连接）做在一起。
+理解它的主线是**密钥认证替代密码认证**：生成一对 Ed25519 密钥，公钥放服务端
+（`~/.ssh/authorized_keys`），私钥留在本地——服务器永远不保存能冒充你的材料，暴力破解
+也无从下手，所以加固的第一步永远是把 `PasswordAuthentication no` 与密钥登录组合起来。
+
+版本与算法现状（截至 2026）：OpenSSH 10.x 是当前主线；Ed25519 是默认推荐的密钥类型
+（RSA 的 SHA-1 签名 `ssh-rsa` 自 8.8 起默认禁用，老对端要用 rsa-sha2 系列签名）；抗量子
+混合密钥交换的默认化分两步：9.0（2022）起默认 `sntrup761x25519`，9.9（2024-09）加入
+`mlkem768x25519-sha256` 支持，10.0（2025-04）起后者成为默认 KEX。新密钥直接生成
+Ed25519，无需再选 RSA 位数。
+
+主机密钥确认（TOFU）是新手最容易跳过的安全机制：首次连接记录服务端指纹，之后指纹变化
+意味着中间人或服务器重装。跳过检查的正确姿势是 `-o StrictHostKeyChecking=accept-new`
+（接受新指纹、拒绝变更），而不是 `-o StrictHostKeyChecking=no`（对变更也无提示，生产环境
+禁用）。
+
+服务单元名注意：RHEL/Fedora 叫 `sshd`，Debian/Ubuntu 叫 `ssh`，脚本里用
+`systemctl is-active sshd 2>/dev/null || systemctl is-active ssh` 兼容两者。
+
 ## ssh 基本连接
 
 **基本写法：连接远程主机**
@@ -56,13 +78,7 @@ ssh -t root@192.168.1.1 "top"
 ## ssh 配置文件
 
 **基本写法：配置主机别名**
-```sshconfig
-`Host <别名>
-    HostName <主机>
-    User <用户>
-    Port <端口>
-    IdentityFile <私钥>`
-```
+`~/.ssh/config 中写 Host 块`
 ```sshconfig
 # 配置 SSH 主机别名
 Host prod
@@ -80,11 +96,13 @@ ssh prod
 ```
 
 **基本写法：禁用严格主机密钥检查**
-`ssh -o StrictHostKeyChecking=no <用户>@<主机>`
+`ssh -o StrictHostKeyChecking=<模式> <用户>@<主机>`
 ```bash
 # 跳过主机密钥确认
 ssh -o StrictHostKeyChecking=no root@192.168.1.1
 ```
+安全提示：`no` 对「指纹变更」也不加提示，生产环境禁用；自动化场景用
+`accept-new`（接受首次指纹、拒绝变更）代替。
 
 **基本写法：保持连接活跃**
 `ssh -o ServerAliveInterval=<秒数> <用户>@<主机>`
@@ -374,3 +392,18 @@ systemctl restart sshd
 sed -i 's/#PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
 systemctl restart sshd
 ```
+
+## 教学自检
+
+按遮码自检法：遮住上文代码块，先自己写命令或推演答案，再对照。
+
+- 密钥登录的信任链条是什么？为什么服务端不需要保存私钥？authorized_keys 里一行对应什么？
+- 改完 sshd_config 直接 restart，如果配置错了会发生什么？为什么改 SSH 配置要「保持已有
+  会话不断开、另开窗口验证」？（提示：sshd -t + 双窗口，否则可能把自己锁在外面）
+- `-L`、`-R`、`-D` 三种转发各解决什么问题？-R 把「内网服务暴露给外网」的模型说清楚。
+- `ssh -L 8080:localhost:80 user@host` 中两个 localhost 分别指哪台机器？改成
+  `-L 8080:db.internal:3306` 时，db.internal 由谁的视角解析？
+- scp 与 sftp 的关系？为什么现代工具链推荐 sftp/rsync？
+- scp 与 ssh 的端口参数为什么一个是 `-P` 一个是 `-p`？各自的 `-p`/`-P` 保留给什么语义？
+- Ed25519 相比 RSA 在安全性与密钥长度上好在哪？`ssh-rsa` 被默认禁用是因为什么算法退役？
+- TOFU 的完整含义是什么？指纹变化时正确与错误的处理分别是什么？

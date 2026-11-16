@@ -388,3 +388,21 @@ echo "search example.com" >> /etc/resolv.conf
 echo "DNS=8.8.8.8 8.8.4.4" >> /etc/systemd/resolved.conf
 systemctl restart systemd-resolved
 ```
+现代发行版注意：装了 systemd-resolved（Ubuntu 默认）或 NetworkManager 时，`/etc/resolv.conf`
+常是指向 `run/systemd/resolve/stub-resolv.conf` 的**符号链接**，手改会被覆盖——本地解析进
+`127.0.0.53` 的 stub 监听器。判断方法 `ls -l /etc/resolv.conf`，改配置应走
+`resolved.conf` 或 `nmcli con mod ... ipv4.dns`。
+
+## 教学自检
+
+按遮码自检法：遮住上文命令与表格，先自己推演，再对照。
+
+- 递归查询与迭代查询分别发生在哪两段之间？`dig +trace` 验证的是哪一段？
+- 「13 个根服务器」为什么不是 13 台机器？Anycast 在其中起什么作用？
+- CNAME 为什么不能与 A 记录共存？根域跳转用什么方案替代？MX 为什么不能指向 CNAME？
+- 负缓存是什么？刚注册的域名「配好了却查不到」可能是哪两个原因？
+- DoT、DoH、DoQ 各自的端口与传输层差异？企业封 853 想达到什么管控目的、为什么 DoH 反而绕开了它？
+- DNSSEC 的信任链从哪里出发？DS 与 DNSKEY 的父子关系怎么画？为什么说 DoH 不能替代 DNSSEC？
+- DORA 四步里 Request 为什么用广播？T1/T2 续租时机分别是多少、失败后走哪一步？
+- DHCP Discover 为什么过不了路由器？中继代理靠 giaddr 字段判断什么？
+- IPv6 下 M/O 标志位如何决定终端走 SLAAC 还是 DHCPv6？各自管什么参数？

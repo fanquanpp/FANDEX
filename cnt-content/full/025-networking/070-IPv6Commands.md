@@ -14,6 +14,18 @@ related:
 prerequisites: []
 ---
 
+## 学 IPv6 命令为什么不难
+
+好消息是：IPv6 的操作命令与 IPv4 几乎一一对应，只需记住三点差异。第一，所有 iproute2 命令
+加 `-6`（`ip -6 addr`、`ss -6 -tlnp`），ping/traceroute 既可用独立的 ping6/traceroute6
+（老别名），也可统一用 `ping -6`（现代 iputils 推荐形式）。第二，IPv6 用邻居发现（ND）替代
+ARP，所以 `ip -6 neigh` 替代 `ip neigh`，ICMPv6 承担了 ARP/部分 DHCP/重定向的工作——这就是
+下面防火墙小节强调「必须放行 ICMPv6」的原因：挡掉它 IPv6 直接瘫痪。第三，链路本地地址
+fe80::/10 不跨网段，操作时必须带接口（`ping6 -I eth0` 或 `fe80::1%eth0`）。
+
+选型提示：老教程常拿 6to4 过渡隧道当入门实验，注意 RFC 7526（2015）已把 6to4 移入 Historic
+（公共 6to4 中继不再服务），生产联网要选隧道 broker（如 HE）或直接原生双栈，6to4 只读不学。
+
 ## IPv6 地址配置
 
 **基本写法:查看 IPv6 地址**
@@ -86,10 +98,10 @@ ip -6 route add 2001:db8:1::/64 via 2001:db8::1
 ip -6 route del 2001:db8:1::/64 via 2001:db8::1
 ```
 
-**基本写法:查看路由缓存**
+**基本写法:查询路由决策**
 `ip -6 route get <目标>`
 ```bash
-# 查看到目标的实际路由
+# 查看到目标的实际路由决策（不真的发包）
 ip -6 route get 2001:db8::100
 ```
 
@@ -297,7 +309,8 @@ dig @8.8.8.8 AAAA example.com
 **基本写法:6to4 隧道**
 `ip tunnel add <隧道> mode sit remote <IPv4> local <IPv4>`
 ```bash
-# 创建 6to4 隧道
+# 创建 6to4 隧道（注意：RFC 7526 已将 6to4 移入 Historic，仅作语法参考，
+# 实际联网用下面的 HE tunnel broker 或原生双栈）
 ip tunnel add tun6to4 mode sit remote any local 203.0.113.1
 ip link set tun6to4 up
 ip -6 addr add 2002:cb00:7101::1/16 dev tun6to4
@@ -462,3 +475,16 @@ tcpdump -i eth0 icmp6 -n
 ip -6 route show
 ip -6 rule show
 ```
+
+## 教学自检
+
+按遮码自检法：遮住上文代码块，先自己写命令或推演答案，再对照。
+
+- IPv6 下 ARP 的对应物是什么？用哪条命令看它的表？ICMPv6 被防火墙挡掉会发生哪三类故障？
+- ping 一个 fe80:: 地址为什么要带接口标识？写两种写法。
+- 双栈主机上 `curl example.com` 走了 IPv4 还是 IPv6，由什么机制决定？（提示：AAAA 优先与
+  Happy Eyeballs 回退；用 curl -v 的连接行验证）
+- `ip -6 addr` 看到三种地址：全局 2001:db8::/64、链路本地 fe80::、临时地址（temporary）——
+  各自的用途是什么？哪一种有隐私语义？
+- 验证服务是否监听了 IPv6，用哪条命令？只监听 `::` 与同时监听 `::` 和 `0.0.0.0` 的差别？
+- SLAAC 拿到的前缀来自路由器的哪种报文？DHCPv6 与它的分工怎么分？

@@ -14,6 +14,19 @@ related:
 prerequisites: []
 ---
 
+## ss 与 netstat：谁取代了谁
+
+netstat 在 Linux 上已进入维护退役状态（net-tools 包停更多年，部分发行版不再预装），ss
+是官方替代：ss 通过 netlink 直接从内核取 socket 状态，速度快、信息全（TCP 内部计时器、
+拥塞窗口、内存占用都是 netstat 没有的），socket 数量大时差距尤其明显。本篇顺序是「先学
+ss，把 netstat 当旧系统的方言」——参数映射记住一张就够：`netstat -tlnp` ≈ `ss -tlnp`，
+`netstat -ant` ≈ `ss -ant`。
+
+ss 过滤表达式是它比 netstat 强的地方：`state <状态>` 按连接状态筛选（如
+`ss -t state established`），`exclude <状态>` 反向排除，`sport =` / `dport =` / `dst <IP>`
+按端口地址精确筛选。这组表达式把「统计 TIME_WAIT」「找某个对端的连接」从 grep 管道变成
+内核级过滤。
+
 ## ss 基本用法
 
 **基本写法：查看所有连接**
@@ -130,10 +143,10 @@ ss -t state connected
 ```
 
 **基本写法：排除特定状态**
-`ss -t state excluding TIME-WAIT`
+`ss -t exclude time-wait`
 ```bash
 # 查看除 TIME-WAIT 外的 TCP 连接
-ss -t state excluding TIME-WAIT
+ss -t exclude time-wait
 ```
 
 ---
@@ -359,3 +372,16 @@ ss -tn state established | awk '{print $4}' | sort | uniq -c | sort -rn
 # 每秒刷新 socket 统计摘要
 watch -n 1 'ss -s'
 ```
+
+## 教学自检
+
+按遮码自检法：遮住上文代码块，先自己写命令或推演答案，再对照。
+
+- `ss -t`、`ss -tl`、`ss -tln`、`ss -tlnp` 四个命令各比前一个多了什么信息？排「端口被占用」
+  时用哪个？为什么 -p 要 root 才显示全？
+- TIME_WAIT 多是「服务端并发能力不足」还是「主动关闭方在等协议要求」？它是问题吗，什么
+  情况才要处理？（提示：主动关闭方进 TIME_WAIT，等 2MSL；高并发压测服务端才会堆积）
+- CLOSE_WAIT 大量堆积说明应用代码哪一类 bug？和 TIME_WAIT 的成因差别在哪？
+- 用 ss 过滤表达式（不用 grep）写出「查看 443 端口的所有 ESTABLISHED 连接」。
+- `ss -ti` 能看到 netstat 看不到的什么信息？什么故障用它判断？
+- lsof -i :80 与 ss -tlnp 的视角差在哪？lsof 多了什么能力（文件描述符视角、用户过滤）？

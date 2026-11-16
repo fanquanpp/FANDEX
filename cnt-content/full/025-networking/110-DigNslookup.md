@@ -13,6 +13,21 @@ related:
 prerequisites: []
 ---
 
+## 三个查询工具怎么分工
+
+dig（bind-utils/dnsutils 包）是 DNS 排查的事实标准：输出直接呈现 DNS 报文的四个段
+（QUESTION/ANSWER/AUTHORITY/ADDITIONAL）与查询耗时、服务器、TTL，`+trace` 能把「从根到
+权威」的迭代链路完整打出来——这是 nslookup 做不到的。nslookup 跨平台（Windows 自带），
+适合快速看一眼与教学演示；host 是 dig 的极简封装。学习投入放 dig。
+
+读 dig 输出的方法比背选项重要：先看 ANSWER 段的 TTL（对比不同解析器可判断缓存差异），
+再看 flags 里的 aa（权威应答）与查询耗时（server 字段确认实际问了谁）。排错的固定套路：
+先 `dig +short` 看结果对不对，不对再对比指定解析器（`@8.8.8.8` vs `@1.1.1.1` vs 本地），
+仍不对用 `+trace` 定位链路在哪一级出问题。
+
+注意：`ANY` 查询在现行权威服务器上普遍不再返回完整记录集——RFC 8482（2019）规定改用
+HINFO 简单应答以防放大攻击，所以「查全部记录」的正确姿势是逐类查询（A/AAAA/MX/TXT/NS）。
+
 ## dig 基本查询
 
 **基本写法：查询域名 A 记录**
@@ -49,6 +64,8 @@ dig @8.8.8.8 example.com
 # 查询所有类型的 DNS 记录
 dig example.com ANY
 ```
+注意：现行权威服务器按 RFC 8482 对 ANY 通常只回 HINFO 提示（防放大攻击），真要枚举记录
+请逐类查询（A/AAAA/MX/TXT/NS）。
 
 ---
 
@@ -344,3 +361,14 @@ dig +dnssec example.com
 # 追踪 CNAME 链
 dig +trace +nodnssec www.example.com
 ```
+
+## 教学自检
+
+按遮码自检法：遮住上文代码块，先自己写命令或推演答案，再对照。
+
+- dig 输出的 ANSWER 段与 AUTHORITY 段各回答什么？flags 里 aa 为 0 意味着这次应答来自哪里？
+- `dig +trace` 与「直接问 8.8.8.8」的本质区别是什么？（自己逐级迭代 vs 让递归解析器代劳）
+- 用户反馈「网站打不开」，如何用 dig 区分「本地解析器坏了」和「权威记录错了」？写三步对比。
+- TTL 的作用是什么？切换解析前为什么要先降 TTL？降晚了会观察到什么现象？
+- nslookup 相比 dig 的优势场景是什么？它隐藏了 DNS 报文的哪些细节？
+- 现在为什么不能靠 ANY 查一个域名的全部记录？正确做法是什么？（RFC 8482）

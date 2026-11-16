@@ -111,6 +111,19 @@ UDP 只做「把数据报发出去」：无连接、无确认、无序、无拥�
 
 **例四：CLOSE_WAIT 抓 bug**。某服务 `ss -tanp state close-wait` 显示对某下游 API 的连接稳定堆积不释放，且 CLOSE_WAIT 的进程是网关。review 发现异常分支里 HTTP 客户端 response body 没 close，连接不归还池。修复：defer close 统一收口。CLOSE_WAIT 数量与某条代码路径强相关，是定位内存外「连接泄漏」的最快路径。
 
+## 教学自检
+
+按遮码自检法：遮住上文命令与表格，先自己推演，再对照。
+
+- 大量 SYN-SENT 与大量 SYN-RECV 分别挂在谁身上、各指向什么故障？
+- TIME_WAIT 为什么挂在主动关闭方？2MSL 的两重理由各防什么？
+- CLOSE_WAIT 堆积的第一反应为什么是「查应用代码」而不是「调内核参数」？
+- `tcp_tw_reuse` 为什么只对客户端出站方向安全？`tcp_tw_recycle` 为什么被移除（Linux 4.12）？
+- 滑动窗口如何同时解释 TCP 的吞吐量来源与 TCP ZeroWindow 的成因？
+- Nagle 算法提吞吐但加延迟的机制是什么？哪些协议应该禁用它（TCP_NODELAY）？
+- 「UDP 不可靠」与「UDP 丢包率高」的差别是什么？应用层用 UDP 必须自答哪三个问题？
+- 弱网实时音视频选 UDP 的根本原因，从 TCP 的哪两个机制推出来？
+
 ## 动手实践
 
 **练习 1（状态观察）**：本机起一个短连接压测（循环 `curl` 同一端口 100 次），用 `ss -tan | awk '{print $1}' | sort | uniq -c` 观察 TIME_WAIT 生成与 60 秒后的消亡；再改用带 keep-alive 的压测对比。

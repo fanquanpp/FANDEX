@@ -57,6 +57,10 @@ WiFi 7（802.11be，2024 年定稿并开始认证）在 WiFi 6 之上再增强�
   既提速又降低时延抖动——这是对确定性时延敏感场景（AR/VR、工业无线）的关键改进；
 - 多 RU 分配：单个用户一次可占用多个资源单元。
 
+下一代的动向：WiFi 8（IEEE 802.11bn，主题是「超高可靠性」）截至 2026 年仍处于草案阶段
+（Draft 2.0 已于 2026 年内通过），Wi-Fi Alliance 认证预计要到 2028 年前后才启动——现阶段
+市面上不会有合规的 WiFi 8 产品，选型时看到「WiFi 8」宣传要按预标准草案对待。
+
 > 频段辨析：2.4GHz 穿墙好但信道少、干扰多；5GHz 信道多但衰减快；6GHz（WiFi 6E/7）是干净
 > 的新频谱，可开大带宽，但绕障能力最弱。三者的取舍是物理规律，换任何标准都不会改变。
 
@@ -206,6 +210,17 @@ station all`）能看到关联到了哪台 AP、什么速率、什么加密方�
 落地为配置项。三层验收里若 STA 拿不到地址，先查 DHCP 与业务 VLAN 是否在 AP 所在口放行，
 这是本实验最高频的故障。
 
+## 教学自检
+
+按遮码自检法：遮住上文代码块与表格，先自己推演，再对照。
+
+- WiFi 6 的 OFDMA 解决的是上一代哪个痛点？为什么说「峰值速率翻倍」不是它的卖点？
+- CAPWAP 有两条隧道，端口号与分工各是什么？为什么访客 SSID 推荐集中转发而办公流量推荐本地转发？
+- WPA3 的 SAE 为什么能让抓包者无法离线跑字典？WPA2/WPA3 混合模式引入了什么新风险？
+- 2.4GHz 为什么只有 1、6、11 三个可用信道？相邻 AP 若分别用 1 和 2 会发生什么？
+- 距离翻倍衰减加 6dB 推出来的是什么权衡？「功率宁小勿大」防的是哪个终端行为？
+- AP 上电后靠什么找到 AC？`display ap all` 里 AP 从 idle 到 normal 的状态迁移对应正文哪几个概念？
+
 ## 7. 练习
 
 标准演进题（5 分钟）：同事说「新采购的 WiFi 7 AP 一定比 WiFi 6 快」，给出两个反例条件
@@ -289,8 +304,6 @@ priority 数值小者为主（两台互指对方为主备时注意数值方向�
 4. **信道规划**：2.4GHz 使用 1/6/11 信道，5GHz 使用非 DFS 信道
 5. **功率调整**：边缘场强 ≥ -65dBm，重叠区域 ≥ -75dBm
 
-<!-- 恢复自 cnt-content/full/025-networking/040-NetworkSystemManagement.md（实施前 HEAD 62c90663308c7d6ea5a29bd1c1bb97cd40884710 版本）；拆分时该小节未随迁，2026-10-07 内容保全核对恢复 -->
-
 ## 无线认证配置
 
 
@@ -315,20 +328,7 @@ priority 数值小者为主（两台互指对方为主备时注意数值方向�
 [AC-aaa-domain-default] radius-server radius1
 ```
 
-### 12.3 AP 隔离
-
-```bash
-# 华为 AC 配置用户隔离
-[AC] wlan
-[AC-wlan-view] traffic-profile name isolate
-[AC-wlan-traffic-prof-isolate] user-isolate l2    # 二层隔离
-[AC-wlan-traffic-prof-isolate] user-isolate l3    # 三层隔离
-```
-
-<!-- 恢复自 cnt-content/full/025-networking/040-NetworkSystemManagement.md（实施前 HEAD 62c90663308c7d6ea5a29bd1c1bb97cd40884710 版本）；拆分时该小节未随迁，2026-10-07 内容保全核对恢复 -->
-
-## AP 隔离
-
+### AP 隔离
 
 ```bash
 # 华为 AC 配置用户隔离
