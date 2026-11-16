@@ -90,7 +90,7 @@ Vector Set 是 Redis 8.0（beta）新增的数据结构，把 ZSet 的思想推�
 2) "0.9999999403953552"
 
 # 成员判断与随机取样
-> VISMEMBER points pt:A          # 8.2 引入
+> VISMEMBER points pt:A          # 8.0 引入
 (integer) 1
 > VRANDMEMBER points 2
 1) "pt:C"

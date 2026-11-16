@@ -60,7 +60,7 @@ Redis Stack 独立发行版停止更新（官方对 6.2/7.2/7.4 的补丁支持�
 
 | 版本 | 代表性变化 |
 | :--- | :--- |
-| 8.2 | LTS 长期支持版；I/O 与内存效率继续优化；Vector Set 补充 VISMEMBER |
+| 8.2 | LTS 长期支持版；`XDELEX`/`XACKDEL`（Stream 删除与确认合一）、`BITOP` 新运算符（DIFF/DIFF1/ANDOR/ONE）、`CLUSTER SLOT-STATS`；VSIM 过滤表达式新增 `IN` 操作符与 `SHARD_K_RATIO` 参数 |
 | 8.4 | `XREADGROUP` 新增 CLAIM 选项（空闲消息认领并入读取）；`DELEX`/`DIGEST` 原子删值并校验；`CLUSTER MIGRATION` 原子槽迁移；Vector Set 补充 VRANGE |
 | 8.6 | Stream 幂等写入（`XADD IDMP/IDMPAUTO`）；LRM（最久未修改）逐出策略；热 key 检测；TLS 证书认证；XREADGROUP CLAIM 进一步优化 |
 | 8.8 | 新增 Array 数据结构；`INCREX` 限速写入；HGETALL/MGET/MSET 性能优化；HyperLogLog 改进 |
@@ -194,8 +194,8 @@ VSIM points VALUES 8 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 COUNT 3 WITHSCORES
 # 返回: 1) "pt:A"  2) "1"  3) ... （按相似度降序）
 ```
 
-- 8.0 以 beta 引入，官方明确「API 未来可能变化」；8.2 补充 VISMEMBER、
-  8.4 补充 VRANGE 等命令，仍在快速演进。
+- 8.0 以 beta 引入，官方明确「API 未来可能变化」；VSIM 的 `IN` 过滤与
+  `SHARD_K_RATIO` 参数为 8.2 增强，VRANGE 为 8.4 补充，仍在快速演进。
 - 完整命令、量化选项（Q8/BIN/NOQUANT）、FILTER 过滤与调参见
   《向量集》一篇（redis/100-VectorSet）。
 - 与查询引擎向量检索的分工：Vector Set 轻量、开箱即用、语义近似 ZSet；
@@ -282,7 +282,7 @@ ACL SETUSER analyst on >pwd ~* +@read +@bloom +@t-digest
   时，删到最后一个字段键仍在。用 `TTL` 与 `HTTL` 分别确认两层过期。
 - **查询引擎语义变化**：`FT.SEARCH` 的 DIALECT 版本影响查询语义，
   升级后显式声明 `DIALECT 2`，避免依赖旧方言。
-- **误把 8.x 全部新特性当 8.0**：VISMEMBER（8.2）、VRANGE（8.4）等
+- **误把 8.x 全部新特性当 8.0**：`XDELEX`/`XACKDEL`（8.2）、VRANGE（8.4）等
   是后续 minor 版本加入，写兼容层时按实际运行版本判断。
 
 ## 教学自检（先遮住代码自己写，再对照）
