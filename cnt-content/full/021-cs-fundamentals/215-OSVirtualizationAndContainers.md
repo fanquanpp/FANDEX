@@ -286,6 +286,14 @@ sudo nsenter -t $SLEEP_PID -p -m sh -c \
 看调度器如何与配额互动；OS 视角的内存管理细节见 210 分段分页与
 220 页面置换；进程与内核的边界（系统调用）见 190 中断与系统调用。
 
+## 自检
+
+- 遮住第 1 节的三级隔离对比与容器/虚拟机表，先自己回答：容器与虚拟机在「内核、隔离单位、隔离机制」三条上的本质差异，再回答「容器不是轻量级虚拟机」这句话准确在说什么是「进程环境 vs 完整计算机」。
+- 遮住第 2 节的 namespace 表，先默写八类 namespace 各自隔离的内容，再回答：`unshare --pid` 为什么必须搭配 `--mount-proc`（`ps` 读到的 `/proc` 视图由 MNT namespace 决定）？
+- 遮住第 3 节的 cgroup 小节，先自己写出 `--cpus=2` 落到 `cpu.max` 的值（200000 100000）与 `--memory=512m` 落到 `memory.max` 的字节数，再回答：`memory.high` 与 `memory.max` 的行为差异（回收节流 vs OOM Killer）。
+- 遮住第 4 节的解剖五步，先默写 `docker run` 在内核层面发生的五件事，再回答：容器内不能 mount 的报错来自哪一步（capabilities/seccomp）？
+- 遮住「JVM 被 OOMKill 的因果链」，先自己复述四步因果（读物理机总量 → 堆超限 → RSS 破 memory.max → OOMKilled），再回答：Go 1.25+、Java 10+、Node 12+ 的「内置感知」感知的是 cgroup 配额而不是物理机总量——为什么这对容器部署是关键？
+
 ## 参考与致谢
 
 - man 7 namespaces、man 7 cgroups（Linux 手册页，许可证见 man-pages 项目 COPYING，GPL+BSD 双许可）
