@@ -95,6 +95,34 @@ ALTER USER 'app_user'@'%' WITH MAX_QUERIES_PER_HOUR 1000;
 ALTER USER 'app_user'@'%' ACCOUNT LOCK;
 ALTER USER 'app_user'@'%' ACCOUNT UNLOCK;
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出语句：给应用创建一个"只读"账号（限制在 mydb 库、只许 SELECT、允许任意主机连接、密码符合策略），并说出为什么应用账号永远不该是 `root@'%'`。
+
+参考答案（先自己写，再对照）：
+
+```sql
+CREATE USER 'app_ro'@'%' IDENTIFIED BY 'StrongP@ss123!' PASSWORD EXPIRE NEVER;
+GRANT SELECT ON mydb.* TO 'app_ro'@'%';
+```
+
+root@'%' 意味着全库全权限 + 全网可达——应用被注入时攻击者直接拿到 DDL/DROP 权限，损失从"数据泄露"升级为"全库毁灭"。最小权限原则的第一层就是"应用账号只有它那一类操作需要的权限"，写与读分开建账号、按库授权。
+
+2. 概念自问：角色（ROLE）解决了什么 GRANT 直授权的痛点？"角色授予后权限立即生效吗"？
+
+参考答案（先自己答，再对照）：痛点是"同一类人在多台库上重复授一批权限"——变更时漏授漏收。角色把权限集打包成可授予/可回收的单元。注意默认授予不等于生效：需要 `SET DEFAULT ROLE`（登录时激活）或开启 `activate_all_roles_on_login` / 会话内 `SET ROLE` 显式激活——"授了角色还是没权限"是 8.0 时代的高频疑问，根源就是激活这一步。
+
+3. 判断题：`FLUSH PRIVILEGES` 每次授权后都要执行，否则权限不生效。
+
+参考答案（先自己答，再对照）：错。GRANT/CREATE USER/REVOKE 直接写授权表并即时生效，无需 FLUSH。需要 FLUSH 的场景是"手工 INSERT/UPDATE mysql.user 系统表"绕过了正常语句（官方不推荐）——FLUSH 只是让服务器重读授权表。另外 8.4 起执行 FLUSH PRIVILEGES 本身还要求专门的 `FLUSH_PRIVILEGES` 权限（不再被 RELOAD 默认覆盖）。形成"授权后必 FLUSH"的肌肉记忆反而是误操作信号。
+
+4. 概念自问：caching_sha2_password 首次认证为什么需要 TLS 或 RSA 公钥交换？"驱动没配 allowPublicKeyRetrieval"的报错根因是什么？
+
+参考答案（先自己答，再对照）：新插件传输的是 SHA-256 挑战-响应，密码不落地，但首次全量认证需要把密码派生值安全地交给服务端——TLS 加密通道或 RSA 公钥加密二选一。客户端默认不主动下载服务器 RSA 公钥（防中间人替换），需要 `allowPublicKeyRetrieval=true` 显式放行（配合 useSSL=true 或固定公钥）；没配就报公钥获取失败。这是 8.0 迁移期"应用连不上"的第一大根因。
+
 ## 用户管理
 
 **单行写法：创建用户允许任意主机连接**
@@ -340,7 +368,7 @@ CREATE USER 'app_user'@'%' IDENTIFIED WITH caching_sha2_password BY 'StrongP@ss1
 ALTER USER 'legacy_user'@'%' IDENTIFIED WITH mysql_native_password BY 'password';
 ```
 
-两个衔接点：其一，新插件首次认证要求安全通道（TLS）或 RSA 公钥交换——很多「升级 8.0 后应用连不上」的事故根因是驱动没配 `allowPublicKeyRetrieval` 或没开 TLS，报错是 `Authentication plugin 'caching_sha2_password' cannot be loaded` 或公钥获取失败；其二，`mysql_native_password` 在 8.4 起默认禁用（8.0 里已标记废弃）——靠回退插件苟着的旧客户端要排期升级驱动，升级清单见 [8.4 升级指南](/mysql/840-MySQL84UpgradeGuide)。加密通道的完整配置见 [SSL 加密](/mysql/710-SSLEncryption)。
+两个衔接点：其一，新插件首次认证要求安全通道（TLS）或 RSA 公钥交换——很多「升级 8.0 后应用连不上」的事故根因是驱动没配 `allowPublicKeyRetrieval` 或没开 TLS，报错是 `Authentication plugin 'caching_sha2_password' cannot be loaded` 或公钥获取失败；其二，`mysql_native_password` 在 8.4 起默认禁用（8.0 里已标记废弃）、9.0 起彻底移除——靠回退插件苟着的旧客户端要排期升级驱动，升级清单见 [8.4 升级指南](/mysql/840-MySQL84UpgradeGuide)。加密通道的完整配置见 [SSL 加密](/mysql/710-SSLEncryption)。
 
 ### 登录失败锁定（8.0+）
 

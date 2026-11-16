@@ -139,18 +139,24 @@ RESET BINARY LOGS AND GTIDS;
 运维可以按标签过滤、跳过某类事务（如批量清理任务）而不影响业务事务：
 
 ```sql
--- 会话级：本会话后续事务都带标签（标签最长 33 字符，需 TRANSACTION_GTID_TAG 权限）
-SET SESSION gtid_next_tag = 'batch_import';
+-- 会话级：把 gtid_next 设为 'AUTOMATIC:标签'，本会话后续事务都带标签
+-- （标签最长 8 字符；需要 TRANSACTION_GTID_TAG 权限）
+SET @@SESSION.GTID_NEXT = 'AUTOMATIC:batch_import';
 INSERT INTO sales VALUES (...);
-SET SESSION gtid_next = AUTOMATIC;
+COMMIT;
+SET @@SESSION.GTID_NEXT = 'AUTOMATIC';   -- 关闭打标
 
--- 单事务级
-SET TRANSACTION GTID_TAG = 'delete_logs';
+-- 单事务级：直接指定完整的 uuid:tag:number
+SET @@SESSION.GTID_NEXT = '3E11FA47-71CA-11E1-9E33-C80AA9429562:purge:23';
 DELETE FROM logs WHERE created_at < NOW() - INTERVAL 30 DAY;
+SET @@SESSION.GTID_NEXT = 'AUTOMATIC';
 ```
 
-备份与位点管理可按标签区分处理（`gtid_purged` 等接口支持带标签的集合），
-这是 8.4 对大型复制拓扑最实用的运维增强之一。
+注意两点：标签长度上限是 8 个字符（不是 33）；`SET GTID_NEXT='AUTOMATIC:TAG'`
+与自定义 `UUID:TAG:NUMBER` 都要求 `TRANSACTION_GTID_TAG` 权限（按官方权限表，
+在主库上打标还须同时持有 `SYSTEM_VARIABLES_ADMIN`、`SESSION_VARIABLES_ADMIN`
+或 `REPLICATION_APPLIER` 之一）。备份与位点管理可按标签区分处理
+（`gtid_purged` 等接口支持带标签的集合），这是 8.4 对大型复制拓扑最实用的运维增强之一。
 
 ## 6. GTID 的收益与代价
 
@@ -177,6 +183,26 @@ SHOW VARIABLES LIKE 'gtid_mode';                             -- 当前模式
 SELECT received_transaction_set FROM
   performance_schema.replication_connection_status;          -- 已接收集合
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：GTID 由哪两部分构成？基于位点的复制与基于 GTID 的复制在"故障切换"时的根本差别是什么？
+
+参考答案（先自己答，再对照）：GTID = source_uuid:transaction_number（8.4 起可扩展为 uuid:tag:number）。位点制下从库记住"哪个文件的哪个偏移"，新主上线后位点坐标全部作废，要人工对齐位点；GTID 制下从库只要比对 gtid_executed 与新主的 gtid_executed 集合，"还差哪些事务"自动推导——CHANGE REPLICATION SOURCE TO ... SOURCE_AUTO_POSITION=1 后故障切换是自动对齐，秒级。
+
+2. 概念自问：开启 GTID 为什么必须同时设 enforce_gtid_consistency=ON？哪类写法会被禁止？
+
+参考答案（先自己答，再对照）：GTID 要求"每个事务在拓扑内有唯一且确定的身份"，而某些写法的事务边界不确定：CREATE TABLE ... SELECT（事务与 DDL 混合）、事务内对非事务引擎（MyISAM）写、临时表操作、gtid_next 未复位——这些在位点制下"凑合能用"，在 GTID 下无法保证重放语义一致，必须禁止。开关的意义：让不兼容写法在上线前就报错，而不是切换时才发现。
+
+3. 判断题：SET @@SESSION.GTID_NEXT='AUTOMATIC:batch' 之后忘了改回 'AUTOMATIC'，只影响当前会话，无伤大雅。
+
+参考答案（先自己答，再对照）：影响超出当前会话。gtid_next 不复位时，该会话后续所有事务都被打上同一个标签或绑死在同一 GTID——若绑定的是具体 uuid:number，下一事务提交会直接报错（GTID 已存在）；标签类则让后续业务事务全部误入 batch 标签组，按标签过滤的从库会把业务事务一起过滤掉。打标语句要和复位语句成对出现，这是 tagged GTID 的使用纪律。
+
+4. 概念自问：gtid_executed 与 gtid_purged 的差集在运维里怎么用？"已清理"意味着什么风险？
+
+参考答案（先自己答，再对照）：gtid_executed = 本机已执行的全部事务；gtid_purged = 其中 binlog 已被清理的部分。新从库接入时比对：需要的 GTID 若落在 purged 区间，自动对齐无从谈起——只能从备份重建（备份文件里带着 gtid_executed 快照）。所以 binlog 保留期决定了"哪些从库还能自动补齐"，保留期就是自动修复能力的半径。
 
 ## 8. 小结
 

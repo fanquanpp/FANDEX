@@ -138,6 +138,33 @@ SET GLOBAL require_secure_transport = ON;
 
 **"和 [PostgreSQL 的 SSL](/postgresql/480-SSLEncryptionConnection) 学哪个？"**——概念完全互通（证书、CA、六档 sslmode、强制策略、mTLS），差异只在配置载体：PostgreSQL 用 pg_hba.conf 行级策略，MySQL 用账号级 REQUIRE 子句。学透一个，另一个是翻译题。
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：ssl-mode 的六档里，PREFERRED（默认）为什么只是"及格线"？REQUIRED 与 VERIFY_IDENTITY 的本质差异是什么？
+
+参考答案（先自己答，再对照）：PREFERRED 表示"能用 TLS 就用，不能用就明文"——自动降级意味着遇到中间人剥离 TLS 时连接悄悄变明文，安全承诺为零。REQUIRED 只保证加密，不验证证书（可被自签证书的中间人劫持）；VERIFY_CA 验证证书链可信；VERIFY_IDENTITY 在此之上还核对主机名——确认"对面就是我连的那台库"。生产对安全的要求是 REQUIRED 起步、对外跨网 VERIFY_IDENTITY。
+
+2. 写出语句：给账号 app_user 强制加密且必须持有效证书（双向认证），并说明 REQUIRE 子句与全局 ssl-mode 谁说了算。
+
+参考答案（先自己写，再对照）：
+
+```sql
+CREATE USER 'app_user'@'%' REQUIRE X509;
+-- 或 ALTER USER 'app_user'@'%' REQUIRE SSL;
+```
+
+两者取更严格的交集：账号级 REQUIRE 是"该账号的最低门槛"，全局 ssl-mode 是"客户端侧承诺"，任一侧不满足即拒绝。X509 = 加密 + 有效证书（mTLS 的服务端视角）；SSL = 仅加密。灰度路径：先 PREFERRED 观察 → REQUIRE SSL 强制 → 收紧为 X509。
+
+3. 判断题：服务端开启了 TLS，客户端连接就一定是加密的。
+
+参考答案（先自己答，再对照）：不一定，取决于客户端 ssl-mode。服务端支持只是"可以加密"，客户端 PREFERRED/REQUIRED 才决定"要不要"；PREFERRED 遇到握手失败会静默降级为明文。验证加密是否真在工作的两条硬证据：`SHOW SESSION STATUS LIKE 'Ssl_cipher'`（非空即加密、值为当前套件）与 performance_schema 的连接线程 TLS 相关列。安全配置的验收标准是"验证过"，不是"配置过"。
+
+4. 概念自问：caching_sha2_password 与 TLS 有什么联动？为什么"没开 TLS 的库"可能连认证都过不去？
+
+参考答案（先自己答，再对照）：该插件首次全量认证要把密码派生值安全送达服务端，路径有二：TLS 加密通道，或 RSA 公钥加密密码。没开 TLS 且客户端未配置 RSA 公钥获取（allowPublicKeyRetrieval）时，认证直接失败——所以 8.0+ 的"认证失败"经常根因在传输层。加密与认证在 8.x 已是咬合设计，排障要一起看。
+
 ## 检验清单
 
 - 能说出自动生成证书的机制与"及格线"（PREFERRED）的不足；

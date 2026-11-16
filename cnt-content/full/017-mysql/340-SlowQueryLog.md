@@ -101,6 +101,8 @@ pt-query-digest /var/log/mysql/slow.log > digest-report.txt
 
 ## SHOW PROFILE
 
+> 版本注：`SHOW PROFILE`/`SHOW PROFILES` 属官方已废弃接口（8.0 起文档标注 deprecated，随时可能移除），本文保留以帮读者看懂存量脚本；新排查请用 Performance Schema——`events_statements_history_long` 看语句清单，`events_stages_history_long` 看各阶段耗时，能力是 profile 的超集。
+
 <!-- 来源：62c90663 版 cnt-content/full/017-mysql/860-PerformanceTuningSecurity.md 小节「SHOW PROFILE」 -->
 
 **基本写法：开启 profile**
@@ -176,6 +178,35 @@ SELECT * FROM users WHERE LOWER(email) LIKE 'zhang%';   -- 前缀匹配可走索
 **"Query_time 高但应用层没感觉慢？"**——三个方向：单次慢但低频（总影响小）；应用有缓存挡在前面；或 SQL 被重写/合并过。优化排序永远以业务视角的总影响为准。
 
 **"能记录所有语句吗（general log）？"**——可以（`general_log`），但开销巨大只适合临时取证，与慢日志定位完全不同，别混用。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出配置：慢日志常驻开启、阈值 1 秒、记录未走索引的查询。每个参数"开错了"的代价是什么？
+
+参考答案（先自己写，再对照）：
+
+```ini
+[mysqld]
+slow_query_log = 1
+long_query_time = 1
+log_queries_not_using_indexes = 1
+```
+
+阈值过低（如 0.1）会让日志被正常业务噪音淹没，磁盘 IO 反成新瓶颈；不开 not_using_indexes 会漏掉"没超时但每次多扫几十万行"的隐形消耗；忘了轮转（logrotate）则日志文件无限膨胀。"抓什么"与"抓多少"是同一道权衡。
+
+2. 概念自问：慢日志里 `Rows_examined` 是 20 万、`Rows_sent` 是 10——这个比例告诉你什么？
+
+参考答案（先自己答，再对照）：扫了 20 万行只送回 10 行，过滤效率约 1/20000——要么缺索引（全表捞），要么索引选择性差（捞出一大把再过滤）。比例是比绝对耗时更本质的诊断信号：耗时受硬件波动，比例直接暴露"查询形状"与数据的关系。修复方向从比例推出：补/换索引，或改写查询缩小扫描面。
+
+3. 判断题：慢日志在语句执行到一半卡死时也会记录，所以能抓到"正在卡住"的查询。
+
+参考答案（先自己答，再对照）：写日志发生在执行结束时——还在跑的语句日志里没有它。执行中途被 kill 的语句会带中断标记出现，但"已经卡了 10 分钟还在跑"的现场要用 `SHOW PROCESSLIST` 或 performance_schema 的运行中语句视图实时看。日志管"事后复盘"，PROCESSLIST 管"现场急救"，两套工具别互相顶替。
+
+4. 概念自问：为什么"找出总耗时最高的语句类"比"找出单次最慢的语句"更接近优化目标？
+
+参考答案（先自己答，再对照）：数据库的负载由语句类 × 频次构成。单次 0.2 秒但每秒执行 500 次的查询，对系统的总压力远大于单次 5 秒、每天一次的报表。mysqldumpslow/pt-query-digest 按"总耗时/总行数"聚合语句类，正是把注意力引到累计影响最大处——按单次耗时排序会永远在救偶发的长尾。
 
 ## 检验清单
 

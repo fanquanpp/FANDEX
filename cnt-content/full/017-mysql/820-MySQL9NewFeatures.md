@@ -30,14 +30,17 @@ MySQL 9.x 是 MySQL 数据库的最新主要版本，引入了大量面向现代
 
 | 版本        | 发布时间  | 定位与核心特性                                   |
 | :---------- | :-------- | :----------------------------------------------- |
-| MySQL 8.0   | 2018-04   | 窗口函数、CTE、JSON 增强、角色管理                |
+| MySQL 8.0   | 2018-04   | 窗口函数、CTE、JSON 增强、角色管理；2026-04 已 EOL |
 | MySQL 8.4   | 2024-04   | **LTS**：移除大量废弃语法（CHANGE MASTER TO 等）  |
-| MySQL 9.0   | 2024-07   | 创新版：VECTOR 类型、EXPLAIN INTO 等准备语句增强  |
-| MySQL 9.1+  | 2024-10 起 | 每季度一个创新版，小步迭代                       |
+| MySQL 9.0   | 2024-07   | 创新版：VECTOR 类型、内联外键强制、EXPLAIN INTO、移除 mysql_native_password |
+| MySQL 9.1-9.6 | 2024-10 至 2026-01 | 每季度一个创新版：触发器缓存、JS 存储程序增强、subquery_to_derived 扩展等 |
+| MySQL 9.7   | 2026-04   | **现行 LTS**：9.x 特性收束 + 维护承诺到 2031/2034 |
+| MySQL 26.7 / 26.10 | 2026-07 / 2026-10 | 创新版改用日历版本号（YY.M.P）：Change Stream Applier、社区版线程池、REST Service 组件 |
 
-> 版本策略提示：官方已宣布转向**日历版本号**（YY.M），2026-07 起为 26.7 系列，
-> 下一 LTS 为 28.4（2028-04）。写作与选型时以"8.4 LTS / 9.x 创新版"为主线表述，
-> 避免把 9.x 描述成"最新稳定版"——LTS 仍是 8.4。
+> 版本策略提示：官方 2026-06 宣布创新版转向**日历版本号**（YY.M.P，26.7 → 26.10 → 27.1），
+> LTS 沿用独立命名（8.4、9.7），约每两年一个。现行 LTS 是 **8.4 与 9.7 两条线**；
+> 写作与选型时避免把"9.x 创新版"描述成"最新稳定版"——生产主线建议 8.4 LTS，
+> 追新特性的项目直接评估 9.7 LTS。
 
 ### 1.2 MySQL 9.x 安装与版本确认
 
@@ -53,11 +56,28 @@ WHERE VARIABLE_NAME LIKE '%vector%';
 SHOW VARIABLES LIKE '%parallel%';
 ```
 
+### 1.3 9.x 逐版要点速览
+
+| 版本 | 要点 | 对教学/迁移的影响 |
+| :--- | :--- | :--- |
+| 9.0（2024-07） | VECTOR 类型；**内联外键开始强制执行**（此前解析器接受但忽略，隐式引用父表主键也生效）；`EXPLAIN ANALYZE ... INTO @var` 与 `EXECUTE IMMEDIATE`；**移除 mysql_native_password 插件与 default_authentication_plugin** | 依赖"内联外键被忽略"旧行为的应用升级后可能撞约束；老驱动认证连接必须迁移 |
+| 9.1（2024-10） | 触发器两阶段加载（元数据与解析分离，`table_open_cache_triggers` 控缓存）、OpenTelemetry 遥测 | 触发器多的库打开表缓存行为变化 |
+| 9.2（2025-01） | JS 存储程序（企业版 MLE）增强：ENUM/SET、CREATE LIBRARY、事务 API；Version Token 插件标记废弃 | 依赖 Version Token 的脚本转为长期兼容风险项，留意后续版本动态 |
+| 9.3（2025-04） | `subquery_to_derived` 支持全部比较运算；GR Primary Election 组件；**创新版之间不再支持降级** | 升级决策要更谨慎：9.3 起回不去 |
+| 9.4（2025-07） | 插件 C API 标记废弃 | 自研插件的技术债要提上日程 |
+| 9.5（2025-10） | `binlog_transaction_dependency_history_size` 默认 25000 提到 1000000；semisync_master/semisync_slave 旧插件名移除 | 依赖旧插件名的部署脚本要改 semisync_source/semisync_replica |
+| 9.6（2026-01） | 外键约束与级联从 InnoDB 移到 SQL 层（`innodb_native_foreign_keys` 可回退）；MD5()/SHA1() 移入 classic_hashing 组件；Audit Log 插件组件化 | 外键执行层变化与哈希函数可用性要过升级检查；合规场景关注哈希算法白名单 |
+| 9.7 LTS（2026-04） | `innodb_log_writer_threads` 默认值随 log_bin 与 CPU 数变化；移除 `replica_parallel_type`、`group_replication_allow_local_lower_version_join`；9.7.4 起四段版本号（`VERSION_WITH_UPDATE()`） | 并行复制的 `replica_parallel_type` 配置必须清理 |
+
+一句话主线：**9.x 是"收编与清理"的系列**——VECTOR 与内联外键是新增能力的大头，
+其余版本大部分篇幅在移除旧插件、旧变量与旧拼写，升级前跑一遍 `util.checkForServerUpgrade`
+比背特性清单更实用。
+
 ## 2. VECTOR 向量类型
 
 ### 2.1 向量类型基础
 
-MySQL 9.0 引入 `VECTOR` 数据类型，原生支持向量数据的存储与检索，为 AI/ML 应用场景（语义搜索、推荐系统、相似度匹配）提供数据库层面的支持。
+MySQL 9.0 引入 `VECTOR` 数据类型，原生支持向量数据的存储与检索，为 AI/ML 应用场景（语义搜索、推荐系统、相似度匹配）提供数据库层面的支持。约束先记住：每个元素是 4 字节单精度浮点，声明 `VECTOR(N)` 的默认上限 2048、绝对上限 16383 个元素；VECTOR 列**不能做任何键**（主键/外键/唯一键/分区键），也不能进直方图——它是"可存储、可转换"的一等公民，不是"可索引"的。
 
 ```sql
 -- 创建包含向量列的表
@@ -136,7 +156,9 @@ CREATE TABLE image_features (
 
 ### 3.1 自动 JSON 模式验证
 
-MySQL 9.0 支持为 JSON 列定义 JSON Schema，自动验证插入和更新的 JSON 数据是否符合预定义的结构。
+> 版本归位：`JSON_SCHEMA_VALID` / `JSON_SCHEMA_VALIDATION_REPORT` 是 **8.0.17** 引入的能力，
+> 不是 9.x 新特性——9.x 时代它已是建表标配。这里放在"JSON 增强"里是把它当作
+> 现代建表的完整拼图，而非版本新事。
 
 ```sql
 -- 创建带 JSON Schema 验证的表
@@ -195,7 +217,7 @@ SELECT department,
 FROM employees
 GROUP BY department;
 
--- MySQL 9.x 增强的 JSON_TABLE 嵌套路径
+-- JSON_TABLE 嵌套路径（NESTED PATH 自 8.0 引入，非 9.x 新增）
 SELECT jt.*
 FROM orders,
      JSON_TABLE(
@@ -214,8 +236,8 @@ FROM orders,
 ### 3.3 JSON 空间优化
 
 ```sql
--- MySQL 9.x 对 JSON 存储进行了优化
--- JSON 列的存储更紧凑，部分更新不再重写整个 JSON 文档
+-- JSON 二进制存储与部分更新自 8.0 起就已支持（非 9.x 新增）：
+-- 修改某成员若不改变存储布局，可原地更新，避免重写整个 JSON 文档
 
 -- 查看表的 JSON 列信息
 SELECT TABLE_NAME, COLUMN_NAME, COLUMN_TYPE
@@ -485,7 +507,8 @@ SELECT * FROM orders WHERE status = 'shipped';
 ### 8.1 现状：innodb_parallel_read_threads 的真实适用面
 
 ```sql
-SHOW VARIABLES LIKE 'innodb_parallel_read_threads';   -- 默认 4，最大 256
+-- 默认值：8.0 为 4；8.4 起按可用逻辑 CPU 数 / 8 动态决定（下限 4），最大 256
+SHOW VARIABLES LIKE 'innodb_parallel_read_threads';
 SET SESSION innodb_parallel_read_threads = 8;
 
 -- 该参数只加速"聚簇索引的全量/大范围并行读"，社区版中实际受益的语句：
@@ -531,13 +554,17 @@ SELECT * FROM performance_schema.threads WHERE NAME LIKE '%parallel_read%';
 ### 9.1 性能改进
 
 ```sql
--- 改进的查询优化器
--- 优化器现在能更好地处理 OR 条件
+-- 8.x/9.x 优化器演进的真实落点（按版本归位）：
+-- 8.2  EXCEPT/INTERSECT 走哈希表优化（hash_set_operations 开关、set_operations_buffer_size）
+-- 8.4  标量关联子查询转派生表的限制放宽；直方图可 AUTO UPDATE
+-- 9.0  EXPLAIN ANALYZE ... INTO @var（JSON 计划落进用户变量）；EXECUTE IMMEDIATE
+-- 9.3  subquery_to_derived 覆盖全部比较运算（>ANY / =ANY / <>ALL ...）
+
+-- index merge 处理 OR 条件自 5.x/8.0 早已可用，不是 9.x 新能力：
 SELECT * FROM orders
 WHERE customer_id = 1001 OR status = 'urgent';
--- 9.x 可能使用 index merge 优化
 
--- EXPLAIN ANALYZE（实际执行并返回耗时）
+-- EXPLAIN ANALYZE（8.0.18+，实际执行并返回耗时）
 EXPLAIN ANALYZE
 SELECT * FROM orders WHERE customer_id = 1001;
 -- 返回实际执行时间、行数等信息
@@ -585,3 +612,27 @@ SET ROLE 'read_write';
 -- 设置默认角色
 ALTER USER 'developer1'@'%' DEFAULT ROLE 'read_write';
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：VECTOR 类型在社区版能做什么、不能做什么？"存与搜"的边界怎么表述？
+
+参考答案（先自己答，再对照）：社区版能做——存储（4 字节浮点数组，默认上限 2048、最大 16383 维）与三类函数：STRING_TO_VECTOR/TO_VECTOR、VECTOR_TO_STRING/FROM_VECTOR、VECTOR_DIM。不能做——VECTOR 列不能做任何键（主键/外键/唯一键/分区键）、不能建向量索引、没有距离函数（DISTANCE 属 HeatWave）；相似度检索要应用层算或走专门引擎。一句话：社区版管"存"，HeatWave 管"搜"。
+
+2. 判断题：JSON Schema 自动校验（JSON_SCHEMA_VALID）是 MySQL 9.0 的新特性。
+
+参考答案（先自己答，再对照）：错，8.0.17 就已引入，9.x 时代是标配能力。类似的"张冠李戴"在教程里很常见——JSON_TABLE 的 NESTED PATH、JSON 部分更新（in-place update）都是 8.0 能力。判断方法：凡"9.x 新特性"清单里的 JSON/窗口/CTE 内容，先回 8.0 手册查证，真正 9.x 的新增集中在 VECTOR、内联外键强制与工具链。
+
+3. 概念自问：9.0"内联外键开始强制执行"为什么被列为迁移风险而不是纯好消息？
+
+参考答案（先自己答，再对照）：此前解析器接受 `user_id INT REFERENCES users(id)` 这类内联写法但**静默忽略**——十年积累的建表脚本里可能埋着"以为有外键、其实裸奔"的列。9.0 起这些声明真的生效：存量应用若曾依赖"无约束"的行为（脏数据已入库、级联假设不成立），升级后 INSERT/UPDATE 会撞上 1452/1451 错误。升级前要审计内联外键声明，决定"补约束"还是"显式删除声明"。
+
+4. 概念自问：`innodb_parallel_read_threads` 调大后普通 OLTP 查询为什么不并行？社区版真正受益的语句是什么？
+
+参考答案（先自己答，再对照）：该参数只覆盖"聚簇索引的全量/大范围并行读"这条特定路径——社区版优化器仍是单线程执行模型，带 WHERE/JOIN/聚合的普通查询不会因它并行。真正受益：无 WHERE 的 COUNT(*)、CHECK TABLE 这类"整棵树扫一遍"的操作（EXPLAIN FORMAT=TREE 里出现 Gather 类算子即生效）。分析型并行要 HeatWave（列存 + 向量）或外部引擎，"调参数就全面并行"是流传最广的误传。
+
+5. 概念自问：选版本时的"8.4 LTS vs 9.7 LTS vs 26.x 创新版"三岔口，各自的适用对象是谁？
+
+参考答案（先自己答，再对照）：8.4 LTS——存量系统的稳妥主线（支持到 2029/2032），改动最小；9.7 LTS——想要 9.x 全部能力（VECTOR、内联外键）又要长期支持的新项目（支持到 2031/2034）；26.x 创新版——能接受每季度升级、想用 Change Stream Applier/社区版线程池等最新特性的团队，支持期只有一季。规则不变：生产跟 LTS，创新版验证特性，"不跳级升级、先跑升级体检"。

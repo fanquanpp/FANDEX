@@ -33,7 +33,7 @@ Docker 部署是最便捷的方式，适合开发和测试环境：
 ### 2.1 基本 Docker 操作
 
 ```bash
- # 拉取 MySQL 镜像（推荐 8.0 或 8.4 LTS 版本）
+ # 拉取 MySQL 镜像（推荐 LTS：8.4 或 9.7；8.0 已于 2026-04 EOL，勿再选）
  docker pull mysql:8.4
  # 查看本地镜像
  docker images mysql
@@ -66,22 +66,21 @@ Docker 部署是最便捷的方式，适合开发和测试环境：
 创建 `docker-compose.yml` 文件：
 
 ```yaml
-version: '3.8'
 services:
   mysql:
-  image: mysql:8.4
-  container_name: mysql
-  environment:
-  MYSQL_ROOT_PASSWORD: root_password
-  MYSQL_DATABASE: mydb
-  MYSQL_USER: dbuser
-  MYSQL_PASSWORD: user_password
-  ports:
-    - '3306:3306'
-  volumes:
-    - mysql-data:/var/lib/mysql
-    - ./my.cnf:/etc/mysql/conf.d/my.cnf
-  command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    image: mysql:8.4
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: user_password
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/conf.d/my.cnf
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 volumes:
   mysql-data:
 ```
@@ -205,9 +204,9 @@ volumes:
 ### 4.2 CentOS/RHEL 安装
 
 ```bash
- # 安装 MySQL 仓库
- sudo yum install -y https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
- # 安装 MySQL 服务器
+ # 安装 MySQL 官方仓库（按系统版本选包：el8 用 mysql84-community-release-el8-3，el9 用 el9-4）
+ sudo yum install -y https://dev.mysql.com/get/mysql84-community-release-el9-4.noarch.rpm
+ # 安装 MySQL 服务器（该仓库默认启用 9.7 系列；要用 8.4 需编辑 /etc/yum.repos.d/mysql-community.repo 把 8.4 的 enabled 置 1、9.7 置 0）
  sudo yum install -y mysql-community-server
  # 启动服务
  sudo systemctl start mysqld
@@ -240,7 +239,7 @@ volumes:
 
 ```bash
  # 如果未安装 Homebrew，先安装
- /
+ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
  # 更新 Homebrew
  brew update
  # 安装 MySQL
@@ -287,10 +286,9 @@ volumes:
  sudo nano /etc/profile # 全局配置
  # 或
  nano ~/.bashrc # 用户级配置
- # 在文件末尾添加（根据实际安装路径）
- export PATH=$PATH:/usr/bin/mysql
- # 或
+ # 在文件末尾添加（根据实际安装路径，PATH 指向 bin 目录而非 mysql 二进制本身）
  export PATH=$PATH:/usr/local/mysql/bin
+ # Homebrew 安装的默认在 /opt/homebrew/bin（Apple Silicon）或 /usr/local/bin（Intel），通常无需额外配置
  # 使配置生效
  source /etc/profile # 全局配置
  # 或
@@ -394,5 +392,25 @@ volumes:
 | **Navicat**         | 商业工具，界面友好，功能强大，性能优秀      | 企业级数据库管理           | 付费 |
 | **phpMyAdmin**      | Web 界面，适合远程管理，无需安装客户端      | 远程管理、简单操作         | 免费 |
 | **HeidiSQL**        | 轻量级 Windows 工具，开源                   | Windows 环境下的数据库管理 | 免费 |
-| **Sequel Pro**      | macOS 专用工具，轻量快速                    | macOS 环境下的数据库管理   | 免费 |
+| **Sequel Ace**      | Sequel Pro 的社区续作，macOS 专用，轻量     | macOS 环境下的数据库管理   | 免费 |
 | **DataGrip**        | JetBrains 出品，强大的数据库 IDE            | 专业开发、复杂查询         | 付费 |
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：开发用 Docker、生产用二进制包/包管理器，为什么这么分工？源码编译什么时候才值得？
+
+参考答案（先自己答，再对照）：Docker 一条命令起环境、可丢弃可重建，适合频繁搭建的本地/CI 环境；生产要的是版本可控、补丁节奏明确与运维工具链成熟，二进制 RPM/DEB 与官方仓库配套。源码编译只在需要定制编译选项（特定 CPU 优化、特殊字符集/插件组合）时才值得——编译时间与后续升级成本远超收益。
+
+2. 概念自问：配置文件里 `[mysqld]`、`[mysql]`、`[client]` 三个组分别被谁读取？把 `port` 写进 `[client]` 会导致什么？
+
+参考答案（先自己答，再对照）：`[mysqld]` 被服务器进程 mysqld 读取；`[mysql]` 只被 mysql 客户端读取；`[client]` 被所有客户端工具（mysql、mysqldump、mysqladmin 等）读取。`port` 写进 `[client]` 不影响服务器监听端口——客户端的 port 是"连哪个端口"，服务器的 port 是"监听哪个端口"，两端要分别配置且一致。
+
+3. 判断题：`character-set-server` 配置在 `[client]` 组里会生效吗？
+
+参考答案（先自己答，再对照）：不会。它是服务器系统变量，客户端组里写了也不会被 mysqld 读取（未知的组内选项会被客户端忽略或告警）。服务器端字符集只能写进 `[mysqld]`；客户端侧对应的是 `default-character-set`。
+
+4. 概念自问：为什么配置示例写 `innodb_redo_log_capacity=512M` 而不是 `innodb_log_file_size`？
+
+参考答案（先自己答，再对照）：redo 容量从 8.0.30 起由动态变量 `innodb_redo_log_capacity` 管理，旧变量 `innodb_log_file_size` 在 8.4 已被移除——在新版本配置文件里写旧变量会导致启动告警或失败。这也是升级 MySQL 时"配置文件要跟着变更日志走"的一个缩影。

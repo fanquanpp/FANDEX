@@ -122,6 +122,32 @@ fi
 
 **"为什么我 ping 返回 access denied？"**——ping 也要认证。容器与脚本里最常见的坑是凭据传递方式：环境变量或 defaults-extra-file 文件，而不是命令行明文。
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出命令：给巡检脚本一个"探活"动作——只判断服务器活着，权限最小化。
+
+参考答案（先自己写，再对照）：
+
+```bash
+mysqladmin -u monitor -p ping    # 或配合 --defaults-extra-file 传凭据，密码不进命令行
+```
+
+`mysqladmin ping` 返回 "mysqld is alive" 且退出码 0 即存活；账号只需 USAGE 权限（探活不做任何查询）。脚本判据是退出码，不是输出文案——文案随版本变，退出码是稳定接口。
+
+2. 概念自问：`mysqladmin status` 一行输出的六个数字（Uptime/Threads/Questions/Slow queries/Opens/Flush tables）各自回答什么问题？为什么它是"速览"而 `extended-status` 才是"详查"？
+
+参考答案（先自己答，再对照）：Uptime 回答"跑多久了"（重启过没有）；Threads 回答"现在多少连接"（水位）；Questions 回答"总共处理多少语句"（吞吐基数）；Slow queries 回答"慢查询累计多少"（趋势）；Opens/Flush tables 反映表缓存压力。status 是把这六个关键计数压成一行——适合巡检脚本抓数与肉眼秒判；extended-status 输出全部计数器——归因时才需要。先速览异常、再详查根因，顺序不能反。
+
+3. 判断题：连接数爆满时，先 `mysqladmin kill` 掉一批连接止血。
+
+参考答案（先自己答，再对照）：错——kill 是止血的最后一步，先找"是谁占着"。正确顺序：`mysqladmin processlist`（或 processlist -v）看连接来源与状态，区分"慢查询堆积""空闲但未提交的事务""应用连接池泄漏"——杀错对象（比如正在提交的临界事务）等于制造新事故。定位后：优先 kill 阻塞源头的空闲事务，而不是按连接号顺序清场。
+
+4. 概念自问：mysqladmin 与 mysql CLI 的分工是什么？什么场景必须用 mysql 而不是 mysqladmin？
+
+参考答案（先自己答，再对照）：mysqladmin 是"管理动作的一行命令"——探活、状态速览、flush-logs、kill、shutdown、改密这类无结果集的运维动作；mysql 是完整 SQL 客户端——查询、事务、需要看结果集的一切操作。凡是"要在 SQL 里判断/计算"（如查 information_schema、跑事务）必须用 mysql；凡是"操作系统脚本里发一个管理指令"用 mysqladmin 更干净（退出码语义、不用处理结果集）。
+
 ## 检验清单
 
 - 会用 ping/status/extended-status/version 四个日常子命令，并读懂 status 输出的每个字段；

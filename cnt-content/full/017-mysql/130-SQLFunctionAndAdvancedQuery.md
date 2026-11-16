@@ -531,6 +531,36 @@ MySQL 不直接支持 FULL OUTER JOIN，可使用 UNION 实现：
 - 使用适当的隔离级别
 - 避免长时间锁定资源
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出查询：users 表里找出「年龄大于所有 VIP 用户年龄」的用户，给出 ALL 与标量子查询两种写法。
+
+参考答案（先自己写，再对照）：
+
+```sql
+SELECT * FROM users
+WHERE age > ALL (SELECT age FROM vip_users);
+
+SELECT * FROM users
+WHERE age > (SELECT MAX(age) FROM vip_users);
+```
+
+两者等价的条件是子查询结果非空——空集时 `> ALL` 恒为真（「大于空集里所有元素」没有反例），而标量子查询返回 NULL 使整个比较为 NULL 而恒为假。边界语义不同，是这类题最容易翻车的地方。
+
+2. 概念自问：`WHERE id NOT IN (SELECT user_id FROM blocked_users)` 有一个著名的静默陷阱，是什么？怎么防？
+
+参考答案（先自己答，再对照）：当 blocked_users.user_id 里出现哪怕一个 NULL，`NOT IN` 对每一行的判断都是 `id NOT IN (..., NULL)`，结果恒为 NULL 而非 TRUE，整个查询静默返回 0 行——没有报错，只有"查不到数"。防法：子查询列加 `IS NOT NULL` 过滤，或改用 `NOT EXISTS`（NULL 相关性判断不受列表污染）。
+
+3. 概念自问：`UNION` 与 `UNION ALL` 的区别是什么？为什么大量数据时推荐 ALL？
+
+参考答案（先自己答，再对照）：UNION 对合并结果做全行去重（需要建临时表/哈希比较，代价随行数增长），UNION ALL 直接拼接不去重。确定两段结果本来就不重叠（如按年份分段的报表）时，UNION 的去重是纯浪费——用 ALL，需要去重时再显式处理。
+
+4. 概念自问：IN 与 EXISTS 都是"存在性判断"，MySQL 8.0 起优化器还可能把它们改写，那写的时候该听谁的建议？
+
+参考答案（先自己答，再对照）：经验法则只配猜起点——外表结果集小用 IN，外表大且内表关联列有索引时 EXISTS 往往更优；但 8.0 优化器已会把 IN 半连接改写（semi-join）成与 EXISTS 同级的计划，口诀经常失效。唯一可靠的判断方式是 `EXPLAIN` 实测两版的执行计划与 `rows` 估算。
+
 ## 6. 总结
 
 本章节详细介绍了 SQL 的高级特性，包括：
