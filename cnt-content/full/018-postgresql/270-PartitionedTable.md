@@ -294,3 +294,37 @@ SELECT * FROM orders WHERE order_date BETWEEN '2024-01-01' AND '2024-01-31';
 -- 查看查询是否触发分区裁剪
 EXPLAIN SELECT * FROM orders WHERE order_date = '2024-01-15';
 ```
+
+## 教学自检
+
+遮住示例代码，先自己写再对照参考答案。
+
+### 任务一：按月分区 + 默认分区兜底
+
+需求：events 表按 created_at 做月度范围分区，要求"没有对应分区的数据也能插入成功但不落进任何月份分区"。写出建表与 2026 年 1 月、2 月分区，以及兜底分区的 DDL；插入 2026-05 数据会发生什么。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+CREATE TABLE events (id bigint, created_at timestamptz) PARTITION BY RANGE (created_at);
+CREATE TABLE events_2026_01 PARTITION OF events
+  FOR VALUES FROM ('2026-01-01') TO ('2026-02-01');
+CREATE TABLE events_2026_02 PARTITION OF events
+  FOR VALUES FROM ('2026-02-01') TO ('2026-03-01');
+CREATE TABLE events_default PARTITION OF events DEFAULT;
+```
+无 DEFAULT 时插入 2026-05 报 "no partition of relation found for row"——整条语句失败；有 DEFAULT 则数据落入兜底分区。注意 DEFAULT 分区是双刃剑：后续为 2026-05 建 `PARTITION OF ... FOR VALUES` 时，必须先扫描/清空 DEFAULT 中落在该区间的行，否则建分区失败——兜底不是免费的。
+
+</details>
+
+### 任务二：什么写法会让裁剪失效
+
+需求：同一张按月分区表，对比 `WHERE created_at >= '2026-01-01' AND created_at < '2026-03-01'` 与 `WHERE date_trunc('month', created_at) = '2026-01-01'` 的裁剪行为，并说出 PREPARE 场景下的执行时裁剪。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+裸列与常量比较可裁剪，只扫 2 个分区；列被函数包裹后优化器无法从表达式反推分区边界，裁剪失效、全部分区扫描（除非建同形状表达式索引）。PREPARE/参数化查询在计划时不知道参数值，PG 17 起支持执行时裁剪：以运行时参数实际值裁掉无关分区（PG 16 及更早对参数化裁剪支持有限，default 分区路由开销大——280 篇有展开）。
+
+</details>

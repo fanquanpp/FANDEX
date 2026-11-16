@@ -164,3 +164,34 @@ WHERE ST_DWithin(geom::geography,
 ## 下一步
 
 空间搜索是"位置相似"，[KNN 向量索引](/postgresql/320-KNNVectorIndex)则是"语义相似"——pgvector 用同样的"近似换速度"思想支撑 AI 应用的相似度检索。
+
+## 教学自检
+
+遮住示例代码，先自己写再对照参考答案。
+
+### 任务一：geometry 还是 geography
+
+需求：存"店铺位置"并做"用户 3 公里内店铺"查询。分别用 geometry 与 geography 写出距离判断，并说出两者的单位与索引注意点。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+-- geometry（平面, 单位=度）: 必须先有投影坐标系才有"米"
+WHERE ST_DWithin(shop.geom::geography, user.geom::geography, 3000)
+-- geography（球面, 单位=米）: 直接按米/球面距离算
+```
+geometry 默认 SRID 4326 下 ST_Distance 返回"度"（1 度约 111km，纬度不同误差大）——最经典的单位陷阱；geography 直接给米。两者都能建 GiST 索引，geometry 支持的操作符与精度更高、geography 免投影但可选算子少。小范围城市级应用两者都行，跨大洲或要求准确"米"时用 geography 或显式投影。
+
+</details>
+
+### 任务二：为什么 B-tree 撑不住"附近三公里"
+
+需求：解释"位置范围查询"在 B-tree 上的失败模式，GiST 用什么结构解决它。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+"附近三公里"是二维区域相交（经度区间 AND 纬度区间的笛卡尔积），B-tree 只能一维排序——建 (lon, lat) 复合索引后纬度条件用不上，本质是对每个经度值都要扫一遍。GiST 的 R 树把空间对象按"最小外接矩形"层层聚合，查询沿"哪个矩形可能相交"分支剪枝，配合 ST_DWithin 直接命中邻域。这也是 EXCLUDE 时段约束同用 GiST 的原因：它们共享"相交/包含"这一类查询形状。
+
+</details>

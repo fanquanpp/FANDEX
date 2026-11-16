@@ -896,7 +896,7 @@ LIMIT 10;
 
 ## 第六章 常见误区
 
-#### 误区一：关闭 autovacuum 改用手动 VACUUM
+### 误区一：关闭 autovacuum 改用手动 VACUUM
 
 许多 DBA 认为手动调度 VACUUM 比 autovacuum 更可控，因此关闭
 autovacuum。这是一个危险的误区。
@@ -905,7 +905,7 @@ autovacuum。这是一个危险的误区。
 手动 VACUUM 作为增强。autovacuum 的事务 ID 回卷防护机制是
 手动 VACUUM 无法替代的。
 
-#### 误区二：频繁执行 VACUUM FULL 消除膨胀
+### 误区二：频繁执行 VACUUM FULL 消除膨胀
 
 VACUUM FULL 需要 ACCESS EXCLUSIVE 锁，阻塞所有业务访问。对于
 生产环境的大表，VACUUM FULL 可能导致长时间停机。
@@ -923,7 +923,7 @@ CREATE EXTENSION pg_repack;
 SELECT repack_table('orders');  -- 几乎不影响业务
 ```
 
-#### 误区三：增大 autovacuum_max_workers 就能加速清理
+### 误区三：增大 autovacuum_max_workers 就能加速清理
 
 autovacuum_max_workers 只控制并发 worker 数量，不影响单个 worker
 的速度。过多的 worker 会增加 I/O 竞争，反而降低效率。
@@ -931,7 +931,7 @@ autovacuum_max_workers 只控制并发 worker 数量，不影响单个 worker
 正确做法：优先调整 cost_delay / cost_limit 提升 worker 速度，
 其次调整 scale_factor 确保及时触发，最后才考虑增加 worker 数。
 
-#### 误区四：全局降低 scale_factor 适用于所有表
+### 误区四：全局降低 scale_factor 适用于所有表
 
 全局降低 scale_factor 会导致小表过于频繁触发 autovacuum，浪费
 资源。
@@ -939,7 +939,7 @@ autovacuum_max_workers 只控制并发 worker 数量，不影响单个 worker
 正确做法：仅对大表和高频更新表按表降低 scale_factor，小表保持
 默认值。
 
-#### 误区五：对正在膨胀的表反复手动 VACUUM
+### 误区五：对正在膨胀的表反复手动 VACUUM
 
 ```sql
 -- 错误：反复 VACUUM 无法解决持续写入导致的膨胀
@@ -1025,3 +1025,40 @@ ALTER TABLE orders SET (
 autovacuum 调优没有万能参数，只有与写入模式匹配的参数。正确的姿势是：先观察（死元组累积速率、触发频率、单次耗时），再假设（是触发太迟、清理太慢，还是被阻塞），然后一次只改一个参数并验证效果。当膨胀已经形成、调参无法挽回时，就需要本系列第三篇的工具箱——[VACUUM 调优与排障](/postgresql/214-VACUUMTuningAndTroubleshoot)提供膨胀诊断、在线重建与事务 ID 回卷排障的完整方案。
 
 ——全文完——
+
+## 教学自检
+
+遮住正文公式与参数表，先自己算、自己答，再对照参考答案。
+
+### 任务一：算一次触发阈值
+
+需求：表 n_live_tup=5,000,000，参数默认（threshold=50、scale_factor=0.2）。死元组到多少触发 autovacuum？若把 scale_factor 降到 0.01 呢？PG 18 引入的 autovacuum_vacuum_max_threshold 对前者有何影响？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+默认：50 + 0.2 x 5,000,000 = 1,000,050 死元组才触发——大表"占比 20%"意味着先烂 100 万行，这就是默认参数下大表膨胀的主因。scale_factor=0.01 时：50 + 50,000 = 50,050。autovacuum_vacuum_max_threshold（PG 18）给百分比路径加上"死元组数上限"（默认 100,000,000，设 -1 则不启用该上限），无论比例算出多大、超过上限就必触发，防止"比例永远达不到"的巨表彻底失控。
+
+</details>
+
+### 任务二：为什么这张表三年没被 autovacuum 过
+
+需求：一张 800GB 大表 `pg_stat_user_tables` 显示 last_autovacuum 为 NULL，但 autovacuum 全局是开的。说出至少三个可能原因与对应验证 SQL。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+(1) 阈值从未达到（scale_factor 大、死元组比例低）——看 n_dead_tup 与计算阈值比较；(2) autovacuum 一直拿不到锁（长事务持 ACCESS EXCLUSIVE 冲突锁）——日志搜 `skipping vacuum of`；(3) worker 全忙或 naptime 内轮不到它——`pg_stat_progress_vacuum` 与 autovacuum 日志；(4) 表上显式关闭了 autovacuum（reloptions）——`SELECT reloptions FROM pg_class WHERE relname='...';`。
+
+</details>
+
+### 任务三：cost delay 给出后为什么反而更慢了
+
+需求：把 autovacuum_vacuum_cost_delay 从默认 2ms 调到 10ms 期望"少抢业务"，结果清理永远跑不完。解释机制并给出正确组合。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+cost limit（默认 200）是每次"刷预算"的额度，读/写/脏页各消耗额度；额度耗尽睡 cost_delay 时长。delay 调大后单位时间清理量 = limit / delay 下降，大表根本跑不完一轮。正确组合：delay 保持小（0-2ms），优先调大 cost_limit 或按表提高 cost_limit；对"要快"的表直接 autovacuum_vacuum_cost_delay=0 关节流，让 VACUUM 全速跑。原则：清理追不上产生死元组的速度，节流就是慢性自杀。
+
+</details>

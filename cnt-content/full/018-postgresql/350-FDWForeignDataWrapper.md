@@ -185,3 +185,38 @@ EXPLAIN ANALYZE SELECT count(*) FROM employees;
 ## 下一步
 
 数据能"连进来"之后，下一个问题是"如何持续同步进来"：[流复制](/postgresql/390-StreamingReplication) 与 [订阅发布](/postgresql/430-SubscribePublish) 是两个层级的答案。
+
+## 教学自检
+
+遮住示例代码，先自己写再对照参考答案。
+
+### 任务一：三层结构搭一遍 postgres_fdw
+
+需求：从本地库连 `remote (host=10.0.0.5, db=app)`，以 `reader` 用户映射到远端 `app_user`，并把远端 `orders` 暴露为本地 `foreign_orders`。写出三步 DDL；本地查询走哪个用户？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+CREATE EXTENSION postgres_fdw;
+CREATE SERVER remote_srv FOREIGN DATA WRAPPER postgres_fdw
+  OPTIONS (host '10.0.0.5', dbname 'app');
+CREATE USER MAPPING FOR reader SERVER remote_srv
+  OPTIONS (user 'app_user', password '...');
+IMPORT FOREIGN SCHEMA public LIMIT TO (orders)
+  FROM SERVER remote_srv INTO public;    -- 或 CREATE FOREIGN TABLE 手写
+```
+本地以 reader 查询 foreign_orders 时，到远端的连接使用映射的 app_user——权限判断在远端按 app_user 做，本地只需 reader 对外部表有 SELECT。三层结构的意义：服务器管"连到哪"，映射管"以谁连"，外部表管"长什么样"。
+
+</details>
+
+### 任务二：为什么远端过滤没生效
+
+需求：`SELECT * FROM foreign_orders WHERE created_at > now() - interval '1 day'` 的计划显示远端取回全表再本地过滤。说出两个常见原因与对策。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+(1) WHERE 里的表达式含远端无法安全求值的函数（本地 now()、自定义函数、易变函数），下推会改变语义，优化器放弃——改为把常量先算好（把 now() - interval 换成具体时间戳）再下推；(2) 没设 `use_remote_estimate`——优化器缺远端统计只能"猜"出全量拉取更便宜，`ALTER SERVER remote_srv OPTIONS (ADD use_remote_estimate 'true')` 让它远端 EXPLAIN 取真代价。外部表统计信息也可用 ANALYZE 收集。
+
+</details>

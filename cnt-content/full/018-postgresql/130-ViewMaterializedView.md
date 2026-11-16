@@ -48,7 +48,7 @@ REFRESH MATERIALIZED VIEW monthly_plays;
 
 代价与取舍一句话：**视图永远最新但要重算，物化视图读取飞快但会过期**。适合"算得慢、读得多、容忍分钟级延迟"的报表聚合。
 
-## 坑点与自检
+## 坑点速览
 
 - **刷新会锁读**：普通 REFRESH 拿排他锁，刷新期间查询被阻塞。要"边刷新边可读"用 `REFRESH MATERIALIZED VIEW CONCURRENTLY`，前提是物化视图上有唯一索引（`CREATE UNIQUE INDEX ... ON ...`），建视图后先补索引。
 - **以为视图是快照**：视图是存储的查询，底表变化立刻反映；要"某个时点的快照"用物化视图或普通表。
@@ -59,3 +59,29 @@ REFRESH MATERIALIZED VIEW monthly_plays;
 
 - 视图能不能写？自动可更新视图、WITH CHECK OPTION、INSTEAD OF 触发器，见[可更新视图](/postgresql/140-UpdatableView)；
 - 视图定义被重写器展开的位置，见[体系架构](/postgresql/160-SystemArchitecture)的查询处理流程一节。
+
+## 教学自检
+
+遮住示例代码，先自己写再对照参考答案。
+
+### 任务一：报表要"边刷边读"，怎么写
+
+需求：物化视图 `monthly_plays` 数据源刚更新完，要求刷新期间线上查询不被阻塞。写出刷新语句，并说明它有一个前置条件是什么、不满足会报什么错。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+`REFRESH MATERIALIZED VIEW CONCURRENTLY monthly_plays;` 前提是物化视图上存在唯一索引（`CREATE UNIQUE INDEX ON monthly_plays (month, show_name);`），没有唯一索引会报 `cannot refresh materialized view "<限定名>" concurrently`，并附 HINT `Create a unique index with no WHERE clause on one or more columns of the materialized view`——并发刷新靠新旧两份数据 diff 换入换出，必须能唯一标识行才能定位差异。普通 REFRESH 拿排他锁，刷新期间查询全被挡住。
+
+</details>
+
+### 任务二：三个场景各选视图还是物化视图
+
+需求：(a) 报表口径"活跃用户"被十几个报表引用；(b) 供后台看板读取的月度聚合，源头表每天百万行更新，看板容忍 5 分钟延迟；(c) 一次性的复杂四表 JOIN，只跑几回。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+(a) 普通视图：口径只定义一次、永远最新、不占存储；(b) 物化视图：算得慢读得多且容忍延迟，定时 REFRESH，读路径变成扫一张表；(c) 什么都不建——一次性查询直接写，建对象反而引入维护负担。判断口诀：谁承担重算成本、数据新鲜度要求多高、生命周期是不是长期。
+
+</details>

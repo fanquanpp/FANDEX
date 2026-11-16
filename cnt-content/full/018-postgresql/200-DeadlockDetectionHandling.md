@@ -360,3 +360,47 @@ COMMIT;
 -- 2. deadlock_timeout (1s)：快速发现死锁
 -- 3. statement_timeout (30s)：防止语句执行过久
 ```
+
+## 教学自检
+
+遮住示例代码，先自己写再对照参考答案。
+
+### 任务一：用两个 psql 会话复现一次死锁
+
+需求：表 `accounts(id, balance)` 已有两行 (1)(2)。写出会话 A 与会话 B 的语句顺序，使双方互相等待、触发死锁，并说出报错码。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```
+A1: UPDATE accounts SET balance=balance-1 WHERE id=1;
+B1: UPDATE accounts SET balance=balance-1 WHERE id=2;
+A2: UPDATE accounts SET balance=balance-1 WHERE id=2;   -- A 等 B
+B2: UPDATE accounts SET balance=balance-1 WHERE id=1;   -- B 等 A → 成环
+```
+死锁在 `deadlock_timeout`（默认 1s）后由等图检测发现，其中一方报
+`ERROR: deadlock detected`（SQLSTATE 40P01），另一方的 UPDATE 正常完成。四步顺序不变、只调换 B1/A2 的行号，就退化为"普通阻塞"——先成环，才有死锁。
+
+</details>
+
+### 任务二：为什么死锁要等 1 秒才被发现，怎么把发现时间调短
+
+需求：说明 `deadlock_timeout` 的作用机制与调小它的代价；再说出 lock_timeout 与它的分工。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+锁等待不会立刻触发等图分析——死锁罕见，每次等待都做全图检测太浪费；进程等锁超过 deadlock_timeout 后做一次检测。调小（如 100ms）能更快报错，但所有真阻塞都会多做检测，高并发下 CPU 开销可感知。lock_timeout 是"等锁的总时长上限"（超时自动放弃，靠应用重试），与死锁检测独立——一个管"等太久"，一个管"等成环"。
+
+</details>
+
+### 任务三：应用层对 deadlock detected 该怎么响应
+
+需求：说出捕获 SQLSTATE 40P01 后的标准动作，以及从源头减少死锁的两条设计纪律。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+捕获 40P01 后回滚该事务并整体重试（不是重放最后一条语句——事务已中止）。源头纪律：多事务修改多行时按**固定顺序**访问行（比如都按主键升序），先来者不成环；事务尽量短小，把远程调用等慢操作移出持锁窗口。配合监控：`log_lock_waits = on` 让每次超过 deadlock_timeout 的等待进日志，死锁苗头先于事故出现。
+
+</details>

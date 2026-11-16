@@ -264,3 +264,34 @@ GROUP BY ROLLUP (region, product);
 - 分组集报表见[GROUP BY 与分组集](/sql/070-GROUPBYGroupingSet)；
 - LATERAL 与派生表的专题展开在[横向连接与派生表](/sql/200-LateralDerivedTable)；
 - 查询 beyond 单机：[并行查询](/postgresql/260-ParallelQuery)讲大表报表怎么吃满核。
+
+## 教学自检
+
+练习题为开放探究；下面再给两道"先遮答案自己写、再对照"的收口题，覆盖本篇最高频的 DISTINCT ON 与 LATERAL。
+
+### 任务一：每组最近一行与每组最近三行
+
+需求：用 DISTINCT ON 求"每档节目最近一次播放"；把同一需求改成"最近三次播放"，说出哪个写法换不动。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+最近一行：
+```sql
+SELECT DISTINCT ON (show_name) show_name, played_at
+FROM plays ORDER BY show_name, played_at DESC;
+```
+最近三次：DISTINCT ON 做不到（它每组只留一行），要换 LATERAL（LIMIT 3）或 ROW_NUMBER <= 3——这正是"每组 N 行"必须上窗口/横向连接的分界线。语法纪律：DISTINCT ON 的列必须是 ORDER BY 的前缀；组内并列时取哪行由后续排序列决定。
+
+</details>
+
+### 任务二：CTE 突然变慢的排查
+
+需求：同一查询从 PG 12 前迁移过来后时快时慢。说出内联（inline）与物化（MATERIALIZED）两种 CTE 处理的差异，以及强制物化的写法。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+PG 12 起单引用、非递归、无副作用的 CTE 默认内联进主查询——优化器可下推谓词，通常更快；但"想固定只算一次"或 CTE 含易变函数时仍会物化。强制物化写 `WITH c AS MATERIALIZED (SELECT ...)`；反之强制内联用 NOT MATERIALIZED。迁移后性能异常先看 EXPLAIN 里 CTE 是不是被物化成了未下推的屏障（250 篇有排查闭环）。
+
+</details>

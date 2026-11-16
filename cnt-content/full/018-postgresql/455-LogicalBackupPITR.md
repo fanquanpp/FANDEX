@@ -239,3 +239,34 @@ docker exec pg-pitr psql -U postgres -tc \
 
 - PostgreSQL 官方文档 Chapter 25 Backup and Restore（23-25 节：SQL Dump / File-level / Continuous Archiving and PITR，PostgreSQL Licence）：<https://www.postgresql.org/docs/current/backup.html>
 - 本篇物理线细节与 450 增量备份篇互补，归档参数语义已对照 PG 17 文档核校。
+
+## 教学自检
+
+遮住示例命令，先自己写再对照参考答案。
+
+### 任务一：两种备份线各自的恢复点
+
+需求：库挂了，最近一次 pg_dump 是昨晚 02:00，WAL 归档完好且持续到现在。分别用"逻辑备份线"和"PITR 线"恢复，各自的数据丢失窗口是多少？恢复到指定时刻用哪个参数？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+pg_dump 线：恢复到昨晚 02:00 的逻辑快照，丢 02:00 之后全部变更——但跨版本、跨表选择性强（-t 只恢复单表，小事故恢复最常用）。PITR 线：基础备份（pg_basebackup）+ 从归档重放 WAL 到任意时刻，丢失窗口收敛到归档延迟（分钟级）；指定时刻用 recovery_target_time = '...'（或 recovery_target_lsn/xid），recovery_target_action = 'promote' 到点自动转正。两条线不是二选一：逻辑线管"精确取一小块"，PITR 线管"回到过去某一刻"。
+
+</details>
+
+### 任务二：pg_dump 的格式与并行恢复
+
+需求：写出"自定义格式 + 目录格式并行导出、并行恢复"的命令组合，并说明为什么默认纯 SQL 格式不适合大库。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```bash
+pg_dump -Fc -f app.dump appdb               # 自定义格式, 压缩 (导出不支持 -j)
+pg_dump -Fd -j 8 -f appdir appdb            # 目录格式, 可并行导出 (-j 仅目录格式支持)
+pg_restore -j 8 -d appdb app.dump           # 并行恢复 (PgBouncer 场景注意单事务)
+```
+纯 SQL 文本格式恢复只能单连接顺序执行 CREATE+INSERT，慢一个量级且不能选择性恢复；自定义格式（-Fc）让 pg_restore 可选表、可选只建结构（-s）、只导数据（-a）、并行（-j，恢复方向）——但 pg_dump 导出方向的 -j 只在目录格式下可用（官方文档明确 "The directory format is the only format that supports parallel dumps"），-Fc 配 -j 会直接报错。目录格式把每表拆成独立文件，是超大库并行导出的唯一选择。
+
+</details>

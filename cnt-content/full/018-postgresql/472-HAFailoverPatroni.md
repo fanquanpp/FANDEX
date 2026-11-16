@@ -237,3 +237,29 @@ psql -h 127.0.0.1 -p 5000 -tc "SELECT count(*), max(id) FROM ha_demo;"
 - Patroni 官方文档（MIT License）：<https://patroni.readthedocs.io/>
 - PostgreSQL 官方文档 Chapter 26 High Availability, Load Balancing, and Replication（PostgreSQL Licence）：<https://www.postgresql.org/docs/current/high-availability.html>
 - 本篇 Patroni 配置骨架源自 470 旧篇搬移，已按 Patroni 官方文档参数语义校订。
+
+## 教学自检
+
+遮住搭建步骤，先自己回答再对照参考答案。
+
+### 任务一：主库"假死"时 Patroni 怎么裁决
+
+需求：主库进程僵死但网络还在。Patroni 会做什么？如果三个节点里两个 DCS 网络分区只剩主库一侧，会发生什么？为什么节点数推荐奇数？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+Patroni 通过 DCS（etcd/Consul）心跳与租约判断主库状态：租约到期失联即判死，按优先级提升一个备库为新主并更新 DCS 视图。网络分区只剩主库一侧时，主库失去 DCS 租约——Patroni 会主动把本地 PostgreSQL 降级/停止，防止"旧主仍在写"的双主分裂（fencing）。奇数节点（3/5）保证 DCS 选举能在分区时仍拿到多数派；偶数节点在 2-2 分裂时谁也当不了多数派，集群反而僵住。
+
+</details>
+
+### 任务二：故障切换后的 60 秒检查单
+
+需求：Patroni 自动完成切换。列出你该立即检查的五项（拓扑、复制方向、连接入口、监控告警、旧主处置）。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+(1) `patronictl list` 确认新主与各成员角色；(2) 新主上 pg_stat_replication 确认备库已重新跟上（旧主降级为备库后 reinit）；(3) 应用侧连接入口（HAProxy/PgBouncer）是否已路由到新主——检查 HAProxy 后端状态；(4) 监控告警恢复与误报清理（切换期间的复制延迟告警）；(5) 旧主回来后确认它以备库身份加入而不是"复活成主"。另外切换后第一时间验证序列值（逻辑复制场景）与最近事务（同步提交等级）。
+
+</details>

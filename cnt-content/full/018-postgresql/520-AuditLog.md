@@ -167,3 +167,39 @@ FROM audit_log ORDER BY id;
 ## 下一步
 
 审计记录"发生过什么"，权限治理决定"本来能发生什么"：进入[行级安全 RLS](/postgresql/500-RowLevelSecurity)，让越权操作根本无法发生。
+
+## 教学自检
+
+遮住示例代码，先自己回答再对照参考答案。
+
+### 任务一：三层审计怎么分工
+
+需求：(a) 合规要求记录"谁执行了哪些 SQL"（DDL/DML 全量）；(b) 业务要求"谁能改 salary"留下行级旧值快照。各选日志级 log_statement、pgAudit 还是触发器审计表？说出 log_statement=all 为什么不能当合规方案。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+(a) pgAudit：标准合规方案，可按对象/角色精细审计、输出结构化、可对接审计平台；(b) 触发器审计表：行级镜像只有触发器做得到（日志层只有语句文本，没有旧值/新值的行语义）。log_statement=all 不当合规方案的原因：它是纯文本日志、无完整性保证（可被 DBA 删改）、参数化语句只记占位符、无法按合规口径过滤，且全量记录对性能与磁盘都是负担。分层记忆：log_statement 管排查、pgAudit 管合规、触发器管行级真相。
+
+</details>
+
+### 任务二：行级审计表设计
+
+需求：audit_log 要兼容 INSERT/UPDATE/DELETE 三种事件且能区分。写出触发器函数核心（用 to_jsonb(OLD/NEW)）与"审计表只插不改"的权限设置。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+CREATE OR REPLACE FUNCTION audit_row() RETURNS trigger AS $$
+BEGIN
+  INSERT INTO audit_log(table_name, op, old_row, new_row, changed_by, at)
+  VALUES (TG_TABLE_NAME, TG_OP,
+          to_jsonb(OLD), to_jsonb(NEW),
+          current_user, now());
+  RETURN COALESCE(NEW, OLD);
+END $$ LANGUAGE plpgsql;
+```
+INSERT 时 OLD 未定义需 COALESCE 兜底；审计表权限收成"业务角色只有 INSERT/SELECT、无 UPDATE/DELETE"，防止审计记录被篡改；配合定期归档（如按月分区）控制体积。会话身份若来自应用层（SET app.user_id），changed_by 应记 current_setting('app.user_id') 而非数据库角色。
+
+</details>

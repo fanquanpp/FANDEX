@@ -237,7 +237,7 @@ WHERE wait_event IS NOT NULL AND pid != pg_backend_pid();
   `FOR UPDATE` 等待的行如果被并发事务改过后，会基于最新版本重新
   评估条件；需要严格快照语义时配合 REPEATABLE READ 使用。
 - **死锁**：锁只是"等待"，等成环才是死锁。检测、日志解读与重试
-  策略见[死锁检测与处理](postgresql/200-DeadlockDetectionHandling)一文。
+  策略见[死锁检测与处理](/postgresql/200-DeadlockDetectionHandling)一文。
 
 ## 小结
 
@@ -247,3 +247,40 @@ WHERE wait_event IS NOT NULL AND pid != pg_backend_pid();
 - 进阶注意：用 `lock_timeout` 保护所有 DDL；`SKIP LOCKED`/`NOWAIT`
   处理高竞争；advisory 锁优先事务级；排查阻塞先看
   `pg_stat_activity.wait_event`，再按"谁阻塞谁"SQL 定位罪魁事务。
+
+## 教学自检
+
+遮住示例代码，先自己回答再对照参考答案。
+
+### 任务一：谁挡住谁
+
+需求：并发执行以下三件事——(a) 长时间 SELECT；(b) ALTER TABLE 加列；(c) 新的 SELECT。若 (a) 先启动、(b) 随后到达、(c) 最后到达，最终谁在跑、谁在等？靠什么参数避免 (b) 卡死队列？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+(a) 持 ACCESS SHARE 正常执行；(b) 的 ACCESS EXCLUSIVE 排队等 (a)；(c) 虽然只需要 ACCESS SHARE，但按"排队不让"规则必须排在 (b) 之后——于是新查询全部挂起，形成雪崩。防御：DDL 会话内先 `SET lock_timeout = '3s'`，拿不到锁快速失败重试，绝不让 ACCESS EXCLUSIVE 无限期排队。
+
+</details>
+
+### 任务二：两个 UPDATE 同一行为什么互等，两个 UPDATE 不同行呢
+
+需求：事务 1 与事务 2 各自 UPDATE 同一张表——情形一：同一行且都不改主键；情形二：不同行。分别说出两把行锁的名称与是否等待。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+情形一：双方都拿 FOR NO KEY UPDATE，该模式与自身冲突，后到者等待。情形二：行锁是按行加的（元组级），不同行不冲突，两者并行。这也解释了 FOR UPDATE 家族为什么要有四档强度——外键检查只需要 FOR KEY SHARE（不挡普通列更新），把冲突面降到最小；改主键才需要升级到 FOR UPDATE。
+
+</details>
+
+### 任务三：定时任务防重复执行，选哪种 advisory 锁
+
+需求：三个应用实例共用一个每日批处理。写出非阻塞拿锁的核心语句，并说明为什么推荐事务级变体。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+`SELECT pg_try_advisory_lock(9101);` 返回 true 才执行、false 直接退出；会话级锁在连接断开时自动释放，但连接若被连接池复用，锁会跟着"活"很久——忘 unlock 就是"任务再也不跑"的经典事故。`pg_advisory_xact_lock(9101)` 在事务结束时自动释放，从根上消除泄漏。注意单参数版本 key 是 bigint、双参数是两个 int，两边空间不通用。
+
+</details>

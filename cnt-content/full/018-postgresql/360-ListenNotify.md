@@ -156,3 +156,38 @@ SELECT pg_notification_queue_usage();   -- 接近 0（消费及时时）
 ## 下一步
 
 让通知自动触发的触发器机制值得深挖：进入 [触发器与事件触发器](/postgresql/380-TriggerEventTrigger)，把数据库的"被动响应"能力系统化。
+
+## 教学自检
+
+遮住示例代码，先自己写再对照参考答案。
+
+### 任务一：通知为什么"没收到"
+
+需求：会话 A 在事务里执行 `NOTIFY order_created, '1001';` 后 1 秒内 ROLLBACK。监听会话 B 提前执行了 `LISTEN order_created;`。B 收到通知吗？A 改成 COMMIT 呢？载荷超过多少字节会报错？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+ROLLBACK 时通知随事务一起取消——NOTIFY 是事务性的，通知在提交瞬间才真正发出，未提交事务的通知永远不可见（这保证了"听到通知必有数据"）。COMMIT 后 B 在下一次收到推送（客户端轮询/事件回调）时读到。载荷上限 8000 字节，超限报错——大对象应只传 id，消费者回查数据。
+
+</details>
+
+### 任务二：触发器 + NOTIFY 的库存告警
+
+需求：stock 表数量低于 5 时自动通知 `stock_low` 通道，载荷带商品 id。写出触发器函数并说明 SELECT 监听的轮询姿势。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+CREATE OR REPLACE FUNCTION trg_notify_low_stock() RETURNS trigger AS $$
+BEGIN
+  IF NEW.quantity < 5 THEN
+    PERFORM pg_notify('stock_low', NEW.id::text);
+  END IF;
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+```
+要点：函数里用 `pg_notify`（等价 NOTIFY 语句，可在函数内拼接载荷）；通知同样事务性。消费端 SELECT 专用连接 `LISTEN stock_low;` 后阻塞等待（libpq 的 PQnotifies 或驱动的事件回调），不要在高频轮询里塞 LISTEN——通知队列满（默认 8GB 段内排队）时监听端处理不及时会造成堆积，消费要快于生产。
+
+</details>

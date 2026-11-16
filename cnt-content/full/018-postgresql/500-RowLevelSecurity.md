@@ -181,3 +181,37 @@ SELECT rolname FROM pg_roles WHERE rolbypassrls;
 - 进阶注意：FORCE 约束表所有者；BYPASSRLS 与 SECURITY DEFINER 是
   两个隐形后门；策略列务必有索引；连接池环境用 SET LOCAL 传递租户
   上下文；上线前必须用目标应用角色做正反两个方向的验证。
+
+## 教学自检
+
+遮住示例代码，先自己写再对照参考答案。
+
+### 任务一：多租户隔离标准模板
+
+需求：orders 表按 tenant_id 隔离。应用连接统一用 app 角色。写出：启用 RLS、多租户策略、会话变量注入。并回答：没有策略匹配的表会怎样（租户 B 能看到 tenant_id 属于 A 的行吗）？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders FORCE ROW LEVEL SECURITY;   -- 连表所有者也受约束
+CREATE POLICY tenant_isolation ON orders
+  USING (tenant_id = current_setting('app.tenant_id')::int)
+  WITH CHECK (tenant_id = current_setting('app.tenant_id')::int);
+-- 应用连接后: SET app.tenant_id = '42';
+```
+策略定义"可见行（USING）与可写入行（WITH CHECK）都是本租户的"；USING 过滤 SELECT/UPDATE/DELETE 的可见面，WITH CHECK 拦住"写入不属于本租户的行"。没有匹配策略且未建 PERMISSIVE 全放行策略时，RLS 启用即默认拒绝——租户 B 看不到 A 的任何行。注意 FORCE 是防"表所有者绕过"的关键开关（superuser 与 BYPASSRLS 角色除外）。
+
+</details>
+
+### 任务二：RLS 性能陷阱
+
+需求：开启 RLS 后多租户查询从 5ms 变 800ms。说出两个常见根因与对策；说明为什么"策略里嵌子查询"要格外小心。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+根因一：策略谓词用不到索引——tenant_id 上没索引或表达式使谓词不可 sargable，每行评估 current_setting 也抹不掉全表扫；对策是保证策略列有索引、保持表达式简单（尽量直接比较列）。根因二：策略里嵌子查询/函数（如查租户表判断启用状态）会乘在每一行上，复杂策略 JOIN 进计划后估算恶化。对策：把"会变的配置"固化到会话变量，策略保持单一比较；必要时 EXPLAIN 检查 RLS 谓词是否出现在计划顶层且走索引。
+
+</details>

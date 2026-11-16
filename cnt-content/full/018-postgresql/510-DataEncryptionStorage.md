@@ -149,3 +149,36 @@ SELECT pgp_sym_decrypt(secret, 'wrong')  FROM enc_demo WHERE id = 1;  -- 报错�
 ## 下一步
 
 加密解决"偷看"，权限解决"越权"：继续[行级安全 RLS](/postgresql/500-RowLevelSecurity)，把"谁能看哪些行"交给数据库本身。
+
+## 教学自检
+
+遮住示例代码，先自己回答再对照参考答案。
+
+### 任务一：两层加密各防什么
+
+需求：磁盘加密（LUKS/云盘加密）与 pgcrypto 字段加密分别防哪类威胁？为什么"数据库文件被拷走"场景两层都要？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+磁盘加密防"物理介质被拿走"（丢服务器、回收旧盘、快照泄露）——数据在落盘时透明加密，应用无感；但它防不了"以合法身份连库读数据"与"内存中的明文"。pgcrypto 字段级加密防"绕过权限体系直接读列"（DBA 只读备份、SQL 注入读敏感列）——密钥在应用层，库里只有密文，DBA 也读不出明文。文件被拷走的完整防线 = 磁盘加密（拿走的是密文块）+ 字段加密（即使解出文件，敏感列仍是密文）+ 权限审计。
+
+</details>
+
+### 任务二：pgcrypto 的对称加密最小闭环
+
+需求：身份证号列需要可逆加密存储。写出建表、插入加密、查询解密的示例（pgp_sym_encrypt/pgp_sym_decrypt），并说出密钥管理的一个关键原则。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE TABLE persons (id bigint, id_no_enc bytea);
+INSERT INTO persons (id_no_enc)
+  VALUES (pgp_sym_encrypt('110101199001011234', '强密钥'));
+SELECT pgp_sym_decrypt(id_no_enc, '强密钥') FROM persons;
+```
+关键原则：密钥不能与密文同库存储（写在函数里、配置里都不行）——应来自应用注入（连接后 SET 自定义参数）或外部 KMS；SQL 里拼接密钥会进 pg_stat_statements/日志。另外注意加密列无法直接做等值查询与索引（查询需解密或对哈希列查询——身份证检索列可用 HMAC 单独存一列）。需查询的敏感列设计：密文列 + 密钥派生的指纹列。
+
+</details>

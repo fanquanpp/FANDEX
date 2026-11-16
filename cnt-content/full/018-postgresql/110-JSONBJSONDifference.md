@@ -10,7 +10,6 @@ updated: '2026-10-11'
 related:
   - 'postgresql/120-JSONTABLE'
   - 'postgresql/080-AdvancedSQL'
-  - 'postgresql/080-AdvancedSQL'
 prerequisites:
   - 'postgresql/010-OverviewInstallConfig'
 ---
@@ -292,3 +291,29 @@ SELECT jsonb_object('{a,b}', '{1,2}');   -- {"a": "1", "b": "2"}
 - [高级 SQL](/postgresql/080-AdvancedSQL)：jsonb_agg 与窗口函数、CTE 的组合用法。
 - [索引类型](/postgresql/220-IndexType)：GIN 的底层原理与其他索引家族。
 - [VACUUM 机制](/postgresql/210-VACUUMMechanism)：高频更新的 JSON 列为什么会膨胀、谁来清理。
+
+## 教学自检
+
+练习题已覆盖操作链；下面两道遮码收口题聚焦"选型"与"索引形状"两个最易错的决策。
+
+### 任务一：json 还是 jsonb，一张表怎么定
+
+需求：报文验签存证表与用户属性配置表，各选 json 还是 jsonb？一句话说清依据。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+验签存证选 json：原文逐字节保真（键序、空格、重复键都保留），SHA256 才能对上；jsonb 会重排键、去重取末、重写数字——验签必挂。属性配置选 jsonb：要 containment 查询（@>）、GIN 索引、键重排后的紧凑存储。默认问一句"要不要按内容查"——要，jsonb；只要原文，json。
+
+</details>
+
+### 任务二：索引建了却不走，差在哪
+
+需求：索引建在 `(payload ->> 'fw')`，查询写 `WHERE payload -> 'fw' = '"2.3.1"'::jsonb`。能用上索引吗？怎么改？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+用不上——表达式索引要求表达式与查询"同形"：`->>` 返回 text，`->` 返回 jsonb，操作符与类型都对不上。改法二选一：查询改成 `payload ->> 'fw' = '2.3.1'`（推荐，text 索引最小），或索引改成 `(payload -> 'fw')` 配 jsonb 比较值。类型转换同理：索引里带 `::int` 查询就必须带。这是表达式索引第一坑（坑点清单第 5 条的实操面）。
+
+</details>

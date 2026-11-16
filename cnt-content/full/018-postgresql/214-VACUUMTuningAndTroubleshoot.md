@@ -1688,3 +1688,40 @@ PostgreSQL 使用 32 位事务 ID，请回答：
 VACUUM 机制是 PostgreSQL MVCC 架构的必然产物，也是这套"读不阻塞写"设计的代价所在。理解它、调优它、治理它，本质上就是理解 PostgreSQL 如何优雅地管理多版本数据的生命周期。
 
 ——全文完——
+
+## 教学自检
+
+遮住正文示例与基准表，先自己写再对照参考答案。
+
+### 任务一：给出一张表的膨胀体检单
+
+需求：只允许用系统视图，说出判断"这张表膨胀了没有、有多重"的三步查询与各自的判断指标。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+(1) 粗查：`SELECT n_live_tup, n_dead_tup, last_autovacuum, last_vacuum FROM pg_stat_user_tables`——死元组占比与最近清理时间；(2) 精测：pgstattuple 扩展的 `pgstattuple('table')` 返回实际 free/dead 空间占比（stat 视图是估算，精确判断用它）；(3) 对象级：`pg_relation_size` 对比"活数据估算大小"（按元组数 x 行宽）与物理大小，差值即膨胀空间。三步从粗到细，先用 (1) 筛嫌疑、(2) 定案。
+
+</details>
+
+### 任务二：100GB 表膨胀到 350GB 且不能停机，选什么工具
+
+需求：对比 VACUUM FULL、CLUSTER、pg_repack 三条路径的锁行为，写出推荐方案与关键风险。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+VACUUM FULL/CLUSTER 都拿 ACCESS EXCLUSIVE 锁，重建期间读写全停——7x24 业务不可接受。推荐 pg_repack：在线重建，全程只持短暂锁（建触发器、建影子表阶段），切换瞬间 ACCESS EXCLUSIVE 一闪而过。风险：需要约等于表大小的临时空间；重建期间写性能下降（触发器双写）；切换窗口要选低峰，失败可回退（原表保留）。没条件装扩展时，退路是低峰窗口短暂 VACUUM FULL 或"建新表 + 拷贝 + 改名"的停机方案。
+
+</details>
+
+### 任务三：failsafe 是什么、为什么它是最后一道闸
+
+需求：说出 vacuum_failsafe_age 的默认值、触发后 VACUUM 行为有什么不同，以及为什么不应该把希望寄托在它身上。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+默认 16 亿 XID（autovacuum_freeze_max_age 的 8 倍）。触发后 VACUUM 忽略 cost limit 节流、跳过索引清理、全力冻结元组——一切为防回卷让路。它是"防数据丢失"的兜底而不是性能机制：跳过索引清理意味着膨胀继续恶化，全表冻结本身极慢。运维上应该在 age 达到 autovacuum_freeze_max_age（2 亿）之前就靠告警介入（见 180 篇四道防线），failsafe 永远不该是主角。
+
+</details>

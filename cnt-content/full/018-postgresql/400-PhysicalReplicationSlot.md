@@ -348,3 +348,34 @@ pg_ctl -D /var/lib/postgresql/data start
 -- 2. 备库移除时自动删除复制槽
 -- 3. 主库切换时复制槽自动迁移
 ```
+
+## 教学自检
+
+遮住示例代码，先自己写再对照参考答案。
+
+### 任务一：为什么主从同步需要复制槽
+
+需求：备库断网 3 小时。有槽与无槽两种情况下主库分别发生什么？说出槽的类型与对应危险。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+无槽：主库只按 wal_keep_size 保留 WAL，断网期间产生的 WAL 超过保留量就被回收，备库回来后报 "requested WAL segment has already been removed"——只能重做 pg_basebackup。有物理槽：主库为该槽无限保留 WAL——备库回来增量续传，但也可能把主库 pg_wal 撑爆导致磁盘写满停库。物理槽用于流复制（pg_create_physical_replication_slot），逻辑槽用于逻辑解码；两者的共同危险都是"持有者不回来，WAL 永远不删"。运维底线：监控 pg_replication_slots 的 active 与 wal 保留量，废弃槽及时删除。
+
+</details>
+
+### 任务二：一条监控 SQL 抓住"危险槽"
+
+需求：写出找出"非活跃槽及其保留的 WAL 大小"的查询（pg_wal_lsn_diff 计算），并给出处置动作。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+SELECT slot_name, slot_type, active, restart_lsn,
+       pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(), restart_lsn)) AS retained
+FROM pg_replication_slots WHERE NOT active;
+```
+retained 越大说明越久没消费。处置：确认持有方（备库/消费进程）是否还要——要则修复网络与消费端，不要则 `SELECT pg_drop_replication_slot('slot_name');`（在非活跃槽上执行）。把它放进巡检清单，retained 超阈值告警，是防"WAL 撑爆主库"事故的最后一道网。
+
+</details>

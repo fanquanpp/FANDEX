@@ -404,3 +404,29 @@ CREATE SUBSCRIPTION data_center_b_sub
 CONNECTION 'host=primary-b port=5432 user=replicator'
 PUBLICATION data_center_b;
 ```
+
+## 教学自检
+
+遮住正文与示例，先自己回答再对照参考答案。
+
+### 任务一：级联链路上备库的配置差异
+
+需求：A(主) -> B(级联备) -> C(再备)。C 的 primary_conninfo 应指向谁？B 需要开什么角色参数？A 挂了整条链路还能收数据吗？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+C 的 primary_conninfo 指向 B（从级联备拉 WAL，不再压主库带宽）；B 除了 standby.signal 外无需特殊角色，但 B 必须允许来自 C 的复制连接（pg_hba 放行 + B 上的 walsender 进程服务 C）。A 挂了：B、C 还在但只能消费已收到的 WAL，没有新写入源——级联不改变"只有主库能写"的事实，反而是 B 可被提升（pg_ctl promote）为新主、C 重定向到 B。级联的价值是"分发拓扑"而不是高可用本身。
+
+</details>
+
+### 任务二：槽挂在哪一层
+
+需求：C 在 B 之下，物理槽应该建在 A 还是 B 上？说出不同挂法在"B 被提升"时的后果。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+物理复制槽建在"WAL 提供者"上：C 直连 B 就在 B 上建槽（B 挂掉时 C 连不上，槽无谓保留）。B 提升为主后：A 的槽失效（主库不再从 A 拉）、B 上原有的"C 的槽"被提升操作处理（PG 13+ 支持 failover slot 前提），C 需要改 primary_conninfo 指向 B。级联 + 槽 + 提升 三者组合的正确姿势是每次拓扑变更后重查 pg_replication_slots 与 pg_stat_replication，不迁移的槽就是 WAL 泄漏点。
+
+</details>

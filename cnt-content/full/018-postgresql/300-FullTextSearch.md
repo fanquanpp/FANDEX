@@ -242,3 +242,33 @@ SELECT token, lexeme, alias, position FROM ts_debug('english', 'Running Foxes');
 - PostgreSQL 官方文档 Chapter 12 Full Text Search（PostgreSQL Licence）：<https://www.postgresql.org/docs/current/textsearch.html>
 - zhparser 项目主页（PostgreSQL Licence）：<https://github.com/amutu/zhparser>
 - pg_jieba 项目主页（BSD-3）：<https://github.com/jaiminpan/pg_jieba>
+
+## 教学自检
+
+遮住示例代码，先自己写再对照参考答案。
+
+### 任务一：从一句话到可搜索向量
+
+需求：不查正文，把 "The quick brown fox" 变成 tsvector、写出匹配 "foxes" 的查询（tsquery），并用 @@ 判断匹配。说明为什么 fox 能匹配 foxes。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+SELECT to_tsvector('english', 'The quick brown fox') @@ to_tsquery('english', 'foxes');
+-- t
+```
+to_tsvector 用字典做归一化（去掉停用词 the、词干化 fox/foxes 归并为同一词素），两侧都归一化后按词素匹配——这是全文检索与 LIKE 的本质区别：LIKE 按原文子串、tsquery 按归一化词素。检索列应存 tsvector 类型（生成列最省心）并配 GIN 索引，否则每查询现场解析。
+
+</details>
+
+### 任务二：中文搜索为什么不能直接用
+
+需求：说明 PG 默认解析器对中文的行为，zhparser/pg_jieba 补了哪一环；"工单号 ABC-123 搜不到"该用 tsquery 还是 trigram？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+默认解析器按空格/标点切词，中文整句没有空格，整段成为一个词素——搜不到。zhparser/pg_jieba 在分词环节补上（词典切词后仍是 tsvector/GIN 那套）。编号、型号类"非语言文本"（ABC-123）不走语义分词，用 pg_trgm 的 GIN 索引 + `%`/`similarity` 做模糊匹配更稳——全文检索解决"语言的词"，trigram 解决"字符的形"，两者互补。
+
+</details>

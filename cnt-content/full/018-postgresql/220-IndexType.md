@@ -258,3 +258,29 @@ WHERE relname = 'episodes' AND idx_scan = 0;
 - [全文检索](/postgresql/300-FullTextSearch)：GIN + tsvector 的完整查询工程。
 - [KNN 向量索引](/postgresql/320-KNNVectorIndex)：pgvector 把"近邻"语义推向 AI 检索。
 - [JSONB 与 JSON](/postgresql/110-JSONBJSONDifference)：GIN 在 JSONB 上的完整实战。
+
+## 教学自检
+
+遮住选型速查表，先自己选型再对照参考答案。
+
+### 任务一：六种查询形状选索引类型
+
+需求：不翻正文表格，给下列需求各选一种索引类型并说理由：(a) 手机号等值点查；(b) 文章标签"包含 postgres"；(c) 经纬度"附近三公里"；(d) 10 亿行日志按时间取最近一小时；(e) 金额范围统计已包含所有输出列；(f) 唯一性约束。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+(a) B-tree（等值/范围通吃，唯一约束只有 B-tree 支持得最完整）；(b) GIN（ containment 语义 @>）；(c) GiST（R 树形状的几何相交）；(d) BRIN（物理顺序与时间一致时块级范围摘要，极小）；(e) B-tree + INCLUDE 覆盖（Index Only Scan）；(f) B-tree（PRIMARY KEY/UNIQUE 需要）。记忆主线：B-tree 是默认答案，其余类型都是"某个形状上比 B-tree 快一个量级、其他形状上没用"的专家。
+
+</details>
+
+### 任务二：BRIN 为什么只有几 MB
+
+需求：BRIN 索引存的是什么？为什么它比 B-tree 小三个数量级？什么前提下 BRIN 才能命中？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+BRIN 按块范围（默认 128 页）只存"每段的 min/max 摘要"，10 亿行也只是几万条摘要——它不存"每行在哪"，只存"哪一段不可能有"。前提：查询条件的物理顺序必须与列的存储顺序强相关（如时间列随插入递增）；数据被 VACUUM FULL 重排或乱序插入后，摘要区间互相重叠，BRIN 退化成几乎全表扫描。与 B-tree 的分工：BRIN 省 99% 空间但只能做粗筛，B-tree 精确但按行计费。
+
+</details>

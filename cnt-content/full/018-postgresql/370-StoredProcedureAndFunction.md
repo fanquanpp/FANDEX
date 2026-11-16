@@ -320,3 +320,36 @@ RETURNS TEXT AS $$
 return reverse($_[0]);
 $$ LANGUAGE plperl;
 ```
+
+## 教学自检
+
+遮住示例代码，先自己写再对照参考答案。
+
+### 任务一：函数与存储过程各选一次
+
+需求：(a) 查询里要复用一个"价格折扣计算"； (b) 夜间批处理要做"分批提交 + 异常后继续"。各选函数还是 CALL 式存储过程？说出关键差异（事务控制、调用位置）。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+(a) 函数：必须在 SQL 表达式里可调用（SELECT discount(price)），且不能自己控制事务——由外层事务包裹。(b) 存储过程（PG 11+）：`CALL nightly_reconcile();` 独立语句执行，内部可 COMMIT/ROLLBACK 分批提交，异常处理里能"提交已完成部分再继续"。一句话：函数是表达式的一部分、过程是独立的业务动作；过程 PG 11 才有，老资料用函数 + DO 块模拟事务控制。
+
+</details>
+
+### 任务二：SECURITY DEFINER 的搜索路径劫持
+
+需求：一个 `SECURITY DEFINER` 函数内部 `SELECT * FROM audit_log` 未写 schema，恶意用户在同 schema 建了同名表。会发生什么？写出加固模板。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+SECURITY DEFINER 下函数以所有者权限执行，search_path 却可能是调用者注入的（untrusted schema 排前面），`audit_log` 解析到假表——数据被偷换甚至提权（CVE 常客）。加固模板：
+```sql
+CREATE FUNCTION f() RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = pg_catalog, public   -- 固定可信路径
+AS $$ ... $$;
+```
+规则： DEFINER 函数必须固定 search_path、内部对象全部 schema 限定、只把 DEFINER 给真正需要提权的最小函数。
+
+</details>

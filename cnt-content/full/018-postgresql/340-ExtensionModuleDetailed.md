@@ -337,3 +337,29 @@ FROM users WHERE name % '张三' ORDER BY sim DESC;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 SELECT uuid_generate_v4();   -- 新项目改用内置 gen_random_uuid()
 ```
+
+## 教学自检
+
+遮住上文表格与示例，先自己回答再对照参考答案。
+
+### 任务一：给需求配扩展
+
+需求：五个需求各配一个扩展：(a) 经纬度范围查询；(b) 语义向量检索；(c) 抓慢 SQL 排行；(d) 命令行模糊搜名字走索引；(e) 在线收缩膨胀表。能不装扩展就不装的写"内置"。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+(a) PostGIS（专用几何类型 + GiST；纯"经度纬度两列 BETWEEN"可以内置，但一旦要"附近/相交"就是 PostGIS）；(b) pgvector；(c) pg_stat_statements（_contrib 内置，加载 shared_preload_libraries 即用）；(d) pg_trgm；(e) pg_repack（内置的 VACUUM FULL 会锁全表）。判断顺序：先确认内置能力不够（gen_random_uuid 已内置省掉 uuid-ossp、pg_stat_statements 是准内置），再上三方扩展——每装一个都带来版本升级与兼容维护成本。
+
+</details>
+
+### 任务二：扩展装在哪一层
+
+需求：`CREATE EXTENSION postgis` 报 "extension not available"。说出三个排查层次（OS 包、控制文件、数据库对象），以及 `extension_control_path`（PG 18）的作用。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+层次一：OS/发行包未安装（如 apt 的 postgresql-18-postgis-3 包没装，.so 与 .control 文件不存在）；层次二：控制文件存在但不在搜索路径——PG 18 新参数 extension_control_path 可指定额外目录（此前只能放系统默认目录）；层次三：控制文件在但版本不兼容（扩展声明的 PG 版本范围不覆盖当前版本）。用 `SELECT * FROM pg_available_extensions WHERE name='postgis';` 确认数据库能"看见"哪个版本。
+
+</details>

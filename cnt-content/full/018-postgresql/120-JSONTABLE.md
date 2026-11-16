@@ -16,24 +16,31 @@ prerequisites:
   - 'postgresql/010-OverviewInstallConfig'
 ---
 
-## 1. JSON_TABLE 概述
+## 1. JSON_TABLE 解决什么问题
 
-JSON_TABLE 是 SQL:2016 标准函数，将 JSON 数据转换为关系表，PostgreSQL 17+ 支持。
+用 `->>`/`#>>` 操作符取 JSON 里的值，遇到"一个字段里装着数组、数组元素里还有嵌套对象"的结构时会写出一长串取值链，而且没法把数组元素变成"行"去 JOIN、GROUP BY、聚合——SQL 的整套关系工具在 JSON 面前用不上。
 
-## 2. 基本用法
+JSON_TABLE 是 SQL:2016 标准函数（PostgreSQL 17+ 支持），做的事就一件：**把 JSON 展平成关系表**。它的工作位置在 FROM 子句，像一个 LATERAL 表函数——对左侧的每一行 JSON，按路径展开成 0 到 N 行。两个核心概念决定你会不会用它：
+
+- **行路径**（第二个参数）：哪里切开算"一行"；
+- **COLUMNS**：切开的每一行里，怎么取"一列"。
 
 ```sql
--- 将 JSON 数组展开为行
+-- 将 JSON 数组展开为行: 行路径 '$.items[*]' 把数组每个元素变成一行
 SELECT jt.*
 FROM api_logs,
 JSON_TABLE(payload, '$.items[*]' COLUMNS (
-    product_id INTEGER PATH '$.product_id',
+    product_id INTEGER PATH '$.product_id',   -- 列路径相对行路径元素
     quantity INTEGER PATH '$.quantity',
     price NUMERIC PATH '$.price'
 )) AS jt;
 ```
 
-## 3. 嵌套列
+展平之后 WHERE、JOIN、GROUP BY 全是普通 SQL，这正是它比操作符取值链强大的原因。
+
+## 2. 嵌套列与错误处理
+
+NESTED PATH 处理"行里还有子结构"——子路径在每一行内再展开：
 
 ```sql
 -- 处理嵌套 JSON
@@ -49,12 +56,12 @@ JSON_TABLE(data, '$' COLUMNS (
 )) AS jt;
 ```
 
-## 4. 错误处理
+路径不存在、类型不匹配、展开为空，都会触发 ON ERROR / ON EMPTY 两个行为开关：
 
 ```sql
--- ERROR ON ERROR：遇到错误报错
--- EMPTY ON ERROR：遇到错误返回空
--- NULL ON ERROR：遇到错误返回 NULL（默认）
+-- ERROR ON ERROR：遇到错误报错（用于"脏数据必须立刻暴露"的校验场景）
+-- NULL ON ERROR：遇到错误返回 NULL（默认, 容忍脏数据继续跑）
+-- EMPTY [ON ERROR]：返回空（JSON_QUERY 返回 JSON 值时用 EMPTY 更贴切）
 
 SELECT jt.*
 FROM documents,
@@ -64,15 +71,17 @@ JSON_TABLE(data, '$.items[*]' COLUMNS (
 )) AS jt;
 ```
 
-## 5. 与 JSONB 操作符对比
+选择依据：数据是"可信契约"（自家系统产出）用 ERROR ON ERROR 尽早暴露；是"外部输入"（用户上传、第三方接口）用默认 NULL 并在应用层补数据质量监控。静默吞错的代价是字段悄悄全变 NULL。
+
+## 3. 与操作符取值的分工
 
 ```sql
--- JSONB 操作符方式
+-- JSONB 操作符方式: 取一两个标量, 一行对一行
 SELECT payload->>'name' AS name,
        payload->'address'->>'city' AS city
 FROM users;
 
--- JSON_TABLE 方式（更适合复杂嵌套）
+-- JSON_TABLE 方式: 结构复杂、需要展平/JOIN/聚合时
 SELECT jt.name, jt.city
 FROM users,
 JSON_TABLE(payload, '$' COLUMNS (
@@ -80,7 +89,13 @@ JSON_TABLE(payload, '$' COLUMNS (
     city VARCHAR(100) PATH '$.address.city'
 )) AS jt;
 ```
-## 创建与插入
+
+分工口诀：**取一两个标量用操作符；把数组当行、要 JOIN/聚合/批量提取用 JSON_TABLE**。与 JSONB 两大存储差异（json/jsonb）的对比见 [JSONB 与 JSON 的区别](/postgresql/110-JSONBJSONDifference)。
+## JSONB 基础操作速查
+
+以下速查覆盖与 JSON_TABLE 配套的日常操作（存储、取值、过滤、修改、聚合、索引）。JSONB 与 JSON 的存储差异及选型心智模型集中在 [JSONB 与 JSON 的区别](/postgresql/110-JSONBJSONDifference)一篇。
+
+### 创建与插入
 
 **单行写法：创建 JSONB 列**
 `<列名> JSONB`
@@ -118,7 +133,7 @@ INSERT INTO logs (tags) VALUES ('["redis", "mysql", "pg"]'::jsonb);
 
 ---
 
-## 查询操作
+### 查询操作
 
 **单行写法：使用 -> 获取 JSON 对象字段**
 `SELECT <列>->'<键>' FROM <表名>;`
@@ -157,7 +172,7 @@ SELECT tags->0 AS first_tag FROM logs;
 
 ---
 
-## 条件查询
+### 条件查询
 
 **单行写法：按 JSON 字段过滤**
 `SELECT * FROM <表名> WHERE <列>->>'<键>' = '<值>';`
@@ -196,7 +211,7 @@ SELECT * FROM products WHERE attributes ?& ARRAY['价格', '库存'];
 
 ---
 
-## 修改操作
+### 修改操作
 
 **单行写法：合并 JSON 对象**
 `SELECT <列> || '<JSON对象>' FROM <表名>;`
@@ -242,7 +257,7 @@ UPDATE products SET attributes = jsonb_set(attributes, '{折扣}', '"0.9"'::json
 
 ---
 
-## 聚合与展开
+### 聚合与展开
 
 **单行写法：JSON 聚合**
 `SELECT json_agg(<列>) FROM <表名>;`
@@ -288,7 +303,7 @@ SELECT * FROM jsonb_each('{"a": 1, "b": 2}'::jsonb) AS x(key, value);
 
 ---
 
-## 索引与性能
+### 索引与性能
 
 **单行写法：创建 GIN 索引**
 `CREATE INDEX <索引名> ON <表名> USING GIN (<列>);`
@@ -348,3 +363,47 @@ SELECT JSON_VALUE(attributes, '$.价格') FROM products WHERE id = 1;
 -- 提取 JSON 对象或数组
 SELECT JSON_QUERY(attributes, '$.地址') FROM users WHERE id = 1;
 ```
+
+## 教学自检
+
+遮住示例代码，先自己写再对照参考答案。
+
+### 任务一：把订单数组展平成行并求总额
+
+需求：`orders` 表有 `payload JSONB` 列，内容形如 `{"order_id": 7, "items": [{"product": "A", "price": 30}, {"product": "B", "price": 12}]}`。写出查询：每个订单一行总额。提示：行路径选哪里、外层要不要 GROUP BY。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+SELECT o.order_id, sum(jt.price) AS total
+FROM orders o,
+JSON_TABLE(o.payload, '$.items[*]'
+  COLUMNS (price NUMERIC PATH '$.price')) AS jt
+GROUP BY o.order_id;
+```
+要点：行路径 `$.items[*]` 把数组元素切成行，每个订单展开出的行数等于元素个数；外层 FROM 里保留了 `orders o`，GROUP BY 回到订单维度聚合——"先展平再按原行聚合"是 JSON_TABLE 最常见的使用形状。若数组不存在，JSON_TABLE 对该行展开 0 行，LEFT JOIN 语义下该订单总额为 NULL 而不是消失，取决于 FROM 写法（`,` 隐式 CROSS JOIN 会丢行，`LEFT JOIN LATERAL` 保行）。
+
+</details>
+
+### 任务二：行路径与列路径的相对关系
+
+需求：行路径写 `$.items[*]`，COLUMNS 里写 `PATH '$.price'`——这个 `$.price` 相对于谁？如果想取订单 id（在数组外层，`$.order_id`），列路径怎么写？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+列路径相对于行路径匹配出的每个元素（即 `$.items[i]`），所以 `$.price` 实际指 `$.items[i].price`。行路径写 `$.items[*]` 时，数组外的字段（如 `$.order_id`）在 COLUMNS 里拿不到——正确做法是把行路径设为 `$`、在 COLUMNS 里用 `NESTED PATH '$.items[*]'` 展开数组：订单 id 与 NESTED 列共存一行。这也是 NESTED 存在的核心价值：一层路径展一个数组，外层字段仍在。
+
+</details>
+
+### 任务三：脏 JSON 该 ERROR 还是 NULL
+
+需求：第三方回传的 JSON 偶尔缺字段。报表查询想"缺了就当 NULL"，审计查询想"缺了直接失败"。分别怎么写？默认行为是什么？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+报表用默认（省略子句即 NULL ON ERROR）；审计在列定义后加 `ERROR ON ERROR`（如 `id INTEGER PATH '$.id' ERROR ON ERROR`）。PG 17 的默认是静默 NULL——字段缺失不会报错而是返回 NULL，这让"路径写错"和"数据真的没有"难以区分，审计/校验场景必须显式 ERROR ON ERROR 才能让脏数据尽早暴露。
+
+</details>
