@@ -122,20 +122,22 @@ FFI 的内存事故几乎全是「释放责任不清」。规则只有一条：*
 use std::ffi::CString;
 
 /// 创建播放器句柄：所有权移交 C 侧
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn player_new(name: *const c_char) -> *mut Player {
     let name = unsafe { CStr::from_ptr(name) }.to_string_lossy().into_owned();
     Box::into_raw(Box::new(Player::new(name)))   // Box 变裸指针：所有权交出，Rust 不再管释放
 }
 
 /// 销毁句柄：必须由 C 侧显式调用，内存回到 Rust 释放
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn player_free(player: *mut Player) {
     if !player.is_null() {
         unsafe { drop(Box::from_raw(player)) }   // from_raw 收回所有权，drop 正常释放
     }
 }
 ```
+
+（`#[unsafe(no_mangle)]` 是 2024 edition 起的强制写法——影响符号与链接正确性的属性被归入 unsafe attributes，裸 `#[no_mangle]` 在该 edition 下是编译错误；新写法在旧 edition 中同样可用，含义不变：关闭名称修饰。）
 
 为什么必须配对 `into_raw`/`from_raw`：
 
@@ -149,7 +151,7 @@ pub extern "C" fn player_free(player: *mut Player) {
 
 ```rust
 // C 侧要长期持有：改为移交所有权（Box::into_raw），由 C 显式 free
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn register_context(ctx: *mut Context) { ... }
 
 // 或者约定「仅在回调期间有效」（文档明确写出借用窗口）
@@ -174,7 +176,7 @@ fn call_it(title: &str) {
 }
 ```
 
-（`unsafe extern` 是 2024 edition 的新写法：显式标注「这个块里的声明带 unsafe 语义」；2021 edition 用 `extern "C"` 不带 unsafe。以你项目的 edition 为准。）
+（`unsafe extern` 是 2024 edition 的新写法：显式标注「这个块里的声明带 unsafe 语义」；2021 edition 用 `extern "C"` 不带 unsafe。同理，2024 edition 起裸 `#[no_mangle]` 是硬错误，必须写成 `#[unsafe(no_mangle)]`，本文示例统一用后者。以你项目的 edition 为准。）
 
 `Cargo.toml` 的链接声明：
 
@@ -226,9 +228,9 @@ lib.player_free(h)
 引擎（如自研或 Godot 的 GDExtension 生态）以 C ABI 加载插件，Rust 侧导出生命周期三件套：
 
 ```rust
-#[no_mangle] pub extern "C" fn plugin_create() -> *mut AudioAnalyzer
-#[no_mangle] pub extern "C" fn plugin_analyze(h: *mut AudioAnalyzer, samples: *const f32, len: usize) -> i32
-#[no_mangle] pub extern "C" fn plugin_destroy(h: *mut AudioAnalyzer)
+#[unsafe(no_mangle)] pub extern "C" fn plugin_create() -> *mut AudioAnalyzer
+#[unsafe(no_mangle)] pub extern "C" fn plugin_analyze(h: *mut AudioAnalyzer, samples: *const f32, len: usize) -> i32
+#[unsafe(no_mangle)] pub extern "C" fn plugin_destroy(h: *mut AudioAnalyzer)
 ```
 
 要点：`handle` 模式（不透明指针）是插件 ABI 的标准形态——C 侧永远只拿指针不知道结构体内部（Rust 结构体可以随便改），**ABI 稳定性靠「不透明 + 函数集」而不是靠「暴露结构体布局」**；`len` 与指针成对出现（C 没有切片，数组跨界必须带长度）；引擎侧的 `destroy` 必须与 `create` 配对（第 4.1 节规则在插件形态的应用）。
@@ -251,7 +253,7 @@ openssl            # 安全封装：把 sys 的 unsafe 包成安全 API，错误
 
 ## 7. 动手实践
 
-**任务一**：完成一次最小的「导出 -> C 调用」。Rust 侧导出 `add(a: i32, b: i32) -> i32`（cdylib），用 Python ctypes 或 C 小程序加载并调用；然后故意去掉 `#[no_mangle]` 重编，观察链接失败并解释原因。
+**任务一**：完成一次最小的「导出 -> C 调用」。Rust 侧导出 `add(a: i32, b: i32) -> i32`（cdylib），用 Python ctypes 或 C 小程序加载并调用；然后故意去掉 `#[unsafe(no_mangle)]` 重编，观察链接失败并解释原因。
 
 <details>
 <summary>任务一参考观察</summary>
@@ -273,10 +275,10 @@ openssl            # 安全封装：把 sys 的 unsafe 包成安全 API，错误
 <summary>任务三参考设计</summary>
 
 ```rust
-#[no_mangle] pub extern "C" fn fingerprint_create() -> *mut Fingerprinter;
-#[no_mangle] pub extern "C" fn fingerprint_compute(
+#[unsafe(no_mangle)] pub extern "C" fn fingerprint_create() -> *mut Fingerprinter;
+#[unsafe(no_mangle)] pub extern "C" fn fingerprint_compute(
     f: *mut Fingerprinter, samples: *const f32, len: usize, out: *mut [u8; 32]) -> i32;  // 0 成功，负数错误码
-#[no_mangle] pub extern "C" fn fingerprint_destroy(f: *mut Fingerprinter);
+#[unsafe(no_mangle)] pub extern "C" fn fingerprint_destroy(f: *mut Fingerprinter);
 ```
 
 责任说明：Fingerprinter 由 create 分配、必须 destroy 一次；samples 由调用方持有、仅在 compute 期间有效（借用窗口）；out 是调用方提供的出参缓冲、compute 负责填充不负责分配——三句话把「谁分配谁释放、借用窗口」全部钉死。要点自查：错误用返回码而不是 out 参数里的错误字符串（跨语言的字符串错误处理要再分配一次，返回码让上层映射）。

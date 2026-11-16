@@ -198,3 +198,61 @@ fn main() {
 结构体把零散字段收拢成一个业务实体，`..` 更新语法与字段简写消灭样板；impl 把行为绑定到类型上，`&self`/`&mut self`/`self` 三种形态对应「只读、要改、要拿走」三种意图，关联函数承担构造器职责。一句话记忆：**struct 装数据、impl 给行为**；多种形态的建模请转向枚举与模式匹配一篇。
 
 > **动手提示**：拿你手头项目里的一个「参数散装传递」函数，把参数收拢成结构体 + 建造者，体会一次字面量初始化「必须写全字段」带来的编译期保障。
+
+## 动手实践与自检
+
+遮码自检：先遮住答案栏，自己写出代码与结论，再展开对照。
+
+1. 为「场次」建模：定义 `Show` 结构体（`title: String`、`seats_left: u32`），实现关联函数 `new`（集中默认余票）、方法 `book(&mut self, n: u32)`（余票不足时打日志并拒绝）、派生 `Debug`；在 main 里用关联函数构造、调用一次 `book`、用 `{:#?}` 打印。要求说出每个方法为什么选这个 `self` 形态。
+2. 找茬：脱离任务一的 `#[derive(Debug)]` 与 `impl` 块，只保留下面这份裸定义和 main，代码里共藏着几处编译问题？逐处指认并修复。
+
+```rust
+struct Show {
+    title: String,
+    seats_left: u32,
+}
+
+fn main() {
+    let s = Show { title: "首演" };
+    println!("{s:?}");
+    s.book(2);
+}
+```
+3. 把第 3 节 `ServerConfig` 的 `with_timeout(mut self, ...) -> Self` 改成 `&mut self` 版本，编译后比较调用写法的差异，解释链式调用为什么必须消费 `self`。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```rust
+// 任务一
+#[derive(Debug)]
+struct Show {
+    title: String,
+    seats_left: u32,
+}
+
+impl Show {
+    // 关联函数：无 self，用 Type::new(..) 调用，承担构造器职责
+    fn new(title: impl Into<String>) -> Self {
+        Show { title: title.into(), seats_left: 100 }
+    }
+    // &mut self：要修改字段，但不需要拿走所有权
+    fn book(&mut self, n: u32) {
+        if self.seats_left >= n {
+            self.seats_left -= n;
+        } else {
+            println!("余票不足：剩 {} 张", self.seats_left);
+        }
+    }
+}
+
+fn main() {
+    let mut show = Show::new("跨年夜场");
+    show.book(2);
+    println!("{show:#?}");
+}
+```
+
+要点：任务一的 `book` 选 `&mut self`——只读改字段，借用即可；`new` 是关联函数（无 self），用 `Show::new(..)` 调用。任务二：三行代码共五处问题，一个报错行可能同时携带多个错误，逐条读完全部 E0xxx 再动手改。第 1 行两处：字面量漏了 `seats_left` 字段（missing field，结构体初始化必须写全字段）；且 `"首演"` 是 `&str`、字段类型是 `String`（E0308，expected String found &str）——修复为 `title: "首演".into()` 并补上 `seats_left: 100`。第 2 行一处：裸定义没有实现 Debug，`{s:?}` 报 E0277（修复：加 `#[derive(Debug)]`，这正是任务一派生它的原因）。第 3 行两处：没有名为 `book` 的方法（no method named `book`，修复：补 impl 块）；若 `book` 按任务一的 `&mut self` 声明，`s` 还必须声明为 `let mut s`（cannot borrow `s` as mutable）。任务三：`&mut self` 版本（`fn with_timeout(&mut self, secs: u32)`，不再返回 Self）必须先 `let mut cfg = ServerConfig::new(..)`，再逐句调用 `cfg.with_timeout(60);`，链式书写消失——`with_timeout(mut self) -> Self` 拿走 self、改完再还回去，`new(..).with_timeout(..)` 的连续调用才能成立。
+
+</details>

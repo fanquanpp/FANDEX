@@ -88,8 +88,8 @@ pub fn lookup_song(id: u32) -> Option<Song> {
 逐段讲解：
 
 - `///` 标注**它下面的那一个项**（函数、结构体、字段），支持 Markdown；`//!` 标注**它所在的整个模块**，只写在文件最顶部。写反位置（`//!` 放在函数上方）会编译报错；
-- 习惯的段落标题（`# Examples`、`# Panics`、`# Errors`）是 rustdoc 的约定：`# Panics` 描述函数何时 panic（如内部 `unwrap`），`# Errors` 描述返回 `Err` 的情形——rustdoc 1.81 起的 missing_errors_doc / missing_panics_doc lint 会提醒公共 API 补这两段；
-- 文档注释本质是 `#[doc = "..."]` 属性的语法糖，所以只有 `pub` 项的文档会出现在生成的文档页里——私有函数写 `///` 不报错也不展示，团队规范里通常约定私有项用普通 `//` 注释，避免误导「这有文档」。
+- 习惯的段落标题（`# Examples`、`# Panics`、`# Errors`）是 rustdoc 的约定：`# Panics` 描述函数何时 panic（如内部 `unwrap`），`# Errors` 描述返回 `Err` 的情形——clippy 的 missing_errors_doc / missing_panics_doc（pedantic 组，分别自 1.41 / 1.51 起提供）会提醒公共 API 补这两段；
+- 文档注释本质是 `#[doc = "..."]` 属性的语法糖；rustdoc 默认只为 `pub` 项生成文档页——私有函数写 `///` 不报错也不展示，团队规范里通常约定私有项用普通 `//` 注释，避免误导「这有文档」。
 
 易错点：`///` 与函数之间不能空行（空行后 rustdoc 会警告 `unused doc comment`），且要紧贴 item 的属性与可见性声明之前。
 

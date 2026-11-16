@@ -143,7 +143,9 @@ FFI（外部函数接口）是 unsafe 最刚性的应用场景：跨语言边界
 
 ```rust
 // 导出 Rust 函数给 C 调用：no_mangle 保留原始符号名，extern "C" 用 C 调用约定
-#[no_mangle]
+// 注意：2024 edition 起这类影响正确性的属性必须写 #[unsafe(no_mangle)]
+// （unsafe attributes；2021 及更早 edition 可用裸 #[no_mangle]，新语法各 edition 均可写）
+#[unsafe(no_mangle)]
 pub extern "C" fn ticket_price(base: u32, vip: i32) -> u32 {
     // 注意：C 语言没有 bool，FFI 边界通常用 i32 承载布尔值
     // 函数体是纯安全代码：C 侧调用它无需任何 unsafe 前提
