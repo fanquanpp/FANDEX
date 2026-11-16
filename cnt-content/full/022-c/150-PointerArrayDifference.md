@@ -640,13 +640,26 @@ printf("%d\n", 2[arr]);        /* 打印什么？能编译吗？ */
 - 算术运算符（指针相减、哨兵与越界边界）（cppreference C）：https://en.cppreference.com/w/c/language/operator_arithmetic
 - GCC 警告选项（-Warray-parameter、-Wsizeof-pointer-div 等）：https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 
-## 14. 自我检查
+## 14. 遮码自检
 
-- 能不看资料复述退化规则与三条例外，并用 `&arr + 1` 跨 40 字节的实验验证 `&arr` 的类型；
-- 能解释 `void f(int a[10])` 与 `void f(int *a)` 为什么是同一个函数，并说出「长度另传」的接口惯例；
-- 拿到 `char *s = "hi"` 与 `char a[] = "hi"`，能指出两者的存储位置、各自的 `sizeof`，以及哪个能改；
-- 能向同事演示「二维数组当 `int **` 传」为什么崩在 `0x200000001` 这样的地址，并给出正确形参；
-- 能写出运行时行列数的两种动态二维数组实现，并说出各自适用场景与释放顺序。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 复述退化规则与三条例外；用 `&arr + 1` 跨 40 字节的实验验证 `&arr` 的类型（`int arr[10]`）。
+2. `void f(int a[10])` 与 `void f(int *a)` 为什么是同一个函数？接口惯例怎么定？
+3. `char *s = "hi"` 与 `char a[] = "hi"`：存储位置、各自的 sizeof、哪个能改？
+4. 演示「二维数组当 `int **` 传」为什么崩在 `0x200000001` 这样的地址，正确形参是什么？
+5. 写出运行时行列数的两种动态二维数组实现，说清各自适用场景与释放顺序。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 退化：多数场合数组名自动变成首元素指针。例外三则：`sizeof arr` 得整个数组（10 × 4 = 40）；`&arr` 得数组指针、类型是 `int (*)[10]`，跨步是整个数组——`&arr + 1` 移动 40 字节；字面量初始化 `char a[] = "hi"` 是拷贝不是指过去。
+2. 形参里的数组声明一律被调整为指针，`int a[10]` 形同 `int *a`，所以是同一个函数。接口惯例：数组参数旁必配长度参数（`void f(int a[], size_t n)`），因为函数内部拿不到原数组的长度信息。
+3. `s` 指向只读段的字面量，`sizeof s` 是 8，改 `s[0]` 是 UB；`a` 是栈上可写拷贝，`sizeof a` 是 3（含 '\0'），改 `a[0]` 合法。
+4. 二维数组内存是连续的 `i * N + j` 布局，元素是 int；`int **` 期望「装指针的数组」——函数里把 int 元素当成 8 字节指针去解引用，地址被拼成 `0x200000001` 这类乱码。正确形参：`void f(int a[][10], size_t rows)` 或 `void f(int (*a)[10], size_t rows)`，行宽必须写死。
+5. 指针数组：先 `int **m = malloc(rows * sizeof *m);` 再逐行 `m[i] = malloc(cols * sizeof **m);`——参差数组友好，从内到外逐行 free 再 free 外层。连续一维：`int *m = malloc(rows * cols * sizeof *m);` 用 `m[i * cols + j]` 寻址——规则矩阵、缓存友好、一次 free。
+
+</details>
 
 ## 本章总结
 

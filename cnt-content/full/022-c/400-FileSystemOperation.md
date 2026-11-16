@@ -603,12 +603,24 @@ printf("%zd %zd %zd\n", n1, n2, n3);
 - rename 手册页（原子替换与 EXDEV）：https://man7.org/linux/man-pages/man2/rename.2.html
 - readdir 的 POSIX 规范（errno 惯用法）：https://pubs.opengroup.org/onlinepubs/9699919799/functions/readdir.html
 
-## 13. 自我检查
+## 13. 遮码自检
 
-- 能不查资料写出 cp_sys.c 的完整骨架，并用 strace 解释 stdio 版与它 read 次数的差距；
-- 能默写 read_n 的循环结构，说出 read 返回值三种身份的处理方式与 EINTR 分支的作用；
-- 能解释 sparse.dat 为什么 ls 与 du 说不通，O_APPEND 为什么不能自己用 lseek 拼；
-- 能向同事讲清硬链接与符号链接的差别，以及「unlink 之后程序还能读出数据」的机制。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 不查资料写出 cp_sys.c 的完整骨架；用 strace 解释 stdio 版与它 read 次数的差距。
+2. 默写 read_n 的循环结构；read 返回值三种身份各怎么处理？EINTR 分支的作用？
+3. sparse.dat 为什么 ls 与 du 说不通？O_APPEND 为什么不能自己用 lseek 拼？
+4. 硬链接与符号链接的差别？「unlink 之后程序还能读出数据」的机制是什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `int in = open(src, O_RDONLY); int out = open(dst, O_WRONLY|O_CREAT|O_TRUNC, 0644); while ((r = read(in, buf, sizeof buf)) > 0) write(out, buf, r); close(in); close(out);`。stdio 版对 1 字节一次的 fgetc 有用户态缓冲，strace 里系统调用次数远少；cp_sys 每次read 是真系统调用——把 buf 开大（如 64KB）减少次数。
+2. `while (got < n) { ssize_t r = read(fd, buf + got, n - got); if (r < 0) { if (errno == EINTR) continue; return -1; } if (r == 0) break; got += r; }`。三身份：-1 出错查 errno；0 到 EOF；正数是实传字节（可能小于请求，磁盘/网络/管道都可能部分读）。EINTR 分支：信号打断的系统调用不是错误，重试。
+3. 稀疏文件：越过文件尾的 lseek + write 只落最后一个字节，中间的洞不占磁盘块——ls 看逻辑大小（很大），du 看实际占用块（很小），两者说不通是特性不是 bug。O_APPEND 由内核把「跳到末尾 + 写」做成原子动作，多进程追加不会互相覆盖；自己 lseek(END) 再 write 两步之间会被插队。
+4. 硬链接：同一 inode 的另一个名字（同分区、不能对目录）；符号链接：存路径的小文件（跨分区、可指向目录、可悬空）。unlink 删的是「名字」，inode 引用计数减一；数据与 inode 要等计数为 0 且没有进程打开它才释放——打开着的 fd 仍能一直读到数据（临时文件模式：open 后立刻 unlink，退出自动消失）。
+
+</details>
 
 ## 本章总结
 

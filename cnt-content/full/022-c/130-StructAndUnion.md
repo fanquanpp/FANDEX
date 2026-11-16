@@ -502,12 +502,30 @@ h.s = 0x0102;
 - 赋值运算符（含「结构体里的数组可以赋值」注记）：https://en.cppreference.com/w/c/language/operator_assignment
 - 相等运算符（含「结构体不可 ==、memcmp 不可靠」注记）：https://en.cppreference.com/w/c/language/operator_comparison
 
-## 14. 自我检查
+## 14. 遮码自检
 
-- 能写出 tag 声明、typedef 简化、指定初始化器、结构体数组的完整小例子；
-- 能向同事解释结构体赋值拷贝了什么、传参拷贝了什么、什么时候该改传 const 指针；
-- 能说出 `==` 比较结构体为什么是编译错误、memcmp 为什么不可靠，替代方案怎么选；
-- 能从零写出 tag + union 变体记录，说出匿名 union 是哪个标准引入、使用纪律是什么，并用成员顺序解释 sizeof 的差异。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 写出 tag 声明、typedef 简化、指定初始化器、结构体数组各一个完整小例子。
+2. 结构体赋值拷贝了什么？传参拷贝了什么？什么时候该改传 const 指针？
+3. `==` 比较结构体为什么是编译错误？memcmp 为什么不可靠？替代方案怎么选？
+4. 从零写出 tag + union 变体记录；匿名 union 是哪个标准引入的？用成员顺序解释 sizeof 的差异。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```c
+struct Point { int x, y; };                        /* tag 声明 */
+typedef struct { double score; } Score;            /* typedef 简化 */
+struct Point p = { .y = 3, .x = 1 };               /* 指定初始化器，抗成员重排 */
+struct Point pts[3] = { {1,2}, {3,4}, {5,6} };     /* 结构体数组 */
+```
+
+2. 赋值逐成员拷贝（含数组成员一起搬）；传参按 sizeof 复制整个结构体——大结构体改传 `const struct Point *`，既省拷贝又防误改。
+3. C 对结构体没有 == 运算符，直接编译报错；memcmp 连 padding 一起比，padding 是不定值，字段相等也可能判不等。替代：逐成员比较（语义清晰）；确要字节比较，先 memset 清零整个结构体再赋值。
+4. `typedef enum { SHAPE_CIRCLE, SHAPE_RECT } ShapeKind; struct Shape { ShapeKind kind; union { double r; struct { double w, h; } rect; }; };`——读 kind 决定 union 里哪个成员有效。匿名 union 是 C11 引入，省掉 `.u.r` 的 u 那层名字，纪律是只写当前 kind 对应的成员。sizeof 差异：double r 与 rect（16 字节）共享一块，union 取最大成员按对齐补齐；成员排列不同、对齐要求不同，sizeof 随之变化。
+
+</details>
 
 ## 本章总结
 

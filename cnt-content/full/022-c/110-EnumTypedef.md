@@ -422,12 +422,24 @@ ST_COUNT 哨兵让表尺寸自动跟随枚举增长；「枚举连续」这个�
 - typedef（别名语义与复杂声明示例）：https://en.cppreference.com/w/c/language/typedef
 - GCC 警告选项（-Wswitch 与 -Wswitch-enum）：https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 
-## 自我检查
+## 遮码自检
 
-- 能把一份魔数 int 状态代码重构成枚举版本，说出新增的两类编译期检查（拼错名字、switch 漏 case）；
-- 能用三步读法解释 `typedef int (*Comparator)(const void *, const void *);` 声明的是什么类型；
-- 能说出 typedef 与 #define 的两条本质差异，并复述「typedef 不创建新类型」的 Celsius/Fahrenheit 反例；
-- 能解释 error_string 为什么先做范围检查，以及 X-Macro 解决了什么漂移问题。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 把一份用 `int status = 2;` 当状态码的代码重构成枚举版本，说出新增的哪两类编译期检查。
+2. 用三步读法解释 `typedef int (*Comparator)(const void *, const void *);` 声明的是什么。
+3. typedef 与 #define 的两条本质差异是什么？「typedef 不创建新类型」用 Celsius/Fahrenheit 反例怎么讲？
+4. error_string 为什么先做范围检查？X-Macro 解决了什么漂移问题？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `typedef enum { STATUS_OK = 0, STATUS_EMPTY, STATUS_OVERFLOW } Status;`。新增检查：拼错名字（不存在的枚举常量直接编译报错，魔数不会）；switch 漏 case（-Wswitch 对穷举枚举的 switch 点名缺失分支）。
+2. 三步读法：遮住 typedef → `int (*Comparator)(const void *, const void *)` 是一个变量声明；变量名 Comparator → 类型是函数指针，指「收两个 const void * 返回 int」的比较函数；typedef 把变量名升格为类型名——之后 `Comparator cmp = compare_by_score;`。
+3. 差异一：typedef 有类型语义（编译器检查、可调试），#define 是无类型文本替换；差异二：typedef 遵守作用域，宏从定义行生效到文件尾。反例：`typedef float Celsius; typedef float Fahrenheit;` 两者互赋照样通过——同一底层类型的两个别名，不是两个新类型。
+4. 枚举弱类型，清单外的整数照样能赋进来，错误码转字符串的表按索引取值，越界索引读到数组外——所以先 `if (code < 0 || code >= MAX_ERR)` 挡住。X-Macro 让枚举常量、名字表、错误串三处数据只有一份来源，新增错误码不会漏改任何一处（不漂移）。
+
+</details>
 
 ## 本章总结
 

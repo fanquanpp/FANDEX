@@ -447,13 +447,26 @@ size_t str_trim(char *s) {
 - CMocka 文档（Apache-2.0 许可）：https://cmocka.org/
 - libcheck 文档（LGPL-2.1+ 许可）：https://libcheck.github.io/check/
 
-## 11. 自我检查
+## 11. 遮码自检
 
-- 能说出 assert 与错误码的分界线，并举出一个「不该用 assert」的场景（用户输入、资源失败）；
-- 能解释 `-DNDEBUG` 陷阱的成因与两条防线；
-- 能不看资料默写 `MT_CHECK` 宏，并解释 `do { } while (0)` 与 `#cond` 的作用；
-- 能为一个「带边界检查的字符串函数」列出至少五条契约断言；
-- 能说出手写框架升级到 Unity/CMocka/libcheck 的三个触发条件。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. assert 与错误码的分界线在哪？举一个不该用 assert 的场景。
+2. `-DNDEBUG` 陷阱怎么形成的？两条防线是什么？
+3. 不看资料默写 MT_CHECK 宏，解释 `do { } while (0)` 与 `#cond` 的作用。
+4. 给「带边界检查的字符串函数」列至少五条契约断言。
+5. 手写框架升级到 Unity/CMocka/libcheck 的三个触发条件？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. assert 管不可能发生的事（内部不变量、程序员的错）；错误码管可能发生的事（用户输入、文件不存在、内存不足）。不该用 assert 的场景：校验用户输入——release 版 assert 蒸发后校验就没了。
+2. 成因：NDEBUG 让 assert 展开为空，测试二进制若开 NDEBUG，断言集体蒸发、测试恒绿。防线一：测试构建命令里永远不出现 -DNDEBUG；防线二：框架的断言宏不依赖 assert，自己实现失败即打印并返回非 0。
+3. `#define MT_CHECK(cond) do { if (!(cond)) { fprintf(stderr, "FAIL %s:%d: %s\n", __FILE__, __LINE__, #cond); exit(1); } } while (0)`。do-while(0)：让宏在无大括号 if/else 里仍是单条语句（吃掉分号歧义）；#cond 把条件表达式字符串化，失败信息直接显示代码原文。
+4. 空串（返回安全/明确错误）；长度恰等于容量（截断且终止）；长度超容量（截断 + 返回值可判）；目标指针 NULL（拒绝而非崩溃）；源串无终止符风险（带 n 上限不越读）。
+5. 断言丰富到需要 fixture/分组（Unity）；要 mock 掉文件系统或网络（CMocka）；测试单元可能真段错误、需要进程隔离继续跑（libcheck）。
+
+</details>
 
 ## 本章总结
 

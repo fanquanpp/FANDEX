@@ -434,12 +434,24 @@ System V IPC 只是 Unix 进程间共享内存的一个门派。写代码时你�
 - ftok 手册页（路径要求、项目字符、碰撞可能）：https://man7.org/linux/man-pages/man3/ftok.3.html
 - ipcs 手册页（查看 System V IPC 设施）：https://man7.org/linux/man-pages/man1/ipcs.1.html
 
-## 自我检查
+## 遮码自检
 
-- 能不看资料说出 key、shmid、挂接地址三者各是什么，为什么不能把裸指针存进共享区；
-- 能亲手完成「init、两个 writer 并发自增、reader 读结果」的完整编排，并解释 counter 为什么恒等于 200000；
-- 能向同事讲清信号量 P/V 与「进程自己写循环检查标志」的差别，以及 SEM_UNDO 防的是什么；
-- 拿到一台「灵异现象」频出的机器，会用 ipcs/ipcrm 排查与清理遗留的 System V IPC 对象。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. key、shmid、挂接地址三者各是什么？为什么不能把裸指针存进共享区？
+2. 亲手完成「init、两个 writer 并发自增、reader 读结果」的编排，并解释 counter 为什么恒等于 200000。
+3. 信号量 P/V 与「进程自己写循环检查标志」差在哪？SEM_UNDO 防的是什么？
+4. 「灵异现象」频出的机器：ipcs/ipcrm 怎么排查与清理？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. key 是跨进程的命名（ftok 由路径与项目字符生成）；shmid 是内核段句柄（shmget 的返回值）；挂接地址是本进程地址空间里的虚地址（shmat 的返回值，各进程不同）。裸指针只有在本进程地址空间里才有意义——别的进程挂接的基址不同，存进去的指针在它那里就是野地址；共享区里只能存偏移或数据。
+2. init 用 semctl SETVAL 把信号量置 1（互斥信号量）；writer 在 P 与 V 之间读-改-写 counter，两 writer 各 100000 次；reader 最后读到 200000。原因：任何时刻只有临界区内的一个 writer 在动 counter，读-改-写不会穿插——信号量把「丢更新」挡在了门外。
+3. P 拿不到时进程睡眠进内核等待队列，不占 CPU；自旋循环检查标志空转烧 CPU 且可能一直抢不到。SEM_UNDO：进程退出时内核自动回滚它对信号量的改动——防止持锁进程崩溃后信号量永远 0、所有人卡死。
+4. `ipcs -s/-m` 列出遗留对象与属主 PID；`ipcrm -m <shmid>` / `ipcrm -s <semid>` 清理。排查思路：nattch 为 0 仍存在的段就是没人认领的遗留物——「创建者初始化、最后走的人删除」没执行。
+
+</details>
 
 ## 本章总结
 

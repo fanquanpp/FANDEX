@@ -515,12 +515,24 @@ for (size_t i = n - 1; i >= 0; i--) {   /* size_t 永远 >= 0 */
 - sizeof（操作数不求值与 size_t）：https://en.cppreference.com/w/c/language/sizeof.html
 - fmod（浮点取余）：https://en.cppreference.com/w/c/numeric/math/fmod.html
 
-## 13. 自我检查
+## 13. 遮码自检
 
-- 能说出 `10 / 3`、`-10 / 3`、`-7 % 3` 的值与依据的两条规则；
-- 能默写转换阶梯的前后各三层，并解释 `sizeof('A')` 为什么是 4；
-- 能向同事讲清 `a < b < c` 错在哪、`i = i++` 为什么编译器想怎么算都合法、怎么改一定对；
-- 能用 `-Wall` 与 `-fsanitize=undefined` 抓出本文演示的两类事故，并说出 `-Wparentheses` 提示的是哪条优先级规则。
+遮住上文示例代码与下面的答案栏，先自己算、先自己答，再展开对照。
+
+1. 口算 `10 / 3`、`-10 / 3`、`-7 % 3`，说出依据的两条规则。
+2. 默写寻常算术转换阶梯的前后各三层，并解释 `sizeof('A')` 为什么是 4。
+3. `a < b < c` 错在哪？`i = i++` 为什么编译器想怎么算都合法？怎么改一定对？
+4. 用 `-Wall` 与 `-fsanitize=undefined` 各抓本文演示的哪类事故？`-Wparentheses` 提示的是哪条规则？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `10 / 3 == 3`、`-10 / 3 == -3`、`-7 % 3 == -1`。规则：整数除法自 C99 起向零截断；余数符号跟随左操作数。
+2. 后三层 char/short 先整型提升为 int，int → unsigned int → long；前三层 long → unsigned long → double（以本机 64 位口径为准）。`'A'` 是 char，经过整型提升变成 int，所以 `sizeof('A')` 是 4。
+3. `a < b < c` 先算 `a < b` 得 0 或 1，再拿它和 c 比——不是数学上的连续比较；要写 `a < b && b < c`。`i = i++` 在两个序列点之间修改同一对象两次，标准不规定顺序，任何结果都「合法」；拆开写（`i = i + 1;` 或 `i++;`）是唯一万能解。
+4. `-Wall` 抓 `=` 误当 `==` 与可读性问题；`-fsanitize=undefined` 抓有符号溢出、越界移位这类 UB；`-Wparentheses` 提示的是「&& 优先级高于 ||」「比较与赋值混写」这类需要括号澄清的优先级组合。
+
+</details>
 
 ## 本章总结
 

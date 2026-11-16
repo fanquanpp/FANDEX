@@ -471,13 +471,26 @@ double rate = count / elapsed;                   /* 速率变负，限速窗口�
 - getrlimit(2)：软限/硬限、RLIMIT_STACK 与 /proc/pid/limits：https://man7.org/linux/man-pages/man2/getrlimit.2.html
 - clock_gettime(3)：CLOCK_REALTIME 与 CLOCK_MONOTONIC 的精确语义：https://man7.org/linux/man-pages/man3/clock_gettime.3.html
 
-## 自我检查
+## 遮码自检
 
-- 能对着 LD_DEBUG 的输出说出 ld.so 加载 .so 的四个阶段，并解释 LD_PRELOAD 抢注符号的原理；
-- 能不看资料写出 MAP_SHARED 加 MAP_ANONYMOUS 的 mmap 调用，并说出为什么映射要建在 fork 之前；
-- 能说出 getuid 与 geteuid 各回答什么问题，setuid 位在 exec 时改变了什么、没改变什么；
-- 能默写守护进程化七步各自的理由，并说出为什么第二次 fork 之后「永远拿不回终端」；
-- 能解释软限与硬限的关系、ulimit 与 getrlimit 的对应，以及「线上限额与 shell 不一致」该看哪个文件。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 对着 LD_DEBUG 的输出说出 ld.so 加载 .so 的四个阶段；LD_PRELOAD 抢注符号的原理？
+2. 不看资料写出 MAP_SHARED 加 MAP_ANONYMOUS 的 mmap 调用；映射为什么必须建在 fork 之前？
+3. getuid 与 geteuid 各回答什么问题？setuid 位在 exec 时改变什么、不改变什么？
+4. 默写守护进程化七步及各自理由；为什么第二次 fork 后「永远拿不回终端」？
+5. 软限与硬限的关系？ulimit 与 getrlimit 怎么对应？「线上限额与 shell 不一致」看哪个文件？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 四阶段：按 NEEDED/搜索顺序定位文件 → mmap 映射进地址空间 → 重定位（符号配平、填 GOT/PLT）→ 跑 .init/构造器再交棒 main。LD_PRELOAD 的库排在最前，先登记的符号先占位，后面的同名符号查表命中前者——「抢注」；setuid 程序的 secure-execution 会忽略它。
+2. `void *p = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);`。fork 复制的是进程的映射表：fork 前建立的共享映射父子指向同一物理页；fork 后各自 mmap 出来的是两块不相干的匿名内存——「互通」必须先建后 fork。
+3. getuid 答「谁启动了我」；geteuid 答「内核检查权限时把我当谁」。exec 带 setuid 位的程序时，有效 UID 换成文件属主（提权），真实 UID 不变——权力换了，出身没换。
+4. 七步：fork（脱离 shell 会话）→ setsid（自成会话、丢控制终端）→ 再 fork（确保永远不重新获得终端）→ umask(0)（自己定权限）→ chdir("/")（不占挂载点）→ 重定向 0/1/2 到 /dev/null（没有终端可读写）→ syslog 替 printf。第二次 fork 后新进程不是会话首进程，即使误开终端也拿不到控制终端。
+5. 软限是当前生效值（超过得 SIGXCPU/SIGXFSZ），硬限是软限能调的天花板；普通进程只能把软限压到 [0, 硬限]。`ulimit -s` 对应 RLIMIT_STACK。线上进程的生效限额以 /proc/self/limits 为准——shell 的 ulimit 只管自己启动的进程，systemd 服务的限额在 unit 配置里。
+
+</details>
 
 ## 本章总结
 

@@ -490,12 +490,24 @@ printf("%zu %zu %zu\n", sizeof(long), sizeof(p), sizeof(*p));
 - WSAStartup 的调用契约（必须是第一个 Winsock 函数）：https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsastartup
 - MSVC 对各 C/C++ 标准的支持动态（版本更新页）：https://learn.microsoft.com/en-us/cpp/overview/what-s-new-for-visual-cpp-in-visual-studio
 
-## 13. 自我检查
+## 13. 遮码自检
 
-- 能把一份 MSVC 报错清单按五类归因，并对每类给出第几节的搭桥手段；
-- 能默写七张对照表中任意三张，说出对应领域的迁移策略一句；
-- 能解释 Windows 文本模式的三个暗改动作，并说出哪些 fopen 模式串是安全的；
-- 能向同事讲清 LLP64 陷阱的本质（long 不是平台字长），以及兼容层与业务代码的边界划在哪。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 把一份 MSVC 报错清单按五类归因，并对每类给出对应小节的搭桥手段。
+2. 默写七张对照表中任意三张，说出对应领域的一句迁移策略。
+3. Windows 文本模式的三个暗改动作是什么？哪些 fopen 模式串是安全的？
+4. LLP64 陷阱的本质是什么？兼容层与业务代码的边界划在哪？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 五类：缺声明/头（微软前缀函数换 CRT 或条件包含）、C 标准缺口（MSVC C17 基线 + 特性探测）、类型宽度（long 换 int32_t/int64_t）、POSIX 无（对照表找 Win32 对应物）、链接库缺（ws2_32.lib 等 pragma/链接项）——对应第 2 节方言、第 4 节七张表、第 5 节数据模型、第 6 节兼容层。
+2. 任选三张（文件、进程、线程、动态库、信号、套接字、时间），各给一句：如线程 → CreateThread 换 _beginthreadex 或 C11 threads.h；套接字 → Winsock 要 WSAStartup 与 closesocket；信号 → 用控制台控制句柄或标志轮询替代 SIGINT。
+3. 暗改：\n 与 \r\n 互转；读到 Ctrl+Z（0x1A）当 EOF；写时行尾补 \r。安全模式串：一律加 b（"rb"、"wb"）关掉翻译；正斜杠路径双平台通用。
+4. long 在 Windows 是 32 位（LLP64），在 Linux 是 64 位（LP64）——「long = 指针宽度」的假设只对后者成立；精确宽度一律 int32_t/int64_t/intptr_t。边界：全部差异收敛进 portability.h 或每平台一个 .c，业务代码一个 #ifdef 都不见；CI 每个目标平台编译一遍才算数。
+
+</details>
 
 ## 本章总结
 

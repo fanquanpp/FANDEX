@@ -415,12 +415,32 @@ report:
 - CMake 官方教程（从最小项目到库、安装、测试的逐步指南）：https://cmake.org/cmake/help/latest/guide/tutorial/index.html
 - cmake_minimum_required 命令文档（策略版本与弃用时间线）：https://cmake.org/cmake/help/latest/command/cmake_minimum_required.html
 
-## 自我检查
+## 遮码自检
 
-- 能默写「目标: 依赖 + tab 命令」的最小 Makefile，并说出 make 判定重建的那句话（目标不存在或依赖比目标新）；
-- 能解释 -MMD -MP 与 -include $(DEPS) 联手解决什么问题，并复现「改头文件没重编」的完整现场；
-- 能给一段 target_link_libraries 写出 PUBLIC/PRIVATE/INTERFACE 各自的传播后果，并说出 CMake 自动处理链接顺序的机制所在（生成阶段排 -l）；
-- 拿到 missing separator 与 No cmake_minimum_required 两类报错，能各自在一分钟内定位原因并修复。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 默写「目标: 依赖 + tab 命令」的最小 Makefile，并说出 make 判定重建的那句话。
+2. -MMD -MP 与 -include $(DEPS) 联手解决什么问题？复现「改头文件没重编」的完整现场。
+3. target_link_libraries 的 PUBLIC/PRIVATE/INTERFACE 各自传播什么后果？链接顺序由哪个阶段处理？
+4. missing separator 与 No cmake_minimum_required 两类报错，各一分钟内定位并修复。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```makefile
+app: main.o utils.o
+	cc main.o utils.o -o app
+clean:
+	rm -f app *.o
+.PHONY: clean
+```
+
+判定句：目标不存在，或任一依赖比目标新（时间戳）就重建。
+2. 联手把「头文件也是依赖」这件事自动化：编译时 -MMD 生成 .d 依赖清单（-MP 给头文件配假目标防删除报错），-include 把 .d 收编进规则图。现场：先 make 出 app → touch utils.h → make → 输出显示什么都没做——因为规则里没有 .h；加上两条后 touch utils.h 触发重编。
+3. PUBLIC：本目标用且下游继承（编进自己的编译行、也传给链接我的目标）；PRIVATE：只有自己用；INTERFACE：自己不用、只传下游（纯头文件库）。链接顺序由 CMake 的生成阶段排好 -l 顺序，用户不用操心。
+4. missing separator：命令行没用 tab（缩进用了空格）——改成真 tab；No cmake_minimum_required：CMakeLists 缺策略版本声明——文件首行补 `cmake_minimum_required(VERSION 3.16)`（CMake 4.0 起对 3.5 以下声明直接报错）。
+
+</details>
 
 ## 本章总结
 

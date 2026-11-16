@@ -445,12 +445,24 @@ IPv4 地址 32 位早已耗尽，IPv6 用 128 位地址接棒。代码层面增�
 - htonl(3)（字节序转换四函数与 endianness 背景）：https://man7.org/linux/man-pages/man3/htonl.3.html
 - getaddrinfo(3)（主机名与服务解析）：https://man7.org/linux/man-pages/man3/getaddrinfo.3.html
 
-## 14. 自我检查
+## 14. 遮码自检
 
-- 能不看资料默写 socket/bind/listen/accept 五步服务器，并说出每个函数成功与失败时的返回值；
-- 能向同事解释 accept 返回新 fd 的语义，以及监听 fd 与连接 fd 的分工；
-- 能复述 read 三态（正数、0、-1）各自的含义，并写出 recv_n；
-- 面对 Address already in use，能按三因顺序排查；面对「偶现消息错乱」，能指出消息边界必须由应用层协议约定。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 默写 socket/bind/listen/accept 五步服务器；说出每个函数成功与失败时的返回值。
+2. accept 返回新 fd 的语义是什么？监听 fd 与连接 fd 的分工？
+3. 复述 read 三态（正数、0、-1）各自的含义，并写出 recv_n。
+4. Address already in use 按哪三因排查？「偶现消息错乱」的根因是什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `sockfd = socket(AF_INET, SOCK_STREAM, 0)`：成功 fd、失败 -1（errno）；`bind(sockfd, (struct sockaddr *)&addr, sizeof addr)`：成功 0、失败 -1；`listen(sockfd, backlog)`：成功 0、失败 -1；`connfd = accept(sockfd, ...)`：成功新 fd、失败 -1；之后 read/write 收发。
+2. accept 从完成队列取出一个连接，返回专属于它的连接 fd——监听 fd 只负责「排队」，永远不读写；连接 fd 才是这条会话的读写通道，一个连接一个 fd，用完 close。
+3. 正数 = 实传字节数（可能小于请求）；0 = 对端有序关闭（EOF）；-1 = 出错查 errno（EINTR 重试、EAGAIN 非阻塞无数据）。recv_n 循环到收满或 EOF：`while (got < n) { ssize_t r = read(fd, buf + got, n - got); if (r == 0) break; if (r < 0) { if (errno == EINTR) continue; return -1; } got += r; }`
+4. 三因：旧进程还没退（ss -ltnp 查占用）；TIME_WAIT 残留（SO_REUSEADDR）；特权端口（<1024 需要 root 或 CAP_NET_BIND_SERVICE）。消息错乱：TCP 只是字节流，两次 send 可能被一次 read 读走——边界必须由应用层协议（定长或长度前缀 + recv_n）维护。
+
+</details>
 
 ## 本章总结
 

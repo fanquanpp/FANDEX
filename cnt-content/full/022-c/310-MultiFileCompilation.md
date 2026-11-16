@@ -660,12 +660,24 @@ int twice(int x) { return 2 * x; }
 - nm 与符号类型字母（GNU Binutils）：https://sourceware.org/binutils/docs/binutils/nm.html
 - -fcommon / -fno-common 的现行默认（GCC）：https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html
 
-## 自我检查
+## 遮码自检
 
-- 能说出翻译单元的组成，并解释为什么两个 .c 各自定义同名的 static 函数互不冲突；
-- 能不看资料写出「.h 只放声明/类型/宏、.c 放定义、守卫齐全」的模块三件套；
-- 拿到一条 undefined reference，会先 nm 相关 .o 再动手改代码，并能说出至少三种成因；
-- 能解释头文件里写定义为什么会 multiple definition，以及 extern 变量的初始化为什么只写在定义文件。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 翻译单元由什么组成？为什么两个 .c 各自定义同名的 static 函数互不冲突？
+2. 不看资料写出「.h 只放声明/类型/宏、.c 放定义、守卫齐全」的模块三件套。
+3. 拿到一条 undefined reference，先做什么再动手改代码？说出至少三种成因。
+4. 头文件里写定义为什么会 multiple definition？extern 变量的初始化为什么只写在定义文件？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 一个 .c 文件加上它递归包含的所有头文件。static 把符号降为内部链接，每个翻译单元各有一份互不可见——两个 TU 各自的 static f 都是「文件内的 f」，符号表上根本不冲突。
+2. math_ops.h：`#ifndef MATH_OPS_H #define MATH_OPS_H` + 函数原型 `double add(double, double);` + 类型定义 + `#endif`；math_ops.c：`#include "math_ops.h"` + `double add(double a, double b) { return a + b; }`；main.c：`#include "math_ops.h"` 后调用。头文件无任何定义。
+3. 先 `gcc -c` 各自编译通过，再 `nm main.o | grep U` 看「有 U 没人接」的符号——U 声明在、没人定义。三种成因：函数/变量压根没实现；.c 忘了加进编译命令；签名不一致（C++ 还要考虑 name mangling）。
+4. 头文件被多个 .c 包含，每个 TU 各得到一份定义，链接时同名外部符号撞车。extern 声明不分配存储，若头文件里写 `extern int g = 1;` 那就成了定义——初始化属于定义，定义必须只在一个 .c：`int g = 1;`，头文件只留 `extern int g;`。
+
+</details>
 
 ## 本章总结
 

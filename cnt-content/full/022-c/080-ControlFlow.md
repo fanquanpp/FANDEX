@@ -563,12 +563,24 @@ int days_in_month(int year, int month, int *ok) {
 - GCC Case Ranges（区间 case 的 GNU 扩展说明）：https://gcc.gnu.org/onlinedocs/gcc/Case-Ranges.html
 - GCC 警告选项（-Wparentheses、-Wempty-body 等）：https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 
-## 12. 自我检查
+## 12. 遮码自检
 
-- 能默写三种分档写法，并讲清 switch 与 if 链的选型依据；
-- 能解释悬空 else 配对规则、switch 穿透语义，知道 `[[fallthrough]]` 放在哪一行；
-- 能把一段嵌套循环在 for/while/do-while 之间互化，说出 continue 在两者里的不同落点；
-- 看到 `if (x = 5)`、`for (...);`、`while (x != 1.0) x += 0.1;` 能立刻指出病灶与修法。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 默写对一段成绩做三档分类的三种写法（if 链、switch、嵌套三目），并说出 switch 与 if 链的选型依据。
+2. 悬空 else 跟谁配对？switch 忘写 break 会发生什么？故意穿透时 `[[fallthrough]]` 放哪一行？
+3. 把一段嵌套循环在 for 与 while 之间互化，说出 continue 在两者里的不同落点。
+4. 看到 `if (x = 5)`、`for (...);`、`while (x != 1.0) x += 0.1;`，各指出病灶与修法。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. if 链管任意条件与范围判断；switch 管单个整型表达式的离散取值， case 多时查表更快、漏 case 编译器可查（-Wswitch）。三个值以上的离散分档优先 switch。
+2. 悬空 else 跟最近的、还没有 else 的 if 配对（写大括号消除歧义）；忘 break 会继续执行下面所有 case 的语句直到遇到 break 或结尾；`[[fallthrough]];` 单独占一行、放在故意穿透的 case 末尾。
+3. continue 在 for 里跳到「步进表达式」再判条件，在 while/do-while 里直接跳到条件判断——所以 while 版必须把步进手动挪进循环体，否则死循环。
+4. `if (x = 5)` 是赋值不是比较，恒真且污染 x——写 `if (x == 5)`，配 `-Wall` 拦；`for (...);` 的分号是空循环体，后面块永远只跑一次——删分号；`x != 1.0` 拿浮点做等值判断，累积误差让它永不成立——改 `while (x < 1.0)` 或对差值取绝对值。
+
+</details>
 
 ## 本章总结
 

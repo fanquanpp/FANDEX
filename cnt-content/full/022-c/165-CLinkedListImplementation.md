@@ -918,13 +918,26 @@ void test_remove_head_without_special_case(void) {
 - 链表数据结构条目（cppreference 无链表页，Wikipedia Linked list 供概念对照）：https://en.wikipedia.org/wiki/Linked_list
 - glibc malloc 手册（节点分配行为）：https://www.gnu.org/software/libc/manual/html_node/Malloc-Examples.html
 
-## 16. 自我检查
+## 16. 遮码自检
 
-- 能画出「头插三个节点」每一步的内存图，并解释 `list_push_front` 的参数为什么必须是 `Node **`；
-- 能用二级指针游走写出免特判的按值删除，并说清 `indirect` 每一轮指向什么；
-- 能对照传统写法与游走写法，数出两者的分支数量差，并解释为什么分支少 bug 就少；
-- 能说出双向链表相对单向链表多出的成本，以及 LRU 为什么必须双向；
-- 能列出 free 纪律清单中的全部七条，并解释「先存 next 再 free」违反时的 ASan 报告长什么样。
+遮住上文示例代码与下面的答案栏，先自己画、先自己写，再展开对照。
+
+1. 画出「头插三个节点」每一步的内存图，解释 `list_push_front` 的参数为什么必须是 `Node **`。
+2. 用二级指针游走写出免特判的按值删除，说清 `indirect` 每一轮指向什么。
+3. 对照传统写法与游走写法，数出两者的分支数量差；为什么分支少 bug 就少？
+4. 双向链表比单向多出什么成本？LRU 为什么必须双向？
+5. 列出 free 纪律七条；「先存 next 再 free」违反时 ASan 报什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 每步：新节点 malloc 出来 → `new->next = *head;` 指向旧链头 → `*head = new;` 接管链头。参数必须 `Node **`：函数要修改的是调用方的「链头指针本身」，传 `Node *` 只拿到指针复印件，函数返回后链头原地不动。
+2. `Node **indirect = head; while (*indirect && (*indirect)->value != v) indirect = &(*indirect)->next; Node *dead = *indirect; if (dead) *indirect = dead->next; free(dead);`。indirect 每一轮指向「指向当前节点的那个指针」——第一轮是链头指针，之后是上一个节点的 next 字段。
+3. 传统写法要特判「删的是头」多一组 if；游走写法头与中间走同一条路径，4 分支降到 2 分支。每个 if 都是一条只有特定输入才会踩的路径，测试覆盖难度随分支数指数上升——分支少 bug 就少。
+4. 多一个 prev 指针（每节点 8 字节）与插入删除时两侧都要改。LRU 淘汰尾巴时要 O(1) 摘掉尾节点并维护倒数第二节点的 next——单向链表拿不到前驱，只能 O(n) 回头找，双向才能双向 O(1)。
+5. 七条：先存 next 再 free；从链上摘干净再 free；销毁整表用二级指针接住头；双向链表两侧指针都要改；头尾双指针同步收口；所有权写进接口文档；开发期常开 ASan。违反时 ASan 报 heap-use-after-free：你 free 掉的节点的 next 字段成了被读的作废内存，报告直接点名分配与释放的行号。
+
+</details>
 
 ## 本章总结
 

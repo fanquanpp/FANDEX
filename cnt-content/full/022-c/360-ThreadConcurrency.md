@@ -304,12 +304,24 @@ Config *get_config(void) {
 - ThreadSanitizer 总览（GCC 文档 -fsanitize=thread 条目所引）：https://github.com/google/sanitizers/wiki#threadsanitizer
 - pthreads 总览手册页（线程共享模型与线程 ID 的权威口径）：https://man7.org/linux/man-pages/man7/pthreads.7.html
 
-## 自我检查
+## 遮码自检
 
-- 能用一句话向同事讲清线程与 fork 子进程的区别，并指出局部变量为什么天然安全；
-- 能在纸上画时序表解释丢失的更新，说出竞态条件与数据竞争两个术语的区别；
-- 能背出数据竞争导致未定义行为的四个「冲突动作」条件，以及加锁为什么能消除它；
-- 拿到一个偶现错值的程序，会用 TSan 编译、读懂报告里两个执行流的冲突现场。
+遮住上文示例代码与下面的答案栏，先自己画、先自己答，再展开对照。
+
+1. 一句话讲清线程与 fork 子进程的区别；局部变量为什么天然安全？
+2. 在纸上画时序表解释丢失的更新；竞态条件与数据竞争两个术语差在哪？
+3. 背出数据竞争判 UB 的四个「冲突动作」条件；加锁为什么能消除它？
+4. 偶现错值的程序：TSan 怎么编译？报告里两个执行流的冲突现场怎么读？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. fork 复制整个进程（新地址空间），pthread_create 只在同一地址空间里加一条执行流。局部变量在各线程自己的栈上，别的线程没有指针够不着——天然隔离。
+2. 时序表：A 读 counter=5 → B 读 counter=5 → A 写 6 → B 写 6 → 两次自增只落一次。竞态条件是「结果依赖执行顺序」的逻辑缺陷；数据竞争是无同步地并发访问同一内存且至少一个是写——C11 判后者为未定义行为，丢账只是表象。
+3. 四条件：两个执行流、访问同一内存位置、无 happens-before 同步、至少一个是写。加锁后第二个线程必须等第一个释放才能进临界区，lock/unlock 建立起先后关系（同步于锁），「无同步」这一条被掐断——冲突不再存在。
+4. `gcc -fsanitize=thread -g demo.c -o demo && ./demo`。报告给出「WARNING: ThreadSanitizer: data race」与两条调用栈（各自线程读到/写到冲突地址的 文件:行号）及「Read/Write of size N at 0x... by thread T2 ... previous write by thread T1」——两条栈就是冲突现场。
+
+</details>
 
 ## 本章总结
 

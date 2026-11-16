@@ -501,12 +501,24 @@ int (*fn)(int) = (int (*)(int))dlsym(handle, "answer");   /* handle 来自 dlope
 - 函数指针章节（Beej's Guide to C Programming）：https://beej.us/guide/bgc/html/split/pointers-iii-pointers-to-pointers-and-more.html
 - dlsym 与 void 转换边界的 POSIX 原文（APPLICATION USAGE 节）：https://pubs.opengroup.org/onlinepubs/9799919799/functions/dlsym.html
 
-## 12. 自我检查
+## 12. 遮码自检
 
-- 能遮住代码写出 `int (*fp)(int, int)` 的声明并解释括号的作用，能区分它与 `int *f(int)`；
-- 能为 int、double、字符串各写一个 qsort 比较器，并说出减法版错在哪、`(a > b) - (a < b)` 为什么安全；
-- 能解释 void *ctx 模式解决什么问题，以及「函数指针 + 上下文」与闭包的对应关系；
-- 能说出类型不匹配、调用空指针的后果，以及对象指针与函数指针互转在 ISO C 与 POSIX 下各自的边界。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 遮住代码写出 `int (*fp)(int, int)` 的声明，解释括号的作用；它与 `int *f(int)` 差在哪？
+2. 为 int、double、字符串各写一个 qsort 比较器；减法版错在哪？`(a > b) - (a < b)` 为什么安全？
+3. void *ctx 模式解决什么问题？「函数指针 + 上下文」与闭包怎么对应？
+4. 类型不匹配、调用空指针各有什么后果？对象指针与函数指针互转的边界在 ISO C 与 POSIX 下各是什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `int (*fp)(int, int);`——括号把 `*fp` 绑成一个整体，读作「fp 是指针，指向收两个 int 返回 int 的函数」。`int *f(int)` 没有 inner 括号，f 是「收 int 返回 int * 的函数」，函数先于指针结合。
+2. int：`return (a > b) - (a < b);`；double：`return (a > b) - (a < b);`；字符串：`return strcmp(sa, sb);`。减法版 `*pa - *pb` 在两个 int 一正一负且绝对值大时下溢/上溢（有符号溢出是 UB）；比较版只产 -1/0/1，永不溢出。
+3. 回调只能传一个函数指针，C 没有闭包——ctx 把「回调要记忆的数据」打包成指针一起传，等价于闭包捕获的环境变量。
+4. 签名不匹配（少收多传）是 UB，x86-64 上常表现为栈错乱或垃圾返回值；调用 NULL 是「jump to invalid address」，ASan 点名 wild jump。ISO C 里对象指针与函数指针互转是 UB（两个地址空间）；POSIX 把 dlsym 的返回值显式转成函数指针定为可行，是唯一的官方桥梁。
+
+</details>
 
 ## 本章总结
 

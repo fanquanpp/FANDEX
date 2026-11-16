@@ -270,12 +270,24 @@ printf("%zu %zu\n", sizeof(struct Log), sizeof(struct LogGood));
 - 位域的布局由实现定义（cppreference C）：https://zh.cppreference.com/w/c/language/bit_fields
 - stdint.h 定宽整数类型手册页：https://man7.org/linux/man-pages/man3/stdint.h.0p.html
 
-## 11. 自我检查
+## 11. 遮码自检
 
-- 能对 Log 这类结构体手工推算两个排序方向的 sizeof，并说出尾部填充的去向；
-- 能向同事解释为什么含指针或 long 的结构体不能直接写进存档；
-- 能不看资料写出 put_u32le，并说出每个字节转 uint32_t 的原因；
-- 面对「结构体直接 fwrite 行不行」，能给出四个理由（padding、偏移、字节序、指针）。
+遮住上文示例代码与下面的答案栏，先自己算、先自己写，再展开对照。
+
+1. 对一个含 char、double、int 成员的结构体，手工推算按对齐值降序与乱序两种排列的 sizeof，并说出尾部填充的去向。
+2. 为什么含指针或 long 的结构体不能直接写进存档？
+3. 不看资料写出 put_u32le（把 uint32_t 按小端写入文件），并说出每个字节为什么要转 uint32_t。
+4. 「结构体直接 fwrite 行不行」——给出四个理由。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 降序（double, int, char）：8 + 4 + 1 + 尾部 3 = 16；乱序（char, double, int）：char 在 0，double 对齐 8 跳到 8 占 8 字节，int 对齐 4 落在 16 占 4，共 20，尾部补 4 凑成 24（最大对齐 8 的倍数）。尾部填充为的是数组里下一个元素仍落在最大对齐值的倍数上。
+2. 指针宽度 8 字节（64 位）但存的是本进程运行时的地址，存档里毫无意义；long 在 Windows 32 位、Linux 64 位——同一结构体两个平台 sizeof 不同，读回来就错位。布局天然随平台漂移，存档必须显式编码。
+3. `void put_u32le(FILE *f, uint32_t v) { fputc(v & 0xFF, f); fputc((v >> 8) & 0xFF, f); fputc((v >> 16) & 0xFF, f); fputc((v >> 24) & 0xFF, f); }`。每字节先与 0xFF 是因为 fputc 的参数是 int，先截到低 8 位保证只写一个字节、不受符号扩展影响。
+4. padding 是不定值（sizeof 与实际有效字节不等）；成员偏移随平台对齐规则变；字节序（int 是大端还是小端）由平台决定；指针/long 等类型宽度随数据模型变——四条都让「原样字节」读不回来。
+
+</details>
 
 ## 本章总结
 

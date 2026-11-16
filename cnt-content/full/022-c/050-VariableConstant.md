@@ -429,12 +429,24 @@ int main(void) {
 - cppreference：整数常量（进制前缀、后缀、C23 二进制与数字分隔符）：https://en.cppreference.com/w/c/language/integer_constant
 - cppreference：存储期与存储类说明符（static/extern/register 语义）：https://en.cppreference.com/w/c/language/storage_duration
 
-## 11. 自我检查
+## 11. 遮码自检
 
-- 能不看资料说清：声明与定义、初始化与赋值，各差在哪一行什么场景；
-- 能解释 zero.c 里 g、s、local 三个值为什么是那样，以及「static 变量默认 0」的实现在哪一段；
-- 面对一张 #define 与 const 的对比表，能填满并举出一个该用 const 的场景与一个必须用枚举的场景；
-- 能向同事讲清 `char *s` 与 `char s[]` 接住 "hello" 后的区别，以及为什么字面量要配 const 指针。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 不看资料说清：声明与定义、初始化与赋值，各差在哪一行、什么场景？
+2. zero.c 里 g、s、local 三个值为什么是那样？「static 变量默认 0」靠什么机制？
+3. #define 与 const 各有什么长短？举一个该用 const 的场景与一个必须用枚举的场景。
+4. `char *s` 与 `char s[]` 接住 "hello" 后有什么区别？为什么字面量要配 const 指针？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 声明只介绍名字（`extern int x;`），定义才分配存储（`int x = 1;`）——差在是否分配内存；初始化是诞生时的第一个值，赋值是之后的覆盖——差在只发生一次还是随时发生。
+2. g 与 s 是静态对象（全局、static 局部），静态存储期默认清零，所以打印 0；local 是自动对象住栈上，值不确定。「默认 0」的实现是可执行文件里 .bss 段的清零约定，不是运行时逐个赋值。
+3. const 有类型、编译器能查错、调试器可见，适合「有类型的常量」；#define 无类型无作用域，适合条件编译与文本替换场景。必须用枚举的场景：要一组编译期整数常量且配 switch（case 标签要求整型常量表达式，const 变量在 C 里不算）。
+4. `char *s = "hello";` 指向只读的无名静态数组，写它是 UB；`char s[] = "hello";` 把内容拷进本栈上可写数组。字面量配 `const char *` 是让编译器替你拦下写操作。
+
+</details>
 
 ## 本章总结
 

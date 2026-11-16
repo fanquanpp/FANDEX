@@ -496,12 +496,24 @@ printf("%s\n", _Generic((3.14f), float: "float", double: "double", default: "?")
 - Clang 的 C23 支持状态（typeof 对应提案 N2927/N2930）：https://clang.llvm.org/c_status.html
 - Modern C（Jens Gustedt，C23 版免费在线，泛型选择章节）：https://gustedt.gitlabpages.inria.fr/modern-c/
 
-## 11. 自我检查
+## 11. 遮码自检
 
-- 能不看资料写出「函数族 + _Generic + 宏」三件套的伪重载骨架，并说出每个部件的职责；
-- 能用 `i++` 实验向同事证明控制表达式不求值，并解释为什么伪重载宏的参数只求值一次；
-- 看到 `duplicate type ... in '_Generic'` 与 `not compatible with any association` 两类报错，能各说出一条成因与修法；
-- 能说出 `const int`、`int[10]`、函数名进开关前的三步整形，以及 `&arr` 为什么能保住数组身份。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 不看资料写出「函数族 + _Generic + 宏」三件套的伪重载骨架，说出每个部件的职责。
+2. 用 `i++` 实验证明控制表达式不求值；伪重载宏的参数为什么只求值一次？
+3. `duplicate type ... in '_Generic'` 与 `not compatible with any association` 两类报错各怎么来的、怎么修？
+4. `const int`、`int[10]`、函数名进开关前经历哪三步整形？`&arr` 为什么能保住数组身份？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 函数族 `double abs_d(double); int abs_i(int);` 保证类型安全与单次求值；`_Generic((x), int: abs_i, double: abs_d, default: abort)` 做编译期类型分派；`#define ABS(x) _Generic(...)` 给统一名字。宏是门面，查表选函数，函数干活。
+2. `printf("%d", _Generic(i++, int: 0, default: 1))` 打印后 i 不变——控制表达式只取类型不取值。宏参数只传给 _Generic 一处（或先把 `(x)` 求值进临时变量再查类型），所以不重复求值；若宏里把 `(x)` 展开多处，副作用就重复了——这正是三件套要规避的。
+3. duplicate type：两个关联类型相同（如同时列 int 与 const int 被剥离后重合）——删重复项或加一层实际类型不同的包装；not compatible：控制表达式的类型剥完形后不匹配任何关联且无 default——补 default 分支，或核对自己的类型假设。
+4. 剥离三步：剥顶层限定符（const int 变 int）、数组转首元素指针（int[10] 变 int *）、函数名转函数指针。`&arr` 的类型是「指向整个数组的指针」，不在「数组自动转指针」的剥离名单里，所以能进开关与 int[10] 区分。
+
+</details>
 
 ## 本章总结
 

@@ -503,12 +503,24 @@ printf("world\n");
 
 进阶书目：W. Richard Stevens《UNIX 环境高级编程》第 8 章（进程）与 Michael Kerrisk《Linux/UNIX 系统编程手册》第 24 至 28 章，是本文主题的两部权威参考。
 
-## 13. 自我检查
+## 13. 遮码自检
 
-- 能对别人讲清 `ls | grep .c` 从敲下回车到屏幕出字的全过程，指认每一步用了哪个系统调用；
-- 能默写「fork 返回三种值各给谁」，并解释为什么 fork 前要 fflush；
-- 给一张 STAT 为 Z 的 ps 截图，能说出成因、后果与两种修法；
-- 能不看书写出 pipe + fork + dup2 + exec + waitpid 的管道样板，并指出「谁必须关闭哪个描述符」。
+遮住上文示例代码与下面的答案栏，先自己讲、先自己写，再展开对照。
+
+1. 讲清 `ls | grep .c` 从敲下回车到屏幕出字的全过程，指认每一步用了哪个系统调用。
+2. 默写 fork 返回的三种值各给谁；为什么 fork 前要 fflush？
+3. ps 截图里 STAT 为 Z：成因、后果、两种修法。
+4. 不看书默写 pipe + fork + dup2 + exec + waitpid 管道样板，并指出「谁必须关闭哪个描述符」。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. shell 解析竖线 → pipe() 建内核管道 → fork 两次 → 子进程 1 dup2(pfd[1], 1) 后 exec("ls")，子进程 2 dup2(pfd[0], 0) 后 exec("grep") → 父进程 waitpid 收尸 → ls 的 stdout 写进管道（write），grep 从 stdin 读出（read）匹配行再 write 回自己的 stdout。涉及：pipe、fork、dup2、execve、waitpid、write/read。
+2. 返回 -1 给父进程（失败）；返回 0 给子进程；返回子进程 PID 给父进程。fork 复制的是整个 stdio 缓冲区：若缓冲区里还有没刷出的文本，父子各刷一份——先 fflush 清空再分身。
+3. Z = 僵尸：子进程已退出，父进程没 wait，进程表里的条目还挂着。后果：占 PID 与进程表项，多了会耗尽。修法：父进程 wait/waitpid；或不等收尸的父进程退出让 init/systemd 接管。
+4. 样板（见第 5 节）：父进程 pipe 后 fork；写端进程 exec 前必须 dup2(pfd[1], 1) 并关闭 pfd[0]（否则读端永不见 EOF）；读端进程 dup2(pfd[0], 0) 并关闭 pfd[1]（否则写端没真正关、SIGPIPE/EOF 语义都乱）。规则：不用的那一端一律立刻关闭。
+
+</details>
 
 ## 本章总结
 

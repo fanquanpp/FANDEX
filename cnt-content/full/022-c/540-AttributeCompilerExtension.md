@@ -280,12 +280,24 @@ printf("%u\n", h->len);
 - GCC 变量属性文档（packed/aligned 等）：https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html
 - GCC 函数属性（constructor/format/noreturn 等）：https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html
 
-## 11. 自我检查
+## 11. 遮码自检
 
-- 能写出带 `format` 属性的日志包装并让它抓出一个真实格式串错误；
-- 能背出 C23 五个常用标准属性各自管什么，并知道扩展写法 `[[gnu::...]]` 的命名空间含义；
-- 能说出 `packed` 的用途、代价（未对齐访问）与 `aligned` 「只抬不压」的规则；
-- 能用宏隔离写出跨编译器的属性抽象，并说出「未知属性被忽略」带来的静默失效风险与自查法。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 写出带 format 属性的日志包装，并让它抓出一个真实格式串错误。
+2. 背出 C23 五个常用标准属性各管什么；`[[gnu::...]]` 的命名空间含义是什么？
+3. packed 的用途与代价？aligned「只抬不压」是什么规则？
+4. 用宏隔离写出跨编译器的属性抽象；「未知属性被忽略」的风险怎么自查？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `__attribute__((format(printf, 1, 2))) void log_msg(const char *fmt, ...);` 之后写 `log_msg("%s", 42);`——编译器把「格式串第 1 个 %s 对上第 2 个参数是 int」报成警告。三个数字：格式串位置、变参起点、printf 风格。
+2. deprecated 管迁移警告、nodiscard 管忽略返回值警告、fallthrough 管贯穿声明、noreturn 管不返回承诺、maybe_unused 管未用警告。`[[gnu::packed]]` 把属性限定在 gnu 命名空间——编译器只认自己命名空间里的扩展属性，标准家族与厂商扩展互不污染，保留字冲突也少。
+3. packed 去掉成员间填充（跨协议/寄存器对话），代价是成员可能未对齐——不对齐访问在某些架构直接总线错误，性能普遍下降。aligned 只能把对齐往大调：类型对齐 4，`aligned(8)` 合法；`aligned(2)` 不降——对齐是承诺不是请求。
+4. `#if defined(__GNUC__) #define NOINLINE __attribute__((noinline)) #elif defined(_MSC_VER) #define NOINLINE __declspec(noinline) #else #define NOINLINE #endif`——业务代码只见 NOINLINE。自查：故意写一个应触发属性的调用（如 deprecated 函数照用），若编译器一声不吭，说明该编译器忽略了这个属性——别赌它生效，用「故意错误」验证。
+
+</details>
 
 ## 本章总结
 

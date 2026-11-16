@@ -383,3 +383,24 @@ int main(void) {
 - `size_t` 无符号回绕、EOF 必须用 int 接、ctype 函数参数要先转 unsigned char——这三类类型层陷阱编译器通常不会警告。
 - 解析不可信输入的完整链条：fgets 读行 -> strtok_r 切分 -> strtol 带错误检测，比 scanf/atoi 系列可控得多。
 - 比较函数、类型宽限（long 转换）、浮点误差等"约定值"在不同平台上语义一致，是标准库可移植性的核心价值；涉及文件系统、进程、信号时才退回到 POSIX 层，见 [POSIX 系统调用速查](/c/420-CPosixSystemCall)。
+
+## 遮码自检
+
+遮住上文速查表与示例、先自己答，再展开对照。
+
+1. 四大常备头文件各管什么？指针型函数与整型返回函数的失败信号各是什么？
+2. `size_t` 无符号回绕怎么把「判断剩余空间」写炸？给安全写法。
+3. 为什么 EOF 必须用 int 接？ctype 函数的参数为什么要先转 unsigned char？
+4. 不查表默写「fgets → strtok_r → strtol 带错误检测」的解析链条。
+5. 涉及进程、信号、套接字时为什么离开标准库、退回 POSIX 层？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. stdio 输入输出、string 字节串、stdlib 内存/转换/排序、math 数学。指针型失败返回 NULL（fopen/malloc/strchr），整型失败返回 -1 或 EOF（fgetc/printf）——用前必须检查，没有例外。
+2. `if (size - used < 10)` 在 used > size 时回绕成巨大的无符号数，判断恒真/恒假——边界判断用 `used <= size - 10` 前先保证 size >= used，或全部改用有符号ptrdiff_t 比较。
+3. EOF 是 -1：char 无符号时 -1 存不进来、有符号时 0xFF 会误判成 EOF，只有 int 同时装下 256 个字符值与 EOF。ctype 的参数要求以 unsigned char 值传入：直接传带符号 char（负值）是 UB，`isalpha((unsigned char)c)`。
+4. `if (!fgets(line, sizeof line, fp)) goto eof; char *tok = strtok_r(line, ", ", &save); while (tok) { char *end; long v = strtol(tok, &end, 10); if (end == tok || *end != '\0') goto bad; tok = strtok_r(NULL, ", ", &save); }`——每一步失败可见，不静默吞错。
+5. 标准库只承诺九大头的可移植契约；进程/信号/套接字是操作系统的地界（POSIX 或 Win32 各一套）——跨平台代码要么条件编译两套实现，要么收敛进 portability 层。
+
+</details>

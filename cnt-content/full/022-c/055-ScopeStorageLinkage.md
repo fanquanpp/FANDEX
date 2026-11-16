@@ -512,12 +512,24 @@ int main(void) {
 - cppreference：存储期与存储类说明符（四种存储期、static/extern/register 逐条语义）：https://en.cppreference.com/w/c/language/storage_duration
 - cppreference：外部定义与暂定定义（tentative definition 规则原文）：https://en.cppreference.com/w/c/language/extern
 
-## 14. 自我检查
+## 14. 遮码自检
 
-- 给任意一行变量声明，能说出它的作用域、存储期、链接性三属性，并指出会被谁遮蔽；
-- 能解释 counter.c 里 ticket 为什么记得住值、初始化为什么只执行一次；
-- 看到 multiple definition 报错能定位并修复，说得出头文件里放 extern 声明的理由；
-- 能纠正两个流行误传：「C23 删除了 register」（没有）与「volatile 能保证线程安全」（那是 _Atomic 与锁的事）。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 给任意一行变量声明，说出它的作用域、存储期、链接性三属性，并指出会被谁遮蔽（拿 `static int count;` 在函数外、`int i;` 在函数内各练一遍）。
+2. counter.c 里 ticket 为什么记得住上次的值？初始化为什么只执行一次？
+3. 看到 multiple definition 报错怎么定位、怎么修？头文件里为什么放 extern 声明而不是定义？
+4. 纠正两个流行误传：「C23 删除了 register」与「volatile 能保证线程安全」。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 文件作用域的 `static int count;`：作用域是声明点到文件尾，存储期静态，链接性内部；函数内的 `int i;`：块作用域，自动存储期，无链接，会被内层同名声明遮蔽（-Wshadow 会报）。
+2. ticket 是 static 局部变量，存储期从自动改为静态、活在数据段，所以函数返回后值还在；静态对象只初始化一次，`static int ticket = 0;` 的初始化在程序启动时完成，每次调用那句代码时直接跳过。
+3. multiple definition 说明同一个符号有两个定义——多半是头文件里写了定义（没加 static/extern）被多个 .c 包含。修法：头文件只放 `extern int g_count;` 声明，定义留在恰好一个 .c 里；链接性靠声明说「别处有」，定义只此一份。
+4. register 还在标准里，硬约束只剩「不可取地址」；volatile 只保证每次都真读写内存、不保证多步操作的原子性——线程安全靠 _Atomic 与锁。
+
+</details>
 
 ## 本章总结
 

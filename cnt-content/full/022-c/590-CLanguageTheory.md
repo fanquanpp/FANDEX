@@ -399,19 +399,33 @@ for (;;) { }          /* B */
 
 - C 内存对象模型研究组对 C11 6.5p6/p7（有效类型与严格别名）的原文引述（WG14 N2294）：https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2294.htm
 - cppreference C：for 循环的「前进保证」（C11 6.8.5p6 的工程表述与空循环示例）：https://en.cppreference.com/w/c/language/for
-- GCC 文档：-fstrict-aliasing 的默认开启级别与 union 类型双关立场：https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/Optimize-Options.html
+- GCC 文档：-fstrict-aliasing 的默认开启级别与 union 类型双关立场：https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
 - LLVM 博客《What Every C Programmer Should Know About Undefined Behavior》（编译器利用 UB 优化的第一手出处）：https://blog.llvm.org/2011/05/what-every-c-programmer-should-know.html
 - LWN《Fun with NULL pointers, part 1》（内核判空被优化删除的事故全程复盘）：https://lwn.net/Articles/342330/
 - cppreference C：一致性与 hosted / freestanding 环境：https://en.cppreference.com/w/c/language/conformance
 
-## 13. 自我检查
+## 13. 遮码自检
 
-- 能画出「源码 → 抽象机语义 → as-if → 可观察行为」的授权链，并指出 volatile 在哪一环截断它；
-- 能默写 C11 6.5p7 的五类允许访问，判断一段类型双关代码是否违规，并给出两种修法；
-- 能把「字节序」「参数求值顺序」「i = i++」「负数右移」逐项归入三分法，并说出标准依据与已学篇章；
-- 能解释 C11 6.8.5p6 对空转循环的后果，以及 while(1) 为什么豁免；
-- 能说清头文件作为「契约」与分离编译代价模型的关系，以及 LTO 在补什么课；
-- 能对着 -std= 开关与 __STDC_HOSTED__ 说出当前代码落在哪个标准、哪种环境。
+遮住上文示例代码与下面的答案栏，先自己画、先自己答，再展开对照。
+
+1. 画出「源码 → 抽象机语义 → as-if → 可观察行为」的授权链，指出 volatile 在哪一环截断它。
+2. 默写 C11 6.5p7 的五类允许访问；给一段「struct A 指针读 struct B 内存」的类型双关定性并给两种修法。
+3. 把「字节序」「参数求值顺序」「i = i++」「负数右移」逐项归入三分法（UB / unspecified / implementation-defined），说出标准依据。
+4. C11 6.8.5p6 对空转循环的后果是什么？while(1) 为什么豁免？
+5. 头文件「契约」与分离编译代价模型是什么关系？LTO 在补什么课？
+6. 对着 -std= 开关与 __STDC_HOSTED__，说出当前代码落在哪个标准、哪种环境。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 链条：源码按抽象机语义执行 → 实现可以任意变换，只要可观察行为（volatile 访问、落盘数据、交互 I/O）不变。volatile 的访问本身是可观察行为——在「变换不得动它」这一环被截断。
+2. 五类：与对象有效类型兼容的类型；兼容限定版本的类型；signed/unsigned 对应类型；字符类型（char/unsigned char）；聚合体成员递归适用。「struct A * 读 struct B」不在五类内——违规 UB。修法：memcpy 拷贝字节，或经 union 成员访问。
+3. 字节序：implementation-defined（必须文档化）；参数求值顺序：unspecified（任取但不许失败）；i = i++：UB（序列点间二次修改）；负数右移：implementation-defined。出处分别是 6.2.6.1/3.5、6.5、6.5.2.4、6.5.7 一线（细节见 070 与 060 各篇的展开）。
+4. 循环体若不做 I/O、不碰 volatile、不碰原子，实现可以认定它「不前进」而整体删除。while(1) 的控制表达式是常量，标准明文不要求它满足前进条件——空转合法、豁免删除。
+5. 分离编译按翻译单元独立翻译：头文件是编译器眼中的「契约书」（声明即承诺定义存在）；代价是跨单元的优化与检查失效——LTO 把多个 TU 的中间表示合起来再优化，补的就是这道课。
+6. `gcc -std=c23` 打印 __STDC_VERSION__ == 202311L 即 C23；`__STDC_HOSTED__ == 1` 是 hosted（全标准库），0 是 freestanding（九个头文件的嵌入式疆界）。
+
+</details>
 
 ## 本章总结
 

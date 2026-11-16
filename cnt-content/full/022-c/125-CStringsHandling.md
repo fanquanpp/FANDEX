@@ -624,13 +624,26 @@ int keep_line(char *line, const char *level) {   /* line 会被就地改写 */
 - 空终止字符串工具（strtok_r 等 POSIX 扩展）：https://man7.org/linux/man-pages/man3/strtok.3.html
 - `strncpy` 的终止符行为说明（C 标准原文的通俗版）：https://en.cppreference.com/w/c/string/byte/strncpy
 
-## 12. 自我检查
+## 12. 遮码自检
 
-- 能解释「n 字节最多安全存 n-1 个字符」的原因，并写出手工填字符数组后补 `'\0'` 的代码；
-- 能在 30 秒内说出 `sizeof(a)`、`strlen(a)`、`sizeof(p)` 对 `char a[20] = "hello"; char *p = a;` 各是多少，以及为什么函数里 `sizeof(a)` 不可信；
-- 能默写 `strncpy` 需要手动补终止符的理由，和 `strncat` 与它行为不对称的事实；
-- 能解释 `strcmp(a, b) == 0` 与 `a == b` 的区别，以及为什么不能写 `== 1`；
-- 能不查资料写出「拷贝、按分隔符切分（strtok_r）、判等、提取数字」四段骨架代码，并说出每个函数的一个坑。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 为什么「n 字节的数组最多安全存 n-1 个字符」？手工逐个填字符后还差哪一步？
+2. `char a[20] = "hello"; char *p = a;`——`sizeof(a)`、`strlen(a)`、`sizeof(p)` 各是多少？进函数后 `sizeof(a)` 还可信吗？
+3. `strncpy` 为什么要手动补终止符？它与 `strncat` 的行为怎么不对称？
+4. `strcmp(a, b) == 0` 与 `a == b` 差在哪？为什么不写 `== 1`？
+5. 不查资料写出「拷贝、按分隔符切分（strtok_r）、判等、提取数字」四段骨架，并各说一个坑。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 数组 n 字节，终止符 `'\0'` 要占最后一格，留给正文的就是 n-1；字符串函数靠扫描到 `'\0'` 才停，没有终止符就一路越界。手工填完必须补 `a[5] = '\0';`。
+2. `sizeof(a)` 是 20（数组身份，问容量）；`strlen(a)` 是 5（扫描内容，遇 '\0' 停）；`sizeof(p)` 是 8（指针大小）。进函数后数组退化为指针，`sizeof(a)` 变 8，不可信。
+3. `strncpy` 只保证拷到 n 个字节、源短时才补零——源长时目标没有 '\0'，必须手动 `dst[n-1] = '\0'`；`strncat` 恰好相反：它保证追加后必有终止符，所以容量按「剩余空间 - 1」算。
+4. `strcmp` 比较内容，返回负/零/正——`== 0` 才是相等；`a == b` 比较的是两个指针（地址），地址相等才有真。不能写 `== 1`，因为标准只保证符号不保证具体值，正数可能是 1 也可能是别的。
+5. 拷贝：`char buf[32]; strncpy(buf, src, sizeof buf - 1); buf[sizeof buf - 1] = '\0';`（坑：strncpy 不补终止符）。切分：`char *tok = strtok_r(buf, ", ", &save); while (tok) { ...; tok = strtok_r(NULL, ", ", &save); }`（坑：原地改串、必须传可写缓冲区）。判等：`if (strcmp(a, b) == 0)`（坑：别用 ==，那是比地址）。提取数字：`long v = strtol(p, &end, 10); if (end == p) /* 没解析到 */;`（坑：atoi 失败无法区分，strtol 要检查 end 与 errno）。
+
+</details>
 
 ## 本章总结
 

@@ -448,12 +448,24 @@ sigprocmask(SIG_UNBLOCK, &block, NULL); /* 解除屏蔽：处理器执行几次�
 - sigaltstack 手册页（备用信号栈与 SIGSTKSZ）：https://man7.org/linux/man-pages/man2/sigaltstack.2.html
 - POSIX.1-2017 2.4.3 Signal Concepts（异步信号安全函数的权威清单）：https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_04
 
-## 12. 自我检查
+## 12. 遮码自检
 
-- 能画出「按键 → 终端驱动 → SIGINT → 处置表 → 处理器/终止」的完整链路，并指出默认动作的三类；
-- 能说清 signal 与 sigaction 的差别、SA_RESTART 有无时系统调用的两种命运；
-- 能背出处理器两条铁律，并对「处理器里 printf 为什么会死锁」给出逐行时序分析；
-- 能默写 reaper.c 的骨架，解释为什么要循环 waitpid、为什么要保护 errno。
+遮住上文示例代码与下面的答案栏，先自己画、先自己写，再展开对照。
+
+1. 画出「按键 → 终端驱动 → SIGINT → 处置表 → 处理器/终止」的完整链路，指出默认动作的三类。
+2. signal 与 sigaction 差在哪？SA_RESTART 有无时系统调用的两种命运？
+3. 背出处理器两条铁律；对「处理器里 printf 死锁」给出逐行时序分析。
+4. 默写 reaper.c 骨架；为什么要循环 waitpid？为什么要保护 errno？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. Ctrl+C → 终端驱动产生 SIGINT → 内核按处置表分发 → 默认动作（终止）或已注册处理器。默认动作三类：终止进程（SIGINT/SIGTERM）、忽略（SIGCHLD/SIGURG）、终止并转储核心（SIGSEGV/SIGABRT）。
+2. signal 的行为标准留给实现决定（历史包袱）；sigaction 每项行为显式指定。无 SA_RESTART：被信号打断的系统调用返回 -1 且 errno 为 EINTR，由调用方重启；有 SA_RESTART：内核自动重启该系统调用，调用方无感知。
+3. 铁律：只读写 volatile sig_atomic_t 或无锁原子；只调异步信号安全函数。时序：主线程在 printf 里持有 stdout 内部锁 → 信号打断，处理器内又调 printf → 尝试取同一把锁 → 锁已被「自己」持有，死锁——malloc/free 撞堆同理。
+4. 骨架：`struct sigaction sa = { .sa_handler = on_chld, .sa_flags = SA_RESTART | SA_NOCLDSTOP }; sigaction(SIGCHLD, &sa, NULL); void on_chld(int s) { int saved = errno; while (waitpid(-1, NULL, WNOHANG) > 0) ; errno = saved; }`。循环：一次 SIGCHLD 可能对应多个已退出子进程（信号不排队）；保护 errno：处理器打断了主流程，主流程可能正靠 errno 判断错误，弄脏它就是埋雷。
+
+</details>
 
 ## 本章总结
 

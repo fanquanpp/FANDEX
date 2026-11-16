@@ -378,13 +378,26 @@ static void delay(int n) {
 - GNU ld 手册（--gc-sections 垃圾回收未用输入段的权威定义）：https://sourceware.org/binutils/docs/ld/Options.html
 - gcc(1) 手册页（-ffunction-sections/-fdata-sections 与 -Os 的官方文本）：https://man7.org/linux/man-pages/man1/gcc.1.html
 
-## 14. 自我检查
+## 14. 遮码自检
 
-- 能向同事讲清「64KB Flash、16KB RAM」的账怎么算：text/data/bss 各占哪边，-Os 与段回收各省哪一部分；
-- 能写出三重限定的寄存器声明并逐层解释，说清 `|=` 为什么不原子、原子置位/复位寄存器好在哪；
-- 能不看资料复述上电到 main 的链条：向量表头两字、搬 .data、清 .bss，并解释 `> RAM AT > FLASH` 的两套地址；
-- 能说出 ISR 三条纪律，以及 printf 与 malloc 进 ISR 分别会踩坏什么；
-- 能解释看门狗为什么不能在定时器中断里无脑喂，以及裸机栈溢出为什么表现为「不相干的变量被改」。
+遮住上文示例代码与下面的答案栏，先自己算、先自己写，再展开对照。
+
+1. 「64KB Flash、16KB RAM」的账怎么算：text/data/bss 各占哪边？-Os 与段回收各省哪部分？
+2. 写出三重限定的寄存器声明并逐层解释；`|=` 为什么不原子？置位/复位寄存器好在哪？
+3. 复述上电到 main 的链条：向量表头两字、搬 .data、清 .bss；`> RAM AT > FLASH` 的两套地址各是什么？
+4. ISR 三条纪律是什么？printf 与 malloc 进 ISR 各踩坏什么？
+5. 看门狗为什么不能在定时器中断里无脑喂？裸机栈溢出为什么表现为「不相干的变量被改」？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. text（代码与常量）与 data 的初值镜像在 Flash；data 运行副本、bss（清零区）在 RAM。size 输出三段与总计；-Os 省的是 text 的体积（换更小代码）；-ffunction-sections/-fdata-sections + --gc-sections 省的是没被引用的函数/变量的段（链接期回收）。
+2. `#define GPIO_BSRR (*(volatile uint32_t *)0x40020018)`。volatile：每次访问真实发生（禁止缓存进寄存器）；uint32_t：宽度与外设字宽精确一致；指针解引用：把整数地址当内存访问。`|=` 是读-改-写三步，中断一插队就丢更新；置位/复位寄存器一次写一个字完成原子置位或清位，硬件保证无读步骤。
+3. 向量表头两字：栈顶指针、复位向量（Reset_Handler 地址）；启动代码把 .data 的初值从 Flash 拷到 RAM、把 .bss 清零，然后调 main。链接脚本 `> RAM AT > FLASH`：VMA 是运行时地址（RAM），LMA 是加载地址（Flash）——拷贝方向就是按这两套地址差算出来的。
+4. 三条：短（几十微秒级）、只碰 volatile 标志（逻辑放主循环）、临界区保护共享数据（关中断配对）。printf 走 UART 可能阻塞几十毫秒且不可重入；malloc 撞堆账本——堆一旦在中断里损坏，主流程随后任意时刻崩。
+5. 看门狗的意义是「程序卡死时重启」：在定时器中断里喂，即使主循环死了中断照样跑——看门狗永远不超时，等于白养。裸机栈溢出是栈指针越过栈底往相邻段写，踩到的正是别的全局变量——所以症状是「不相干的变量被改」而不是报错。
+
+</details>
 
 ## 本章总结
 

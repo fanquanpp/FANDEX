@@ -359,12 +359,36 @@ buggy_std.c:13:16: error: 'nullptr' undeclared (first use in this function)
 - WG14 官方文档库（标准草案与提案原文）：https://www.open-std.org/jtc1/sc22/wg14/
 - GCC 手册 C 方言选项（`-std` 全部取值）：https://gcc.gnu.org/onlinedocs/gcc/C-Dialect-Options.html
 
-## 15. 自我检查
+## 15. 遮码自检
 
-- 能不看资料写出「打印 `__STDC_VERSION__` 并判断是否为 C23」的探针程序；
-- 能一口气说出五个特性的名字，并各用一句话讲清它解决了什么旧别扭；
-- 看到 `unknown type name 'bool'` 能立刻给出两个可能原因并按顺序排查；
-- 能说清 C23 的 `auto` 与 C++ 的 `auto` 至少两处不同。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 不看资料写出「打印 `__STDC_VERSION__` 并判断是否为 C23」的探针程序。
+2. 一口气说出五个特性的名字，各用一句话讲清它解决的旧别扭。
+3. 看到 `unknown type name 'bool'`，两个可能原因是什么？按什么顺序排查？
+4. C23 的 `auto` 与 C++ 的 `auto` 至少两处不同？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```c
+#include <stdio.h>
+int main(void) {
+    printf("__STDC_VERSION__ = %ldL\n", (long)__STDC_VERSION__);
+#if __STDC_VERSION__ >= 202311L
+    puts("C23 on");
+#else
+    puts("pre-C23");
+#endif
+    return 0;
+}
+```
+
+2. 数字分隔符 `1'000'000`（长数字可数）；`nullptr`（空指针有了自己的类型与字面量）；`bool`/`true`/`false` 关键字化（不再借住 stdbool.h）；`auto`（类型名只写一遍，编译器从初始化推导）；`[[attributes]]`（如 [[deprecated]]、[[fallthrough]]，约定变成编译警告）。
+3. 原因一：标准没开（命令缺 -std=c23，默认还是 gnu17/gnu23 看编译器版本）；原因二：编译器太旧（GCC 12 及以下不认；GCC 13 起在 -std=c2x/gnu2x 下已支持 bool 关键字）。先查探针打印的 __STDC_VERSION__，再看 gcc --version——分清「标准没开」与「编译器太旧」。
+4. 差异一：C23 的 auto 只能从初始化器推导，且用于对象声明；C++ 的 auto 还能用于函数返回值、参数模板等。差异二：C23 中不带存储类说明符的 auto 声明才有推导语义，`auto int x;` 这类旧式用法（存储类含义）不合法——两个世界同名不同义。
+
+</details>
 
 ## 本章总结
 

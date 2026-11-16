@@ -425,12 +425,24 @@ static void dispatch_cmd(int id, int x) {
 - 函数指针声明与间接调用（Beej's Guide to C Programming）：https://beej.us/guide/bgc/html/split/pointers-iii-pointers-to-pointers-and-more.html
 - 函数指针作为对象：可入数组、可赋值、可传参（cppreference C）：https://en.cppreference.com/w/c/language/pointer
 
-## 11. 自我检查
+## 11. 遮码自检
 
-- 能把一个多分支 switch 分发器重构成表驱动，说清「改了哪些地方、没改哪些地方」；
-- 能解释指定初始化器为什么比按位置初始化安全，以及漏写的槽是什么值、由此引出哪条防御纪律；
-- 能按分发频率与可维护性，为具体场景在表驱动、switch、if-else 链之间给出选择和理由；
-- 能读懂一次「调用 NULL 函数指针」的 ASan 报告（认出 wild jump 指纹），写出边界检查加判空的两级防御。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 把一个二十个 case 的 switch 分发器重构成表驱动：说清改了哪些地方、没改哪些地方。
+2. 指定初始化器为什么比按位置初始化安全？漏写的槽是什么值？由此引出哪条防御纪律？
+3. 分发频率与可维护性两个维度上，表驱动、switch、if-else 链怎么选？给理由。
+4. 「调用 NULL 函数指针」的 ASan 报告长什么样（wild jump 指纹）？写出两级防御代码。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 改的：分发处缩成一行查表调用 `handlers[cmd](arg);`，加命令只加一行表项；没改的：每个命令的实现函数原封不动——「有哪些分支」从控制流搬进了数据。
+2. 指定初始化器 `[CMD_HELP] = cmd_help` 按枚举名字绑定槽位，成员重排、枚举增删都不会错位；漏写的槽自动初始化为 NULL（指针数组的零初始化保证）。防御纪律：调用前判空 `if (handlers[cmd]) handlers[cmd](arg);`——NULL 槽静默存在，不判空就是段错误。
+3. 低频分发（命令解析、菜单、协议命令）选表驱动——可维护性赢，加命令不改分发器；case 密集且是热路径的选 switch——编译器本就会把它优化成跳转表，性能更好且无需判空；条件互相重叠、涉及范围的判断选 if-else 链——表驱动要求索引是离散枚举。
+4. ASan 报 SEGV，栈顶帧是 wild jump / 未知地址跳转（PC 指向不可执行地址）。两级防御：先边界检查 `if (cmd < 0 || cmd >= CMD_MAX)`，再判空 `if (handlers[cmd])`——把崩溃变成报错。
+
+</details>
 
 ## 本章总结
 

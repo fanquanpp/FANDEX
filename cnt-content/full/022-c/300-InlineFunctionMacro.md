@@ -353,12 +353,24 @@ printf("r=%d\n", r);
 - Modern C（Jens Gustedt，C23 版免费在线，inline 与存储类章节）：https://gustedt.gitlabpages.inria.fr/modern-c/
 - Beej's Guide to C Programming（内联与预处理入门向）：https://beej.us/guide/bgc/
 
-## 11. 自我检查
+## 11. 遮码自检
 
-- 能用 objdump 复现「-O0 有 call、-O2 无 call」的实验，并解释为什么没标 inline 的小函数也被展开；
-- 能不看资料画出 C99 inline 三种写法的语义表，并把 `undefined reference to 'sq'` 与 `multiple definition of 'sq'` 各归因到一条规则的违反；
-- 能对着对照表说出「这个需求该用宏还是 static inline」，并给出宏不可替代的三个能力各一例；
-- 能解释内联的两种代价与「递归/大函数不该内联」的原因，说出内核编码规范那句准则。
+遮住上文示例代码与下面的答案栏，先自己跑、先自己答，再展开对照。
+
+1. 用 objdump 复现「-O0 有 call、-O2 无 call」的实验，并解释为什么没标 inline 的小函数也被展开。
+2. 画出 C99 inline 三种写法的语义表；把 `undefined reference to 'sq'` 与 `multiple definition of 'sq'` 各归因到一条规则的违反。
+3. 「这个需求该用宏还是 static inline」怎么判？宏不可替代的三个能力各举一例。
+4. 内联的两种代价是什么？递归与大函数为什么不该内联？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `gcc -O0 -g demo.c -o d0 && objdump -d d0 | grep call` 能看到 `call sq`；`-O2` 版没有 call——函数体已抄进调用处。原因：inline 关键字不是开关，优化等级才是——-O2 下编译器按启发式自动内联所有值得抄的小函数。
+2. 语义表：裸 inline 头文件内联定义（不产外部符号，须恰好一个 .c 补外部定义）；extern inline 声明点明外部定义在别处；static inline 内部链接、每 TU 一份副本。undefined reference：头文件里写裸 inline 却没有任何 TU 提供外部定义——违反「内联定义不算数」；multiple definition：GNU89 语义下裸 inline 在每个包含它的 TU 各发一份外部定义——违反「外部定义唯一」。`static inline` 两种规则下都只产内部副本，一笔勾销分歧。
+3. 判据：类型敏感、要调试器可见、参数只求值一次 → static inline；需要代码生成、编译期探测、参数当左值 → 宏。三例：`#define STRINGIFY(x) #x`（字符串化，函数做不到）、`__has_include` 类编译期探测（函数进不了预处理期）、`SWAP(t, a, b)` 把参数当左值取地址（函数拿不到调用方的左值身份）。
+4. 代价一：代码膨胀（二进制变大、指令缓存压力上升）；代价二：编译变慢。递归展开会无穷倒推（编译器按深度限制截断），大函数展开膨胀远超省下的调用开销——都不值得。记住分工：内联是优化不是指令，inline 关键字真正管的是链接语义。
+
+</details>
 
 ## 本章总结
 

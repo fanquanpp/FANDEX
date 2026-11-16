@@ -406,12 +406,29 @@ LD_DEBUG 是加载器的自曝开关：`LD_DEBUG=libs ./app` 打印库搜索全�
 - ldd 手册页（定义与不可用于不可信程序的警告）：https://man7.org/linux/man-pages/man1/ldd.1.html
 - POSIX dlsym 规范（void* 与函数指针转换的保证）：https://pubs.opengroup.org/onlinepubs/9799919799/functions/dlsym.html
 
-## 自我检查
+## 遮码自检
 
-- 能不看资料写出「-c 编译、ar rcs 打包、-L 加 -l 链接」三步，并说出 -lutils 会展开成什么名字；
-- 能解释 gcc -L. -lutils main.o 为什么报 undefined reference，以及 --start-group 或重复列库为什么能救；
-- 能搭出 libx.so.1.0.0 / libx.so.1 / libx.so 三件套，并用 readelf -d 与 ldd 指出 SONAME、NEEDED 分别在哪；
-- 拿到 cannot open shared object file，能按三顺位说出三种修法各自的适用场景，并说出 ldd 与 readelf -d 的分工。
+遮住上文示例代码与下面的答案栏，先自己跑、先自己答，再展开对照。
+
+1. 不看资料写出「-c 编译、ar rcs 打包、-L 加 -l 链接」三步；-lutils 会展开成什么名字？
+2. `gcc -L. -lutils main.o` 为什么报 undefined reference？--start-group 或重复列库为什么能救？
+3. 搭出 libx.so.1.0.0 / libx.so.1 / libx.so 三件套；用 readelf -d 与 ldd 指出 SONAME、NEEDED 分别在哪。
+4. 拿到 cannot open shared object file：按三顺位说出三种修法的适用场景；ldd 与 readelf -d 的分工？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```bash
+gcc -c utils.c -o utils.o          # 1) 编出目标文件
+ar rcs libutils.a utils.o          # 2) 打包成静态库（s 建符号索引）
+gcc main.o -L. -lutils -o prog     # 3) -L 指搜索路径，-l 展开为 libutils.a
+```
+
+2. 链接器从左到右处理：先扫 main.o 记下 U，再扫 libutils.a 时按索引补符号——但若写成 `-lutils main.o`（库在左），扫库时还没有 U 需求，库白扫一遍。--start-group 让 ld 对组内归档反复扫描到符号收敛，重复列库同理——都靠「再扫一遍」接住前向依赖。
+3. `gcc -shared -fPIC -Wl,-soname,libx.so.1 -o libx.so.1.0.0 x.c`；`ln -s libx.so.1.0.0 libx.so.1; ln -s libx.so.1 libx.so`。`readelf -d libx.so.1.0.0 | grep SONAME` 看真身的 SONAME；`readelf -d prog | grep NEEDED` 看可执行文件依赖哪个 soname；`ldd prog` 显示运行时实际解析到的全路径——静态账本与运行时实况分工。
+4. 三顺位：LD_LIBRARY_PATH（临时验证、别写进部署）；/etc/ld.so.conf + ldconfig（系统级正确做法）；-Wl,-rpath 嵌入 $ORIGIN（随应用自带的库，部署可复制）。ldd 谨慎用于不可信程序（跑它的加载器，有副作用风险）；readelf -d 纯读文件零风险，CI 里用后者。
+
+</details>
 
 ## 本章总结
 

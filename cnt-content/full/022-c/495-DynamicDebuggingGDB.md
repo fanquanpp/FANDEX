@@ -1117,6 +1117,28 @@ gcc -g -pthread deadlock.c -o deadlock && gdb ./deadlock
 - 阅读 GDB 源码中 `gdb/testsuite/` 的测试用例,学习各种调试技巧
 - 阅读开源项目(如 Redis、Nginx)的 CI 配置,学习工业级工具链集成
 - 参与 OSS-Fuzz 项目,实战 fuzzing 与 sanitizer
+
+## 遮码自检
+
+遮住上文命令清单、先自己默写，再展开对照。
+
+1. 默写五步最小调试循环：编译到断点、断住、看局部变量、单步、继续到结束。
+2. `break main` 后 `run`，怎么打印一个结构体与它指向的字符串？指针显示成裸地址时缺了什么？
+3. watch（监视点）与 break 的分工是什么？什么时候 watch 一发入魂？
+4. 程序崩溃后拿到 core 文件，怎么让它「复活」到崩溃现场？gdb 的运行命令是什么？
+5. 多线程程序里 `info threads`、`thread N`、`bt` 三件套怎么用？死锁现场看什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `gcc -g -O0 demo.c -o demo`（可调试版）→ `gdb ./demo` → `break main` → `run` → `print x` / `info locals` → `next`（不进函数）/ `step`（进函数）→ `continue` 直到退出。
+2. `print st`（结构体整体）、`print st.name`（字段）、`print *ptr`（解引用）。裸地址说明编译时没带 -g——GDB 没有类型与符号信息，只能当数字看。
+3. break 是「执行到某行停下」，watch 是「某个表达式变值时停下」。当不知道哪一行改坏了数据、只知道「这个变量的值何时错了」时，watch 一发入魂——先让它跑，变化点自己冒出来。
+4. `gdb ./demo core`（或 `gdb ./demo -c core`）加载现场，`bt` 直接看崩溃时的调用栈——栈顶帧就是事故行。core 大小受 RLIMIT_CORE 限制，生产环境用 systemd-coredump 或 coredumpctl 取。
+5. `info threads` 列出全部线程及当前停点；`thread N` 切到目标线程；`bt` 看该线程的栈。死锁现场：多个线程都停在 pthread_mutex_lock（futex_wait），打印各自持有的锁构成环路——修复方向是统一加锁顺序或 trylock + 回退。
+
+</details>
+
 ## 参考与致谢
 
 - GDB Manual: https://sourceware.org/gdb/current/onlinedocs/gdb/

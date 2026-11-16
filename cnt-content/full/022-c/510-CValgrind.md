@@ -423,4 +423,25 @@ ASAN_OPTIONS=detect_leaks=1 ./app
 - 长驻服务的内存问题用 massif 看增长趋势比看单次退出摘要更有效；多线程问题优先 helgrind，嫌慢再试 drd。
 - 工具链组合拳：日常开发 ASan（快），提交前 Valgrind（全），两者互补而非互替；原理层面的内存错误分类见 [内存管理](/c/210-ProcessMemoryLayoutAndErrors)。
 
+## 遮码自检
 
+遮住上文命令与报告样例、先自己默写，再展开对照。
+
+1. 默写标准姿势两步：编译开关与运行命令；报告只看哪两处？
+2. 一次 invalid read 报告，怎么在 30 秒内读出「现场在哪、内存从哪来」？
+3. definitely lost / indirectly lost / still reachable 三档分别意味着什么？各怎么处置？
+4. `--track-origins=yes` 抓什么问题？代价是什么？什么时候开？
+5. Callgrind、Massif、Helgrind 各自回答什么问题？与 memcheck 什么关系？
+6. CI 门禁那行命令怎么写？为什么 memcheck 报告要配高覆盖率测试？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `gcc -g -O0 demo.c -o demo` → `valgrind --leak-check=full ./demo`。只看 ERROR SUMMARY（错误计数）与 LEAK SUMMARY（泄漏分档）两处，正文按需展开。
+2. 先看错误类型（Invalid read of size N）→ 第一个 at 的 `文件:行号` 是出错现场 → 往下翻「was allocated by」段，alloc'd 的 `文件:行号` 是这块内存的出生地——修哪、谁共享这块内存，两处都指明。
+3. definitely lost：指针全丢、无救——必修；indirectly lost：跟着 definitely 丢的内层结构——修完前者自然消；still reachable：退出时还有指针指着（全局缓存、池）——可解释则不修，要彻底干净再登记清理路径。
+4. 抓 Conditional jump or move depends on uninitialised value 这类「未初始化值」问题：它会回溯出「这个脏值从哪次 malloc 出来没初始化」。代价显著变慢，日常回归不开，只在这种报告出现时加开关复跑。
+5. Callgrind 答「时间花在哪个函数」（逐函数 cycle 计数）；Massif 答「堆内存为什么涨」（随时间的堆快照）；Helgrind/DRD 答「线程间有没有竞争与死锁」（数据竞争检测）。它们与 memcheck 共用 Valgrind 的二进制翻译底座，换 tool 开关即换问题域。
+6. `valgrind --leak-check=full --error-exitcode=1 ./app`——有错误就非零退出，门禁生效。memcheck 只能看见「运行到的路径」，低覆盖率的运行没报错不等于没错误——测试要先把代码跑透，报告才有说服力。
+
+</details>
