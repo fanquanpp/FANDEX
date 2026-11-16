@@ -468,6 +468,63 @@ const hasFooter = Astro.slots.has('footer')
 | 组件 `<style>` 影响不到子组件 | 子组件样式没生效 | scoped 样式默认不穿透子组件 | 在父组件用 `:global()`，或在子组件内自行定义样式 |
 | Slot 内容不显示 | 写了 `<Component>内容</Component>` 但页面没有内容 | 组件模板里忘了放 `<slot />` | 在组件模板的期望位置加上 `<slot />` |
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写一个卡片组件 `Card.astro`：接收 `title` 与可选 `count` 两个 Props（带类型），模板里渲染标题；`count` 未传时显示"暂无数据"。
+
+   参考答案（先自己写，再对照）：
+
+   ```astro
+   ---
+   interface Props {
+     title: string
+     count?: number
+   }
+   const { title, count } = Astro.props
+   ---
+   <div class="card">
+     <h2>{title}</h2>
+     {count === undefined ? <p>暂无数据</p> : <p>{count} 条</p>}
+   </div>
+   ```
+
+   验收点：Props 类型写在 frontmatter 的 `interface Props`；`Astro.props` 解构取值；模板里可以用三元表达式做条件渲染。
+
+2. 默写"父组件传两段内容、子组件两个插槽出口"的写法：出口分别叫 header 与 default，header 缺位时子组件显示回退文案。
+
+   参考答案（先自己写，再对照）：
+
+   ```astro
+   ---
+   // src/components/Panel.astro（子）
+   ---
+   <section>
+     <header><slot name="header">默认标题</slot></header>
+     <slot />
+   </section>
+   ```
+
+   ```astro
+   ---
+   // src/pages/index.astro（父，节选）
+   import Panel from '../components/Panel.astro'
+   ---
+   <Panel>
+     <h2 slot="header">歌单详情</h2>
+     <p>这里是默认插槽的正文内容。</p>
+   </Panel>
+   ```
+
+   验收点：父侧用 `slot="header"` 指定去向，子侧用 `<slot name="header" />` 接；元素不带 slot 属性即进默认插槽；`<slot>` 标签自带的子内容是回退内容，父侧传了就不显示。
+
+3. scoped 样式为什么不会影响其他组件？需要让"富文本容器内部的链接"吃到全局规则时怎么写？
+
+   参考答案（先自己写，再对照）：
+
+   构建期 Astro 给组件内元素与选择器都附加同一个哈希属性（如 `data-astro-cid-7f3k9a`），选择器变成 `.card[data-astro-cid-...]`，其他组件哈希不同所以互不干扰。Markdown 渲染出的元素没有这个哈希，scoped 选择器够不着它们——在 scoped 块里写 `.prose :global(a) { ... }`，只对这个容器内部放行，比整块 `is:global` 的逃逸面小。
+
 ## 10. 一句话记忆
 
 **组件是乐高零件：Props 是说明书（传数据），Slot 是凹槽（插内容），`<style>` 是涂装（只属于自己）——把重复封装成零件，把变化暴露成参数。**

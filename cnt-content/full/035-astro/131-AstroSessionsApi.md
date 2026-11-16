@@ -20,7 +20,7 @@ prerequisites:
 - **解决什么问题**：HTTP 无状态，登录态、购物车、偏好这些"跟人走"的数据需要一个服务端保管处。Session API 就是 Astro 内建的保管处：你只管 `session.set/get`，Cookie 的签发、sessionId 的生成、服务端存储的读写全部由框架接管。
 - **什么时候用到**：粉丝团后台登录态、未登录也能用的购物车暂存、主题偏好记忆。前提：站点必须能按请求渲染（SSR 适配器或按需页面）——纯静态站点没有"请求"，也就没有会话。
 
-> 版本说明：Session API 自 Astro 5.7 引入（初为实验特性，后续版本转正），字段与驱动名以所用版本官方 Session 指南为准；本文行为语义跨版本稳定。
+> 版本说明：Session API 于 Astro 5.7 转正（此前以实验特性提供），`session` 配置项自 astro@5.7.0 加入；Astro 7.2 起还可用 `session: false` 整体禁用会话。驱动配置以所用版本官方 Session 指南为准；本文行为语义跨版本稳定。
 
 ## 学习目标
 
@@ -47,27 +47,29 @@ Cookie 里只有一个随机字符串（sessionId），用户信息、购物车�
 配置只在 `astro.config.mjs` 一处：
 
 ```javascript
-// astro.config.mjs：开发环境用文件驱动即可
-import { defineConfig } from 'astro/config'
+// astro.config.mjs：Node / Cloudflare / Netlify 适配器会自动配置默认驱动，
+// 通常无需手写；其他适配器（或想显式指定时）用官方 helper 声明
+import { defineConfig, sessionDrivers } from 'astro/config'
 
 export default defineConfig({
   // ...已有的适配器配置不动
   session: {
-    driver: 'file',        // 会话数据存本地 .astro/session/（自动生成，勿提交 git）
+    driver: sessionDrivers.lruCache({ max: 800 }),  // 内置 LRU 内存驱动（开发/单实例够用）
   },
 })
 ```
 
-生产环境换驱动（多实例部署必须共享存储，否则 A 实例发的票 B 实例不认）：
+生产环境换驱动（多实例部署必须共享存储，否则 A 实例发的票 B 实例不认）。Redis 这类外部存储走 **driver entrypoint** 形式——按官方约定写一个驱动入口文件（用 unstorage 兼容生态，如 `unstorage/drivers/redis` 配 `ioredis`），再把入口挂进配置：
 
 ```javascript
 session: {
-  driver: 'redis',             // unstorage 生态的驱动名，还有 upstash / vercelKV / netlifyBlobs 等
-  options: { url: process.env.REDIS_URL },
+  // entrypoint 指向一个导出 SessionDriver 工厂的模块；
+  // 连接参数建议经 astro:env 注入，避免构建期内联敏感信息
+  driver: { entrypoint: new URL('./src/session-driver.ts', import.meta.url) },
 }
 ```
 
-驱动选型一句话：本地开发 file；自建多实例 Redis；Vercel/Netlify 用平台托管 KV（部分平台有开箱默认驱动，检测到适配器即自动启用）。共同点：sessionId 与数据都不过浏览器，选谁只影响"多个服务实例之间认不认同一张票"。
+驱动选型一句话：官方适配器（Node/Cloudflare/Netlify）自动配默认驱动；单实例或开发期用内置 `sessionDrivers.lruCache()`；自建多实例走 unstorage 兼容的 entrypoint 驱动接 Redis 等外部存储。旧的字符串驱动名与 `session.options` 传参写法已被官方弃用，新配置不要再用。共同点：sessionId 与数据都不过浏览器，选谁只影响"多个服务实例之间认不认同一张票"。
 
 ## 2. 用法四件套：set / get / destroy / regenerate
 
@@ -134,9 +136,10 @@ export const POST: APIRoute = async ({ request, session }) => {
 ## 4. 边界与易错点
 
 - **无 SSR 适配器 = 无会话**：纯静态输出的站点没有按请求执行的服务端代码，`Astro.session` 会报错。最低门槛是给需要会话的页面开按需渲染（`export const prerender = false` 加适配器）。
-- **会话不是数据库**：会话数据应有生命周期（随会话销毁）、无强一致要求；订单、收藏这类持久数据落库，会话只存过渡态。
-- **驱动与部署形态不匹配**：本地开发 file 驱动部署到 Serverless（多实例、文件系统临时）会导致"登录态时有时无"——症状是刷新一下就登出，见到这个症状先查驱动配置。
+- **会话不是数据库**：会话数据应有生命周期（随会话销毁）、无强一致要求；订单、收藏这类持久数据落库，会话只存过渡态。存入的值会被序列化（官方用 devalue，支持字符串、数字、`Date`、`Map`、`Set`、`URL`、数组与普通对象），类实例、函数放不进去。
+- **驱动与部署形态不匹配**：内存类驱动（如 `sessionDrivers.lruCache()`）部署到 Serverless（多实例、进程内存各自独立）会导致"登录态时有时无"——症状是刷新一下就登出，见到这个症状先查驱动配置。
 - **不要在会话里存敏感明文**：会话数据在服务端存储里是可读的（尤其平台托管 KV），密码、完整支付信息这类数据不入会话。
+- **按需收窄**：确定完全不用会话的项目，Astro 7.2 起可在配置写 `session: false`，阻止适配器注入默认驱动，减小 serverless/edge 包体积；想要编辑器对会话数据的类型提示，则在 `src/env.d.ts` 声明 `App.SessionData` 接口（字段名即 `session.get/set` 的键）。
 
 ## 5. 动手实践
 
@@ -166,11 +169,56 @@ curl -i http://localhost:4321/fanclub/ -b cookies.txt   # 302
 
 练习二（匿名购物车）。任务：实现第 3 节的购物车端点并加一个 GET 返回当前列表；用两个独立 curl 会话验证"未登录购物车互不串门"。提示：curl 不带 `-b`/`-c` 时每次都是新会话；对比带同一份 cookies.txt 的请求，确认数据跟随 sessionId 而不是接口。
 
-练习三（驱动切换故障复现）。任务：file 驱动下登录，然后把配置临时改成指向另一个目录的 file 驱动，刷新受保护页——观察登录态消失（模拟"多实例不共享存储"）。目的：在受控环境里先见到"驱动不匹配"的症状，将来在生产里遇到能秒判。
+练习三（驱动切换故障复现）。任务：用 `sessionDrivers.lruCache()` 登录后，把 `driver` 一行注释掉（让适配器的默认驱动接管——它与 lruCache 是两套独立存储），刷新受保护页——观察登录态消失（模拟"多实例不共享存储"）。目的：在受控环境里先见到"驱动不匹配"的症状，将来在生产里遇到能秒判。
 
 ## 本篇小结
 
-Session API 的模型是"浏览器持不透明钥匙、服务端驱动开保险柜"：`session.set/get/destroy/regenerate` 四件套覆盖存、取、销毁、换钥匙；驱动按部署形态选（开发 file、自建 Redis、平台托管 KV），多实例必须共享驱动。登录流程的标准顺序是"校验 -> regenerate -> 写入"，登出用 destroy 而非删单键。会话不是数据库：放过渡态与身份，持久数据落库；纯静态站点无会话，按需渲染是最低门槛。
+Session API 的模型是"浏览器持不透明钥匙、服务端驱动开保险柜"：`session.set/get/destroy/regenerate` 四件套覆盖存、取、销毁、换钥匙；驱动按部署形态选（官方适配器自动配默认驱动，单实例或开发期用内置 `sessionDrivers.lruCache()`，多实例走 entrypoint 驱动接 Redis 等共享存储），多实例必须共享驱动。登录流程的标准顺序是"校验 -> regenerate -> 写入"，登出用 destroy 而非删单键。会话不是数据库：放过渡态与身份，持久数据落库；纯静态站点无会话，按需渲染是最低门槛。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写登录端点的关键三步：校验通过后、写入用户前的防固定动作与写入动作，再写出登出端点的正确销毁方式。
+
+   参考答案（先自己写，再对照）：
+
+   ```ts
+   // 登录：校验通过后
+   await session.regenerate()  // 登录瞬间换新 sessionId，防会话固定攻击
+   await session.set('user', { name: user.name, level: user.level })
+   ```
+
+   ```ts
+   // 登出：销毁整个会话，而不是只删某个键
+   await session.destroy()
+   ```
+
+   验收点：regenerate 必须在"校验通过之后、写入之前"；登出用 `destroy()`——残留的旧 sessionId 复用是隐患，只 `set`/删单键都不彻底。
+
+2. 默写中间件里的身份换取：从会话取 user，取不到 302 到登录页并带回跳，取得到注入 locals。
+
+   参考答案（先自己写，再对照）：
+
+   ```ts
+   const authGuard = defineMiddleware(async (context, next) => {
+     if (!context.url.pathname.startsWith('/fanclub')) return next()
+     const user = await context.session?.get('user')
+     if (!user) {
+       return context.redirect(`/login?redirect=${encodeURIComponent(context.url.pathname)}`, 302)
+     }
+     context.locals.user = user
+     return next()
+   })
+   ```
+
+   验收点：可选链保证"会话未启用的部署形态"下守卫降级而不是 500；验证逻辑只存在中间件一处，页面永远信任 locals。
+
+3. 说出存储模型的一句话与驱动选型的一句话；多实例部署不共享驱动会出什么症状？
+
+   参考答案（先自己写，再对照）：
+
+   存储模型：浏览器只持不透明 sessionId Cookie，数据全在服务端驱动里。驱动选型：官方适配器（Node/Cloudflare/Netlify）自动配默认驱动，单实例或开发期用内置 `sessionDrivers.lruCache()`，多实例走 entrypoint 驱动接 Redis 等共享存储。症状：A 实例发的票 B 实例不认——刷新一下就登出，遇到先查驱动配置。
 
 ## 参考与致谢
 

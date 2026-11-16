@@ -179,6 +179,49 @@ export const onRequest = sequence(readPrefs, authGuard, requestTimer)
 1. **给守卫补换取逻辑**：把第 2 节守卫里 `context.locals.user = ...` 一行替换为真实的会话换取——拿 sessionId 去服务端存储查用户，查不到视为未登录重定向。提示：换取的具体实现（driver 配置与 `Astro.session` 用法）按 [Session API 篇](/astro/131-AstroSessionsApi) 的动手环节做完再回来接。
 2. **请求耗时看板**：用 `requestTimer` 中间件把每个页面请求的耗时写入 `X-Process-Ms` 头，再用浏览器网络面板对比静态页与 SSR 页的耗时构成。提示：`next()` 返回后再改响应头。
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写最小中间件：每个请求把"方法 + 路径"打一行日志，并向 locals 挂载请求时间戳，然后放行。
+
+   参考答案（先自己写，再对照）：
+
+   ```ts
+   // src/middleware.ts
+   import { defineMiddleware } from 'astro:middleware'
+
+   export const onRequest = defineMiddleware((context, next) => {
+     console.log(`[访问] ${context.request.method} ${context.url.pathname}`)
+     context.locals.requestTime = Date.now()
+     return next()
+   })
+   ```
+
+   验收点：约定文件是 `src/middleware.ts`、导出 `onRequest`；返回 `next()` 放行，直接返回 `Response` 则短路；`locals` 是每请求独立的传话筒。
+
+2. 默写守卫分支：未登录访问 `/fanclub` 下任意路由时，302 到 `/login?redirect=原路径`。
+
+   参考答案（先自己写，再对照）：
+
+   ```ts
+   if (pathname.startsWith('/fanclub')) {
+     const sessionId = context.cookies.get(SESSION_COOKIE)?.value
+     if (!sessionId) {
+       return context.redirect(`/login?redirect=${encodeURIComponent(pathname)}`, 302)
+     }
+   }
+   return next()
+   ```
+
+   验收点：公开路由（登录页、静态资源）要显式放行避免重定向循环；回跳参数要 encodeURIComponent。
+
+3. 为什么"给预渲染页面写登录守卫"形同虚设？
+
+   参考答案（先自己写，再对照）：
+
+   中间件的执行时机与输出模式强相关：预渲染页面的中间件只在 `astro build` 时执行一次，那次执行时没有请求也没有 Cookie；只有按请求渲染的页面（`prerender = false` 或 server 模式默认）中间件才在每个请求里执行。守卫要拦的页面必须按请求渲染。
+
 ## 参考链接
 
 - Astro 官方文档 Middleware 指南（MIT 许可）：https://docs.astro.build/en/guides/middleware/

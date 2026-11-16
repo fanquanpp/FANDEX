@@ -377,6 +377,64 @@ export const collections = { releases };
 
 </details>
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写最小 `content.config.ts`：用 glob loader 收集 `src/content/blog` 下全部 Markdown，schema 含必填 title、可转 Date 的 pubDate、默认为空数组的 tags。
+
+   参考答案（先自己写，再对照）：
+
+   ```ts
+   import { defineCollection } from 'astro:content'
+   import { z } from 'astro/zod'
+   import { glob } from 'astro/loaders'
+
+   const blog = defineCollection({
+     loader: glob({ pattern: '**/*.md', base: './src/content/blog' }),
+     schema: z.object({
+       title: z.string(),
+       pubDate: z.coerce.date(),
+       tags: z.array(z.string()).default([]),
+     }),
+   })
+
+   export const collections = { blog }
+   ```
+
+   验收点：`z` 从 `astro/zod` 导入（从 `astro:content` 重导出的旧写法已弃用）；`z.coerce.date()` 负责字符串转 Date；`default()` 保住存量文档。
+
+2. 默写列表页与详情页的数据代码：列表页按日期倒序列出全部草稿外的文章；详情页按条目 id 取单篇并渲染正文。
+
+   参考答案（先自己写，再对照）：
+
+   ```astro
+   ---
+   // src/pages/blog/index.astro（列表）
+   import { getCollection } from 'astro:content'
+   const posts = (await getCollection('blog', ({ data }) => !data.draft))
+     .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+   ---
+   ```
+
+   ```astro
+   ---
+   // src/pages/blog/[...slug].astro（详情，节选）
+   import { getEntry, render } from 'astro:content'
+   const entry = await getEntry('blog', Astro.params.slug)
+   const { Content } = await render(entry)
+   ---
+   <Content />
+   ```
+
+   验收点：getCollection 的第二个参数做数据级过滤；排序读 `data.pubDate`（已是 Date）；渲染入口是 `render(entry)` 而不是旧的 `entry.render()`。
+
+3. Live Content Collections（实时内容集合）与普通集合的核心差异是什么？各自适合什么数据？
+
+   参考答案（先自己写，再对照）：
+
+   普通集合在构建期拉取并固化进产物，改内容要重新构建；Live 集合把 loader 推迟到**请求期**执行，每次请求实时拉数据源，站点不必重建。适合频繁变化的实时数据（库存、公告、行情）用 Live；本地 Markdown 与稳定内容用普通集合——构建期产物能被 CDN 缓存，性能与成本都更优。
+
 ## 7. 下一步
 
 - [030：页面与路由](/astro/030-PagesRouting)：`[slug].astro` 动态路由与 `getStaticPaths` 的完整机制；

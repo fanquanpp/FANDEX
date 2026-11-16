@@ -85,7 +85,7 @@ Astro 换了一种思路，它的工作方式更像一家**报社**：
 
 Astro 是一个面向**内容驱动网站**（博客、文档站、营销页、电商展示页）的 Web 框架。它于 2021 年发布，核心理念是：**默认输出零 JavaScript 的静态 HTML，只有显式标记的交互组件才在浏览器加载脚本**。
 
-截至 2026 年 9 月，Astro 的版本演进如下：
+截至 2026 年 11 月（当前稳定版 Astro 7.4），Astro 的版本演进如下：
 
 | 版本 | 时间 | 关键特性 |
 | --- | --- | --- |
@@ -96,6 +96,7 @@ Astro 是一个面向**内容驱动网站**（博客、文档站、营销页、�
 | Astro 5.x | 2024 年 12 月 | **Content Layer**（统一内容加载）、**Server Islands**（服务器岛）、Actions、类型安全环境变量 `astro:env`、Session API |
 | Astro 6.x | 2026 年 3 月 | **Live Content Collections**（实时内容集合）、Fonts API、内置 CSP、重设计的 dev server（Vite 7 Environment API）、路由缓存（实验）、Rust 编译器（实验） |
 | Astro 7.x | 2026 年 6 月 | **Rust 编译器转正**、Sätteri 原生 Markdown 管线、Vite 8（Rolldown 打包器）、队列渲染与路由缓存稳定、Advanced Routing（`src/fetch.ts`） |
+| 7.1-7.4 小版本 | 2026 年 7-10 月 | CSP 细粒度控制、`session: false` 可禁用会话（7.2）、`astro preview --background`、实验性增量静态构建与持续的性能优化 |
 
 其中 Astro 5 引入的 Content Layer 把"内容集合"从只能读本地 Markdown 扩展为"可以从任何数据源加载"的统一 API；Astro 6 进一步把"实时内容集合"转正，允许内容在**请求时实时拉取**而非仅构建时获取，非常适合内容频繁更新的场景。2026 年 1 月 Cloudflare 收购了 Astro 背后的公司（框架保持 MIT 开源许可），6.x/7.x 与 Cloudflare 平台的适配因此愈发深入。
 
@@ -437,3 +438,41 @@ flowchart LR
 ## 12. 一句话记忆
 
 **Astro 是"内容优先"的 Web 框架：默认零 JavaScript 输出静态 HTML，交互组件像大海中的岛屿一样按需加载，让内容站又快又省。**
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 用两句话向选型同事讲清"内容站为什么选 Astro 而不是 React SPA"：一句讲代价差异，一句讲 Astro 的机制。
+
+   参考答案（先自己写，再对照）：
+
+   SPA 为了页面上 10% 的交互，把整站 UI 逻辑打包发给浏览器——内容站付出"下载 100% 的 JS，只为渲染 90% 不变的文本"；Astro 默认输出零 JS 的静态 HTML，只给显式标记了 `client:` 指令的交互岛屿加载脚本。"海洋（静态内容）+ 岛屿（按需水合）"的分工让 JS 量与交互量成正比，而不是与页面量成正比。
+
+2. 默写"一分钟看懂 Astro"的最小页面：frontmatter 里算出站点名，模板里渲染标题与欢迎语，并标注哪部分不会发给浏览器。
+
+   参考答案（先自己写，再对照）：
+
+   ```astro
+   ---
+   // frontmatter：构建期执行，不会发给浏览器
+   const siteName = 'FANDEX 文档站'
+   ---
+   <html lang="zh-CN">
+     <head>
+       <meta charset="utf-8" />
+       <title>{siteName}</title>
+     </head>
+     <body>
+       <h1>欢迎来到 {siteName}</h1>
+     </body>
+   </html>
+   ```
+
+   验收点：`---` 围栏内是构建期脚本；`{siteName}` 在构建期被替换为字符串，`dist/` 产物里没有任何 JS。
+
+3. 说出 Astro 5、6、7 三代各自"改的是哪一层"，并指出哪一代是引擎级大改款。
+
+   参考答案（先自己写，再对照）：
+
+   5.0 改内容层（Content Layer、Server Islands、Actions、`astro:env`）；6.0 改平台（重设计 dev server 的 Vite 7 Environment API、Fonts API、内置 CSP，路由缓存与 Rust 编译器进入实验）；7.0 改引擎（Rust 编译器、Sätteri Markdown 管线、Vite 8/Rolldown 三件套全部 Rust 原生，队列渲染默认开启）。7.0 是引擎级大改款：语法与写法不变，构建整体提速。

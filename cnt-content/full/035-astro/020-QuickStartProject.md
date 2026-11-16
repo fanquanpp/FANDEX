@@ -81,7 +81,7 @@ npm create astro@latest
 | 提问 | 选项 | 建议选择 |
 | --- | --- | --- |
 | 项目名称（Directory） | 输入任意英文名，如 `my-site` | 小写英文字母 + 连字符 |
-| 选择模板（Select a template） | Baseline / Blog / Docs / Portfolio / Minimal 等 | 初学选 **Baseline**（空白基础模板） |
+| 选择模板（Select a template） | Minimal / Blog / Portfolio / Starlog / Starlight 等 | 初学选 **Minimal**（最小空白模板） |
 | 是否安装依赖（Install dependencies?） | Yes / No | Yes（省去后面手动 `npm install`） |
 | 是否初始化 Git（Initialize a Git repository?） | Yes / No | 想用版本管理选 Yes，否则 No |
 | 是否使用 TypeScript（Use TypeScript?） | Yes / No | 强烈建议 Yes（类型提示对学习有巨大帮助） |
@@ -89,18 +89,18 @@ npm create astro@latest
 如果你不想一路点选，可以用"非交互式"命令一步到位：
 
 ```bash
-npm create astro@latest my-site -- --template baseline --install --git --no-ai --yes
+npm create astro@latest my-site -- --template minimal --install --git --no-ai --yes
 ```
 
 各标志含义：
 
-- `--template baseline`：使用空白基础模板；
+- `--template minimal`：使用最小空白模板；
 - `--install`：创建后自动安装依赖；
 - `--git`：初始化 Git 仓库（`--no-git` 则跳过）；
 - `--yes`：跳过全部交互提示，使用默认值；
 - `--no-ai`：跳过创建 AI 代理配置文件。
 
-其他常用模板：`minimal`（最小模板）、`blog`（博客）、`docs`（文档站）、`portfolio`（作品集）。你甚至可以用任意 GitHub 仓库作为模板，例如 `--template 用户名/仓库名`。
+其他常用模板：`blog`（博客）、`portfolio`（作品集）、`starlog`（内容站）、`starlight`（文档站）。你甚至可以用任意 GitHub 仓库作为模板，例如 `--template 用户名/仓库名`。
 
 ### 2.3 查看创建结果
 
@@ -358,3 +358,29 @@ dist/
 ## 12. 一句话记忆
 
 **`npm create astro@latest` 生成积木盒，`npm run dev` 边搭边看，`npm run build` 出成品——src/pages 里每个文件就是一块会自动变成页面的积木。**
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写一条非交互式创建命令：项目名 my-site、用最小空白模板、自动装依赖、初始化 Git、跳过 AI 配置文件、跳过全部提示。
+
+   参考答案（先自己写，再对照）：
+
+   ```bash
+   npm create astro@latest my-site -- --template minimal --install --git --no-ai --yes
+   ```
+
+   验收点：`--` 之后是传给 create-astro 的参数；`--no-ai` 跳过 AGENTS.md 一类 AI 配置文件；`--yes` 等价于对每个提示都选默认值。
+
+2. `npm run dev`、`npm run build`、`npm run preview` 三条脚本各自做什么、分别在什么时候用？
+
+   参考答案（先自己写，再对照）：
+
+   dev 启动开发服务器（热更新，边改边看，开发期用）；build 在 `dist/` 生成最终产物（发布前跑，也是一次全站正确性校验）；preview 用构建产物本地起一个"接近生产"的服务器（验收 dist 时用，不能代替 dev 的热更新）。
+
+3. `src/pages/`、`src/components/`、`public/` 三者的分工是什么？把页面放进 components 会发生什么？
+
+   参考答案（先自己写，再对照）：
+
+   pages 里的文件按文件名映射成路由；components 放被 pages 引用的零件，不产生路由；public 里的文件不经处理按原路径原样拷贝进产物。页面写进 components 不会被当作路由——访问对应 URL 只有 404，且构建不报错，只能靠"URL 少了一页"来排查。

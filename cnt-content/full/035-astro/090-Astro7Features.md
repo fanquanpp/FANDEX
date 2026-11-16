@@ -189,7 +189,7 @@ export default defineConfig({
 })
 ```
 
-内置实现支持 SHA-512 脚本哈希、自定义指令等能力，具体指令级配置项以官方 Configuration Reference 的 `security.csp` 为准。收紧 `script-src` 是文档站最常见的 XSS 防护手段。
+内置实现支持 SHA-512 脚本哈希、自定义指令等能力，具体指令级配置项以官方 Configuration Reference 的 `security.csp` 为准。收紧 `script-src` 是文档站最常见的 XSS 防护手段。7.1 又补上了细粒度控制——对内联脚本与内联样式可单独放行或收紧，让"整站一个策略"粗放模式的误伤面进一步缩小。
 
 ### 4.8 AI 增强：为编程工具优化的开发体验
 
@@ -207,7 +207,7 @@ astro dev status
 # {"status":"running","pid":1234,"url":"http://localhost:4321"}
 ```
 
-此前 AI 工具执行 `astro dev` 常遇到"命令不退出、重复启动、无法判断就绪"等问题，Astro 7 用"后台模式 + JSON 日志"提供了标准化的开发协议。
+此前 AI 工具执行 `astro dev` 常遇到"命令不退出、重复启动、无法判断就绪"等问题，Astro 7 用"后台模式 + JSON 日志"提供了标准化的开发协议。7.2 把同一套思路推广到预览服务器：`astro preview --background` 让构建产物的预览也转入后台。
 
 ## 5. 升级到 Astro 7：注意事项清单
 
@@ -257,3 +257,27 @@ astro dev status
 ## 8. 一句话记忆
 
 **"Astro 7 是'换发动机'的一次大改款：编译器、Markdown 管线、打包器全部 Rust 原生，语法与写法不变，构建提速 15%-61%，路由缓存转正、AI 开发体验就位——升级只是 `npx @astrojs/upgrade` 一条命令。"**
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. Astro 7 的"三台 Rust 引擎"与"一项默认启用的新渲染方式"分别是什么？它们共同指向哪个目标？
+
+   参考答案（先自己写，再对照）：
+
+   三台引擎：`.astro` 编译器（Go 重写为 Rust，基于 Oxc 解析与 Lightning CSS）、Sätteri Markdown/MDX 原生管线（pulldown-cmark + Oxc）、Vite 8 的 Rolldown 打包器（统一替代 esbuild 与 Rollup）。默认启用：队列渲染。共同目标是不改语法与架构的前提下提升构建与渲染速度（官方基准 15%-61%）。
+
+2. 升级到 Astro 7 后，两个并排行内元素换行书写不再渲染出空格，原因是哪个配置变了？写出两种修复。
+
+   参考答案（先自己写，再对照）：
+
+   `compressHTML` 默认值从 `true` 变为 `'jsx'`——空白按 JSX 规则折叠，行内元素之间的换行不再产生可见空格。修复一：需要空格处显式写 `{' '}`；修复二：配置 `compressHTML: true` 恢复旧行为（`false` 则保留全部空白）。
+
+3. 默写升级 Astro 7 前的五条检查清单。
+
+   参考答案（先自己写，再对照）：
+
+   （1）Node 22.12 及以上；（2）模板更严格：未闭合标签构建报错、空白 JSX 化，存量非规范 HTML 要修；（3）用 remark/rehype/recma 插件的项目需装 `@astrojs/markdown-remark` 并配 `markdown: { processor: unified() }`；（4）依赖 Vite 内部 API 的集成按 Vite 8 迁移指南验证；（5）`@astrojs/db` 已移除，改用独立数据库客户端（如 `node:sqlite`、Drizzle）。
+
+检查点：三题全部通过，说明已具备升级预演的知识底座；第 7 节的动手实践把其中最容易翻车的两条变成亲历。

@@ -353,6 +353,55 @@ window.addEventListener('search:done', (e) => {
 
 做完两个任务，回头重读第 2 节的指令表——此时每一行的含义都应该对应着你刚刚看到的网络请求、点击行为与时间线片段。
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 说出 `client:load`、`client:idle`、`client:visible` 的水合时机，并给出从轻到重的选型路径。
+
+   参考答案（先自己写，再对照）：
+
+   load：页面加载后立即水合（首屏关键交互）；idle：浏览器空闲时（不紧急但常用）；visible：进入视口时（首屏外）。选型路径：能用纯 HTML/CSS 解决就不引框架；交互在首屏外用 visible；重要但不必立即用 idle；首屏关键用 load；服务端跑不了的依赖用 client:only。
+
+2. 默写"滚动到评论区才水合"的岛屿写法：React 组件 CommentForm，位于页面底部。
+
+   参考答案（先自己写，再对照）：
+
+   ```astro
+   ---
+   import CommentForm from '../components/CommentForm.tsx'
+   ---
+   <footer>
+     <CommentForm client:visible />
+   </footer>
+   ```
+
+   验收点：指令必须直接写在组件标签上，不能经展开属性传入；未水合前组件只输出服务端渲染的 HTML，点击没反应不是 bug 而是尚未"上电"。
+
+3. 两个岛屿要共享"当前播放歌曲"，用 nanostores 写出 store 定义与两侧用法的关键行。
+
+   参考答案（先自己写，再对照）：
+
+   ```ts
+   // src/stores/player.ts
+   import { atom } from 'nanostores'
+   export const currentSong = atom<{ name: string } | null>(null)
+   ```
+
+   ```ts
+   // 岛屿 A（写入）
+   import { useStore } from '@nanostores/react'
+   import { currentSong } from '../stores/player'
+   currentSong.set({ name: '千本樱' })
+   ```
+
+   ```ts
+   // 岛屿 B（读取）
+   const song = useStore(currentSong)
+   ```
+
+   验收点：nanostores 解决跨岛屿状态同步；但岛屿未水合时没有任何人在监听——未水合区域要显示数据，仍要靠服务端渲染时算好（props 或 Astro 组件直出）。
+
 ## 8. 一句话记忆
 
 **"页面默认是一片静态的海洋，只有显式加上 `client:` 指令的组件，才会变成一座被水合的岛屿——不加指令，就没有交互。"**
