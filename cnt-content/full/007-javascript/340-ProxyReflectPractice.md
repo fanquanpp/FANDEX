@@ -2861,7 +2861,7 @@ state.user.address.city = 'Shanghai';  // user.address.city: "Beijing" -> "Shang
 ### 11.7 扩展主题
 
 - **Symbol 与私有字段**：ES2022 的 `#field` 私有字段是 Proxy 之外的强私有方案，理解其与 Proxy 私有代理的差异。
-- **Decorator**：ES2024 装饰器提案与 Proxy 在元编程上的协同关系。
+- **Decorator**：Stage 2.7 装饰器提案与 Proxy 在元编程上的协同关系。
 - **WebAssembly 与 Proxy**：WASM 模块的 JS 接口如何通过 Proxy 实现懒加载。
 - **Async Iterator Proxy**：通过 Proxy 拦截 `Symbol.asyncIterator` 实现可观察的异步流。
 - **Worker 通信层**：通过 Proxy 将 `postMessage` 透明化为本地方法调用。

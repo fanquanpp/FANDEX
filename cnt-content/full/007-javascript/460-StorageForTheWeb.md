@@ -2199,6 +2199,27 @@ const topics = await document.browsingTopics();
 5. **性能优化**：异步 API、批量操作、流式处理
 
 **未来展望：** Web 存储正从「开放但脆弱」迈向「隐私但可控」。开发者需适应新的隐私模型，采用用户授权、联邦认证、本地优先等新模式。掌握当前存储机制的核心原理，将有助于应对未来标准的演进。
+
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 不看表格，列出本篇五种存储机制（Cookie、localStorage、sessionStorage、IndexedDB、Cache API）各自的一条不可替代场景；
+2. 写出「30 天有效的登录态 Cookie」的完整 `Set-Cookie` 三要素（过期方式、作用域限制、安全三开关：HttpOnly/Secure/SameSite），并说明每个开关防什么攻击；
+3. `localStorage` 写入 2MB 数据会发生什么（容量、阻塞、异常）？为什么大 JSON 不该进 localStorage；
+4. 一个标签页改了 localStorage，另一个标签页怎么知道？写出监听代码，并说出它的一个天然盲区；
+5. 口述配额查询与清空：`navigator.storage.estimate()` 返回什么、`persist()` 请求什么；什么情况会触发浏览器自动清除数据。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：Cookie——随请求自动带向服务器的会话凭证；localStorage——跨会话的小型键值配置；sessionStorage——标签页级的一次性状态；IndexedDB——结构化大数据与索引查询；Cache API——Request/Response 级的 HTTP 资源缓存（配 Service Worker）；
+- 第 2 问：`Set-Cookie: token=...; Max-Age=2592000; Path=/; Domain=example.com; HttpOnly; Secure; SameSite=Lax`——HttpOnly 防 XSS 偷取，Secure 防明文传输截获，SameSite 防 CSRF 跨站携带；
+- 第 3 问：超配额（通常 5MB）抛 QuotaExceededError；写入是同步操作，主线程被 IO 卡住造成掉帧；JSON.parse 大对象每次读取都重建全量——大结构化数据应走 IndexedDB；
+- 第 4 问：`window.addEventListener('storage', e => ...)` 只在**其他**标签页触发（本页不触发）；盲区：storage 事件不带新值以外的上下文，且同页多标签的时序竞争要自己处理（通常配 BroadcastChannel 补足）；
+- 第 5 问：estimate 返回 `{ usage, quota }` 字节数；persist 请求「持久化豁免」——不被自动清理；浏览器在磁盘紧张且站点未被标记为重要（低使用频率、未安装 PWA、未授予持久化）时可能整站清除存储。
+</details>
+
 ## localStorage
 
 **基本写法：setItem 存储**
@@ -2416,23 +2437,3 @@ const storage = {
 ```javascript
 // 小数据用 localStorage 大数据用 IndexedDB
 ```
-
-## 教学自检
-
-> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
-
-1. 不看表格，列出本篇五种存储机制（Cookie、localStorage、sessionStorage、IndexedDB、Cache API）各自的一条不可替代场景；
-2. 写出「30 天有效的登录态 Cookie」的完整 `Set-Cookie` 三要素（过期方式、作用域限制、安全三开关：HttpOnly/Secure/SameSite），并说明每个开关防什么攻击；
-3. `localStorage` 写入 2MB 数据会发生什么（容量、阻塞、异常）？为什么大 JSON 不该进 localStorage；
-4. 一个标签页改了 localStorage，另一个标签页怎么知道？写出监听代码，并说出它的一个天然盲区；
-5. 口述配额查询与清空：`navigator.storage.estimate()` 返回什么、`persist()` 请求什么；什么情况会触发浏览器自动清除数据。
-
-<details>
-<summary>参考要点（先自己写再展开）</summary>
-
-- 第 1 问：Cookie——随请求自动带向服务器的会话凭证；localStorage——跨会话的小型键值配置；sessionStorage——标签页级的一次性状态；IndexedDB——结构化大数据与索引查询；Cache API——Request/Response 级的 HTTP 资源缓存（配 Service Worker）；
-- 第 2 问：`Set-Cookie: token=...; Max-Age=2592000; Path=/; Domain=example.com; HttpOnly; Secure; SameSite=Lax`——HttpOnly 防 XSS 偷取，Secure 防明文传输截获，SameSite 防 CSRF 跨站携带；
-- 第 3 问：超配额（通常 5MB）抛 QuotaExceededError；写入是同步操作，主线程被 IO 卡住造成掉帧；JSON.parse 大对象每次读取都重建全量——大结构化数据应走 IndexedDB；
-- 第 4 问：`window.addEventListener('storage', e => ...)` 只在**其他**标签页触发（本页不触发）；盲区：storage 事件不带新值以外的上下文，且同页多标签的时序竞争要自己处理（通常配 BroadcastChannel 补足）；
-- 第 5 问：estimate 返回 `{ usage, quota }` 字节数；persist 请求「持久化豁免」——不被自动清理；浏览器在磁盘紧张且站点未被标记为重要（低使用频率、未安装 PWA、未授予持久化）时可能整站清除存储。
-</details>
