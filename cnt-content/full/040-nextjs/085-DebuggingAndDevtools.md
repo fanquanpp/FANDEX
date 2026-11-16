@@ -30,6 +30,7 @@ prerequisites: []
 2. **DevTools 指示器**：页面左下角的小面板，显示当前路由信息（静态/动态标记、渲染耗时）与开发服务器状态。它回答的是"这条路由现在以什么方式渲染"——和构建日志的路由标记（见《Next.js 部署与环境配置》第 1 节）是同一套语义的实时版。
 3. 配置与关闭：`next.config.ts` 里 `devIndicators: false` 可整体关闭指示器（比如录屏演示时）；不建议日常关闭——它是"我改的代码生效了吗"的第一确认点。
 4. 易错点：覆盖层显示的错误经常是**结果不是原因**。水合错位报在某个 DOM 节点上，根因可能在上游条件渲染的时序里——把覆盖层当"案发现场"而不是"凶手"，往调用栈上游找。
+5. **DevTools MCP（16 新增）**：Next.js 内置了面向 AI 编码代理的 MCP 集成（官方指南：nextjs.org/docs/app/guides/mcp）——代理能拿到路由/缓存/渲染上下文、浏览器与服务端的统一日志、自动抓取的错误栈与"当前页面感知"，直接在对话里诊断"这条路由为什么没被静态化"这类框架行为问题。让代理排错前先把它接上，等于给它配了一副能看见运行现场的眼镜。
 
 ## 2. 服务端断点：--inspect 与 VS Code
 
@@ -132,8 +133,13 @@ export default {
 
 ```tsx
 // 方案 A：序列化后下发（推荐——时间格式由服务器统一，客户端零逻辑）
-export default async function PostPage({ params }: { params: { id: string } }) {
-  const post = await getPost(params.id)
+export default async function PostPage({
+  params,
+}: {
+  params: Promise<{ id: string }> // 15 起 params 是 Promise，必须 await
+}) {
+  const { id } = await params
+  const post = await getPost(id)
   const publishedAt = post.publishedAt.toLocaleString("zh-CN", {
     timeZone: "Asia/Shanghai",
   })

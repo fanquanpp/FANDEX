@@ -291,6 +291,12 @@ export async function DELETE(
 2. 给 `/api/posts` 加 `export const revalidate = 30`，在 `next build` 日志里观察它的缓存类型变化。
 3. 写一个流式接口逐字输出一句话，前端用 `res.body.getReader()` 渲染打字机效果。
 
+## 自检
+
+- 遮住第 1 节代码：在 `route.ts` 里写出 GET 返回 JSON、POST 读 body 的最小实现，能不看示例写对吗？顺带回答：它与 `page.tsx` 同目录时是什么关系？
+- 遮住第 2 节：动态段的 `params` 与查询串的 `searchParams`，类型怎么标、读取前要做什么动作？（15 起的关键词：Promise 与 await）
+- 用一句话回答：GET 接口的缓存语义从 13/14 到 15 发生了什么反转？现在想让某个 GET 接口缓存起来该怎么显式声明？
+
 ## 小结与延伸
 
 > `route.ts` 导出方法即接口：params/searchParams 记得 `await`；NextRequest/NextResponse 管 Cookie 与跳转；GET 是否缓存由你显式声明；错误统一封装，4xx 说人话、5xx 不泄密。

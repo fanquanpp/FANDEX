@@ -67,10 +67,13 @@ import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
   cacheComponents: true, // 16 起的稳定开关；取代旧的 experimental.dynamicIO / ppr / useCache
+  partialPrefetching: true, // 16.4 起并入模型本体：导航预取按"静态壳 + 动态洞"部分进行
 }
 
 export default nextConfig
 ```
+
+**推荐地位（16.4 起）**：官方已把 Cache Components 列为所有新应用的最佳选择，`create-next-app` 新项目默认打开这两个开关，Next.js 17 计划将其设为默认——它的学习优先级已从"进阶选修"变为"默认必修"。
 
 启用后，四条硬性规则立即生效：
 
@@ -306,6 +309,8 @@ export default async function LivePrice({
 
 **同步 IO 陷阱**：预渲染期的壳里不允许 `new Date()`、`Date.now()`、`Math.random()`、`crypto.randomUUID()` 这类"每次执行结果都不同"的同步调用，构建会直接报错，且 `instant = false` 也无法豁免。修复思路一致：把调用挪进 `<Suspense>` 内的动态区（或客户端组件）；确需在服务端动态区触发时，可在读取前调用 `connection()` 显式声明"我要切换到请求时执行"。
 
+**16.4 新增的阶段控制 API**：模型走向默认后，官方补齐了三件"精调预渲染边界"的工具。路由级导出 `ensureStatic`（取值 `'navigation'`/`'prefetch'`/`'shell'`）让构建期强制该路由的完整导航、显式预取或静态壳必须全静态——任何动态内容混入都会构建失败，适合电商详情页、营销页这类"绝不能退化成请求时渲染"的站点（也可加在 layout 上约束整个子树）。组件内 `await navigation()`（从 `next/cache` 导入）把一块缓存内容推迟到真实导航才加载、不占预取带宽，`await prefetch()` 则推迟到显式预取阶段才加载——两者解决"预取该预取多少"的成本精调问题。初学阶段记住 `ensureStatic` 的守门作用即可，后两者在为预取成本做优化时再查官方文档。
+
 ## 7. 传统模型 -> 新模型映射表
 
 迁移不用死记：传统模型里的每个缓存手段，在新模型里都有唯一对应物。
@@ -474,5 +479,5 @@ export function RefreshButton() {
 
 - 传统缓存语义（fetch 选项、四层缓存地图）的完整入门，见第 3 篇《Next.js 数据获取与缓存》。
 - SSG/ISR/SSR 渲染选型与决策树，见第 6 篇《渲染策略与缓存》。
-- 缓存对部署形态（Serverless/自托管/静态导出）的影响，见第 9 篇《Next.js 部署与性能优化》。
+- 缓存对部署形态（Serverless/自托管/静态导出）的影响，见第 9 篇《Next.js 部署与环境配置》。
 - Route Handler 的缓存语义与 `revalidateTag` 在接口层的用法，见第 4 篇《Route Handlers 与 API 设计》。

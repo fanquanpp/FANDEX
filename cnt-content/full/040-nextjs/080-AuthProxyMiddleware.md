@@ -224,7 +224,7 @@ export default nextConfig
 
 1. CSP 配置不当容易"误伤"自己的脚本与样式：初期可先用 `Content-Security-Policy-Report-Only` 观察违规报告，再逐步收紧为强制模式。
 2. 以上为常用起步值，具体指令组合需结合站点实际的第三方资源调整；完整指令清单以官方文档为准。
-3. 静态资源、CDN 缓存与安全头的相互作用属于部署话题，可延伸阅读第 9 篇《Next.js 部署与性能优化》。
+3. 静态资源、CDN 缓存与安全头的相互作用属于部署话题，可延伸阅读第 9 篇《Next.js 部署与环境配置》。
 
 ## 6. CSRF 与鉴权分层模型
 
@@ -272,11 +272,17 @@ export async function deleteUser(formData: FormData) {
 2. 在 `next.config.ts` 配置三个安全头，用浏览器 DevTools 的 Network 面板确认响应中已生效。
 3. 给第 5 篇的文章删除 Action 补上管理员校验，并尝试不带 Cookie 直接调用该 Action，确认返回无权限。
 
+## 自检
+
+- 遮住第 3 节代码，写出 proxy 的最小登录闸门：`matcher` 只拦粉丝团路由、未登录重定向到 `/login` 并带 `from` 回跳参数——写完再对照示例。
+- 用一句话回答：为什么 proxy 里不能查数据库？"proxy 粗筛、action/handler 强校验"两层各防的是什么攻击路径？
+- Session+Cookie 与 JWT 的取舍（吊销、跨服务、存储位置）能各说一条吗？CSRF 的两道防线（sameSite 与 Origin 校验）分别拦哪一段？
+
 ## 小结与延伸
 
 > 登录态首选 Cookie + 服务端会话：`cookies()` 读 anywhere、写只在 Action/Handler；`proxy.ts`（16 起由 middleware.ts 更名，运行在 Node.js 运行时）做粗筛与安全头，官方仍要求它保持轻量、不做慢查询与完整鉴权；CSRF 靠 sameSite 加 Origin 校验；分层模型记住一句：proxy 粗筛、action/handler 强校验、数据层兜底，永远不要只靠 proxy。
 
 - Server Action 与 Route Handler 的写法基础，见第 4 篇《Route Handlers 与 API 设计》与第 5 篇《Server Actions 与表单》。
 - 会话读取导致的动态渲染、缓存失效逻辑，见第 6 篇《渲染策略与缓存》。
-- 生产环境的 HTTPS、反代与密钥管理，见第 9 篇《Next.js 部署与性能优化》。
+- 生产环境的 HTTPS、反代与密钥管理，见第 9 篇《Next.js 部署与环境配置》。
 - 认证库（Auth.js、Clerk 等）的接入方式、proxy 运行时的具体能力边界，以官方文档为准。

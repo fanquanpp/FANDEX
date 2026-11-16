@@ -16,7 +16,7 @@ related:
 prerequisites: []
 ---
 
-Next.js 模块共 10 篇文档，覆盖了从建站到上线的完整链路。本文继续以"虚拟歌手音乐平台"为背景（歌姬主页、演唱会排期、粉丝团报名），把 App Router 文件约定、数据获取与缓存、API 层、渲染策略、缓存新模型和部署安全六条线索收拢成一页，作为二轮复习的索引。
+Next.js 模块共 19 篇文档（本文梳理其中 10 篇主线，样式、国际化、调试、测试等 9 篇延伸见下方知识地图），覆盖了从建站到上线的完整链路。本文继续以"虚拟歌手音乐平台"为背景（歌姬主页、演唱会排期、粉丝团报名），把 App Router 文件约定、数据获取与缓存、API 层、渲染策略、缓存新模型和部署安全六条线索收拢成一页，作为二轮复习的索引。
 
 使用建议：Next.js 的知识重心不在语法而在"约定与选型"——文件放哪里、缓存选哪种、渲染用哪档，都是决策题而非默写题。它的设计哲学是"约定优先于配置"：记住文件名就是记住功能，记住缓存关键词就是记住整套数据策略。因此复习时建议每读完一节就问自己：这个需求放到我的项目里该怎么选，为什么这样选，换一种选法会牺牲什么。示例代码可直接放入 create-next-app 生成的项目中对照验证。
 
@@ -55,13 +55,25 @@ flowchart TB
         B006["Server Actions 与表单"]
     end
     subgraph N5["部署与安全"]
-        B004["部署与优化"]
+        B004["部署与环境配置"]
         B008["认证、代理与安全"]
     end
+    subgraph N6["延伸专题"]
+        E1["服务器/客户端组件边界"]
+        E2["样式方案"]
+        E3["平行与拦截路由"]
+        E4["国际化路由"]
+        E5["AI 流式体验"]
+        E6["调试与 DevTools"]
+        E7["静态资源与性能优化"]
+        E8["元数据与 SEO"]
+        E9["应用测试"]
+    end
     N1 --> N2 --> N3 --> N4 --> N5
+    N2 -.-> N6
 ```
 
-模块共 10 篇，结构紧凑：N1 与 N2 解决"页面从哪来"，是一切的地基；N3 是全模块的心脏，数据从哪来、多旧可接受、HTML 何时生成，三个问题都落在这里，其中 010 是 003 与 007 的进阶合流（Next.js 16 的显式缓存模型），初学可先跳过、二轮复习时再攻；N4 解决"数据怎么改"；N5 解决"如何安全地上线"。读完后回头看，你会发现整条链路就是一次真实项目从开发到发布的顺序重演，按编号顺序复习即可覆盖全部主干。
+模块共 19 篇：主线 10 篇（图中 N1-N5）结构紧凑，N1 与 N2 解决"页面从哪来"，是一切的地基；N3 是全模块的心脏，数据从哪来、多旧可接受、HTML 何时生成，三个问题都落在这里，其中 070《缓存体系与 Cache Components 深入》是 030 与 060 的进阶合流（Next.js 16 的显式缓存模型），初学可先跳过、二轮复习时再攻；N4 解决"数据怎么改"；N5 解决"如何安全地上线"。N6 是 9 篇延伸专题（组件边界、样式、平行与拦截路由、国际化、AI 流式、调试、性能、SEO、测试），主线读到对应话题时穿插阅读即可。读完后回头看，你会发现整条链路就是一次真实项目从开发到发布的顺序重演，按主线顺序复习即可覆盖全部主干。
 
 ## 核心概念回顾
 
@@ -229,7 +241,7 @@ export default async function RankingPage() {
 
 ### 7. proxy.ts 与访问控制
 
-`proxy.ts`（Next.js 16 起由 `middleware.ts` 更名，旧文件名仍可用但已废弃）在请求进入路由前运行，适合做登录态检查、重定向与请求改写。它运行在 Node.js 运行时上，但官方要求它保持轻量：只做 Cookie 或请求头级别的判断，重查询交给页面或 Route Handler，否则每个被拦截的请求都会变慢。更完整的鉴权分层模型见第 8 篇。
+`proxy.ts`（Next.js 16 起由 `middleware.ts` 更名，旧文件名仍可用但已废弃）在请求进入路由前运行，适合做登录态检查、重定向与请求改写。它运行在 Node.js 运行时上，但官方要求它保持轻量：只做 Cookie 或请求头级别的判断，重查询交给页面或 Route Handler，否则每个被拦截的请求都会变慢。更完整的鉴权分层模型见[认证、代理与安全](/nextjs/080-AuthProxyMiddleware)。
 
 ```ts
 // proxy.ts：未登录用户访问粉丝团页时重定向到登录页
@@ -409,5 +421,6 @@ revalidatePath('/fan-club')
 4. 精读 [渲染策略与缓存](/nextjs/060-RenderingStrategies)，理解 Next.js 16 缓存模型显式化后的 Cache Components、Partial Prefetching 与 Instant Navigations。
 5. 进阶 [缓存体系与 Cache Components 深入](/nextjs/070-CacheComponentsDeepDive)，掌握 `'use cache'`、`cacheLife` 与 `updateTag` 的新模型写法，并把传统缓存语义逐一迁移过去。
 6. 学习 [认证、代理与安全](/nextjs/080-AuthProxyMiddleware)，为平台补上完整的登录、会话与代理转发方案。
-7. 实践 [部署与优化](/nextjs/090-DeploymentOptimization)，把构建分析、图片字体优化落到 CI 流程里，形成可重复的发布管线。
+7. 实践 [Next.js 部署与环境配置](/nextjs/090-DeploymentOptimization)，把构建分析、图片字体优化落到 CI 流程里，形成可重复的发布管线。
 8. 回到 [Next.js App Router](/react/410-NextJsAppRouter)，从 React 视角补全 App Router 的实现原理，理解服务端组件在元框架中如何落地，打通 react 模块与 nextjs 模块的最后一公里。
+9. 延伸专题按需精读：[服务器组件与客户端组件边界](/nextjs/015-ServerClientComponents)、[Next.js 样式方案](/nextjs/017-StylingInNextjs)、[平行路由与拦截路由](/nextjs/025-AdvancedRouteConventions)、[国际化路由与本地化](/nextjs/027-InternationalizationRouting)、[AI 流式体验](/nextjs/075-NextjsAiStreaming)、[调试与 DevTools](/nextjs/085-DebuggingAndDevtools)、[静态资源与性能优化](/nextjs/088-AssetsAndPerfOptimization)、[元数据与 SEO](/nextjs/095-MetadataSeo)、[Next.js 应用的测试](/nextjs/105-TestingNextjsApps)——主线过完二轮后，按当前项目需要各读一遍。

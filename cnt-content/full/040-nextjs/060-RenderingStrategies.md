@@ -120,7 +120,7 @@ export default function Loading() {
 
 ## 3. Cache Components 与 Partial Prefetching
 
-Next.js 16.0 把缓存模型显式化：过去"fetch 默认缓存、Router Cache 自动缓存"的隐式行为，是"为什么页面没更新"类问题的根源。在 `next.config.ts` 中设置 `cacheComponents: true` 启用，两个核心概念：
+Next.js 16.0 把缓存模型显式化：过去"fetch 默认缓存、Router Cache 自动缓存"的隐式行为，是"为什么页面没更新"类问题的根源。启用需要在 `next.config.ts` 打开两个开关——`cacheComponents: true` 与 `partialPrefetching: true`（16.4 起 Partial Prefetching 被并入模型本体）；`create-next-app` 自 16.4 起默认帮你打开这两个开关，官方也开始把 Cache Components 推荐为所有新应用的最佳选择，Next.js 17 计划将其设为默认。两个核心概念：
 
 1. **Cache Components**：缓存什么由代码显式声明（`use cache` 指令等），未声明的内容默认动态渲染；动态读取必须放在 `<Suspense>` 边界内，与缓存壳自由组合。
 2. **Partial Prefetching**：导航预取不再只有"整页静态 HTML"与"什么都不取"两档——可以只预取页面的静态壳，动态部分进入页面后再流式补齐。
@@ -233,11 +233,17 @@ flowchart TD
 2. 给仪表盘页加 `loading.tsx` 与两块 `<Suspense>` 骨架屏，用 Network 面板观察 HTML 的流式到达。
 3. 选一个商品页按第 3 节拆分：稳定信息与实时价格分离，思考哪些部分适合声明缓存。
 
+## 自检
+
+- 遮住第 0 节对比表与决策树，给营销首页、商品详情、搜索结果页、登录后仪表盘各选一种渲染策略，并说出每一步的判定信号——说不全就回到决策树重走一遍。
+- 遮住第 1 节代码：框架判定"静态还是动态"的三类信号（动态 API、fetch 缓存选项、路由段配置）能各写出一个触发例子吗？
+- 用一句话分别回答：`loading.tsx` 与手动 `<Suspense>` 的分工是什么？Partial Prefetching 预取的到底是页面的哪一部分？
+
 ## 小结与延伸
 
 > 先问数据多旧可接受：不变用 SSG、可容忍延迟用 ISR、要实时用 SSR；再问交互多重：重交互只下沉到叶子组件 CSR。判定看动态 API 与显式声明；慢查询交给 Suspense 流式；16 时代的缓存要显式声明，导航即时感来自 Partial Prefetching 与 Instant Navigations。
 
 - 数据获取与缓存的基础语法，见第 3 篇《Next.js 数据获取与缓存》。
 - Cache Components 指令与迁移映射的系统讲解，见第 7 篇《缓存体系与 Cache Components 深入》。
-- 缓存与预取对部署产物与 CDN 的影响，见第 9 篇《Next.js 部署与性能优化》。
+- 缓存与预取对部署产物与 CDN 的影响，见第 9 篇《Next.js 部署与环境配置》。
 - Partial Prefetching 与 Instant Navigations 的最新形态以官方文档为准。

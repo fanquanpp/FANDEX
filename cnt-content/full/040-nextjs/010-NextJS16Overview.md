@@ -47,11 +47,12 @@ Next.js 是 React 官方文档推荐的**全栈元框架（meta-framework）**�
 
 **类比**：React 是发动机，Next.js 是整车——发动机决定动力上限，但方向盘、变速箱、安全气囊这些"能开上路"的部件由整车厂提供。换框架（如 Remix）相当于换整车，发动机仍是 React。
 
-### 1.1 版本现状（2026-09）
+### 1.1 版本现状（2026-11）
 
-- Next.js 16.3.x 为 **Active LTS**（16.3 于 2026-08-03 发布，核心新特性是 Instant Navigations；2026-08-25 安全版本为 16.3.3）；15.5.x 为 Maintenance LTS，仅安全维护。官方自 2026-07 起实行月度安全发布流程，生产项目应跟踪安全公告及时升级补丁版本。
+- Next.js 16.4.x 为 **Active LTS**（16.4 于 2026-10-06 发布；2026-11-03 安全版本为 16.4.5，一次修复 7 个安全漏洞）；15.5.x 为 Maintenance LTS，仅安全维护。官方自 2026-07 起实行月度安全发布流程，生产项目应跟踪安全公告及时升级补丁版本。
+- 16.3（2026-08-03）引入 Instant Navigations 套件；16.4（2026-10-06）的主线是 **Cache Components 转正**：官方开始把它推荐为所有新应用的最佳选择，`create-next-app` 新项目默认启用（`cacheComponents` 与 `partialPrefetching` 两个开关），Next.js 17 计划将其设为默认；随框架携带 React 19.3（View Transitions 转正），并新增 `ensureStatic` 与 `navigation()`/`prefetch()` 等"导航阶段控制" API。
 - 16.0（2025-10-21）是近年最重要的一次大版本：Turbopack 成为默认打包器（开发与构建，官方数据构建提速 2-5 倍、Fast Refresh 最快 10 倍）、推出 Cache Components 显式缓存模型、`middleware.ts` 更名为 `proxy.ts`。
-- 环境要求：Node.js 20.9+（推荐 22 LTS）、TypeScript 5.1+；配套 React 19.2+（App Router 实际使用 React Canary 通道，可用 View Transitions、`useEffectEvent`、`<Activity>` 等 19.2 特性）。
+- 环境要求：Node.js 20.9+（推荐 22 LTS）、TypeScript 5.1+；配套 React 19.2+（16.0 随框架携带 19.2，16.4 起为 19.3；App Router 实际使用 React Canary 通道，可用 View Transitions、`useEffectEvent`、`<Activity>` 等 19.x 特性）。
 - 新项目统一使用 App Router；Pages Router 进入维护模式，仅用于存量项目。
 
 学习建议：版本号不必背，记住**两条主线**即可——15 完成了"缓存默认值反转"（fetch、GET 接口、客户端导航默认不再缓存）与请求 API 异步化（`params`、`cookies()` 等要 `await`）；16 完成了"Turbopack 默认化 + 缓存显式化（Cache Components）+ 代理层更名（proxy.ts）"。
@@ -148,7 +149,7 @@ export default function CounterPage() {
 **讲解：**
 
 1. Next.js 16 移除了 `next lint` 命令：ESLint 直接用 `npx eslint .` 运行（或改用 Biome），`next build` 也不再顺带执行 lint。
-2. 大版本升级优先用 codemod CLI，它能自动处理 `params` 异步化、middleware 更名等机械改动；无法自动迁移的部分参考官方升级指南。
+2. 大版本升级优先用 codemod CLI，它能自动处理 `params` 异步化、middleware 更名等机械改动；无法自动迁移的部分参考官方升级指南。16.4 起另有 `next upgrade --agent`：由 AI 编码代理按版本指引完成检查、迁移与验证的整条升级流程。
 
 ## 6. 新手常见陷阱
 
@@ -159,7 +160,7 @@ export default function CounterPage() {
 
 ## 7. 本模块学习路线
 
-本模块共 10 篇，按由浅入深排列：本篇概述建立整体认知后，App Router 路由、数据获取与缓存是地基；Route Handlers 与 Server Actions 解决"数据怎么改"；渲染策略与缓存深挖（Cache Components）是进阶选型课；认证、代理与安全、部署与性能优化面向上线；学习总结用于二轮复习串线。
+本模块共 19 篇，按由浅入深排列，分主干与延伸两条线：本篇概述建立整体认知后，App Router 路由、数据获取与缓存是地基；Route Handlers 与 Server Actions 解决"数据怎么改"；渲染策略与缓存深挖（Cache Components）是进阶选型课；认证、代理与安全、部署与环境配置面向上线；学习总结用于二轮复习串线——这 10 篇是主干。另有 9 篇延伸专题穿插其间：服务器/客户端组件边界、样式方案、平行与拦截路由、国际化路由、AI 流式体验、调试与 DevTools、静态资源与性能优化、元数据与 SEO、应用测试，按项目需要取用。
 
 ## 8. 动手实践
 

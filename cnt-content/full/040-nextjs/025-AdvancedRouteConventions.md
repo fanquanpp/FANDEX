@@ -26,7 +26,7 @@ prerequisites: []
 ## 学习目标
 
 - 能用 `@folder` 定义槽位，在 layout 里当 props 渲染，并说出"children 是隐式槽位"。
-- 能用 `default.tsx` 处理硬导航后的槽位失配，解释为什么缺它就是 404。
+- 能用 `default.tsx` 处理硬导航后的槽位失配，并解释 16 起为什么它对每个槽位都是必备文件（缺失直接构建失败）。
 - 能为每个槽位配置独立的 loading/error，实现面板级互不影响的加载。
 - 能用 `(.)` 等约定实现"站内弹模态框、刷新直达完整页"的模态路由模式。
 
@@ -96,7 +96,7 @@ export default function Default() {
 }
 ```
 
-规则链条：失配槽位有 `default.tsx` 就渲染它；没有则整个页面 404——包括那些本来匹配良好的其他槽位。同理，children 作为隐式槽位，在"槽位 URL 与主页面组合"的页面里刷新时也需要 default 兜底。**调试口诀：刷新就 404，先找哪个槽缺 default。**
+规则链条（Next.js 16 起收紧为硬约束）：失配槽位有 `default.tsx` 就渲染它；**命名槽位（`@team`、`@analytics` 等）缺失 `default.tsx` 时不再静默 404，而是直接报错，必须补上文件才能继续**——想保留旧的"失配即 404"行为，就写一个调用 `notFound()` 的 `default.tsx`。children 是隐式槽位，行为不同：没有 default 时仍是整页 404，所以在"槽位 URL 与主页面组合"的页面里刷新失配依旧要靠 default 兜底。**调试口诀：刷新就 404 或构建报槽位错误，先找哪个槽缺 default。**
 
 ### 1.3 条件渲染与独立加载
 
@@ -234,7 +234,7 @@ export default function CatchAll() { return null }
 
 **任务一：双面板仪表盘。** 用平行路由搭"课程列表（children）+ 学习统计（@stats）"仪表盘，给 @stats 写慢查询（`await new Promise(r => setTimeout(r, 2000))` 模拟）并配专属 loading 骨架，验证课程列表先渲染完成。提示：骨架样式写在 @stats/loading.tsx；观察浏览器 Network 的流式响应（HTML 分段到达）。
 
-**任务二：default 兜底实验。** 在任务一基础上把 @stats 的子页 `/stats/weekly` 做出来，站内跳过去后刷新，分别删掉与保留 default.tsx 观察差异。提示：删掉 default 时整个 /stats/weekly 404——包括 children 槽；这就是"失配拖垮整页"的实证。
+**任务二：default 兜底实验。** 在任务一基础上把 @stats 的子页 `/stats/weekly` 做出来，站内跳过去后刷新，观察 default.tsx 的兜底；再体验 16 的硬约束——删掉 @stats 的 default.tsx 重新构建，看构建如何报错而不是等运行时 404；最后写一个只调 `notFound()` 的 default.tsx 找回旧的"失配即 404"行为。提示：命名槽缺 default 是构建错误，children 槽缺 default 才表现为整页 404，两种失败形态都值得亲眼见一次。
 
 **任务三：通知中心模态框。** 实现"顶栏铃铛点击弹通知模态、刷新 /notifications 直达完整通知页"。提示：@modal/(.)notifications + @modal/default.tsx + @modal/[...catchAll] 三件套；模态内容与完整页复用同一个 NotificationList 服务器组件。
 
@@ -273,7 +273,7 @@ export default async function NotificationsModal() {
 
 ## 5. 一句话记住
 
-> 平行路由用 @slot 把一个 layout 拆成多个独立流式渲染的面板（children 是隐式槽位），硬导航失配靠 default.tsx 兜底、缺了就 404；拦截路由用 (.)/(..)/(...) 让"站内到达"渲染成模态、"直达刷新"渲染成完整页，闭合靠 default + page + catchAll 三个 null 兜底；条件槽位只管展示不管鉴权。
+> 平行路由用 @slot 把一个 layout 拆成多个独立流式渲染的面板（children 是隐式槽位），硬导航失配靠 default.tsx 兜底——16 起每个槽位都必须显式提供它，缺了直接构建失败；拦截路由用 (.)/(..)/(...) 让"站内到达"渲染成模态、"直达刷新"渲染成完整页，闭合靠 default + page + catchAll 三个 null 兜底；条件槽位只管展示不管鉴权。
 
 ## 6. 相关阅读
 
