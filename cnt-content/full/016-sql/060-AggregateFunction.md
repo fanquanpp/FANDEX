@@ -403,6 +403,48 @@ FROM episodes GROUP BY published_at;
 8. **GROUP_CONCAT 截断**：超 1024 字节静默截断，先调 `group_concat_max_len`。
 9. **COUNT(\*) 大表慢**：PostgreSQL 大表展示用 `reltuples` 估算或预聚合表。
 
+## 8.5 遮码自检
+
+遮住答案先写；聚合题的判断标准是"能说出 NULL 在这一步被怎么处理"。
+
+**第 1 题："本周上架了几期节目"，`COUNT(*)`、`COUNT(play_count)`、`COUNT(DISTINCT show_id)` 各数出什么？**
+
+<details><summary>参考答案</summary>
+
+`COUNT(*)` 数行数（NULL 也算）；`COUNT(play_count)` 数 play_count 非 NULL 的行；
+`COUNT(DISTINCT show_id)` 数去重后的节目数。选哪种取决于业务口径——数的是"行"
+还是"非空值"还是"不同个体"，写之前先说清楚口径。
+</details>
+
+**第 2 题："分类平均播放量不到 1 万的不要"，这个条件写 WHERE 还是 HAVING？为什么换错了会直接报错？**
+
+<details><summary>参考答案</summary>
+
+写 HAVING：筛选对象是**分组**（聚合结果）。WHERE 在分组前执行，那时 AVG(play_count)
+还没算出来——WHERE 里出现聚合要么报错要么语义错误。执行顺序 WHERE → GROUP BY →
+HAVING 决定了两者的分工：筛行用 WHERE，筛组用 HAVING。
+</details>
+
+**第 3 题：`AVG(rating)` 会把没打分的行算进去吗？这会让平均值向哪边偏？**
+
+<details><summary>参考答案</summary>
+
+不会——AVG 忽略 NULL，平均值只在**打过分的行**上算。偏差方向：如果没打分的行
+本来就倾向低分，剩下的样本偏高，平均值虚高；想"未打分按 0 分计入"要写
+`AVG(COALESCE(rating, 0))` 或 `SUM(rating)/COUNT(*)`。聚合函数对 NULL 的忽略
+既是便利也是口径陷阱。
+</details>
+
+**第 4 题："哪期节目播放量最高？把那一期整个拉出来"——为什么 `MAX` 给不了整行？两种正解各是什么？**
+
+<details><summary>参考答案</summary>
+
+MAX 只返回一个数，不是行——"顺着最大值找回整行"需要别的方式。正解一：子查询
+`WHERE play_count = (SELECT MAX(play_count) FROM episodes)`（并列时返回多行）；
+正解二：窗口函数按 play_count 排序取第一（并列时的取舍规则更明确）。这是"聚合
+折行"与"窗口不折行"分野的第一个直观案例。
+</details>
+
 ## 9. 练习
 
 全部基于回声FM四张表，答案都能用手算验证：

@@ -244,6 +244,62 @@ UNPIVOT (
     value FOR month IN (jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec_val)
 ) u;
 ```
+## 遮码自检
+
+遮住答案先写；行列转换题的判断标准是"能说出每个新列是一个 CASE、GROUP BY 决定行粒度"。
+
+**第 1 题：把 `quarterly_revenue(dept_id, quarter, revenue)` 转成"每部门一行、Q1/Q2 两列"。写出语句；聚合里 `ELSE 0` 和不写 ELSE 有什么隐蔽差别？**
+
+<details><summary>参考答案</summary>
+
+```sql
+SELECT dept_id,
+       SUM(CASE WHEN quarter = 'Q1' THEN revenue ELSE 0 END) AS q1,
+       SUM(CASE WHEN quarter = 'Q2' THEN revenue ELSE 0 END) AS q2
+FROM quarterly_revenue
+GROUP BY dept_id;
+```
+
+不写 ELSE 时缺位的组得到 NULL（SUM 忽略 NULL），报表显示空白；写 ELSE 0 得 0。
+两者对 SUM 数值几乎等价，但语义不同：0 是"确认没卖"，NULL 是"没有记录"；换成
+COUNT 聚合时差别就是错的——`COUNT(CASE WHEN ... THEN 1 END)` 才数得对。
+</details>
+
+**第 2 题：为什么"列随数据变"的 PIVOT 没法用一条静态 SQL 写死？通用解法是什么？**
+
+<details><summary>参考答案</summary>
+
+SQL 的 SELECT 列表是编译期确定的，不能"按数据动态出列"——所以每加一个季度都要改
+语句。解法是动态 SQL：先 `STRING_AGG(DISTINCT quarter)` 拼出列清单，再用 EXECUTE/
+PREPARE 执行拼好的语句（PostgreSQL 的 DO 块、SQL Server 的动态 T-SQL）。代价是失去
+静态校验与计划缓存，优先靠"列集稳定"的建模避免。
+</details>
+
+**第 3 题：UNPIVOT 是 PIVOT 的逆操作。用 UNION ALL 把 `(dept_id, q1, q2, q3, q4)` 转回 `(dept_id, quarter, revenue)`，写出骨架。**
+
+<details><summary>参考答案</summary>
+
+```sql
+SELECT dept_id, 'Q1' AS quarter, q1 AS revenue FROM wide
+UNION ALL SELECT dept_id, 'Q2', q2 FROM wide
+UNION ALL SELECT dept_id, 'Q3', q3 FROM wide
+UNION ALL SELECT dept_id, 'Q4', q4 FROM wide;
+```
+
+要点：季度名是字符串字面量（"列名变值"），每列一个分支；NULL 值的格子会在结果里
+变成 NULL 行，需要时用 WHERE revenue IS NOT NULL 过滤——这正是宽表丢信息的痕迹。
+</details>
+
+**第 4 题：SQL Server 的 `PIVOT` 语法和条件聚合相比，多写了什么、少写了什么？为什么跨库项目仍推荐条件聚合？**
+
+<details><summary>参考答案</summary>
+
+PIVOT 语法里 FOR quarter IN ([Q1],...) 免去了逐列写 CASE，但列清单照样要写死、且
+聚合函数与 IN 列表是隐式配对，可读性与排查性都弱一些；条件聚合每列一个 CASE，多写
+几行但任何数据库都能跑、语义一目了然。SQL Server 专用语法不进跨库代码库——PIVOT
+/UNPIVOT 本来就不是 SQL 标准语句。
+</details>
+
 ## 行转列（Pivot）
 
 **基本写法：CASE WHEN 实现行转列**

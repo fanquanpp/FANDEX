@@ -94,7 +94,7 @@ SQL-92 是最广泛实现的标准，几乎所有数据库都声称兼容此标�
 - **属性图查询**（SQL/PGQ）：图查询语言集成到 SQL
 - **JSON 增强**：更多 JSON 构造、查询简写与谓词（`IS JSON` 等）
 - **UNIQUE 约束的 NULL 处理**：`UNIQUE NULLS NOT DISTINCT` 等新选项
-- SQL:2023 是截至目前最新的完整标准版本，数据库厂商仍在逐步跟进实现
+- SQL:2023 是截至目前最新的完整标准版本，数据库厂商仍在逐步跟进实现（2026-08 发布了一批勘误 Cor 1:2026，下一版标准尚未定稿，业界暂称 SQL:202y，GROUP BY ALL、向量类型等在讨论中）
 
 ### 标准兼容性现实
 
@@ -204,10 +204,11 @@ SELECT DECODE(sign(score - 60), 1, 'Pass', 0, 'Pass', -1, 'Fail') AS result FROM
 ### UPSERT 差异
 
 ```sql
--- MySQL: ON DUPLICATE KEY UPDATE
+-- MySQL: ON DUPLICATE KEY UPDATE（8.0.20+ 推荐行别名写法，别名在 VALUES 之后）
 INSERT INTO users (id, name, email)
-VALUES (1, 'Alice', 'alice@example.com')
-ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email);
+VALUES (1, 'Alice', 'alice@example.com') AS new_row
+ON DUPLICATE KEY UPDATE name = new_row.name, email = new_row.email;
+-- 旧写法 name = VALUES(name) 自 8.0.20 起已废弃，新代码别再用了
 
 -- PostgreSQL: ON CONFLICT
 INSERT INTO users (id, name, email)
@@ -232,6 +233,10 @@ WHEN NOT MATCHED THEN INSERT (id, name, email) VALUES (source.id, source.name, s
 ## 数据库系统选型
 
 选型时需要综合考虑多个维度，没有"最好"的数据库，只有"最适合"的。
+
+版本现状先记住（截至 2026-11）：MySQL 8.0 已于 2026 年 4 月终止社区支持，
+主线是 8.4 LTS 与 9.7 LTS；PostgreSQL 当前稳定版为 18.x（19 版处于候选阶段）；
+SQLite 最新为 3.54.x。遇到线上还在跑 8.0 的系统，规划升级路径比记新特性更紧迫。
 
 ### 主流数据库对比
 
@@ -331,6 +336,38 @@ CREATE TABLE         →     索引基础               →    执行计划分�
 简单过滤与排序        →     CTE / 视图             →    物化视图 / 分区
                       →     存储过程               →    性能调优
 ```
+
+## 遮码自检
+
+先遮住答案，口头回答每题；答不上来就回到对应小节重读，别急着往下走。
+
+**第 1 题：DQL、DML、DDL、DCL、TCL 各管什么？各举一个关键字。**
+
+<details><summary>参考答案</summary>
+
+DQL 查数据（SELECT）；DML 改数据（INSERT / UPDATE / DELETE）；DDL 改结构（CREATE / ALTER / DROP）；
+DCL 管权限（GRANT / REVOKE）；TCL 管事务（BEGIN / COMMIT / ROLLBACK）。判断口诀：动的是"行"
+还是"表"还是"权限"——动行是 DML，动表是 DDL，动权限是 DCL。
+</details>
+
+**第 2 题：为什么说写"可移植的 SQL"很困难？举一对具体的方言差异。**
+
+<details><summary>参考答案</summary>
+
+标准是"建议"而非强制：各数据库只实现标准子集并加私有扩展。具体差异任举一对即可，例如
+自增主键 MySQL 用 `AUTO_INCREMENT`、PostgreSQL 用 `SERIAL`/身份列、Oracle 用
+`GENERATED ALWAYS AS IDENTITY`；或分页 MySQL/PG/SQLite 用 `LIMIT ... OFFSET`、SQL Server 与
+Oracle 12c+ 用 `OFFSET ... FETCH`。骨架取标准语法，落库前查具体方言文档。
+</details>
+
+**第 3 题：一个高并发读的内容型网站，预算有限、查询以简单读写为主，决策树会把你带到哪个数据库？换成以复杂分析、JSON、GIS 为主呢？**
+
+<details><summary>参考答案</summary>
+
+前者到 MySQL（读密集 OLTP 优秀、部署简单、资料最多）；后者到 PostgreSQL（数据类型与扩展生态
+强，JSONB 可索引、PostGIS 等）。嵌入式/本地存储另走 SQLite，云原生分布式另看托管与分布式方案。
+选型没有全局最优，只有与业务、团队、预算匹配的解。
+</details>
 
 ## 小结
 

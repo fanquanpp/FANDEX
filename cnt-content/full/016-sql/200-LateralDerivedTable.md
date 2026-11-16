@@ -253,6 +253,47 @@ FROM (
 ) t
 WHERE rn <= 3;
 ```
+## 遮码自检
+
+遮住答案先答；LATERAL 题的判断标准是"子查询的哪一步依赖了左表的当前行"。
+
+**第 1 题：普通派生表在查询开始时要执行几次？LATERAL 派生表呢？这个差别带来什么能力？**
+
+<details><summary>参考答案</summary>
+
+普通派生表与外表无关，整个查询执行一次、结果固定；LATERAL 可以引用它左侧的表，
+因此对外表的每一行各执行一次、结果随当前行变化。带来的能力是"以左表的行去发起
+一段带排序/取前 N 的子查询"——这是普通 JOIN 和聚合都表达不了的形状。
+</details>
+
+**第 2 题："每个部门薪资最高的 3 名员工"，为什么 `JOIN + GROUP BY` 做不到，LATERAL 怎么做到的？**
+
+<details><summary>参考答案</summary>
+
+聚合只能对"整组"算一个值（COUNT/MAX），取不回组内的"前 3 行明细"；窗口函数
+ROW_NUMBER 能做但要先给全表打标再过滤，写法绕。LATERAL 把"取该部门按薪资倒序的
+前 3 行"封装成子查询，`WHERE e.dept_id = d.id ORDER BY e.salary DESC LIMIT 3`，
+左表每行触发一次——语义直接对齐"每组 Top N"这个问题本身。
+</details>
+
+**第 3 题：`JOIN LATERAL (...) sub` 与 `LEFT JOIN LATERAL (...) sub` 的差别是什么？某部门没有员工时各发生什么？**
+
+<details><summary>参考答案</summary>
+
+普通 JOIN（等价 CROSS JOIN LATERAL）下子查询返回 0 行时该部门整体消失；LEFT JOIN
+LATERAL 保留左表行、子查询的列全为 NULL（相当于 OUTER APPLY）。要"每组 Top N，
+没有成员的组也留一行"就必须 LEFT JOIN LATERAL。
+</details>
+
+**第 4 题：SQL Server 里对应 LATERAL 的两个关键字是什么？旧资料说"Oracle/SQLite 不支持 LATERAL"，现在还成立吗？**
+
+<details><summary>参考答案</summary>
+
+CROSS APPLY（等价 JOIN LATERAL）与 OUTER APPLY（等价 LEFT JOIN LATERAL）。"Oracle/
+SQLite 不支持"的说法已过时：Oracle 12c 起支持 LATERAL，SQLite 3.39 也已补齐。
+只有面对老版本（如 Oracle 11g）才需要退回标量子查询或表函数。
+</details>
+
 ## 派生表（子查询）
 
 **基本写法：FROM 子句中的派生表**

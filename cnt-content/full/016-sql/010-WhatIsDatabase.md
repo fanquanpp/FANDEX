@@ -210,6 +210,48 @@ SELECT COUNT(*) FROM students;                 -- 计数：3
 删除前先 SELECT 确认、更新删除必带 WHERE"的工程规范，后续事务章节（TCL）会讲
 用事务给危险操作留后悔药。
 
+## 9.5 遮码自检
+
+先遮住答案口头作答；说不出"为什么"就回对应小节重读。
+
+**第 1 题：一句话区分"数据库""DBMS""SQL"，并说出"装了 MySQL"装的到底是哪个。**
+
+<details><summary>参考答案</summary>
+
+数据库是按结构组织的数据集合（馆藏的书）；DBMS 是管理这些数据的软件（图书馆和管理员）；
+SQL 是操作数据的语言（借书单的固定格式）。"装个 MySQL"装的是 DBMS——数据本身是你之后
+在库里建的表和行。平时混说无妨，概念上分清才能看懂报错是谁的问题：连不上是 DBMS 层，
+查不到行是数据层。
+</details>
+
+**第 2 题：把数据存成文件有哪三个致命问题？数据库分别用什么手段解决？**
+
+<details><summary>参考答案</summary>
+
+找得慢（只能顺序读）——数据库有索引与检索结构，按条件毫秒级定位；改得险（并发写互相
+覆盖）——DBMS 有并发控制与锁，多个用户同时读写不会踩踏；容易坏（写一半断电留半条记录）——
+有事务与日志保证写入要么完整生效、要么整体不算。这三条正是后文事务与索引篇章的主题。
+</details>
+
+**第 3 题：对着 `users(id, name, email, city, registered_at)` 这张表，说出哪是列、哪是行；"张三"和"email"各是什么？**
+
+<details><summary>参考答案</summary>
+
+`id / name / email / city / registered_at` 是五列（一种属性一列，命名在表头）；每一行
+（如 `1 | 张三 | zhang@ex.com | 北京 | 2025-01-10`）是一个完整对象。"张三"是某一行在
+name 列上的**值**；email 本身是**列**。先分清"列是属性、行是实体、交叉点是值"，后面
+学 GROUP BY、JOIN 才不会晕。
+</details>
+
+**第 4 题：SELECT、UPDATE、CREATE TABLE、GRANT 各属于哪一"家族"？**
+
+<details><summary>参考答案</summary>
+
+SELECT 属 DQL（查询）；UPDATE 属 DML（操作数据行）；CREATE TABLE 属 DDL（定义表结构）；
+GRANT 属 DCL（控制权限）。判断法：动的是行、表结构，还是权限——动行 DML、动结构 DDL、
+动权限 DCL、取数 DQL。
+</details>
+
 ## 10. 下一步与小结
 
 进入 [SQL 概述与标准](/sql/020-OverviewStandard) 开始语法主线；想搭建本地数据库

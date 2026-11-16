@@ -293,6 +293,47 @@ SELECT NULL AS v;
 
 匹配按**位置**进行，不是按列名。`SELECT id, name` 对上 `SELECT name, id`，等于拿 id 跟 name 比，轻则空结果，重则静默错配。
 
+## 8.5 遮码自检
+
+用第 2 节的两张表（buyers_2025: 1, 2, 3, 3；buyers_2026: 3, 3, 4, 5）遮住答案先算。
+
+**第 1 题：`INTERSECT` 与 `EXCEPT` 的结果各是什么？换成 ALL 变体呢？**
+
+<details><summary>参考答案</summary>
+
+INTERSECT（默认 DISTINCT）：3；EXCEPT：1, 2。ALL 变体按出现次数运算：INTERSECT ALL
+取 min(m, n) 份（3 一次，min(2,2)=2 份——即 3, 3）；EXCEPT ALL 取 max(m-n, 0) 份。
+默认去重版是业务最常用的口径。
+</details>
+
+**第 2 题："注册了但从没下过单"用 `EXCEPT` 写安全吗？用 `NOT IN` 呢？两者对 NULL 的态度差在哪？**
+
+<details><summary>参考答案</summary>
+
+EXCEPT 安全：它按**整行**比较且遵循"NULL 彼此相等"的集合语义，不会把整份结果毒化；
+NOT IN 只要子查询出一行 NULL，整个 NOT IN 判不出 TRUE，结果空集。这也是"反连接优先
+NOT EXISTS / EXCEPT，慎用 NOT IN"的根子——比较语境与集合语境对 NULL 是两套规则。
+</details>
+
+**第 3 题：MySQL 8.0.31 之前没有 EXCEPT/INTERSECT，写出两个经典替身并各说一个语义注意点。**
+
+<details><summary>参考答案</summary>
+
+交集：`INNER JOIN`（或 IN 子查询）——注意 JOIN 在右表有重复时放大行数，需 DISTINCT；
+差集：`LEFT JOIN ... WHERE 右表键 IS NULL`（或 NOT EXISTS）——NOT EXISTS 对 NULL
+免疫，LEFT JOIN 写法要求比较列非 NULL 才严格等价。重复行语义与 EXCEPT DISTINCT 并不
+总一致，迁移时要拿小数据集对答案。
+</details>
+
+**第 4 题：`A UNION B INTERSECT C` 先算哪个？有什么自检习惯？**
+
+<details><summary>参考答案</summary>
+
+MySQL 8.0.31 起（跟随 SQL 标准）INTERSECT 优先级高于 UNION/EXCEPT，等价于
+`A UNION (B INTERSECT C)`。自检习惯：集合操作一律**显式加括号**——优先级规则不像
+AND/OR 那样人人记得住，括号是零成本的确定性。
+</details>
+
 ## 9. 分层小结
 
 - **入门**：EXCEPT 求差集、INTERSECT 求交集；默认去重，列数一致、按位置匹配、ORDER BY 放最后。

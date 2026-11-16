@@ -30,14 +30,14 @@ prerequisites:
 SQL 标准从 **SQL:2016** 起把 JSON 处理纳入规范（SQL/JSON：路径语言、`JSON_TABLE`、
 构造与查询函数），SQL:2023 进一步扩充。三大开源库的实现都已相当成熟。
 
-## 2. 支持面总览（2026-09）
+## 2. 支持面总览（2026-11）
 
 | 数据库 | 存储类型 | 关键里程碑 |
 | ------ | -------- | ---------- |
 | PostgreSQL | `json` / `jsonb` 两种 | 9.4（2014）引入 jsonb；12 起支持 SQL/JSON 路径语言；16 加 `IS JSON` 谓词；17 加标准 `JSON_TABLE` |
 | MySQL | `JSON` 原生类型 | 5.7.8 引入；8.0 加 `JSON_TABLE`、多值索引、`JSON_SCHEMA_VALID` |
 | SQLite | `TEXT` 存储 + 函数族 | 3.38.0（2022）起 JSON 函数与 `->`/`->>` 默认内置；3.45.0（2024）起提供 JSONB 内部格式 |
-| SQL Server | `NVARCHAR(MAX)` + 函数族 | 2016 起 `JSON_VALUE`/`JSON_QUERY`/`OPENJSON`；原生 `json` 类型自 2024 年起才在 Azure SQL/新版本中落地（以官方文档为准） |
+| SQL Server | `NVARCHAR(MAX)` + 函数族 | 2016 起 `JSON_VALUE`/`JSON_QUERY`/`OPENJSON`；原生 `json` 类型 Azure SQL 先行，SQL Server 2025（17.x，2025-11 GA）正式落地并配套 JSON 索引 |
 
 PostgreSQL 的 `json` 与 `jsonb` 必须分清：`json` 原样保存文本（保留空格、键顺序、
 重复键），每次读取都要重新解析；`jsonb` 解析后以规范化二进制存储（去重、乱序、
@@ -254,6 +254,50 @@ ALTER TABLE products
   版本列表存"每行一版"而不是一列大 JSON。
 - **ETL 中转区**：异构源数据先入 staging 表的 JSON 列，用 JSON_TABLE 映射到
   规范化的目标表，映射错误不会污染目标库。
+
+## 10.5 遮码自检
+
+遮住答案先答；JSON 题的判断标准是"能回答'这个键该不该是普通列'"。
+
+**第 1 题：PostgreSQL 的 `json` 与 `jsonb` 差在哪？什么场景必须忍痛用 `json`？**
+
+<details><summary>参考答案</summary>
+
+`json` 原样存文本（保留空格、键序、重复键），每次读都要重新解析，不能建 GIN 索引、
+不能用包含运算符；`jsonb` 解析后规范化的二进制存储（去重复键、乱序、去空白），支持
+等值/包含查询与 GIN 索引。必须用 `json` 的场景：合规存档等需要逐字节还原原文的地方。
+现代实践默认选 jsonb。
+</details>
+
+**第 2 题：`attrs->>'layout' > 100` 在 PostgreSQL 上为什么可能把 87 判成大于 100？怎么修？修完又引入什么新问题？**
+
+<details><summary>参考答案</summary>
+
+`->>` 返回**文本**，文本比较按字典序：'87' > '100' 为真。修法是显式转型
+`(attrs->>'layout')::int > 100`；但转型的表达式不是原列，普通表达式索引用不上——
+要么建函数/表达式索引，要么把该键提升为普通列。这正是"->> 是文本"这一心智模型
+直接推出的两个后果。
+</details>
+
+**第 3 题：三库各自的"JSON 语法校验"最小方案是什么？谁的校验表达力最强？**
+
+<details><summary>参考答案</summary>
+
+PostgreSQL 16+ 用 `CHECK (attrs IS JSON)`（SQL/JSON 谓词）或 `jsonb_typeof`；MySQL
+8.0.17+ 用 `CHECK (JSON_SCHEMA_VALID(...))`；SQLite 用 `CHECK (json_valid(attrs))`；
+SQL Server 用 `CHECK (ISJSON(col) = 1)`。表达力最强的是 MySQL 的 JSON_SCHEMA_VALID——
+能声明结构与必填键；其余方案只保证"是合法 JSON/是对象"，结构约定要靠应用层或函数
+CHECK 补。
+</details>
+
+**第 4 题："这个字段要不要塞进 JSON 列"的判断标准是什么？举一个该提列的信号。**
+
+<details><summary>参考答案</summary>
+
+问一句："它要不要出现在 WHERE / JOIN / 聚合里？"要，就用普通列——塞进 JSON 等于
+放弃约束、外键、索引与统计信息这些关系库的核心能力。信号例如：某个 JSON 键开始
+出现在高频查询条件里、或开始被外键引用——就是提升为普通列的时刻。
+</details>
 
 ## 11. 小结
 

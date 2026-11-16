@@ -294,6 +294,56 @@ FROM episodes e JOIN plays_per_ep p ON p.episode_id = e.id;
 8. **ON 条件里包函数**：`ON LOWER(u.email) = LOWER(o.email)` 让两边的索引都失效，大表上一次全表对全表的扫描。正确姿势是保持条件裸列等值；大小写问题用表达式索引或统一入库口径解决。
 9. **JOIN 表数量失控**：单条查询 5-7 张表以上，执行计划搜索空间指数增长、人也读不懂——先拆 CTE 分步，再拼装（见[CTE](/sql/230-CTE)）。
 
+## 8.5 遮码自检
+
+遮住答案先写；连接题的判断标准是"能预判结果行数，并说出行从哪来"。
+
+**第 1 题："还没上架任何单集的节目"，用 LEFT JOIN 怎么写？为什么条件必须放在 ON 里、放进 WHERE 语义就变了？**
+
+<details><summary>参考答案</summary>
+
+```sql
+SELECT s.title FROM shows s
+LEFT JOIN episodes e ON e.show_id = s.id
+WHERE e.id IS NULL;
+```
+
+"保留左侧全部行"是 JOIN 的行为，归 ON 管；`e.id IS NULL` 只筛出"没拼上"的行，是
+对连接**结果**的过滤，归 WHERE 管。反过来把 `e.id IS NULL` 挪进 ON，外连接会保留
+全部行、过滤条件形同虚设；把"有单集"这类右表条件放 WHERE，NULL 行被过滤掉，
+LEFT JOIN 退化成 INNER JOIN。
+</details>
+
+**第 2 题："每档节目配了几期"，直接 `JOIN` 后 `COUNT(*)` 得到的每节目数对吗？怎么数才对？**
+
+<details><summary>参考答案</summary>
+
+对，只要数的是"拼上的行"：`COUNT(e.id) GROUP BY s.id`。容易错的是两个方向——用
+`COUNT(*)` 时（LEFT JOIN 下没单集的节目也会被数成 1，因为 NULL 行还在）；或一对多
+连接后 SELECT 里混入右侧列导致节目行重复。口诀：先想连接的基数（1:N 会放大左表），
+再决定数什么列。
+</details>
+
+**第 3 题：MySQL 至今没有 FULL JOIN，"两个方向的节目单都要"怎么拼？为什么直接 UNION 会多行？**
+
+<details><summary>参考答案</summary>
+
+LEFT JOIN 与 RIGHT JOIN 各取一半再拼：左表全保留的那份 + 仅右表侧存在的行
+（`WHERE 左表键 IS NULL`）用 UNION 合并。直接 UNION 两份完整外连接会多行——两表
+都匹配的行在两个方向里各出现一次。SQLite 3.39+、PostgreSQL、SQL Server、Oracle
+都原生支持 FULL OUTER JOIN，无需模拟。
+</details>
+
+**第 4 题：方言事实自检——"MySQL 只会嵌套循环连接"对吗？优化器挑连接算法时你负责什么？**
+
+<details><summary>参考答案</summary>
+
+不对：MySQL 8.0.18 起有 Hash Join，8.0.20 移除了旧的 Block Nested-Loop；PostgreSQL
+三种算法（嵌套循环/哈希/合并）一直都有，靠代价模型自动挑。你负责的是给连接列
+建索引（外键列如 episodes(show_id)、ratings(episode_id)），让 Nested Loop 走得快，
+其余交给优化器——并用 EXPLAIN 验证（见[执行计划](/sql/430-ExecutionPlan)）。
+</details>
+
 ## 9. 练习
 
 基于回声FM的表（含本文补的第 6 档节目）：

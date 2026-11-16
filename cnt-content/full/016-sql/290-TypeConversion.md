@@ -298,6 +298,49 @@ SELECT CAST('2024-03-15' AS DATE);
 （都是把列转数字）；`WHERE created_at > CAST('2026-01-01' AS DATE)` 则 CAST 在常量侧，
 索引不受影响。
 
+## 9.5 遮码自检
+
+遮住答案先答；类型转换题的判断标准是"能说出这次转换发生在谁身上、代价是什么"。
+
+**第 1 题：`CAST('2024-03-15' AS DATE)`、`'2024-03-15'::date`、`CONVERT(...)` 各是哪些数据库的写法？CONVERT 的参数顺序在 SQL Server 与 MySQL 里差在哪？**
+
+<details><summary>参考答案</summary>
+
+CAST 是 SQL 标准、四库通用；`::` 是 PostgreSQL 专属简写；CONVERT 非标准——SQL Server
+是 `CONVERT(目标类型, 表达式 [, style])`（类型在前），MySQL 是 `CONVERT(表达式, 目标
+类型)`（表达式在前），参数顺序正好相反，迁移脚本时最容易在这翻车。
+</details>
+
+**第 2 题：`WHERE name_col = 123`（name_col 是 VARCHAR）在三库各是什么下场？谁最容易让事故"看起来能跑"？**
+
+<details><summary>参考答案</summary>
+
+MySQL 宽松：把两边转成数字比，转不动的字符串按 0 处理——`'abc' = 0` 为真，结果悄悄
+错；PostgreSQL 严格：直接报错（无法比较 character varying 和 integer），错误在开发期
+暴露；SQLite 靠类型亲和性，存进去就变了形状。三库差异巨大正是"显式 CAST、条件两侧
+类型一致"纪律的来源。
+</details>
+
+**第 3 题：`WHERE phone = 13800001111`（phone 是 VARCHAR 列带索引）为什么可能全表扫描？怎么改？**
+
+<details><summary>参考答案</summary>
+
+列与数字比较时，隐式转换作用在**列**上——每行的 phone 都要先转成数字再比，索引里
+存的还是字符串原值，优化器无法使用该索引（等价于对列套函数）。改成
+`WHERE phone = '13800001111'`（字面量加引号，类型对齐），转换消失、索引恢复。
+自检习惯：条件两侧"肉眼同型"。
+</details>
+
+**第 4 题：转换失败时"返回 NULL 而不是报错"的写法三库各是什么？共通的思路是什么？**
+
+<details><summary>参考答案</summary>
+
+SQL Server 用 TRY_CAST（失败返回 NULL）；PostgreSQL 16+ 用 `pg_input_is_valid(值, 类型)`
+先预检再转；MySQL 没有等价函数，用 REGEXP 预检合法格式（或严格模式让脏数据在写入时
+就拦住）。共通思路：**把"能不能转"的判断从异常路径挪到显式谓词**——先验证再转换，
+别让一条脏数据打断整批查询。
+</details>
+
 ## 10. 小结
 
 - 优先 `CAST`（全库通用）；PostgreSQL 加用 `::`；注意 SQL Server 与 MySQL 的

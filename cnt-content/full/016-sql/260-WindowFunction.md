@@ -431,6 +431,47 @@ ORDER BY stat_date;
 5. **NULL 排序位置影响排名** → PostgreSQL 默认 ASC 时 NULL 排最后（被认为最大），需要 `NULLS LAST` 明示；MySQL 把 NULL 当最小值。
 6. **性能**：窗口函数通常要按分区排序数据，百万行级别先缩小 WHERE 范围、只对必要列开窗；能改成 GROUP BY 的汇总不要硬用窗口。
 
+## 8.5 遮码自检
+
+遮住答案先写；窗口题的判断标准是"能说出计算范围（分区、排序、帧）各是哪一段"。
+
+**第 1 题：窗口函数与 GROUP BY 的根本差别一句话是什么？"每个单集比本节目平均高多少"为什么只有窗口能做？**
+
+<details><summary>参考答案</summary>
+
+GROUP BY 把每组折成一行，窗口函数**不折叠行**、每行都保留并把组内计算挂在旁边。
+"平均值和这一行自己同时出现"要求行不消失——GROUP BY 做不到 2（行没了），只有
+`AVG(play_count) OVER (PARTITION BY show_id)` 能把组平均挂在每行上。
+</details>
+
+**第 2 题：每个分类内部播放量排第几——ROW_NUMBER、RANK、DENSE_RANK 对并列值各怎么处理？业务上怎么选？**
+
+<details><summary>参考答案</summary>
+
+ROW_NUMBER 给并列值强行编号（1、2、3），RANK 并列同名次但跳号（1、1、3），DENSE_RANK
+并列同名次不跳号（1、1、2）。选型先回答业务问题："并列算不算并列名次""要不要
+严格前 N 个人"——榜单用 RANK/DENSE_RANK，唯一席位（如每组取一条记录）用 ROW_NUMBER。
+</details>
+
+**第 3 题："每日播放量环比昨天涨了多少"用什么函数？没有昨天的数据时结果是什么、怎么呈现？**
+
+<details><summary>参考答案</summary>
+
+`play_count - LAG(play_count) OVER (ORDER BY stat_date)`：LAG 取排序后上一行的值，
+首行没有上一行，结果为 NULL（报表上通常用 COALESCE 或标注"首日"）。
+LEAD 是反方向（下一行）。偏移函数不折叠行、也不受帧影响，只看分区内的相对位置。
+</details>
+
+**第 4 题：`SUM(play_count) OVER (ORDER BY stat_date)` 没写帧子句，算的是"累计至今"还是"7 日滑动"？两者怎么显式区分？**
+
+<details><summary>参考答案</summary>
+
+算的是"累计至今"——有 ORDER BY 时默认帧是
+`RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`。要 7 日滑动必须显式写
+`ROWS BETWEEN 6 PRECEDING AND CURRENT ROW`。帧不写就猜，是 LAST_VALUE 之坑的根源——
+帧必须显式说清楚。
+</details>
+
 ## 9. 练习
 
 全部基于回声FM的表：

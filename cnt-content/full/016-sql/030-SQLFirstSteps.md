@@ -231,6 +231,48 @@ WHERE NOT EXISTS (SELECT 1 FROM producer WHERE producer_name = 'ry0');
 4. 故意制造一次 1062 错误（重复插入同一主键），观察报错信息，再用 `INSERT IGNORE` 修复。
 5. 把三张表的建表语句用 `SHOW CREATE TABLE` 导出，保存成你自己的第一个 SQL 脚本文件。
 
+## 7.5 遮码自检
+
+先自己写再展开答案；重点是说出"为什么这么写"。
+
+**第 1 题：建库建表语句为什么要带上 `IF NOT EXISTS`？不带的脚本会遇到什么问题？**
+
+<details><summary>参考答案</summary>
+
+教学脚本会被反复执行（换环境、重跑、给别人用）。不带 `IF NOT EXISTS`，第二次执行就在
+`CREATE DATABASE` 处报"已存在"而中断；带上之后同一脚本永远可重复执行（幂等）。配套习惯：
+数据写入用 `INSERT IGNORE` 或存在性检查，整个脚本跑几遍结果都一致——动手练习第 2 题就是
+让你连跑两遍体会这一点。
+</details>
+
+**第 2 题：想给某首歌的播放量加 1，完整的安全流程怎么走？写出语句并说明每步为什么。**
+
+<details><summary>参考答案</summary>
+
+先查再改：`SELECT play_count FROM music WHERE music_id = 42;` 确认目标存在、看清当前值；
+再 `UPDATE music SET play_count = play_count + 1 WHERE music_id = 42;`。先 SELECT 能避免
+"改了个不存在的 id 还以为成功了"；UPDATE 必须带 WHERE——不带就是全表 +1。生产上这类
+读改写还要防并发竞态，那是事务与锁篇的主题。
+</details>
+
+**第 3 题：`INSERT IGNORE` 和"先 SELECT 判断再 INSERT"都能防重复写入，取舍是什么？**
+
+<details><summary>参考答案</summary>
+
+先查再插在并发下有竞态：两个请求同时查到"不存在"，然后都插入。`INSERT IGNORE` 依赖
+唯一键/主键约束在写入瞬间兜底，数据库层保证不会重复。所以防重的根子是**唯一约束**，
+IGNORE 只是利用它的写法；没有唯一键，两种写法都挡不住重复。
+</details>
+
+**第 4 题：在 MySQL 里写 `SELECT 1 + 1 WHERE 1 < 2;`，什么版本能跑通？更老的版本怎么办？**
+
+<details><summary>参考答案</summary>
+
+MySQL 8.0.19 起允许 SELECT 无 FROM 还带 WHERE；更早版本必须补 `FROM DUAL`：
+`SELECT 1 + 1 FROM DUAL WHERE 1 < 2;`。PostgreSQL 一直支持无 FROM 的 WHERE。这类
+"表达式试探"是确认方言版本差异最快的手段——报错信息会直接告诉你差在哪。
+</details>
+
 ## 8. 小结与下一课
 
 - 一条 SQL = 定位（库/表）+ 动作（DDL/DML/DQL）+ 分号结尾。

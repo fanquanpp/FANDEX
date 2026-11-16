@@ -196,6 +196,48 @@ ALTER TABLE music ADD COLUMN release_date DATE NULL;
 判读要点：任务 2 的误差量级随行数线性放大，千行 0.1 累计已经偏 1.4e-5，账务系统千万行就是肉眼可见的分账差异——这就是"金额禁用 FLOAT"的实验证据。
 </details>
 
+## 遮码自检
+
+遮住答案先答；答不上"为什么"就回对应决策小节重读。
+
+**第 1 题：金额字段为什么不能用 FLOAT/DOUBLE？`DECIMAL(10,2)` 最多能存多大的数？**
+
+<details><summary>参考答案</summary>
+
+FLOAT/DOUBLE 是二进制浮点，0.1 在二进制里是无限循环小数，存进去的只能是近似值——多行
+0.1 相加会漂成 0.3000000094 之类的数，对不上账。DECIMAL 是十进制定点数，精确到指定小数位。
+`DECIMAL(10,2)` 总位 10、小数 2 位，最大 99999999.99。口诀：钱的字段一律 DECIMAL。
+</details>
+
+**第 2 题：手机号、身份证号该用什么类型存？为什么 INT 是错的？**
+
+<details><summary>参考答案</summary>
+
+字符串（本篇用 CHAR 定长：手机号 CHAR(11)、身份证 CHAR(18) 并配 CHECK 正则）。INT 的错
+有三层：手机号不以 0 开头会丢前导零；身份证末位的 X 无法进整数；两者都不参与算术，本质
+是"编号"不是"数"。判据就是选型四问的第一问：它参与算术吗？
+</details>
+
+**第 3 题：`DATETIME` 与 MySQL 的 `TIMESTAMP` 怎么选？各自的坑是什么？**
+
+<details><summary>参考答案</summary>
+
+DATETIME 无时区、范围 1000-9999 年，适合纯本地业务时间；TIMESTAMP 随会话时区转换、但
+MySQL 实现有 1970-2038 上限与隐式转换。全球化系统记 created_at 用 TIMESTAMP（PG 用
+timestamptz）；纯国内系统用 DATETIME + 应用层统一 UTC 心智更简单。另外
+`ON UPDATE CURRENT_TIMESTAMP` 的"自动刷新"藏在表结构里，评审时容易漏看。
+</details>
+
+**第 4 题：为什么"技能列表"不该用 `VARCHAR` 存 `'Java,Python,Go'`？两种正解各适合什么场景？**
+
+<details><summary>参考答案</summary>
+
+逗号拼接多值违反 1NF：查"会 Python 的员工"只能 LIKE 模糊匹配，索引失效且无法建外键约束。
+正解 A 关联表（employee_skill 联合主键）——要按技能筛选/统计时用；正解 B JSON 列——
+整体读写、不按值查询的半结构化附件。一旦出现高频 `WHERE JSON_EXTRACT(...)`，说明它该
+升级成列或关联表。
+</details>
+
 ## 检验清单
 
 - 能背出选型四问并为任意字段走一遍流程；

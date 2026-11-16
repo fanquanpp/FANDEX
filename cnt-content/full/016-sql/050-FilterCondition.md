@@ -299,6 +299,37 @@ SQL 是声明式语言，你写条件的顺序不决定执行顺序，优化器�
 
 多条件联合过滤的索引设计（复合索引、最左前缀）在[索引](/sql/420-Index)一文中展开。
 
+## 5.5 遮码自检
+
+遮住答案先写；过滤题的判断标准是"能预判 NULL 会不会被这个条件漏掉或误收"。
+
+**第 1 题："上架的、时长超过 20 分钟、标题带 AI"三个条件直接 AND 连写有风险吗？什么时候必须加括号？**
+
+<details><summary>参考答案</summary>
+
+纯 AND 连写无歧义；一旦混入 OR 就要警惕——AND 优先级高于 OR，
+`WHERE a OR b AND c` 实际是 `a OR (b AND c)`。写 OR 的地方就问自己"不加括号 AND
+会不会先算"，答案几乎总是"会"，所以直接加括号。
+</details>
+
+**第 2 题：`WHERE language <> 'en'` 会把 language 为 NULL 的单集算进来吗？"非英语"的正确写法是什么？**
+
+<details><summary>参考答案</summary>
+
+不会。NULL 与任何值比较（包括 <>）都是 UNKNOWN，三值逻辑下被 WHERE 过滤——NULL 行
+被悄悄漏掉。要"非英语"就写 `WHERE language <> 'en' OR language IS NULL`，把"没填
+语言"的行显式召回。写 <> 的瞬间先问：目标列有没有 NULL？
+</details>
+
+**第 3 题：`title LIKE '%AI%'` 和 `duration_sec > 1200`，哪个能走 B-tree 索引？为什么？**
+
+<details><summary>参考答案</summary>
+
+后者能：对列的普通比较是 SARGable 的，索引按序定位。前者不能：前导通配符让任何行
+都可能是答案，索引无从定位，只能全表扫；后缀通配 `LIKE 'AI%'` 可以走索引。判断口诀：
+函数、运算别套在列上，通配符别放开头。
+</details>
+
 ## 练习
 
 继续用 episodes 表，先补一条数据再做题：

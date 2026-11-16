@@ -237,6 +237,51 @@ SELECT * FROM (
 - 关联子查询是否只用于小结果集或语义必需处？大数据量场景是否考虑窗口函数/JOIN 改写？
 - 派生表是否都起了别名？
 
+## 4.5 遮码自检
+
+遮住答案先写；子查询题的判断标准是"能说出这个子查询执行几次、返回几行几列"。
+
+**第 1 题："这笔配送费算高吗"要和全城平均比——写出标量子查询，并说明它执行几次、为什么必须恰好一行一列。**
+
+<details><summary>参考答案</summary>
+
+```sql
+SELECT id, fee FROM orders
+WHERE fee > (SELECT AVG(fee) FROM orders);
+```
+
+子查询不引用外层，只执行**一次**，结果当常量用；标量位置要求恰好一行一列，多行
+直接报错——这就是"先想形状再用"的意义。
+</details>
+
+**第 2 题："从没有超时记录的骑手"，NOT IN 和 NOT EXISTS 两种写法在什么数据下结果不同？**
+
+<details><summary>参考答案</summary>
+
+orders 里只要有一行 rider_id 为 NULL（平台调度单），`id NOT IN (SELECT rider_id ...)`
+整体判不出 TRUE，结果空集；NOT EXISTS 对 NULL 免疫，仍能正确返回。所以 NOT EXISTS
+是默认选择，NOT IN 只在子查询列确定 NOT NULL 时才安全。
+</details>
+
+**第 3 题："哪些订单比该骑手自己的历史均价高"——为什么这是关联子查询？它执行几次？**
+
+<details><summary>参考答案</summary>
+
+比较对象"该骑手的历史均价"随外层当前行变化，子查询必须引用外层的 rider_id——
+相关子查询，逻辑上每条订单执行一次。改写成 JOIN（按骑手预聚合均价再连接）或
+窗口函数（AVG() OVER (PARTITION BY rider_id)）可让子查询只算一次，数据量大时
+是主要的性能迁移方向。
+</details>
+
+**第 4 题："本周接过单的骑手名单"用 IN 子查询写。右表 rider_id 有 NULL 会影响 IN 吗？和第 2 题的差异是什么？**
+
+<details><summary>参考答案</summary>
+
+不影响：`id IN (1, 2, NULL)` 只要命中 1 或 2 就为 TRUE，NULL 只是不额外命中。
+正反不对称是三值逻辑的必然——IN 容忍 NULL，NOT IN 被 NULL 毒化。所以"正向找存在"
+用 IN/EXISTS 都安全，"反向找不存在"只能 NOT EXISTS。
+</details>
+
 ## 练习
 
 1. 查出配送费高于"本骑手所在城市均价"的订单（注意：比较基准从骑手均价换成城市均价，先想清楚关联条件挂在哪列）。

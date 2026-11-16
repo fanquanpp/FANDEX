@@ -363,3 +363,47 @@ WINDOW w AS (PARTITION BY x ORDER BY y);
 - **预聚合表**：将窗口计算结果物化为中间表
 - **增量计算**：利用 `LAG` 仅计算增量部分
 - **近似算法**：使用 `HyperLogLog` 等近似去重替代精确 `COUNT(DISTINCT)`
+
+## 遮码自检
+
+遮住答案先答；框架题的判断标准是"能对着一条 OVER 子句说出帧的起点和终点"。
+
+**第 1 题：`SUM(x) OVER (ORDER BY day)` 没写帧子句，默认帧是什么？`LAST_VALUE(x)` 为什么常返回"最后一行的重复值"？**
+
+<details><summary>参考答案</summary>
+
+有 ORDER BY 时默认帧是 `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`。CURRENT
+ROW 是"当前 peers 组的边界"（RANGE 模式下并列值同属一组），所以 LAST_VALUE 返回的是
+**当前并列组里最后一行的值**——并列多时看起来"总是自己"。修法：显式写
+`ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`。这正是"FIRST_VALUE 天生
+安全，LAST_VALUE 必查帧"口诀的由来。
+</details>
+
+**第 2 题：ROWS、RANGE、GROUPS 三种帧单位的差别是什么？"并列第 2 名的 3 行"在这三种单位下各算几行？**
+
+<details><summary>参考答案</summary>
+
+ROWS 按物理行数偏移，并列也要一行行数；RANGE 按排序值的逻辑区间，并列值整体同进出；
+GROUPS 按不同排序值分成组来偏移（SQL:2011 引入）。对"值相同并列 3 行"：ROWS 数 3 行，
+RANGE 把这 3 行当一个边界（要么都进帧要么都不进），GROUPS 把它们算 1 个组。做"滑动
+平均"要逐行算用 ROWS；做"包含所有同分者"用 RANGE。
+</details>
+
+**第 3 题：写出"每天连同前两天，3 天滑动平均"的 OVER 子句，并说明为什么必须显式写帧。**
+
+<details><summary>参考答案</summary>
+
+`AVG(sales) OVER (ORDER BY day ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)`。必须显式
+写：默认帧（RANGE 到 CURRENT ROW）是"从头累计到当前并列组"，不是固定 3 行的滑动窗；
+且前两天不足时该写法天然输出"现有行的平均"，窗口起点自动截断，不用特判开头。
+</details>
+
+**第 4 题：`ROW_NUMBER()` 能加帧子句吗？哪些函数受帧影响、哪些不受？**
+
+<details><summary>参考答案</summary>
+
+不能——ROW_NUMBER/RANK/DENSE_RANK/NTILE/LAG/LEAD 这类排名与偏移函数根本不使用窗口
+帧（写了会被忽略或报错）；受帧影响的是聚合函数与 FIRST_VALUE/LAST_VALUE/NTH_VALUE。
+判断法：函数的结果是否"由帧内的行集合算出来"——排名看的是分区内全体的相对位置，
+自然与帧无关。
+</details>

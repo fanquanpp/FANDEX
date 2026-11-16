@@ -325,6 +325,50 @@ for attempt in range(3):
 已提交）、间隙锁锁住范围阻止插入。参考答案骨架：**快照读下没有幻读；当前读会读到新插入
 的行；要彻底防住范围插入，用 FOR UPDATE 让间隙锁把空隙锁死**。
 
+## 9.5 遮码自检
+
+遮住答案先答；隔离级别题的判断标准是"能对着异常表格说出'哪一级挡住哪一行'"。
+
+**第 1 题：标准四级各自挡住哪些并发异常？MySQL 的 REPEATABLE READ 在标准之外多挡了什么？**
+
+<details><summary>参考答案</summary>
+
+READ UNCOMMITTED 什么都不挡（脏读/不可重复读/幻读都可能）；READ COMMITTED 挡脏读；
+REPEATABLE READ 再挡不可重复读（标准仍允许幻读）；SERIALIZABLE 三样全挡。MySQL
+InnoDB 的 RR 借助 Next-Key Lock（记录锁 + 间隙锁）在很大程度上防住幻读，是标准允许
+范围之外的加强实现。
+</details>
+
+**第 2 题：PostgreSQL、MySQL、SQL Server 的默认隔离级别各是什么？为什么 PG 的 READ UNCOMMITTED"形同虚设"？**
+
+<details><summary>参考答案</summary>
+
+PostgreSQL 默认 READ COMMITTED，MySQL InnoDB 默认 REPEATABLE READ，SQL Server 默认
+READ COMMITTED（另有 SNAPSHOT 快照隔离可选）。PG 的 MVCC 实现根本不暴露未提交数据，
+设置 READ UNCOMMITTED 会被静默当作 READ COMMITTED——"能读脏数据"这个级别在 PG 上
+无法存在，也说明隔离级别是"实现向上兼容标准"而非标准强制实现。
+</details>
+
+**第 3 题：`SET TRANSACTION ISOLATION LEVEL ...` 和 `SET SESSION TRANSACTION ISOLATION LEVEL ...` 作用范围差在哪？各库有什么"必须写在开头"的限制？**
+
+<details><summary>参考答案</summary>
+
+不带 SESSION 的 SET TRANSACTION 只影响**下一个**事务，随事务结束失效；SET SESSION
+改当前会话的默认级别。PG 要求 `SET TRANSACTION` 必须写在事务的第一条查询之前
+（或直接 `BEGIN ISOLATION LEVEL ...`），事务中途改级别会报错——隔离级别是快照的
+建立参数，不能"读到一半换规则"。
+</details>
+
+**第 4 题：REPEATABLE READ 下，普通 SELECT 与 `SELECT ... FOR UPDATE` 看到的数据可能不同——为什么？**
+
+<details><summary>参考答案</summary>
+
+普通 SELECT 是**快照读**：读事务开始时的 MVCC 版本，不加锁；FOR UPDATE 是**当前读**：
+读最新已提交版本并加锁。同级别下两者视线不同，恰好是"隔离级别约束快照读、锁约束
+当前读"两套机制并存的证据。写路径（UPDATE/DELETE）也是当前读——这就是为什么 RR 下
+"先 SELECT 再 UPDATE"仍可能基于过期判断，需要 FOR UPDATE 或乐观锁补位。
+</details>
+
 ## 10. 小结
 
 - 标准四级对应三类异常的递进消除：脏读 → 不可重复读 → 幻读。

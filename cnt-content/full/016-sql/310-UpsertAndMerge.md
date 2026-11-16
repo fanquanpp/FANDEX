@@ -159,7 +159,7 @@ WHEN NOT MATCHED THEN
 | 数据库   | MERGE 支持情况 |
 | -------- | -------------- |
 | SQL Server / Oracle | 早年即支持，语法成熟 |
-| PostgreSQL | **15**（2022-10）才引入；初版不能删除、不能 RETURNING；17（2024-09）补上 `WHEN NOT MATCHED ... BY SOURCE` 与 `RETURNING` |
+| PostgreSQL | **15**（2022-10）才引入；初版即支持 `WHEN MATCHED THEN UPDATE/DELETE`，缺 RETURNING；17（2024-09）补上 `WHEN NOT MATCHED ... BY SOURCE` 与 `RETURNING` |
 | MySQL / MariaDB | 至今不支持，用 `ON DUPLICATE KEY UPDATE` |
 | SQLite   | 不支持，用 `ON CONFLICT` |
 
@@ -241,6 +241,49 @@ WHERE product_id IN (SELECT product_id FROM daily_removed);
 | 冲突时跳过 | `DO NOTHING` | `INSERT IGNORE` | `DO NOTHING` | `MERGE ... WHEN MATCHED THEN UPDATE SET 主键=主键`（变通） |
 | 先删后插 | 无（不建议） | `REPLACE INTO` | `REPLACE INTO` | 无 |
 | 多分支合并（含删除） | `MERGE`（15+，17 起含 BY SOURCE） | 不支持 | 不支持 | `MERGE` |
+
+## 8.5 遮码自检
+
+遮住答案先写；UPSERT 题的判断标准是"能说出冲突靠什么判定、EXCLUDED/别名各指哪一行"。
+
+**第 1 题：`ON CONFLICT (product_id) DO UPDATE SET qty = inventory.qty + EXCLUDED.qty` 里的 `EXCLUDED` 是什么？没有它这句话为什么写不出来？**
+
+<details><summary>参考答案</summary>
+
+EXCLUDED 是"本想插入、但因冲突被拦下"的那一行（拟插入值）。更新分支里"新数量 = 旧
+数量 + 本次增量"，旧数量是表里的 inventory.qty，本次增量只存在于拟插入行里——不引用
+EXCLUDED 就拿不到这个值。它在 DO NOTHING 分支不存在，只在 DO UPDATE 里可用。
+</details>
+
+**第 2 题：MySQL 的 ODKU，为什么推荐 `INSERT ... VALUES ... AS new_row ... ON DUPLICATE KEY UPDATE qty = qty + new_row.qty` 而不是 `qty = qty + VALUES(qty)`？**
+
+<details><summary>参考答案</summary>
+
+`VALUES(col)` 函数式旧写法自 MySQL 8.0.20 起已废弃（官方警告未来会移除）；行别名写法
+（8.0.19+）可读性更好——`new_row` 明确指"想插入的行"，与 PostgreSQL 的 EXCLUDED 心智
+对齐。跨方言迁移时两种写法的"指代"能一一对应，旧写法不行。
+</details>
+
+**第 3 题：库存对账要"匹配则更新、无则插入、对不上则删除"，为什么 UPSERT 表达不了、MERGE 可以？PostgreSQL 15 与 17 在这件事上差在哪？**
+
+<details><summary>参考答案</summary>
+
+UPSERT 只有"匹配则更新 / 不匹配则插入"两个分支，没有删除分支；MERGE 是 SQL:2003
+标准语句，WHEN MATCHED / WHEN NOT MATCHED 各自可指定 INSERT、UPDATE、**DELETE**。
+PostgreSQL 15 引入 MERGE 时就支持"匹配即删"（WHEN MATCHED THEN DELETE）；本题"目标
+表中对不上源的行要删"对应的是 `WHEN NOT MATCHED BY SOURCE THEN DELETE`，这个分支
+PostgreSQL 17（2024-09）才补上——15/16 上只能拆成独立 DELETE（见 5.3 的对账实战）。
+跨库首选仍是 UPSERT。
+</details>
+
+**第 4 题：高并发下几百个请求同时对同一 product_id 做 ON CONFLICT，可能出现什么现象？这提示你什么设计习惯？**
+
+<details><summary>参考答案</summary>
+
+同一冲突键上的语句会互相等待行锁，重一点就排队甚至死锁（互相持有对方要的键）；批量
+语句里键的顺序不同时死锁概率更高。设计习惯：热点键的合并写入收敛到单一入口（队列/
+串行化），批量 UPSERT 先按键排序再执行，减少交叉等待。
+</details>
 
 ## 9. 小结
 
