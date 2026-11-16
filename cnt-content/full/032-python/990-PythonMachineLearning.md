@@ -541,3 +541,12 @@ clf = RandomForestClassifier(n_estimators=100)
 clf.fit(X_train, y_train)
 print(f"准确率: {clf.score(X_test, y_test):.2%}")
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：sklearn 的四行最小流程。要点：`train_test_split(X, y, test_size=0.2)` 切分 -> `clf.fit(X_train, y_train)` -> `clf.predict(X_test)` 或 `clf.score(X_test, y_test)`；所有 estimator 都遵循 fit/predict 统一接口，这是 sklearn 的核心设计。
+2. 预测题：类别不平衡 95:1 时，99% 准确率说明什么？要点：可能只是全预测多数类——先看混淆矩阵与召回/精确率，不平衡场景准确率是最具欺骗性的指标。
+3. 排错题：验证集上表现好、上线后效果差，按顺序自查哪三条？要点：训练与推理的特征预处理是否一致（scaler 只在训练集 fit、推理侧要复用）；是否存在数据泄漏（目标相关列混进特征）；训练数据分布与线上分布是否漂移。
+4. 操作题：把随机森林换成逻辑回归并对比指标，说出哪个接口变了、哪个没变。要点：只换类名（`LogisticRegression()`），fit/predict 不变——统一接口让换模型成本接近零，也让「先立基线再迭代」成为低阻力流程。

@@ -630,3 +630,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 口述题：Authorization Code 流的四步走——前端跳转、回跳带 code、后端换 token、校验。要点：前端重定向到授权端点（带 client_id、redirect_uri、state）；用户授权后带 code 回跳；后端用 code + client_secret 换 access_token；校验 `state` 防 CSRF——code 交换必须由后端做，secret 不进前端。
+2. 默写题：用 password 验证签发 JWT 的 FastAPI 依赖，写出核心三行。要点：`oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")`；`payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])`；取不到/验不过就 `raise HTTPException(401)`——校验失败必须显式 401 而不是静默放行。
+3. 预测题：JWT 能否被撤销？由此决定 access token 的生命期怎么定？要点：不能（无状态签发后无法主动作废，除非维护黑名单）；所以 access token 短命（分钟级），refresh token 长命且服务端可撤销，权限即时变更场景靠短命 token + 黑名单兜底。
+4. 纠错题：把 `allow_origins=["*"]` 与 `allow_credentials=True` 同时配置为什么是错的？要点：带凭证的请求禁止通配源（浏览器层面强制），等同关闭跨源防护；白名单列出可信源，方法与头也按需收窄。

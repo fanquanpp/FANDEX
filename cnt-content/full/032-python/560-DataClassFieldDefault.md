@@ -2588,4 +2588,11 @@ dataclass 提供了大量可选项，但不强制使用。默认配置即可满�
 
 dataclass 与 attrs 的"竞争"是 Python 生态健康的体现。attrs 推动了 dataclass 的诞生，dataclass 反过来促进了 attrs 的改进。两者共存，各自服务不同需求。
 
----
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：一个含默认值、含校验的字段——金额必须大于 0，写出 dataclass 定义。要点：`field(default=Decimal("0"), metadata={...})` 配 `__post_init__` 里 `if self.amount <= 0: raise ValueError(...)`；或用 `field(validator=...)`（attrs/Pydantic 路线）。
+2. 纠错题：`@dataclass class Item: tags: list[str] = []` 错在哪？要点：可变默认值直接抛 `ValueError: mutable default`；必须 `field(default_factory=list)`——所有实例共享同一个列表是 dataclass 明确禁止的坑。
+3. 预测题：`@dataclass(frozen=True)` 实例上 `obj.name = "x"` 会发生什么？要点：抛 `FrozenInstanceError`；frozen 换来可哈希与线程安全的只读性，代价是修改要走 `dataclasses.replace(obj, name="x")` 生成新对象。
+4. 默写题：`KW_ONLY` 分隔位置的写法（3.10+），并解释动机。要点：`@dataclass class Item: name: str; _: KW_ONLY; note: str = ""`——`_` 之后的字段只能按关键字传，避免布尔旗标按位置传错序。

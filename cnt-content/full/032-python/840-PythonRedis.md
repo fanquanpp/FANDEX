@@ -490,3 +490,12 @@ return 1
 result = r.eval(rate_limit_script, 1, 'rate_limit:user:123', 10, 60)
 print(f"请求是否允许: {bool(result)}")
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：设一个 60 秒过期的键并原子读取。要点：`r.set("key", "v", ex=60)`；`r.get("key")` 返回 `bytes`（需 decode）或 `None`——「值是字节不是 str」是 redis-py 的第一坑。
+2. 默写题：用 `INCR` 与过期实现固定窗口计数器，写出三行。要点：`count = r.incr(key)`；`if count == 1: r.expire(key, 60)`；超阈值拒绝——注意先 INCR 再判，保证并发下不漏计数。
+3. 预测题：为什么限流的「检查并递增」必须放进 Lua 脚本而不能两条命令分开执行？要点：Redis 单线程执行脚本是原子的；分开执行在并发下会出现「读旧值-重复放行」的竞态，Lua 保证检查与写入不可分割。
+4. 排错题：`r.eval(script, 1, "rate_limit:user:123", 10, 60)` 中 `1`、`10`、`60` 各是什么？要点：`1` 是脚本访问的键数量（KEYS[1]），`10`、`60` 是 ARGV 参数——键与参数分开传是 Redis 集群路由的前提。

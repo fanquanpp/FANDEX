@@ -453,3 +453,12 @@ health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
 # 设置服务状态为健康
 health_servicer.set('', health_pb2.HealthCheckResponse.SERVING)
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：在 .proto 里定义一个 RPC 并生成 Python 代码，写出服务方法签名。要点：`service Greeter { rpc SayHello (HelloRequest) returns (HelloReply); }`；`python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. greeter.proto`；实现类覆写 `SayHello(self, request, context)`。
+2. 口述题：gRPC 的四种流模式与各自适用场景？要点：unary（普通请求响应）；server streaming（推送/下载）；client streaming（批量上传）；bidirectional（聊天/实时同步）——流由 `stream` 关键字标在消息类型前。
+3. 预测题：客户端收 `grpc.RpcError`，怎么区分「业务拒绝」和「服务崩溃」？要点：`e.code()` 是 `StatusCode`（INVALID_ARGUMENT/NOT_FOUND 是业务，UNAVAILABLE/INTERNAL 是基础设施）；业务错误也应映射到合适的 code 而不是一律 UNKNOWN。
+4. 纠错题：proto3 里把用户 ID 字段从 `int32` 改成 `string` 直接发布。错在哪？要点：字段类型变了但编号没变，旧客户端按 int32 解读 wire 格式直接错乱——proto 的兼容规则是「编号与类型不可变，新增用新编号」，废弃字段加 `reserved`。

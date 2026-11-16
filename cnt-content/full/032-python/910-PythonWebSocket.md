@@ -610,3 +610,12 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         local_connections.remove(websocket)
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 口述题：WebSocket 握手在 HTTP 之上做了什么？要点：客户端发 `Upgrade: websocket` 的 HTTP 请求，服务器 101 Switching Protocols 同意后，同一条 TCP 连接切换为全双工帧协议——这也是「为什么升级请求必须经 HTTP 通道」的原因。
+2. 默写题：FastAPI 里收发文本消息的最小端点。要点：`@app.websocket("/ws") async def ws(websocket: WebSocket): await websocket.accept(); data = await websocket.receive_text(); await websocket.send_text(f"echo: {data}")`。
+3. 预测题：多进程部署（uvicorn 多 worker）下为什么需要 Redis pub/sub 中转？要点：每条连接只存在于一个 worker 进程的内存里；进程 A 收到的消息要让进程 B 的连接收到，必须走进程间通道——本地连接列表无法跨进程广播。
+4. 排错题：客户端断线后 `receive_text()` 抛什么异常？清理逻辑为什么可能漏连接？要点：`WebSocketDisconnect`；异常路径外的注册（如 accept 后、try 之前挂掉）会漏删——清理要放在 `finally`，并用断线感知 + 心跳兜底僵尸连接。

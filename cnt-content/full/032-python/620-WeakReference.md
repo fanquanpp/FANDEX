@@ -2220,3 +2220,12 @@ print(weakref.getweakrefcount(obj))
 # 返回所有弱引用列表
 print(weakref.getweakrefs(obj))
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：创建弱引用、访问对象、处理对象已死三种情况的四行模板。要点：`ref = weakref.ref(obj)`；`ref()` 活着返回对象、死了返回 `None`——每次都判 `if ref() is not None`，绝不把 `ref()` 的结果缓存成「还活着」的结论。
+2. 预测题：`class A: pass` 与 `class B: __slots__ = ("x",)`，哪个能直接 `weakref.ref(b)`？要点：A 可以；B 不行——开启 `__slots__` 后默认没有 `__weakref__` 槽，需要显式加 `__slots__ = ("x", "__weakref__")`。同理内置 list/dict/int 都不支持弱引用，dict 子类可以。
+3. 默写题：对象死亡时收到通知的写法。要点：`weakref.finalize(obj, callback, *args)`（3.4+）或 `weakref.ref(obj, callback)`；注意回调里不要持有 obj 本身，否则对象永生。
+4. 口述题：缓存为什么用 `WeakValueDictionary` 而不是普通 dict？要点：普通 dict 的键值引用让对象永不回收，缓存变内存泄漏；弱值字典在别处引用全部消失时自动清掉条目，缓存只「加速」不「挽留」。

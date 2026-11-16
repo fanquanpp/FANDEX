@@ -144,7 +144,7 @@ with open("legacy_gbk.txt", "r", encoding="gbk") as fin, \
     fout.write(fin.read())
 ```
 
-逐段解释：`encoding` 省略时用 `locale.getpreferredencoding()`——Linux 上通常是 UTF-8，Windows 中文环境是 gbk，**同一份代码两边结果不同**，这就是 PEP 686 在未来版本把默认值改为 UTF-8 的动机（3.15 计划）。纪律：生产代码里 `open` 的文本模式**永远写 encoding**。`errors` 三档的取舍：`strict`（默认）让坏字节立刻炸出来——数据校验场景要的就是这声爆炸；`replace` 把坏字节换成 `\ufffd`——日志清洗这类「宁缺毋断」的批处理选它；`ignore` 静默丢弃——几乎不该用（丢了什么无从审计）。常见编码对照：`utf-8`（通用首选）、`gbk`（Windows 中文历史遗留）、`ascii`（ASCII 子集）、`latin-1`（字节到码点一一映射，处理来路不明的字节流的万能钥匙）。编码转换的本质：「字节流 + 编码解释 = 文本」，换个解释重新编码即转码——字符串与编码的完整心智模型见 [字符串格式化](/python/120-StringFormattingMethods)。
+逐段解释：`encoding` 省略时，Python 3.14 及以前用 `locale.getpreferredencoding()`——Linux 上通常是 UTF-8，Windows 中文环境是 gbk，**同一份代码两边结果不同**；PEP 686 已在 Python 3.15 落地，默认编码改为 UTF-8（特殊场景可用 `encoding="locale"` 回到旧行为）。历史差异仍值得知道：网上代码与旧环境的默认值未必是 UTF-8。纪律不变：生产代码里 `open` 的文本模式**永远显式写 encoding**——它让代码不依赖解释器版本与运行环境。`errors` 三档的取舍：`strict`（默认）让坏字节立刻炸出来——数据校验场景要的就是这声爆炸；`replace` 把坏字节换成 `\ufffd`——日志清洗这类「宁缺毋断」的批处理选它；`ignore` 静默丢弃——几乎不该用（丢了什么无从审计）。常见编码对照：`utf-8`（通用首选）、`gbk`（Windows 中文历史遗留）、`ascii`（ASCII 子集）、`latin-1`（字节到码点一一映射，处理来路不明的字节流的万能钥匙）。编码转换的本质：「字节流 + 编码解释 = 文本」，换个解释重新编码即转码——字符串与编码的完整心智模型见 [字符串格式化](/python/120-StringFormattingMethods)。
 
 ## 大文件处理：迭代与分块
 

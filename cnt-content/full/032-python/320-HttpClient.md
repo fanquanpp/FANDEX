@@ -267,3 +267,12 @@ conn.close()
 1. 用 `http.client` 手动向 `httpbin.org/get` 发一个带自定义 `User-Agent` 的 GET 请求，打印状态码、响应头与体长。
 2. 复用同一连接连续请求同一主机 5 次，对比"每次新建连接"与"keep-alive 复用"的总耗时（`time.perf_counter` 计时）。
 3. 故意对一个返回 301 的地址发请求，读取 `Location` 头并手动完成一次重定向，体会高层库替你做了什么。
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：用 `http.client` 发一个 GET 请求并取出状态码、响应头、响应体的三行模板。要点：`conn = http.client.HTTPSConnection(host)`；`conn.request("GET", path)`；`resp = conn.getresponse()` 后读 `resp.status`、`resp.getheader(name)`、`resp.read()`（返回 bytes）。
+2. 排错题：`resp.read()` 第二次调用返回空，为什么？要点：响应体是流，读一次指针到尾就没了；需要复用先存进变量。
+3. 口述题：keep-alive 复用与每次新建连接差在哪一层开销？要点：TCP 三次握手（HTTPS 还有 TLS 握手）每次都要重来；同一 `HTTP(S)Connection` 对象连发多次请求可摊掉这层固定成本。
+4. 判断题：业务代码该用 `http.client` 还是 `requests`/`httpx`？要点：`http.client` 是理解协议与排查问题的学习层；业务层选带连接池、超时、重试的高层库，理由是这些策略自己手写极易出错。

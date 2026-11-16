@@ -549,3 +549,12 @@ docker buildx create --name mybuilder --use
 # 构建多平台镜像
 docker buildx build --platform linux/amd64,linux/arm64 -t my-app .
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：写出 Python 应用的 Dockerfile 骨架——slim 基础镜像、装依赖、非 root 用户、入口。要点：`FROM python:3.12-slim`；先 `COPY requirements.txt` + `pip install` 再 `COPY . .`（利用层缓存）；`RUN useradd ...` + `USER app`；`CMD ["python", "-m", "app"]`。
+2. 纠错题：镜像为什么把 `.dockerignore` 漏了 `.venv` 与 `__pycache__` 之后体积暴涨？要点：构建上下文把本地几百 MB 的虚拟环境整个传给守护进程并可能被 COPY 进层——排除清单与 COPY 顺序是镜像体积的第一杠杆。
+3. 预测题：requirements.txt 任何一行变更后，重建镜像哪些层会重跑？要点：该层及其后所有层（pip install、COPY 代码）全部重跑——这就是「先复制清单再装依赖、最后复制代码」的原因。
+4. 口述题：多阶段构建里 builder 与 runtime 各放什么？要点：builder 装编译工具链并产出 wheel/安装结果，runtime 只拷贝产物——编译器、头文件不进最终镜像，既缩小体积又减少攻击面。

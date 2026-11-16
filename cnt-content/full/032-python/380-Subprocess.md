@@ -250,3 +250,12 @@ subprocess.run(["gzip", filename])
 1. 写一个函数 `git_last_tag()`，用 `subprocess.run` 执行 `git describe --tags --abbrev=0` 并返回 tag 名，处理"仓库没有 tag"的异常路径。
 2. 用两个 `Popen` 串联实现 `type big.log | findstr ERROR`（Windows）或 `cat big.log | grep ERROR`（Unix），统计匹配行数。
 3. 给一个外部命令加上 `timeout=5` 与重试三次的逻辑，验证超时进程确实被终止、退出码被正确捕获。
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：运行 `git status` 并捕获输出，失败时抛异常，写出最短调用。要点：`subprocess.run(["git", "status"], capture_output=True, text=True, check=True)`；`check=True` 才把非零退出码变成 `CalledProcessError`，`text=True` 免去手工 decode。
+2. 纠错题：`subprocess.run("git status", shell=True)` 与列表形式各有什么风险？要点：shell=True 走 shell 解释，拼接用户输入就是命令注入入口；列表形式跳过 shell、参数边界清晰，是默认选择。
+3. 预测题：`run(..., timeout=5)` 超时会抛什么异常？子进程状态如何？要点：`TimeoutExpired`，超时后子进程被 kill（Windows 上 `kill()` 随后 `communicate()` 收尾）；重试逻辑要把超时计入异常路径。
+4. 默写题：把上游进程 stdout 接到下游 stdin 的三行模板。要点：`p1 = Popen(cmd1, stdout=PIPE)`；`p2 = Popen(cmd2, stdin=p1.stdout, stdout=PIPE)`；`p1.stdout.close()`——不 close 会造成 p2 读不到 EOF 而挂起。

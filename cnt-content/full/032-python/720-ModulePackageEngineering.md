@@ -502,29 +502,27 @@ Python 会缓存导入的模块，以提高性能。
 
 ### 8.3 包的分发
 
-使用 `setuptools` 可以将包分发给其他人。
+分发信息写在 `pyproject.toml`（`setup.py` 写法已过时，演进脉络见 [打包演进与 pyproject.toml](/python/730-PythonPackagingEvolution)）：
 
-```python
- # setup.py
- from setuptools import setup, find_packages
- setup(
-  name="mymath",
-  version="1.0.0",
-  description="A simple math package",
-  packages=find_packages(),
-  install_requires=[],
-  entry_points={
-  "console_scripts": [
-  "mymath = mymath.cli:main"
-  ]
-  }
- )
+```toml
+ # pyproject.toml
+ [build-system]
+ requires = ["setuptools"]
+ build-backend = "setuptools.build_meta"
+
+ [project]
+ name = "mymath"
+ version = "1.0.0"
+ description = "A simple math package"
+
+ [project.scripts]
+ mymath = "mymath.cli:main"
 ```
 
 ### 8.4 包的安装方式
 
 - **开发模式安装**: `pip install -e .`
-- **构建分发包**: `python setup.py sdist bdist_wheel`
+- **构建分发包**: `python -m build`（产出 sdist 与 wheel 到 `dist/`；`python setup.py sdist bdist_wheel` 已废弃）
 - **上传到 PyPI**: `twine upload dist/*`
 
 ---
@@ -806,26 +804,6 @@ except ImportError:
     import json
 ```
 
----## 基本类型别名
-
-**基本写法：类型别名**
-`<别名> = <类型>`
-```python
-# 为类型定义别名
-Vector = list[float]
-Matrix = list[list[float]]
-def scale(v: Vector, n: float) -> Vector:
-    return [x * n for x in v]
-```
-
-**基本写法：Python 3.12+ type 语句**
-`type <别名> = <类型>`
-```python
-# Python 3.12+ 使用 type 关键字定义类型别名
-type Vector = list[float]
-type Callback = Callable[[int], str]
-```
-
 ---
 
 ## 基本类型别名
@@ -847,3 +825,12 @@ def scale(v: Vector, n: float) -> Vector:
 type Vector = list[float]
 type Callback = Callable[[int], str]
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：建一个包并声明版本——目录结构与最小文件清单。要点：`mymath/__init__.py`（哪怕为空也要有，让它成为包）、`pyproject.toml`；函数放 `mymath/core.py`，入口 `from mymath.core import add`。
+2. 默写题：三种导入各写一行——整个模块、指定名字、给名字起别名。要点：`import mymath.core` / `from mymath.core import add` / `import numpy as np`；说出各自命名空间的差别（`mymath.core.add` vs 直接用 `add`）。
+3. 排错题：`python mymath/core.py` 报 `ImportError: attempted relative import with no known parent package`。为什么？要点：直接运行脚本时 `__name__` 是 `__main__`、没有包上下文，相对导入失效；正确入口是 `python -m mymath.core`（包环境下）或把相对导入改绝对导入。
+4. 预测题：`sys.modules` 里 `del sys.modules["mymath"]` 后再 `import mymath` 会怎样？要点：触发重新执行模块顶层代码——这就是为什么「运行时改缓存」极容易造成两份并存的状态（旧对象与新类不是同一个类型），只该用于热重载等受控场景。

@@ -2121,3 +2121,12 @@ def process_order(order: Order):
 - `python/850-PythonMessageQueue`: AMQP 协议与消息中间件
 - `python/790-PythonDocker`: 容器化部署 Celery
 - `python/890-PythonDjango`: Django 项目中集成 Celery
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：定义一个带重试的任务并异步调用。要点：`@app.task(bind=True, max_retries=3)` 里 `self.retry(exc=exc, countdown=2 ** self.request.retries)`；调用侧 `send_mail.delay(to="x@y.z")`——`bind=True` 才有 `self`，指数退避靠 countdown。
+2. 口述题：Broker 与 Backend 各自承载什么？要点：Broker（RabbitMQ/Redis）只管任务消息的传递与排队；Backend（Redis/数据库）存结果——不配 Backend 时任务照样能跑，只是拿不到 `result.get()`。
+3. 预测题：worker 池选 prefork 还是 gevent/threads 的判断依据？要点：CPU 密集选 prefork（进程隔离、不受 GIL 限制）；IO 密集选 gevent/threads 提高单机并发；C 扩展任务与 gevent 的 monkey-patch 兼容性要先验证。
+4. 排错题：任务状态一直是 PENDING。按顺序查什么？要点：worker 是否在跑（`celery -A app inspect ping`）、`app.include`/模块导入是否让任务被注册、result_backend 是否配置（PENDING 也可能是「查不到结果」的默认值）。

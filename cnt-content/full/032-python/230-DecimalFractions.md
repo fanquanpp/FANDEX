@@ -277,3 +277,12 @@ print(Decimal("0.1"))    # 0.1
 1. 写一个购物车结算函数：单价与数量用 Decimal，输出未税价、税率 13%（Fraction 定义）、税额（quantize 到分）与总计，并验证 0.1 类商品价不产生误差。
 2. 分别用 float、Decimal、Fraction 计算斐波那契相邻项之比趋于黄金分割的过程，观察三种表示在第几步出现差异。
 3. 用 `limit_denominator(100)` 求圆周率近似分数（`Fraction(3.14159265)`），与 22/7、333/106 对比误差。
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：把 `0.1` 变成精确的十进制数与精确的分数，各写一行。要点：`Decimal("0.1")`（传字符串，传 float 会把浮点误差带进来）；`Fraction(1, 10)` 或 `Fraction("0.1")`。
+2. 预测题：`Decimal("0.1") + Decimal("0.2")` 结果是多少？float 呢？要点：`Decimal("0.3")` 精确成立；float 得 `0.30000000000000004`——二进制浮点表示不了 0.1，这就是金额计算必须换 Decimal 的原因。
+3. 默写题：把 `Decimal("1.005")` 四舍五入到两位小数，写出代码。要点：`Decimal("1.005").quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)`——默认舍入是 `ROUND_HALF_EVEN`（银行家舍入），想要日常「四舍五入」必须显式指定。
+4. 操作题：把 `Fraction(22, 7)` 与 `float` 互相转换。要点：`float(Fraction(22, 7))` 直接转；`Fraction(3.14159265).limit_denominator()` 把不精确的浮点收回最接近的可读分数。

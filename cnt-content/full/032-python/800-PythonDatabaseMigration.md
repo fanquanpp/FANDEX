@@ -559,3 +559,12 @@ alembic upgrade head --sql
 # 生成从某个版本到另一个版本的 SQL
 alembic upgrade a1b2c3:e5f6a7b --sql
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：Alembic 日常四连命令——生成迁移、执行、回退一步、看当前版本。要点：`alembic revision --autogenerate -m "add users"`、`alembic upgrade head`、`alembic downgrade -1`、`alembic current`。
+2. 排错题：autogenerate 说「No changes detected」，但模型明明加了列。三个最常见原因？要点：env.py 连的不是这个库 / 目标模型没 import 进 metadata / 表的主键或命名约定配置漏了——先确认「对比的双方」是哪两个 schema。
+3. 口述题：为什么线上迁移要写 `downgrade()` 且先在预发跑 `--sql` 审查？要点：可回滚是迁移的一部分而非可选项；autogenerate 只对比结构不懂数据语义，破坏性变更（删列、改类型）必须人审 SQL 再执行。
+4. 预测题：两台服务器同时 `alembic upgrade head` 会怎样？要点：迁移表无锁时会各自执行同一段迁移导致冲突或脏状态——部署流水线里迁移必须是单点步骤（作业或发布钩子），不能放进多副本启动路径。
