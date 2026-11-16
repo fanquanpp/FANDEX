@@ -252,6 +252,74 @@ async」组合的现代标准写法；`mockRejectedValueOnce` 的队列顺序即
 - **并发用例共享 mock 记录**：`test.concurrent` + `toHaveBeenCalledTimes`
   的组合几乎必然偶发失败，并发用例只断言「自己的结果」。
 
+## 教学自检
+
+以下题目按遮码自检法设计：先遮住参考答案自己写，再对照。
+
+### 题 1：识别假绿（找错题）
+
+任务：下面这条测试为什么显示通过却什么都没验证？给出两种修法。
+
+```javascript
+test('获取用户名', () => {
+  fetchUser(1).then((user) => {
+    expect(user.name).toBe('Alice');
+  });
+});
+```
+
+参考答案：测试函数同步返回后 Jest 即认定它结束，`then` 里的断言要么没跑
+（Promise 被丢弃），要么在测试结束后才跑、失败也不会让该用例变红——假绿。
+修法一：函数加 `async` 并 `await fetchUser(1)`；修法二：`return
+fetchUser(1).then(...)` 把 Promise 交回 Jest。兜底手段是
+`expect.assertions(1)`，断言没执行时用例会显式失败。
+
+### 题 2：拒绝路径（遮码题）
+
+任务：`fetchUser(-1)` 应 reject 并抛「用户不存在」。写出断言，
+要求同时校验错误消息。
+
+参考答案：
+
+```javascript
+test('用户不存在时抛错', async () => {
+  await expect(fetchUser(-1)).rejects.toThrow('用户不存在');
+});
+```
+
+自检：`rejects` 前面的 `await` 不能省——省了就回到假绿。需要更宽松的
+匹配时可传正则 `/不存在/`。
+
+### 题 3：Mock 网络（遮码题）
+
+任务：不修改全局对象的前提下，把 `axios.get` 打桩为返回
+`{ data: { id: 1 } }`，并验证它以 `/api/users/1` 被调用过。
+
+参考答案：
+
+```javascript
+jest.mock('axios');
+
+test('getUser 走 axios', async () => {
+  axios.get.mockResolvedValue({ data: { id: 1 } });
+  await getUser(1);
+  expect(axios.get).toHaveBeenCalledWith('/api/users/1');
+});
+```
+
+自检：`jest.mock('axios')` 替身的是整个模块——所有 `import axios` 的
+代码都拿到同一个替身，因此打桩要在断言之前完成。
+
+### 题 4：假定时器与重试（概念题）
+
+任务：测「失败后间隔 100ms 重试」的逻辑，为什么必须用假定时器？
+`advanceTimersByTimeAsync` 与 `advanceTimersByTime` 的差别是什么？
+
+参考答案：真实等待让测试至少慢 100ms 且对时序敏感；假定时器把「等」
+变成显式快进，既快又确定。差别：普通 `advanceTimersByTime` 只推进宏任务
+（定时器），不等待排队的 Promise 回调；`advanceTimersByTimeAsync` 会同时
+冲刷微任务，适合「setTimeout + async」交织的重试/轮询场景。
+
 ## 小结
 
 - 初学者要点：异步测试的三种合法形态——async/await、return Promise、

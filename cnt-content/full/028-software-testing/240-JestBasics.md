@@ -210,6 +210,74 @@ npx jest --bail=1               # 首次失败即停止
 - **测试依赖真实时间/网络**：时间用假定时器、网络用 Mock（后两篇展开），
   否则 CI 上必现偶发失败。
 
+## 教学自检
+
+以下题目按遮码自检法设计：先遮住参考答案自己写，再对照。
+
+### 题 1：三件套骨架（遮码题）
+
+任务：为 `slugify(input)`（转小写、空白转连字符）写一个 describe 块，
+含两条用例：正常转换与空字符串。
+
+参考答案：
+
+```javascript
+describe('slugify', () => {
+  it('把空格转为连字符并转小写', () => {
+    expect(slugify('Hello World')).toBe('hello-world');
+  });
+
+  it('空字符串返回空字符串', () => {
+    expect(slugify('')).toBe('');
+  });
+});
+```
+
+自检：`describe` 只是组织结构不影响执行逻辑；`it`/`test` 是同义别名；
+每条 `it` 应能独立运行——用例间不共享可变状态。
+
+### 题 2：匹配器三对应（遮码题）
+
+任务：分别断言：(a) 数字 1；(b) 深度相等的对象 `{a: 1}` 与字面量；
+(c) 浮点 `0.1 + 0.2` 约等于 0.3。各用哪个匹配器？
+
+参考答案：
+
+```javascript
+expect(1).toBe(1);                          // 原始值：Object.is
+expect({ a: 1 }).toEqual({ a: 1 });         // 对象：深度相等
+expect(0.1 + 0.2).toBeCloseTo(0.3, 5);      // 浮点：专用比较
+```
+
+自检：对象误用 `toBe` 比较引用几乎必挂；浮点误用 `toBe` 是精度陷阱。
+`toStrictEqual` 更严（还查 undefined 属性与类）。
+
+### 题 3：生命周期作用（概念题）
+
+任务：两条用例都要一个新建的购物车实例。状态声明在哪里、怎么初始化？
+直接在 describe 顶层 `let cart = new Cart()` 有什么问题？
+
+参考答案：`let cart;` 声明在 describe 顶层（作用域共享），但初始化放
+`beforeEach(() => { cart = new Cart(); })`——每条用例前重建。顶层直接
+`new Cart()` 时第一条用例对购物车的修改会漏进第二条，执行顺序一变就红。
+`beforeAll` 只跑一次，仅适合只读共享资源（如全局连接）。
+
+### 题 4：假测试识别（找错题）
+
+任务：这条用例全绿但什么都没验证，两个问题在哪？
+
+```javascript
+it('测试购物车', () => {
+  cart.add({ id: 1, price: 100 });
+  console.log('done');
+});
+```
+
+参考答案：问题一：没有任何 `expect` 断言——执行不等于验证，测试永远
+通过；问题二：`console.log` 不检查任何东西。修复：
+`expect(cart.count()).toBe(1)`。兜底手段是 `expect.assertions(1)` 声明
+断言数量，断言没执行时用例显式失败。
+
 ## 小结
 
 - 初学者要点：`describe/it/expect` 三件套 + `beforeEach` 重建状态，就能

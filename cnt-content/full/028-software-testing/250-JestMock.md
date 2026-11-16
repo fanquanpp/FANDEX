@@ -63,12 +63,9 @@ test('jest.fn 的三种用法', () => {
 //   export async function fetchUser(id) { ... 真实 HTTP 请求 ... }
 
 // user.test.js
-import { fetchUser } from './api';
 import { getUserName } from './user';
 
-jest.mock('./api');   // 整个模块被自动 mock：每个导出变成 undefined 返回的 jest.fn
-
-import { mocked } from 'ts-jest/utils';
+jest.mock('./api');   // 整个模块被自动 mock：每个导出变成返回 undefined 的 jest.fn
 ```
 
 自动 mock 的替身返回 `undefined`，通常要配合**工厂函数**给出关键实现：
@@ -194,6 +191,69 @@ module.exports = { clearMocks: true };
   用例，出现「单跑通过、全跑失败」。放 `afterEach` 或配置 `restoreMocks: true`。
 - **断言 Mock 的内部实现过细**：验证 `fetchUser` 被调用一次是行为验证，
   再验证它内部先调了 `buildUrl` 就是把测试焊死在实现上，重构必红。
+
+## 教学自检
+
+以下题目按遮码自检法设计：先遮住参考答案自己写，再对照。
+
+### 题 1：选对 Mock 入口（概念题）
+
+任务：两种场景分别用 `jest.fn()` 还是 `jest.mock()`？(a) 被测函数把
+`sendEmail` 当参数传入；(b) 被测模块内部 `import { db } from './db'`。
+
+参考答案：(a) 用 `jest.fn()`——依赖能通过参数注入，替身从外部传入即可；
+(b) 只能 `jest.mock('./db')`——依赖在模块边界内，代码里没有任何注入点。
+判断口诀：能传参用 `fn`，是导入用 `mock`。
+
+### 题 2：部分模拟（遮码题）
+
+任务：`./utils` 有十个导出，只想把 `fetchConfig` 换成返回
+`{ retries: 0 }` 的替身，其余保持真实实现。写出 `jest.mock` 调用。
+
+参考答案：
+
+```javascript
+jest.mock('./utils', () => ({
+  ...jest.requireActual('./utils'),
+  fetchConfig: jest.fn().mockReturnValue({ retries: 0 }),
+}));
+```
+
+自检：没有 `jest.requireActual('./utils')` 时其余九个导出全部变 `undefined`，
+被测代码会在别处以更隐蔽的方式崩掉——「只替身你关心的」是可控性的来源。
+
+### 题 3：三种清理方法（判断题）
+
+任务：三条需求分别用 `mockClear` / `mockReset` / `mockRestore` 哪个？
+(a) 只想清空调用记录，保留打桩实现；(b) 连实现带记录全清；(c) 恢复
+`spyOn` 包住的原方法。
+
+参考答案：(a) `mockClear`；(b) `mockReset`；(c) `mockRestore`（仅对
+`spyOn` 创建的替身有意义）。跨用例污染的兜底是配置 `clearMocks: true`。
+
+### 题 4：假定时器（遮码题）
+
+任务：测一个 300ms 防抖函数：连续触发三次，验证只在停止后触发一次。
+写出测试骨架。
+
+参考答案：
+
+```javascript
+test('防抖 300ms', () => {
+  jest.useFakeTimers();
+  const onChange = jest.fn();
+  const debounced = debounce(onChange, 300);
+
+  debounced(); debounced(); debounced();
+  jest.advanceTimersByTime(300);
+  expect(onChange).toHaveBeenCalledTimes(1);
+  jest.useRealTimers();
+});
+```
+
+自检：如果用真实的 `setTimeout`，这条用例至少要等 300ms；假定时器把
+「等」变成「跳」，套件才配得上「单元测试毫秒级」的说法。别忘了
+`useRealTimers()` 还原，否则假时间漏进后续用例。
 
 ## 小结
 

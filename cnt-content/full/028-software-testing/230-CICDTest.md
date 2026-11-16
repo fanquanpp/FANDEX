@@ -267,10 +267,10 @@ jobs:
   unit-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: '3.14'
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Run unit tests
@@ -291,7 +291,7 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run integration tests
         run: pytest tests/integration/ -v
         env:
@@ -301,7 +301,7 @@ jobs:
     needs: integration-test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Start API server
         run: |
           docker-compose up -d api
@@ -312,7 +312,7 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run Trivy scan
         uses: aquasecurity/trivy-action@master
         with:
@@ -510,9 +510,9 @@ jobs:
   gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: '3.14' }
       - run: pip install -r requirements.txt
       - run: ruff check src/           # 第 1 道门禁：静态检查，秒级
       - run: pytest tests/ -q          # 第 2 道门禁：单元测试

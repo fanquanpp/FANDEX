@@ -19,7 +19,11 @@ prerequisites:
 pytest 是 Python 生态事实上的标准测试框架。它的核心卖点：用原生 `assert`
 写断言（失败时自动展示表达式两边的实际值），用函数参数实现依赖注入
 （fixture），用装饰器实现参数化与标记。写过 unittest 的话，可以把它理解为
-「少写一半样板代码」的替代品；刚入门则可以直接从 pytest 学起。
+「少写一半样板代码」的替代品；刚入门则可以直接从 pytest 学起。版本方面：
+2026-11 的最新稳定线是 9.x（9.2.0，2026-10-27 发布）；8.4.2（2025-09）
+是 8.x 的最后一版，旧分支不再有新发布——升级走官方迁移指南即可；
+9.0 主要清理了 8.x 周期弃用的 API（如 nose 风格的 setup/teardown 方法），
+本文示例对 8.x 与 9.x 均适用。
 
 前置知识：Python 基础语法、函数与装饰器、pip 虚拟环境的基本使用。
 
@@ -342,6 +346,78 @@ pytest --cov=app --cov-report=html --cov-report=term-missing
 | 参数化        | 减少重复代码       |
 | Mock 外部依赖 | 隔离测试           |
 | 覆盖率目标    | 80%+               |
+
+## 教学自检
+
+以下题目按遮码自检法设计：先遮住参考答案自己写，再对照。
+
+### 题 1：fixture 作用域（遮码题）
+
+任务：写一个 `session` 作用域的 fixture，连接一次数据库并供多个测试共用；
+测试结束后关闭连接。
+
+提示：连接与清理分别写在 `yield` 的哪一侧？
+
+参考答案：
+
+```python
+@pytest.fixture(scope="session")
+def db():
+    conn = create_connection()
+    yield conn          # 测试拿到的就是它
+    conn.close()        # 全部测试结束后才执行
+```
+
+自检：`yield` 之前是 setup、之后是 teardown。写成 `return` 就没有清理路径；
+写成函数级 scope 则每个测试都重连一次数据库，套件会明显变慢。
+
+### 题 2：参数化（遮码题）
+
+任务：用 `parametrize` 测试 `is_leap(year)`：2000（闰）、1900（平）、
+2024（闰）、2023（平）。要求失败时能直接看出是哪一年出错。
+
+提示：参数化 ID 会怎么显示？不传 `ids` 时 pytest 默认给什么？
+
+参考答案：
+
+```python
+@pytest.mark.parametrize("year,expected", [
+    (2000, True), (1900, False), (2024, True), (2023, False),
+])
+def test_is_leap(year, expected):
+    assert is_leap(year) is expected
+```
+
+自检：默认 ID 是 `test_is_leap[2000-True]` 这样的形式，通常已够定位；
+若参数是复杂对象，才需要显式传 `ids`。
+
+### 题 3：异常断言（遮码题）
+
+任务：`parse_age("abc")` 应抛 `ValueError` 且消息含「不是合法年龄」。
+写出这条测试，并说明为什么 `with` 块里只放一行。
+
+提示：`pytest.raises` 的哪个参数校验错误消息？
+
+参考答案：
+
+```python
+def test_parse_age_rejects_letters():
+    with pytest.raises(ValueError, match="不是合法年龄"):
+        parse_age("abc")
+```
+
+`with` 块内只放会抛错的那一行：范围过宽时，异常可能从错误语句抛出，
+测试照样通过——你验证的不是想验证的东西。
+
+### 题 4：内置 fixture 选型（概念题）
+
+任务：三个需求分别该用哪个内置 fixture：(a) 在临时目录里读写文件；
+(b) 给被测代码注入一个假的环境变量；(c) 验证函数打印了什么。
+
+参考答案：(a) `tmp_path`（`pathlib.Path`，自动清理）；(b) `monkeypatch`（`setenv`
+后自动还原，不污染后续用例）；(c) `capsys`（`readouterr()` 拿 stdout/stderr）。
+共同点：都不需要你手工管理生命周期——这正是「不要手改全局状态」原则的
+工具化落地。
 
 ## 小结
 
