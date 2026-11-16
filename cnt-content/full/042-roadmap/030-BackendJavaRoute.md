@@ -13,6 +13,7 @@ related:
   - 'java/010-WhatIsJava'
   - 'mysql/020-Roadmap'
   - 'redis/010-OverviewCoreDataStructure'
+  - 'spring-boot/010-WhySpringBoot'
 ---
 
 ## 岗位画像
@@ -88,7 +89,7 @@ flowchart TD
 
 **第 10 个月：检验项目四（作品集主项目）**
 
-二选一，都要求：Spring Boot 3 + MySQL + Redis + 消息队列（RabbitMQ 或 RocketMQ 入门级使用）+ Docker Compose 一键启动 + 完整 README（架构图、表设计、压测数据、踩坑记录），部署到一台云服务器（devops 模块的 Linux 与 Docker 章节支持）：
+二选一，都要求：Spring Boot 4.x（3.5 系列的开源支持已于 2026 年 6 月结束，新项目直接从 4.x 起步；具体版本以 start.spring.io 默认与 [Spring Boot 模块](/spring-boot/010-WhySpringBoot) 的版本说明为准）+ MySQL + Redis + 消息队列（RabbitMQ 或 RocketMQ 入门级使用）+ Docker Compose 一键启动 + 完整 README（架构图、表设计、压测数据、踩坑记录），部署到一台云服务器（devops 模块的 Linux 与 Docker 章节支持）：
 
 - **选项 A：限量抢购后端**——库存预热、请求削峰（消息队列）、防超卖（数据库乐观锁或 Redis 原子操作）、压测报告。这是并发三件套的最小完整闭环；
 - **选项 B：AI 应用网关**——API Key 管理、按用户的配额与限流、调用计费与用量报表、上游大模型接口的代理与重试。2026 年企业真实在建的系统，简历差异化极强。
@@ -106,6 +107,28 @@ flowchart TD
 3. **并发与 JVM 一开始就啃书**：没有多线程代码体感前读《深入理解 JVM》必弃。正确顺序是先让代码出问题、再带着问题学原理；
 4. **项目停留在课设水平**：管理系统类项目人人都有。差异化的下限是"带并发/缓存元素的主项目"，上限是选项 B 这种新场景项目；
 5. **不用 git、不写文档**：后端工程师的协作素养从第一天就该体现在 commit 历史与 README 里。
+
+## 教学自检
+
+遮住对应小节先自己作答，再展开对照；答不出的小节回到原文重读：
+
+**自检一：主线顺序与理由。** 不看「技能树」，默写必学主线四段，并解释为什么 MySQL 排在 Spring Boot 之前。
+
+<details>
+<summary>参考答案（先写完再展开）</summary>
+
+主线：Java → SQL/MySQL → Spring Boot → Redis。JVM、并发、MySQL 是面试三座大山，框架只是入场券；索引与事务原理先于框架黑盒——先有 SQL 底座，学 MyBatis/JPA 才知道它们在替你做什么。
+
+</details>
+
+**自检二：项目四双选项定位。** 不看「第 10 个月」一节，说出两个选项各自的并发考点，以及「缓存改造报告」为什么必须有压测数据对比。
+
+<details>
+<summary>参考答案（先写完再展开）</summary>
+
+选项 A（限量抢购）：库存预热、消息队列削峰、防超卖——并发三件套的最小完整闭环；选项 B（AI 应用网关）：配额与限流、代理与重试——2026 年企业真实在建的系统。缓存改造没有前后压测对比，报告在面试里只是作文：数据才是「改造有效」的证据。
+
+</details>
 
 ## 求职准备清单
 
