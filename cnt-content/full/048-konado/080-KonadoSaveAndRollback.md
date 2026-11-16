@@ -140,7 +140,7 @@ Backlog（对话历史，默认面板实例位于 res://addons/konado/templates/
 程序侧的对话历史 API：
 
 ```gdscript
-dialogue_manager.dialogue_history.entries(offset, include_pending)  # 读取条目
+dialogue_manager.dialogue_history.entries(limit := 0, include_pending := false)  # 读取条目，limit 为 0 时取全部
 dialogue_manager.dialogue_history.size()    # 当前条目数
 dialogue_manager.dialogue_history.clear()   # 清空历史
 dialogue_manager.entry_committed            # 新条目提交时发射的信号
