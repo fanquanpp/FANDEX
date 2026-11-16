@@ -84,7 +84,7 @@ export class HealthController {
 1. 响应形如 `{ status: "ok", info: { memory_heap: {...}, database: {...} } }`；任一指示器失败则整体 `status: "error"` 并返回 503。
 2. 用途直接：K8s 的 liveness/readiness 探针指向 `GET /health`，负载均衡按它摘除不健康实例，发布流水线用它做前置检查。
 3. 健康检查要"轻"：只验证关键依赖的连通性（一条 `SELECT 1` 即可），不要在探针里做重查询，否则探针本身会拖垮服务。
-4. 自定义指示器在 NestJS 11 起推荐基于 `HealthIndicatorService` 编写，与 Prisma、TypeORM 的现成指示器用法以官方文档为准。
+4. 自定义指示器的现行写法基于 `HealthIndicatorService`（v11 起推荐、v12 起唯一路径）：通过 `healthIndicatorService.check(key)` 取得指示器，返回 `up()/down()`，或把探测交给 `attempt(() => ...)`（可链 `.withTimeout(ms)`），由其把异常翻译成 down；「继承 HealthIndicator、抛 HealthCheckError 报不健康」的旧 API 在 v11 已废弃并在 v12 被移除，存量指示器升级时按官方迁移指南改写。
 
 「探针要轻」再强调一层：`/health` 的调用频率由平台决定（K8s 默认每 10 秒一次每实例），重查询指示器等于给自己加了一个定时压测工具——「自定义指示器跑业务聚合 SQL」是健康检查反模式的第一名。
 

@@ -142,12 +142,12 @@ export class ReportService {
 
 | 事项 | 现状 |
 | --- | --- |
-| 框架版本 | NestJS 12 已发布（ESM-ready、原生支持 Standard Schema），11 仍被广泛使用 |
-| 运行时 | 推荐 Node.js 24 LTS（22 已进入 Maintenance，仅存量项目继续使用） |
-| 语言 | TypeScript 5.x |
-| ESM | 核心包提供 ESM 导出，存量 CJS 项目可渐进迁移 |
+| 框架版本 | NestJS 12 已发布（核心包 ESM-only、原生支持 Standard Schema），11 仍被广泛使用 |
+| 运行时 | 推荐 Node.js 26 LTS（Lithium，2026-10 进入 LTS）；24 已转入 Maintenance，22 亦处维护期 |
+| 语言 | TypeScript 6（@nestjs/schematics v12 起 peer 依赖 TS 6，nest upgrade 会一并升级） |
+| ESM | 核心包只发布 ESM 格式；存量 CJS 项目经 require(esm)（Node 20.19+/22.12+）继续运行 |
 
-升级策略：按官方迁移指引（Migrations to v12）在 CI 里先行验证，重点核对 RxJS、cache-manager、bullmq 等外围包的版本配套；ESM-ready 指包同时提供 CJS 与 ESM 双导出，存量项目不要在业务高峰期顺带做 ESM 改造，单独排期。细节以官方文档为准。
+升级策略：按官方迁移指引（Migrations to v12）在 CI 里先行验证，重点核对 RxJS、cache-manager、bullmq 等外围包的版本配套；ESM-only 指核心包只发布 ESM 格式，CJS 应用靠 Node 的 require(esm) 消费——这正是 v12 把运行时最低线抬到 20.19/22.12 的原因；是否把业务代码本身切换成 ESM 与升级 v12 无关，不要在业务高峰期顺带做 ESM 改造，单独排期。细节以官方文档为准。
 
 ## 参考与致谢
 

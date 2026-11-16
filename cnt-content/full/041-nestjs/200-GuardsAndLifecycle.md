@@ -187,7 +187,7 @@ export class AppModule {}
 
 1. 传类引用（而非 new 出来的实例）时，Nest 会在所属模块作用域内实例化，构造器依赖正常注入；`useGlobalGuards(new X())` 脱离模块上下文，只适合零依赖组件。
 2. 同一个 `APP_GUARD` token 写多个即注册多个全局守卫，执行顺序就是书写顺序：AuthGuard 先登录校验，RolesGuard 后判角色。
-3. 全局守卫对每一个路由生效（包括不存在的路由），因此 RolesGuard 里"没有元数据就放行"的判断必不可少。
+3. 全局守卫只对「匹配到路由」的请求生效：请求先经路由解析，未匹配的路径在框架路由层直接落到默认 404，不进入守卫管线（nestjs/nest#3950 的行为记录）。因此 RolesGuard 里"没有元数据就放行"的判断，防的是**没标 `@Roles` 的已匹配路由**——RolesGuard 全局注册后它们也会经过守卫，缺了放行分支会把整个应用的接口全部 403。
 
 ## 4. 自定义参数装饰器：消费守卫的产出
 
@@ -219,7 +219,68 @@ me(@CurrentUser() user: AuthUser, @CurrentUser("name") name: string) {
 1. 工厂函数第一个参数就是使用处传入的值：`@CurrentUser("id")` 传入 `"id"`，配合可选参数实现"取整 / 取字段"两种用法。
 2. 参数装饰器在管道之后求值，但它依赖的数据（`request.user`）由守卫提前写入——管线各层围绕同一个 request 对象协作，分工明确。
 
-## 5. 小结与延伸
+## 5. 动手实践（遮代码自检）
+
+遮住参考答案先自己写，再对照——三个任务分别对应第 1、2、3 节的核心机制。
+
+**任务一**：不查资料，写出全局守卫的模块注册写法（用 `APP_GUARD`），并回答：为什么推荐它而不是 `app.useGlobalGuards(new AuthGuard())`？两个全局守卫的执行顺序由什么决定？
+
+<details>
+<summary>任务一参考答案</summary>
+
+```typescript
+// src/app.module.ts（节选）
+@Module({
+  providers: [{ provide: APP_GUARD, useClass: AuthGuard }]
+})
+export class AppModule {}
+```
+
+传类引用时 Nest 在所属模块作用域内实例化，构造器依赖（`JwtService`、`Reflector` 等）正常注入；`useGlobalGuards(new X())` 传的是脱离模块容器的实例，DI 断裂（见[依赖注入](/nestjs/165-DiContainerAndProviders)）。同一个 `APP_GUARD` token 注册多个即执行多个，顺序就是书写顺序——「先注册先执行」，鉴权守卫放前面、角色守卫放后面。
+</details>
+
+**任务二**：给「管理员才能删除歌单」写完整链路：角色装饰器、守卫读取逻辑、控制器挂载。要求写出 `Reflector` 该用哪个读取方法、数组顺序为什么不能反。
+
+<details>
+<summary>任务二参考写法</summary>
+
+```typescript
+// 装饰器：第 2 节的 Roles = (...roles) => SetMetadata(ROLES_KEY, roles)
+// 守卫：第 2 节的 RolesGuard，核心一行——
+const required = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
+  context.getHandler(), // 方法级先查
+  context.getClass()    // 类级后查
+])
+// 控制器：类上 @UseGuards(RolesGuard)，删除方法上 @Roles("admin")
+@Delete(":id")
+@Roles("admin")
+remove(@Param("id") id: string) {
+  return this.playlistsService.remove(id)
+}
+```
+
+`getAllAndOverride` 按数组顺序命中即返回：方法级在前形成「方法覆盖类」；顺序反了语义就变成「类覆盖方法」。要合并两处角色判断用 `getAllAndMerge`。全局注册 RolesGuard 时「无元数据即放行」的判断不能省——全局守卫覆盖本模块所有**已匹配**的路由，没标 `@Roles` 的接口同样会经过它（未匹配的路径在路由层直接 404，进不了守卫管线，见第 3 节讲解 3），缺放行分支的后果是全站 403。
+</details>
+
+**任务三**：只看第 4 节的调用形式 `@CurrentUser("id")` 与 `@CurrentUser()`，先自己实现 `CurrentUser` 工厂函数，再对照；并回答参数装饰器读到的 `request.user` 是哪一层写进去的、为什么控制器能安全使用它。
+
+<details>
+<summary>任务三参考答案</summary>
+
+```typescript
+export const CurrentUser = createParamDecorator(
+  (data: string | undefined, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest()
+    const user = request.user
+    return data ? user?.[data] : user
+  }
+)
+```
+
+`request.user` 由守卫（`canActivate` 里）在管道与处理器之前写入——管线各层共享同一个 request 对象，守卫层先把「这个人是谁」定下来，处理器执行时数据必然已就位；`?.` 可选链防的是守卫未挂载（如遗漏 `@UseGuards`）时的 undefined 访问。
+</details>
+
+## 6. 小结与延伸
 
 - 请求生命周期七层：Middleware、Guard、Interceptor（前）、Pipe、Handler、Interceptor（后）、Exception Filter，各层只做一类事。
 - 守卫答"能不能进"：`CanActivate` + `ExecutionContext` 判断，`@SetMetadata`/`Reflector` 做声明式角色控制。

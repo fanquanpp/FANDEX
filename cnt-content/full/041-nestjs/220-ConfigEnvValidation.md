@@ -162,7 +162,7 @@ Error: 环境变量校验失败，请对照 .env.example 检查：
 1. `z.coerce.number()` 一步完成"字符串转数字 + 校验"，修掉 `"3000" === 3000` 的经典 bug。
 2. `safeParse` 不抛异常，方便把所有 issue 汇总成一次报错；用 `parse` 遇到第一个错误就中断，排查体验差。
 3. 返回的 `result.data` 会成为 ConfigModule 内部的配置源：`get("PORT")` 拿到的是转换后的 number。
-4. NestJS 12 原生支持 Standard Schema（zod、valibot、arktype 等实现的统一校验接口），schema 可直接交给框架消费，写法更简洁，细节以官方文档为准；本节的 validate 函数写法在 NestJS 11 与 12 上都可用。
+4. NestJS 12 原生支持 Standard Schema（zod、valibot、arktype 等实现的统一校验接口），schema 可直接交给框架消费，写法更简洁，细节以官方文档为准；`@nestjs/config` v12 的 `validationSchema` 选项同样改为接受 Standard Schema（沿用 Joi 时需升级到 Joi v18+，库专属选项移入 `validationOptions.libraryOptions`）。本节的 validate 函数写法在 NestJS 11 与 12 上都可用。
 
 ## 4. 类型安全读取：infer 出来的 ConfigService
 

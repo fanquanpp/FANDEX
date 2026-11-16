@@ -86,6 +86,8 @@ export class EventsGateway
 
 与 Bun 裸写的对照（nestjs/130）：裸 WebSocket 要自己管理 `ws.on("connection")` 与消息分发，网关的 `@SubscribeMessage` 把「事件名 -> 处理器」变成声明式、依赖注入可用——框架的价值在连接数多、事件类型多的项目里才体现；单房间十个连接的小玩具，裸写更简单。
 
+版本注记（NestJS 12.5+）：若改用 ws 适配器（`@nestjs/platform-ws` 的 `WsAdapter`），Nest 自 12.5.0 起默认限制客户端单条消息最大 1 MB（此前默认 100 MB），超限连接以 1009 关闭；网关自身的 `maxPayload` 选项优先，设 `0` 可解除限制。消息体大小是长连接最容易被忽视的 DoS 面——与本篇第 4 节握手鉴权同理，上生产前主动设限，别依赖运行时默认值。
+
 ## 3. 房间与在线名单
 
 房间（room）是 Socket.IO 的分组原语：同一个 server 上的连接可以加入多个房间，广播按房间投递。
