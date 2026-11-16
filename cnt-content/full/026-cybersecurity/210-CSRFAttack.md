@@ -269,5 +269,5 @@ DevTools → Application → Cookies：
 - 遮住 SameSite 一节，说出 Strict/Lax/None 三档的携带差异，并解释为什么「新站默认 Lax」仍留风险（未声明 SameSite 的旧 Cookie 裸奔、顶级 GET 导航仍携带）。
 - 同步 Token 为什么必须绑定会话、为什么不能放 URL？（前者防跨会话重放，后者会被 Referer 头泄露。）
 - 双提交模式防住什么、被什么破坏？（不需要服务端存储，但任何能写根域 Cookie 的子域 XSS 都能伪造配对。）
-- 遮住第 4 节的决策树，按「纯 JSON API / 服务端渲染表单 / 高敏感操作」三类场景各写出推荐防御组合。
+- 遮住第 3.5 节的决策树，按「纯 JSON API / 服务端渲染表单 / 高敏感操作」三类场景各写出推荐防御组合。
 - 「JSON API 天然免疫 CSRF」的完整前提是什么？（严格校验 Content-Type + 自定义头 + CORS——缺一条就可能被 HTML 表单的简单请求绕过。）
