@@ -27,15 +27,15 @@ Gode 是 GodotHub 组织开源维护的 Godot 引擎扩展项目，仓库描述�
 
 - 说出 Gode 的定位、开发组织、主语言与许可证。
 - 理解内嵌 Node.js（libnode）与 GDExtension（Godot 原生扩展机制）的实现原理。
-- 记住五大支持平台、各平台最低版本与 Godot 引擎版本要求。
+- 记住五大支持平台、各平台最低版本与 Godot 引擎版本要求，知道 Web 平台的官方路径是轻量版 godot-js。
 - 按四步完成插件下载、解压与启用。
 - 认识 addons/gode 的目录结构，知道每个目录的用途。
 - 语言列表里没有 TypeScript 时，能按顺序独立排查。
-- 了解 2.3.2 到 2.4.4 的版本演进，重点记住两个破坏性版本。
+- 了解 2.3.2 到 2.4.8 的版本演进，重点记住两个破坏性版本。
 
 ## Gode 是什么
 
-Gode 的开发组织是 GodotHub（GitHub 组织名为 godothub），该组织同时维护 godothub.com 文档站。仓库创建于 2026 年 5 月 6 日，主题标签包括 godot、godot-engine、javascript、nodejs、npm、plugin、typescript，可见其自我定位横跨引擎与前端两个社区。插件元数据 plugin.cfg 中声明 `name="gode"`、`author="GodotHub"`、`version="2.4.4"`，也就是说你安装的插件名字就叫 gode。
+Gode 的开发组织是 GodotHub（GitHub 组织名为 godothub），该组织同时维护 godothub.com 文档站。仓库创建于 2026 年 5 月 6 日，主题标签包括 godot、godot-engine、javascript、nodejs、npm、plugin、typescript，可见其自我定位横跨引擎与前端两个社区。插件元数据 plugin.cfg 中声明 `name="gode"`、`author="GodotHub"`、`version="2.4.8"`，也就是说你安装的插件名字就叫 gode。
 
 官方演示项目 gode-tps-demo 的仓库描述是 "Third person shooter demo made using Godot Engine and TypeScript(Gode)"，即用 Godot 引擎与 TypeScript（基于 Gode）制作的第三人称射击演示，是 Godot 官方 tps-demo 的移植版本。想快速判断 Gode 是否适合自己的项目，把官方演示跑一遍是最直接的途径。
 
@@ -45,9 +45,9 @@ Gode 的开发组织是 GodotHub（GitHub 组织名为 godothub），该组织�
 
 这一节解释 Gode 如何把 TypeScript 跑进 Godot。理解原理，后面遇到问题才知道往哪个方向排查。
 
-第一个关键事实：Gode 内嵌的不是独立的 V8 引擎，也不是 QuickJS，而是 Node.js 的库形态 libnode——把 Node.js 运行时以库的方式链接进引擎进程。V8（Node.js 底层的 JavaScript 执行引擎）随之间接引入。这意味着你在 Gode 中获得的不仅是 JavaScript 执行能力，还有 Node.js 的运行时语义，这也是后面 npm 生态、调试协议等能力的基础。
+第一个关键事实：Gode 内嵌的不是独立的 V8 引擎，也不是 QuickJS，而是 Node.js 的库形态 libnode——把 Node.js 运行时以库的方式链接进引擎进程（当前内嵌 Node.js 为 24.21.0，随 2.4.6 更新）。V8（Node.js 底层的 JavaScript 执行引擎）随之间接引入。这意味着你在 Gode 中获得的不仅是 JavaScript 执行能力，还有 Node.js 的运行时语义，这也是后面 npm 生态、调试协议等能力的基础。
 
-第二个关键事实：Gode 以 GDExtension 的方式集成。GDExtension 是 Godot 的原生扩展机制，允许在不重新编译引擎的前提下为引擎添加能力。插件中的 `gode.gdextension` 清单声明了入口符号 `entry_symbol = "gode_runtime_library_init"`，并要求 `compatibility_minimum = "4.6.2"`，即最低支持 Godot 4.6.2。从 2.4.0 起，原生扩展拆分为两部分：`gode_runtime`（运行时，随导出包分发）与桌面专用的 `gode_editor`（仅编辑器使用），因此导出包只包含目标平台的运行时二进制，编辑器专用文件不会进入导出产物。C++ 侧的依赖子模块包括 third/godot-cpp、third/node-addon-api（N-API 绑定）、third/tree-sitter 与 tree-sitter-typescript。
+第二个关键事实：Gode 以 GDExtension 的方式集成。GDExtension 是 Godot 的原生扩展机制，允许在不重新编译引擎的前提下为引擎添加能力。插件中的 `gode.gdextension` 清单声明了入口符号 `entry_symbol = "gode_runtime_library_init"`，并要求 `compatibility_minimum = "4.6.2"`，即最低支持 Godot 4.6.2。从 2.4.0 起，原生扩展拆分为两部分：`gode_runtime`（运行时，随导出包分发）与桌面专用的 `gode_editor`（仅编辑器使用），因此导出包只包含目标平台的运行时二进制，编辑器专用文件不会进入导出产物。C++ 侧的依赖子模块包括 third/godot-cpp、third/node-addon-api（N-API 绑定）、third/tree-sitter 与 tree-sitter-typescript，2.4.6 起还多出 third/godot-js 子模块（轻量版插件只保留分发文件与打包流水线，实现统一在 Gode 维护）。
 
 第三个关键事实：Godot API 绑定是自动生成的。仓库 generator/ 目录是一个基于 Python 与 Jinja2 的代码生成框架，从 godot-cpp 的 extension_api.json 生成三类产物：Godot 类绑定、内置 Variant（Godot 的通用动态值类型）绑定，以及发布在插件 types/ 目录的 TypeScript 声明文件。启用插件后，Gode 还会注入一个名为 `EventLoop` 的 autoload（自动加载节点，指向 `res://addons/gode/runtime/event_loop.gd`），承担运行时事件循环辅助工作。
 
@@ -81,7 +81,9 @@ Gode 官方支持五大原生平台，最低版本要求如下：
 
 Windows 平台有一个值得注意的额外细节：依赖 `node.dll`（一个 Node-API forwarder，负责把 Node-API 调用转发给内嵌运行时）。该文件自 2.4.0 引入，导出 Windows 包时会随包分发。
 
-引擎版本方面：GDExtension 元数据 `compatibility_minimum = "4.6.2"`，即最低要求 Godot 4.6.2；官方示例工程按 Godot 4.7 配置（project.godot 的 features 包含 "4.7"）。插件当前最新版本为 2.4.4，发布于 2026 年 9 月 9 日。
+引擎版本方面：GDExtension 元数据 `compatibility_minimum = "4.6.2"`，即最低要求 Godot 4.6.2；官方示例工程按 Godot 4.7 配置（project.godot 的 features 包含 "4.7"）。插件当前最新版本为 2.4.8，发布于 2026 年 11 月 12 日。
+
+还有一条平台边界值得现在就记住：上表与后文的导出流程都只覆盖原生平台，完整版 Gode 不发 Web。Web（wasm32）的官方路径是 2.4.6 起派生的轻量版插件 [godot-js](https://github.com/godothub/godot-js/releases)——它基于同一套源码构建，去掉大部分 Node.js 运行时、保留 V8 执行引擎，脚本写法与 Gode 完全相同，因此能覆盖包括 Web 在内的更多平台。注意它不是"另一个项目"，而是 Gode 的轻量分支，且与完整版在同一项目中只能二选一安装；需要完整 Node 能力（原生 .node 插件、子进程、Worker、crypto 等）的项目留在原生平台，导出篇章会再展开这组取舍。
 
 ## 安装：四步完成
 
@@ -123,7 +125,7 @@ my_project/
 
 启用插件后，新建脚本对话框的语言列表应当出现 TypeScript。如果没有，按以下顺序逐项检查：
 
-1. 确认插件路径严格为 `res://addons/gode`。多一层目录（例如 `addons/gode-2.4.4/gode`）或少一层都会导致 Godot 无法识别插件。
+1. 确认插件路径严格为 `res://addons/gode`。多一层目录（例如 `addons/gode-2.4.8/gode`）或少一层都会导致 Godot 无法识别插件。
 2. 确认 `addons/gode` 下存在 `plugin.cfg`，且 `项目设置 > 插件` 中 gode 已处于启用状态。
 3. 启用插件后重启编辑器，让 GDExtension 与脚本语言注册生效。
 4. 确认 `binary/` 下存在当前平台的二进制文件（例如在 Windows 上应有对应平台的库文件）。
@@ -132,7 +134,7 @@ my_project/
 
 ## 版本演进一览
 
-了解版本演进有助于升级旧项目。从 2.3.2 到 2.4.4 的关键变化如下：
+了解版本演进有助于升级旧项目。从 2.3.2 到 2.4.8 的关键变化如下：
 
 | 版本 | 日期 | 关键变化 |
 |---|---|---|
@@ -143,14 +145,18 @@ my_project/
 | 2.4.2 | 2026-08-13 | 修复非桌面导出与 npm 快照打包的边界情况；新增 issue 模板 |
 | 2.4.3 | 2026-09-02 | 新增 @GlobalClass 装饰器；修复全局/tool 装饰器元数据受同文件辅助类影响的问题 |
 | 2.4.4 | 2026-09-09 | 导出 interface[] 属性的 Inspector 编辑（含嵌套字段与默认值）；Signal 类型检查与运行时绑定、恢复全局 Signal 声明；修复共享 ESM 单例与显式 super() 的脚本 owner 绑定；修复 number/bigint 重载选择 |
+| 2.4.5 | 2026-10-02 | 数值 Packed 数组接受 TypedArray 输入（一次整块拷贝）；修复继承导出属性的 Inspector 显示与默认值；修复资源生命周期——Godot 持有的资源不再受 JS 侧 GC 影响 |
+| 2.4.6 | 2026-10-07 | 内嵌 Node.js 升级至 24.21.0；新增轻量插件 godot-js（支持 Web 导出）；缩小插件体积、新增 Android 编辑器支持；修复导出项目中相对 TS 导入失败 |
+| 2.4.7 | 2026-10-22 | 修复自定义 TS 资源保存与信号处理；修复资源泄漏与脚本重载崩溃 |
+| 2.4.8 | 2026-11-12 | 修复 TS UI 控件的鼠标交互与 tooltip；修复脚本方法查找、参数个数与通知回调 |
 
-其中 2.3.3 与 2.4.0 是两个破坏性版本：如果你的项目停留在更早版本，升级前务必阅读官方对应说明，重点检查导出属性的写法（hint_string）与静态方法的调用方式（脚本资源 API）。
+其中 2.3.3 与 2.4.0 是两个破坏性版本：如果你的项目停留在更早版本，升级前务必阅读官方对应说明，重点检查导出属性的写法（hint_string）与静态方法的调用方式（脚本资源 API）。2.4.5 到 2.4.8 全部是修复与增量特性，老项目升级到最新版没有迁移成本。
 
 ## 动手实践
 
 **任务一：四步安装与验证。** 在一个空 Godot 4.6.2+ 项目上完成四步安装，验证三件事：语言列表出现 TypeScript、`addons/gode` 目录结构与第"安装后的目录结构"一节一致、`.gode/build/typescript/` 在第一次运行 TS 脚本后出现。提示：第三项是"编译产物自动生成"的直接证据——没出现说明脚本没被编译，先查插件是否启用。
 
-**任务二：亲手复现"语言列表里没有 TypeScript"。** 把 `gode` 目录故意解压成 `addons/gode-2.4.4/gode`（多一层目录），重启编辑器观察语言列表；再按第"故障排查"一节的顺序修复。提示：这个任务把排查清单从"读过"变成"见过"——多一层目录是最常见的安装事故，亲眼看过失败形态以后一眼就能认出来。
+**任务二：亲手复现"语言列表里没有 TypeScript"。** 把 `gode` 目录故意解压成 `addons/gode-2.4.8/gode`（多一层目录），重启编辑器观察语言列表；再按第"故障排查"一节的顺序修复。提示：这个任务把排查清单从"读过"变成"见过"——多一层目录是最常见的安装事故，亲眼看过失败形态以后一眼就能认出来。
 
 **任务三：读懂 plugin.cfg 与 gdextension 清单。** 打开 `addons/gode/plugin.cfg` 与 `addons/gode/binary/gode.gdextension`，找到插件名、版本、入口符号与 compatibility_minimum 四个值，并与本篇正文的声明对照。提示：这四个值就是"插件是谁、多新、要多新的引擎"的机器可读版本——以后排查版本不匹配问题，第一手信息都在这两个文件里。
 
@@ -163,7 +169,7 @@ my_project/
 复现步骤：
 1. 把 gode.zip 解压到临时目录，整体拖进 addons/（拖进去的是 gode 目录本身
    还是外面包了一层压缩包名的目录，正是事故高发点）
-2. 若变成 addons/gode-2.4.4/gode，Godot 在"项目设置 > 插件"里看不到任何插件
+2. 若变成 addons/gode-2.4.8/gode，Godot 在"项目设置 > 插件"里看不到任何插件
    —— 因为它只扫描 addons/<插件名>/plugin.cfg 这个固定层级
 3. 症状：插件列表为空；即使手动启用也无法生效；语言列表无 TypeScript
 
@@ -182,10 +188,10 @@ c) 修复成功后顺手看一眼 binary/ 下有没有当前平台的库，为�
 ## 小结
 
 - Gode 是 GodotHub 出品的 MIT 开源项目，C++ 编写，为 Godot 提供 JavaScript/TypeScript 脚本支持，覆盖所有原生平台。
-- 内嵌 Node.js 的库形态 libnode，V8 随之引入；以 GDExtension 集成，最低要求 Godot 4.6.2，官方示例按 4.7 制作。
+- 内嵌 Node.js 的库形态 libnode（当前 24.21.0），V8 随之引入；以 GDExtension 集成，最低要求 Godot 4.6.2，官方示例按 4.7 制作。
 - `.ts` 在编辑、运行、导出时自动编译为 ESM JavaScript，输出到 `res://.gode/build/typescript/`；场景始终引用 `.ts` 原文件。
 - TypeScript 编译器内置在 `addons/gode/tsc/`，常规开发不需要安装 Node.js/npm。
-- 五大平台支持：Windows 10+、Android 9+、macOS 10.15+、iOS 16+、Ubuntu 22+；Windows 额外包含 node.dll。
+- 五大平台支持：Windows 10+、Android 9+、macOS 10.15+、iOS 16+、Ubuntu 22+；Windows 额外包含 node.dll；Web 平台不在完整版覆盖范围，官方路径是轻量版 godot-js。
 - 安装四步：下载 gode.zip、解压到 addons、在项目设置中启用、新建脚本选择 TypeScript。
 - 升级旧项目时重点关注 2.3.3 与 2.4.0 两个破坏性版本。
 
