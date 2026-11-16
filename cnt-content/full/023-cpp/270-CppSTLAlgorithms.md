@@ -85,7 +85,7 @@ InputIterator find(InputIterator first, InputIterator last, const T& value) {
 C++98 标准定义的 STL 算法约 60 余个，涵盖：
 
 - 非修改式：`for_each`、`find`、`count`、`mismatch`、`equal`、`search`
-- 修改式：`copy`、`transform`、`swap`、`replace`、`fill`、`generate`、`remove`、`unique`、`reverse`、`rotate`、`random_shuffle`
+- 修改式：`copy`、`transform`、`swap`、`replace`、`fill`、`generate`、`remove`、`unique`、`reverse`、`rotate`、`random_shuffle`（注：`random_shuffle` 是列表中唯一已被移除的——C++14 弃用、C++17 删除，现代代码改用 `std::shuffle` 配随机数引擎）
 - 排序：`sort`、`stable_sort`、`partial_sort`、`nth_element`、`binary_search`、`merge`
 - 堆：`push_heap`、`pop_heap`、`make_heap`、`sort_heap`
 - 数值：`accumulate`、`inner_product`、`partial_sum`、`adjacent_difference`（位于 `<numeric>`）
@@ -1689,7 +1689,64 @@ long long sum_fibonacci(std::size_t n) {
 5. **阅读实现**：浏览 libstdc++ 或 libc++ 的算法实现，理解内省排序等机制
 6. **参与社区**：关注 CppCon、ISO C++ 委员会提案，跟进 C++26 演进
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：同一份「从日志行里筛出 ERROR 级并取前 3 条」的需求写两版——手写循环版与算法管道版（`std::copy_if` + `std::count_if` 或 ranges）；要求两版输出一致，并写出各自「错误容易藏在哪」（手写版的下标、管道版的谓词副作用）。
+
+**提示**：管道版把「筛什么」（谓词）与「怎么放」（迭代器目标）拆开——谓词必须是纯函数（无副作用、无状态），这也是它与手写循环最大的纪律差异。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <algorithm>
+#include <vector>
+#include <string>
+
+struct LogLine { std::string level; std::string msg; };
+
+// 手写版：下标与边界自己管
+std::vector<LogLine> filterLoop(const std::vector<LogLine>& logs) {
+    std::vector<LogLine> out;
+    for (std::size_t i = 0; i < logs.size() && out.size() < 3; ++i)
+        if (logs[i].level == "ERROR") out.push_back(logs[i]);
+    return out;
+}
+
+// 管道版：谓词纯函数 + 复制式算法
+std::vector<LogLine> filterPipe(const std::vector<LogLine>& logs) {
+    std::vector<LogLine> out;
+    std::copy_if(logs.begin(), logs.end(), std::back_inserter(out),
+                 [](const LogLine& l) { return l.level == "ERROR"; });
+    out.resize(std::min<std::size_t>(out.size(), 3));
+    return out;
+}
+```
+
+要点自查：手写版的坑是「out.size() < 3 与 i++ 的耦合顺序」，管道版的坑是「先全量 copy 再 resize」的内存放大——两者没有绝对优劣，算法名的语义（copy_if 复制满足谓词的元素）让读者一眼看懂意图才是最大收益。
+
+**任务二**：复杂度与失效辨析——对下面每个算法写出复杂度与迭代器要求（`std::sort`、`std::find`、`std::lower_bound`、`std::remove`），并回答：「`remove` 为什么不真的删除元素」以及「对未排序区间调用 `lower_bound` 会发生什么」。
+
+**提示**：`std::remove` 是「逻辑删除」——把不删的元素前移返回新逻辑尾，物理删除要再接 `erase`；`lower_bound` 的二分假设前置条件是已排序，破坏前提则结果未指定（不是 UB，是「胡乱返回一个位置」）。
+
+**参考实现**（先自己写完再看）：
+
+```text
+std::sort       O(n log n)，随机访问迭代器（list 不能用，用 list::sort）。
+std::find       O(n)，任意输入迭代器。
+std::lower_bound O(log n)，前向迭代器 + 已排序前提。
+std::remove     O(n)，前向迭代器；返回新逻辑尾。
+
+- remove 不真删：算法层只有迭代器，不知道容器怎么改大小——「前移 + 返回新尾」
+  是唯一通用方案，物理删除交给容器的 erase（remove-erase 惯用法）。
+- 未排序调用 lower_bound：二分的前提被破坏，返回「某个不可预测的位置」；
+  不是未定义行为（标准允许），但结果无意义——前置条件违反应由调用方负责，
+  调试手段是先 std::is_sorted 检查输入。
+```
+
+要点自查：四个算法的复杂度/迭代器要求是本篇速查表的骨干；「remove 的逻辑删除」与「lower_bound 的排序前提」这两个「前置条件陷阱」是 STL 算法面试与实战的最高频误区。
+
 ---
 
 > 本文档基于 ISO/IEC 14882:2024（C++23）标准编写，覆盖 C++98 至 C++26 草案的主要算法演进。如需了解最新提案进展，请访问 [ISO C++ 委员会官网](https://isocpp.org/) 与 [cppreference.com](https://en.cppreference.com/)。
-

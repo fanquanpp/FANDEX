@@ -305,6 +305,57 @@ int main() {
 - cppreference copy elision：https://en.cppreference.com/w/cpp/language/copy_elision
 - `return` 语句与隐式移动：https://en.cppreference.com/w/cpp/language/return
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：用「返回值里插一条打印」的实验验证 NRVO——写一个带拷贝/移动构造打印的类 `Traced`，函数 `Traced make()` 返回局部对象；分别在 `g++ -std=c++17` 与 `-fno-elide-constructors` 下运行，预测两种编译选项下各打印几次拷贝/移动，再实测对照。
+
+**提示**：C++17 起**纯右值返回是语言保证的省略**（不是优化）——`return Traced{...};` 构造的就是返回对象本身；NRVO（返回具名局部对象）仍是编译器可选优化但所有主流编译器都做。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+struct Traced {
+    Traced() = default;
+    Traced(const Traced&) { std::puts("copy"); }
+    Traced(Traced&&) { std::puts("move"); }
+};
+Traced make() { return Traced{}; }      // prvalue 返回
+int main() { auto t = make(); }
+```
+
+```text
+默认 -O0 -std=c++17：一次构造，零 copy 零 move —— C++17 保证的省略。
+-fno-elide-constructors：允许你观察「没有省略的世界」，多出两次移动
+（prvalue -> 返回临时 -> 接收变量，均按移动）；NRVO 部分同样可被它关闭。
+```
+
+要点自查：「C++17 的保证省略与 NRVO 是两件事」——前者是语言规则（连移动构造都不需要），后者是优化（具名对象才适用）；把这条区别讲给旁人听，是本篇的核心考点。
+
+**任务二**：判断下面三个函数的返回各能否被省略（ Guaranteed/NRVO/不可省略），并给出「不可省略」时的实际成本路径：
+
+```cpp
+Widget a();                       // (1) return Widget{};（prvalue）
+Widget b();                       // (2) Widget w; ...; return w;（具名）
+Widget c(Widget w) { return w; }  // (3) 返回参数
+```
+
+**提示**：(1) 保证省略；(2) NRVO（主流编译器都做）；(3) 参数不是 NRVO 对象，但作为「隐式移动」按右值返回——走移动构造。
+
+**参考实现**（先自己写完再看）：
+
+```text
+(1) C++17 保证省略：调用点直接构造，零拷贝零移动，连异常路径都省。
+(2) NRVO：具名局部对象，编译器可选（全主流编译器实现）；
+    检测手段：写拷贝/移动打印后跑 -O0/-O2 对比。
+(3) 不可 NRVO（参数对象有独立身份），但 return w 触发隐式移动（C++11 起
+    把参数当右值）——成本 = 一次移动构造；显式 std::move(w) 反而多余
+    （还禁用了本可发生的 NRVO 形态判断）。
+```
+
+要点自查：三个场景能各自给出「保证/可选/隐式移动」的归类与成本，才算掌握本篇的省略谱系；「return 里写 std::move 会抑制 NRVO」是最常见的画蛇添足。
+
 ## 12. 自我检查
 
 - 能用「prvalue 是构造说明书」模型推出强制省略的三类场景；

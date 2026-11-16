@@ -1728,3 +1728,58 @@ sem.release();   // 计数加 1
 // 等价于只有 0 和 1 的信号量
 std::binary_semaphore sem(1);
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：判断下面的程序可能输出什么（运行多次），并用本篇的 happens-before 链条解释；再把 `x` 改成 `std::atomic<int>` 且两处分别用 `relaxed` 与 `release/acquire` 配对，说明输出如何被「钉住」。
+
+```cpp
+int x = 0;
+bool ready = false;              // 两个普通变量
+
+void writer() { x = 42; ready = true; }
+void reader() { if (ready) std::println("{}", x); }   // x 一定是 42 吗？
+```
+
+**提示**：普通读写之间没有同步关系——writer 里两句是普通写，编译器可以重排，reader 看到的 ready==true 不保证先于 x=42 可见；x 可能读到 0。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+std::atomic<int> x{0};
+std::atomic<bool> ready{false};
+
+void writer() {
+    x.store(42, std::memory_order_relaxed);
+    ready.store(true, std::memory_order_release);      // 发布：之前的写不许下移
+}
+void reader() {
+    if (ready.load(std::memory_order_acquire)) {       // 获取：之后的读不许上移
+        std::println("{}", x.load(std::memory_order_relaxed));   // 一定是 42
+    }
+}
+```
+
+要点自查：release/acquire 建立的是「写-读配对」的同步边——ready 的发布写与读到 true 的获取读配对，于是 x=42「先发生于」读取；relaxed 只保证原子性不保证顺序，单独用 relaxed 读 ready 依然可能读到 42 之外的旧值组合。
+
+**任务二**：解释「数据竞争 = 未定义行为」在语言标准层面意味着什么（不是「读到旧值」而是 UB），并回答：`volatile int` 能替代 `std::atomic` 吗？用三个论据（可见性、原子性、顺序性）写一段判词。
+
+**提示**：volatile 只承诺「每次访问真的发生在内存」（阻止编译器缓存/合并访问），它不保证读改写原子、不建立线程间同步边——MMIO 场景的语义被挪用到了并发上。
+
+**参考实现**（先自己写完再看）：
+
+```text
+1. 语言层面：C++ 内存模型规定「两个线程并发访问同一非原子对象且至少一个是写」
+   即数据竞争，行为未定义——不是未指定结果，是任何结果（包括崩溃）都合法。
+2. volatile 判词：
+   - 原子性：volatile int++ 在多数平台编译成三条指令（load/add/store），
+     两个线程并发自增会丢更新——不原子。
+   - 可见性/顺序：volatile 访问不建立 happens-before，编译器对 volatile
+     之间的普通访问照样重排——不同步。
+   - 结论：volatile 是给 MMIO/信号处理用的「别动我的访问」，不是并发原语；
+     线程间通信一律 std::atomic。
+```
+
+要点自查：能把「UB」和「结果不确定」区分开（前者允许任何行为），才算理解本篇为什么强调原子操作不只是「慢一点的安全版」；volatile 与 atomic 的混淆是 C++ 内存模型最经典的入门错。

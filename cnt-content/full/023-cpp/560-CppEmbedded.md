@@ -2101,4 +2101,63 @@ constexpr std::uint32_t crc32(const std::uint8_t* data, std::size_t len) {
 
 ---
 
-> 本文档基于 ISO/IEC 14882:2020 与 ARM Cortex-M3/M4 参考手册编写，示例代码已在 STM32F103C8 与 STM32F407VE 上验证通过。MISRA C++:2023 与 AUTOSAR C++14 规范引用基于截至 2025 年 7 月的版本。
+> 本文档基于 ISO/IEC 14882:2020 与 ARM Cortex-M3/M4 参考手册编写，示例代码已在 STM32F103C8 与 STM32F407VE 上验证通过。MISRA C++:2023 与 AUTOSAR C++14 规范引用基于截至 2026 年 11 月的公开版本，规范本身的最新修订以各规范发布方为准。
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：为无操作系统、无堆的裸机环境写一个「无锁单生产者单消费者环形缓冲」的最小工具——固定长度 `std::array`、两个索引裸推进（容量取 2 的幂，用位与代替取模）；写出 push/pop 并回答：为什么嵌入式里容量取 2 的幂？`volatile` 需要加在中断共享的索引上吗？
+
+**提示**：`index & (N - 1)` 代替 `index % N` 是除法指令换成与指令的编译期优化前提（N 必须是常量 2 的幂）；中断与主循环共享变量要 `volatile` + 禁中断临界区（或用原子），两层保护缺一不可。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <array>
+#include <cstdint>
+
+template <typename T, std::uint32_t N>   // N 必须是 2 的幂
+class RingBuffer {
+    static_assert((N & (N - 1)) == 0, "N must be power of two");
+    std::array<T, N> buf_{};
+    volatile std::uint32_t head_ = 0;    // 中断侧写（如 UART RX ISR）
+    volatile std::uint32_t tail_ = 0;    // 主循环侧写
+public:
+    bool push(const T& v) {              // 仅中断侧调用
+        auto h = head_, t = tail_;
+        if (h - t == N) return false;    // 满
+        buf_[h & (N - 1)] = v;           // 位与代替取模
+        head_ = h + 1;                   // 回绕后仍成立的单调计数
+        return true;
+    }
+    bool pop(T& out) {                   // 仅主循环侧调用
+        auto h = head_, t = tail_;
+        if (h == t) return false;
+        out = buf_[t & (N - 1)];
+        tail_ = t + 1;
+        return true;
+    }
+};
+```
+
+要点自查：容量 2 的幂 = 把取模编译成一个 AND；头尾用「单调计数 + 位与」而不是「指向位置的裸下标」是为了空/满判定不歧义；中断与主循环各占一个方向的写权是 SPSC 的嵌入式化身。
+
+**任务二**：算账题——一个循环每 100us 轮询一次串口寄存器，主频 48MHz，轮询消耗占比多少？改成中断驱动后每字节触发一次 ISR（约 2us），10KB/s 流量下 CPU 占比又多少？用本篇「轮询 vs 中断 vs DMA」的结论给出选型判据。
+
+**提示**：轮询成本 = 频率 x 每次循环指令数；中断成本 = 字节率 x ISR 时间；DMA = 两者皆免但要有缓冲管理与完成通知。
+
+**参考实现**（先自己写完再看）：
+
+```text
+轮询：100us 一次 → 每秒 1 万次循环；每次约 20 条指令 ≈ 0.4us
+      → 1 万 x 0.4us = 4ms/s → 占 0.4%。
+中断：10KB/s = 每秒 1 万字节 x 2us ISR = 20ms/s → 占 2%，
+      且 CPU 在两次中断之间可以睡眠（低功耗收益）。
+DMA：CPU 占比接近 0，只在半满/完成中断时介入；
+      适合音频流、大块传感器数据。
+判据：字节率低且延迟敏感 → 中断；字节率高且块状 → DMA；
+      只有极简延迟探测才用轮询。把每秒中断次数乘 ISR 时长的账算出来再选。
+```
+
+要点自查：嵌入式性能题都能落到「频率 x 次数 = 时间占比」的三行算术；轮询、中断、DMA 的功耗与实时性差异（轮询最高功耗、DMA 最低 CPU 占用）要能对应起来。

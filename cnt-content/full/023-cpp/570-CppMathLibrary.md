@@ -1716,3 +1716,53 @@ double sqrt2 = std::numbers::sqrt2;    // 1.41421...
 double ln2 = std::numbers::ln2;        // 0.69314...
 double phi = std::numbers::phi;        // 黄金比例
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：手写一个 2D 向量类 `Vec2`——支持 `+`、`-`、数乘、点积、长度、归一化；要求运算符写成「成员 `+=` + 非成员 `+`」的组合式（与 [运算符重载](/cpp/210-OperatorOverloading) 的惯例一致），`length()` 与 `normalize()` 明确标注各自的浮点误差来源（平方和的量级差）。
+
+**提示**：`normalize` 的经典坑是零向量除零——先判长度再除；平方和 `x*x + y*y` 在分量量级差异大（1e8 与 1e-8）时会吞掉小分量，这是「什么时候需要 Kahan/双精度」的判断点。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <cmath>
+
+struct Vec2 {
+    double x{}, y{};
+
+    Vec2& operator+=(const Vec2& r) { x += r.x; y += r.y; return *this; }
+    Vec2& operator-=(const Vec2& r) { x -= r.x; y -= r.y; return *this; }
+
+    double length() const { return std::sqrt(x * x + y * y); }
+    Vec2 normalized() const {
+        double len = length();
+        return len > 0 ? Vec2{x / len, y / len} : Vec2{};   // 零向量安全
+    }
+};
+inline Vec2 operator+(Vec2 a, const Vec2& b) { return a += b; }
+inline Vec2 operator-(Vec2 a, const Vec2& b) { return a -= b; }
+inline Vec2 operator*(Vec2 a, double s) { return Vec2{a.x * s, a.y * s}; }
+inline double dot(const Vec2& a, const Vec2& b) { return a.x * b.x + a.y * b.y; }
+```
+
+要点自查：浮点题先想「哪里会丢精度」再想「怎么算快」——`x*x + y*y` 的量级吞没是物理模拟漂移的常见源头；零向量、单位化后长度近似 1 但不精确等于 1，两个边界都要有意识。
+
+**任务二**：矩阵库选型判断——下面三个需求各选 Eigen / 手写小矩阵 / BLAS：游戏内骨骼变换（4x4 每帧百万次）、科学计算的稠密矩阵分解（1000x1000）、配置里的 3x3 仿射矩阵；写出选择理由（不是抄性能表，而是说清「编译期尺寸已知 / 运行期尺寸 / 生态成熟度」三个维度）。
+
+**提示**：Eigen 的强项是「固定尺寸表达式模板零中间临时量」；1000x1000 分解的瓶颈在算法（LAPACK/BLAS 的并行与分块），不是表达式模板；3x3 用 Eigen 也行，但很多引擎为了控制二进制与编译时间手写。
+
+**参考实现**（先自己写完再看）：
+
+```text
+- 骨骼变换 4x4 x 百万次/帧：Eigen::Matrix4f（固定尺寸，SIMD 向量化 +
+  无堆分配 + 表达式模板合并运算）——尺寸编译期已知是 Eigen 的甜区。
+- 1000x1000 分解：BLAS/LAPACK（Eigen 的 Dynamic 矩阵也能调，但极限性能
+  依赖分块与多线程，直接用 MKL/OpenBLAS 更稳）。
+- 3x3 仿射：手写 struct（语义就是 9 个数，无泛型需求）或 Eigen::Affine3d；
+  判据是「会不会给编译时间与依赖负担」——小项目 Eigen，二进制敏感项目手写。
+```
+
+要点自查：矩阵库选型的第一问是「尺寸是编译期常量还是运行期值」，第二问是「性能瓶颈在运算合并还是在算法」——把两问答对，库选型就不是背表。

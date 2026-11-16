@@ -2099,3 +2099,79 @@ public:
     auto operator<=>(const Point&) const = default;
 };
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：为下面的 `Money` 类补全运算符：支持「金额相加」「金额比较」「输出到流」。要求给出成员/非成员的选型理由——`operator+` 与 `operator<<` 谁必须是友元非成员、`operator+=` 为什么定义为成员，并保证 `a + b + c` 可用。
+
+```cpp
+class Money {
+    long long cents_;   // 以分为单位，避免浮点误差
+public:
+    explicit Money(long long cents) : cents_(cents) {}
+};
+```
+
+**提示**：三段式惯例——先写 `+=`（成员，就地修改），再用它实现 `+`（非成员，参数都是左值或右值都成立）；`<<` 的左操作数是 `std::ostream&`，不可能定义成 `Money` 的成员，只能非成员（需要访问私有成员才加 friend）。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <iostream>
+
+class Money {
+    long long cents_;
+public:
+    explicit Money(long long cents) : cents_(cents) {}
+
+    Money& operator+=(const Money& rhs) {      // 成员：修改 this 本身
+        cents_ += rhs.cents_;
+        return *this;
+    }
+    friend std::ostream& operator<<(std::ostream& os, const Money& m) {
+        return os << m.cents_ / 100 << "." << (m.cents_ % 100 < 10 ? "0" : "")
+                  << m.cents_ % 100;
+    }
+};
+
+inline Money operator+(Money lhs, const Money& rhs) {  // 非成员：对称性
+    lhs += rhs;
+    return lhs;
+}
+
+// a + b + c 可用：operator+ 按值收 lhs，右值也能进来
+```
+
+要点自查：`operator+` 第一参数按值传，是为了让「右操作数进临时对象」这条路径天然可行；比较运算符这里用 C++20 默认化 `operator<=>` 也行（`auto operator<=>(const Money&) const = default;`）。
+
+**任务二**：找出下面重载的三个问题（一个语义陷阱、一个必须 `const` 的遗漏、一个前置/后置递增的分辨问题）并改对：
+
+```cpp
+class Counter {
+    int n_ = 0;
+public:
+    Counter operator++() { ++n_; return *this; }
+    Counter operator++(int) { ++n_; return *this; }
+    bool operator==(Counter& rhs) { return n_ == rhs.n_; }   // 与 STL 容器配合时会炸
+};
+```
+
+**提示**：后置递增的语义是「先记下旧值再自增」，返回旧值副本；比较运算符若不标 `const`，`const Counter` 与按值临时对象都无法参与比较——STL 算法传的是 const 引用。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+class Counter {
+    int n_ = 0;
+public:
+    Counter& operator++() { ++n_; return *this; }          // 前置：左值语义
+    Counter operator++(int) { Counter old(*this); ++n_; return old; }  // 后置：旧值副本
+    friend bool operator==(const Counter& a, const Counter& b) {
+        return a.n_ == b.n_;
+    }
+};
+```
+
+要点自查：前置返回引用、后置返回副本且按值（不然返回局部变量引用是悬垂）；`int` 形参只是编译器区分两者的标记，调用者永远不传；比较运算符参数全部 `const&`——这是与 `std::find`、`std::sort` 顺畅配合的前提。

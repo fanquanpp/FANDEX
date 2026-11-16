@@ -1148,3 +1148,83 @@ Dog dog;
 Animal& ref = dog;
 ref.sound();
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：写一个最小多态体系——基类 `Shape` 提供 `virtual double area() const` 与 `virtual const char* name() const`，派生类 `Circle`（半径成员）与 `Rect`（宽高成员）各自实现；在 `main` 里用 `std::unique_ptr<Shape>` 的数组遍历输出每个图形的名字与面积，然后回答：基类析构函数必须是什么写法？为什么？
+
+**提示**：通过基类指针/引用删除派生类对象时，若析构非虚，行为未定义（通常只析构基类子对象）。`std::unique_ptr<Shape>` 的析构调用的就是 `~Shape()`——所以答案在 `unique_ptr` 的析构路径上，不在 `main` 里有没有手动 delete。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <memory>
+#include <vector>
+#include <cstdio>
+#include <cmath>
+
+struct Shape {
+    virtual double area() const = 0;
+    virtual const char* name() const = 0;
+    virtual ~Shape() = default;              // 关键：多态基类的析构必须为虚
+};
+struct Circle : Shape {
+    double r;
+    explicit Circle(double r) : r(r) {}
+    double area() const override { return M_PI * r * r; }
+    const char* name() const override { return "circle"; }
+};
+struct Rect : Shape {
+    double w, h;
+    Rect(double w, double h) : w(w), h(h) {}
+    double area() const override { return w * h; }
+    const char* name() const override { return "rect"; }
+};
+
+int main() {
+    std::vector<std::unique_ptr<Shape>> shapes;
+    shapes.push_back(std::make_unique<Circle>(2.0));
+    shapes.push_back(std::make_unique<Rect>(3.0, 4.0));
+    for (const auto& s : shapes)
+        std::printf("%s area = %.2f\n", s->name(), s->area());
+}
+```
+
+要点自查：`override` 关键字每个重写函数都带上，签名写错编译期就报；`virtual ~Shape() = default` 一行同时满足「可被析构」与「无多余代码」。
+
+**任务二**：只用封装语义（不涉及继承）重写下面这个「暴露内脏」的类：成员改成私有，提供 `add()` 与 `total()`；说明 `total()` 为什么按值返回 `int` 而不是 `const int&`，以及什么时候才值得返回引用。
+
+```cpp
+class Cart {
+public:
+    std::vector<int> items;   // 任何人都能绕过逻辑直接改
+};
+
+Cart c;
+c.items.push_back(10);        // 合法，但没有经过任何业务规则
+```
+
+**提示**：封装的目的不是「藏起来」而是「让不变式有且只有一个维护点」——把 push_back 收进 `add()`，才可能校验「金额必须为正」。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+class Cart {
+    std::vector<int> items_;
+public:
+    bool add(int v) {                    // 业务规则唯一入口
+        if (v <= 0) return false;
+        items_.push_back(v);
+        return true;
+    }
+    int total() const {                  // 小于机器字长的标量按值返回
+        int s = 0;
+        for (int v : items_) s += v;
+        return s;
+    }
+};
+```
+
+要点自查：`total()` 按值返回是因为 `int` 是标量、拷贝零成本且无别名风险；返回引用只值得用在「大对象且频繁读取且无重入」的场景——本篇第 2 节的判断标准。

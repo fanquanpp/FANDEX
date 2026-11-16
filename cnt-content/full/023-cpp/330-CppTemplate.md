@@ -1052,3 +1052,53 @@ if constexpr (std::is_integral_v<T>) {
     return x;
 }
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：写一个函数模板 `largest`，返回三个值中的最大者：先只给声明让编译器对 `largest(1, 2.5, 3)` 推导一次，观察报错；然后用 `std::common_type` 或「显式指定模板实参」修复。再回答：为什么 `largest<double>` 可以但 `largest(1.0, 2, 3L)` 会失败（按 std::common_type 语义想想）？
+
+**提示**：单个模板参数 T 意味着「三次推导必须推出同一个 T」——`1, 2.5, 3` 推出 `int, double, int`，冲突。修复方向：多参数模板 + 返回类型用 `std::common_type_t`，或调用点显式指定。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+template <typename A, typename B, typename C>
+auto largest(const A& a, const B& b, const C& c)
+    -> std::common_type_t<A, B, C>            // C++14 起尾置返回推导
+{
+    return std::max({static_cast<std::common_type_t<A, B, C>>(a),
+                     static_cast<std::common_type_t<A, B, C>>(b),
+                     static_cast<std::common_type_t<A, B, C>>(c)});
+}
+// largest(1, 2.5, 3) OK：common_type_t = double
+// largest<double>(1.0, 2, 3L)：显式只指定第一个参数没有意义——本模板三个参数都推不出来了
+//                              （这就是显式实参按位置吃掉模板参数的代价）
+```
+
+要点自查：「一个 T 参数 = 一次强一致约束」是模板参数个数设计的第一课；`std::common_type_t` 是「混合算术类型」的标准答案；显式指定实参时参数从左往右被吃掉，只指定一半等于把剩下的交给推导。
+
+**任务二**：实现一个简单类模板 `Box<T>`，满足：内部用 `std::vector<T>` 存元素、提供 `push`/`size`/`at`；为 `Box<int>` 与 `Box<std::string>` 各实例化一次；然后解释**模板必须放头文件**的原因（实例化时机 + 两阶段查名），以及 `export template`（C++26 才有真正的模块化导出）与此前的关系。
+
+**提示**：编译器在实例化点需要看到完整定义才能生成 `Box<int>` 的代码——定义在 .cpp 里时其他翻译单元只见过声明，链接期找不到符号。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// box.h —— 模板定义整体放头文件（或显式实例化声明配合）
+template <typename T>
+class Box {
+    std::vector<T> items_;
+public:
+    void push(const T& v) { items_.push_back(v); }
+    std::size_t size() const { return items_.size(); }
+    const T& at(std::size_t i) const { return items_.at(i); }
+};
+
+// main.cpp
+Box<int> b1;  b1.push(1);
+Box<std::string> b2;  b2.push("hi");
+```
+
+要点自查：模板不是「编译后等链接」的普通代码——它是**按需生成代码的配方**，实例化点必须能看见配方全文；名字查找的两阶段（模板定义期查非依赖名、实例化期查依赖名）决定了为什么依赖名要 `this->` 或 `typename`。

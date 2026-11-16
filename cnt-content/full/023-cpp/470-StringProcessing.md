@@ -2770,3 +2770,63 @@ std::string str = R"(Hello\nWorld)";
 // 带分隔符的原始字符串
 std::string str = R"DELIM(This contains )")DELIM";
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：同一个「在字符串里找子串并计数」的需求写三版——`std::string::find` 循环版、`std::string_view` 版（函数参数）、`std::regex` 版；用 `string_view` 版说明为什么参数用 `std::string_view` 而不是 `const std::string&`（调用方传什么不会发生拷贝），并说出 string_view 的唯一大坑。
+
+**提示**：`string_view` 是「指针 + 长度」的只读视图——传 `const char*`、`std::string`、字面量都不拷贝；大坑是**不拥有数据**：被引用的字符串先死，视图就悬垂。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <string_view>
+#include <print>
+
+int countSub(std::string_view hay, std::string_view needle) {
+    int count = 0;
+    for (auto pos = hay.find(needle);
+         pos != std::string_view::npos;
+         pos = hay.find(needle, pos + needle.size()))
+        ++count;
+    return count;
+}
+// countSub("abcabc", "bc") == 2；调用方传字面量/char*/string/string_view 全都零拷贝。
+
+// 大坑演示：
+std::string_view danger() {
+    std::string s = "temp";
+    return s;              // 返回后 s 析构，视图悬垂 —— 编译不报错，运行期 UB
+}
+```
+
+要点自查：string_view 的正确位置是「只读参数」——返回值位置几乎总是错（除非引用的存储比函数活得久）；`find` 第二参数是起点下标，`pos + needle.size()` 避免重复计数重叠匹配。
+
+**任务二**：数字与字符串互转的现代写法——用 `std::from_chars` 把 `"123abc"` 前缀解析成 int（要求：能识别「解析到哪一位结束」），再用 `std::to_chars` 把 int 格式化进栈上缓冲区；对比 `std::stoi`/`std::atoi` 的三个缺点（异常、区域设置依赖、无错误定位）。
+
+**提示**：`from_chars` 返回 `{ptr, ec}` 结构——`ec == std::errc{}` 表示成功，`ptr` 指向第一个未消费的字符；它不抛异常、无 locale、无内存分配。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <charconv>
+#include <array>
+
+int parsePrefix(std::string_view sv) {
+    int value = 0;
+    auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), value);
+    if (ec != std::errc{}) throw std::runtime_error("not a number");
+    return value;          // "123abc" -> 123；ptr 停在 'a'，可继续解析剩余
+}
+
+std::string toText(int v) {
+    std::array<char, 16> buf{};
+    auto [ptr, ec] = std::to_chars(buf.data(), buf.data() + buf.size(), v);
+    if (ec != std::errc{}) throw std::runtime_error("buffer too small");
+    return std::string(buf.data(), ptr);
+}
+```
+
+要点自查：`from_chars/to_chars` 三优点——无异常、无 locale、零分配——是「解析热点路径」的标准答案；`std::stoi("123abc")` 返回 123 但**无法知道**消费到哪，且非法输入抛 `std::invalid_argument`；浮点 `from_chars` 在 GCC 11+/Clang 16+/MSVC 19.29+ 才齐备（整数版早得多），旧工具链注意查表。

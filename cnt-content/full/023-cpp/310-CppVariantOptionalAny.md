@@ -372,3 +372,70 @@ public:
 - `variant` 的大小是其最大候选类型的大小 + 判别式，把巨型类型放进候选会放大所有
   对象的内存占用；
 - `std::visit` 的多 variant 形式会做 N 维分派，候选组合爆炸时注意编译期与代码体积成本。
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：用 `std::variant` 重写下面的「枚举 + 联合体」式状态机：状态为 `Idle`、`Running{int progress}`、`Failed{std::string reason}` 三者之一；用 `std::visit` + 重载 lambda 实现一个 `describe()`，并说明为什么 `visit` 要求 lambda 覆盖**所有**备选类型。
+
+```cpp
+// 老写法：enum + 手工状态字段，不变式全靠自觉
+struct State { enum Kind { Idle, Running, Failed } kind;
+                int progress; std::string reason; };
+```
+
+**提示**：`std::visit` 的访客必须是「对每个备选类型都可调用」的，少一个分支就编译失败——这正是它比 switch 安全的原因：variant 里再加一种状态，所有 visit 编译期全报错。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <variant>
+#include <string>
+#include <print>
+
+struct Idle {};
+struct Running { int progress; };
+struct Failed { std::string reason; };
+using State = std::variant<Idle, Running, Failed>;
+
+std::string describe(const State& s) {
+    return std::visit([](const auto& alt) -> std::string {
+        using T = std::decay_t<decltype(alt)>;
+        if constexpr (std::is_same_v<T, Idle>)    return "空闲";
+        else if constexpr (std::is_same_v<T, Running>)
+            return "运行中 " + std::to_string(alt.progress) + "%";
+        else return "失败：" + alt.reason;
+    }, s);
+}
+```
+
+要点自查：老写法 `kind == Running` 时 `reason` 是「存在但无效」的字段——不变式无法表达；variant 让「同时只有一种状态」成为类型事实；`describe` 的 lambda 覆盖全部三个备选，新增状态时此处编译期报错。
+
+**任务二**：辨析三个类型——「函数可能失败」用哪个容器表达？写出下面的 `find` 两个版本的返回类型与调用方解包，并说明 `std::optional` 与「返回指针 + nullptr」的取舍；再用 `std::any` 写一行代码并解释它为什么不该出现在接口签名里。
+
+```cpp
+// 在 map 里按 key 查值
+std::unordered_map<std::string, int> table = {{"a", 1}};
+```
+
+**提示**：查不到是**正常分支**不是错误 → `std::optional<int>`；`any` 的值被类型擦除，取回要 `std::any_cast`，接口用 `any` 等于把类型检查从编译期推迟到运行期。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+std::optional<int> find(const std::unordered_map<std::string, int>& t,
+                        const std::string& k) {
+    if (auto it = t.find(k); it != t.end()) return it->second;
+    return std::nullopt;
+}
+// 调用方：if (auto v = find(table, "a")) std::println("{}", *v);
+//
+// optional vs 裸指针+nullptr：optional 是值语义（不涉及所有权、不悬垂），
+// 裸指针适合「指向容器内部已有元素」的场景。
+//
+// std::any a = 42;  // 只适合真正的「任意类型搬运工」（如脚本绑定层）
+// 接口签名出现 any：调用方必须 any_cast 才能用，类型错误运行期才爆——能用 variant 就别用 any。
+```
+
+要点自查：三兄弟的分工——`optional` 是「可能有值」，`variant` 是「几种之一」，`any` 是「运行期才知道什么」；把 `any` 写进接口签名几乎总是选型错误。

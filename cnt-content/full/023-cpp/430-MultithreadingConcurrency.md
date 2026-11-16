@@ -252,6 +252,60 @@ void run() {
 - cppreference std::lock_guard：https://en.cppreference.com/w/cpp/thread/lock_guard
 - cppreference std::atomic：https://en.cppreference.com/w/cpp/atomic/atomic
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：默写「两线程各自对共享计数自增一万次」的三个版本——裸 int（错）、`std::atomic<int>`（对）、`std::mutex` + `lock_guard`（对）；运行后回答：裸 int 版为什么「几乎总是得到不到 20000」？这是未定义行为还是数据竞争的另一种说法？
+
+**提示**：`int++` 是「读-改-写」三步，两个线程交错执行会互相覆盖更新；标准对「并发写 + 读同一非原子对象」的定名就是数据竞争（= UB）。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+int naive = 0;
+std::atomic<int> counter{0};
+std::mutex m;
+int guarded = 0;
+
+// 版本一（错）：naive++ —— 数据竞争，结果小于 20000 且为 UB。
+// 版本二（对）：counter.fetch_add(1, std::memory_order_relaxed); —— 原子读改写。
+// 版本三（对）：{ std::lock_guard<std::mutex> lk(m); ++guarded; } —— 互斥锁串行化。
+// 数据竞争不是「结果不确定」，是标准层面的未定义行为——与 635 篇的 UB 语义一致。
+```
+
+要点自查：三个版本能默写 + 能说出「数据竞争 = UB」的标准语义，本篇就达标；relaxed 内存序在这里够用（只要求原子性不要求同步），这是它与 acquire/release 的分工。
+
+**任务二**：找错——下面线程代码有一个必现 bug 与一个生命周期风险，指出并修复：
+
+```cpp
+void worker() { /* 长任务 */ }
+
+void start() {
+    std::thread t(worker);
+}                       // (A)
+std::thread t2;
+void start2() {
+    int local = 1;
+    t2 = std::thread([&local] { /* 用 local */ });   // (B)
+}   // start2 返回后 main 里才 join
+```
+
+**提示**：(A) 线程对象析构时若仍 joinable 且未 join/detach，`std::terminate`；(B) lambda 按引用捕获局部变量，线程还活着、变量先死——悬垂引用。
+
+**参考实现**（先自己写完再看）：
+
+```text
+(A) std::thread 析构时仍 joinable 且未 join/detach => std::terminate。
+    修法：t.join()（等待完成）或 t.detach()（明确放弃控制，慎用）；
+    更稳的做法用 RAII 包装（scope guard 在析构里 join）。
+(B) local 在 start2 返回时析构，线程仍在按引用用它 => 悬垂。
+    修法：按值捕获 [local]，或把数据的生命周期延长到与线程一致
+    （堆上对象 + shared_ptr 捕获）。
+```
+
+要点自查：「joinable 的线程对象析构即 terminate」与「引用捕获跨越线程生命周期」是线程接口的两个标志性坑；线程的 joined 状态与共享数据的生命周期要一起设计，不能各自为政。
+
 ## 13. 自我检查
 
 - 能默写「创建、join、析构前必须二选一」的线程生命周期，并说出 detach 的风险；

@@ -1696,3 +1696,51 @@ perf report                 # 查看报告
 perf top                    # 实时热点
 perf stat ./app             # 统计信息
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：定位性能问题的完整流程演练——给出一个「慢函数」（遍历 vector<pair<int,string>> 按 key 查找 10 万次），要求：先写出你的复杂度分析（不实测），再给出两个优化方向（换 unordered_map / 预排序 + lower_bound），各预测一次收益量级；最后写出用 `-O2` 与无优化对比测时的 bench 代码骨架。
+
+**提示**：优化先算复杂度再谈常数——10 万次 x O(n) 顺序扫 = 十亿级比较；unordered_map 摊还 O(1)，排序数组 O(log n)；收益预测要给出数量级（百倍/几倍），实测来验证。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <chrono>
+#include <print>
+
+template <typename F>
+double bench(F&& f) {
+    auto t0 = std::chrono::steady_clock::now();
+    f();
+    auto t1 = std::chrono::steady_clock::now();
+    return std::chrono::duration<double, std::milli>(t1 - t0).count();
+}
+
+// 预测：原版 O(n) 扫描，10 万次查找 x 10 万元素 = 10^10 比较量级；
+// 排序 + lower_bound：O(n log n) 排序一次 + 10 万 x ~17 次比较 ≈ 下降 2 个数量级；
+// unordered_map：摊还 O(1)，但每元素一次堆分配——百万级时分配成本可见。
+// 编译对比：g++ -std=c++23 bench.cpp && g++ -O2 bench.cpp && 分别运行计时。
+```
+
+要点自查：bench 三纪律——多轮取中位、防死代码消除（结果要被消费）、Release 编译；「先分析后测量」是流程，「测量后仍要解释数字」是能力——两者缺一就是盲调。
+
+**任务二**：缓存友好度辨析——用 `perf stat -e cache-misses`（或 Linux perf 对应事件）对比两种遍历：「vector<4KB 结构体> 数组遍历」与「指针数组遍历」各跑一遍，写出你预期能看到的指标差异与原因（硬件预取器、缓存行 64B）。
+
+**提示**：顺序访问让预取器工作，指针追逐是随机访问——预期指针版 cache-misses 高一个数量级；perf 的计数器是「实测」，预测错的环节才是收获。
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 两个版本分别编译运行：
+perf stat -e cycles,instructions,cache-misses,LLC-load-misses ./seq
+perf stat -e cycles,instructions,cache-misses,LLC-load-misses ./ptrchase
+
+# 预期：ptrchase 的 cache-misses 与 LLC-load-misses 显著更高，
+# instructions 数量相近但 cycles 差一个数量级——瓶颈在内存不在指令。
+# 结论：同样的算法，数据布局决定了「指令快」还是「内存慢」。
+```
+
+要点自查：本篇的方法论闭环——复杂度分析 → 写可预测的假设 → perf/bench 实测 → 用缓存行模型解释数字；只在「实测数字与假设矛盾」处修改心智模型，而不是凭感觉改代码。

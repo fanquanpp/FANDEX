@@ -256,6 +256,59 @@ main.cpp:4:5: error: expected ';' before 'return'
 - isocpp FAQ（含 undefined behavior 条目）：https://isocpp.org/faq
 - GCC 警告选项手册：https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：不看正文，默写一个最小可运行的 `main.cpp`（含输入输出），写出编译与运行的两条命令；然后回答：`main` 返回的 0 是给谁看的？把它改成 `return 3` 在 shell 里怎么观察到差异？
+
+**提示**：两步是「编译生成可执行文件」与「运行可执行文件」；返回值给的是**操作系统/调用方**，`echo $?` 能看到。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <iostream>
+int main() {
+    int age = 0;
+    std::cin >> age;
+    std::cout << "age = " << age << '\n';
+    return 0;
+}
+```
+
+```bash
+g++ -std=c++23 -Wall main.cpp -o main
+./main
+echo $?    # 0 表示程序报告成功；return 3 时这里显示 3
+```
+
+要点自查：`echo $?` 读的是上一个进程的退出码——脚本与 CI 就是用它判断程序是否成功；`return 0` 不是装饰，是程序对调用方的承诺。
+
+**任务二**：找错并解释——下面的程序「在我机器上多数时候能跑出 42」，指出错误与风险等级：
+
+```cpp
+#include <iostream>
+int main() {
+    int values[3] = {10, 20, 30};
+    int* p = values + 5;
+    std::cout << *p << '\n';
+    return 0;
+}
+```
+
+**提示**：`values + 5` 越出了数组边界（合法下标 0..2，越界指针本身已未定义）——这是未定义行为：不是「必然崩溃」，而是「标准不承诺任何结果」，恰好读到旧值也是 UB。
+
+**参考实现**（先自己写完再看）：
+
+```text
+错误：越界解引用（ UB ）。风险等级：最高——它可能今天输出 42、明天输出
+垃圾值、后天被优化器整段删掉（UB 允许任意行为）。
+正确意识：UB 的「能跑」是运气不是正确；用 -Wall -Wextra 与 -fsanitize=address
+在测试期暴露它，而不是指望它上线后不炸。
+```
+
+要点自查：把「程序输出了期望值」与「程序正确」区分开，是本篇最核心的一课——UB 的判定看标准，不看这次运行。
+
 ## 13. 自我检查
 
 - 能从空文件夹在 5 分钟内重建 main.cpp 并两步跑通；

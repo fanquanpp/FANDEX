@@ -504,3 +504,60 @@ PyMODINIT_FUNC PyInit_capi_module(void) {
     return PyModule_Create(&module);
 }
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：用 pybind11 写一个最小扩展模块——导出 C++ 函数 `add(int, int)` 与一个类 `Counter`（成员方法 `inc`/`value`）；写出 `PYBIND11_MODULE` 骨架并回答：`py::arg` 命名参数与默认值为什么值得写？编译产物在 Linux/macOS 上为什么不能是 `libxxx.so`/`xxx.dylib` 而 Python 仍能 import？
+
+**提示**：CPython 的导入机制只认 `PyInit_<模块名>` 这个入口符号，文件名带不带 `lib` 前缀、扩展名是 `.so`（不分 Linux/macOS 平台差异）都无关紧要；`py::arg("x") = 1` 让 Python 侧可以用关键字调用。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// demo.cpp —— 编译：c++ -O3 -shared -std=c++17 -fPIC $(python3 -m pybind11 --includes) demo.cpp -o demo.so
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+
+int add(int a, int b) { return a + b; }
+
+class Counter {
+    int n_ = 0;
+public:
+    void inc(int step = 1) { n_ += step; }
+    int value() const { return n_; }
+};
+
+PYBIND11_MODULE(demo, m) {                       // 模块名必须与文件名一致
+    m.def("add", &add, py::arg("a"), py::arg("b") = 1);   // 关键字参数 + 默认值
+    py::class_<Counter>(m, "Counter")
+        .def(py::init<>())
+        .def("inc", &Counter::inc, py::arg("step") = 1)
+        .def("value", &Counter::value);
+}
+// Python 侧：import demo; demo.add(2); demo.Counter().inc(step=3)
+```
+
+要点自查：模块名三处一致（PYBIND11_MODULE 第一个参数、输出文件名、import 名）；`py::arg` 的收益是「调用处可读 + 默认值进 Python 签名」，比靠位置传参的可维护性高一个档次。
+
+**任务二**：内存与所有权辨析——`py::keep_alive<0,1>()`、`py::return_value_policy::reference_internal`、`std::shared_ptr` 作为成员参数分别解决什么问题？写一个「C++ 对象持有 Python 回调」的场景说明生命周期顺序（先析构谁）。
+
+**提示**：核心问题是「解释器先死还是你的对象先死」——Python 进程退出时解释器先于静态/全局对象析构，此时再碰任何 Python API 都是 UB；回调被 C++ 持有时必须持 `py::object`（引用计数）而不是裸函数指针。
+
+**参考实现**（先自己写完再看）：
+
+```text
+- py::keep_alive<0, 1>()：让返回值（0 号）保住参数（1 号）的生命周期——
+  适合「返回参数内部数据的视图」，防止参数先被 GC。
+- return_value_policy::reference_internal：返回引用但把生命周期挂在调用者对象上，
+  是「读成员不拷贝」的安全策略。
+- shared_ptr 参数：C++ 侧与 Python 侧共同管理同一对象，引用计数跨语言生效。
+- C++ 持 Python 回调：
+    struct Worker { py::function cb; };          // 持引用计数，别存裸函数指针
+    // 析构顺序坑：进程退出时若 Worker 是静态对象，解释器已死，
+    // 此时 cb 的析构还会碰 Python API → 崩溃。对策：尽量别用静态生命周期持有
+    // py::object；必须持有时，在解释器 finalization 前手动清空。
+```
+
+要点自查：跨语言生命周期的总原则——「谁引用谁计数，析构顺序以解释器为先」；引用计数策略（return_value_policy）的六种取值能各自说对一个场景，才算掌握 pybind11 的所有权语义。

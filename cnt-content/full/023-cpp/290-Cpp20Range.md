@@ -578,3 +578,63 @@ auto n = std::ranges::count(v, 3);
 // 转换并存入另一容器
 std::ranges::transform(v, std::back_inserter(dest), [](int x) { return x * 2; });
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：把这段「五层嵌套的迭代器式过滤」改写成三行 Range 管道——取偶数、平方、去重并取前 3 个；改写时说明每个适配器的输入输出。
+
+```cpp
+std::vector<int> v{4, 3, 2, 4, 6, 2, 8, 7};
+std::vector<int> out;
+for (int x : v) {
+    if (x % 2 == 0) {
+        int sq = x * x;
+        if (std::find(out.begin(), out.end(), sq) == out.end()) out.push_back(sq);
+    }
+}
+// 输出 out 的前 3 个
+```
+
+**提示**：管道顺序就是数据流顺序：`v | std::views::filter(...) | std::views::transform(...) | std::views::unique | std::views::take(3)`。注意 `unique` 只对**相邻**重复去重——把它放在 transform 之后的原因要想清楚。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <ranges>
+#include <vector>
+#include <print>
+
+std::vector<int> v{4, 3, 2, 4, 6, 2, 8, 7};
+auto results = v
+    | std::views::filter([](int x) { return x % 2 == 0; })  // 4 2 4 6 2 8
+    | std::views::transform([](int x) { return x * x; })    // 16 4 16 36 4 64
+    | std::views::unique                                    // 相邻去重 16 4 36 4 64
+    | std::views::take(3);                                  // 16 4 36
+for (int x : results) std::println("{}", x);
+```
+
+要点自查：全管道是**惰性**的——遍历时才逐元素流过每一级，没有中间容器产生；`unique` 的相邻性决定了它在 transform 后才有效（平方后才出现相邻重复）。
+
+**任务二**：解释下面两个循环为什么输出不同——`views::iota` 的惰性体现在哪？`cache_last`/`to` 这类「需要落地」的场景怎么处理？
+
+```cpp
+for (int x : std::views::iota(1, 1000000000) | std::views::take(3))
+    std::print("{} ", x);          // 立即输出 1 2 3，瞬间完成
+// 而先 std::vector<int> v(std::views::iota(1, 1000000000) | std::views::take(3) ...) 直接构造则出错或爆内存
+```
+
+**提示**：`iota(1, 1000000000)` 不创建十亿个元素，视图只记住「从 1 开始数」这条规则；只有真正被遍历的 3 个元素被物化。想真正拿到容器，用 `std::ranges::to<std::vector>(...)`（C++23）。
+
+**参考实现**（先自己写完再看）：
+
+```text
+- 输出 1 2 3 且瞬间完成：iota 是无存储视图，take(3) 后遍历只请求 3 个值。
+- views::iota 的惰性：视图是「生成规则」不是「数据」，遍历一次算一个。
+- 落地为容器的正确写法（C++23）：
+    auto v = std::views::iota(1) | std::views::take(3) | std::ranges::to<std::vector>();
+  得到 v == {1, 2, 3}；没有 ranges::to 的工具链用显式循环 push_back。
+```
+
+要点自查：「视图是规则、容器是仓库」是本篇的心智模型；把大范围直接塞进容器是 Range 最常见的翻车点，先问自己「要不要物化」再决定用视图还是容器。

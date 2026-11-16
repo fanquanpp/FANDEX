@@ -394,6 +394,55 @@ bgfx::init(init);
 - Vulkan 官方主页：<https://www.vulkan.org/>
 - learnopengl.com 中文版：<https://learnopengl-cn.github.io/>（本文路线图的最佳续篇）
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：默写 OpenGL「画一个三角形」的四步资源准备（VAO、VBO、着色器编译链接、draw call），每步一行代码骨架；然后回答：为什么改窗口大小后三角形变形——视口（viewport）与投影矩阵各管什么？
+
+**提示**：资源准备顺序是「生成 + 绑定 VAO -> 生成 + 填充 VBO -> 指定顶点属性指针 -> glDrawArrays」；变形是「视口没跟随新尺寸」或「投影纵横比没更新」二选一，先分清两者分工。
+
+**参考实现**（先自己写完再看）：
+
+```text
+1. glGenVertexArrays + glBindVertexArray：VAO 记住顶点属性配置。
+2. glGenBuffers + glBindBuffer(GL_ARRAY_BUFFER) + glBufferData：顶点数据进显存。
+3. glVertexAttribPointer + glEnableVertexAttribArray：解释「每 3 个 float 一个顶点」。
+4. glUseProgram + glDrawArrays(GL_TRIANGLES, 0, 3)：提交绘制。
+
+变形排查：glViewport 管的是「画到窗口的哪块像素区域」（跟随窗口尺寸）；
+投影矩阵管「3D 空间如何映射到裁剪空间」（纵横比 aspect 要同步更新）。
+改窗口大小只调 glViewport 而不更新投影 aspect => 三角形被拉伸变形。
+```
+
+要点自查：能把「VAO/VBO 是显存里的什么」说清楚（配置对象 vs 数据缓冲）以及「viewport 与投影各管一层映射」，图形 API 的资源模型才算入门；着色器编译失败的排查看 `glGetShaderiv` 的 log。
+
+**任务二**：为「每帧 60fps 渲染 + 物理更新」写一个最小帧循环骨架（deltaTime 计时 + 输入处理 + 更新 + 渲染 + 交换缓冲），并回答两问：为什么更新要乘 deltaTime（帧率无关性）？「CPU 提交命令与 GPU 执行」的异步关系为什么会导致卡顿测量不准？
+
+**提示**：循环顺序与 glSwapBuffers（glutSwapBuffers/SDL_GL_SwapWindow 按你用的库）的位置；GPU 是队列消费者，CPU 端计时不包含 GPU 排队时间。
+
+**参考实现**（先自己写完再看）：
+
+```text
+while (!quit) {
+    auto now = clock::now();
+    float dt = duration<float>(now - last).count(); last = now;   // 帧间隔秒数
+
+    processInput();          // 键盘/鼠标状态
+    update(dt);              // 位置 += 速度 * dt：帧率无关
+    render();                // 提交绘制命令
+    swapBuffers();           // 前后缓冲交换（垂直同步点可能阻塞）
+}
+
+两问：
+1. deltaTime：60fps 与 30fps 下每帧时长不同，速度乘 dt 才能保证「每秒位移一致」。
+2. 提交/执行异步：glDraw 只是往 GPU 命令队列投递，CPU 立即返回；
+   真实执行在队列里排队——CPU 计时只测到「投递」，卡顿在 GPU 端，
+   需要 GPU timer query 或帧同步点才测得准。
+```
+
+要点自查：帧循环的五段顺序（输入 -> 更新 -> 渲染 -> 交换 -> 计时）能默写，dt 与异步提交两个「为什么」能回答，本篇的渲染主线就完整了。
+
 ## 自我检查
 
 全部能答上来再进入下一篇：

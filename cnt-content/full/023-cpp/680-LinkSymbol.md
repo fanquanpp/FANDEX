@@ -383,3 +383,55 @@ template int triple<int>(int);          // 只为 int 生成符号
 - 内部链接（`static`、匿名命名空间、`constexpr`）是控制符号污染的第一道闸门；
 - 动态库遵循「默认隐藏、显式导出」，可见性属性比全局默认导出更工程化；
 - `extern "C"`、弱符号、链接脚本、map 文件是跨语言互操作与嵌入式场景的进阶工具。
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：手写三文件最小工程复现一次「undefined reference」——`main.cpp` 声明并调用 `int calc(int)`、`calc.cpp` 提供定义但**故意**编译漏掉、`build.sh` 演示链接失败；再用 `nm -C` 分别查看「有定义」与「无定义」目标文件的符号表差异，并回答：头文件里的 `extern int calc(int);` 与实现里的 `int calc(int) {...}` 在符号表里各是什么角色？
+
+**提示**：`nm` 输出里大写字母 = 全局符号，U = 未定义引用（本文件用、别的文件给）；`nm -C` 把 mangled 名还原成可读签名。
+
+**参考实现**（先自己写完再看）：
+
+```text
+main.cpp:    extern int calc(int);   int main() { return calc(2); }
+calc.cpp:    int calc(int x) { return x * 2; }
+
+# 演示失败：只编译 main.cpp 就链接
+g++ -std=c++23 -c main.cpp && g++ main.o -o app
+# main.o:(.text+0x...): undefined reference to `calc(int)'
+
+nm -C main.o    →  U calc(int)      # 未定义引用：链接器的「寻人启事」
+nm -C calc.o    →  T calc(int)      # T：全局代码段符号，兑现寻人启事
+# extern 声明的角色 = 产生一个 U 记录；定义的角色 = 提供一个 T/D 记录；
+# 链接器的全部工作就是把 U 和提供者一一配对，配不上就是 undefined reference。
+```
+
+要点自查：能独立用 `nm` 把「谁在找、谁在供」说清楚，链接错误就从玄学变成查表；`-c` 只编译不链接是排查这类错误的常用手法。
+
+**任务二**：C++ 名字修饰辨析——为什么 C++ 里 `extern "C"` 能让 C 库可链接？用 `nm`（不带 -C）对比 `int f(int)` 的 C++ mangled 名（如 `_Z1fi`）与 `extern "C"` 后的名字；并回答：头文件里 `#ifdef __cplusplus extern "C" { #endif` 这个包装为什么是标准做法？
+
+**提示**：mangled 名编码了参数类型（重载依赖它）；C 链接层丢弃参数信息所以没有重载；`__cplusplus` 宏在 C++ 编译时才定义——同一份头文件被 C 与 C++ 同时使用。
+
+**参考实现**（先自己写完再看）：
+
+```text
+C++ 修饰：nm 输出 _Z1fi —— _Z 前缀 + 函数名长度/名字 + 参数类型编码。
+  重载 int f(int) / int f(double) 修饰成 _Z1fi / _Z1fd，符号不同所以能共存。
+extern "C" int f(int)：nm 输出 f —— C 语言链接约定，只按名字找。
+  这就是「同一个二进制里 C++ 调 C 库」的桥。
+
+// c_api.h —— C/C++ 两用的标准包装
+#ifdef __cplusplus
+extern "C" {
+#endif
+int f(int);
+#ifdef __cplusplus
+}
+#endif
+// 原因：C 编译器看到的是普通声明；C++ 编译器看到的是 C 链接声明。
+// 限制：extern "C" 块内不能写重载（名字无类型信息，会冲突）与类成员函数。
+```
+
+要点自查：mangling 的存在理由（重载需要类型进符号名）与 extern "C" 的代价（丢重载、丢成员函数）是一体两面；能看懂 `_Z1fi` 每一段的含义，就具备了「从链接器报错反推声明」的能力。

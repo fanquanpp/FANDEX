@@ -364,7 +364,7 @@ error: 'co_await' was not declared in this scope
 error: 'std::coroutine_handle' has not been declared
 ```
 
-修复：`-std=c++20`（MSVC：`/std:c++20`）；GCC 10 额外需要 `-fcoroutines`；Clang 14 之前的版本走的是 Coroutines TS（`<experimental/coroutine>`），直接升级编译器。
+修复：`-std=c++20`（MSVC：`/std:c++20`）；GCC 10 额外需要 `-fcoroutines`；Clang 17 起才在 `-std=c++20` 下默认启用协程，更早的版本要么走 Coroutines TS（`<experimental/coroutine>`），要么需要手动开 `-fcoroutines`（Clang 14-16），直接升级编译器。
 
 ### 2. promise 缺 yield_value：co_yield 编译失败
 
@@ -538,3 +538,92 @@ Boost.Asio 从 1.70 起原生支持 `co_await`（`asio::awaitable<T>` + `co_spaw
 ## 总结
 
 C++20 协程是一台编译器级的状态机生成器：三关键字标记挂起点，promise_type 定制行为，awaiter 三步协议定义等待语义，协程帧承载跨挂点状态。它的学习曲线几乎全部来自两件事：生命周期（帧的销毁权在谁手里——final_suspend、RAII Task、handle 的每一次 resume 都要 answer 这个问题）与"机制而非策略"留下的空白（Task/Executor/取消都要自己选库或实现）。掌握本篇后应能：徒手写出 Generator 与 Task；用对称转移与 HALO 把性能做到接近普通调用；用 ASan 报告反推协程生命周期 bug；在 Boost.Asio/folly::coro/cppcoro 之间为项目选型。下一步自然是 C++23 std::generator 与 C++26 std::execution——机制已经学完，新特性只是把策略标准化。
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：不照抄正文，默写一个「最小生成器」的 promise_type 骨架——`Generator` 返回类型 + 内嵌 `promise_type`（含 `get_return_object`、`initial_suspend`、`final_suspend`、`yield_value`、`return_void`、`unhandled_exception`），并写出 `co_yield` 循环生成 1-5 的 `main`。写完逐行解释 `initial_suspend: suspend_never` 与 `final_suspend: suspend_always` 各造成什么行为差异。
+
+**提示**：六个成员一个都不能少，缺一个编译器直接列出缺失项；`final_suspend` 必须返回 `suspend_always` 且为 `noexcept`——否则销毁协程帧后还要再走一遍已销毁状态。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <coroutine>
+#include <print>
+
+struct Generator {
+    struct promise_type {
+        int current_ = 0;
+        Generator get_return_object() {
+            return Generator{std::coroutine_handle<promise_type>::from_promise(*this)};
+        }
+        std::suspend_never initial_suspend() noexcept { return {}; }   // 启动即跑到第一个 yield
+        std::suspend_always  final_suspend() noexcept { return {}; }   // 结束后保留帧由 handle 销毁
+        std::suspend_always  yield_value(int v) { current_ = v; return {}; }
+        void return_void() {}
+        void unhandled_exception() { std::terminate(); }
+    };
+    std::coroutine_handle<promise_type> h_;
+    explicit Generator(std::coroutine_handle<promise_type> h) : h_(h) {}
+    ~Generator() { if (h_) h_.destroy(); }
+    bool next() { h_.resume(); return !h_.done(); }
+    int value() const { return h_.promise().current_; }
+};
+
+Generator count() {
+    for (int i = 1; i <= 5; ++i) co_yield i;
+}
+
+int main() {
+    Generator g = count();
+    while (g.next()) std::println("{}", g.value());   // 1 2 3 4 5
+}
+```
+
+要点自查：`initial_suspend = suspend_never` 意味着「调用 count() 就立刻执行到第一个 co_yield」（急切启动）；改成 `suspend_always` 则启动权移交给调用方（首次 resume 才跑）——两种都合法，语义差异要能说清；RAII 保管 handle 是协程正确性的第一课。
+
+**任务二**：找错——下面的协程代码有三个问题（协程帧无人销毁、对 done 的协程 resume、异常被静默吞掉），指出并修复。注意 `make()` 的返回类型必须带 `promise_type` 才是合法协程类型（裸的 `std::coroutine_handle<>` 不行），所以这里先给出最小 `Task`：
+
+```cpp
+struct Task {
+    struct promise_type {
+        Task get_return_object() { return {}; }
+        std::suspend_never initial_suspend() noexcept { return {}; }
+        std::suspend_always  final_suspend() noexcept { return {}; }
+        void return_void() {}
+        void unhandled_exception() {}            // (C)
+    };
+};
+
+Task make() {            // 合法协程：返回类型带 promise_type
+    co_return;
+}
+void bad() {
+    Task t = make();     // (A) final_suspend 挂起后，协程帧谁来 destroy？
+    // (B) 若绕过 RAII 拿到裸 handle：对 done 的协程再 resume 会怎样？
+}
+```
+
+**提示**：`co_return` 后协程处于 done；对 done 的 handle resume 是未定义行为；`final_suspend = suspend_always` 表示帧不会自动回收——destroy 的责任被移交给返回对象的使用者，而没有 RAII 就没人履行。
+
+**参考实现**（先自己写完再看）：
+
+```text
+问题 (A)：final_suspend = suspend_always，co_return 后帧挂着等人销毁；
+          Task 里没有存 handle 也没有析构 destroy => 泄漏。
+          修法：像任务一的 Generator 那样，get_return_object 里把
+          coroutine_handle 存进返回对象，析构函数里 h.destroy()（RAII 保管）。
+问题 (B)：对 done 的 handle 调 resume 是未定义行为；
+          修法：resume 前检查 h.done()；正确的调用序列是
+          while (!h.done()) { h.resume(); }（由 RAII 类执行 destroy）。
+问题 (C)：unhandled_exception 提供了空实现 => 协程内抛出的异常在这里被捕获
+          后就地丢弃，调用方既看不到异常也拿不到结果——比崩溃更难排查。
+          对照语义（务必分清）：promise 缺失 unhandled_exception 成员时，
+          异常不会被捕获，而是直接从 resume() 抛给恢复方；std::terminate
+          只在 unhandled_exception 自身再抛出等场景发生。
+          修法：std::current_exception() 存进 promise，由调用方 get/rethrow。
+```
+
+要点自查：协程的生命周期责任在**调用方**（final_suspend 挂起 = 帧不自动回收，RAII 必须补位）；「done 之后不能再 resume」「suspend_always 需要 destroy」「unhandled_exception 不能空着」是本篇最常考的三个坑；顺带记牢——返回类型不带 promise_type 的函数写 co_await/co_return 直接编译失败。

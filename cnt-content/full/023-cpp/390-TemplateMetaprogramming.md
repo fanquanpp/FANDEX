@@ -2466,3 +2466,58 @@ Concepts 的错误诊断优势源于其约束的「原子化」。当 `save(Some
 - **std::ranges**：C++20 标准库，Concepts 的最大规模工业应用。
 
 ---
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：用三种世代的技术各写一遍「编译期判断 T 是否整数」——C++98 特化风格（`is_int<T>` 结构体 + value）、C++11 风格（`std::integral_constant` / `std::bool_constant` + using 别名）、现代风格（`constexpr bool` 变量模板 + concepts 约束）；三版都要能通过 `static_assert` 验证。
+
+**提示**：三版的共同骨架是「把类型谓词变成编译期值」，差异只在「值的载体」：成员常量、integral_constant 的继承、变量模板。写完对照第一节的世代演进表。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// 世代一：C++98 —— struct + 特化 + 静态成员
+template <typename T> struct is_int             { static const bool value = false; };
+template <>           struct is_int<int>        { static const bool value = true;  };
+
+// 世代二：C++11 —— integral_constant + using 模板别名
+template <typename T>
+using is_int11 = std::integral_constant<bool, std::is_integral_v<T>>;
+
+// 世代三：C++20 —— 变量模板 + concept
+template <typename T>
+inline constexpr bool is_int20 = std::is_integral_v<T>;
+template <typename T>
+concept Integer = std::is_integral_v<T>;
+
+static_assert(!is_int<double>::value && is_int<int>::value);
+static_assert(!is_int11<double>::value && is_int11<int>::value);
+static_assert(!is_int20<double> && is_int20<int>);
+static_assert(Integer<int> && !Integer<double>);
+```
+
+要点自查：`is_int<T>::value`、`is_int11<T>::value`、`is_int20<T>` 三种取值形态都要认识——大量既有库（Boost、老代码）还停留在世代一；concept 版多出的能力是「能进函数模板签名当约束」。
+
+**任务二**：用「递归 + 特化终止」实现编译期 `Sum<1,2,3,4>`（变参模板求和 = 10），再折叠表达式版对照；解释两版的实例化路径差异（递归版实例化多少个模板？折叠版呢？）。
+
+**提示**：递归版把参数包拆成「头 + 尾包」，尾包递归直到空；终止特化处理空包。折叠表达式 `(0 + ... + xs)` 一行完成，实例化只有一次。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+template <int...>
+struct Sum { static constexpr int value = 0; };       // 终止：空包
+template <int First, int... Rest>
+struct Sum<First, Rest...> {
+    static constexpr int value = First + Sum<Rest...>::value;
+};
+static_assert(Sum<1, 2, 3, 4>::value == 10);
+
+template <int... Vs>
+constexpr int sumFold = (0 + ... + Vs);               // 折叠表达式
+static_assert(sumFold<1, 2, 3, 4> == 10);
+```
+
+要点自查：递归版实例化 `Sum<1,2,3,4>`、`Sum<2,3,4>`、`Sum<3,4>`、`Sum<4>`、`Sum<>` 共 5 个模板——参数包越大编译越慢，这正是折叠表达式（C++17）取代递归元编程的直接动机。

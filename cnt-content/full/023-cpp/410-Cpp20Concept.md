@@ -194,7 +194,7 @@ C++26 草案中的相关进展：
 | 2018 | Rapperswil <concepts> 定稿 Eric Niebler |  |
 | 2019 | Ranges 完成标准化 | P0896 合入 |
 | 2020 | C++20 发布 | ISO/IEC 14882:2020 |
-| 2021 | 主流编译器完整支持 | GCC 10+, Clang 10+, MSVC 19.29+ |
+| 2021 | 主流编译器完整支持 | GCC 10+, Clang 10+, MSVC 19.29+（注：MSVC 需 19.30/VS 2022 17.0 起才完整，Clang 早期版本有缺口） |
 | 2023 | C++23 小幅增强 | expected / flat_map |
 | 2026 | C++26 草案 | 反射 + 概念协同 |
 
@@ -1215,7 +1215,7 @@ int main() {
 | **诊断精度** | 低，失败被静默排除 | 高，明确指出失败约束 |
 | **标准化** | C++11 起标准化 | C++20 标准化 |
 | **向后兼容** | C++11/14/17/20/23 全支持 | 仅 C++20+ |
-| **编译器支持** | 所有主流编译器 | GCC 10+, Clang 10+, MSVC 19.29+ |
+| **编译器支持** | 所有主流编译器 | GCC 10+, Clang 10+, MSVC 19.30+（19.23-19.29 部分支持） |
 
 ### 5.2 C++20 Concepts 与 Rust Trait Bounds 对比
 
@@ -2216,3 +2216,60 @@ void run(F func) { func(); }
 template <std::predicate<int> F>
 bool test(F func, int x) { return func(x); }
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：写一个 concept `Hashable`（类型可被 `std::hash` 哈希），并用它约束一个函数模板 `addTag(T value)`；然后**故意**用一个不可哈希的类型调用，把编译错误的关键行找出来——对比 concepts 约束与老式 SFINAE（`std::enable_if_t`）在报错信息上的差异。
+
+**提示**：requires 表达式里写 `std::hash<T>{}(std::declval<T>())` 合法即满足；概念不满足时编译器直接说「constraints not satisfied」并列出失败的表达式，而 enable_if 版只会说「没有匹配的重载」。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <functional>
+#include <string>
+
+template <typename T>
+concept Hashable = requires(const T& t) {
+    { std::hash<T>{}(t) } -> std::convertible_to<std::size_t>;
+};
+
+template <Hashable T>
+std::string addTag(T value) { return "tag:" + std::to_string(std::hash<T>{}(value)); }
+
+// addTag(std::vector<int>{}) → 编译错误关键行：
+//   "the required type 'std::hash<std::vector<int>>' is ill-formed"
+//   （vs enable_if 版：no matching function for call to 'addTag' —— 不告诉你为什么）
+```
+
+要点自查：concept 约束失败会**指出失败的第一条 requires**——这是 SFINAE 时代无法企及的诊断质量，也是 concepts 被称为「调试期收益最大」特性的原因；约束写在模板形参上（`template <Hashable T>`）与写在 requires 子句里语义相同，风格统一即可。
+
+**任务二**：自定义 concept `Number`（支持 `+`、`*`、可比较）并定义一个 `Matrix<T>` 类模板要求 `T` 满足 `Number`；随后回答三问：`requires` 子句里的 `{ expr } noexcept -> Type` 三段各是什么意思？`std::integral` 这类标准概念为什么优先于手写？concept 能否取地址/做运行期判断？
+
+**提示**：三段式 `{ t + t } noexcept -> std::same_as<T>`——表达式合法、 noexcept、返回类型约束；标准库概念已覆盖 90% 需求（`std::floating_point`、`std::copyable` 等），自写前先查 `<concepts>`。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+template <typename T>
+concept Number = requires(T a, T b) {
+    { a + b } -> std::same_as<T>;
+    { a * b } -> std::same_as<T>;
+    { a < b } -> std::convertible_to<bool>;
+};
+
+template <Number T>
+class Matrix { /* 元素类型被编译期契约约束 */ };
+
+// 三问答案：
+// 1. { a + b } 要求表达式 a+b 合法；noexcept 要求它不抛；
+//    -> std::same_as<T> 要求其类型恰为 T（不是 convertible，是完全一致）。
+// 2. 标准概念经过数百份提案打磨，语义细节（如保持相等性）比手写可靠；
+//    手写概念容易漏「两次调用结果一致」这类隐含要求。
+// 3. concept 是编译期布尔值：可以 constexpr 用（static_assert(Number<int>)），
+//    但它不是运行期实体，不能取地址、不能运行时 if 判断（要用 if constexpr）。
+```
+
+要点自查：`same_as` 与 `convertible_to` 的区别（精确匹配 vs 允许转换）是最常写错的一处；「保持相等性」——同一输入重复求值结果相同——是自定义 concept 最容易被忽略的正确性要求。

@@ -133,8 +133,8 @@ C++20 模块的核心设计：
 
 ### 1.4 编译器支持现状（保守表述）
 
-截至 2025-2026 年，三大编译器的模块支持程度差异明显，总体格局是：**MSVC 完整度最高，
-GCC 14/15 良好，Clang 仍在持续改进中**（具体特性覆盖请以 cppreference 编译器支持页为准）：
+截至 2026 年 11 月，三大编译器的模块支持程度差异明显，总体格局是：**MSVC 完整度最高，
+GCC 14/15（16 沿用）良好，Clang 仍在持续改进中**（具体特性覆盖请以 cppreference 编译器支持页为准）：
 
 | 编译器 | 版本 | 支持程度 | BMI 格式 | 后缀约定 |
 |--------|------|----------|----------|----------|
@@ -1872,3 +1872,58 @@ g++ -std=c++20 -fmodules-ts -c math.cpp
 // MSVC 编译模块接口单元
 cl /std:c++20 /c /interface math.cpp
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：默写最小模块对——`math.ixx` 导出 `export int add(int, int)`，`main.cpp` 用 `import math;`；分别写出 GCC 与 MSVC 的编译命令（GCC 侧注意两件事：模块支持须显式开启；`.ixx` 不在 GCC 默认 C++ 源后缀列表内，动手前先想好怎么让编译器接受这个文件），并说明「BMI 必须在 import 之前生成」这个次序约束对构建系统的含义。
+
+**提示**：模块接口单元先编译出 BMI（.gcm/.ifc），import 它的文件必须在 BMI 存在后编译——makefile 的依赖图从此多一层「接口单元 -> BMI -> 使用者」的边。
+
+**参考实现**（先自己写完再看）：
+
+```text
+math.ixx：
+    export module math;
+    export int add(int a, int b) { return a + b; }
+
+main.cpp：
+    import math;
+    int main() { return add(1, 2); }
+
+GCC（-std=c++20 不够，须显式加 -fmodules-ts；.ixx 不在默认 C++ 源后缀
+    列表（.C/.cc/.cpp/.CPP/.c++/.cp/.cxx）内，须用 -x c++ 指定语言）：
+    g++ -std=c++20 -fmodules-ts -x c++ -c math.ixx   # 产出 gcm.cache/math.gcm
+    g++ -std=c++20 -fmodules-ts -c main.cpp          # 需 gcm.cache/math.gcm 已存在
+    g++ main.o math.o -o app
+
+MSVC：
+    cl /std:c++20 /interface /TP /ifcOutput math.ifc /c math.ixx
+    cl /std:c++20 /reference math.ifc /c main.cpp
+    link main.obj math.obj
+
+次序约束：构建系统必须把「BMI 生成」建模为 import 方文件的前置任务；
+    CMake 3.28+（Ninja 后端）按 named modules 协议自动生成这层依赖。
+```
+
+要点自查：模块不是「编译得更快的关键字」，是「翻译单元边界变成显式接口」——BMI 次序依赖是它对构建系统的直接要求；`#include <iostream>` 与 `import std;`（GCC 15 起较完整）是两套并行的标准库消费方式。
+
+**任务二**：辨析三题——`export` 在 `export module` 之外再写 `export` 的作用是什么？头文件单元（`export import "header.h"`）解决什么问题？为什么「宏不能从模块导出」是特性也是坑？
+
+**提示**：宏与模块的哲学冲突——模块设计目标是「可复现的语义导入」，宏是全局文本替换；头文件单元是把既有头包装成模块的过渡桥。
+
+**参考实现**（先自己写完再看）：
+
+```text
+1. export 声明：标记「这个实体在接口单元外可见」。未标 export 的实体是
+   模块私有（类比 static，但作用于整个模块分区）。
+2. 头文件单元：global module fragment / 头文件单元包装既有头（如 #include
+   <vector> 的 C++20 用法：module; #include <vector> export module m;）——
+   解决「标准库没有模块版本时如何进模块世界」的过渡问题。
+3. 宏不可导出：好处是模块边界干净（import 不改变你的预处理状态）；
+   坑是依赖宏的库（配置宏、平台宏）必须仍走 #include —— 本篇第 6 节
+   「模块与宏库共存」的混合策略由此而来。
+```
+
+要点自查：`export` 的两个位置（module 行 / 实体声明）语义不同；「宏不进模块」决定了宏密集库（如 Boost.MPL 风格）无法模块化——遇到它们先问「能不能先用头文件包装层隔离」。

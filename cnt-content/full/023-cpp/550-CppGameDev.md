@@ -2338,3 +2338,69 @@ void example() {
 | Behavior Tree         | Behavior Tree                     | 行为树                                |
 | GC                    | Garbage Collection                | 垃圾回收                              |
 | RAII                  | Resource Acquisition Is Initialization | 资源获取即初始化                 |
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：手写一个极简 ECS 的核心数据结构——`ComponentArray<T>` 用「稀疏数组（实体 id -> 数组下标映射）+ 紧凑数组（实际组件）」两层数组实现 O(1) 添加/删除，删除时用 swap-and-pop；写出 `add`/`remove`/`get` 三个函数并解释 swap-and-pop 为什么会打乱迭代顺序、遍历时要怎么应对。
+
+**提示**：紧凑数组为了「无空洞」，删除把最后一个元素挪到被删位置——顺序变了，但数组永不出现洞；迭代中删除要把「下一个下标」逻辑写对。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <unordered_map>
+#include <vector>
+#include <optional>
+
+template <typename T>
+class ComponentArray {
+    std::unordered_map<std::uint32_t, std::size_t> sparse_;  // entity -> 紧凑数组下标
+    std::vector<std::uint32_t> entities_;                    // 紧凑数组的实体回链
+    std::vector<T> components_;
+public:
+    void add(std::uint32_t e, T v) {
+        sparse_[e] = components_.size();
+        entities_.push_back(e);
+        components_.push_back(std::move(v));
+    }
+    bool remove(std::uint32_t e) {
+        auto it = sparse_.find(e);
+        if (it == sparse_.end()) return false;
+        std::size_t idx = it->second, last = components_.size() - 1;
+        if (idx != last) {                                   // swap-and-pop：尾补洞
+            components_[idx] = std::move(components_[last]);
+            entities_[idx] = entities_[last];
+            sparse_[entities_[idx]] = idx;
+        }
+        components_.pop_back(); entities_.pop_back(); sparse_.erase(e);
+        return true;
+    }
+    T* get(std::uint32_t e) {
+        auto it = sparse_.find(e);
+        return it == sparse_.end() ? nullptr : &components_[it->second];
+    }
+};
+```
+
+要点自查：swap-and-pop 保证紧凑数组零空洞（遍历 = 顺序扫内存，缓存友好），代价是「第 k 个元素是哪个」不稳定——游戏逻辑按实体 id 查，不按下标；这正是本篇「面向数据设计」里顺序换性能的典型案例。
+
+**任务二**：辨析——为什么「每帧遍历所有组件」用 ECS 数组快、而「单次按键处理」用传统 OO 虚函数无妨？用本篇的缓存行（64B）视角算一笔账：遍历 100 万个 `Transform{float x,y,z}` 组件，ECS 紧凑数组与「对象指针数组」各需要跳过多少次内存（DRAM 访问按 100ns 算的代价差）？
+
+**提示**：紧凑数组顺序访问由硬件预取器串起来（几乎免费）；指针数组每个元素都是一次潜在缓存未命中——两种布局在「每帧全量遍历」下差距被放大 60 倍以上。
+
+**参考实现**（先自己写完再看）：
+
+```text
+ECS 紧凑数组：12 字节/组件（3 float），一个 64B 缓存行装 5 个组件；
+  100 万组件 ≈ 12MB ≈ 一路顺序读，DRAM 访问约 20 万次（每行 5 个组件），
+  且预取器让大部分访问与 CPU 重叠。
+指针数组：每个 Transform 是独立堆分配（还各有管理开销），
+  一次遍历 = 100 万次指针解引用，全部随机 → 最坏 100 万次 DRAM 访问，
+  每次约 100ns 量级 → 理论差距两个数量级。
+结论：每帧全量处理（物理、渲染提交）是 ECS 的主场；
+  低频事件（点击、拾取）走 OO 虚函数完全够——按「访问模式」选范式，不是按信仰。
+```
+
+要点自查：能把「组件大小 → 缓存行 → 每行组件数 → DRAM 访问次数」这条链算出来，才算吃透本篇的面向数据动机；ECS 的收益来自布局，不来自「用了 ECS」这个名词。

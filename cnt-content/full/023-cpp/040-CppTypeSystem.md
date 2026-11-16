@@ -313,6 +313,50 @@ narrow2.cpp:5:22: error: narrowing conversion of '2500000000' from 'long long in
 - 隐式转换规则总表：https://en.cppreference.com/w/cpp/language/implicit_conversion
 - auto 类型推导：https://en.cppreference.com/w/cpp/language/auto
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：先凭记忆写出 `int`、`double`、`char`、`bool` 在主流 64 位平台的 `sizeof`，再用 `std::cout << sizeof(int) ...` 实测对照；然后回答：什么时候必须用 `int32_t`/`int64_t` 而不是 `int`？什么时候反而不该用固定宽度整型？
+
+**提示**：`sizeof` 的实测才是承诺，记忆值只是预期；固定宽度整型用于「二进制格式/跨平台接口/位运算」这类尺寸敏感处。
+
+**参考实现**（先自己写完再看）：
+
+```text
+预期（64 位主流平台）：int 4、double 8、char 1、bool 1。
+实测：std::cout << sizeof(int) << sizeof(double) << sizeof(char) << sizeof(bool);
+必用固定宽度：文件格式字段、网络协议、序列化、位标志——尺寸与布局写进了契约。
+不必用：普通算术与循环下标——标准保证了 int 的最小宽度，
+全用 int32_t 反而让代码变噪（也与惯用的 size_t 配合变差）。
+```
+
+要点自查：`int` 的本质是「至少 16 位、通常 32 位的最快整数」——「跨平台尺寸写契约用 intN_t，普通计算用 int」这条分工要能自己说出来。
+
+**任务二**：找出下面三行的隐式转换，并写出「让编译器替你挡住」的防错写法：
+
+```cpp
+double d = 3.9;
+int i = d;                    // (1)
+unsigned u = -1;              // (2)
+int small = 300;
+char c = small;               // (3)
+```
+
+**提示**：三处都是窄化转换——(3) 的 300 超 char 范围会回绕；(2) 的 -1 变成巨大无符号数。防错工具是**大括号初始化**（窄化直接报错）。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+int i1{d};      // 编译错误：double -> int 窄化，必须显式 static_cast<int>(d)
+unsigned u1{static_cast<unsigned>(v)};   // 想要回绕就显式写
+char c1 = static_cast<char>(small);      // 同上
+// 判定：编译器「私相授受」的隐式转换是静默 bug 源；
+// 大括号初始化 = 把「窄化审查」交回编译器。
+```
+
+要点自查：能对每行说出「发生了什么转换、丢了什么信息」，再配上大括号初始化的防错习惯，本篇第 8 节的转换规则就算落地。
+
 ## 15. 自我检查
 
 - 能不看笔记写出 sizeof 实验程序，并解释 long 跨平台为什么不同；

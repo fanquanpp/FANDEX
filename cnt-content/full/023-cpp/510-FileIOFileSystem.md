@@ -805,3 +805,56 @@ std::cout << p.extension() << std::endl;
 fs::path p("dir/file.txt");
 std::cout << p.parent_path() << std::endl;
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：用 `std::filesystem` 完成一个「目录瘦身」函数：递归遍历给定目录，打印所有大小超过 1MB 的文件（含相对路径与字节数），并统计总大小；要求跳过无权限的子目录而不是抛异常中断。写出完整代码，注明每个用到的 fs 入口（`recursive_directory_iterator`、`file_size`、`is_regular_file`）的失效/异常语义。
+
+**提示**：`recursive_directory_iterator` 默认深入子目录，构造或 `++` 遇到无权限目录会抛 `filesystem_error`——用 `std::error_code` 版本的重载把异常变成返回值；`file_size` 对符号链接/特殊文件要先 `is_regular_file` 判断。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <filesystem>
+#include <print>
+namespace fs = std::filesystem;
+
+void slimReport(const fs::path& dir) {
+    std::uintmax_t total = 0;
+    std::error_code ec;
+    for (auto it = fs::recursive_directory_iterator(dir, fs::directory_options::skip_permission_denied, ec);
+         it != fs::recursive_directory_iterator{}; it.increment(ec)) {
+        if (ec) { std::println(stderr, "skip: {}", ec.message()); ec.clear(); continue; }
+        const auto& entry = *it;
+        std::error_code stat_ec;
+        if (!entry.is_regular_file(stat_ec) || stat_ec) continue;
+        auto size = entry.file_size(stat_ec);
+        if (stat_ec) continue;
+        if (size > 1024 * 1024)
+            std::println("{} ({} bytes)", entry.path().generic_string(), size);
+        total += size;
+    }
+    std::println("total: {} bytes", total);
+}
+```
+
+要点自查：每个 fs 调用都有一个 `error_code` 重载——「库代码不抛异常」就选它；`skip_permission_denied` 是迭代器级的兜底；跨平台路径输出用 `generic_string()`（统一 `/` 分隔符）。
+
+**任务二**：解释三件事——为什么文件流写完要 `close()` 或依赖析构（缓冲在谁手里）？`std::ofstream` 打开已有文件的默认截断行为是什么、追加模式怎么写？`std::filesystem::rename` 跨设备失败的原因与「复制 + 删除」降级的关系？
+
+**提示**：`ofstream` 缓冲在 streambuf 里，不显式 flush/close 时崩溃或异常会丢数据；默认 `ios::out` 即截断（truncate）；rename 是操作系统原子操作，跨文件系统（盘符/挂载点）在 POSIX 与 Windows 上都可能失败（EXDEV 类错误）。
+
+**参考实现**（先自己写完再看）：
+
+```text
+1. close() 的意义：把 streambuf 里未写入的缓冲 flush 到磁盘；RAII 析构也会 close，
+   但「检查写入是否成功」只有显式 close 后才知道（close 会置 failbit）。
+2. 默认行为：std::ofstream f("log.txt"); 截断已有内容；
+   追加：std::ofstream f("log.txt", std::ios::app);（写入位置始终在末尾）
+3. rename：同文件系统内是原子改名；跨设备时内核无法只改目录项，标准允许失败——
+   应用层降级为「fs::copy_file + fs::remove」，但要接受「非原子窗口」的存在。
+```
+
+要点自查：能把「缓冲谁持有、flush 何时发生、错误何时可见」串成一条链，才算掌握 IO 语义；rename 的原子性是「更新配置文件」等场景的核心卖点，也是跨设备降级的代价所在。

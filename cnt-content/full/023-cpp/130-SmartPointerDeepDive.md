@@ -373,6 +373,60 @@ delete；shared_ptr 只能管 new 出来的对象。修法：return std::make_sh
 - cppreference weak_ptr：https://en.cppreference.com/w/cpp/memory/weak_ptr
 - C++ Core Guidelines R.11（避免显式 new/delete）：https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#R11
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：改写这段「一行异常就让清理失效」的函数——三个资源（FILE*、malloc 缓冲、锁）全部交给智能指针/RAII 类型，要求函数体里不出现任何手动释放：
+
+```cpp
+void process(const char* path, std::mutex& m) {
+    FILE* f = std::fopen(path, "rb");
+    auto* buf = static_cast<char*>(std::malloc(4096));
+    std::lock_guard<std::mutex> lk(m);
+    parse(f, buf);        // 任一环节抛异常
+    std::free(buf);
+    std::fclose(f);
+}
+```
+
+**提示**：FILE* 用自定义删除器的 unique_ptr（`decltype(&fclose)`），malloc 缓冲用 vector 或 unique_ptr<char[]>；锁已经是 RAII。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+void process(const char* path, std::mutex& m) {
+    std::unique_ptr<std::FILE, decltype(&fclose)> f{std::fopen(path, "rb"), &fclose};
+    std::vector<char> buf(4096);
+    std::lock_guard<std::mutex> lk(m);
+    parse(f.get(), buf.data());   // 抛异常时三个析构按构造逆序自动执行
+}
+```
+
+要点自查：栈展开只析构**对象**，不析构裸资源——把资源装进对象是本篇第 3 节「所有权交给类型系统」的全部操作；改写后连正常路径的 free/fclose 都省了。
+
+**任务二**：默写 shared_ptr 循环引用的最小现场（两个节点互相持有 shared_ptr）与破环修法，并回答：为什么 `weak_ptr` 能破环而不导致悬垂访问？
+
+**提示**：A 持 B、B 持 A，引用计数永不归零；破环一方改成 `weak_ptr`；访问时 `lock()` 升级成临时 shared_ptr。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+struct Node {
+    std::shared_ptr<Node> next;          // 拥有
+    std::weak_ptr<Node>   prev;          // 只观察：不增加计数
+};
+
+auto a = std::make_shared<Node>();
+auto b = std::make_shared<Node>();
+a->next = b;
+b->prev = a;                              // weak：计数不 +1，环断开
+
+if (auto sp = b->prev.lock()) { /* 用 sp */ }   // lock() 升级：活着给 shared_ptr，死了给 nullptr
+```
+
+要点自查：weak_ptr 的「观察不拥有」与 `lock()` 的「原子升级」配合，既不延长生命周期也不产生悬垂——父节点持子节点、子节点回指父节点（缓存/树）是最常见的破环位置。
+
 ## 14. 自我检查
 
 - 能对着第 2 节输出讲清：异常展开为什么救不了手工 delete、却救得了 unique_ptr；

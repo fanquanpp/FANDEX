@@ -2045,3 +2045,42 @@ struct Base { virtual int compute() = 0; };
 template <typename D>
 struct CRTPBase { int compute() { return static_cast<D*>(this)->computeImpl(); } };
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：回答并验证——`struct V { int x; virtual int f() { return 1; } };` 在主流 64 位平台上的 `sizeof` 是多少？把 `virtual` 去掉后又变成多少？用 `sizeof` 实测一次，然后画出两种情况的内存布局图。
+
+**提示**：有虚函数的类会多一个虚指针（vptr），指向该类的虚函数表；64 位平台指针 8 字节，且类的对齐被抬到 8。
+
+**参考实现**（先自己写完再看）：
+
+```text
+有 virtual：sizeof(V) = 16  —— [ vptr(8) | x(4) | pad(4) ]
+无 virtual：sizeof(V) = 4   —— [ x(4) ]
+验证命令：g++ -std=c++20 v.cpp && ./a.out（或 printf("%zu\n", sizeof(V));）
+```
+
+要点自查：多出来的 8 字节 + 4 字节对齐填充就是「多态的内存税」——单对象不明显，千万级数组就是数 GB 级差异；这正是本篇讲 CRTP 静态多态作为替代方案的动机。
+
+**任务二**：解释虚调用 `b->f()` 在汇编层面做了哪三步（从 vptr 到函数体），并据此回答两个问题：为什么虚函数内联默认失效？为什么构造函数里调用虚函数不会走派生类版本？
+
+**提示**：布局图里 vptr 在对象首部；构造期间 vptr 是分阶段设置的——基类构造执行时 vptr 指向的是**基类**的 vtable。
+
+**参考实现**（先自己写完再看）：
+
+```text
+虚调用三步：
+1. 从对象首部加载 vptr（b->vptr）；
+2. 用函数在 vtable 中的固定槽位下标取出函数指针（vptr[slot]）；
+3. 间接调用该指针。
+
+推论一：调用目标只有运行时才知道，编译器无法在调用点内联展开——除非编译器
+        能证明动态类型（去虚化 devirtualization）。
+推论二：Base::Base() 执行时 vptr 尚未切换，此时调 f() 解析到 Base::f；
+        进 Derived::Derived() 时 vptr 才指向 Derived 的 vtable。
+        ——虚函数在构造/析构中「降级」为本层版本，不是 bug 是规则。
+```
+
+要点自查：能画出「对象内存 → vptr → vtable 槽位 → 函数」这条链，才算真正掌握本篇；CRTP 消灭前三步的全部运行时成本，代价是失去运行时多态。

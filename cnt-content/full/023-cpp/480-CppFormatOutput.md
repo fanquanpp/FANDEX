@@ -1821,7 +1821,7 @@ int main() {
 
 ---
 
-> 本文档基于 ISO/IEC 14882:2020 与 ISO/IEC 14882:2024 编写，C++26 部分基于截至 2025 年 7 月的草案。示例代码已在 GCC 14.1、Clang 18.1、MSVC 19.39 上验证通过。
+> 本文档基于 ISO/IEC 14882:2020 与 ISO/IEC 14882:2024 编写，C++26 部分基于截至 2026 年 11 月的草案（技术工作已定稿，DIS 投票未通过、出版推迟，条款仍可能调整）。示例代码已在 GCC 14.1、Clang 18.1、MSVC 19.39 上验证通过；更新编译器的支持情况以 cppreference 编译器支持页为准。
 ## std::format 基础
 
 **基本写法：格式化字符串**
@@ -2034,3 +2034,58 @@ std::format("{}", true);  // 1 或 true
 // 指针地址输出
 std::format("{:p}", (void*)ptr);
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：用 `std::format` 写出下面三种格式化（不查文档先写，写完对照）：宽度 8 右对齐的整数、精度 3 的浮点、`%` 字面量与位置参数混用；再用 `std::print` 一行输出同样内容，说明它与 `format + cout` 的关系。
+
+**提示**：格式微语言 `{[arg_id][fill][align][width][.precision][type]}`——`{:>8}`、`{:.3f}`；位置参数 `{0}` 从 0 数；`std::print("{:8}\n", ...)` 等价于 `cout << format(...)` 且省一次中间字符串。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <format>
+#include <print>
+
+std::string s1 = std::format("[{:>8}]", 42);        // [      42]
+std::string s2 = std::format("[{:.3f}]", 3.14159);  // [3.142]
+std::string s3 = std::format("{0}% of {1}", 50, 100); // 50% of 100
+std::print("[{:>8}] [{:.3f}]\n", 42, 3.14159);      // 直达 stdout，无中间 string
+```
+
+要点自查：`std::print` = format + 写 stdout 一步到位，但**不要**用它写 UTF-8 与编码混杂的 Windows 控制台场景（本篇 6 节的坑）；自定义类型需要 `std::formatter<T>` 特化才能进 `{}`。
+
+**任务二**：为自定义类型 `Temperature`（double，摄氏度）特化 `std::formatter`，支持 `{:f}`（定长一位小数）与 `{:d}`（整数输出）；写出特化结构体的 `parse` 与 `format` 两个成员，并说明「parse 里 `*ctx.begin()` 判空」的作用。
+
+**提示**：`parse` 消费 `{}` 里冒号后的格式说明并返回指向 `}` 的指针；`ctx.begin()/ctx.end()` 框住的是格式说明区间，第一个字符若已是 `}` 说明用户没写任何格式。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+struct Temperature { double celsius; };
+
+template <>
+struct std::formatter<Temperature> {
+    bool fixed = false;
+    constexpr auto parse(std::format_parse_context& ctx) {
+        auto it = ctx.begin();
+        if (it != ctx.end() && *it != '}') {          // 有格式说明才解析
+            if (*it == 'f') fixed = true; else if (*it == 'd') fixed = false;
+            ++it;
+        }
+        return it;                                     // 必须指向 '}' 或 end
+    }
+    auto format(const Temperature& t, std::format_context& ctx) const {
+        if (fixed)
+            return std::format_to(ctx.out(), "{:.1f}", t.celsius);
+        return std::format_to(ctx.out(), "{}", static_cast<int>(t.celsius));
+    }
+};
+
+// std::print("{}", Temperature{36.6});      -> 36
+// std::print("{:f}", Temperature{36.66});   -> 36.7
+```
+
+要点自查：`parse` 返回值必须是「指向 `}`（或末尾）」——漏判 `*ctx.begin() == '}'` 会把空格式当非法；`format` 要标 `const`；特化必须写在 `std` 命名空间内且为真特化（不得添加成员）。

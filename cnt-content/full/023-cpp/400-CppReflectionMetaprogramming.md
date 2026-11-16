@@ -1410,7 +1410,7 @@ C++26 草案已并入 P2996 静态反射，`^^T` 反射算子、`[: :]` 拼接�
 
 ### 限制 1：编译器支持有限
 
-C++26 反射提案 P2996 截至 2024 年仅在 Clang trunk 中部分实现，GCC 与 MSVC 尚未支持。生产代码需使用第三方库。
+C++26 反射提案 P2996 截至 2026 年 11 月：EDG 前端可在 Compiler Explorer 试用，Bloomberg 的 clang-p2996 试验分支可用，GCC 16（2026-04 发布）已上游化**部分实现**（cppreference 编译器支持页标注 partial），主线 Clang 也在推进上游化，MSVC 尚无实现。另注意：C++26 的 DIS 国民团体投票未通过、出版时间推迟，反射能否如期随版落地以编译器支持页为准。生产代码仍建议使用第三方库。
 
 ### 限制 2：模板递归深度限制
 
@@ -1864,3 +1864,54 @@ void printIndices(std::index_sequence<I...>) {
 printIndices(std::make_index_sequence<5>{});
 // 输出 0 1 2 3 4
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：不查库，手写本篇的「检测惯用法」三件套——检测类型是否有 `size()` 成员函数：先写 C++17 `std::void_t` 版本的 `has_size`，再写 C++20 concepts 版本（要求 `requires` 表达式），两个版本都要通过 `static_assert` 验证「`std::vector<int>` 有、`int` 没有」。
+
+**提示**：void_t 版的骨架是「主模板给 false，偏特化用 `void_t<decltype(std::declval<T&>().size())>` 探测表达式是否合法」；C++20 版一行 `requires` 就能表达同一个意思。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// C++17：void_t 探测
+template <typename T, typename = void>
+struct has_size : std::false_type {};
+template <typename T>
+struct has_size<T, std::void_t<decltype(std::declval<T&>().size())>>
+    : std::true_type {};
+
+// C++20：requires 表达式
+template <typename T>
+concept HasSize = requires(T& t) { t.size(); };
+
+static_assert(has_size<std::vector<int>>::value);
+static_assert(!has_size<int>::value);
+static_assert(HasSize<std::vector<int>>);
+static_assert(!HasSize<int>);
+```
+
+要点自查：void_t 的核心技巧是「SFINAE 把非法表达式挤进重载决议的失败侧」；concept 版语义相同但诊断信息与可读性好得多——这正是本篇「从模拟反射到原生反射」演进链的中间站。
+
+**任务二**：解释「Boost.PFR 为什么只对聚合体有效」——给一个聚合体 `struct P { int x; const char* s; };` 用 PFR 风格的思路（`std::get<N>` on aggregate）写出取第一个成员的代码示意，并说明它无法处理「有私有成员/自定义构造函数的类」的原因。
+
+**提示**：聚合体可以通过 brace-init 按顺序初始化，结构化绑定与 PFR 依赖的「元组式访问」就是建立在这个顺序性上；一旦有了自定义构造函数或私有成员，「第 N 个成员」这个概念在语言层面就不存在了。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+struct P { int x; const char* s; };
+
+P p{42, "hi"};
+auto& [first, second] = p;      // 结构化绑定：聚合体的第 0 个成员
+static_assert(std::is_same_v<decltype(first), int&>);
+
+// boost::pfr::get<0>(p) 与上面等价——它用编译器技巧枚举聚合体成员。
+// 失效条件：struct Q { Q(int); private: int x; };
+//   Q 不是聚合体（自定义构造函数 + 私有成员），brace 顺序初始化不再存在，
+//   也没有任何标准机制枚举它的成员——这正是等待 P2996 静态反射要补的能力。
+```
+
+要点自查：聚合体 = 「无自定义构造、无私有保护成员、无基类构造问题」的结构——PFR 的适用边界由此而来；在 P2996 落地前，非聚合类的反射只能靠注册宏/代码生成（本篇 3-6 节的模拟方案）。

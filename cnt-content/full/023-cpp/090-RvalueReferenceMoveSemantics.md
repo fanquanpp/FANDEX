@@ -308,6 +308,72 @@ assert(taken == "sensor-001");
 - std::move（cppreference）：https://en.cppreference.com/w/cpp/utility/move （中文：https://zh.cppreference.com/w/cpp/utility/move ）
 - 移动构造函数：https://en.cppreference.com/w/cpp/language/move_constructor
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：对下面六个表达式各判「左值 / 右值」，写出一句话依据（有没有名字、能不能取地址）：
+
+```cpp
+int a = 1;
+std::string s = "hi";
+a;                    // (1)
+a + 1;                // (2)
+std::string("tmp");   // (3)
+s;                    // (4)
+std::move(s);         // (5)
+"literal";            // (6)
+```
+
+**提示**：判据不是「在左边还是右边」，而是「有没有身份（名字/地址）」；`std::move(s)` 是把左值**转换**成右值引用的表达式——s 本身仍是左值。
+
+**参考实现**（先自己写完再看）：
+
+```text
+(1) 左值：a 有名字、可取地址。
+(2) 右值：临时结果，无名字。
+(3) 右值：临时对象（虽然构造了真实对象，但没有名字）。
+(4) 左值：s 有名字。
+(5) 右值（xvalue）：std::move 只做类型转换，不移动任何东西——
+    把 s 标记为「可被移动」，真正移动发生在绑定到 T&& 的移动构造里。
+(6) 右值：字符串字面量是常量数组，无名字不可取址修改。
+```
+
+要点自查：`std::move` 不移动——它只是「无条件转换成右值引用」的 static_cast 换皮；被 move 后的 s 处于「有效但未指定」状态（moved-from 纪律，本篇第 5 节）。
+
+**任务二**：默写一个带资源的类的完整五件套（拷贝构造、拷贝赋值、移动构造、移动赋值、析构），资源用 `int* data_` + `size_` 表示；写完对照本文第 3 节的对照实验，检查移动版是否把源对象指针置空。
+
+**提示**：移动构造偷资源 + 置空源；移动赋值先防自赋值、再释放自己现有资源、再偷；析构函数判断空指针。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+class Buffer {
+    int* data_ = nullptr;
+    std::size_t size_ = 0;
+public:
+    explicit Buffer(std::size_t n) : data_(new int[n]{}), size_(n) {}
+    ~Buffer() { delete[] data_; }
+
+    Buffer(const Buffer& o) : data_(new int[o.size_]), size_(o.size_) {
+        std::copy(o.data_, o.data_ + o.size_, data_);          // 复印
+    }
+    Buffer& operator=(const Buffer& o) {
+        if (this != &o) { Buffer tmp(o); std::swap(data_, tmp.data_); std::swap(size_, tmp.size_); }
+        return *this;
+    }
+    Buffer(Buffer&& o) noexcept : data_(std::exchange(o.data_, nullptr)),
+                                  size_(std::exchange(o.size_, 0)) {}   // 搬家 + 源置空
+    Buffer& operator=(Buffer&& o) noexcept {
+        if (this != &o) { delete[] data_; data_ = std::exchange(o.data_, nullptr);
+                          size_ = std::exchange(o.size_, 0); }
+        return *this;
+    }
+};
+```
+
+要点自查：五件套缺一件都可能导致泄漏或双重释放；`std::exchange` 是「偷资源 + 置空源」的惯用一行；移动构造标 `noexcept` 的原因（vector 扩容退回拷贝）在下一篇展开。
+
 ## 12. 自我检查
 
 - 能写出左值/右值的直观判别法，并用重载实验现场验证；

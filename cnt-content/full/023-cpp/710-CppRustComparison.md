@@ -387,3 +387,70 @@ C++ 与 Rust 的分野源于一个决策：安全靠纪律还是靠编译器。C
 ## 下一步
 
 想继续深入 C++ 现代化，读 [C++23/26 新特性](/cpp/730-Cpp23NewFeatures)；决定学 Rust，从 [Rust 是什么](/rust/010-WhatIsRust)进入完整主线。
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：同一个「计数服务」核心逻辑分别用 C++ 与 Rust 写最小版——C++ 用 `std::unordered_map` + RAII；Rust 用 `HashMap` + 所有权移动；各自实现 `record(key)` 与 `count(key)` 两个操作，然后逐项对照：可变性默认（`const&` vs `&self`）、错误处理（`std::optional` vs `Result`）、字符串所有权（`string_view` vs `&str`）。
+
+**提示**：对照的目的是「发现语言默认值的不同」——C++ 默认可变拷贝（要显式 const），Rust 默认不可变借用（要显式 mut）；把这个差异写进注释。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// C++（std::unordered_map + optional）
+#include <optional>
+#include <string>
+#include <unordered_map>
+
+class CounterCpp {
+    std::unordered_map<std::string, long long> m_;
+public:
+    void record(const std::string& k) { ++m_[k]; }          // k 若不存在，operator[] 默认构造 0
+    std::optional<long long> count(const std::string& k) const {
+        if (auto it = m_.find(k); it != m_.end()) return it->second;
+        return std::nullopt;
+    }
+};
+```
+
+```rust
+// Rust（HashMap + Result/Option）
+use std::collections::HashMap;
+
+#[derive(Default)]
+struct CounterRust {
+    m: HashMap<String, i64>,
+}
+
+impl CounterRust {
+    fn record(&mut self, k: &str) { *self.m.entry(k.to_owned()).or_insert(0) += 1; }
+    fn count(&self, k: &str) -> Option<i64> { self.m.get(k).copied() }
+}
+```
+
+要点自查：C++ 的 `const std::string&` 与 Rust 的 `&str` 都是「只读借用」，但 Rust 的借用有编译期生命周期检查；`optional` 与 `Option` 语义同构——差异在 Rust 的 match 强制穷尽处理，C++ 靠自觉 `if (opt)`。
+
+**任务二**：FFI 互通题——C++ 暴露一个 C ABI 函数给 Rust 调用：写出 `extern "C" int compute(int)` 与 Rust 侧 `extern "C" { fn compute(n: i32) -> i32; }` 声明；回答两问：为什么「跨 ABI 边界」必须用 C 类型而不能传 `std::string`/`Vec`？`unsafe fn` 边界意味着调用方承诺了什么？
+
+**提示**：C ABI 是最小公约数（固定调用约定 + 原生类型）；C++ 类型的布局与名称修饰是实现细节，不进 ABI 契约；unsafe 是「我保证这个声明与真实 ABI 一致」的人工契约。
+
+**参考实现**（先自己写完再看）：
+
+```text
+C++ 侧（编译为共享库，导出符号保持未修饰名）：
+    extern "C" int compute(int n) { return n * 2; }
+
+Rust 侧：
+    extern "C" { fn compute(n: i32) -> i32; }
+    let v = unsafe { compute(21) };   // unsafe 块：人工担保签名与 ABI 一致
+
+两问：
+1. std::string/Vec 的布局由编译器实现决定（SSO、容量字段、分配器），且
+   名称修饰使符号不稳定——跨 ABI 只传「原始字节类型」（i32/f64/指针）。
+2. unsafe = 调用方承诺：函数存在、签名正确、传入指针满足「有效 + 生命周期内」；
+   编译器不再检查这三点——所以 FFI 边界要包一层安全的 Rust 包装函数。
+```
+
+要点自查：C ABI 边界的纪律是「类型收窄到 C 共有子集 + 所有权手工管」；`unsafe` 不是「关掉检查随便跑」，是把检查责任显式转移到人——这与本篇 C++ 侧 RAII 管资源的哲学正好互补。

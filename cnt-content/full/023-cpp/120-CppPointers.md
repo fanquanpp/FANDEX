@@ -186,6 +186,58 @@ int* firstPositive(int* arr, size_t n) {
 - cppreference nullptr：https://en.cppreference.com/w/cpp/language/nullptr
 - C++ Core Guidelines 对指针的纪律（只看不拥有）：https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-raw
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：把下面两个声明的「const 位置」读成中文（谁不能变），并写出各自合法/非法的一行示例代码：
+
+```cpp
+const int* p1;
+int* const p2;
+```
+
+**提示**：从右往左读声明——`p1` 是「指向 const int 的指针」（指向的内容不能改，指针可以挪）；`p2` 是「const 指针」（指针不能挪，内容可以改）。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+const int* p1;   // 指向 const int 的指针：*p1 = 1 非法；p1 = nullptr 合法
+int* const p2 = &x;   // const 指针：p2 = nullptr 非法；*p2 = 1 合法
+// 记法：const 在 * 左边管内容，在 * 右边管指针本身；
+// 两边都有（const int* const p3）就是「谁也不能变」。
+```
+
+要点自查：能脱口读出任意 `const` 组合，函数签名里的 `const char*`、成员函数的 `const` 才不会读错；这套「从右往左」读法也适用于引用。
+
+**任务二**：找错并修——下面代码有两个指针级 bug（悬垂、空解引用），写出触发条件与修法：
+
+```cpp
+int* make() {
+    int local = 42;
+    return &local;            // (A)
+}
+void f(int* p) {
+    if (p == nullptr) return;
+    delete p;
+    std::cout << *p;          // (B)
+}
+```
+
+**提示**：(A) 返回栈变量地址——离开函数即悬垂；(B) delete 之后又解引用（use after delete）。修法方向：所有权交给谁、置空 + 检查。
+
+**参考实现**（先自己写完再看）：
+
+```text
+(A) 悬垂指针：local 是栈对象，函数返回后地址失效——返回值类型改成 int（按值），
+    或把存储交给调用方/容器（unique_ptr<int>）。
+(B) use after delete：delete 后指针仍指着旧内存——解引用是 UB。
+    修法：p = nullptr（delete 空指针是安全空操作），或直接用 unique_ptr
+    接管生命周期，让「delete」从代码里消失。
+```
+
+要点自查：本篇第 10 节的结论要能复述——裸指针在新代码里只表达「观察不拥有」（观察者），拥有权交给智能指针或容器；「返回局部对象地址」与「delete 后再用」都是它直接防掉的事故。
+
 ## 13. 自我检查
 
 - 能画出「变量-地址-指针」三层图并解释 `&` 与 `*` 互逆；

@@ -783,3 +783,64 @@ struct Data {
 };
 // 读取时根据版本决定如何解析
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：手写一个最小二进制序列化往返——把 `struct Record { std::uint32_t id; double score; }` 写进 `std::ofstream` 再读回来。先写「直接 fwrite 整个 struct」的版本，再用逐字段 + 显式字节序的方式重写，并回答：第一种版本的两个隐患是什么？
+
+**提示**：整个 struct 直接落盘等于把「内存布局」当「文件格式」——平台间填充差异、端序差异都会让文件不可移植；double 的位模式跨平台一致（IEEE 754），但字节顺序不保证。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <cstdint>
+#include <fstream>
+#include <print>
+
+struct Record { std::uint32_t id; double score; };
+
+void write(const Record& r, std::ofstream& f) {
+    f.write(reinterpret_cast<const char*>(&r.id), sizeof r.id);   // 演示用：直接写内存表示
+    f.write(reinterpret_cast<const char*>(&r.score), sizeof r.score);
+}
+Record read(std::ifstream& f) {
+    Record r{};
+    f.read(reinterpret_cast<char*>(&r.id), sizeof r.id);
+    f.read(reinterpret_cast<char*>(&r.score), sizeof r.score);
+    return r;
+}
+// 隐患一：struct 整块 fwrite 会把编译器插入的填充字节也写进去，格式绑死平台；
+// 隐患二：小端机器写出的文件在大端机器上读反——生产格式需固定端序（如小端）并逐字段转换。
+```
+
+要点自查：序列化格式的第一课是「文件格式 ≠ 内存布局」；逐字段写 + 固定端序是手写二进制格式的底线；实际项目更应选成熟格式（protobuf/JSON），手写二进制只在性能极限场景。
+
+**任务二**：JSON 侧——用 nlohmann/json 完成 `Record` 的 `to_json/from_json`（按库的 ADL 约定写在 `void to_json(nlohmann::json&, const Record&)`），并解释「serde 风格的 derive」在 C++ 里缺失（对比 Rust `#[derive(Serialize)]`）的现状与 C++26 静态反射将如何补上这一环。
+
+**提示**：nlohmann 库靠 ADL（参数依赖查找）找到类型旁的 `to_json/from_json` 自由函数——这是「在类型定义旁边放两个函数」的约定；没有反射，这两个函数只能手写或由宏生成。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <nlohmann/json.hpp>
+
+struct Record { std::uint32_t id; double score; };
+
+void to_json(nlohmann::json& j, const Record& r) {
+    j = nlohmann::json{{"id", r.id}, {"score", r.score}};
+}
+void from_json(const nlohmann::json& j, Record& r) {
+    j.at("id").get_to(r.id);
+    j.at("score").get_to(r.score);
+}
+
+// nlohmann::json j = Record{1, 99.5};         // 自动调 to_json
+// auto back = j.get<Record>();                // 自动调 from_json
+// 现状：每个类型手写一对函数；宏（NLOHMANN_DEFINE_TYPE_INTRUSIVE）可生成但仍是宏。
+// C++26 静态反射（P2996）：遍历成员自动生成上述代码——把 derive 从宏变成语言能力；
+// 落地进度见编译器支持页（GCC 16 已有部分实现）。
+```
+
+要点自查：ADL 约定（`to_json`/`from_json` 放在类型同一命名空间）是 nlohmann 的扩展点；理解「宏生成 → 反射生成」的演进方向，就理解了本篇为什么说反射是序列化库的下一个分水岭。

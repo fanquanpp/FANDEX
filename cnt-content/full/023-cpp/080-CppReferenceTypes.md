@@ -174,6 +174,53 @@ public:
 - cppreference 引用声明：https://en.cppreference.com/w/cpp/language/reference
 - 引用初始化与临时对象延长：https://en.cppreference.com/w/cpp/language/reference_initialization
 
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：给下面的三个函数参数各选一种传法（值、`T&`、`const T&`）并写一句理由：打印函数、交换函数、只读统计函数（参数是 1MB 的 `std::vector`）。
+
+**提示**：判据是三问——要不要修改调用方的对象？对象大不大？要不要所有权（本篇不涉及，用引用就够）。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+void print(const std::vector<int>& v);        // 只读 + 可能很大：const 引用
+void swap(int& a, int& b);                    // 要修改调用方对象：非 const 引用
+Stats summarize(const std::vector<int>& v);   // 只读统计大容器：const 引用
+// 打印一个 int 就按值传：小对象按值更省（少一层间接）。
+```
+
+要点自查：`const T&` 是「只读且不小」的默认答案，但**小标量按值传**反而更好——引用是别名，底层是指针，多一层间接。
+
+**任务二**：找错——下面函数返回了什么危险的东西？写出两种场景下各自的后果（绑定临时对象、返回局部引用），并给出正确签名：
+
+```cpp
+int& getMax(std::vector<int>& v) {
+    int max = *std::ranges::max(v);
+    return max;                       // (A)
+}
+std::string& concat(const std::string& a, const std::string& b) {
+    return a + b;                     // (B)
+}
+```
+
+**提示**：(A) 返回局部变量的引用——函数一返回它就死了；(B) `a + b` 产生临时对象，引用绑定到临时上，表达式结束即悬垂。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+int getMax(const std::vector<int>& v) {          // 按值返回（int 很小）
+    return *std::ranges::max(v);
+}
+std::string concat(const std::string& a, const std::string& b) {
+    return a + b;                                  // 按值返回，C++17 起有 RVO/移动优化
+}
+// 什么时候返回引用是对的：返回的对象比函数活得久——成员、全局、容器内元素。
+```
+
+要点自查：「引用是别名，别名不能比本体活得久」是悬垂引用事故的全部逻辑；返回引用的安全前提只有一个——被引用对象的生命周期长于所有使用者。
+
 ## 12. 自我检查
 
 - 能用别名模型推出引用的三铁律并演示；
