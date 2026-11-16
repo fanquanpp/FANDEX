@@ -216,7 +216,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY play_summary;
 
 分组集负责"一次算对"，预聚合负责"天天算得起"，两者是配合关系。
 
-## 5.5 遮码自检
+## 遮码自检
 
 遮住答案先写；分组集题的判断标准是"能对着结果行说出它属于哪个分组集"。
 

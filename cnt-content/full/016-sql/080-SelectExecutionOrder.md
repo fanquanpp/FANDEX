@@ -190,7 +190,7 @@ SELECT show_name, MAX(platform) AS any_platform, COUNT(*) FROM plays GROUP BY sh
 
 老版本 MySQL 默认容忍这种写法（取任意一行的值），5.7 起默认 `ONLY_FULL_GROUP_BY` 关掉了这个坑。见过"别的库能跑"的旧 SQL 报错时，先想到这里。
 
-## 4.5 遮码自检
+## 遮码自检
 
 遮住答案先答；执行顺序题的判断标准是"能背出链条并推出每个别名的作用域"。
 
