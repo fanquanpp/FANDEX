@@ -326,3 +326,11 @@ python3 -c "import jwt; print(jwt.decode('eyJ...', options={'verify_signature': 
 # 列出所有客户端配置检查安全性
 curl -H "Authorization: Bearer admin_token" https://kc.example.com/admin/realms/myrealm/clients | python3 -m json.tool
 ```
+
+## 自检
+
+- 遮住「概念速览」，写出 OAuth 与 OIDC 的分工一句话，并解释为什么「拿 access_token 当身份」是错的。
+- 为什么公共客户端（SPA/移动端）必须用授权码 + PKCE？code_verifier 与 code_challenge 各存在哪里、各自的作用是什么？
+- 遮住「OAuth2 安全检测」一节，自己写出三条检测命令：PKCE 是否强制、隐式/密码模式是否仍暴露、发现文档是否可匿名访问。
+- 本地校验 ID Token 与调自省端点校验 access_token 的差别是什么？各自防什么（本地验签防伪造、自省防吊销失效——过期不等于吊销）。
+- 遮住「OAuth2 服务端配置」一节，写出 Keycloak 命令行里「关隐式流、强制 PKCE、缩短 Token 有效期」的对应操作。

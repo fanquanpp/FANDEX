@@ -16,6 +16,10 @@ prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
 
+- **解决什么问题**：Metasploit 是渗透攻击环节的「标准库」——模块化的 exploit/payload/encoder/auxiliary，让一次利用可以复用统一的操作流。本篇是命令面：msfconsole 操作、模块搜索、载荷配置、Meterpreter 会话与后渗透常用命令。
+- **容易怎么错**：对未授权目标使用（framework 的命令记录全面，但法律不关心你记录了什么）；不验证模块可靠性就打生产（meterpreter 的稳定性与指纹噪音都要评估）；混淆 meterpreter 与 shell 会话的能力边界；用完不做痕迹清理与复盘。
+- **学完能做什么**：跑通「search → use → 设置 RHOSTS/与 payload → exploit → 后渗透命令」的完整操作；理解 payload 类型（staged vs stageless、reverse vs bind）的选择依据；把会话纳入授权测试的报告与清理流程。
+
 ## msfconsole 基础操作
 
 **基本写法:启动 msfconsole**
@@ -502,3 +506,11 @@ workspace -a pentest
 # 查看模块加载路径
 show module_paths
 ```
+
+## 自检
+
+- 遮住「模块搜索」一节，写出「按 CVE 搜索 exploit 并查看详情」的命令（search cve:xxxx / info），并说出 rank 字段代表什么（可靠性排序）。
+- reverse 与 bind 两类 payload 的方向差异是什么？各自适配什么网络环境（出站可达 vs 入站可达，NAT/防火墙决定选择）。
+- staged（如 windows/x64/meterpreter/reverse_tcp）与 stageless（reverse_tcp_rc4 等）差别是什么？分别牺牲什么换什么（体积/指纹 vs 稳定性与检测面）。
+- 遮住「Meterpreter 会话」一节，写出「提权 → 抓哈希 → 截图 → 迁移进程」的四条常用命令，并说明 migrate 为什么常做（stability）。
+- 后渗透阶段的「清理与报告义务」包括什么？（移除持久化与上传文件、记录所有操作供报告引用、按授权约定销毁访问。）

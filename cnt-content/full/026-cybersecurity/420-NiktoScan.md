@@ -16,6 +16,10 @@ prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
 
+- **解决什么问题**：Nikto 是 Web 服务器的「体检仪」——过时组件、危险文件、默认配置、缺失安全头，一次扫描全列出。它的定位要清楚：基于签名的粗筛工具，噪音大但便宜快，适合作为漏洞扫描层（OpenVAS）与手动测试（Burp）之间的中间层。
+- **容易怎么错**：把 Nikto 输出当「确认漏洞」（大量条目需要人工验证）；对生产站点直接全量扫描（高强度探测可能触发告警或影响业务）；只扫根路径（`-root`/路径定向能覆盖 API 前缀）。
+- **学完能做什么**：跑通「扫描 → 输出 JSON/HTML → 逐条研判」的流程；用调优参数（超时、代理、限速）适配不同环境；把确认的发现转成漏洞管理工单。
+
 ## Nikto 基础扫描
 
 **基本写法:基础扫描目标**
@@ -404,3 +408,11 @@ nikto -h example.com -Format json -o - | python3 -c "import sys,json; print(json
 # 组合 Nikto 与依赖检查全面评估
 nikto -h example.com -o web_scan.json -Format json && dependency-check --scan ./target/app.jar --out dep_report
 ```
+
+## 自检
+
+- 遮住「基础扫描」一节，写出对 `https://example.com` 的基础扫描命令，并说出 `-h` 之外你最常用的三个参数。
+- 为什么说 Nikto 是「粗筛」而不是「确认」？举出两类高噪音输出（默认页面/目录类条目、过时组件误报）与对应的研判动作。
+- 遮住「输出格式」一节，写出「扫完导出 JSON 供后续解析」的命令，并解释 JSON 输出对接 SIEM/工单系统的好处。
+- 生产站点扫描前应做哪三件准备（授权确认、时间窗选择、限速/超时参数）？
+- Nikto 能测出「业务逻辑漏洞」吗？为什么不能（它只做签名/配置类探测），这类问题该用什么方法（人工测试与 DAST 交互式测试）。

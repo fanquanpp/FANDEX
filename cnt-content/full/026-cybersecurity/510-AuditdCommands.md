@@ -16,6 +16,10 @@ prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
 
+- **解决什么问题**：auditd 是 Linux 内核层的「行为记录仪」——比 syslog 更底层、不可被应用层绕过，回答三个取证核心问题：谁（uid）、对什么（文件/系统调用）、什么时候（时间戳）。520 篇的基线核查与 560 篇的应急响应都依赖它的日志。
+- **容易怎么错**：规则写了一堆却从不 `aureport` 回看（审计的价值在查询不在记录）；规则过多拖垮磁盘与内核队列（丢事件）；auditd 不允许 systemctl reload 热载（必须 `augenrules --load` 或重启服务）；只记录不集中（本机日志可被攻击者抹除，要转发到远端 SIEM）。
+- **学完能做什么**：用 `auditctl` 写出文件监控（-w）与系统调用监控（-a）两类规则；用 `ausearch`/`aureport` 按键值快速定位「谁改了 /etc/passwd」；设计一套低噪音、可长期运行的关键动作审计集。
+
 ## auditd 服务管理
 
 **基本写法:启动 auditd 服务**
@@ -426,3 +430,11 @@ sudo auditctl -w /etc/passwd -p wa -k user_change
 sudo auditctl -w /etc/shadow -p wa -k user_change
 sudo auditctl -w /etc/group -p wa -k user_change
 ```
+
+## 自检
+
+- 用「内核层行为记录仪」解释 auditd 与 syslog 的差别：为什么应用层日志可以被绕过而 auditd 不易被绕过？
+- 遮住「规则编写」一节，写出「监控 /etc/passwd 的写与属性变更、标记 passwd_change」的规则，并解释 `-p wa` 与 `-k` 各管什么。
+- 「谁在 3 点改了 /etc/shadow」——写出用 ausearch 按键值回查该事件的命令，并说出你会读输出里的哪三个字段（uid、exe、时间戳）。
+- `-w`（文件监控）与 `-a`（系统调用监控）各适合什么场景？举一个必须用 `-a` 的例子（execve 监控/ptrace 类敏感调用）。
+- 为什么审计日志要转发到远端？本机日志在入侵场景下的三个风险（被删、被改、时间线被伪造）。

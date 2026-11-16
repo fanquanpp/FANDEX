@@ -21,6 +21,11 @@ prerequisites:
 建议先阅读以下内容再进入本文：
 
 - [安全基础与防御](/cybersecurity/010-SecurityBasicsDefense)
+- [漏洞扫描](/cybersecurity/400-VulnerabilityScan) 与 [漏洞扫描工具](/cybersecurity/410-VulnerabilityScanTools)——本篇的命令面是它们概念层的落地。
+
+- **解决什么问题**：OpenVAS（现属 Greenbone/GVM 家族）是开源漏扫的主力——NVT 漏洞脚本库持续更新，覆盖 CVE 匹配与配置核查。本篇是它的命令面：从服务初始化、订阅更新到任务化扫描与报告导出。
+- **容易怎么错**：初始化后没等 NVT 同步完成就开扫（结果空洞）；只按 CVSS 排序不叠加上下文；扫描账号权限过大（应最小化）；版本理解混乱（Greenbone 社区版的组件版本各自演进，认 NVT feed 日期比认组件版本号更可靠）。
+- **学完能做什么**：跑通「初始化 → 更新 → 建目标建任务 → 扫描 → 导出报告 → 研判」全流程，并与 410 篇的研判框架衔接。
 
 ## OpenVAS/GVM 服务管理
 
@@ -423,3 +428,11 @@ sudo gvmd --optimize
 # 查看 GVM 数据目录磁盘占用
 du -sh /var/lib/gvm/*
 ```
+
+## 自检
+
+- 遮住「服务管理」一节，写出启动、停止、检查初始化状态的三条命令（gvm-start / gvm-stop / gvm-check-setup）。
+- 首次安装后为什么要等 NVT feed 同步完再扫描？用什么命令确认同步状态，未同步完的扫描结果会怎样（空洞、大量 miss）？
+- 遮住「任务管理」一节，用 gvm-cli 写出「创建目标 → 创建任务 → 启动任务 → 导出报告」的命令序列。
+- OpenVAS 与 Nessus 的分工差别是什么？在「预算受限的内网全覆盖」场景你会选谁、为什么。
+- 拿到一份 GVM 报告：写出你的研判三步（先看凭据扫描是否启用 → 查 NVT 对应 CVE 的可靠性 → 按 KEV/资产价值重排优先级）。

@@ -249,3 +249,11 @@ spec:
   （生产用 restricted）、Secret 外部化与 etcd 加密、NetworkPolicy 默认拒绝；
   privileged 与 docker.sock 挂载是两条必背逃逸路径，准入控制工具把它们变成
   集群级硬约束。
+
+## 自检
+
+- 遮住第 1 节的对比表，说出容器与虚拟机的三条隔离差异，并解释为什么「容器安全是配置问题不是架构问题」。
+- 遮住 mermaid 图，凭默画出四层递进（供应链 → 运行时 → 平台 → 网络检测）与每层的「一句话目标」。
+- 说出两条必背逃逸路径的完整链条：挂载 docker.sock 后如何在容器里再起一个 privileged 容器拿宿主机根目录。
+- K8s 1.25 移除 PodSecurityPolicy 后，替代物是什么？写出 Pod Security Admission 三档的名字与生产推荐档（restricted）。
+- 遮住第 4 节，写出「非 root 运行 + 只读根文件系统 + 去除全部 capabilities」的容器 Spec 关键字段。

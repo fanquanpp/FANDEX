@@ -16,6 +16,10 @@ prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
 
+- **解决什么问题**：[CSRF 攻击](/cybersecurity/210-CSRFAttack) 讲清了「浏览器自动带 Cookie」这个本体，本篇是它的防御命令面：Token 生成与校验、SameSite Cookie、Origin/Referer 校验、双提交模式，最后给出站点自查脚本。
+- **容易怎么错**：Token 放 URL 参数（会被 Referer 泄露）；Token 不绑定会话（可跨会话重放）；SameSite=Lax 之后就删 Token（Lax 挡不住顶级 GET 导航与旧 Cookie）；只校验 Referer（可被 stripped）。
+- **学完能做什么**：为应用落地「Token 主防御 + SameSite 基线 + Origin 校验兜底」的三层组合，并用末节脚本自查自己的站点。
+
 ## CSRF Token 生成与校验
 
 **基本写法:生成随机 CSRF Token**
@@ -382,3 +386,11 @@ curl -s -X POST https://example.com/api -H "Origin: https://evil.com" -w "%{http
 # 一次性检查 CSRF 相关安全响应头
 curl -sI https://example.com | grep -iE "x-frame|x-content|set-cookie|strict-transport"
 ```
+
+## 自检
+
+- 遮住「Token 生成」一节，写出「用 openssl 生成 32 字节随机 Token 并绑定会话存储」的命令与存储位置（服务端会话或签名 Cookie，绝不入 URL）。
+- 为什么 CSRF Token 必须绑定会话？说出不绑定时的一类攻击（Token 在会话间可复用的重放）。
+- SameSite 的三档语义各挡什么？遮住「SameSite」一节，写出 `SameSite=Lax; Secure; HttpOnly` 的完整 Set-Cookie 行并解释每个属性各挡一类什么问题。
+- 「上了 SameSite=Lax 就能删 Token」为什么错？回到 210 篇的层次防御论证。
+- 遮住「CSRF 防护自检脚本」一节，自己写出「批量检查 Cookie 属性 + 跨域 POST 探测」两条命令再对照。

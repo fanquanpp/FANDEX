@@ -16,6 +16,10 @@ prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
 
+- **解决什么问题**：[XXE 攻击](/cybersecurity/240-XXEAttack) 讲清了实体机制的原理，本篇是防御命令面：先探测自己的接口是否接受 XML 与外部实体，再按语言逐个关闭解析器特性，最后落到代码扫描与出网管控。
+- **容易怎么错**：只测了回显型 XXE 就下结论（盲注 OOB 需带外平台确认）；防御只改了一个解析器入口（同进程可能有多个 XML 解析点）；忘了文件解析类入口（DOCX/SVG/SOAP）也是 XML。
+- **学完能做什么**：跑通「检测 → 逐语言修复 → 复测 → 代码扫描兜底」的闭环；对自己语言栈写出「禁 DTD/禁外部实体」的最终配置。
+
 ## XXE 漏洞检测
 
 **基本写法:发送 XML 实体探测请求**
@@ -323,3 +327,11 @@ curl -X POST -H "Content-Type: application/xml" -d '<!DOCTYPE foo [<!ENTITY x SY
 # Java 项目扫描 XML 解析器使用情况
 grep -rn "XMLReader\|SAXParser\|XmlDocument\|DocumentBuilder" src/ --include=*.java
 ```
+
+## 自检
+
+- 遮住「XXE 漏洞检测」一节，写出「探测接口接受 XML → 发送外部实体读取 /etc/hostname → 判断是否回显」的三步命令。
+- 回显型与盲注型 XXE 的确认方法差在哪？盲注为什么必须用带外（OOB）平台（响应不回传，只能靠外连信号确认）。
+- 遮住「逐语言防御配置」一节，写出你自己语言栈「禁用 DTD 与外部实体」的配置语句，并说明为什么禁 DTD 是一刀切正解。
+- 修复后如何回归验证？（用 240 篇的同一批探测 payload 重放，确认全部失效；再做一次 OOB 确认。）
+- 「接口只收 JSON 为什么还要防 XXE」——说出两个非 API 入口（上传 DOCX/XLSX/SVG 解析、SAML/SSO 报文处理）。

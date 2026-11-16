@@ -16,6 +16,10 @@ prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
 
+- **解决什么问题**：SSH 密钥是服务器管理的第一道门——比口令登录更抗爆破、更易审计、可按人按机轮换。本篇覆盖从生成、部署、agent 到 SSH 证书（CA 签发）的完整链路，重点是「理解每一步到底在验证什么」，命令只是这条链的落点。
+- **容易怎么错**：默认思维还停在 RSA（现代首选 ed25519——密钥短、确定性签名、常数时间）；把私钥复制到服务器；known_hosts 变更当噪声忽略（可能是中间人信号）；agent forwarding 常开（等于把信任权交给链路上每一台中间机器）。
+- **学完能做什么**：生成、部署、轮换 ed25519 密钥；解释 OpenSSH 10.0 起默认密钥交换改为后量子混合 `mlkem768x25519-sha256`（防「先截获后解密」的量子风险，10.1 起客户端还会对不支持 PQ 的服务器告警）；多机场景用 SSH 证书替代逐台放公钥。
+
 ## ssh-keygen 密钥生成
 
 **基本写法：生成 RSA 密钥**
@@ -275,13 +279,6 @@ ssh-add -X
 
 **基本写法：配置主机别名**
 ```sshconfig
-`Host <别名>
-    HostName <主机>
-    User <用户>
-    Port <端口>
-    IdentityFile <私钥>`
-```
-```sshconfig
 # SSH 配置文件 ~/.ssh/config
 Host prod
     HostName 192.168.1.100
@@ -292,11 +289,6 @@ Host prod
 
 **基本写法：通配符配置**
 ```sshconfig
-`Host *.<域名>
-    User <用户>
-    IdentityFile <私钥>`
-```
-```sshconfig
 # 配置所有 *.example.com 主机
 Host *.example.com
     User admin
@@ -304,12 +296,6 @@ Host *.example.com
 ```
 
 **基本写法：安全配置**
-```sshconfig
-`Host *
-    ServerAliveInterval <秒数>
-    ServerAliveCountMax <次数>
-    StrictHostKeyChecking <yes/no>`
-```
 ```sshconfig
 # 全局安全配置
 Host *
@@ -394,3 +380,11 @@ systemctl restart sshd
 echo "LoginGraceTime 30" >> /etc/ssh/sshd_config
 systemctl restart sshd
 ```
+
+## 自检
+
+- 遮住「ssh-keygen 密钥生成」一节，写出「生成 ed25519 密钥（带注释） → 部署公钥到服务器 → 用指定私钥登录」三步命令再对照。
+- `ssh-copy-id` 实际做了什么？手动做的话改哪个文件、两端权限要求是什么？（把公钥追加到远端 `~/.ssh/authorized_keys`；`~/.ssh` 目录 700、文件 600，权限过宽会被 sshd 拒用。）
+- known_hosts 报主机密钥变更时，安全处置流程是什么？（先经带外渠道确认真是对方重装/换主机——核对指纹——再 `ssh-keygen -R` 删单条记录；绝不无脑清空整份文件。）
+- 为什么 ed25519 成为默认推荐？RSA-4096 在什么场景仍有价值？（兼容极老设备/旧系统；ed25519 短、快、常数时间。）
+- 说出 OpenSSH 10.0 默认密钥交换算法的名字与它组合的两部分（ML-KEM-768 + X25519），并回答它防的威胁模型（Harvest Now, Decrypt Later）。

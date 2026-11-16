@@ -494,3 +494,12 @@ sudo firewall-cmd --permanent --list-all-zones > firewalld-export.txt
 sudo iptables-save > iptables-v4.rules
 sudo ip6tables-save > iptables-v6.rules
 ```
+
+## 自检
+
+- 遮住「ufw 基础操作」一节，写出「默认拒绝入站 + 放行 SSH + 放行 80/443 + 启用」的完整命令序列，并解释为什么 SSH 放行必须在 enable 之前（避免把自己锁在门外）。
+- 「ufw 开了为什么端口还通」可能的两层原因是什么？（云安全组另有放行；规则顺序/具体化规则未生效——用 `ufw status numbered` 验证。）
+- firewalld 的 zone 模型里，流量先匹配什么再落到默认 zone？遮住「区域管理」一节写出「把 22 端口加进 public 区并永久生效」的命令。
+- 遮住「iptables 高级配置」一节，写出「限速放行 22 端口、超频丢弃」的 recent 模块规则，并说出 state 与 conntrack 的关系。
+- 三套工具（ufw/firewalld/iptables）的关系一句话是什么？（ufw/firewalld 是前端管理器，规则最终落在内核 netfilter/iptables-nft 后端。）
+- 防火墙改完规则后的「验证动作」是什么？遮住「防火墙安全自检」一节对照你的答案（本机看规则 + 从外部探端口，两个视角缺一不可）。

@@ -17,7 +17,9 @@ prerequisites: []
 
 ## 学习目标
 
-本文是「网络安全」模块的第 37 篇，难度定位为进阶。重点内容：Metasploit框架、Nmap高级用法、Wireshark深度分析、Burp Suite进阶、SQLMap自动化注入、Hydra暴力破解、John密码破解、Kali工具集、安全……
+- **解决什么问题**：本篇是渗透工具链的「总装车间」——把 Metasploit、Nmap、Wireshark、Burp Suite、sqlmap、Hydra/John、Kali 工具集放在一张图上看清分工与组合，再以加固脚本收尾，把攻防两侧串成闭环。
+- **容易怎么错**：把「会背工具清单」当能力（每个工具只是流程一环，组合与节奏才是水平）；在生产网络直接跑高噪音扫描与爆破；混淆在线爆破（受速率限制、留日志）与离线破解（拿到哈希库后的 GPU 穷举）的适用场景。
+- **学完能做什么**：为一个授权测试项目按阶段选型工具组合；写出 Metasploit 资源脚本与常用 Wireshark 过滤器；用末节的加固脚本把本篇演示过的攻击面逐一关掉。
 
 主要章节：
 
@@ -632,3 +634,11 @@ Update-MpSignature
 
 Write-Host "安全加固完成！"
 ```
+
+## 自检
+
+- 不查资料，为一次授权 Web 渗透按阶段配工具：侦察（subfinder/httpx）、扫描（Nmap/Nikto）、测试（Burp/sqlmap）、利用（Metasploit）——每个阶段说出主用工具与一个备选。
+- Metasploit 的核心五步流程是什么（search → use → set RHOSTS/payload → exploit → post）？遮住第 1 节命令自己走一遍。
+- Wireshark 里写出三个你用过的过滤器：一个看 HTTP 请求、一个抓特定 IP 的 TLS、一个看 DNS——并解释显示过滤器与捕获过滤器的区别。
+- Hydra（在线）与 John/hashcat（离线）的适用边界在哪里？为什么对着登录页跑全量字典是「又慢又脏」的选择。
+- 遮住第 9 节的加固脚本，自己写出 Linux 侧你必做的五条加固命令，再对照脚本查漏。
