@@ -329,6 +329,30 @@ import './index.css'
 | 6 | 动态 import 页面的样式没生效 | `cssCodeSplit` 关闭后异步 chunk 的样式被合并但加载顺序异常 | 按需确认是否真的需要关闭分割；大项目保持默认开启 |
 | 7 | 全局样式污染组件 | 全局 `.css` 中的选择器与组件类名重名 | 组件样式一律走 `.module.css`；全局样式用前缀约定（如 `.fx-`）隔离 |
 
-## 9. 一句话记忆
+## 9. 教学自检：遮住答案，先自己写
+
+以下五题按遮码自检法使用：先遮住提示自己作答，再对照验证。这条流水线的每一站都对应一题，答不出的回对应站点重读。
+
+**第 1 题：零配置的边界在哪。** `import './style.scss'` 直接就能跑吗？为什么 `.css` 可以零配置而 `.scss` 不行？
+
+提示（对照第 2、3 节）：`.css` 是浏览器与 Vite 都认识的原生格式，直接走管线；`.scss` 必须先经过第 2 站编译——Vite 内置了"识别"，但编译器要自己装（`pnpm add -D sass`），装完即可，无需任何 Vite 配置。
+
+**第 2 题：additionalData 解决什么问题。** 十个组件文件都要用同一套 `$primary` 变量，挨个 `@use` 太繁琐，配置怎么写？这个配置的风险是什么？
+
+提示（对照第 3.3 节）：在 `css.preprocessorOptions.scss.additionalData` 里写一行 `@use "/src/styles/variables" as *;`，它被拼接到每个 SCSS 文件开头。风险在于"每个文件"——注入内容有编译错误时所有组件样式一起报错，所以只放真正全局通用的东西。
+
+**第 3 题：全局与局部的分界线。** `Button.css` 和 `Button.module.css` 在同一项目里行为有什么不同？想让 `.btn` 不被别的组件覆盖，文件名怎么起？
+
+提示（对照第 5 节）：`Button.css` 是全局样式，类名原样进入页面；`Button.module.css` 启用 CSS Modules，类名构建时变成带哈希的唯一名，组件间互不干扰。命名规则就是开关：`.module.css`（或 `.module.scss`）结尾即局部。
+
+**第 4 题：开发与生产的送达方式。** 为什么开发时改样式毫秒级生效、不用等构建？生产环境的 CSS 又去了哪？
+
+提示（对照第 6 节）：开发时 CSS 以 `<style>` 标签注入、改动走 HMR，无需落盘；生产时抽取为独立 `.css` 文件并按异步 chunk 分割——只访问首页的用户不会下载管理页的样式。`cssCodeSplit: false` 可关掉分割。
+
+**第 5 题：Tailwind v4 与 v3 的接入差别。** v4 为什么不再需要 `tailwind.config.js` 与 PostCSS 配置？
+
+提示（对照第 7 节）：v4 改为"原生 CSS 优先"，通过官方 Vite 插件 `@tailwindcss/vite` 直接接入：注册插件 + 入口 CSS 一行 `@import "tailwindcss"` 完事；扫描源码生成工具类的工作由插件在 Vite 管线内完成。v3 走 PostCSS 链路，两者不可混用。
+
+## 10. 一句话记忆
 
 **CSS 在 Vite 中就是一条五站流水线：import 入口登记 -> 预处理器编译 -> PostCSS 加工 -> CSS Modules 装盘 -> 压缩按需送达——你只需记住"装编译器就能用、`.module.css` 管局部、生产自动分割"三个要点**。

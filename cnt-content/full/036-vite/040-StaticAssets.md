@@ -308,6 +308,30 @@ export default defineConfig({
 | 6 | 动态拼接路径拿不到图片 | 字符串变量路径无法被静态分析 | 改用 `new URL(name, import.meta.url)` 或 `import.meta.glob` |
 | 7 | 字体加载导致文字闪烁/白屏 | 未设置 `font-display` | `@font-face` 加 `font-display: swap`，并考虑字体子集化 |
 
-## 11. 一句话记忆
+## 11. 教学自检：遮住答案，先自己写
+
+以下五题按遮码自检法使用：先遮住提示自己作答，再对照验证——答不出的回到对应场景重读。
+
+**第 1 题：两条黄金法则各管什么。** 组件里用的背景图、一个 favicon、一份第三方要求固定路径的验证文件，各该放哪、怎么引用？
+
+提示（对照第 2、4 节）：背景图放 `src/assets/` 用 import（CSS 里走 `url()`），享受哈希缓存、内联与压缩；favicon 与验证文件放 `public/`，用根绝对路径（如 `/favicon.ico`）引用。法则一管"被代码引用的资源"，法则二管"要原名、不被加工的资源"。
+
+**第 2 题：内联阈值的行为。** import 一个 3KB 的 SVG，构建后产物是什么？换成 2MB 的 PNG 呢？
+
+提示（对照第 3 节）：3KB 小于默认 4096 字节阈值，被内联为 base64 直接嵌入代码，产物中没有独立文件；2MB 大图生成 `assets/xxx-内容哈希.png` 独立文件。阈值由 `build.assetsInlineLimit` 控制。
+
+**第 3 题：三个特殊后缀的返回值。** `?raw`、`?url`、`?inline` 各自把 import 的返回值变成了什么？
+
+提示（对照第 5 节）：`?raw` 返回文件内容的原始字符串（GLSL 着色器、HTML 片段）；`?url` 返回资源在产物中的 URL 字符串（Worklet、Worker 需要真实文件地址）；`?inline` 强制返回 base64 字符串，单文件层面覆盖"小于 4KB 才内联"的默认规则。
+
+**第 4 题：动态路径为什么 import 不行。** 图标名存在变量里，写 `import(\`${name}.png\`)` 为什么不可靠？正确写法是什么？
+
+提示（对照第 6 节）：完全动态的路径无法被静态分析，构建器不知道该打包哪些文件。正确写法是 `new URL(\`./icons/${name}.png\`, import.meta.url).href`。模板字符串可以带动态段，但官方文档明确了三个边界：该模式不包含子目录中的文件（如 `./dir/${name}.png` 不会匹配 `dir/` 的子目录）；URL 字符串必须可被静态分析，完全动态的写法（如传入纯变量）Vite 不会转换，产物中代码将原样保留，`build.target` 不支持 `import.meta.url` 时会运行时报错；SSR 场景不可用（`import.meta.url` 在浏览器与 Node 中语义不同）。批量场景用 `import.meta.glob`。
+
+**第 5 题：base 与前缀的分工。** 部署到 `https://example.com/fandex/` 子路径，哪里必须改？为什么 public 资源不用手动加前缀？
+
+提示（对照第 9 节）：只在 `vite.config.ts` 设 `base: '/fandex/'`（以 `/` 开头且结尾）。import 资源与 public 的绝对路径引用都会被 Vite 自动拼上 base——源码里手动再拼一次反而双写前缀。
+
+## 12. 一句话记忆
 
 **图片字体走 `src/` 的 import（有哈希、可内联、可优化），`favicon`、`robots.txt` 这类"不加工、要原名"的走 `public/`，部署子路径就设 `base`——资源路径问题的答案，永远在这三句话里**。

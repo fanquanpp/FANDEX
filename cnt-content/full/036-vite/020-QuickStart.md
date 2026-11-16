@@ -28,17 +28,17 @@ prerequisites:
 
 | 环境项 | 要求 | 说明 |
 | --- | --- | --- |
-| Node.js | 20.19+ 或 22.12+ | Vite 8 要求较新的 Node 版本，用 `node -v` 检查 |
-| 包管理器 | pnpm 9+ / npm 10+ / yarn 4+ | 本文统一使用 pnpm |
+| Node.js | 20.19+ 或 22.12+ | Vite 8 要求较新的 Node 版本，用 `node -v` 检查；推荐最新 LTS（Node 26） |
+| 包管理器 | pnpm 10+ / npm 11+ / yarn 4+ | 本文统一使用 pnpm（当前主线 12.x） |
 
 在终端中依次执行检查命令：
 
 ```bash
-node -v        # 应输出 v20.19.0 或更高（如 v22.x）
-pnpm -v        # 应输出 9.x 或更高；若提示不存在，先安装 Node 后执行 corepack enable
+node -v        # 应输出 v20.19.0 或更高（如 v22.x / v24.x）
+pnpm -v        # 应输出 10.x 或更高
 ```
 
-如果 `pnpm` 不可用（常见于 Windows 环境），安装 Node.js 之后执行一次 `corepack enable` 即可启用 Node 内置的 pnpm。
+如果 `pnpm` 不可用（常见于 Windows 环境），不要走 `corepack enable` 这条老路——corepack 方案已被官方放弃：pnpm 10 起官方推荐独立安装，pnpm 11 起连 pnpm 管理的 Node 运行时都不再提取 Node 捆绑的 corepack，Node.js 25 起也不再内置 corepack。官方推荐用独立安装脚本（`https://get.pnpm.io/install.sh`）或 `npm install -g pnpm` 直接安装。
 
 ## 3. 第 1 步：点火——创建项目
 
@@ -259,7 +259,7 @@ pnpm dev             # 删除缓存目录后重启，效果同上
 
 | 序号 | 报错/现象 | 原因 | 解决办法 |
 | --- | --- | --- | --- |
-| 1 | `'pnpm' 不是内部或外部命令` | pnpm 未启用（Windows 常见） | 安装 Node.js 后执行 `corepack enable` |
+| 1 | `'pnpm' 不是内部或外部命令` | pnpm 未安装（Windows 常见） | 用独立安装脚本（get.pnpm.io）或 `npm install -g pnpm` 安装；不要用 `corepack enable`（原因见环境检查一节） |
 | 2 | 提示 Node 版本过低，创建或启动失败 | Node 版本低于 20.19+ / 22.12+ | 升级 Node 到受支持版本（建议 LTS 22.x） |
 | 3 | 端口被占用 | 5173 已被其他进程使用 | 无需处理，Vite 会自动顺延端口；或 `pnpm dev --port 3000` 指定 |
 | 4 | 编辑器报"找不到模块 react" | 依赖未安装或编辑器未重新加载 | 确认 `pnpm install` 成功；重启编辑器让 TS 服务重新加载 |
