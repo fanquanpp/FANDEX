@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++编码规范与最佳实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/180-CppMemoryManagement'
   - 'cpp/710-CppRustComparison'
@@ -2163,3 +2163,60 @@ std::string s = std::format("x={}, y={}", x, y);
 #include <print>
 std::println("result = {}", result);
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：给下面的「三段重名」代码起名字（本篇命名规则的应用题）——类型、成员变量、常量、函数各自选一种主流风格并写出一行理由；再把「含糊动词」改名（`doProcess`、`handleData`）。
+
+```cpp
+class customer { public: int nm; };
+#define MAXCNT 100
+int processData(Customer c);
+void handleData(std::vector<int>& v);
+```
+
+**提示**：风格不是审美，是「读者能否从名字推断实体角色」——类型 PascalCase、成员 snake_case 或 m_/ 后缀、常量 kMaxCount 或 MAX_COUNT（看团队）、函数动词开头。
+
+**参考实现**（先自己写完再看）：
+
+```text
+class Customer { int name_; };        // 类型 PascalCase；成员后缀 _（Google）或 m_（MSVC 系）
+constexpr int kMaxCount = 100;        // k 前缀（Google）或 MAX_COUNT（宏时代遗产）
+int totalFor(const Customer& c);      // 动词/名词短语，参数 const&
+void accumulateRange(std::vector<int>& v);   // handleData → 说清「对什么做什么」
+// 改名判据：名字要回答「这是什么/做什么」，do/handle/process 这类空动词全部消灭。
+```
+
+要点自查：命名一致性的收益在 grep 与 review——能「一眼从名字定位实体种类」的风格才是对的风格；同一代码库里混两种成员风格比选哪种风格更伤。
+
+**任务二**：工具链落地题——为上面修好的文件写一个 `.clang-format` 最小配置（基于 LLVM 或 Google 风格，指定 `BasedOnStyle`），写出 `.clang-tidy` 中启用 `modernize-*` 与 `cppcoreguidelines-*` 的写法；回答：为什么格式化要全自动、而「命名风格检查」适合放 CI 而不是 editor？
+
+**提示**：clang-format 是「无争议的机械转换」（缩进、括号位置交给工具，人只管内容）；clang-tidy 的命名/语义检查有讨论余地，放 CI 让 reviewer 聚焦真正的设计问题。
+
+**参考实现**（先自己写完再看）：
+
+```yaml
+# .clang-format
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 100
+```
+
+```yaml
+# .clang-tidy
+Checks: >
+  -*,
+  modernize-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-owning-memory
+```
+
+```text
+分工：clang-format 全自动（提交钩子/CI 统一执行，diff 干净）；
+clang-tidy 命名与语义放 CI（新代码必须干净，存量代码用 --fix 渐进收敛）；
+编辑器只做即时反馈——「检查有争议、格式无争议」决定了两者的自动化程度。
+```
+
+要点自查：能写出「两个配置文件 + 一条分工判据」就算掌握本篇的工具链落地；格式化由工具负责、人只改内容，与 [Markdown 表格](/markdown/100-Table) 的格式化纪律同源。

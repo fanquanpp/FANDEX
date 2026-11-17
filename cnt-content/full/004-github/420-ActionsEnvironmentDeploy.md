@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: 从「生产数据库密码躺在仓库级 Secrets 里，任何 job 都能读」这个真实隐患切入，动手创建 environment、配保护规则和审批流，讲清环境级密钥覆盖规则、多环境渐进部署工作流与并发防踩踏。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/380-ActionsTrigger'
   - 'github/410-ActionsArtifact'
@@ -119,9 +119,9 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: pnpm install --frozen-lockfile && pnpm build:all
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: build-output
           path: dist/
@@ -131,7 +131,7 @@ jobs:
     environment: staging
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { name: build-output, path: dist/ }
       - run: ./deploy.sh staging
 
@@ -140,7 +140,7 @@ jobs:
     environment: production          # 停下等审批
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { name: build-output, path: dist/ }
       - run: ./deploy.sh production
 ```

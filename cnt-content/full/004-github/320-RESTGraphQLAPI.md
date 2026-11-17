@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: GitHub API详解：REST与GraphQL双路线对比（餐厅点餐类比）、认证方式、curl/gh api调用与速率限制。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/300-CodeQLCodeScanning'
 prerequisites:
@@ -339,6 +339,38 @@ gh api graphql -f query='{ rateLimit { limit cost remaining resetAt } }'
 | 只想取部分数据却拿到一大包 | 响应体积大、慢 | 用了 REST 套餐端点 | 改用 GraphQL 按需声明字段 |
 | 分页只返回一页 | 数据不全 | REST 默认 per_page=30 且未处理分页 | 用 `per_page=100` + `--paginate` 或 Link 头翻页 |
 | Token 误提交到仓库 | 密钥扫描告警 | Token 硬编码进代码 | 撤销 Token；改用环境变量或 gh auth |
+
+## 8. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：用 curl 在 `octocat/Hello-World` 创建一个带 `bug` 标签的 Issue（标题「CI 失败」，正文一句描述）。写出完整命令，注意两个必需的请求头。
+
+**任务二**：用 `gh api` 改写上面这条调用，并从中提取返回 JSON 里的 `number` 字段。
+
+**任务三**：判断——（a）未认证调 REST 的配额是多少？（b）GraphQL 的限额为什么用「点数」而不是次数？（c）Token 明明有效却查某个私有仓库返回 404，最可能的原因是什么？
+
+**提示**：curl 需要 `Authorization: Bearer` 与 `Content-Type: application/json`；gh api 用 `-f` 传表单字段、`--jq` 提字段；（c）考 GitHub 对无权限资源的「伪装」策略。
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 任务一
+curl -X POST \
+  -H "Authorization: Bearer ghp_xxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"CI 失败","body":"main 分支测试连续失败","labels":["bug"]}' \
+  https://api.github.com/repos/octocat/Hello-World/issues
+
+# 任务二
+gh api repos/octocat/Hello-World/issues \
+  -f title="CI 失败" -f body="main 分支测试连续失败" \
+  --jq '.number'
+```
+
+任务三参考答案：（a）60 次/小时（按 IP 计），所以脚本必须认证；（b）GraphQL 每个查询按复杂度计分，字段越多、嵌套越深消耗越高，点数制比次数制更公平；（c）Token 缺少该私有仓库的权限——GitHub 对无权限的资源返回 404 而不是 403，用于避免泄露资源是否存在。
+
+要点自查：认证永远是第一个 401/403/404 排查项；REST 分页默认 30 条、上限 100，批量场景用 `gh api --paginate`；「简单单资源用 REST、关联数据一次取用 GraphQL、事件推送用 Webhooks」是三条路线的分工。
 
 ## 9. 一句话记忆
 

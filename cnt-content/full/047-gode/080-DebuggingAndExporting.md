@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 打开 Node inspector 做断点调试，配置导出策略把 TS 项目发布到五大原生平台
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'gode/070-NpmWorkflow'
   - 'godot/130-ExportingProjects'
@@ -112,6 +112,8 @@ async function runLevelTask(task: () => Promise<void>): Promise<void> {
 
 工具链要求分两种情况：无 npm 依赖的项目导出时不需要系统安装 Node.js 或 npm；有依赖的项目要求 node/npm 在 PATH 中且依赖已安装（node_modules 必须存在）。
 
+目标平台有一条边界必须先说清：以上流程覆盖五大原生平台；Web（wasm32）的官方路径是 2.4.6 起的轻量版插件 [godot-js](https://github.com/godothub/godot-js/releases)，与完整版 Gode 在同一项目中二选一安装。它基于同一套源码，脚本写法与 Gode 相同，但去掉了大部分 Node.js 运行时——原生 .node 插件、子进程助手、Worker、Inspector、ICU/Intl、crypto/TLS、SQLite 等系统能力都不在轻量版里，纯 JS npm 包若依赖这些功能同样无法使用。Web 导出还有三个配套条件：Godot 4.7 的 wasm32 自定义导出模板（随 godot-js 插件包分发）、导出预设启用线程与 GDExtension、托管服务器提供 COOP/COEP 响应头。发布目标包含 Web 时，先用"依赖能否离开完整 Node 运行时"评估 npm 依赖，再决定装哪个插件。
+
 有 npm 依赖时，根目录 `gode.json` 的 export 配置控制打包行为，模板如下：
 
 ```json
@@ -153,6 +155,7 @@ flowchart TD
 - 断点永远打不上——inspector 默认关闭，先确认 `res://gode.json` 里 `enabled: true`，再以启动打印的真实 URL 附加（不可手写地址）；
 - VS Code 断点落在编译产物上、变量名全是压缩后的——`sourceMapPathOverrides` 没配或写错，`res://*` 必须映射到工作区目录；
 - 编辑器里运行正常，一导出就失败——按官方提醒先检查 `export.npm` 六项配置，误关闭 `exportDependencies` 或 `includeNodeModules` 是最常见原因；
+- 导出预设里找不到 Web 平台——完整版 Gode 只覆盖原生平台，Web 走轻量版 godot-js（与完整版二选一安装，缺少完整 Node 能力，见"项目导出"一节的平台边界说明）；
 - 局域网另一台机器连你的 inspector 调试——这是高危事故：调试器可执行任意 JS，host 保持 `127.0.0.1`，release 保持 inspector 关闭；
 - await 后抛的异常在日志里无声无息——异步边界 try/catch 记录加重抛（见上文模式），并学会从终端启动 Godot 看 Node/V8 warning；
 - 自检问题一：console.log 与 GD.print 的区别是什么？（Node console API 属终端诊断，不保证镜像到 Godot 输出面板；给引擎看的日志走 GD.print/printerr）

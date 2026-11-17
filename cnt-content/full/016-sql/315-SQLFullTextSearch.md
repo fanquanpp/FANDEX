@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: LIKE 前缀匹配的性能困境、倒排索引心智模型，MySQL FULLTEXT、PostgreSQL tsvector/tsquery、SQL Server CONTAINS 三方言对照与中文分词现状
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -195,6 +195,48 @@ WHERE MATCH(title, body) AGAINST('全文 索引');
 ```
 
 判读要点：相关度只在同一查询的结果集内有意义；n=2 的 ngram 下搜"索引"能命中"全文索引"，搜单字"引"则受 `ngram_token_size` 下限限制。
+</details>
+
+## 遮码自检
+
+遮住答案先答；全文检索题的判断标准是"能对一次搜索说出'拆词→建目录→查目录→排序'四步发生在哪"。
+
+**第 1 题：`LIKE '无线%'` 和 `LIKE '%无线%'` 谁能走 B-tree 索引？为什么差一个百分号天壤之别？**
+
+<details><summary>参考答案</summary>
+
+前者能：前缀已知等于一个范围扫描，B-tree 按字典序定位起点；后者不能：任何行都可能
+是答案，索引无从定位，退化为全表逐行扫。倒排索引解决的正是后者——写入时拆词建
+"词 → 文档列表"目录，查询变成查目录求交集。
+</details>
+
+**第 2 题：MySQL 的 FULLTEXT 对中文整句为什么几乎搜不到东西？`WITH PARSER ngram` 补的是什么？**
+
+<details><summary>参考答案</summary>
+
+MySQL 默认分词器按空格与标点切词，中文整句没有分隔符，整句成一个"词"，搜任何单个
+词都匹配不上。ngram 解析器（5.7.6+ 内置）按 N 字符滑窗切词（`ngram_token_size` 默认
+2）："数据库"被切成"数据"与"据库"两个词元，能互相命中但精度一般。
+</details>
+
+**第 3 题：PostgreSQL 里为什么"表达式与索引必须同形"才走得上 GIN 全文索引？**
+
+<details><summary>参考答案</summary>
+
+GIN 建在表达式 `to_tsvector('english', name || ' ' || description)` 的**结果**上；
+查询条件若写 `to_tsvector('simple', ...)` 或换了拼接顺序，产生的是另一个表达式，
+优化器对不上号，索引白建。所以要么把 tsvector 固化成生成列再索引，要么两处严格
+同形（同一分词配置、同一表达式）。
+</details>
+
+**第 4 题：站内搜索第一版用数据库全文，什么时候该换独立搜索引擎？判断依据是什么？**
+
+<details><summary>参考答案</summary>
+
+出现三类信号就该换：相关度要求高（需要自定义打分、同义词、拼音纠错）；数据量与
+查询量超出库的舒适区（全文索引膨胀拖垮写路径）；多语种分词需求超出内置分词器。
+判断依据不是"功能有没有"，而是"检索需求是否已经从'过滤'升级成'排序与召回'"——
+数据库全文擅长前者，独立引擎擅长后者。
 </details>
 
 ## 检验清单

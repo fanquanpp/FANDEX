@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: VS Code 安装配置：三平台安装、code 命令行、扩展管理与 settings.json 常用配置
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'shell/050-IDEEditorSelection'
   - 'shell/070-PluginEcosystem'
@@ -60,7 +60,7 @@ sudo apt install code    # Ubuntu 系统安装 VS Code（需已添加微软软�
 ```bash
 code --version
 # 预期输出类似：
-# 1.9x.x
+# 1.14x.x
 # 488a1f239235055e34e673291fb8d8c810886f81
 # x64
 ```
@@ -172,3 +172,21 @@ code --add ./shared              # 把文件夹添加进当前工作区
 - macOS 的 cask 安装不会自动注册 `code` 命令，需手动执行一次 Shell Command
 - settings.json 分"用户级"与"工作区级"，团队规范放工作区级并提交进仓库
 - `code --goto 文件:行:列` 配合报错输出定位代码，是 CLI 与 GUI 结合的典型用法
+
+## 8. 动手自检：遮住命令，说出每一步
+
+先遮住参考答案，按题干自己写出验证步骤，再对照。
+
+1. 三条新机器装完后的验证命令：GUI 正常、PATH 正常、扩展能装各对应哪一条？
+2. 写出「把一个仓库的扩展清单带到新机器」的完整命令序列（导出与安装两步）。
+3. 测试报错指向 `src/utils.js:42:8`，写出用 code 命令直接跳到该位置的命令。
+4. `code -d a.txt b.txt` 和在 VS Code 里手动打开两个文件比较，有什么本质区别？
+
+<details>
+<summary>参考答案</summary>
+
+1. GUI：点图标能启动；PATH：终端 `code --version` 有输出（第 0 节的三条状态）；扩展：`code --install-extension <id>` 后 `code --list-extensions` 能看到它。
+2. 旧机器 `code --list-extensions --show-versions` 拿到清单，逐行转成 `code --install-extension <发布者.名称>`；新机器批量执行（或存成 setup 脚本进仓库）。这也是第 3 节"脚本化配齐环境"的落地。
+3. `code --goto src/utils.js:42:8`——行与列都以冒号分隔，比滚动查找快一个数量级（第 2 节）。
+4. `-d` 打开的是 diff 编辑器（左右对照高亮差异），手动打开两个文件只是并排两个普通编辑器，没有差异计算——code 命令把「比较」变成了一个可脚本化的动作。
+</details>

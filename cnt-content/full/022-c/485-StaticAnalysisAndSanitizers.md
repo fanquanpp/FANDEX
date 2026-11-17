@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C 代码静态分析与 Sanitizers 四件套：编译器警告分级、cppcheck/clang-tidy 工作流、ASan/UBSan/TSan/MSan 原理与实战、CI 警告门禁。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'c/470-BuildSystem'
   - 'c/495-DynamicDebuggingGDB'
@@ -1518,6 +1518,28 @@ CI 只对「新增警告」失败；每周安排清理日削减基线，而不�
 - Valgrind Manual: http://valgrind.org/docs/manual/manual.html
 - cppcheck Manual: http://cppcheck.sourceforge.net/manual.pdf
 - clang-tidy: https://clang.llvm.org/extra/clang-tidy/
+
+## 遮码自检
+
+遮住上文工具清单与命令、先自己答，再展开对照。
+
+1. 编译期四道防线的顺序与分工：警告、静态分析、Sanitizer、fuzzing 各抓哪类问题？
+2. 默写 `-Wall -Wextra -Werror -g` 的含义；为什么调试信息 -g 要常开？
+3. ASan 与 Valgrind 的取舍：速度、环境要求、能抓的问题各差在哪？UBSan 抓什么？
+4. `-fsanitize=thread` 与 `-fsanitize=address` 能一起开吗？为什么？
+5. CI 里接入 cppcheck 与 clang-tidy 的两条命令各依赖什么？存量警告怎么管理？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 顺序即成本递增：警告（-Wall，编译期零运行成本，抓低级失误）→ 静态分析（cppcheck/clang-tidy，跨函数路径推理，抓逻辑隐患）→ Sanitizer（运行时插桩，抓内存/UB/数据竞争的实况）→ fuzzing（海量随机输入喂给带 Sanitizer 的程序，抓深层可达缺陷）。
+2. -Wall 常用警告全开、-Wextra 额外警告、-Werror 把警告升级为错误（新代码必须零警告）、-g 生成调试信息——没有 -g，崩溃时 ASan/GDB 报告里只有地址没有 文件:行号。
+3. ASan：编译期插桩，约 2 倍慢、要重编译，抓 heap/stack/overflow、use-after-free、泄漏；Valgrind：二进制翻译，约 10-50 倍慢、不用重编译，memcheck 还能抓未初始化值（加 --track-origins）。UBSan 抓有符号溢出、越界移位、空指针解引用等未定义行为且开销小——日常开发常开。
+4. 不能：TSan 与 ASan 用了不兼容的插桩机制，同时开会在运行期直接拒绝——分两次跑（构建开关切换），一次抓内存一次抓竞争。
+5. cppcheck：`cppcheck --enable=warning,error --error-exitcode=1 src/`（error 级直接失败）；clang-tidy：`cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON` 先导出编译数据库，再 `run-clang-tidy -p build`。存量警告生成基线清单进仓库，CI 只对新增警告失败，每周清理削减基线。
+
+</details>
+
 ## 参考与致谢
 
 - GCC Warning Options: https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html

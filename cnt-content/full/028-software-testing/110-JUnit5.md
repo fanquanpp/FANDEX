@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: JUnit 5测试框架：注解、断言、参数化测试、扩展模型与最佳实践详解。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'software-testing/120-APIAutomationTest'
 prerequisites:
@@ -18,7 +18,8 @@ prerequisites:
 JUnit 是 Java 生态使用最广的单元测试框架。当前主线是 JUnit 5（Jupiter 编程
 模型），2025-09-30 团队又发布了 JUnit 6.0：Platform/Jupiter/Vintage 统一为
 单一版本号、基线提升到 Java 17（Kotlin 2.2），注解与编程模型和 5.x 基本兼容，
-存量代码升级成本很低；仍在 Java 8 上运行的老项目可继续使用 5.x 系列。本文
+存量代码升级成本很低；仍在 Java 8 上运行的老项目可继续使用 5.x 系列。6.x 线
+目前演进到 6.1.x（6.1.3，2026-08-07 发布，以缺陷修复与小增强为主）。本文
 内容对 5.x 与 6.x 均适用。
 
 前置知识：Java 基础语法、Maven 或 Gradle 的基本使用、面向对象常识。
@@ -34,11 +35,11 @@ JUnit 是 Java 生态使用最广的单元测试框架。当前主线是 JUnit 5
 ### 1.2 Maven 依赖
 
 ```xml
-<!-- JUnit 6：三模块统一版本号，要求 Java 17+ -->
+<!-- JUnit 6：三模块统一版本号，要求 Java 17+（示例取 6.x 线当前版本） -->
 <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter</artifactId>
-    <version>6.0.0</version>
+    <version>6.1.3</version>
     <scope>test</scope>
 </dependency>
 
@@ -300,6 +301,89 @@ class MyTest {
 | 参数化      | 减少重复代码       |
 | 标签过滤    | `@Tag("slow")`     |
 | 超时保护    | `@Timeout`         |
+
+## 教学自检
+
+以下题目按遮码自检法设计：先遮住参考答案自己写，再对照。
+
+### 题 1：生命周期（遮码题）
+
+任务：写一个测试类：所有测试开始前初始化一次昂贵资源，每条测试前重置状态，
+全部结束后释放资源。
+
+提示：两个「一次性」的注解必须是什么修饰符？为什么？
+
+参考答案：
+
+```java
+class OrderServiceTest {
+    static ExpensiveResource resource;
+
+    @BeforeAll
+    static void initAll() { resource = new ExpensiveResource(); }
+
+    @BeforeEach
+    void resetState() { resource.reset(); }
+
+    @AfterAll
+    static void tearDownAll() { resource.close(); }
+}
+```
+
+自检：`@BeforeAll/@AfterAll` 默认是「类级、每类一次」，而默认生命周期是
+每方法新建实例——没有实例就没有 `this`，所以必须是 `static`（或加
+`@TestInstance(Lifecycle.PER_CLASS)`）。
+
+### 题 2：CSV 参数化（遮码题）
+
+任务：用 `@CsvSource` 参数化测试 `Calculator.add`：1+1=2、2+3=5、-1+1=0。
+
+参考答案：
+
+```java
+@ParameterizedTest
+@CsvSource({"1, 1, 2", "2, 3, 5", "-1, 1, 0"})
+void testAdd(int a, int b, int expected) {
+    assertEquals(expected, Calculator.add(a, b));
+}
+```
+
+自检：方法参数顺序与 CSV 列顺序一一对应；`@ValueSource` 只能给单参数，
+多参数必须 `@CsvSource` 或 `@MethodSource`。
+
+### 题 3：嵌套测试（遮码题）
+
+任务：为 `Stack` 写嵌套测试结构：外层「新建栈」断言 isEmpty，内层
+「push 之后」断言 not empty。内层的 `@BeforeEach` 应该做什么？
+
+参考答案：
+
+```java
+@Nested
+class WhenNew {
+    @Test void isEmpty() { assertTrue(stack.isEmpty()); }
+
+    @Nested
+    class AfterPushing {
+        @BeforeEach
+        void pushOne() { stack.push("x"); }
+
+        @Test void isNotEmpty() { assertFalse(stack.isEmpty()); }
+    }
+}
+```
+
+自检：嵌套类的外层 `@BeforeEach` 会先于内层执行——内层天然继承外层的
+setup，这正是嵌套结构表达「场景状态机」的价值。
+
+### 题 4：JUnit 6 与断言组织（概念题）
+
+任务：(a) JUnit 6 相对 5.x 的两个关键变化是什么？(b) 五个断言要一次看到
+全部失败，用哪个 API？
+
+参考答案：(a) Platform/Jupiter/Vintage 统一为单一版本号、Java 基线从 8
+提升到 17，注解与编程模型保持兼容；(b) `assertAll("描述", () -> ...,
+() -> ...)`——它收集所有断言结果后统一报告，普通串行断言遇错即停。
 
 ## 小结
 

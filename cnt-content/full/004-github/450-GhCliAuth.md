@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 'GitHub CLI（gh）安装与认证的完整教学：交互式登录、Token 登录、多账户切换、SSH 密钥管理与 CI 环境配置。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/440-GitHubCLI'
   - 'github/480-GhRepoManage'
@@ -239,7 +239,7 @@ jobs:
     permissions:            # 最小权限：声明工作流需要什么
       contents: write       # 创建 Release 需要写 contents
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: 用 gh 创建 Release
         env:                # GH_TOKEN 指向内置 token，gh 即完成认证
           GH_TOKEN: ${{ github.token }}
@@ -265,6 +265,40 @@ jobs:
 - **不落盘、不入库**：token 不写进代码、截图、日志；`token.txt` 用完即删；`.gitignore` 中排除一切凭据文件（详见 github/070-GitignoreConfig）。
 - **`--show-token` 输出即泄露面**：截屏、录屏、结对演示前先确认没有带 token 的输出。
 - **离职/换机处理**：在 GitHub Settings 里删除旧设备对应的 token 与 SSH key（或用 `gh ssh-key delete`），再为新设备重新认证。
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考答案自己写，写完再对照。
+
+**任务一**：新机器装好 gh，写出登录并验证的两条命令；向导里「Authenticate Git with your GitHub credentials?」选 yes 的好处是什么？
+
+**任务二**：CI 里不能用交互登录——写出给 gh 供 Token 的环境变量名与对应命令形态；这个 Token 至少需要哪些 scope？
+
+**任务三**：判断——（a）个人电脑同时有公司与个人两个 GitHub 账号，gh 怎么共存？（b）`gh auth status` 显示 token 缺 `repo` scope 导致 API 报错，补救命令是什么？
+
+**参考答案**（先自己写完再看）：
+
+```bash
+# 任务一
+gh auth login          # 浏览器设备码流程完成认证
+gh auth status         # 验证：账号、token、scopes 一目了然
+# 选 yes 的好处：gh 顺手把 git 的 HTTPS 凭据助手配好，
+# 之后 git push/pull 也免密——认证只做一次。
+
+# 任务二
+export GH_TOKEN=ghp_xxxx    # gh 读取该环境变量作为凭据
+gh repo view owner/repo     # 脚本里照常调用
+# 最小 scope：gh cli 的常规操作需要 repo（私有库可见）+ read:org
+# （组织数据）+ workflow（改工作流文件时）；最小化按需给。
+
+# 任务三
+# (a) gh auth login 登录两个账号后用 gh auth switch 切换，
+#     （旧版本用 -h 指定主机多账户，现在 switch 是标准姿势）；
+# (b) gh auth refresh -s repo —— 走浏览器补充 scope，
+#     不必重新走完整登录流程。
+```
+
+要点自查：gh 的凭据存在系统 keyring，人机交互登录是默认推荐；脚本/CI 走 `GH_TOKEN`（或 `GITHUB_TOKEN`）环境变量，Token 登录不写 keyring；scope 不足用 `gh auth refresh -s` 增量补，不推荐「删掉重登」；多账户切换、凭据过期、scope 检查都收敛在 `gh auth status` 一个命令里。
 
 ## 11. 小结
 

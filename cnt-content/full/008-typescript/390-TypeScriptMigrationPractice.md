@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 渐进式迁移策略、类型覆盖提升、常见迁移陷阱与生产级最佳实践，涵盖 tsconfig 演进、JSDoc 桥接、ts-migrate 自动化与大型项目案例研究。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/350-TypeScriptEngineeringConfig'
   - 'typescript/180-SatisfiesOperator'
@@ -2061,6 +2061,12 @@ module.exports = {
 - [ ] 更新文档
 - [ ] 总结经验教训
 
+### 编译器版本迁移（2026 起）
+
+- [ ] 把 tsconfig 关键项（`strict`/`module`/`target`/`rootDir`/`types`）显式写全，锁档再升级——TS 6.0 起这些默认值已翻转
+- [ ] 清理弃用项：`moduleResolution: node/node10`、`target: es5`、`outFile`、`baseUrl` 依赖等（TS 6.0 弃用、7.0 移除）
+- [ ] 确认自己是「普通用户」还是「编译器 API 消费者」，后者先停在 6.0 双轨（完整路线见 [TS 6.0 与 7.0](/typescript/680-TypeScript6And7CompilerEvolution)）
+
 ## 附录 D：第三方库类型声明速查
 
 ### 有官方 @types 的库
@@ -2156,3 +2162,11 @@ export {};
 | Module Augmentation | 模块增强 | 扩展已有模块的类型 |
 | Project Reference | 项目引用 | `references` 配置 |
 | Composite Project | 复合项目 | 支持项目引用的项目 |
+
+## 自检
+
+- 「允许 any 但记录原因」比「禁止 any」好执行在哪？你的团队用什么字段记录（注释、lint 报告白名单还是 coverage 报告）？
+- 迁移顺序为什么「底层模块优先」？自上而下会反复发生什么返工？
+- 渐进式收紧 tsconfig 的一档长什么样？写出从 `strict: false` 到 `strict: true` 之间你会上的一串中间开关。
+- 遮住附录 C 的「编译器版本迁移」小节，自己复述 2026 年升级 6.0/7.0 的三步：锁档、清弃用项、定位是否 API 消费者。
+- 第三方库既没有 `@types` 也没有自带类型时，你的三条路是什么（谁建声明、放哪、怎么不阻塞主线）？

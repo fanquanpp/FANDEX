@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以一个桌面小应用学会声明式 UI：状态驱动重组、remember 与状态提升、LaunchedEffect 副作用、Modifier 顺序陷阱，附 2026 年 Compose Multiplatform 各平台稳定后的选型现状。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'kotlin/440-KotlinAndroid'
   - 'kotlin/460-KotlinMultiplatform'
@@ -68,8 +68,8 @@ Compose Desktop 不需要 Android Studio，一个 Gradle 项目即可。最小 `
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "2.2.20"
-    id("org.jetbrains.compose") version "1.9.0"
+    kotlin("jvm") version "2.4.21"
+    id("org.jetbrains.compose") version "1.12.2"
 }
 
 repositories {
@@ -84,7 +84,7 @@ dependencies {
 }
 ```
 
-版本号会随时间推进（截至 2026 年秋，Compose Multiplatform 稳定线在 1.9.x），以 compose-multiplatform 官方模板为准：`gradle init` 后照抄模板的版本目录（libs.versions.toml）最省心。
+版本号会随时间推进（截至 2026 年 11 月，Compose Multiplatform 稳定线在 1.12.x，当前稳定 1.12.2 发布于 2026 年 10 月 15 日；注意 2026-09 的 androidx.compose.runtime 1.12.1 属 AndroidX 版本线，与 org.jetbrains.compose 的版本号不是一套），以 compose-multiplatform 官方模板为准：`gradle init` 后照抄模板的版本目录（libs.versions.toml）最省心。
 
 `src/main/kotlin/Main.kt`：
 
@@ -286,6 +286,35 @@ fun BadList() {
 ```
 
 思路：`LaunchedEffect(Unit)` 只在首次组合执行一次，之后数据源更新不会刷新（key 应包含数据版本，或改由上层传入列表）；`items` 未提供 key，且列表项没有任何交互尚可接受，但若加点击动画就会错位——练习目标是说出 key 的作用。
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：remember 的两种身份**。`remember { mutableStateOf(0) }` 必须包 State，而 `remember { parse(cfg) }` 里是普通值——两者各解决什么问题？
+
+参考答案：重组会把可组合函数从头重跑，局部变量不留存。`mutableStateOf` 把值写进 Compose 的记忆系统并让读取处订阅变化（写触发重组）；普通值用 remember 只为「跨重组存活、避免重复计算」，值不变就不会触发重组。判别式：值要不要「变化时通知 UI」——要就 State，不要就普通 remember。
+
+**练习 2：Modifier 顺序实验**。`Modifier.padding(8.dp).background(Color.Red)` 与 `Modifier.background(Color.Red).padding(8.dp)` 画出的红色区域一样吗？先画再验证。
+
+参考答案：不一样——Modifier 自左向右逐层包裹：前者先留出 padding 再对整块（含 padding）上色，后者先上色再收缩、红色只贴内容区。顺序即语义，写错不报错只画歪，只能靠渲染对比发现。
+
+**练习 3：状态提升判断**。答题计数器 `Counter()` 内部自持 `mutableStateOf`，要做成可复用组件该怎么改？写出提升后的签名与「该不该提升」的判断标准。
+
+参考实现：
+
+```kotlin
+@Composable
+fun Counter(
+    count: Int,
+    onIncrement: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Button(onClick = onIncrement, modifier = modifier) {
+        Text("答对 $count 题")
+    }
+}
+```
+
+判断标准：会被外部逻辑共享、随屏幕旋转恢复、或同一组件多处驱动——提升；纯私有交互细节（如按按压动画）——内聚。提升后组件无状态可复用，所有者负责状态生命周期。
 
 ## 下一步
 

@@ -9,7 +9,7 @@ prerequisites:
   - 'mybatis/070-MybatisPlusCrud'
   - 'spring-boot/100-TransactionManagement'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/430-MVCCPrinciple'
   - 'mybatis/090-PitfallsPerformance'
@@ -57,6 +57,16 @@ public class MybatisPlusConfig {
 ```
 
 这个类是 MP 的插件总线：一个 MyBatis 插件、一列 InnerInterceptor，query 走查询线、update 走更新线，把内部组件在合适的时机挨个调用。顺序不是随意的——060 引过官方建议：**会改写 SQL 的优先放入，只做检查的最后放入**。本篇四件套里分页与乐观锁各改各的语句（分页改 SELECT，乐观锁改 UPDATE），互不干扰可同档；防全表更新是纯检查，收尾。必须记死的硬约束只有一条：分页要排在多租户、动态表名这类会改写 SELECT 的插件之后——排错了，count 与 LIMIT 就基于错误形态的 SQL 计算。
+
+装总线还差最后一块砖：**JSqlParser 依赖**。总线里的解析类拦截器（分页改写、防全表检查、多租户）都要在运行期解析 SQL，而 MP 从 3.5.9 起把 JSqlParser 拆成独立模块、starter 不再默认携带——少引它，工程一启动就报类找不到，报错位置离原因十万八千里，是 3.5.9 及以后版本的升级清单里最容易漏的一项。引入方式：直接引 `mybatis-plus-jsqlparser`（保持跟进最新版 JSqlParser；需要锁老版本用 `mybatis-plus-jsqlparser-4.9`），或用 `mybatis-plus-bom` 统一管版本。以 3.5.18 为例：
+
+```xml
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus-jsqlparser</artifactId>
+    <version>3.5.18</version>
+</dependency>
+```
 
 ## 3. 分页：Page 对象与自定义 XML 分页
 

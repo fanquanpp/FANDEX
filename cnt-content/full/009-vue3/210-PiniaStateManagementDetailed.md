@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Store 定义、状态读写、异步操作与插件机制。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'vue3/110-ComponentSystem'
   - 'vue3/230-TypeScriptIntegration'
@@ -516,7 +516,23 @@ export const useUserStore = defineStore('user', () => {
 ## 13. 总结
 
 Pinia 是 Vue3 生态系统中推荐的状态管理库，它提供了简洁的 API、更好的 TypeScript 支持和强大的功能。通过本教程的学习，你应该已经掌握了 Pinia 的核心概念和使用方法，可以在实际项目中灵活运用。
-## 创建 Pinia
+
+> 版本提示：Pinia 4（2026-07）起为 ESM-only 包——CommonJS 的 require() 不再受支持，打包器需支持 ESM；Store API 本身与 3.x 一致，现有代码零改动迁移。
+
+## 自检
+
+回答不出的回对应小节；Store 题先遮住示例代码自己写，再对照。
+
+1. defineStore 的两个参数各是什么？id 为什么必须全局唯一？
+2. $patch 与逐字段赋值相比省了什么？什么时候该用 $patch 传函数形态？
+3. getter 里访问另一个 store 的正确写法是什么？为什么推荐在 getter 内部调用而不是顶层解构？
+4. 异步 action 抛错时调用方怎么感知？$onAction 订阅能拿到什么错误信息？
+5. storeToRefs 解决什么问题？直接解构 store 实例丢的是什么？
+6. setup 语法的 store 里为什么不能 return this？两类写法各自的适用场景？
+
+## 附录：Pinia API 速查
+
+### 创建 Pinia
 
 **createPinia 创建实例**
 ```typescript
@@ -543,7 +559,7 @@ app.use(pinia);
 
 ---
 
-## defineStore 定义 store
+### defineStore 定义 store
 
 **Options 选项式**
 `const <useStore> = defineStore(<id>, <options>);`
@@ -623,7 +639,7 @@ export const useUserStore = defineStore('user', {
 
 ---
 
-## 使用 store
+### 使用 store
 
 **获取 store**
 `const <store> = useXxxStore();`
@@ -664,7 +680,7 @@ const { increment } = store;
 
 ---
 
-## State 操作
+### State 操作
 
 **直接修改**
 ```typescript
@@ -705,7 +721,7 @@ unsubscribe();
 
 ---
 
-## Getters
+### Getters
 
 **基础 getter**
 ```typescript
@@ -753,7 +769,7 @@ export const useCartStore = defineStore('cart', {
 
 ---
 
-## Actions
+### Actions
 
 **同步 action**
 ```typescript
@@ -820,7 +836,7 @@ unsubscribe();
 
 ---
 
-## 多 store 组合
+### 多 store 组合
 
 **store 互相调用**
 ```typescript
@@ -846,7 +862,7 @@ export const useCartStore = defineStore('cart', () => {
 
 ---
 
-## 持久化
+### 持久化
 
 **手动持久化**
 ```typescript
@@ -888,7 +904,7 @@ app.use(pinia);
 
 ---
 
-## 组件中使用
+### 组件中使用
 
 ```vue
 <script setup lang="ts">

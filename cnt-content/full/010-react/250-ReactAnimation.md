@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 动画分层指南：CSS 过渡/动画驱动、退场动画与卸载时机、motion（Framer Motion）与 WAAPI、rAF 循环与 React 渲染解耦、prefers-reduced-motion。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/230-ReactRouteAdvanced'
   - 'react/240-ReactI18n'
@@ -224,6 +224,19 @@ motion 库内置该支持（`MotionConfig reducedMotion="user"`）；自定义 C
 - 分层选型：CSS（交互反馈）-> motion（进出场、layout/FLIP 编排）-> WAAPI/rAF（程序化、逐帧）。
 - Tab 指示条、列表重排这类布局动画用 `layoutId`/`layout` 声明，避免手写 FLIP。
 - 无条件尊重 `prefers-reduced-motion`，这是无障碍要求的一部分（见[React 无障碍](/react/320-ReactAccessibility)）。
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **预测题**：`{open && <Panel />}` 直接卸载面板，想给退场加 200ms 过渡为什么天生做不到？React 层的正确思路是什么？
+   答案：条件渲染在 state 变化那帧就销毁 DOM，CSS transition 需要元素「留在文档里」才有起点和终点。思路是「延迟卸载」——多存一个 shouldRender 状态，先切换视觉类名、监听 transitionend（或 setTimeout）后再真正卸载；motion 的 AnimatePresence 把这套状态机封装好了。
+2. **修 Bug 题**：给列表项加了入场动画后，某些项的动画时不时自己重播一遍，最可能的原因是什么？
+   答案：key 不稳定（用了数组下标或随机值）。key 变了 React 就销毁重建该元素，重建即重新入场动画；key 必须是稳定业务 ID。
+3. **辨析题**：为什么动画属性优先 `transform` 和 `opacity` 而不是 `width`/`top`？
+   答案：transform/opacity 只由合成器线程处理，不触发重排与重绘，掉帧风险低；width/top/margin 每帧都要重新计算布局，元素越多卡顿越明显。
+4. **规则题**：rAF 动画循环里为什么「帧数据不进 state」？清理函数忘写会怎样？
+   答案：每帧 setState 触发全量重渲染，大列表直接掉帧——帧内数据放 ref 或直接操作 Canvas/DOM，只把需要展示的终值 setState；忘写清理则组件卸载后 rAF 继续跑、StrictMode 双跑下两个循环叠加，内存泄漏与诡异动画随之而来。
 
 ## 速查
 

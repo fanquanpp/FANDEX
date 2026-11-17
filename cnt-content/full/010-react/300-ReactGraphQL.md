@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 接入 GraphQL：查询语言最小集、fetch 裸调与 Apollo Client 完整接入、useQuery/useMutation 与缓存更新、分页策略、与 REST+TanStack Query 的选型对比。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/280-ReactWebAssembly'
   - 'react/290-ReactWebSocket'
@@ -240,3 +240,16 @@ fetchMore({ variables: { cursor: data.feed.endCursor },
 subscription OnOrderCreated { orderCreated { id title } }
 # 通道：GraphQL over WebSocket；客户端用 useSubscription 订阅
 ```
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **预测题**：服务端返回的 User 对象只有 name 与 email 字段，但查询里写了 `age`，会发生什么？REST 同样的场景呢？
+   答案：GraphQL 按查询文档校验——字段不存在直接报错，请求都不发出去；REST 会把整个固定端点响应返回，多余字段靠客户端忽略。这就是「按需取、类型安全」的来源。
+2. **辨析题**：裸 fetch 就能发 GraphQL 查询，为什么还要 Apollo Client？
+   答案：GraphQL 只是一个 POST 请求体里的字符串，发请求零门槛；但归一化缓存（`__typename:id` 扁平存储、多处引用共享一份数据）、mutation 后按 id 自动合并进缓存、分页 fetchMore——这些缓存层能力才是库的价值。
+3. **修 Bug 题**：关注按钮 mutation 返回了 `id + following`，但页面上的粉丝数没有刷新，为什么？怎么写 mutation 返回值能修好？
+   答案：缓存里对应对象的字段没有全部更新——mutation 只写了 `following`，粉丝数字段还是旧值。让 mutation 返回变更影响的所有字段（粉丝数、following），Apollo 就能按 `User:id` 自动合并，无需手动 refetch 或 update。
+4. **规则题**：什么样的项目不适合 GraphQL？一句话判据。
+   答案：数据形状简单、页面与端点一一对应、没有「一个视图要聚合多个资源」的需求时，REST + 缓存库（TanStack Query）更省维护成本——GraphQL 的收益来自字段级按需取与多资源一次取齐，没有这两类需求就只留下了 schema 维护成本。

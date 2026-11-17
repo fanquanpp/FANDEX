@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 分支模型设计（GitHub Flow / Git Flow）、保护规则配置与强制策略。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/150-CollaborationDevelopmentStandard'
   - 'github/160-READMEFile'
@@ -223,6 +223,36 @@ SECURITY.md @security-lead
 | 无法批准自己的 PR | GitHub 界面无 Approve 按钮 | GitHub 不允许作者自审自批 | 邀请团队成员审查；配置 CODEOWNERS 指定审查者 |
 | 保护规则不生效 | 管理员仍能绕过 | 未勾选 "Include administrators" | 在规则中勾选"对管理员同样生效" |
 | 找不到所需检查项 | 状态检查下拉列表没有目标项 | 该检查从未运行过 | 先推送代码让检查运行一次，之后即可勾选为 required |
+
+## 6.5 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考答案自己写，写完再对照。
+
+**任务一**：三个团队各选一种分支模型——（a）三人小组的网站项目，持续部署，随时可发布；（b）多版本并行的手机 App，要同时维护 v2.x 和 v3.x；（c）开源库，只有 main 和短期分支。写出各自的模型名与理由。
+
+**任务二**：为 main 分支写出保护规则的**五条最小配置**（人话描述即可），并回答：想在组织层面一次给 50 个仓库套用同一套规则，用 branch protection 还是 Rulesets？
+
+**提示**：模型选型看两点——是否需要多版本并行维护、团队对流程重量的承受力；五条配置围绕「谁能改、怎么合、能不能强推」。
+
+**参考答案**（先自己写完再看）：
+
+```text
+任务一：
+(a) GitHub Flow —— 持续部署不需要 release 分支，main 随时可上线的项目越轻越好；
+(b) Git Flow —— 需要 develop 隔离日常开发、release/* 稳定化、多版本用 maintenance 分支持续维护；
+(c) GitHub Flow —— 开源贡献天然走 fork + PR，短生命周期分支即可。
+
+任务二（main 最小保护配置）：
+1. Require a pull request before merging —— 禁止直推；
+2. Require approvals（至少 1-2 人）—— 没有第二双眼睛不合入；
+3. Require status checks to pass —— CI 不绿不合；
+4. 禁止 force push —— 公共历史不可改写；
+5. 禁止删除 + Include administrators —— 规则对管理员同样生效。
+```
+
+任务二追问：用 **Rulesets**——规则集支持组织级批量下发、按分支名模式匹配、多个规则集可叠加，多仓库治理是它的主场；单仓库的简单保护用传统 branch protection 也够用。
+
+要点自查：模型没有优劣只有适配——判断标志是「要不要并行维护多个发布版本」；保护规则的本质是把「团队约定」变成「平台强制」，光写规范不配规则等于没有规范。
 
 ## 7. 一句话记忆
 

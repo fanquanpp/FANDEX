@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL存储过程与自定义函数详解：创建、参数、变量、流程控制、游标与异常处理。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/335-ObservabilitySystemSchemas'
   - 'mysql/290-FunctionalIndex'
@@ -504,7 +504,7 @@ SELECT name, CalculateAge(birthdate) AS age FROM employees;
 | :------- | :-------------- | :------------- |
 | 返回值   | OUT参数或结果集 | 单个标量值     |
 | SQL调用  | CALL            | SELECT中使用   |
-| DML操作  | 允许            | 不允许（一般） |
+| DML操作  | 允许            | 允许（不能修改调用语句正在读写的表） |
 | 事务控制 | 允许            | 不允许         |
 | 结果集   | 可返回多个      | 只返回一个值   |
 
@@ -544,14 +544,20 @@ SET o.discount = CASE
 END;
 ```
 
-### 6.3 函数中不能执行DML
+### 6.3 函数内 DML 的边界
 
 ```sql
--- 问题：函数中执行INSERT/UPDATE/DELETE报错
--- 解决方案：改用存储过程
+-- 误区：函数体完全不能写数据
+-- 事实（官方手册 §27.8 Restrictions for Stored Functions）：
+--   函数体内可以做 INSERT/UPDATE/DELETE，
+--   但禁止：显式或隐式 commit / rollback、
+--           返回结果集给调用者、FLUSH 语句、递归调用，
+--           以及修改"调用语句正在读取或写入的表"
+-- 例：SELECT calc_bonus(id) FROM employees 报错，若函数内
+--     UPDATE employees —— 正在 SELECT 的表不允许被同一语句改动
 
--- 函数只能做计算，不能修改数据
--- 如果需要修改数据，使用存储过程
+-- 若函数只是写"其他表"（审计日志类），是合法的；
+-- 需要"写入 + 事务 + OUT 参数"的编排时，改用存储过程
 ```
 
 ## 7. 动手实践：给订单库写一个"下单对账"过程
@@ -617,6 +623,51 @@ SELECT @oid AS 新订单号;
 
 </details>
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出骨架：一个"扣库存 + 建订单"的存储过程，要求任一步失败整体回滚、结果通过 OUT 参数告知调用方。说出 DELIMITER 在其中扮演什么角色。
+
+参考答案（先自己写，再对照）：
+
+```sql
+DELIMITER $$
+CREATE PROCEDURE place_order(IN p_pid INT, IN p_qty INT, OUT p_oid BIGINT)
+BEGIN
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    SET p_oid = NULL;
+  END;
+  START TRANSACTION;
+  UPDATE products SET stock = stock - p_qty
+    WHERE id = p_pid AND stock >= p_qty;
+  IF ROW_COUNT() = 0 THEN
+    ROLLBACK; SET p_oid = NULL;
+  ELSE
+    INSERT INTO orders (product_id, qty) VALUES (p_pid, p_qty);
+    SET p_oid = LAST_INSERT_ID();
+    COMMIT;
+  END IF;
+END$$
+DELIMITER ;
+```
+
+DELIMITER 只是**客户端**的分隔符切换（让客户端知道分号不再是语句结束），服务器端存储的是切好的一个整体；不是 SQL 语法的一部分，写进应用直发的 SQL 反而会报错。
+
+2. 概念自问：`DECLARE EXIT HANDLER FOR SQLEXCEPTION` 与 `DECLARE CONTINUE HANDLER` 的差别是什么？"游标 + NOT FOUND"为什么必须用 CONTINUE？
+
+参考答案（先自己答，再对照）：EXIT 触发后终止当前 BEGIN...END 块（配合 ROLLBACK 做"出错即撤退"）；CONTINUE 触发后继续执行下一句——游标循环正是靠"NOT FOUND 时继续走到 `LEAVE` 判断"来优雅退出，若用 EXIT 会在第一行数据取完后直接跳出整个块。两个 HANDLER 的差别就是"异常即中止"与"信号即状态"的语义分工。
+
+3. 判断题：游标是处理批量数据的首选，性能也好。
+
+参考答案（先自己答，再对照）：恰恰相反。游标是逐行取、逐行处理的"行模式"，在集合引擎上绕一圈又回到逐行——能用 `UPDATE ... JOIN`、`INSERT ... SELECT` 等集合操作完成的批处理，游标版本通常慢一个数量级以上。游标的正当场景只有"逐行逻辑必须调用外部/无法集合化"的少数场合。选择指南里"游标作为最后手段"就是这条纪律。
+
+4. 概念自问：存储函数（CREATE FUNCTION）与存储过程（CREATE PROCEDURE）的三条硬差异是什么？什么场景该用哪一个？
+
+参考答案（先自己答，再对照）：差异一，调用方式——函数嵌在 SQL 表达式里（SELECT fn(...)），过程用 CALL；差异二，返回——函数必须 RETURN 单值，过程靠 OUT/INOUT 参数；差异三，限制——函数体内可以做 DML（官方仅劝阻：更新表会带来表锁开销、降低并发），真正禁止的是：显式或隐式 commit/rollback（含 START TRANSACTION，事务控制归调用语句）、返回结果集的语句（SELECT 不带 INTO、SHOW、EXPLAIN、CHECK TABLE）、FLUSH、递归调用、PREPARE/EXECUTE 动态 SQL，以及修改调用它的语句正在读写的表；过程可以包含完整事务。取舍：表达式内复用的计算用函数，"一组带事务的写操作"用过程。
+
 ## 8. 总结与最佳实践
 
 ### 8.1 选择指南
@@ -633,6 +684,7 @@ SELECT @oid AS 新订单号;
 4. **避免游标**：能用集合操作就不用游标
 5. **添加注释**：存储过程和函数应包含用途说明
 6. **权限控制**：通过存储过程控制数据访问，不直接暴露表
+
 ## 存储过程基础
 
 **换行写法：创建无参存储过程**

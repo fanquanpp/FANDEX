@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin扩展函数编译原理详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'kotlin/160-SealedClassSealedInterface'
   - 'kotlin/200-InlineClass'
@@ -25,14 +25,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
-
-
-> 本文档对标 MIT 6.005、Stanford CS193P、CMU 15-410 教学水准，系统讲解 Kotlin 扩展函数（Extension Functions）从语言设计到 JVM 字节码实现的完整链路。内容覆盖 Kotlin 1.0 至 2.0 K2 编译器的演进，配套企业级生产代码、跨语言对比、形式化推导与习题解析。
+- 能说出扩展函数编译成 JVM 字节码后的真实形态（顶层静态方法 + 接收者首参），并据此解释 Java 如何调用 Kotlin 扩展
+- 能推演「成员函数优先于扩展函数」「扩展按声明类型静态解析」两条规则在重载与继承场景下的结果
+- 能解释扩展属性为什么没有幕后字段，以及可空接收者扩展的判空语义
+- 能识别扩展函数在二进制兼容性、命名冲突、`@JvmName` 与 K2 解析上的工程边界
 
 ## 1. 历史动机与发展脉络
 
@@ -166,6 +162,9 @@ JetBrains 在设计扩展函数时遵循了以下哲学：
 2022  Kotlin 1.7 — K2 预览
 2023  Kotlin 1.9 — K2 Beta
 2024  Kotlin 2.0 — K2 GA，扩展函数性能大幅提升
+2025  Kotlin 2.2 — 上下文参数等特性稳定；kotlinOptions DSL 报错，全面转向 compilerOptions
+2025  Kotlin 2.3 — 数据流穷尽检查稳定；语言 1.8 以下支持移除
+2026  Kotlin 2.4 — K1 不再支持；上下文参数、显式幕后字段 GA
 ```
 
 ---
@@ -723,9 +722,9 @@ fun <K, V> Map<K, V>?.isBlankSafe(): Boolean = this?.isEmpty() ?: true
 ```kotlin
 // build.gradle.kts
 plugins {
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.4.21"
     `maven-publish`
-    id("org.jetbrains.dokka") version "1.9.20"
+    id("org.jetbrains.dokka") version "2.2.0"
 }
 
 group = "com.example"
@@ -737,9 +736,9 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.14.4")
 }
 
 tasks.test {
@@ -750,17 +749,17 @@ kotlin {
     jvmToolchain(17)
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf(
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll(
             "-Xjsr305=strict",
-            "-Xcontext-receivers",
-            "-Xcontext-parameters",
             "-opt-in=kotlin.RequiresOptIn"
         )
-        jvmTarget = "17"
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
+// 注意：Kotlin 2.2 起 kotlinOptions{} DSL 直接报错，统一用上方 compilerOptions{}；
+// 旧写法里的 -Xcontext-receivers 已被上下文参数（默认开启）取代，且不能与 -Xcontext-parameters 同时启用。
 
 // 发布配置
 publishing {
@@ -1523,7 +1522,7 @@ fun main() {
 ```kotlin
 // build.gradle.kts
 plugins {
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.4.21"
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.14.0"
 }
 
@@ -1639,18 +1638,20 @@ data class User(val name: String, val age: Int)
 ### 7.7 Gradle 构建优化
 
 ```kotlin
-// 启用 Kotlin 编译器优化
+// 启用 Kotlin 编译器优化（2.x 写法）
+// 注：value class 自 1.5 起稳定，不再需要 -Xinline-classes；
+// 上下文参数自 2.4 起稳定且默认开启，-Xcontext-receivers 已废弃。
 kotlin {
     compilerOptions {
-        freeCompilerArgs.add("-Xinline-classes")
-        freeCompilerArgs.add("-Xcontext-receivers")
-        allWarningsAsErrors = true
+        allWarningsAsErrors.set(true)
     }
 }
 
-// 增量编译
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.incremental = true
+// 增量编译默认开启，无需配置；如需显式开关：
+kotlin {
+    compilerOptions {
+        incremental.set(true)
+    }
 }
 ```
 
@@ -2377,6 +2378,9 @@ final 成员：静态分发（基于声明类型）
 | 1.7 | K2 编译器预览 | Alpha |
 | 1.9 | K2 Beta | Beta |
 | 2.0 | K2 GA，性能优化 | GA |
+| 2.2 | guard 条件、非局部 break/continue 稳定；kotlinOptions DSL 报错 | GA |
+| 2.3 | 数据流穷尽检查稳定 | GA |
+| 2.4 | K1 不再支持；上下文参数、显式幕后字段稳定 | GA |
 
 ---
 
@@ -2450,3 +2454,26 @@ final 成员：静态分发（基于声明类型）
 6. **工程实践**：注意二进制兼容性、命名冲突、并发安全、内存泄漏。
 
 希望本文档能帮助学习者深入理解 Kotlin 扩展函数的本质，并在生产实践中正确应用。
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：字节码形态推演**。遮住答案，先回答：`fun String.shout() = uppercase()` 编译后在 JVM 里长什么样？Java 代码怎么调用它？`inline` 的扩展函数又有什么不同？
+
+参考答案：编译成一个顶层类的静态方法 `public static final String shout(String $this$shout)`，接收者变成第一个参数；Java 里调用为 `ExtKt.shout("hi")`（可用 `@JvmName` 改名）。`inline` 扩展则连静态方法都不保证保留——调用点直接展开字节码，Java 无法调用。
+
+**练习 2：成员优先级实验**。同一模块里既有成员函数 `consume()` 又有顶层扩展 `fun Drink.consume()`，调用处写 `d.consume()` 走哪个？把成员改成 `private` 后呢？
+
+参考答案：成员优先——只要成员在作用域可见，扩展永不参战；成员改 `private` 后在包外不可见，扩展才被解析到。这条优先级规则是「库作者扩展 API 后，升级版本添加同名成员会静默改变绑定目标」这一二进制兼容陷阱的根源：添加成员函数比添加同名扩展危险得多。
+
+**练习 3：扩展属性设计**。写一个扩展属性 `val File.ageMs: Long` 返回文件的最后修改距今毫秒数，并在正文里找出「为什么它不能写成 `var`」的原因。
+
+参考实现：
+
+```kotlin
+import java.io.File
+
+val File.ageMs: Long
+    get() = System.currentTimeMillis() - lastModified()
+```
+
+原因：扩展属性编译后是 `getAgeMs(File)` 静态方法，只生成 getter/setter 一对函数，没有 `field`——没有地方存 setter 写进去的值，所以 `var` 扩展属性只能依赖既有 setter 语义（如 `StringBuilder.lastChar`）而不能新增存储。

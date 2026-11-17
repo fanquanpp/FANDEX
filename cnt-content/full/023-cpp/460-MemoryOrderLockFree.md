@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++内存序与无锁编程详解：std::memory_order、std::atomic、fence、ABA 问题与无锁数据结构。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/730-Cpp23NewFeatures'
   - 'cpp/330-CppTemplate'
@@ -1552,3 +1552,64 @@ counter.wait(0);          // 阻塞直到值变化
 counter.store(1);
 counter.notify_one();     // 唤醒一个等待者
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：默写 SPSC 有界队列的最小骨架——`std::atomic<size_t>` 两个游标（head/tail）+ 环形数组，`push` 用 release 写游标、`pop` 用 acquire 读对端游标；写出 push 与 pop 的完整代码，并注释出每一处内存序「防的是什么重排」。
+
+**提示**：SPSC 只有一个生产者与一个消费者，各自独占一个游标写权——所以游标只需原子性 + 正确的 release/acquire 配对，无需 CAS。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+template <typename T, std::size_t N>
+class SpscQueue {
+    std::array<T, N> buf_{};
+    std::atomic<std::size_t> head_{0};   // 消费者游标（消费者独占写）
+    std::atomic<std::size_t> tail_{0};   // 生产者游标（生产者独占写）
+public:
+    bool push(const T& v) {
+        auto h = head_.load(std::memory_order_acquire);  // 读取消费进度：防止 buf_ 写入上移越过
+        auto t = tail_.load(std::memory_order_relaxed);  // 自己的游标， relaxed 足够
+        if (t - h == N) return false;                    // 满
+        buf_[t % N] = v;                                 // 先写数据……
+        tail_.store(t + 1, std::memory_order_release);   // ……再发布游标（写不许可下移过此行）
+        return true;
+    }
+    bool pop(T& out) {
+        auto t = tail_.load(std::memory_order_acquire);  // 读取生产进度：防止读取上移越过
+        auto h = head_.load(std::memory_order_relaxed);
+        if (h == t) return false;                        // 空
+        out = buf_[h % N];                               // acquire 保证读到生产者发布的完整数据
+        head_.store(h + 1, std::memory_order_release);
+        return true;
+    }
+};
+```
+
+要点自查：配对关系是「push 的 release 写 tail -> pop 的 acquire 读 tail」与反向一对；relaxed 用在自己独占写、只当本地进度用的读取上——每个内存序都能答出「防哪种重排」才算会。
+
+**任务二**：解释 ABA 问题：用一段两线程的伪代码演示「值相同但中间换过一轮」如何导致 CAS 错误地成功；给出标准库的两个缓解手段（版本号/带标签指针的思路、`std::atomic::compare_exchange` + hazard pointer / RCU 的回收配合）各自的适用场景。
+
+**提示**：CAS 只比较「值」，不比较「历史」。栈顶指针 p 在 T1 卡在比较前时，被 T2 弹出、重新压回同一个地址——T1 的 CAS 依然成功，但链表结构已经变了。
+
+**参考实现**（先自己写完再看）：
+
+```text
+ABA 演示（无锁栈 push 头节点）：
+  T1: 读 head = p（准备 CAS p -> new）
+  T2: pop 掉 p；pop 掉 q；重新 push 一个恰好分配到 p 地址的新节点
+  T1: CAS(head: p -> new) 成功 —— 但 p 的 next 已不是 T1 读到的旧 next，
+      链表被静默破坏。
+
+缓解一（版本号）：把指针与计数打包（如 128 位 tagged pointer），
+  每次修改计数 +1，CAS 同时比较地址与计数——A 变成 A'，比较失败。
+  适用：能做多字节原子 CAS 的平台（x86-64 cmpxchg16b）。
+缓解二（延迟回收）：hazard pointer 或 RCU 保证「其他线程可能还握着的旧节点」
+  在所有线程声明安全前不被 free——ABA 的「地址复用」前提被拆掉。
+  适用：通用无锁容器；std::atomic<std::shared_ptr> 是简化版（代价：内部锁/更低性能）。
+```
+
+要点自查：ABA 的根因是「值相等不等于状态相同」；能独立讲出「版本号」与「延迟回收」两条路各自的成本，才算完成本篇从内存序到回收策略的完整推导。

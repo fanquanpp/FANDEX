@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 注解声明（Target/Retention/Repeatable）、kotlin-reflect 与 KClass/KProperty 的用法、成本与编译期替代方案。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -236,4 +236,24 @@ fun <T : Any> mask(obj: T): Map<String, String> =
 
 - Kotlin Annotations 官方文档（kotlinlang.org，Apache-2.0）：https://kotlinlang.org/docs/annotations.html
 - Kotlin Reflection 官方文档（kotlinlang.org，Apache-2.0）：https://kotlinlang.org/docs/reflection.html
-- kotlin.reflect.full API 参考（kotlinlang.org，Apache-2.0）：https://kotlinlang.org/api/kotlinx.coroutines/（注：反射 API 见 https://kotlinlang.org/api/kotlin.reflect.full/）
+- kotlin.reflect.full API 参考（kotlinlang.org，Apache-2.0）：https://kotlinlang.org/api/kotlin.reflect.full/
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：注解「消失」排查**。同事写的 `annotation class Cache(val ttl: Int)` 在运行时反射里读不到。不运行代码，先列出两个最可能的原因，再给修复写法。
+
+参考答案：一、漏了 `@Retention(AnnotationRetention.RUNTIME)`——Kotlin 注解默认 `BINARY`，进了 class 文件但反射不可见；二、目标贴错位置——注在属性上时运行时注解落在 getter 字节码里，要用 `kotlin.reflect.full.findAnnotation` 或声明 `@Target(AnnotationTarget.PROPERTY_GETTER)` 并按 getter 读。修复：
+
+```kotlin
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class Cache(val ttl: Int)
+```
+
+**练习 2：反射成本决策**。需求：启动时按注解扫描生成路由表，页面峰值 QPS 高。给出「运行时反射 vs 编译期生成」两条路线的取舍，并说出各自由哪个组件承担。
+
+参考答案：运行时反射——kotlin-reflect（约 3MB）+ 启动扫描，开发快但体积与启动时间买单；编译期——KSP/注解处理器在编译期生成路由表源码，运行时零反射成本，代价是构建链路复杂。高 QPS 服务端热路径与 Android 体积敏感场景优先编译期（见 [Kotlin 编译器插件](/kotlin/420-KotlinCompilerPlugin)）；工具类、低频路径用反射即可。
+
+**练习 3：KClass 与 Java Class 边界**。`User::class` 与 `User::class.java` 各是什么类型？为什么「只用 `::class` 读不到 `@JvmName` 改名后的 Java 方法注解」这类问题要回到 `.java`？
+
+参考答案：前者是 `KClass<User>`（Kotlin 反射视图，含可空性、默认参数等 Kotlin 特有信息，完整实现要 kotlin-reflect），后者是 `Class<User>`（JVM 视图）。`@JvmName` 等影响的是字节码层的命名，Kotlin 视图已把语义还原，某些 JVM 细节（合成方法、DefaultImpls）用 Java 反射读更稳定——两个视图各管一层，混用时先想清楚要读的是「语言语义」还是「字节码事实」。

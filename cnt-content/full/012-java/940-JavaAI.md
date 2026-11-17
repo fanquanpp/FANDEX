@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Java机器学习与AI集成
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/930-JavaGraphQL'
   - 'java/960-JavaPerformanceTuning'
@@ -63,8 +63,9 @@ Python 凭借 NumPy、Pandas、scikit-learn、PyTorch、TensorFlow 生态在 AI 
 | 2022 | DJL 0.20+ | 支持 PyTorch 1.x/2.x、TensorFlow 2.x、MXNet、TensorRT 后端 |
 | 2023 | LangChain4j | 大模型（LLM）应用开发框架出现 |
 | 2024 | Spring AI 1.0 里程碑版 | Spring 官方 AI 集成模块 |
-| 2025 | Spring AI 1.0 GA（5 月） | 官方 AI 抽象进入生产可用 |
-| 2024 | JDK 21 虚拟线程 + 分代 ZGC | 高并发 LLM 服务底层优化 |
+| 2025 | Spring AI 1.0 GA（5 月）与 LangChain4j 1.0 GA（同月） | 两大 LLM 框架双双转正，生产可用；此后高频小版本迭代 |
+| 2025 | JDK 25 LTS | 虚拟线程 + 紧凑对象头，LLM 网关类服务的并发与内存成本双降 |
+| 2026 | JDK 26 | HTTP/3 客户端（JEP 517）落地，面向流式 LLM API 的传输选项更丰富 |
 
 ### 当代 Java AI 的三大主线
 
@@ -219,7 +220,7 @@ LangChain4j 移植自 Python LangChain，核心概念：
     <version>1.0.0</version>
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
-        <djl.version>0.24.0</djl.version>
+        <djl.version>0.39.0</djl.version>  <!-- 当前稳定线，以 github.com/deepjavalibrary/djl releases 为准 -->
     </properties>
     <dependencies>
         <dependency>
@@ -1086,3 +1087,13 @@ public class ChatController {
 - **CMU 11-785 Introduction to Deep Learning**：深度学习。
 - **Berkeley CS288 Natural Language Processing**：现代 NLP。
 - **Fast.ai Practical Deep Learning**：实战深度学习。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. Java 侧做模型推理的主流三条路径是什么？各自适合什么场景？——DJL/ONNX Runtime（JVM 内嵌推理，低延迟、模型固定）、Spark/Flink（大规模特征管道与训练数据准备）、LangChain4j/Spring AI（调 LLM API 做 RAG/Agent 应用）。
+2. RAG 的三个阶段各做什么？为什么向量检索环节通常不写在 Java 主线程里同步做大模型调用？——检索（embedding + 相似度）、增强（拼装上下文）、生成（LLM 产出）；LLM 调用秒级且流式，同步占死工作线程会拖垮吞吐，配合虚拟线程或异步流式响应处理。
+3. 写出 LangChain4j 中"聊天模型 + 系统提示 + 用户消息"的最小骨架。——ChatModel（或 ChatLanguageModel）接口 + `model.chat(SystemMessage.from("..."), UserMessage.from("..."))` 风格调用，具体类名随版本看官方文档，概念层固定：模型抽象、消息抽象、记忆抽象。
+4. 为什么说"虚拟线程 + 分代 ZGC"组合改善了 Java LLM 网关的成本模型？——每个请求一线程不再受平台线程上限约束（IO 等待期间卸载），分代 ZGC 降低短命对象（JSON、流式片段）的 GC 停顿与内存占用。
+5. 判断：把 Python 训练代码直接"翻译"成 Java 是 Java AI 的定位。——不是。主流定位是"用 Java 部署与集成 AI"（推理、编排、工程化），训练仍留在 Python 生态，跨语言通过 ONNX/SavedModel 等交换格式衔接。

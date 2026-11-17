@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL分区表：RANGE、LIST、HASH、KEY分区的语法、管理、裁剪与性能优化
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/620-GroupReplication'
   - 'mysql/680-ShardingMiddleware'
@@ -18,6 +18,8 @@ prerequisites:
 ## 1. 分区概述
 
 分区将大表拆分为多个物理小表，对应用透明，用于提升查询性能和管理便利性。
+
+版本与引擎边界（8.0+）：分区仅支持内置分区感知引擎——InnoDB（默认）与 NDB；MyISAM 的分区支持已在 8.0 移除，老库里的分区 MyISAM 表升级后不可用。分区的唯一键必须包含分区键（所有主键/唯一键列），这是建表报错的第一来源。
 
 ## 2. RANGE 分区
 
@@ -79,6 +81,42 @@ CREATE TABLE sessions (
 PARTITIONS 8;
 ```
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出语句：orders 表按年份做 RANGE 分区，未来数据自动落入兜底分区。说出"兜底分区"为什么必不可少。
+
+参考答案（先自己写，再对照）：
+
+```sql
+CREATE TABLE orders (
+  id BIGINT AUTO_INCREMENT,
+  order_date DATE NOT NULL,
+  amount DECIMAL(10,2),
+  PRIMARY KEY (id, order_date)
+) PARTITION BY RANGE (YEAR(order_date)) (
+  PARTITION p2024 VALUES LESS THAN (2025),
+  PARTITION p2025 VALUES LESS THAN (2026),
+  PARTITION p2026 VALUES LESS THAN (2027),
+  PARTITION pmax  VALUES LESS THAN MAXVALUE
+);
+```
+
+没有 MAXVALUE 兜底分区时，超出所有分区的值直接报错（ERROR 1526）——跨年脚本忘加新分区，新年第一笔订单就把写入打挂。兜底分区是"分区管理滞后"的保险。
+
+2. 概念自问：分区裁剪的生效条件是什么？为什么"分区键不出现在 WHERE 里"时分区反而可能拖慢查询？
+
+参考答案（先自己答，再对照）：裁剪要求 WHERE 能根据分区键推断目标分区——`order_date >= ...` 才能只扫 p2026；条件里没有分区键时，每个分区都要扫一遍（N 个分区 = N 次小全表扫，还要逐分区开文件），比不分区的单次全表扫更贵。分区不是"加个开关就变快"，它是"把大扫描切成小扫描"的机制，切错了维度（查询从不带分区键）就是纯开销。
+
+3. 判断题：分区表的主键可以不含分区键，只要 id 是主键就行。
+
+参考答案（先自己答，再对照）：不行，这是硬性规则——分区表的每个唯一键（含主键）都必须包含分区键。原因：唯一性校验要在行所在分区内完成，若唯一键不含分区键，同一键值可能落到不同分区，全局唯一就无从判定。所以本项目主键是 (id, order_date) 的复合主键——这也是"分区与业务唯一性互相牵制"的典型体现，设计期就要想清楚。
+
+4. 概念自问：分区与分库分表的边界在哪？"数据量大了就分区"错在哪？
+
+参考答案（先自己答，再对照）：分区是单机内的物理切分（同一实例、同一引擎，解决管理性与裁剪扫描），分库分表是跨实例的数据分布（解决容量与写入吞吐）。分区不能突破单机 CPU/磁盘/内存上限——写入瓶颈、连接上限、备份时长都不因分区而改变。判据：管理性诉求（按月归档、快速删除历史数据 REMOVE/DROP PARTITION）用分区；容量与吞吐诉求用分片，两者经常是先后关系而不是替代关系。
+
 ## 6. 分区裁剪
 
 ```sql
@@ -107,6 +145,7 @@ ALTER TABLE orders OPTIMIZE PARTITION p2026;
 -- 检查分区
 ALTER TABLE orders CHECK PARTITION p2026;
 ```
+
 ## RANGE 分区
 
 **基本写法：RANGE 分区建表**

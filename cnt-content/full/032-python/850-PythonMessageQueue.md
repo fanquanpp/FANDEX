@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: RabbitMQ与Kafka
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'python/900-ConfigManagement'
   - 'python/500-Decorator'
@@ -562,3 +562,12 @@ for message in consumer:
         consumer.commit()
         batch = []
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 口述题：生产者发送消息的三种投递语义（at-most-once / at-least-once / exactly-once）分别怎么实现、代价是什么？要点：fire-and-forget 最快但会丢；at-least-once 靠确认+重试（消费者要幂等）；exactly-once 靠事务/幂等生产者，吞吐最低——多数业务选 at-least-once + 幂等消费。
+2. 默写题：写出「处理成功后才手动提交偏移量」的消费者骨架。要点：`enable_auto_commit=False`；循环里先 `process_batch(batch)` 再 `consumer.commit()`——顺序颠倒就是「提交了但没处理完」的数据丢失点。
+3. 预测题：消费者组里两个消费者订阅同一个主题 4 个分区，分区怎么分？要点：组内一个分区只归属一个消费者；4 分区 2 消费者各得 2 个——同组是负载分摊，不同组是广播。
+4. 排错题：消费者反复收到同一条已处理过的消息。最可能原因？要点：处理超时被踢出组触发 rebalance，或提交偏移量在处理之前/失败——查 max 轮询间隔与会话超时，并保证提交严格发生在处理成功之后，消费逻辑做幂等兜底。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 用银行 ATM、超市管理、奶茶店结算、玩具店四个任务共用的一套方法签名框架做迁移训练：Login/Menu/AddGoods/FindMaxAndMin/Settle 的方法拆分、数组作参、while(true)+switch 菜单循环；对比「返回值回传余额」与「void 加全局变量」两种参数传递设计，并用一个真实的死循环 bug 练找错。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/100-MethodDetailed'
   - 'java/110-ArrayDetailed'
@@ -334,3 +334,13 @@ static boolean Login() {
 
 - Oracle, *The Java Tutorials*：Control Flow Statements（while/switch/break/continue 语义）与 Classes and Objects（方法签名设计）章节（https://docs.oracle.com/javase/tutorial/java/ ），本文框架的方法组织原则与之对照；
 - 四大任务的方法签名、ATM 双版本对比与登录死循环 bug 均取自仓库扫描素材（实训指导书与 ATM 笔记，见 `.workflow-tmp/scan/e-core-java-mysql-web.md` 1.4/1.5 节），正文代码为本文按教学需要重写与扩展。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 写出 `while (true) + switch` 菜单循环的最小骨架，退出分支用什么语句？——`while (true) { int c = in.nextInt(); switch (c) { case 1 -> ...; case 0 -> { return; } default -> 提示; } }`；退出用 return（或 break 外层标签）。
+2. "余额怎么传"一节对比了返回值与全局变量，说出各自的坑。——返回值：调用方必须接住返回值并回写，忘了就白算；全局变量（static 字段）：任何方法都能改，状态失控难排查，耦合面大。
+3. 方法参数传 int 数组进去排序，调用方能拿到排序结果吗？为什么？——能；数组是引用传递（引用按值传），方法内通过引用修改的是同一个堆上数组对象。
+4. 三个业务方法 share 的一个数组，为什么传参比放 static 字段更好？——参数显式声明了数据流向，方法不依赖外部状态，测试与复用都更容易；static 字段把"谁能改数据"藏起来了。
+5. 找错：`if (input = 3)` 与 `while (i < len; )` 各错在哪？——前者把 == 写成 =（赋值表达式恒为 3 非 boolean，编译错）；后者 while 条件里不能放分号分隔的多语句，应写 for。

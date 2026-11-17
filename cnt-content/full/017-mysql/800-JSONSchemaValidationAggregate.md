@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL JSON模式验证与JSON聚合函数：JSON_SCHEMA_VALID、JSON_ARRAYAGG、JSON_OBJECTAGG
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/820-MySQL9NewFeatures'
   - 'mysql/830-VectorType'
@@ -113,6 +113,7 @@ JSON_TABLE(address, '$' COLUMNS (
     )
 )) AS jt;
 ```
+
 ## 聚合函数
 
 **单行写法：COUNT 计数**
@@ -313,3 +314,36 @@ SELECT user_id, order_no, total_amount,
   total_amount / SUM(total_amount) OVER (PARTITION BY user_id) AS ratio
 FROM orders;
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出语句：给 orders 表的 ext JSON 列加上"必须是包含 name(字符串) 与 amount(数字) 的对象"的校验，并说明校验失败的默认行为。
+
+参考答案（先自己写，再对照）：
+
+```sql
+ALTER TABLE orders
+  ADD CONSTRAINT chk_ext CHECK (
+    JSON_SCHEMA_VALID('{"type":"object",
+                       "required":["name","amount"],
+                       "properties":{"name":{"type":"string"},
+                                     "amount":{"type":"number"}}}',
+                      ext));
+```
+
+JSON_SCHEMA_VALID 返回 1/0，放进 CHECK 约束后在严格模式下让非法写入直接报错（ERROR 3819）；非严格模式下行为受 sql_mode 影响。校验是"写入闸门"——它防止的是脏 JSON 进入，不能修复已在库里的历史数据，上线前先跑一遍全表校验找出存量违规。
+
+2. 概念自问：JSON_SCHEMA_VALID 与 JSON_VALID 的分工是什么？为什么两个都要？
+
+参考答案（先自己答，再对照）：JSON_VALID 只回答"这是不是合法 JSON 语法"（能解析）；JSON_SCHEMA_VALID 回答"这个 JSON 是否符合业务结构"（字段、类型、必填、嵌套规则）。语法合法但结构错乱（把数值写进 name 字段）是 JSON 列最常见的脏数据形态——没有 schema 校验的 JSON 列等于"没有任何约束的 TEXT"。两层闸门分别挡语法垃圾与结构垃圾。
+
+3. 判断题：`SELECT SUM(ext->'$.amount') FROM orders` 与 `SELECT SUM(CAST(ext->'$.amount' AS DECIMAL(10,2))) FROM orders` 结果一定相同。
+
+参考答案（先自己答，再对照）：不一定。`ext->'$.amount'` 返回的是 JSON 类型值——SUM 对 JSON 值的聚合会先尝试隐式转换，遇到 null/字符串/嵌套结构时行为可能是报错或按 0 处理（版本相关）；CAST 到明确数值类型后语义确定，非法值显式报错。JSON 里做聚合的纪律：先 CAST 定型，再聚合，并用 WHERE 过滤掉结构异常行。
+
+4. 概念自问：JSON 列上做 GROUP BY/HAVING 与普通列有什么额外成本？"预计算生成列"怎么救？
+
+参考答案（先自己答，再对照）：每次分组都要对每行做 JSON 解析与路径提取（`$` 解析是 CPU 密集操作），没有索引可用、无法走覆盖索引——大表上聚合就是全表解析风暴。救法：把高频聚合的路径物化成生成列（`GENERATED ALWAYS AS (ext->'$.city') STORED`），对生成列建索引后，GROUP BY/HAVING 走的就是普通索引列的路径——解析一次、建索引、处处快。
+

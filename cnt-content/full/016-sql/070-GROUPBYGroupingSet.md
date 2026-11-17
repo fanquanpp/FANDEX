@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 用播客平台的收听周报掌握分组：GROUP BY 基础、ROLLUP 小计总计、GROUPING 区分汇总行、GROUPING SETS 精确控制与 CUBE 的成本。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/050-FilterCondition'
   - 'sql/060-AggregateFunction'
@@ -215,6 +215,38 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY play_summary;
 ```
 
 分组集负责"一次算对"，预聚合负责"天天算得起"，两者是配合关系。
+
+## 遮码自检
+
+遮住答案先写；分组集题的判断标准是"能对着结果行说出它属于哪个分组集"。
+
+**第 1 题：`GROUP BY ROLLUP (show_name, platform)` 会比普通 GROUP BY 多出哪些行？它们长什么样？**
+
+<details><summary>参考答案</summary>
+
+多出两档：每个 show_name 的"跨平台小计"（platform 列为 NULL 的行）与全表"总计"（两列
+都 NULL）。层次是"明细 → 按 show_name 小计 → 总计"逐级收拢，右侧列先被卷起——
+ROLLUP 的 NULL 是"该维度未参与分组"的占位，不是数据里的 NULL。
+</details>
+
+**第 2 题：数据里恰好有一行 platform 本来就是 NULL，和 ROLLUP 生成的汇总行混在一起怎么区分？**
+
+<details><summary>参考答案</summary>
+
+用 `GROUPING(platform)`：由 ROLLUP 卷起产生 NULL 时函数返回 1，数据本身的 NULL 返回
+0。报表上把汇总行标注为"小计/总计"（如 `CASE WHEN GROUPING(platform)=1 THEN '小计'`
+），靠肉眼区分 NULL 是不可靠的。
+</details>
+
+**第 3 题：想要"节目 x 客户端、仅节目小计、仅全表总计"三种集合，ROLLUP 和 GROUPING SETS 各怎么写？CUBE 的行数代价是什么？**
+
+<details><summary>参考答案</summary>
+
+ROLLUP (show_name, platform) 恰好是这三档的固定层次；GROUPING SETS
+((show_name, platform), (show_name), ()) 逐个点名同样三种，还能要任意组合。
+CUBE (show_name, platform) 是全组合（2 的维度数次方个分组集）——维度一多，分组集
+数与扫描代价指数增长，按需点名用 GROUPING SETS，固定层次才用 ROLLUP。
+</details>
 
 ## 练习
 

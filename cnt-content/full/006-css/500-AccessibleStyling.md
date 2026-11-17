@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 让样式不成为障碍：对比度、焦点可见、减少动效与文本缩放，四个维度讲清可访问性样式的落地要点。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/180-Accessibility'
   - 'css/410-CSSVariableCustomAttribute'
@@ -152,3 +152,44 @@ body {
 - 无障碍完整教程：`html5/180-Accessibility`；
 - 动效：`css/330-CSSAnimationTransition`；
 - 深色主题：`css/360-MediaQuery`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住「四件事」一节的示例代码自己写，再对照参考实现。
+
+**任务一**：写出「焦点纪律」的完整方案——全局不允许裸 `outline: none`；按钮键盘聚焦时显示 2px 品牌色描边（外扩 2px），鼠标点击不显示；再用一句话说清 `:focus` 与 `:focus-visible` 的分界。
+
+**任务二**：写「动效可降级」的精细版——`prefers-reduced-motion: reduce` 时，大位移动画（translateY 入场）改为透明度过渡，而不是一刀切 `duration: 0.01ms`；并给出正文对比度达标的一条自查注释。
+
+**提示**：任务一的关键字是 `:focus-visible`（四件事第 2 点）——它只在「键盘等非指针输入」聚焦时匹配；任务二对应第 3 点「更克制的精细做法」：降级时保留状态反馈（透明度变化）只去掉位移，前庭安全优先。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.btn:focus-visible {
+  outline: 2px solid var(--color-accent-base);
+  outline-offset: 2px;
+}
+
+/* :focus 对一切聚焦方式生效（含鼠标点击）；
+   :focus-visible 只在浏览器判定「需要可见焦点」时匹配——
+   键盘 Tab 聚焦有框，鼠标点击无框 */
+
+/* 任务二 */
+@media (prefers-reduced-motion: reduce) {
+  .banner {
+    animation: none;
+    opacity: 1;               /* 直接呈现终态，信息不丢 */
+  }
+  .card-enter {
+    transform: none;
+    transition: opacity 0.2s;  /* 位移降级为淡入 */
+  }
+}
+
+/* 对比度自查：正文与背景 >= 4.5:1（AA），大字号 >= 3:1；
+   用 Lighthouse/axe 测量，不凭目测 */
+```
+
+验收点：任务一里若把选择器写成 `:focus`，鼠标点一下按钮也会出现描边——正是两个伪类的分水岭；任务二的「0.01ms 全局杀」方案会让依赖动画展示终态的元素瞬间跳变，精细降级先保「信息可达」再谈「动效克制」。

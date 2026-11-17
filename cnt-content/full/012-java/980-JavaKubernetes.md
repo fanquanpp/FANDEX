@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Java 应用在 Kubernetes 上的部署完整指南：资源限制、健康检查、优雅停机、自动伸缩与云原生实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/550-JavaVirtualThread'
   - 'java/1000-JavaGraalVM'
@@ -802,3 +802,13 @@ spec:
           port: 8080
         initialDelaySeconds: 5
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. JVM 在 K8s 里的内存三笔账怎么算？——JVM 堆（MaxRAMPercentage）+ 堆外（元空间、线程栈、直接内存、JIT）+ 进程开销；容器 limit 要大于三者之和，否则 OOMKilled。
+2. liveness 与 readiness 的语义差异是什么？Java 应用各自怎么配？——liveness 探活失败重启 Pod；readiness 失败摘流量不重启；Java 里 liveness 用极轻的 ping（别探数据库），readiness 可查依赖就绪。
+3. 滚动更新的三个关键参数与语义？——maxSurge（可超出副本数）、maxUnavailable（可缺失数）、minReadySeconds（新 Pod 就绪后观察期），配合 terminationGracePeriodSeconds 优雅停机。
+4. HPA 基于 CPU 的扩缩容为什么对 Java 应用可能不准？——JIT 预热期 CPU 高、稳态后低，且 GC/线程池等待不在 CPU 上；更稳的指标是自定义（QPS、队列深度）。
+5. 判断：JVM 参数写死 -Xmx 与容器 limit 解耦是安全做法。——不安全；limit 与堆脱节时堆外内存增长会先撞 limit 被 OOMKilled，应该用 MaxRAMPercentage 跟随 limit。

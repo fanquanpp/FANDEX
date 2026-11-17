@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 无障碍实战：语义化 HTML 与 ARIA 分工、表单标注与错误播报、键盘导航与焦点管理（弹窗焦点圈禁）、aria-live 动态播报、jsx-a11y 与 jest-axe 工具链。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/300-ReactGraphQL'
   - 'react/310-ReactMicroFrontend'
@@ -207,6 +207,19 @@ it('表单无可访问性违规', async () => {
 - 弹窗焦点管理三步：进入聚焦、`inert` 圈禁背景、关闭归还焦点；原生 `<dialog>` 优先。
 - 动态内容用常驻 `aria-live` 容器播报，等级 polite 为主。
 - 工具链三层：eslint-plugin-jsx-a11y（编码期）、jest-axe（测试期）、键盘 + 读屏冒烟（上线前）。
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **修 Bug 题**：`<div className="btn" onClick={...}>保存</div>` 用读屏器听不到、Tab 聚焦不到，最小修复是什么？为什么不加 `role="button"` 就完事？
+   答案：换成 `<button type="button">`——原生元素自带角色、键盘激活与焦点语义。只加 role 不换元素，键盘 Enter/Space 触发、disabled 语义仍要自己补，等于手写一个 button。
+2. **预测题**：表单校验失败后只把错误文案显示在输入框旁边，读屏用户能感知吗？表单三件套怎么配？
+   答案：不能——视觉变化不触发播报。三件套：真实 `<label htmlFor>` 关联、错误容器 `role="alert"`（出现即播报）、输入框 `aria-invalid` + `aria-describedby` 指向错误文案。
+3. **辨析题**：弹窗打开后 Tab 还能点到背景里的按钮，问题与修法各是什么？关闭时还要做什么？
+   答案：背景没有圈禁。用 `inert` 属性（或焦点陷阱）圈禁弹窗外内容，进入时聚焦弹窗（标题或第一个控件）；关闭时把焦点归还给触发弹窗的元素，否则用户「迷路」回页面顶部。
+4. **规则题**：为什么工具链三层缺一不可（eslint-plugin-jsx-a11y、jest-axe、人工冒烟）？
+   答案：静态规则抓「写了反模式」（无 alt、div onClick），运行时 axe 抓「渲染结果不可达」，但「焦点顺序是否合理、播报文案是否有意义」只有人工键盘 + 读屏冒烟才能判断——自动化覆盖不了语义判断。
 
 ## 速查
 

@@ -6,13 +6,28 @@ category: 云与基础设施
 difficulty: beginner
 description: ping 与 traceroute：ICMP 可达性测试、TTL 与路径追踪原理、mtr 持续监测与输出解读。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/050-IPCommands'
   - 'networking/270-Tcpdump'
 prerequisites: []
 ---
+
+## ping 不通是故障还是正常
+
+ping 与 traceroute 的价值不在命令本身，而在「分层解读」。ping 用 ICMP Echo，回答「IP 层
+可达吗」；traceroute 利用 TTL 逐跳递减触发中间设备回 Time Exceeded，回答「路径经过谁」。
+但两者都大量误报，新手最常见的三个误判：
+
+- **ping 不通 ≠ 主机宕机**：大量主机与防火墙策略丢弃 ICMP（云厂商安全组默认如此），先用
+  端口探测（nc/telnet）或 arping（二层验证）交叉确认；
+- **traceroute 出现 `* * *` ≠ 路径断了**：中间路由器可能只是不回 ICMP TTL 超时报文
+  （常见于运营商骨干），后续跳若能显示则路径正常；
+- **ICMP 被限速 ≠ 丢包**：多数设备对 ICMP 做速率限制，traceroute 的丢包统计在高跳数处
+  不可靠——持续定位丢包用 mtr 的 TCP 模式更接近真实业务路径。
+
+泛洪类选项（`ping -f`、fping 高频扫描）是主动探测，只对自己的实验环境使用。
 
 ## ping 连通性测试
 
@@ -320,3 +335,14 @@ fping -a -g 192.168.1.0/24 2>/dev/null
 # 从文件读取 IP 列表
 fping -f iplist.txt
 ```
+
+## 教学自检
+
+按遮码自检法：遮住上文代码块，先自己写命令或推演答案，再对照。
+
+- traceroute 依赖 TTL 的什么行为？中间路由器靠哪种报文暴露自己？什么设备会让该跳显示 `*`？
+- 为什么 traceroute -T（TCP SYN 探测）在 HTTP 服务路径上比 ICMP 版更真实？
+- ping 通但 curl 不通，三类最常见原因怎么按顺序验证？（ICMP 放行 vs TCP 放行 vs 服务监听）
+- mtr 相比「traceroute + ping」解决了什么问题？--report 模式为什么比实时看更常用在工单里？
+- arping -D 检测 IP 冲突的原理是什么？它为什么只能在同二层内使用？
+- `-w 10` 与 `-W 3` 都带超时语义，差别是什么？（总时长 vs 单包等待）

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从 strcpy 溢出现场出发，给全危险函数地图与 snprintf 正解，讲透 strncpy 无终止符、sizeof(指针)、整数转 size_t 三大经典坑，核实 Annex K（_s 函数）的真实生态位，收口于编译期检查清单。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/430-StdioFileIO'
   - 'c/210-ProcessMemoryLayoutAndErrors'
@@ -365,12 +365,24 @@ void log_msg(const char *user, const char *msg) {
 - AddressSanitizer 官方 wiki：https://github.com/google/sanitizers/wiki/AddressSanitizer
 - MITRE CWE 弱点分类（CWE-120 系缓冲区溢出条目）：https://cwe.mitre.org/
 
-## 12. 自我检查
+## 12. 遮码自检
 
-- 能背出危险函数地图五行的「危险函数与替代」，并解释 `gets` 为何被整条删除；
-- 能写出 strncpy 源串过长时不补 `\0` 的复现实验，并说出两种修法；
-- 能向同事讲清「函数内部为什么拿不到缓冲区大小」以及 `sizeof(指针)` 误用的后果；
-- 能说出 Annex K 的生态现状（MSVC 有、glibc/musl 拒绝）并据此给出跨平台选型：默认 `snprintf`。
+遮住上文示例代码与下面的答案栏，先自己背、先自己写，再展开对照。
+
+1. 背出危险函数地图五行的「危险函数与替代」；`gets` 为什么被整条删除？
+2. 写出 strncpy 源串过长时不补 `\0` 的复现实验，并说两种修法。
+3. 「函数内部为什么拿不到缓冲区大小」？`sizeof(指针)` 误用的后果？
+4. Annex K 的生态现状如何？跨平台选型为什么默认 snprintf？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. gets → fgets（C11 已删除）；strcpy/strcat → snprintf 或 strlcpy 族；sprintf → snprintf；scanf("%s") → fgets 加 sscanf（配宽度限定）；strcpy 家族无法防 → vsnprintf 两遍法。gets 连边界参数都没有，标准委员会删掉后任何合规编译器都不提供——写了直接链接失败。
+2. `char dst[8]; strncpy(dst, "0123456789", sizeof dst);` 后 dst 无 '\0'，printf(dst) 越界读。修法一：`dst[sizeof dst - 1] = '\0';` 手动补；修法二：换 `snprintf(dst, sizeof dst, "%s", src)`，永远终止、截断可判。
+3. 数组传参退化为指针，函数内只有首地址、没有长度信息——所以容量必须作为独立参数传。`sizeof(p)` 对指针算出 8（指针大小），拿它当缓冲区容量，写入超过真实分配的内存就是溢出。
+4. Annex K（*_s 函数）只有 MSVC 实现完整，glibc/musl 拒绝纳入；跨平台代码以 snprintf（永远终止、返回值判截断）与小封装（fail-safe 的 xsnprintf）为主，不赌 _s 系列的存在。
+
+</details>
 
 ## 本章总结
 

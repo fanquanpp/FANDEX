@@ -4,9 +4,9 @@ title: React 19 新增 API
 module: 'react'
 category: 前端技术
 difficulty: advanced
-description: React 19 及 19.x 后续新增 API 详解：use、useActionState、useOptimistic、ref 作为 prop、useEffectEvent、Activity 与资源加载。
+description: React 19 及 19.x 后续新增 API 详解：use、useActionState、useOptimistic、ref 作为 prop、useEffectEvent、Activity、ViewTransition、Fragment Refs 与资源加载。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/060-React19NewFeatures'
   - 'react/400-ServerClientComponents'
@@ -233,7 +233,7 @@ function App() {
 }
 ```
 
-## 5. 19.1 / 19.2 新增 API
+## 5. 19.1 / 19.2 / 19.3 新增 API
 
 React 19 之后进入小版本特性节奏，重点新 API：
 
@@ -244,6 +244,11 @@ React 19 之后进入小版本特性节奏，重点新 API：
 | 19.2（2025-10） | `<Activity>` | 隐藏 UI 同时保留 state（实验性 Offscreen 的正式版） |
 | 19.2（2025-10） | `cacheSignal` | RSC 中获取缓存生命周期相关的 AbortSignal |
 | 19.2（2025-10） | Partial Pre-rendering | react-dom 层支持静态外壳预渲染 + 动态部分延迟恢复 |
+| 19.3（2026-09） | `<ViewTransition>` 转正 | 基于 View Transition API 的组件级进出场/更新/共享元素动画（实验期名为 unstable_ViewTransition） |
+| 19.3（2026-09） | `addTransitionType` | 给同一次 Transition 标注"原因类型"，让同一状态变化按方向播不同动画 |
+| 19.3（2026-09） | Fragment Refs 转正 | ref 直接传给 `<Fragment>`，拿 FragmentInstance 把子节点当一组操作（focus/事件/Observer） |
+| 19.3（2026-09） | `browser()`（react-dom） | 声明"此段只在客户端渲染"：服务端 Suspense 挂起出占位，客户端直接出内容 |
+| 19.3（2026-09） | Server Component 渲染 Context | RSC 可直接渲染从 'use client' 模块导入的 Context，不再必须包 Provider 组件 |
 
 ### 5.1 useEffectEvent
 
@@ -294,6 +299,68 @@ function Tabs() {
 
 与条件渲染（卸载销毁）和 `display: none`（Effect 继续跑、可能烧性能）相比，Activity 语义精确：**隐藏 = 不可见但保活，Effect 全部卸载**。
 
+### 5.3 ViewTransition、Fragment Refs 与 browser()（19.3）
+
+React 19.3（2026-09）把两个实验 API（ViewTransition、Fragment Refs）转正，并新增 browser() 等 API 与一组边界友好的小件。共同点是：**它们都在给"框架隐式行为"补上显式的声明入口**——动画、DOM 分组、客户端专属逻辑。
+
+**ViewTransition：组件级动画**。基于浏览器 View Transition API，React 在 enter/exit/update/share 四类时机自动生成快照并交由 CSS 播放；默认是淡入淡出，通过 CSS 自定义或 `onEnter` 等事件 props 用 Web Animations API 接管。关键约束：**只在 Transition 类更新中生效**——`startTransition`、Suspense 揭示、`useDeferredValue` 触发的更新才有动画，紧急更新（点击计数、键入）什么都不播。这也是为什么它常和 5.2 的 Activity、430 篇的并发模型放在一起理解：动画时机由优先级模型决定，不是由 CSS 决定。
+
+```tsx
+import { ViewTransition, startTransition, addTransitionType } from 'react';
+
+function Carousel({ slides }: { slides: string[] }) {
+  const [current, setCurrent] = useState(0);
+  return (
+    <div>
+      <button
+        onClick={() => startTransition(() => {
+          addTransitionType('next'); // 给这次更新标注"方向"
+          setCurrent((c) => Math.min(c + 1, slides.length - 1));
+        })}
+      >
+        下一张
+      </button>
+      {/* enter/exit 按类型映射到不同 CSS 动画类，方向感来自这里而不是组件 */}
+      <ViewTransition enter={{ next: 'slide-in-right' }} exit={{ next: 'slide-out-left' }}>
+        <img src={slides[current]} alt="" />
+      </ViewTransition>
+    </div>
+  );
+}
+```
+
+**Fragment Refs：一组节点的句柄**。ref 现在可以直接传给 `<Fragment>`，返回的 FragmentInstance 把子节点当整体操作——`focus`、`scrollIntoView`、`addEventListener`、接入 IntersectionObserver。适合"一列表格行整体进入视口再高亮""表单区块整体聚焦"这类以前要拿外层 div 才能做的事：
+
+```tsx
+import { Fragment, useRef, type FragmentInstance } from 'react'; // 类型随 @types/react 19.3+ 导出
+
+function Rows({ posts }: { posts: Post[] }) {
+  const groupRef = useRef<FragmentInstance>(null);
+  return (
+    <Fragment ref={groupRef}>
+      {posts.map((p) => (
+        <Heading key={p.id}>{p.title}</Heading>
+      ))}
+    </Fragment>
+  );
+  // groupRef.current.focus() 深度优先聚焦整组第一个可聚焦子节点（不可聚焦的会跳过）；observeUsing 可挂 IntersectionObserver
+}
+```
+
+**browser()：客户端专属的显式声明**。从 `react-dom` 导入，用 `use(browser())` 消费：服务端渲染时该组件挂起（HTML 里出 Suspense 占位），客户端不挂起直接渲染。它取代的是"用 typeof window 分支 + useEffect 二段式渲染"的惯用 hack，语义从"偷偷检测环境"变成"渲染模型里声明窗口归属"：
+
+```tsx
+import { use } from 'react';
+import { browser } from 'react-dom';
+
+function TimeZone() {
+  use(browser()); // SSR 挂起出占位；客户端 hydration 后直接渲染
+  return <p>当前时区：{Intl.DateTimeFormat().resolvedOptions().timeZone}</p>;
+}
+```
+
+最后一个 19.3 的结构性变化对 RSC 项目影响最大：**Server Component 可以直接渲染 Context**。以前 Server Component 只能把 children 穿透给一个 'use client' 的 Provider 包装组件；现在可以导入 'use client' 模块导出的 Context 并直接渲染——RSC 树中间不再为了塞一个主题值插入一层"什么都不做"的 Provider 组件。
+
 ## 6. 注意事项
 
 - `use()` 不是 Hook，却要求在渲染期间调用；不要把它写进事件处理器
@@ -302,6 +369,8 @@ function Tabs() {
 - `useFormStatus` 只认组件树上的父 form；跨层级无效
 - `forwardRef` 在 19 中不再必要但仍可用；类组件的 ref 转发依旧走 `forwardRef`
 - `<Activity>` 隐藏时会卸载 Effect：清理逻辑必须写对，否则隐藏后仍在请求/监听
+- `<ViewTransition>` 只在 Transition 类更新（startTransition/Suspense 揭示/useDeferredValue）中触发动画；紧急更新不播——"动画没出现"先查更新是不是走 Transition
+- `browser()` 必须配合 `use()` 消费，且只影响渲染归属，不等于"跳过 hydration"——服务端出的占位在客户端仍会被真实内容替换
 
 ## 7. 小结
 
@@ -309,6 +378,20 @@ function Tabs() {
 - 表单套件（`useActionState` + `useOptimistic` + `useFormStatus` + form action）把异步提交的样板代码压缩到一个 Hook 内
 - `ref` as prop 与 ref 清理函数移除了 `forwardRef` 的历史包袱
 - 19.1/19.2 的 `useEffectEvent`、`<Activity>` 解决的是"Effect 心智模型"与"保活渲染"两个长期痛点，新代码应优先采用官方方案
+- 19.3 把动画（ViewTransition）、DOM 分组（Fragment Refs）、客户端归属（browser()）从"社区 hack"收编成声明式 API，且都建立在同一套并发模型之上
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：`use()` 与 `useContext(SomeContext)` 什么时候等价、什么时候必须用 `use()`？
+   答案：读 Context 时两者取值等价；`use()` 独有的两个能力——可以出现在条件/循环之后（不受 Hooks 顺序约束）与读取 Promise（配合 Suspense 挂起）。需要「提前返回之后再读」或「渲染期读异步」时必须用 `use()`。
+2. **修 Bug 题**：`const [state, submit, isPending] = useActionState(async (fd) => save(fd), null)` 报错或行为异常，函数签名错在哪？
+   答案：action 的签名是 `(prevState, payload) => newState`——第一个参数是上一次返回的状态，不是 FormData。漏写 prev 会导致每次提交基于错误的状态计算（如乐观追加重复项）。
+3. **预测题**：`<Activity mode="hidden">` 里挂着一个每 5 秒发一次请求的 Effect，切到 hidden 后请求停不停？为什么不改用 `display: none`？
+   答案：停——Activity 隐藏时卸载其全部 Effect（state 保留）；`display: none` 只是视觉隐藏，Effect 照跑、请求照发，性能与数据新鲜度都被浪费。Activity 的语义是「不可见但保活，副作用全部停机」。
+4. **规则题**：`<ViewTransition>` 包住的组件在 onClick 里直接 setState，动画为什么不播？
+   答案：ViewTransition 只在 Transition 类更新（startTransition/Suspense 揭示/useDeferredValue）中生成快照；紧急更新的渲染优先级是同步直出，不做两帧对比。把更新包进 startTransition（必要时配 addTransitionType）动画才生效。
 
 ## 速查
 
@@ -387,6 +470,37 @@ useEffect(() => { on('page', onPage); }, []); // onPage 不进依赖
 <Activity mode={show ? 'visible' : 'hidden'}>
   <Editor /> {/* 隐藏保活，状态保留 */}
 </Activity>
+```
+
+**ViewTransition（19.3）**
+
+`<ViewTransition> <组件 /> </ViewTransition>`
+```tsx
+startTransition(() => {
+  addTransitionType('next');
+  setCurrent(c => c + 1);
+});
+<ViewTransition enter={{ next: 'slide-in-right' }} exit={{ next: 'slide-out-left' }}>
+  <Slide index={current} />
+</ViewTransition> {/* 只在 Transition 更新中播动画 */}
+```
+
+**Fragment Refs（19.3）**
+
+`<Fragment ref={<instanceRef>}>`
+```tsx
+const ref = useRef<FragmentInstance>(null);
+<Fragment ref={ref}>
+  {rows.map(r => <Row key={r.id} {...r} />)}
+</Fragment> {/* ref.current.focus() 深度优先聚焦首个可聚焦子节点；observeUsing() 作用于整组子节点 */}
+```
+
+**browser()（19.3）**
+
+`use(browser())`
+```tsx
+import { browser } from 'react-dom';
+use(browser()); // 服务端挂起出 Suspense 占位，客户端直接渲染
 ```
 
 **资源加载**

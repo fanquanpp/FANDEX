@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 以「测试库 5 毫秒、生产 5 秒」引入：逐列读懂 EXPLAIN 的 type 优劣阶梯、key/rows/filtered 读法与 Extra 关键信号，附全表扫描三步定位与误读清单。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/330-MySQLIndexExecutionPlan'
   - 'mysql/230-CompositeIndexLeftmostPrefixPrinciple'
@@ -303,6 +303,26 @@ WHERE level = 8 ORDER BY score DESC LIMIT 10;
 
 - EXPLAIN 语法（含 FORMAT=TREE/JSON、EXPLAIN ANALYZE 概览）：https://dev.mysql.com/doc/refman/8.4/en/explain.html
 - 输出列与 Extra 全表（fulltext/index_merge 等取值在这里查）：https://dev.mysql.com/doc/refman/8.4/en/explain-output.html
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：type 阶梯里 `const`、`ref`、`range`、`index`、`ALL` 各代表什么访问方式？两个相邻档位之间差一个数量级的原因是什么？
+
+参考答案（先自己答，再对照）：const 主键/唯一键等值定位（最多 1 行）；ref 非唯一索引等值定位；range 索引范围扫描；index 扫整棵索引树（比 ALL 少回表但仍全量）；ALL 全表扫描。每上一档都是"树的高度换遍历长度"——从"按值直接跳到页"变成"从头逐项比对"，10 万行的表差出几个数量级。
+
+2. 概念自问：`rows` 是什么性质的数字？它和 `filtered` 怎么配合着读？
+
+参考答案（先自己答，再对照）：rows 是优化器基于统计信息的**估算**扫描行数，不是实测（实测用 EXPLAIN ANALYZE）；filtered 是该步骤输出行数占 rows 的百分比估计。两者相乘才是"预计真正参与下一步的行数"——rows=10 万、filtered=1% 意味着这一步本身可能已经在做 10 万次比较，优化得从这一步下手。
+
+3. 判断题：EXPLAIN 输出里 possible_keys 有值、key 为 NULL，说明索引建错了。
+
+参考答案（先自己答，再对照）：不一定。possible_keys 表示"候选可用"，key 为 NULL 是优化器的**成本决策**：候选索引的过滤收益不抵回表成本（如条件命中 80% 的行），或统计信息过时导致估算失真。处置顺序：先 ANALYZE TABLE 刷新统计、再评估选择性，最后才考虑 hint 干预——"建错索引"只是众多可能里的一种。
+
+4. 概念自问：Extra 里 `Using filesort` 与 `Using temporary` 分别在警告什么？看到后第一动作是什么？
+
+参考答案（先自己答，再对照）：filesort 警告"排序无法用索引有序性完成，要在内存/磁盘里额外排一遍"；temporary 警告"需要中间临时表（常见于 GROUP BY/DISTINCT/UNION）"。第一动作都是"对照排序列/分组列检查索引设计"——把排序列接在等值条件列后面建联合索引，或把 GROUP BY 列纳入索引前缀，多数两例都能消除。
 
 ## 14. 自我检查
 

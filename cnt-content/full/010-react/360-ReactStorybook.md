@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 组件工作台 Storybook：CSF3 故事格式、args 与控件面板、文档自动生成、play 交互测试、a11y 与 MSW 插件、CI 集成与视觉回归。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/340-ReactCanvas'
   - 'react/350-ReactD3'
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 1. 一句话理解
 
-Storybook 是**组件的独立工作台**：把每个组件在"脱离应用"的状态下渲染出来，配上一组可调参数（props）的样例——即"故事"（story）。它解决三个真实痛点：UI 开发不用来回启动整个业务应用；设计评审有了真实可交互的对照物；组件回归测试有了明确靶子。类比：应用是"整车测试场"，Storybook 是"零件台架"——零件（组件）在台架上跑通，才装回整车。当前主流为 Storybook 8/9 + **CSF3** 故事格式 + Vite 构建，一条命令接入：
+Storybook 是**组件的独立工作台**：把每个组件在"脱离应用"的状态下渲染出来，配上一组可调参数（props）的样例——即"故事"（story）。它解决三个真实痛点：UI 开发不用来回启动整个业务应用；设计评审有了真实可交互的对照物；组件回归测试有了明确靶子。类比：应用是"整车测试场"，Storybook 是"零件台架"——零件（组件）在台架上跑通，才装回整车。当前主流为 Storybook 10（2025-10 发布，全面 ESM-only，不再提供 CommonJS 包；对 React 生态的支持覆盖 Next.js 16 与 Vitest 4）+ **CSF3** 故事格式 + Vite 构建，一条命令接入：
 
 ```bash
 npx storybook@latest init
@@ -190,3 +190,16 @@ npm run storybook                # 本地工作台
 npm run build-storybook          # 静态产物（部署文档站/CI 校验）
 npx test-storybook               # 执行 play 测试
 ```
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：CSF3 里默认导出与命名导出各是什么？`args` 与 `argTypes` 的分工呢？
+   答案：默认导出是组件级元信息（meta：component、tags、argTypes），每个命名导出是一个故事（一种使用场景）；args 是传给组件的初始 props 值，argTypes 声明控件面板的编辑方式（radio/select/number 等）——前者管「故事内容」，后者管「怎么调」。
+2. **修 Bug 题**：组件加了必填 prop 后所有故事红掉、CI 的 build-storybook 失败，这算事故还是机制在工作？正确应对是什么？
+   答案：机制在工作——故事集就是组件接口的调用清单，接口变化理应让所有调用点显式更新。别用 any 敷衍，补齐每个故事的新必填 args；这正是「漂移暴露」的价值。
+3. **预测题**：故事里写了 `new Date().toLocaleDateString()`，视觉回归每天报几十个假差异，为什么？两种修法是什么？
+   答案：故事渲染不确定，截图与基线天然对不上。修法：mock 时间（@storybook/test 的 mockDate 或固定 props 传入），或在装饰器层统一注入确定的日期——确定性是视觉回归的前提。
+4. **规则题**：为什么「页面级故事」不能当 E2E 用？play 测试与 220 篇的 RTL 测试分工是什么？
+   答案：Storybook 是隔离环境，没有真实路由、后端与状态衔接，页面故事只适合布局快照；端到端流程交给 Playwright。分工：RTL 用例测业务逻辑行为（应用内），play 测「组件在隔离环境下可交互、可达成状态」，play 函数让故事成为 CI 里可执行的交互测试。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Optional 的创建与安全取值、map/flatMap 链式取值、orElse 与 orElseGet 家族的求值差异、ifPresentOrElse 与 or（Java 9+）、什么时候该返回 Optional、什么时候是反模式；用用户查询、嵌套 DTO、遗留代码迁移三个场景落地。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/290-LambdaFunctionalProgramming'
   - 'java/300-StreamAPI'
@@ -332,3 +332,13 @@ private boolean isVip(Long userId) {
 - Oracle, *Java SE API Specification*：`java.util.Optional` 类文档（https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html ），含 Java 9 新增 `ifPresentOrElse`/`or`/`stream` 与 Java 10 新增 `orElseThrow()` 的官方语义；
 - JDK 源码注释（Brian Goetz 对 Optional 设计定位的说明：仅为返回类型设计，非字段/参数用途）；
 - 模块内 290-LambdaFunctionalProgramming 第 7 节、300-StreamAPI、330-JavaFunctionalProgramming 第 4.7 节的既有 Optional 片段，本篇为其独立成篇的收拢与深化。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 创建 Optional 的三个工厂分别是什么？"一条军规"指什么？——Optional.of(x)（x 不可为 null）、Optional.empty()、Optional.ofNullable(x)；军规：返回值可以 Optional，字段与参数一律不要 Optional。
+2. `opt.orElse(defaultX)` 与 `opt.orElseGet(() -> defaultX)` 的执行差异是什么？——orElse 的参数无条件先求值（哪怕 opt 有值）；orElseGet 惰性，只在缺值时才调用 Supplier。
+3. map 与 flatMap 在 Optional 上的区别？——map 对包装内值做变换，函数返回普通值；flatMap 用于函数本身返回 Optional 的场景，避免 Optional<Optional<T>>。
+4. 为什么 get() 被视为反模式？正确取值姿势是哪几个？——它把空值问题变成 NoSuchElementException，等于没有解决问题；用 orElse/orElseGet/orElseThrow/ifPresent/map 链。
+5. 判断：把 Optional 作为方法参数让调用方"可以不传"。——不对；Optional 不是参数省略机制，应重载方法或用 @Nullable 注解，字段同理。

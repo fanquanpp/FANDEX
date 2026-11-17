@@ -6,13 +6,25 @@ category: 云与基础设施
 difficulty: beginner
 description: ip/ifconfig/route 常用网络命令：接口与地址管理、路由表操作、邻居表查看与持久化配置。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/080-PingTraceroute'
   - 'networking/060-ARPRouting'
 prerequisites: []
 ---
+
+## ip 命令为什么是主线
+
+iproute2 的 `ip` 是 Linux 网络配置的现行主线：net-tools 家族（ifconfig/route/arp/netstat）
+自 2001 年后基本停止维护，内核新特性（策略路由、多表、netns、网桥、隧道统一管理）只有
+`ip` 支持。老教材与老脚本里的 ifconfig 语法还能在部分发行版上跑（补装 net-tools 即可），
+但读任何现代文档、报错信息、容器与云环境，遇到的都是 ip 语法——学习投入应该直接落在
+`ip` 上，ifconfig 只作为「看得懂旧系统」的对照保留。
+
+与老语法的心智差异也值得记住：`ip` 命令的参数顺序是「对象 + 动作」（`ip addr`、`ip link`、
+`ip route`），配置默认**不持久化**——重启即失效，永久生效靠发行版的网络管理器
+（NetworkManager/nmcli、netplan、/etc/network/interfaces）。临时实验用 ip，落地要落配置。
 
 ## ip addr 地址管理
 
@@ -129,10 +141,10 @@ ip route add 172.16.0.0/16 dev eth0
 ip route del 10.0.0.0/24
 ```
 
-**基本写法：查看路由缓存**
+**基本写法：查询路由决策**
 `ip route get <目标IP>`
 ```bash
-# 查看到 8.8.8.8 的路由决策
+# 查看到 8.8.8.8 的路由决策（内核会选哪条路由、从哪个口出，不真的发包）
 ip route get 8.8.8.8
 ```
 
@@ -443,14 +455,23 @@ ip link show
 ```
 
 **基本写法：重命名网络接口**
+`ip link set <接口> name <新名称>（先 down）`
 ```bash
-`ip link set <接口> down
-ip link set <接口> name <新名称>
-ip link set <新名称> up`
-```
-```bash
-# 重命名 eth0 为 wan0
+# 重命名 eth0 为 wan0（改名前必须 down）
 ip link set eth0 down
 ip link set eth0 name wan0
 ip link set wan0 up
 ```
+
+## 教学自检
+
+按遮码自检法：遮住上文代码块，先自己写命令或推演答案，再对照。
+
+- `ip addr add` 加的地址重启后还在吗？要让它永久生效应该动哪些配置？
+- `ip addr` 与 `ip link` 的输出差在哪一层信息？判断「接口有地址但没 UP」该看哪个？
+- `ip route get 8.8.8.8` 和 `ip route show` 各回答什么问题？为什么 get 是排错利器？
+  （提示：它直接回答「这个包会从哪个口、按哪条路由出去」）
+- 同一网卡挂多个 IP 时，出向流量的源地址按什么规则选？
+- `ip neigh` 里 REACHABLE、STALE、FAILED 各表示什么？ARP 学不到条目时先查哪个环节？
+- 策略路由里 `table 100` 的路由表内容还没建，规则会生效吗？完整配置缺哪一步？
+- 把接口改名前必须做什么？为什么？

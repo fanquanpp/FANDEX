@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Web 安全知识块导览：OWASP Top 10 攻防全景图、九大漏洞类别的入口索引、渗透测试与 Web 安全的学习路线。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/010-SecurityBasicsDefense'
   - 'cybersecurity/160-OWASPTop10Detailed'
@@ -38,20 +38,20 @@ flowchart TD
     B & C & D & F & H & J --> K["防线：输入验证 170<br/>纵深：Web 安全 280<br/>运行时：WAF 350"]
 ```
 
-OWASP Top 10（2021）是这个地图的官方坐标——前十风险与模块入口的对照：
+OWASP Top 10:2025（2025-11 发布的当前正式版）是这个地图的官方坐标——前十风险与模块入口的对照：
 
 | 排名 | 风险 | 模块入口 |
 | :--- | :--- | :--- |
-| A01 | 权限控制失效（越权、IDOR） | [OWASP Top 10 详解](/cybersecurity/160-OWASPTop10Detailed) |
-| A02 | 加密机制失效 | [密码学应用](/cybersecurity/030-CryptographyApplication) |
-| A03 | 注入 | [SQL 注入](/cybersecurity/180-SQLInjection)、[命令注入](/cybersecurity/270-CommandInjection) |
-| A04 | 不安全设计 | [安全编码原则](/cybersecurity/330-SecureCodingPrinciples) |
-| A05 | 安全配置错误 | [文件上传安全](/cybersecurity/275-FileUploadSecurity)、[Web 安全纵深](/cybersecurity/280-WebSecurityDeep) |
-| A06 | 易受攻击和过时的组件 | [漏洞扫描工具](/cybersecurity/410-VulnerabilityScanTools) |
-| A07 | 身份识别和认证失败 | [认证与授权](/cybersecurity/290-AuthenticationAuthorization)、[JWT 安全实践](/cybersecurity/315-JWTSecurityPractice) |
-| A08 | 软件和数据完整性失败 | [反序列化漏洞](/cybersecurity/260-DeserializationVulnerability) |
-| A09 | 安全日志和监控失效 | [SOC 安全运营](/cybersecurity/550-SOC) |
-| A10 | 服务器端请求伪造 | [SSRF 攻击](/cybersecurity/230-SSRFAttack) |
+| A01 | 权限控制失效（越权、IDOR，SSRF 并入此列） | [OWASP Top 10 详解](/cybersecurity/160-OWASPTop10Detailed)、[SSRF 攻击](/cybersecurity/230-SSRFAttack) |
+| A02 | 安全配置错误 | [文件上传安全](/cybersecurity/275-FileUploadSecurity)、[Web 安全纵深](/cybersecurity/280-WebSecurityDeep) |
+| A03 | 软件供应链失败（依赖与构建被污染） | [漏洞扫描工具](/cybersecurity/410-VulnerabilityScanTools) |
+| A04 | 加密失败 | [密码学应用](/cybersecurity/030-CryptographyApplication) |
+| A05 | 注入 | [SQL 注入](/cybersecurity/180-SQLInjection)、[命令注入](/cybersecurity/270-CommandInjection) |
+| A06 | 不安全设计 | [安全编码原则](/cybersecurity/330-SecureCodingPrinciples) |
+| A07 | 认证失败 | [认证与授权](/cybersecurity/290-AuthenticationAuthorization)、[JWT 安全实践](/cybersecurity/315-JWTSecurityPractice) |
+| A08 | 软件或数据完整性失败 | [反序列化漏洞](/cybersecurity/260-DeserializationVulnerability) |
+| A09 | 日志与告警失败 | [SOC 安全运营](/cybersecurity/550-SOC) |
+| A10 | 异常条件处置不当（失败开放） | [安全编码原则](/cybersecurity/330-SecureCodingPrinciples) |
 
 ## 2. 攻防成对的学习顺序
 
@@ -103,7 +103,7 @@ OWASP Top 10（2021）是这个地图的官方坐标——前十风险与模块�
 
 ## 6. 自我检查
 
-- 能不看资料复述 OWASP Top 10（2021）的至少五项，并为每项指出模块入口篇；
+- 能不看资料复述 OWASP Top 10:2025 的至少五项，并为每项指出模块入口篇；
 - 能说出「攻击/防御成对」结构的意义，并举出一对（如 190+200）；
 - 能画出六类入口到漏洞族到防御篇的对应图；
 - 能说清渗透测试为什么必须「先读方法论再碰工具」。
@@ -114,6 +114,6 @@ OWASP Top 10（2021）是这个地图的官方坐标——前十风险与模块�
 
 ## 参考与致谢
 
-- OWASP Top 10（2021）条目与顺序：https://owasp.org/Top10/ （CC-BY 许可）；
+- OWASP Top 10:2025 条目与顺序：https://owasp.org/Top10/ 与 https://top10.owasp.org/2025/ （CC-BY 许可）；
 - 本篇为导览重写：原第九个编号章节分别由 [OWASP Top 10 详解](/cybersecurity/160-OWASPTop10Detailed)（原第 1 节）、[SQL 注入](/cybersecurity/180-SQLInjection)（原第 2 节）、[XSS 攻击](/cybersecurity/190-XSSAttack) 与 [XSS 防御](/cybersecurity/200-XSSDefense)（原第 3 节）、[CSRF 攻击](/cybersecurity/210-CSRFAttack) 与 [CSRF 防御](/cybersecurity/220-CSRFDefense)（原第 4 节）、[命令注入](/cybersecurity/270-CommandInjection)（原第 6 节）、[渗透测试方法论](/cybersecurity/360-PenetrationTestingMethodology)（原第 7 节）、[Nmap 扫描](/cybersecurity/390-NmapScan)（原第 8 节）、[Burp Suite CLI](/cybersecurity/440-BurpSuiteCLI)（原第 9 节）覆盖；原第 5 节文件上传漏洞拆入 [文件上传安全](/cybersecurity/275-FileUploadSecurity)；原无编号操作系列（信息收集/端口扫描/服务枚举/Web 应用测试/漏洞利用/密码破解/后渗透操作/权限提升/内网渗透/报告生成）经逐段比对与 [渗透测试方法论](/cybersecurity/360-PenetrationTestingMethodology) 同名系列逐字节重复，按去重原则移除；
 - 其余内容为原创。

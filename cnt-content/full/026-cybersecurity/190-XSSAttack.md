@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 跨站脚本攻击原理、分类、利用方式与防御策略详解。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/580-IoTOTSecurity'
   - 'cybersecurity/370-SecurityToolsPractice'
@@ -16,6 +16,9 @@ prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
 
+- **解决什么问题**：XSS 的本体是「数据被当成 HTML/JS 执行」——与 SQL 注入同源（换了解释器），但攻击对象从服务器换成了**访问页面的其他用户**。理解三类 XSS 的差异与绕过手法，是下一篇防御（200-XSSDefense）的出发点。
+- **容易怎么错**：只防 `<script>`（事件属性、伪协议、编码都能绕过）；以为 HttpOnly 挡住了一切（它只挡 Cookie 窃取，DOM 破坏与键盘记录照旧）；把反射型与存储型的危害等级搞反（存储型持续命中所有访问者）。
+- **学完能做什么**：按「注入点 → 存储位置 → 触发者」三要素给一次 XSS 定性；在授权靶场里复现三类 XSS 并解释各自的触发链。
 
 ## 1. XSS 攻击原理
 
@@ -222,3 +225,11 @@ Set-Cookie: session=abc123; HttpOnly; Secure; SameSite=Strict
 %3Cscript%3Ealert(1)%3C/script%3E
 &#60;script&#62;alert(1)&#60;/script&#62;
 ```
+
+## 自检
+
+- 遮住第 2 节的分类表，自己画出三类 XSS（反射、存储、DOM）的「注入点 → 存储位置 → 触发者」三要素对照。
+- 为什么存储型 XSS 通常危害最大？（触发者覆盖所有访问该页面的用户，且无需构造链接。）
+- 遮住 5.2 的 payload 清单，自己写出「基础探测、事件属性、编码绕过」三类各一条，并说出每条针对什么过滤写法。
+- 「HttpOnly 之后 XSS 就没威胁了」这句话错在哪？（Cookie 只是窃取目标之一，DOM 篡改、键盘记录、蠕虫传播不受影响。）
+- 防御端你会先上哪三件事？为什么顺序是「出口编码 → CSP → 输入验证」而反过来不行（详见 200-XSSDefense）。

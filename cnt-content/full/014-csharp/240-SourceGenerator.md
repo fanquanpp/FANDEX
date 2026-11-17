@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C# Source Generators
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/190-GenericCovarianceContravariance'
   - 'csharp/230-SpanMemory'
@@ -1538,3 +1538,27 @@ context.AddSource("Generated.g.cs", """
 ```
 
 ---
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己口述或写出关键代码，再对照。本篇自检核心是「生成器解决什么问题」与「增量管线为什么这样设计」。
+
+**题 1（动机）**：反射在启动与 AOT 场景的两大硬伤是什么？源生成器如何同时解决？
+
+参考答案：硬伤一：运行时反射要扫描程序集/构造成员表，冷启动慢、热路径有解释开销；硬伤二：Native AOT 裁剪会删掉"反射才能发现"的成员，`GetType().GetProperty(...)` 在 AOT 下直接失灵。源生成器在编译期读取用户代码的语法/语义模型，把本来运行时反射做的事情（如"枚举带某 Attribute 的类型并生成注册表"）生成成普通 C# 代码，启动即有 IL、AOT 可见可裁剪。
+
+**题 2（接线三要素）**：让一个生成器类被编译器识别并让生成代码与用户代码互相可见，需要哪三件事？
+
+参考答案：(1) 类标 `[Generator]` 并实现 `IIncrementalGenerator`（独立 netstandard2.0 工程，引用 Microsoft.CodeAnalysis.CSharp）；(2) 使用方以 `Analyzer`/`ProjectReference`（`OutputItemType="Analyzer"`）方式引用生成器工程；(3) 用户代码里的目标类型标 `partial`——生成器产出的也是 partial，两边由编译器拼合。少了 partial，生成的成员无处安放。
+
+**题 3（增量管线）**：`IIncrementalGenerator` 的管线为什么要设计成"多步 Transform + RegisterSourceOutput"，而不是在 `Initialize` 里一次性扫全量语法树？`WithTrackingNames`/缓存失效靠什么？
+
+参考答案：全量扫描在每次按键/小改动后重跑，大项目必然卡顿。增量管线把分析拆成等价性可比的中间步骤（`SyntaxProvider.ForAttributeWithMetadataName` 等），编译器对每步输入做 equality 判断：输入没变就复用缓存值，只有真正变化的文件重新经过后续步骤；`RegisterSourceOutput` 只在最终输入集合变化时重新发射源码。缓存失效完全由"每步输出是否 Equals 相等"驱动，所以中间值必须设计成可比较的不可变记录。
+
+**题 4（Diagnostic 还是抛异常）**：生成器遇到不支持的用法（比如目标类型不是 partial）应该怎么办？写出大致的 Diagnostic 流程。
+
+参考答案：不能抛异常（会变成生成器崩溃、用户只看到一串编译错误），必须发 `Diagnostic`：用 `DiagnosticDescriptor`（id 如 `SG0001`、严重级别、消息模板）+ `Location`（指向用户代码位置）创建 `Diagnostic`，通过 `context.ReportDiagnostic` 上报，IDE 里就变成一条指向错误行、可点击跳转的分析器提示；同时选择不生成或生成兜底代码。
+
+**题 5（BCL 里的源生成器）**：说出三个 .NET 内置的源生成器使用场景，并说明它们替换了什么运行时机制。
+
+参考答案：(1) `System.Text.Json` 的 `JsonSerializerContext`——替换运行时反射构建序列化元数据，AOT 与启动友好；(2) `LoggerMessage` 源生成器——替换运行时装箱/字符串插值的日志模板，生成强类型日志方法；(3) 正则 `[GeneratedRegex]`——把 `Regex` 模式在编译期编译成解释/优化代码，替代运行时解析模式；另外 DI 场景（如 `Microsoft.Extensions.DependencyInjection` 的 AOT 支持）与 ASP.NET Core 的 Request Delegate Generator 同理。共同点：把"运行时元数据编程"前移到编译期。

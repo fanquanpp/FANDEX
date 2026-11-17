@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: WebSocket
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/300-ServiceWorkerPWA'
   - 'html5/350-MicrodataJSONLD'
@@ -28,7 +28,7 @@ prerequisites:
 | ---------- | --------- | --------- |
 | 通信模式   | 请求-响应 | 全双工    |
 | 连接       | 短连接    | 持久连接  |
-| 服务器推送 |           |           |
+| 服务器推送 | 原生不支持（只能轮询/长轮询模拟） | 原生支持 |
 
 ## 2. WebSocket API
 
@@ -467,6 +467,37 @@ class ChatClient {
 const chat = new ChatClient('wss://chat.example.com');
 chat.send('Hello!');
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写 WebSocket 客户端最小骨架：建立 `wss://` 连接、连接后发一条 JSON、收到消息打印、关闭时打印状态码，并在发送前检查连接状态。
+
+参考答案（先自己写，再对照）：
+
+```javascript
+const ws = new WebSocket('wss://example.com/chat');
+
+ws.onopen = () => {
+  ws.send(JSON.stringify({ type: 'chat', content: '你好' }));
+};
+ws.onmessage = (e) => console.log('收到:', e.data);
+ws.onclose = (e) => console.log('关闭:', e.code);
+ws.onerror = () => console.error('错误');
+
+function safeSend(data) {
+  if (ws.readyState === WebSocket.OPEN) ws.send(data);
+}
+```
+
+2. 概念自问：为什么断线重连要用「指数退避 + 上限」？心跳解决什么问题？聊天室与新闻推送分别该选 WebSocket 还是 SSE？
+
+参考答案（先自己答，再对照）：服务端故障恢复期间固定间隔重连会形成请求风暴，指数退避（乘系数递增、封顶如 30 秒）保护双方；心跳防止中间设备（NAT/代理）回收静默连接，并及时发现「半开连接」；聊天室双向实时用 WebSocket，新闻推送只需服务器单向推、用更轻的 SSE 即可。
+
+3. 判断题：生产环境用 `ws://` 有什么风险？页面关闭时要对连接做什么？
+
+参考答案（先自己答，再对照）：`ws://` 明文传输可被窃听篡改，统一用 `wss://`（TLS）；页面卸载时主动 `close()` 回收连接，否则服务端与设备资源泄漏。
 
 ## 动手试试
 

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 云安全：共享责任模型、IAM 与凭证治理、云元数据与 SSRF 风险、CSPM/CWPP 与 CNAPP、云原生安全左移与合规自动化。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/230-SSRFAttack'
   - 'cybersecurity/320-ZeroTrustArchitecture'
@@ -165,3 +165,11 @@ NetworkPolicy 默认拒绝、服务网格 mTLS——与零信任思想一致（�
 - **进阶注意**：云 IAM 的治理重点是机器身份与「实际可达权限」（CIEM 视角）；
   IMDSv2 + 最小实例角色是 SSRF→接管的根本解；把安全左移进 CI（密钥/SAST/SCA/IaC/
   镜像五连检）并用运行时检测兜底；取证时先固化日志与快照再处置。
+
+## 自检
+
+- 遮住第 1 节的责任表，自己标出 IaaS 与 SaaS 两列里「客户侧」的行，并回答「无论哪种模型都永远在客户侧」的是哪两行（身份与数据）。
+- 为什么说云 IAM 是最大单点风险？说出机器身份的三个治理点（轮换、收敛 `"*"`、用临时凭证替代长期 AK）。
+- 遮住 2.2 的 CLI 片段，写出「生成并读取凭证报告找 90 天未轮换 AK」的思路（不背 API，能说流程即可）。
+- IMDSv2 为什么是 SSRF→接管的根本解？回到 230-SSRFAttack 的利用链，指出哪一步被它切断。
+- 遮住第 5 节的 CI 检查清单，写出「密钥 / SAST / SCA / IaC / 镜像」五连检各自挡住的一类事故。

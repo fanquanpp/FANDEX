@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL多版本并发控制MVCC：版本链、快照读、Read View、可见性判断与垃圾回收机制
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/380-DirtyReadNonRepeatablePhantom'
   - 'sql/390-LockMechanism'
@@ -237,6 +237,51 @@ SET innodb_kill_idle_transaction = 60;             -- MySQL
 -- 配置 autovacuum 参数
 ALTER TABLE employees SET (autovacuum_vacuum_scale_factor = 0.1);
 ```
+## 遮码自检
+
+遮住答案先答；MVCC 题的判断标准是"能对一行历史数据说出'谁、什么时候、看哪个版本'"。
+
+**第 1 题：MVCC 用什么换来"读不阻塞写"？写出读写双方各自拿到的东西。**
+
+<details><summary>参考答案</summary>
+
+用**多版本**换来：写操作创建新版本（新行 + 事务信息），旧版本仍留在版本链上；
+读操作按可见性规则访问旧版本（快照读），不加锁。于是读者拿到的是"它开始时世界的
+快照"，写者改的是"最新版本"，两者操作的是不同版本，物理上无需互斥。
+</details>
+
+**第 2 题：InnoDB 一行的隐藏列 DB_TRX_ID 与 DB_ROLL_PTR 各干什么？Read View 怎么用它们判断"这个版本我能不能看"？**
+
+<details><summary>参考答案</summary>
+
+DB_TRX_ID 记录最后修改该行的事务 ID；DB_ROLL_PTR 指向 undo log 里的前一个版本，
+串成版本链。Read View 记录"创建快照时活跃（未提交）事务"的集合：某版本的
+trx_id 早于快照（已提交）可见；晚于快照或正活跃则不可见，沿 roll_ptr 找更旧的
+版本重判，直到找到可见版本。可见性判断是 MVCC 的全部秘密。
+</details>
+
+**第 3 题：同一行数据，普通 SELECT 与 UPDATE 看到的版本可能不同——各自的读叫什么名字？这解释了什么经典 bug？**
+
+<details><summary>参考答案</summary>
+
+普通 SELECT 是**快照读**（走 MVCC 版本链，不加锁）；UPDATE/DELETE/FOR UPDATE 是
+**当前读**（读最新已提交版本并加锁）。经典 bug：应用"先 SELECT 确认余额足够再
+UPDATE"——SELECT 走快照，UPDATE 用当前值判断，两个读之间别人已把钱扣走，判断
+过期。修法：把判断与修改放进同一条当前读路径（`UPDATE ... WHERE balance >= 100`
+）或显式 `FOR UPDATE`，即悲观锁；或乐观锁版本号。
+</details>
+
+**第 4 题：MVCC 的版本不会自己消失——旧版本靠什么回收？长事务为什么是"存储与性能杀手"？**
+
+<details><summary>参考答案</summary>
+
+回收靠后台清理：InnoDB 的 purge 线程在"没有任何快照还需要某版本"后清理 undo；
+PostgreSQL 靠 VACUUM 回收死元组（旧版本堆在表内，这也是 PG 表膨胀问题的根源）。
+长事务一直持有旧快照，"有人还需要"就永远成立——undo/死元组无法回收，版本链越拖
+越长，回滚表空间膨胀、查询越走越慢。纪律：事务要短，长事务是 MVCC 数据库的第一
+大敌。
+</details>
+
 ## MVCC 基本概念
 
 **基本写法：MVCC 原理**

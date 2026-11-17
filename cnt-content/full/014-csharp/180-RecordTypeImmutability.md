@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C#记录类型（record）与不可变性详解：从ECMA-334标准到函数式编程实践的完整指南。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/390-GCGeneration'
   - 'csharp/050-ValueTypeReferenceType'
@@ -1990,3 +1990,27 @@ flowchart TD
 ---
 
 > **结语**：record 类型是 C# 迈向函数式编程范式的重要一步。理解其底层 IL 实现、值相等语义、与 GC 的协同，是写出高质量 .NET 代码的关键。本章节作为金标准文档，旨在为学习者提供从理论到实践的完整知识体系，从 ECMA-334 规范到企业级案例研究，构建对 record 与不可变性的深刻理解。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码或口述结论，再对照。本篇自检核心是「不可变性的层次」与「浅不可变的陷阱」。
+
+**题 1（三层不可变）**：`init` 属性、`readonly` 字段、`readonly record struct`——三者分别在什么粒度上锁死什么？各写一行声明。
+
+参考答案：`public int Age { get; init; }`——对象构造完成后属性不可改，但引用指向的内部数据仍可变；`private readonly List<string> _items;`——字段引用构造后不可重新赋值，但列表内容可增删；`readonly record struct Money(decimal Amount, string Currency);`——整个结构体（栈上值 + 属性）都不可变。粒度从"属性"到"引用槽"到"整个值"逐层收紧。
+
+**题 2（浅不可变陷阱）**：`record Order(decimal Total, List<string> Tags);`——`order.Tags.Add("vip")` 能编译吗？这破坏了什么？给出两种修复。
+
+参考答案：能编译——`Tags` 属性是 init（引用不可换），但 `List` 内容不受 record 任何机制约束，Add 照常生效，"不可变 record"实际是浅不可变。修复：(1) 换 `ImmutableList<string>`/`FrozenSet<string>`，Add 返回新集合；(2) 类型收窄为 `IReadOnlyList<string>` 并在构造时 `tags.ToList()` 防御性拷贝，外部拿不到可变引用。
+
+**题 3（with 的复制语义）**：`var b = a with { };` 与 `var b = a;` 对 record 而言差别是什么？对 class 而言呢？
+
+参考答案：record 下 `a with { }` 调用复制构造函数创建新实例（`ReferenceEquals` 为 false，值相等为 true）；`var b = a;` 只是复制引用，`b` 与 `a` 是同一实例。对 class：`with { }` 根本不可用（类没有合成复制构造函数），只有引用复制。要点：`with` 是"不可变换新"的核心 API，前提是 record。
+
+**题 4（集合不可变的层次）**：`ImmutableArray<T>` 与 `T[]` 包在 `IReadOnlyList<T>` 里，两者的"不可变"承诺差在哪？给调用方的实际影响？
+
+参考答案：`ImmutableArray<T>` 是真正的不可变：类型系统保证没有修改 API，`Add` 返回新实例，多线程共享绝对安全。`IReadOnlyList<T>` 只是"只读视图"——底层 `T[]` 仍可被持有者改写，调用方迭代到一半数组可能被替换内容。影响：跨线程、跨边界传递时必须用前者；后者只表达"我不改"，不表达"没人改"。
+
+**题 5（不可变与并发）**：为什么"不可变数据 + 显式状态容器"比"处处加锁"更容易写出正确的并发代码？用"共享的订单对象"举一个两行级的例子。
+
+参考答案：不可变数据没有可写状态，任何线程读它都得到一致的值，不存在数据竞争，也就无需锁；变化被表达为"用 `with` 造一个新版本 + 原子替换引用"。例如多线程统计订单：共享 `ImmutableOrder` 只读，线程各自算出 `order with { Total = order.Total + delta }`，最后用 `Interlocked.CompareExchange` 替换容器里的引用——读路径零锁，写路径一个原子操作；若是可变订单，同样的读改写每一步都可能撞车，只能全靠锁包住。

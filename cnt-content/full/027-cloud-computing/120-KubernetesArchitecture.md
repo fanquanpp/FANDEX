@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Kubernetes核心架构：控制平面、节点组件、etcd、API Server 等详解。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/070-DockerDeepAnalysis'
   - 'cloud-computing/080-CloudNativeApp'
@@ -918,6 +918,31 @@ value: 1000
 globalDefault: false
 description: "高优先级 Pod"
 ```
+
+## 教学自检
+
+遮住上面的架构图与代码示例，先口头回答/默写命令，再展开对照。答不出的回到对应小节重读：
+
+1. 控制平面四个组件各自负责什么？所有组件之间靠什么通信（谁是一切请求的必经之路）？
+2. API Server 处理一个写请求的完整流程是什么（从认证到持久化）？
+3. etcd 为什么必须奇数节点、SSD、独立部署？3 节点与 5 节点各容忍几个故障？
+4. Scheduler 的两阶段流程是什么？`nodeSelector`、污点/容忍、Pod 反亲和分别影响哪个阶段？
+5. kubelet 与 kube-proxy 的分工是什么？kube-proxy 的 iptables/IPVS/nftables 三种模式分别在什么规模下选？
+6. dockershim 移除后集群还能用 Docker 构建的镜像吗？运行时与构建工具的关系是什么？
+7. 默写两条运维命令：节点维护前安全驱逐 Pod 的命令；检查某用户能否创建 Pod 的命令。
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. API Server（唯一入口：认证/授权/准入 + 读写 etcd）、etcd（唯一状态存储）、Scheduler（决定 Pod 放哪个节点）、Controller Manager（跑各种控制循环让现实趋近期望）。一切组件间通信都走 API Server，没有组件直接互相调用。
+2. 请求 → 认证 → 授权 → 准入控制 → 校验 → etcd 持久化 → 响应；随后由各控制器的 Watch 感知变更并执行。
+3. etcd 用 Raft 共识，需要多数派存活才能写入——3 节点容忍 1 故障、5 节点容忍 2 故障，偶数节点不增加容忍度还浪费机器；SSD 因为写路径在关键链路上；独立部署避免与业务抢资源。它是整个集群的命门，还要定期备份。
+4. Filter（过滤不满足条件的节点）→ Score（打分选最优）→ Bind。nodeSelector/亲和性是过滤条件，污点也是过滤（节点拒绝不容忍它的 Pod）；Pod 反亲和影响过滤与打分（要求/偏好分散）。
+5. kubelet 管 Pod 生命周期（拉镜像、启停容器、探针、上报状态）；kube-proxy 只管 Service 的转发规则。中小规模 iptables/nftables 够用，Service 数量几百以上或需要最少连接等调度算法用 IPVS。
+6. 能。镜像遵循 OCI 标准，运行时（containerd）与构建工具（docker build）解耦——用 Docker 构建镜像、用 containerd 运行完全兼容。
+7. `kubectl drain <节点> --ignore-daemonsets --delete-emptydir-data`（驱逐并标记不可调度）；`kubectl auth can-i create pods --as=<用户>`。污点用 `kubectl taint nodes <节点> <键>:<效果>-` 移除。
+
+</details>
 
 ## 小结
 

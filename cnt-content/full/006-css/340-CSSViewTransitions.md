@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: View Transitions API 在页面状态切换时自动生成平滑过渡，支持自定义动画与跨文档过渡。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/330-CSSAnimationTransition'
   - 'css/650-CSSNewFeatures'
@@ -34,7 +34,7 @@ document.getElementById("switch").addEventListener("click", () => {
 });
 ```
 
-**讲解：** 回调里同步修改 DOM，浏览器自动为整个页面生成过渡。Chrome/Edge 已稳定支持，Safari 18 起跟进，Firefox 的支持进度以 MDN/caniuse 为准；旧浏览器直接跳过动画，功能不受影响。
+**讲解：** 回调里同步修改 DOM，浏览器自动为整个页面生成过渡。三大引擎均已稳定支持：Chrome/Edge 111 起（2023）、Safari 18 起（2024-09）、Firefox 144 起（2025-10），同文档视图过渡自 2025-10 进入 Baseline Newly Available；旧浏览器直接跳过动画，功能不受影响。
 
 ## 2. 命名视图：只让部分元素动
 
@@ -92,7 +92,7 @@ document.getElementById("switch").addEventListener("click", () => {
 
 - 页面必须**同源**（协议、域名、端口一致），跨站导航不参与；
 - 旧页面不能被 `unload` 阻塞逻辑拖慢，且两边都要声明 `@view-transition`；
-- 跨文档过渡属较新能力：Chromium 系与较新的 Safari 已支持，Firefox 以 MDN/caniuse 为准，生产使用前查支持状态，不支持时导航行为完全正常（动画只是增强）。
+- 跨文档过渡属较新能力：Chromium 系（Chrome 126 起）与 Safari 18.2（2024-12）已支持，Firefox 尚未落地（截至 2026-11，以 MDN/caniuse 为准），生产使用前查支持状态，不支持时导航行为完全正常（动画只是增强）。
 
 ## 5. 与动画/新特性的关系
 
@@ -107,7 +107,45 @@ document.getElementById("switch").addEventListener("click", () => {
 3. 自定义 `::view-transition-old(root)` 的动画时长与曲线；
 4. 进阶挑战：做“列表点击卡片 → 详情页卡片放大展开”的跨文档过渡原型。
 
-## 7. 核心知识点
+## 7. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1-3 节的示例代码自己写，再对照参考实现。
+
+**任务一**：写一个「只有头像动」的主题切换——点击按钮切换 `body` 的 `dark` 类时，页面默认淡入淡出，但 `.avatar` 单独做位移/缩放补间，且这段补间时长固定 0.4s。
+
+**任务二**：写一个「只淡入、不淡出」的定制——切换时旧画面瞬间消失（无动画），新画面 0.2s 淡入。
+
+**提示**：任务一用 `view-transition-name` 给头像圈定独立过渡层，用 `::view-transition-group(avatar)` 改时长（第 2 节）；任务二把旧画面层的动画设为 `none`，新画面层换自己的 keyframes（第 3 节）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.avatar {
+  view-transition-name: avatar;
+}
+
+::view-transition-group(avatar) {
+  animation-duration: 0.4s;
+}
+
+/* 任务二 */
+::view-transition-old(root) {
+  animation: none; /* 旧画面瞬间消失 */
+}
+
+::view-transition-new(root) {
+  animation: fade-in 0.2s ease forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+```
+
+验收点：任务一里若忘了 `view-transition-name`，头像会随整页一起淡入淡出而不是单独飞行；`view-transition-name` 在同一时刻必须全局唯一，两个元素同名会报错且过渡取消。
+
+## 8. 核心知识点
 
 > 一句话记住视图过渡：startViewTransition 捕获新旧状态，view-transition-name 圈定重点元素，伪元素自定义动画，旧浏览器自动降级。
 
@@ -118,7 +156,7 @@ document.getElementById("switch").addEventListener("click", () => {
 - 跨文档过渡用 `@view-transition { navigation: auto; }` 开启，要求同源与同名视图；
 - 不支持时静默降级为直接切换。
 
-## 8. 注意事项与改进建议
+## 9. 注意事项与改进建议
 
 | 问题点 | 说明 | 改进方案 |
 | --- | --- | --- |
@@ -127,7 +165,7 @@ document.getElementById("switch").addEventListener("click", () => {
 | 过渡期间重复点击 | 连续触发导致动画叠加 | 加状态锁或在回调中防抖 |
 | 与 reduced-motion 冲突 | 动晕用户不适 | 遵循 `prefers-reduced-motion` 关闭过渡 |
 
-## 9. 扩展学习
+## 10. 扩展学习
 
 - 动画与过渡：`css/330-CSSAnimationTransition`；
 - 新特性总览：`css/650-CSSNewFeatures`；

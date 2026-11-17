@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git stash 详解：工作进度暂存栈、未跟踪文件、多任务并行与恢复冲突处理。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'git/060-ThreeTrees'
   - 'git/260-GitReflog'
@@ -164,6 +164,35 @@ git log --oneline --graph refs/stash -3    # 可见 stash 链
 ```
 
 理解这一点后，stash 的全部能力都可推演：可以 `git diff stash@{0}^ stash@{0}` 看改动、可以 `git cherry-pick -n stash@{0}` 把暂存内容当作补丁应用、也可以在误 drop 后用 `git fsck` 按悬空提交找回——stash 的「栈」本质就是 `refs/stash` 的 reflog。
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. `git stash` 默认收走哪些文件？新写的未跟踪文件用什么选项收？被 .gitignore 忽略的呢？
+2. `pop` 与 `apply` 的分工是什么？`pop` 遇到冲突时，栈里那条 stash 还在吗？
+3. 实操：用 `--keep-index` 走一遍「提交前演练」；再用 `git stash branch` 把一条基点走远的 stash 安顿回出生分支。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```bash
+# 1) 默认只收已跟踪文件的修改（工作区 + 暂存区）。
+#    未跟踪新文件：git stash -u（--include-untracked）；
+#    连被忽略文件一起收：git stash -a（--all，慎用，会收走构建产物）。
+
+# 2) pop = apply + drop：取回并删除条目，适合「恢复即终点」；
+#    apply 保留条目，适合「同一份改动还要贴到别的分支」。
+#    pop 冲突时条目不删除（Git 明确提示 The stash entry is kept in case you need it again），
+#    解决冲突后要手动 git stash drop，否则条目滞留。
+
+# 3)
+git stash push --keep-index -m "pre-commit rehearsal"  # 全部收走，已暂存内容留在原地
+git stash pop                                          # 演练完恢复全部改动
+git stash branch coupon-wip 'stash@{1}'                # 按出生提交建分支并恢复
+```
+
+</details>
 
 ## 小结
 

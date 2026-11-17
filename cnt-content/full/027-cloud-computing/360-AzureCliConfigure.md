@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Azure CLI（az）的安装、登录认证、订阅管理、默认配置与 JMESPath 输出控制实战。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/370-AzureGroupVMCommand'
   - 'cloud-computing/380-AzureStorageCommand'
@@ -38,8 +38,8 @@ brew install azure-cli
 
 # 查看版本：输出 JSON 形式的 CLI 与各依赖库版本
 az version
-# 预期输出：
-# { "azure-cli": "2.7x.0", "azure-cli-core": "2.7x.0", ... }
+# 预期输出（版本号随时间变化）：
+# { "azure-cli": "2.9x.0", "azure-cli-core": "2.9x.0", ... }
 
 # CLI 自带的自升级命令（会列出变更并确认）
 az upgrade
@@ -208,6 +208,31 @@ az vm open-port --name web-vm-01 --port 80 --priority 1001
 # 清理：删除整个资源组即删除其中所有资源
 az group delete --name MyResourceGroup --yes --no-wait
 ```
+
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. Azure 的「租户-订阅-资源组」三层结构各是什么？与 AWS 的账号模型类比一下。
+2. 三种登录方式各适合什么场景？生产上比服务主体更好的选择是什么？
+3. `az ad sp create-for-rbac` 输出的 password 有什么特性？CI 里怎么注入凭证？
+4. 多订阅账号最容易翻车的事是什么？脚本里怎么防？
+5. 默认配置存哪里？「设置默认资源组」的命令是什么？
+6. 脚本取值的黄金组合是什么？为什么 tsv 比 json 更适合赋值给 shell 变量？
+7. 扩展（extension）是什么？生产脚本依赖扩展命令要注意什么？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 租户 = 身份目录（像公司），订阅 = 独立账套（计费与权限边界），资源组 = 资源的最小管理单元（同生命周期资源放一起，删组即删全部资源）。类比 AWS：订阅 ≈ 账号，资源组 ≈ 靠约定组织的资源集合（AWS 没有原生等价物）。
+2. `az login` 浏览器交互（本地开发）、`--use-device-code`（SSH/无图形环境）、服务主体（CI/脚本）。生产上更推荐 Managed Identity——VM/AKS 自带身份，完全不管理密码。
+3. 只显示一次，且绝不进代码仓库。CI 用 `AZURE_CLIENT_ID`/`AZURE_TENANT_ID`/`AZURE_CLIENT_SECRET` 环境变量三件套注入（或 OIDC 联合凭据免密）。
+4. 在错误的订阅里建了资源——计费和权限全乱。脚本显式传 `--subscription`，操作资源前先 `az account show` 确认。
+5. `~/.azure/config`（INI 格式）。`az config set defaults.group=MyResourceGroup`，之后命令可省略 `-g`。
+6. `--query '...' --output tsv`。tsv 无引号、无对齐空白，能直接赋值给 shell 变量（json 要再走 jq/解析）。
+7. 新服务特性先以扩展形式发布，首次使用自动提示安装。注意：可能是实验性 API，字段与稳定版不同——CI 固定 `--extension-version` 并显式安装。
+
+</details>
 
 ## 小结
 

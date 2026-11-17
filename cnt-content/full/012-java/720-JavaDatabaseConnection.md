@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: JDBC 规范、连接池原理、事务管理、ORM 框架与高性能数据库访问最佳实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/460-JavaTextBlock'
   - 'java/470-JavaModuleSystem'
@@ -1863,3 +1863,10 @@ HikariPool-1 - Connection is not available, request timed out after 30000ms
 
 ---
 
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. JDBC 四步骨架：加载驱动之后的三步是什么？现代驱动为什么不再 Class.forName？——DriverManager.getConnection(url, user, pwd) -> Connection 创建 Statement -> 执行并处理 ResultSet；SPI 机制让驱动 jar 自注册，无需显式加载。
+2. PreparedStatement 相对 Statement 的两条核心收益？——预编译执行计划复用（性能）+ 参数占位符转义（SQL 注入防线）。
+3. 连接池为什么必要？HikariCP 快的核心手段是什么？——建 TCP + 认证 + 会话初始化的成本远高于单次查询，复用连接摊薄成本；HikariCP 用无锁集合（ConcurrentBag）与字节码代理精简路径。
+4. 事务的正确释放姿势怎么写？commit 与 rollback 各在什么分支？——try (conn) { setAutoCommit(false); ...; conn.commit(); } catch { conn.rollback(); throw; }；成功路径 commit，异常路径 rollback 后上抛让上层感知。
+5. ResultSet 关闭后还能取数据吗？为什么 try-with-resources 顺序重要？——不能（连接关闭时结果集随之失效）；资源按声明逆序关闭，ResultSet 先于 Statement、Statement 先于 Connection 释放，所以声明顺序应从内层资源开始。

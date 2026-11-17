@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: BGP 边界网关协议：AS 路径、选路策略、路由聚合与 Anycast。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/280-ComputerNetworkAdvanced'
   - 'cs-fundamentals/370-QUIC'
@@ -182,3 +182,11 @@ BGP 信任模型建立在"邻居说真话"上：任何 AS 宣告一条它不拥�
 - iBGP 水平分割要求 RR 或全互联；出向过滤与入向 Bogon 过滤是防事故/防劫持的第一道闸。
 - RPKI 起源验证已进入主流强制阶段，但只覆盖"谁有资格宣告"，路径完整性仍是开放问题。
 - 调试 BGP 依赖多源视角：Looking Glass、RouteViews/RIPE RIS、`show route detail` 的 AS_PATH 与 validation-state 是基本工具链。
+
+## 自检
+
+- 遮住第 1 节，先自己回答：AS 是什么、为什么互联网需要「AS 联邦 + 外交协议」而不是一个全球 OSPF？
+- 遮住 eBGP/iBGP 小节，回答：iBGP 的水平分割规则是什么？它逼出了哪两种拓扑解法（RR 或全互联）？
+- 遮住选路属性表，先默写 LOCAL_PREF、AS_PATH、MED 的比较顺序与方向（谁在出向打分、谁在入向打分），再用「商业策略优先于路径长度」解释一条大概率被选的路线。
+- 遮住劫持案例小节，先自己回答：Pakistan Telecom 事件里「更精确的 /24 优于 /22」利用了哪条转发规则（最长前缀匹配），再对照。
+- 遮住 RPKI 小节，回答：RPKI 验证的是「谁有资格宣告」还是「路径没被改」？被劫持的流量与正常流量在 validation-state 上有什么不同？

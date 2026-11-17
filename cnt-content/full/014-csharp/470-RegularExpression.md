@@ -6,13 +6,24 @@ category: 后端技术
 difficulty: beginner
 description: Regex 匹配替换、分组捕获、选项标志、超时防护与 GeneratedRegex 源生成的速查手册，附完整示例与易错点解析。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/030-CSharpBasicSyntax'
   - 'csharp/240-SourceGenerator'
 prerequisites:
   - 'csharp/020-CSharpOverviewEnvSetup'
 ---
+
+## 查表前的四条军规
+
+正则是"一行搞定"与"一行灾难"距离最短的 API。查下面的表之前，先记住四条：
+
+1. **先想格式，再想正则**：能靠 `DateTime.TryParse`、`IPAddress.TryParse` 之类的领域解析器解决的事，不要用正则硬匹配（可读性与正确性都赢）；
+2. **用户输入定长防回溯**：模式里嵌套量词（`(a+)+` 类）遇上恶意输入会灾难性回溯，外部输入的正则必须设 `Regex.IsMatch(input, pattern, options, TimeSpan.FromSeconds(1))` 形式的超时；
+3. **重复使用的正则走静态方法或源生成**：`Regex` 静态方法自带缓存，`[GeneratedRegex]` 则把模式编译进代码，热路径首选；
+4. **分组要命名**：`(?<name>...)` 让捕获按名字取，`$1/$2` 这类魔法数字是可维护性杀手。
+
+四条立住后，速查表里每个写法才用得放心。
 
 ## 基本匹配
 
@@ -342,3 +353,45 @@ Console.WriteLine(seconds);
 - **记住**：`IsMatch` 判断、`Match`/`Matches` 提取、`Replace` 替换；命名分组 `(?<name>...)`；`@` 原样字符串写模式。
 - **理解**：静态方法缓存上限、贪婪与懒惰、回溯与超时防护、`Success` 先行检查。
 - **应用**：日志解析、格式校验、文本清洗选对入口方法；高频调用的固定模式一律 `[GeneratedRegex]` 源生成（.NET 7+），编译期即完成优化。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写模式与代码，再对照。本篇自检核心是"读得懂、写得对、防得住"。
+
+**题 1（命名分组提取）**：从日志行 `2026-11-10 12:30:05 [WARN] 磁盘占用 87%` 提取日期、级别、消息三段，用命名分组写出代码。
+
+参考答案：
+
+```csharp
+[GeneratedRegex(@"^(?<date>\d{4}-\d{2}-\d{2}) (?<time>\d{2}:\d{2}:\d{2}) \[(?<level>[A-Z]+)\] (?<msg>.*)$")]
+private static partial Regex LogLine();
+
+var m = LogLine().Match(line);
+if (m.Success)
+    Console.WriteLine($"{m.Groups["date"].Value} {m.Groups["level"].Value}: {m.Groups["msg"].Value}");
+```
+
+要点：`(?<name>...)` 命名捕获按名取值；`Success` 必须先检查；模式由源生成编译，热路径零解析成本。
+
+**题 2（贪婪与懒惰）**：对 `<a>1</a><a>2</a>` 用 `<a>(.*)</a>` 与 `<a>(.*?)</a>` 分别得到什么组？为什么？
+
+参考答案：前者贪婪——`.*` 吃到能吃的最长，捕获组是 `1</a><a>2`（一直吃到最后的 `</a>`）；后者懒惰——`.*?` 尽量少吃，第一组匹配 `1`，配合 `Matches` 能拿到两条完整匹配。写 HTML/标记类解析时选错贪婪性是最经典的"怎么多吃了"事故。
+
+**题 3（替换）**：把文本中所有 `手机号 138-1234-5678` 形态统一成 `138****5678`，写出 MatchEvaluator 替换。
+
+参考答案：
+
+```csharp
+var masked = Regex.Replace(text, @"(\d{3})-(\d{4})-(\d{4})",
+    m => $"{m.Groups[1].Value}****{m.Groups[3].Value}");
+```
+
+要点：需要"按匹配内容计算替换值"时用 `MatchEvaluator` 重载（而不是静态替换串 `$1****$3`），逻辑更可测；静态替换串适合纯搬移捕获组的场景。
+
+**题 4（防回溯）**：为什么 `^(\w+)+$` 配 30 个字符的 `aaaaaaaaaaaaaaaaaaaaaaaaaaaaab` 会卡死？两道防线是什么？
+
+参考答案：`\w+` 嵌在 `(...)+` 里，双重量词在失败时产生指数级的回溯分支组合（灾难性回溯），CPU 打满直到字符串耗尽。防线一：超时——`new Regex(pattern, options, TimeSpan.FromSeconds(1))`，超时抛 `RegexMatchTimeoutException` 而不是挂死；防线二：改写模式消除嵌套量词（本例等价于 `^\w+$`），并优先用领域解析器替代正则。
+
+**题 5（源生成取舍）**：`[GeneratedRegex(@"\d{4}-\d{2}-\d{2}")] private static partial Regex Date();` 相比 `new Regex(...)` 静态字段好在哪？什么时候只能用运行时构造？
+
+参考答案：源生成在编译期把模式编译成优化代码：启动零解析、无运行时缓存查找、AOT 友好、模式错误编译期就报。运行时构造仍不可替代的场景：模式来自用户输入或配置（编译期不存在）；这类动态模式必须带超时参数，作为不可信输入处理。原则：静态模式一律源生成，动态模式一律超时防护。

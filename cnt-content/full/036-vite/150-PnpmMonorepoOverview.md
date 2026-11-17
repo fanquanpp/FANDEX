@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: pnpm 与 Monorepo 工程化：workspace、内容寻址存储、依赖隔离、catalog、任务编排与发布
 author: fanquanpp
-updated: '2026-10-25'
+updated: '2026-11-17'
 related:
   - 'vite/010-ViteOverview'
   - 'devops/140-CICDPipeline'
@@ -16,8 +16,8 @@ prerequisites: []
 
 > 本节为增量补充，帮助你选择 pnpm 版本。
 
-- pnpm：11.x 为本仓库锁定的版本（11.15.1，要求 Node.js 22+），2026 年 pnpm 12 已成为最新稳定线；本篇与后续各篇介绍的 workspace、catalog、任务编排与发布用法在两个大版本间保持一致。
-- 安装方式：`corepack enable pnpm` 或独立安装脚本；建议通过 packageManager 字段固定版本。
+- pnpm：11.x 为本仓库锁定的版本（11.15.1，要求 Node.js 22.13+），2026 年 8 月 pnpm 12 发布后 12.x 已成为最新稳定线；本篇与后续各篇介绍的 workspace、catalog、任务编排与发布用法在两个大版本间保持一致。
+- 安装方式：独立安装脚本（`https://get.pnpm.io/install.sh`）或 `npm install -g pnpm`；不建议再用 `corepack enable pnpm`——pnpm 10 起官方推荐独立安装，pnpm 11 起不再兼容 Node 捆绑的 corepack 方案，Node.js 25 起也不再内置 corepack。建议通过 packageManager 字段固定版本。
 - Monorepo 场景：pnpm workspaces + Turborepo + Changesets 是当前企业主流组合。
 
 
@@ -285,7 +285,31 @@ steps:
 
 **陷阱六：大仓库 CI 慢。** 全量任务重复跑。→ 用 turbo 缓存与 `--affected` 模式。
 
-## 10. 小结
+## 10. 教学自检：遮住答案，先自己写
+
+本篇是 pnpm 与 Monorepo 的全景图。以下五题按遮码自检法使用：先遮住提示，自己说出答案或写出配置，再展开对照。能独立答对大部分，才说明"为什么这样设计"已经进入你的心智模型，而不只是命令背下来了。
+
+**第 1 题：workspace 的最小组成。** 一个 pnpm monorepo 最少需要哪几个文件？各自负责什么？
+
+提示（对照第 3 节）：根 `pnpm-workspace.yaml` 用 `packages:` 声明子包路径——没有它 pnpm 不把这个仓库当 workspace，`workspace:` 协议也无法解析；根 `package.json` 承担共享脚本、依赖提升协商与 `packageManager` 版本锁定；每个子包有自己的 `package.json`，声明"我能被谁 import"。
+
+**第 2 题：catalog 的声明与引用。** 让"react 全仓库统一 19.x"落地，两处分别怎么写？直接在各子包写死版本号会埋下什么问题？
+
+提示（对照第 4 节）：`pnpm-workspace.yaml` 的 `catalog:` 段写 `react: ^19.2.0`，子包 `package.json` 里写 `"react": "catalog:"`。写死的代价是版本漂移——五个包五个版本，漏升一个就出现两份 react 实例，组件库与应用对不上。catalog 把版本收敛成"单一事实来源"。
+
+**第 3 题：workspace 协议的双面语义。** 子包 B 引用本地子包 A，`dependencies` 里写什么？发布到 npm 后这个值会变成什么？
+
+提示（对照第 2 节与 [workspace 协议](/vite/180-WorkspaceProtocol)）：写 `"@repo/shared": "workspace:*"`，安装时 pnpm 直接软链到本地目录；`pnpm publish` 时会按 semver 转换成 A 的实际版本（如 `^1.2.0`）。这正是协议的设计意图——开发指向本地、发布指向版本号。
+
+**第 4 题：任务编排的分工边界。** `pnpm -r build` 与 `turbo run build` 的本质差别是什么？什么时候才值得引入 turbo？
+
+提示（对照第 6 节）：`pnpm -r build` 有拓扑顺序但每次全量执行、没有跨提交的内容寻址缓存；turbo 补的是"依赖图 + 缓存 + 只跑受影响的包"。仓库超过三五个包、CI 时间开始难忍时才引入——小仓库先跑通 pnpm 原生闭环，避免过早引入复杂度。
+
+**第 5 题：changesets 三步各自产生什么。** 为什么不能直接改版本号然后 `npm publish`？
+
+提示（对照第 7 节）：`changeset add` 生成记录"哪个包、升哪级、改动是什么"的 markdown 文件；`changeset version` 消费这些文件，改写各包版本与 CHANGELOG；`changeset publish` 把新版本发到 npm。直接改版本号发布，评审者无法从 PR 判断这次到底动了哪些包、是 patch 还是 minor——changesets 把"意图"变成了可评审的产物。
+
+## 11. 小结
 
 pnpm + Monorepo 是现代前端工程化的主流组合，它的价值可以浓缩成四句话：
 

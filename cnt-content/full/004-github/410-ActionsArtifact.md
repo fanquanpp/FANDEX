@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 'GitHub Actions制品（Artifacts）流程驱动详解：按"上传→下载→过期管理"完整流程，讲透 upload-artifact、download-artifact 与跨 Job/跨工作流传递。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/400-ActionsCacheDependency'
   - 'github/430-ActionsSelfHostedRunner'
@@ -69,7 +69,7 @@ GitHub 官方文档的定义：制品是工作流运行过程中产生的**一�
 
 ```yaml
 - name: Upload build artifacts
-  uses: actions/upload-artifact@v4
+  uses: actions/upload-artifact@v7
   with:
     name: dist-files            # 制品名称（同一工作流内唯一）
     path: |                     # 要上传的路径（支持多路径、glob）
@@ -90,6 +90,7 @@ GitHub 官方文档的定义：制品是工作流运行过程中产生的**一�
 | `compression-level` | 压缩级别 0-9，默认 6；不易压缩的大文件建议 0 以显著加快上传 |
 | `if-no-files-found` | `warn`（默认，警告不报错）/ `error`（报错）/ `ignore`（静默跳过） |
 | `overwrite` | true 时同名制品会被删除后重新上传；false 时同名直接报错 |
+| `archive` | v7 起支持 `false`：跳过压缩直接上传，**目前仅支持单个文件**（glob 解析出多个文件会直接失败），且 `name` 参数被忽略（制品名取文件名）；需配合 download-artifact v8 使用（见第 3 节） |
 
 ### 2.3 版本演进（迁移须知）
 
@@ -99,7 +100,14 @@ v3 及更早版本已停止服务（2024 年起逐步移除），**v4 是当前�
 | --- | --- |
 | v4 | 大版本重构：制品不可变（同名不再自动覆盖/合并，需 `overwrite: true`）；跨工作流下载需 `run-id` + `github-token` |
 | v6 | 运行时升级到 Node 24，要求 runner v2.327.1 及以上 |
-| v7 | 新增"免压缩直传"模式（`archive: false`，适合已压缩内容，省去打包时间） |
+| v7 | 新增"免压缩直传"模式（`archive: false`，适合已压缩内容，省去打包时间；限制见 2.2 参数表） |
+
+下载侧的当前主线是 **download-artifact v8**（2026-02 起），升级前要知道两个默认行为变化：
+
+- **解压策略**：为配合免压缩直传，v8 不再"盲目"解压所有下载文件——先检查 `Content-Type`：zip 制品默认仍自动解压，非 zip 文件（如 upload v7 的免压缩直传单文件）跳过解压按原样落地；另有 `skip-decompress: true` 参数可强制不解压 zip。
+- **哈希校验**：v8 起 digest 不匹配默认从**警告升级为报错**（`Hash mismatches will now error by default`），失败会直接终止工作流；可用 `digest-mismatch` 参数配置该行为（安全优先的默认值）。
+
+更早的大版本已停止维护，示例一律按 v8 书写。
 
 ### 2.4 v4 相对 v3 的关键行为变化
 
@@ -116,10 +124,10 @@ v3 及更早版本已停止服务（2024 年起逐步移除），**v4 是当前�
 
 ```yaml
 - name: Download build artifacts
-  uses: actions/download-artifact@v4
+  uses: actions/download-artifact@v8
   with:
     name: dist-files        # 指定制品名称
-    path: dist/             # 下载到指定目录（默认解压到当前目录）
+    path: dist/             # 下载到指定目录（v8 起 zip 制品仍默认自动解压；非 zip 文件按原样落地）
 ```
 
 不指定 `name` 时下载该运行的所有制品（v4 起更推荐显式指定，避免歧义）。
@@ -131,9 +139,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: npm ci && npm run build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: build-output
           path: dist/
@@ -142,7 +150,7 @@ jobs:
     needs: build                      # 必须等 build 完成（上传先于下载）
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: build-output
           path: dist/
@@ -152,7 +160,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: build-output
           path: dist/
@@ -174,7 +182,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - run: npm run build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: build-${{ matrix.os }}    # 名称包含矩阵变量，避免冲突
           path: dist/
@@ -189,7 +197,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: build-output
           run-id: ${{ github.event.workflow_run.id }}   # 来源工作流运行 ID
@@ -209,7 +217,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           run-id: ${{ github.event.workflow_run.id }}
 ```
@@ -233,7 +241,7 @@ jobs:
 | Release 交付包 | 30 天 |
 
 ```yaml
-- uses: actions/upload-artifact@v4
+- uses: actions/upload-artifact@v7
   with:
     name: temp-build
     path: dist/
@@ -247,7 +255,7 @@ jobs:
 ```yaml
 - name: Upload debug snapshot
   if: failure()                # 仅在失败时上传
-  uses: actions/upload-artifact@v4
+  uses: actions/upload-artifact@v7
   with:
     name: debug-${{ github.run_id }}
     path: |
@@ -268,7 +276,7 @@ gh api repos/OWNER/REPO/actions/artifacts \
 ### 4.4 体积优化
 
 ```yaml
-- uses: actions/upload-artifact@v4
+- uses: actions/upload-artifact@v7
   with:
     name: build
     path: |
@@ -287,14 +295,14 @@ gh api repos/OWNER/REPO/actions/artifacts \
 
 - name: Upload test results
   if: always()                  # 测试失败也要上传，便于排查
-  uses: actions/upload-artifact@v4
+  uses: actions/upload-artifact@v7
   with:
     name: test-results
     path: test-results.json
     retention-days: 7
 
 - name: Upload coverage report
-  uses: actions/upload-artifact@v4
+  uses: actions/upload-artifact@v7
   with:
     name: coverage-report
     path: coverage/
@@ -308,15 +316,15 @@ gh api repos/OWNER/REPO/actions/artifacts \
   run: npm run build:all
 
 - name: Upload Linux binary
-  uses: actions/upload-artifact@v4
+  uses: actions/upload-artifact@v7
   with: { name: app-linux, path: dist/app-linux }
 
 - name: Upload macOS binary
-  uses: actions/upload-artifact@v4
+  uses: actions/upload-artifact@v7
   with: { name: app-macos, path: dist/app-macos }
 
 - name: Upload Windows binary
-  uses: actions/upload-artifact@v4
+  uses: actions/upload-artifact@v7
   with: { name: app-windows, path: dist/app-windows }
 ```
 
@@ -325,7 +333,7 @@ gh api repos/OWNER/REPO/actions/artifacts \
 ```yaml
 - name: Upload E2E failure artifacts
   if: failure()                 # 只在失败时上传，省空间
-  uses: actions/upload-artifact@v4
+  uses: actions/upload-artifact@v7
   with:
     name: e2e-failures-${{ github.run_id }}
     path: |
@@ -344,6 +352,40 @@ gh api repos/OWNER/REPO/actions/artifacts \
 | 跨工作流下载失败 | 提示权限不足或找不到 | 制品归属于来源运行，跨工作流需 `run-id` + `github-token` | 补全 `run-id` 与 `github-token` 参数 |
 | 存储空间被占满 | `Artifact storage quota has been hit` | 每次运行都上传大制品 + 默认 90 天保留期过长 | 设置合理 `retention-days`、用 `if: failure()` 条件上传、压缩级别调优 |
 | 升级 v3 → v4 后行为异常 | 同名覆盖变报错、下载行为变化 | v4 对命名冲突与下载做了更严格限制 | 按 v4 迁移指南调整：名称唯一或用 `overwrite: true`，显式指定 name |
+
+## 6.5 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：job 之间为什么必须用制品传文件而不是 job outputs？制品与缓存的分工用一句话说清。
+
+**任务二**：默写「构建 job 上传 dist/、部署 job 下载」的最小两个 step（各一个 action + 关键参数）。
+
+**任务三**：判断——（a）v4 之后两个 job 都传同名制品会怎样？（b）想保留 30 天而不是默认 90 天，改哪个参数？（c）下游工作流（跨 workflow）要下载制品，还需要额外给什么？
+
+**参考实现**（先自己写完再看）：
+
+```yaml
+# 构建 job
+- uses: actions/upload-artifact@v7
+  with:
+    name: dist-files
+    path: dist/
+    retention-days: 30
+
+# 部署 job（needs: build）
+- uses: actions/download-artifact@v8
+  with:
+    name: dist-files
+    path: dist/
+```
+
+任务三参考答案：
+(a) 报错——v4 起制品**不可变**且名称在同一运行内唯一，同名要开 `overwrite: true`；
+(b) `retention-days`（1-90，0 表示跟随仓库设置）；
+(c) `run-id` + 有 actions: read 权限的 `github-token`——v4 起跨工作流下载默认收紧。
+
+要点自查：制品解决「job 间文件系统隔离」，缓存解决「重复下载」——两者的保留策略（90 天 vs 7 天未访问）与访问方式（显式 up/download vs key 命中）完全不同；upload 默认 zip 打包（v7 的 `archive: false` 可跳过，仅限单文件），download v8 按 Content-Type 决定是否解压（zip 仍默认解压，非 zip 原样落地，`skip-decompress: true` 可强制不解压）。
 
 ## 7. 一句话记忆
 

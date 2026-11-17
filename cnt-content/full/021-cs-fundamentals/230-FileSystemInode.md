@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 文件系统 inode 机制：inode 结构、目录项、超级块与 Ext4 文件系统。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/210-MemorySegmentationAndPaging'
   - 'cs-fundamentals/220-PageReplacementAlgorithm'
@@ -193,3 +193,11 @@ ls -li original.txt soft.txt
 - inode 数量在格式化时预定，海量小文件会"有空间却建不了文件"，用 `df -i` 诊断。
 - 删除的真实语义是"目录项移除 + 链接计数减 1"；进程持有句柄时空间不释放，是磁盘莫名占满的头号原因。
 - ext4 的 extent 树与日志（默认 ordered 模式）分别解决间接指针的性能问题与崩溃一致性问题；理解这两点即可迁移到 XFS/Btrfs 等现代文件系统的设计。
+
+## 自检
+
+- 遮住 1 的类比与两条铁律，先自己回答：为什么「同盘 mv 瞬间完成、跨盘却要逐字节搬」？inode 与目录项各记录什么？
+- 遮住 2.1 的字段表，先默写 inode 元数据的七类字段（编号、类型、权限、链接计数、大小、时间戳、数据块位置），再对照——哪个字段是「文件名不在其中」的直接证据？
+- 遮住数据块指针小节，自己算一遍「4KB 块 + 4B 指针」下直接块与一级间接的最大文件大小，再对照 ext4 的 extent 方案对比其改进点。
+- 遮住硬/软链接小节，先自己预测「删除原文件后，硬链接与软链接各自能否打开」的实验结果，再对照——软链接悬空时的报错发生在哪一步（路径解析）？
+- 遮住「删除的真实语义」小节，回答：为什么进程打开着一个大文件时 `rm` 后 `df` 仍不释放空间？第一诊断动作是什么？

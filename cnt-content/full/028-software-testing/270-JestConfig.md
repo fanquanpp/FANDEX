@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: Jest 工程化：jest.config 核心配置项、testEnvironment 选择、路径别名与 setup、快照测试的正确用法与更新纪律、覆盖率阈值。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'software-testing/240-JestBasics'
   - 'software-testing/230-CICDTest'
@@ -207,6 +207,56 @@ npx jest --changedSince=origin/dev   # 只跑相对基线变更的测试
   `mockRestore()`。
 - **配置只活在一个人机器上**：`testEnvironment`、transform 漂移会导致
   「我这就通过」。配置入库，用 `--ci` 固定 CI 行为。
+
+## 教学自检
+
+以下题目按遮码自检法设计：先遮住参考答案自己写，再对照。
+
+### 题 1：环境选择（判断题）
+
+任务：三份代码分别该配哪个 `testEnvironment`？(a) Express 路由处理函数；
+(b) React 组件（断言 DOM 结构）；(c) 检查按钮点击后页面是否滚动的用例。
+
+参考答案：(a) `node`——只需要 Node API；(b) `jsdom`——提供 window/document；
+(c) 哪个都不该用——jsdom 没有布局与真实渲染，滚动/视觉行为属于 E2E
+（Playwright 等）的领地。jsdom 只让 DOM API「存在」，不负责「渲染」。
+
+### 题 2：setup 时机（遮码题）
+
+任务：你想给所有测试扩展一个 `toBeWithinRange` 匹配器，应该配进
+`setupFiles` 还是 `setupFilesAfterEnv`？为什么？
+
+参考答案：`setupFilesAfterEnv`。匹配器扩展要调用 `expect.extend`，而
+`expect` 在测试框架加载之后才存在；`setupFiles` 跑在框架加载前，
+彼时引用 `expect` 只会拿到 undefined。口诀：需要测试环境就绪后才能
+用的代码，放 AfterEnv。
+
+### 题 3：快照更新纪律（概念题）
+
+任务：CI 上快照测试失败，同事建议直接 `npx jest -u` 后提交。正确流程
+是什么？什么样的快照最容易滑向「无脑 -u」？
+
+参考答案：先本地运行看快照 diff，逐行确认变化是预期的行为变更（而不是
+意外回归），再更新并在提交信息中说明理由；CI 挂了就 `-u` 会把回归
+「合法化」。最容易滑向无脑 `-u` 的是几百行的大快照——没人会真的读它，
+维护它的人都只把它当橡皮图章。含时间戳/随机 id 的输出应先过滤再快照。
+
+### 题 4：覆盖率阈值（遮码题）
+
+任务：给项目配置：全库行覆盖率不低于 80%，`src/core` 目录分支覆盖率
+不低于 95%。写出配置片段，并说明它如何在 CI 中生效。
+
+参考答案：
+
+```javascript
+coverageThreshold: {
+  global: { lines: 80 },
+  './src/core/**': { branches: 95 },
+},
+```
+
+任一指标不达标时 `jest --coverage` 以非零退出码结束，CI 门禁因此能直接
+把它当检查步骤——阈值是机器强制的，这就是它与「口头约定 80%」的区别。
 
 ## 小结
 

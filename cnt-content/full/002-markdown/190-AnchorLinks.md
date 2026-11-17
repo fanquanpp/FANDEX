@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: '锚点机制：GitHub 标题 slug 规则、自定义锚点、页内与跨文档跳转的写法与排错。'
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-16'
 related:
   - 'markdown/200-AutoTOC'
   - 'markdown/020-HeadingSyntax'
@@ -17,7 +17,7 @@ prerequisites:
 ---
 
 > **认知导入（Layer 1 进阶层）**
-> 前置知识：017 链接与图片（锚点链接就是目的地为 `#片段` 的链接）。
+> 前置知识：050 链接与图片（锚点链接就是目的地为 `#片段` 的链接）。
 > 边界说明：Markdown 标题会自动生成锚点（HTML id），锚点规则由**各渲染器自行定义**——本篇以 GitHub 规则为主线，其余平台给出差异提示。锚点跳转失效的原因九成是"slug 算错了"。
 > 强制练习：写一个中文标题和一个英文标题，各生成一次锚点并链接过去，在 GitHub 预览验证能否跳转。
 

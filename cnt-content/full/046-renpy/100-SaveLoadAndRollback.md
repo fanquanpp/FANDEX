@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 理解 Ren'Py 自动保存什么不保存什么，用 File 动作搭建存档界面；persistent 跨会话数据的完整工程：字段演进、与存档的本质区别、成就与画廊解锁参考实现、MultiPersistent
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'renpy/080-ScreensAndScreenLanguage'
   - 'renpy/117-ConfigVariablesAndPreferences'
@@ -132,7 +132,7 @@ python hide:
 - _game_runtime：游戏内经过的时间；
 - _screenshot：存档截图。
 
-脚本里的 save_name 变量会随存档一起保存，可以把它当作"章节名"使用：进入新章节时给 save_name 赋值，存档界面就能显示玩家当前读到哪一章。
+脚本里的 save_name 变量会随存档一起保存，可以把它当作"章节名"使用：进入新章节时给 save_name 赋值，存档界面就能显示玩家当前读到哪一章。读档侧还有两个挂钩点：after_load 特殊 label 在读档后运行（补状态、修数据的惯例位置），8.5 起又新增了 before_load 特殊 label 与 config.before_load_callbacks，在读档前执行——例如先停掉正被读档替换的语音通道。
 
 调试时还有一类特殊存档：从 8.4.0 起，游戏发生未处理异常时，Ren'Py 会自动把当前状态存入 _tracesave-1 到 _tracesave-10 槽位（Traceback Saves，异常存档），方便你或玩家把"出 bug 那一刻"的状态保存下来用于复现。
 
@@ -351,6 +351,51 @@ MultiPersistent 对象要显式调用 `mp.save()` 才落盘（不像 persistent 
 多台设备或多个存档位之间可能存在同一份 persistent 数据的不同版本，合并（merge）时的默认策略是逐字段取较新的值。如果字段是集合之类需要"并集"语义的数据，可以用 renpy.register_persistent('endings', merge_endings) 注册自定义合并函数。
 
 最后一条纪律：persistent 里只应存放 Python 或 Ren'Py 的原生类型（数字、字符串、list、dict、set 以及 Ren'Py 对象等）。塞进不可序列化的对象，轻则丢数据，重则启动报错。
+
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案，再展开对照。
+
+1. 官方经典示例（define a / default c / $ b / $ o.value = 42）里存档保存了哪几个变量？o.value 为什么不被保存？
+2. 四类不保存的内容分别是什么？其中"图像名到 displayable 的映射不保存"对玩家可见的后果是什么？
+3. 为什么 python 块内写多轮循环会导致读档后副作用重放？官方推荐的循环语句是什么？
+4. 哪些 Python 类型不可保存？文件操作的标准防坑写法是什么？
+5. persistent 与存档的两条关键推论是什么？"当前周目选的分支"适合放哪边？
+6. 版本演进时给 persistent 加新字段的正确写法是什么？在 init python 里写 persistent.achievements = [] 会怎样？
+7. 回滚不可用的三类数据是什么？怎么显式补救？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 只保存 b 和 c。b 是开局后被赋值的变量；c 是 default 变量、总是参与
+   保存；a 是 define 常量且没变；o 变量本身从未被重新赋值——变的只是
+   它指向对象的字段，而字段变化不触发保存，读档后 o.value 不恢复。
+
+2) 开局后未变化的变量、控制流路径、图像名映射、config 与样式。后果：
+   更新游戏替换图片后，旧存档读出来显示的是新图片。
+
+3) 玩家可能在块内交互中途存档，读档后回到整个块的起点重新执行，块内
+   已发生的副作用再来一遍；循环体语句间才是精确的存档点。用 while。
+
+4) Render、迭代器与生成器、协程 task/future、文件对象、socket、内部函数
+   与 lambda。文件操作放进 python hide: 块，或用 with open(...) as f:
+   保证用完即关。
+
+5) 不随回滚（反悔也撤销不了）、不随读档（读旧档也保持最新状态）。履历类
+   （成就、画廊解锁）进 persistent；进度类（当前分支）必须进 default
+   变量随存档走。
+
+6) 直接追加一行 default persistent.achievements = []——default 只对
+   不存在的字段生效，不覆盖已有数据。init 里赋值会每次启动清空玩家
+   数据，是"成就莫名重置"的第一大来源。
+
+7) 内建类型方法的返回值（如 str.split 的结果）、import 模块里创建的对象
+   （如 collections.defaultdict）、Ren'Py API 返回的对象。需要回滚时
+   显式转成可回滚等价类型，如 $ attrs = list(renpy.get_attributes(...))。
+```
+
+</details>
 
 ## 小结
 

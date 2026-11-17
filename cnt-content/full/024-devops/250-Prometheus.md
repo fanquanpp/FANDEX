@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Prometheus 指标采集与 Alertmanager 告警：PromQL、规则配置与通知路由。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'devops/210-Terraform'
   - 'devops/220-AnsiblePlaybookConfigManagement'
@@ -181,6 +181,18 @@ relabel 阶段映射，事后是补不回来的（标签在抓取时就已定型
 1. 标签基数是第一生产事故来源，设计指标先算基数。
 2. 高可用靠双抓取 + Alertmanager 集群，长期存储用 remote_write 生态（Thanos/Mimir/VictoriaMetrics）。
 3. 记录规则（recording rules）预计算昂贵查询，仪表盘与告警共用，别让 UI 实时硬算。
+
+## 自检
+
+- 拉模型与推模型的取舍：Pull 让 Prometheus 获得哪两个工程收益（服务发现自治、抓取失败可见）？
+- Counter/Gauge/Histogram/Summary 四类指标各回答什么问题？遮住第 2 节，默写"QPS 与 P99"两条 PromQL（rate + sum + histogram_quantile）。
+- 告警链路两段式：Prometheus 规则管什么、Alertmanager 管什么？`for` 字段防什么事故？
+- 标签基数口算：一个 user_id 标签 10 万用户、每用户 5 条序列，30 秒抓一次——一天产生多少样本？这个数字告诉你标签该怎么设计。
+- 高可用与长期存储的两个标准动作：双抓取防什么、remote_write（Thanos/Mimir/VictoriaMetrics）解决什么？
+
+## 附录：promtool、PromQL 与运维速查
+
+以下按场景组织参考：promtool 工具、PromQL 语法（基础/聚合/计算）、告警规则、服务发现、重标记、远程存储与联邦、HTTP API、性能排查。教学主线在上面八节；这里收语法细节与运维命令，用时查。
 
 ## promtool 工具
 

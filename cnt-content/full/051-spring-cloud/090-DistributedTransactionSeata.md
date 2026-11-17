@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/100-TransactionManagement'
   - 'mysql/540-DistributedTransaction'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/540-DistributedTransaction'
   - 'spring-cloud/100-EventDrivenMessaging'
@@ -86,11 +86,13 @@ T3b 任一分支失败 → TM 通知 TC 全局回滚 → 各 RM 校验镜像、�
 
 ## 4. 落地全流程：server、依赖、表、注解
 
-协调者一行起（file 存储模式起步够用；2.x 镜像标签以 Docker Hub 为准）：
+协调者一行起（file 存储模式起步够用；镜像 tag 以 Docker Hub 官方页为准）：
 
 ```bash
-docker run -d --name seata-server -p 8091:8091 seataio/seata-server
+docker run -d --name seata-server -p 8091:8091 apache/seata-server
 ```
+
+（Seata 已并入 Apache 基金会，官方镜像命名空间随之从社区早期的 seataio 迁到 apache——老教程见到 seataio/seata-server 换成 apache/seata-server 即可。2.x 起客户端 Java 包名也从 io.seata 迁到 org.apache.seata，绕过 starter 直接引客户端坐标时要用 org.apache.seata 前缀。）
 
 存储模式一句话交代：file 模式把全局事务状态存本地，**server 重启未完结的全局事务记录就没了**——开发演示无妨，生产必须换 db 模式，把全局事务落库，配合 server 的高可用部署。
 

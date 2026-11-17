@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java ThreadLocal 内存泄漏的可达性分析、弱引用 Key 设计、线程池复用场景、Scoped Values（JEP 446）演进与生产级防御方案
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/510-ConcurrencyDetailed'
   - 'java/520-CompletableFutureAsync'
@@ -686,7 +686,7 @@ public class ThreadLocalLeakDemo {
 | 虚拟线程友好 | 否 | 是 |
 | 父子传递 | 需 InheritableThreadLocal | 自动（run() 调用栈） |
 | 性能 | 中（ThreadLocalMap） | 高（JVM 原生） |
-| 可用性 | JDK 1.2+ | JDK 21+ Preview |
+| 可用性 | JDK 1.2+ | JDK 25+ 正式（JEP 506；21-24 预览） |
 | 推荐场景 | 平台线程 + 兼容老代码 | 虚拟线程 + 新项目 |
 
 ### 5.3 Java ThreadLocal vs C# ThreadStatic vs Go goroutine-local
@@ -1114,20 +1114,20 @@ public User currentUser() {
 **权衡**：
 
 - **优势**：自动清理、虚拟线程友好、不可变；
-- **劣势**：仅 JDK 21+ Preview，需 `--enable-preview`；
-- **过渡策略**：保留 ThreadLocal 用于平台线程，新增代码用 ScopedValue；JDK 24+ GA 后全面迁移。
+- **版本现状**：JDK 21-24 为预览特性（需 `--enable-preview`）；JDK 25（LTS）起正式化（JEP 506），无需任何开关；
+- **过渡策略**：老代码的 ThreadLocal 不必急着拆，新增代码在 JDK 25+ 上直接用 ScopedValue。
 
 ## 9. 未来演进
 
-### 9.1 JEP 446 Scoped Values 路线
+### 9.1 Scoped Values 的正式化路线（已定案）
 
-Scoped Values 在 JDK 21 Preview（JEP 446）、JDK 22 Second Preview（JEP 462）、JDK 23 Third Preview（JEP 480），预计 JDK 24+ GA。
+Scoped Values 一路为 JDK 20 孵化（JEP 429）→ JDK 21 预览（JEP 446）→ JDK 22 二预览（JEP 464）→ JDK 23 三预览（JEP 481）→ JDK 24 四预览（JEP 487，顺带移除了 `runWhere` 静态方法）→ **JDK 25 正式化（JEP 506）**。写作初稿时推测的"JDK 24 GA"没有兑现——真正的正式化发生在 JDK 25 LTS，这正是预览特性不可依赖的又一例证。
 
-未来增强：
+后续演进方向：
 
-1. **结构化并发集成**：与 JEP 453（Structured Concurrency）配合，自动传播作用域；
+1. **结构化并发集成**：与 JEP 525（Structured Concurrency，截至 JDK 26 仍是第 6 次预览）配合，自动传播作用域；
 2. **动态作用域**：支持在调用栈中间读取（类似 Common Lisp 的 special variables）；
-3. **性能优化**：JVM 内部存储，避免 ThreadLocalMap 开销。
+3. **性能优化**：JVM 内部存储，避免 ThreadLocalMap 开销（部分已在 JEP 506 的实现中落地）。
 
 ### 9.2 虚拟线程的全面影响
 
@@ -1188,7 +1188,7 @@ Mono.fromCallable(() -> USER_ID_TL.get())
 | ThreadLocal | 线程私有变量 | 低 | 平台线程 + 短作用域 |
 | InheritableThreadLocal | 父子传递 | 低 | 简单 new Thread 场景 |
 | TransmittableThreadLocal | 线程池传递 | 中 | 线程池 + 上下文 |
-| ScopedValue（Preview） | 不可变作用域值 | 中 | 虚拟线程 + JDK 21+ |
+| ScopedValue（JDK 25+ 正式） | 不可变作用域值 | 中 | 虚拟线程 + JDK 25+（21-24 需预览开关） |
 | Reactor Context | 反应式上下文 | 中 | WebFlux / Reactor |
 | Micrometer ContextPropagation | 跨范式传播 | 中 | 混合编程模型 |
 | MAT | 堆转储分析 | 中 | 泄漏排查 |
@@ -1297,7 +1297,7 @@ executor.submit(TtlRunnable.get(() -> doWork(ttl.get())));
 
 ---
 
-## ScopedValue（Java 21+ 预览）
+## ScopedValue（JDK 25 起正式，JEP 506；JDK 21-24 需 --enable-preview）
 
 **基本写法：创建 ScopedValue**
 `private static final ScopedValue<<类型>> NAME = ScopedValue.newInstance();`
@@ -1389,3 +1389,13 @@ Thread.ofVirtual().start(() -> {
     try { work(); } finally { ctx.remove(); }
 });
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 线程池里用 ThreadLocal 存了请求上下文却从不 remove，为什么会泄漏？泄漏的是哪两个对象？——线程池线程长期存活，ThreadLocalMap 的 Entry 是弱引用 key（ThreadLocal 对象）、强引用 value；ThreadLocal 被回收后 value 仍被 Entry 强引用，线程不死 value 不释放，泄漏的是 value 及它引用的对象图。
+2. get() 之后 finally 里 remove()，这个模式防的是什么？在虚拟线程上还需要吗？——防的是跨任务串数据与 value 滞留；虚拟线程生命周期极短，随线程退出自动清理，但池化复用的场景仍需要显式清理。
+3. 写出 ScopedValue 绑定与读取的最小骨架，并说出它与 ThreadLocal 的两条本质差异。——`static final ScopedValue<String> U = ScopedValue.newInstance(); ScopedValue.where(U, "alice").run(() -> use(U.get()));`；差异：不可变（无 set）、绑定随 run 作用域自动销毁（无需 remove）。
+4. InheritableThreadLocal 在线程池里为什么不可靠？该用什么替代？——它只在 new Thread 创建时复制，线程池复用已有线程不会再复制，会拿到上一次任务残留的值；线程池传上下文用 TransmittableThreadLocal 或提交前显式包装 Runnable。
+5. 判断：ScopedValue 从哪个 JDK 版本起无需 --enable-preview？——JDK 25（LTS，JEP 506 正式化）；JDK 21-24 均为预览。

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: Git交互式rebase详解：reword、squash、fixup、drop等操作改写提交历史。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'git/320-GitRevertResetComparison'
   - 'git/230-CodeReviewBestPractice'
@@ -363,6 +363,36 @@ git reset --hard backup-before-rebase
 ```
 
 （reflog 同样是兜底，备份分支的价值在于「有一眼可辨的名字」。）
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. `reword` / `squash` / `fixup` 三者对提交信息分别做什么？提交清单第一行为什么必须是 `pick`？
+2. 在 `edit` 暂停点上，把一个提交拆成两个的完整步骤？
+3. 实操：开发时先 `git commit --fixup=<目标>` 打标记，再用 `--autosquash` 完成归并；最后给清单加一行 `x npm test` 体会逐提交验证。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) reword：保留该提交但改写信息（打开编辑器）；squash：并入上一提交并合并双方信息（打开编辑器整理）；
+   fixup：并入上一提交但直接丢弃本条信息（不弹编辑器，fixup -C 反转为保留本条）。
+   squash/fixup 的目标永远是「上一行」提交，首行若不是 pick 就没有合并目标，Git 不会执行。
+
+2) 把 pick 改为 edit 保存退出 → Git 停在该提交：
+git reset HEAD^                    # 1) 退提交留改动
+git add src/models/user.js && git commit -m "feat: add user model"     # 2) 分批提交
+git add src/services/user.js && git commit -m "feat: add user service"
+git rebase --continue              # 3) 继续重放后续提交
+
+3)
+git commit --fixup=abc1234
+git rebase -i --autosquash HEAD~3   # fixup! 提交自动排到 abc1234 之后并标 f
+# 编辑器中在首个 pick 后插入一行：x npm test —— 每个提交重放后自动跑测试
+```
+
+</details>
 
 ## 小结
 

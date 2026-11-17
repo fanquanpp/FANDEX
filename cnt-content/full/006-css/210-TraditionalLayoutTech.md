@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 读懂并迁移传统布局：float 与高度塌陷的四种修法、position 五种参照系、BFC 的规则与应用、圣杯/双飞翼布局原理，以及每一项在 Flex/Grid 时代的现代等价写法。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/050-CSS3BoxModelDetailed'
   - 'css/200-FloatClear'
@@ -150,7 +150,7 @@ prerequisites:
 三个高频坑，记下来能省大量调试时间：
 
 1. **absolute 找不到锚点会满页跑**：忘了给父元素 `position: relative`，元素就相对整个页面定位；
-2. **transform/filer/perspective 会劫持 fixed**：祖先链上任何一个元素设置了这些属性，`fixed` 子元素的参照系就从视口变成那个祖先——"我写的是 fixed 怎么跟着滚了"的元凶；
+2. **transform/filter/perspective 会劫持 fixed**：祖先链上任何一个元素设置了这些属性，`fixed` 子元素的参照系就从视口变成那个祖先——"我写的是 fixed 怎么跟着滚了"的元凶；
 3. **sticky 的两个失效条件**：必须写至少一个 `top/bottom/left/right`；父容器或任何滚动祖先设了 `overflow: hidden/auto/scroll` 也会失效（`overflow: clip` 不算，这是它近年流行的原因之一）。
 
 `z-index` 只对非 static 定位元素生效，且受层叠上下文约束（`opacity < 1`、`transform`、`filter` 等都会创建上下文，子元素 z-index 再大也跳不出父级）——完整机制见 `css/230-StackingContext`。
@@ -310,7 +310,43 @@ BFC（Block Formatting Context，块格式化上下文）是一块独立渲染�
 4. （选做）把圣杯布局改写为 Grid 版本，对比代码行数与窄窗口行为；
 5. （选做）考古题：找任意一个开源老项目的 CSS，找出它清浮动用的方案（额外标签/overflow/clearfix 中的哪种），并说明换成 `flow-root` 是否安全。
 
-## 8. 下一步
+## 8. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 5 节的示例代码自己写，再对照参考实现。
+
+**任务一**：不看正文默写「左固定右自适应」的两代写法——传统版（float 左栏 + 右栏 BFC）与现代版（Flex），并各用一句注释说明右栏为什么不再环绕。
+
+**任务二**：考古题——给出下面这行老代码，写出它在干什么、为什么当年需要它、今天的安全替代：
+
+```css
+.clearfix::after { content: ""; display: block; clear: both; }
+```
+
+**提示**：任务一传统版的右栏靠「BFC 不与浮动重叠」的边界规则（第 4 节应用三），现代版一行 `display: flex` 加 `flex: 1`；任务二对应第 2.2 节修法演进表——伪元素在父容器末尾插入一个会 clear 的块，撑开高度。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一：传统版 */
+.layout-legacy { display: flow-root; } /* 顺手包住浮动，防塌陷 */
+.layout-legacy .side { float: left; width: 200px; }
+.layout-legacy .main { display: flow-root; } /* 新 BFC 不与左栏浮动重叠，
+                                                自动占满剩余宽度 */
+
+/* 任务一：现代版 */
+.layout-modern { display: flex; }
+.layout-modern .side { flex: 0 0 200px; }
+.layout-modern .main { flex: 1; min-width: 0; }
+
+/* 任务二 */
+/* 在父容器末尾插入一个空块级伪元素，clear: both 把它推到所有浮动之下，
+   父容器因此把「这个伪元素的位置」算进高度——浮动内容间接被包住。
+   今天直接用 display: flow-root：语义直白、无伪元素、无副作用 */
+```
+
+验收点：任务一传统版把 `.main` 的 flow-root 删掉后，正文会环绕到左栏下方——这是「BFC 避让浮动」规则的反证；任务二的 clearfix 若忘了 `display: block`（伪元素默认行内），clear 不会生效，塌陷依旧。
+
+## 9. 下一步
 
 - 浮动的完整原理（视觉格式化模型视角）：`css/200-FloatClear`；
 - 定位与层叠的深水区：`css/220-PositionDetailed`、`css/230-StackingContext`；

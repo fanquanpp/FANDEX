@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: rclone 跨云同步、数据校验与备份策略、Velero 跨云 K8s 迁移、镜像与数据库迁移、跨云 IaC 工具与监控告警的命令手册。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -723,3 +723,30 @@ policies:
 # 执行多云合规策略
 custodian run -s output custodian.yml
 ```
+
+---
+
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. `rclone copy` 与 `rclone sync` 的本质区别是什么？迁移收尾想顺手清空源桶用哪条？
+2. `--update` 参数过滤什么？要「只同步 images 目录的 jpg」该用哪两个参数？
+3. 同步完成后怎么确认「敢切换」？`rclone check --download` 与默认对比的差异是什么？
+4. 大批量迁移的两个并发参数是什么？生产凭证的正确姿势是什么（为什么不用明文 AK/SK）？
+5. Velero 的备份与恢复各用什么命令？K8s 跨云迁移前必须先处理什么资源（提示：存储类）？
+6. 数据库跨云迁移为什么必须停写或用 CDC？只靠定时全量导出会丢什么？
+7. `rclone check --one-way` 回答什么问题？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. copy 只向目标写入（保留源文件），sync 让目标与源完全一致（会删除目标端多出来的文件——正因如此 sync 才能当镜像，但方向写反会清空正确一侧）。迁移收尾清源用 `rclone move`。
+2. `--update` 跳过目标端已更新的文件（只同步修改过的）；过滤用 `--include "images/*.jpg"` + `--exclude "*"`。
+3. `rclone check 源 目标` 全量比对（数量/大小/校验和），加 `--download` 会实际下载读取做字节级校验（更慢更确凿）；默认只比对元数据。敢切换的标准：check 无差异 + `rclone size` 文件数与总量一致。
+4. `--transfers`（并行传输文件数，大批量给 32 级）与 `--checkers`（并行校验数，16 级）。凭证用各云 IAM 角色（rclone 配置 `env_auth = true`），明文 AK/SK 落盘就是新的泄露面。
+5. `velero backup create <名> --include-namespaces ...`；`velero restore create --from-backup <名>`。迁移前必须处理存储类（StorageClass）映射——云盘 CSI 名称两云不同，PV 直接恢复会挂不上。
+6. 数据库在迁移窗口内仍有写入，直接搬走会丢窗口内的增量。要么短暂停写（可容忍的停机窗口内导出+导入），要么 CDC 持续追增量再切换（见 200 篇的最小停机迁移）。定时全量导出会丢两次导出之间的写入。
+7. 只检查「源有而目标没有」的方向（单向差异），适合确认迁移是否遗漏而不关心目标端多余文件。
+
+</details>

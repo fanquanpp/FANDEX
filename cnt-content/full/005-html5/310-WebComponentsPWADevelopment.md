@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Web Components 组件体系：Custom Elements、Shadow DOM、HTML Templates、slot 插槽、样式隔离与生命周期。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'html5/220-EmbeddedContent'
   - 'html5/160-ProgressMeter'
@@ -194,12 +194,12 @@ flowchart TD
 - **Stencil**：Ionic 团队开发的 Web Components 编译器
 - **Svelte**：可以编译为 Web Components 的前端框架
 
-浏览器支持：Chrome、Firefox、Edge 完全支持；Safari 支持（旧版本需要 polyfill）。
+浏览器支持：Chrome、Firefox、Edge、Safari 四大引擎均已原生支持多年（Shadow DOM 自 Safari 10 起可用），现代项目无需 polyfill；只有维护面向旧版 Safari/IE 的遗留项目时才考虑 polyfill。
 
 ## 8. 常见问题与解决方案
 
-**问题**：自定义元素在某些浏览器中不工作
-**解决方案**：使用 Web Components polyfill
+**问题**：自定义元素在页面上不生效（渲染成无样式的未知标签）
+**解决方案**：先查三件事——元素名是否含连字符、定义脚本的 `customElements.define` 是否执行（忘了 import）、执行时机是否晚于元素出现（可监听 `customElements.whenDefined`）。polyfill 只留给真正要兼容老浏览器的项目。
 
 **问题**：样式隔离问题
 **解决方案**：使用 Shadow DOM 确保样式隔离
@@ -235,6 +235,43 @@ flowchart TD
 | 忘记 `super()` | 构造器报错，元素无法初始化 | 第一行调用 `super()` |
 | Shadow DOM 内样式写死 | 组件无法被外部定制 | 用 CSS 变量提供主题入口 |
 | 组件与框架混用不熟 | 生命周期与框架渲染冲突 | 先掌握原生生命周期，再对照框架集成 |
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写出实现，再展开参考答案对照。
+
+1. 定义一个 `<my-badge>` 自定义元素：使用 Shadow DOM，读取 `level` 属性显示「Lv. N」，属性变化时同步更新。
+
+参考答案（先自己写，再对照）：
+
+```javascript
+class MyBadge extends HTMLElement {
+  static get observedAttributes() { return ['level']; }
+
+  constructor() {
+    super();
+    const shadow = this.attachShadow({ mode: 'open' });
+    const span = document.createElement('span');
+    span.textContent = 'Lv. ?';
+    shadow.appendChild(span);
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'level') {
+      this.shadowRoot.querySelector('span').textContent = 'Lv. ' + newValue;
+    }
+  }
+}
+customElements.define('my-badge', MyBadge);
+```
+
+```html
+<my-badge level="3"></my-badge>
+```
+
+2. 概念自问：自定义元素名称为什么必须带连字符？`observedAttributes` 不声明会怎样？`open` 与 `closed` 的 Shadow DOM 差别是什么？
+
+参考答案（先自己答，再对照）：连字符用来与原生标签区分、避免未来标准加同名标签冲突；不声明 `observedAttributes` 时 `attributeChangedCallback` 对任何属性都不会触发，属性驱动失效；`open` 可通过 `element.shadowRoot` 访问内部结构，`closed` 下 `shadowRoot` 返回 null，外部无法操作（JS 内部仍可持有引用）。
 
 ## 扩展学习
 

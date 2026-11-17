@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: macOS 开发环境完整配置指南，涵盖 Homebrew、Xcode Command Line Tools、Git、Node.js（nvm）、Python（pyenv）、Java JDK、Docker Desktop、VS Code 安装与配置。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'shell/020-WindowsEnvConfigTutorial'
   - 'shell/040-LinuxEnvConfigTutorial'
@@ -183,8 +183,8 @@ nvm（Node Version Manager）是管理 Node.js 版本的标准工具。
 ### 4.1 安装 nvm
 
 ```bash
-# 使用官方安装脚本
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+# 使用官方安装脚本（具体版本号以 nvm 仓库 README 页为准）
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.41.0/install.sh | bash
 
 # 或使用 Homebrew
 brew install nvm
@@ -203,14 +203,14 @@ source ~/.zshrc
 nvm install --lts
 
 # 安装指定版本
-nvm install 20
-nvm install 22
+nvm install 24
+nvm install 26
 
 # 切换版本
-nvm use 20
+nvm use 24
 
 # 设置默认版本
-nvm alias default 20
+nvm alias default 24
 
 # 查看已安装版本
 nvm list
@@ -224,7 +224,7 @@ nvm ls-remote --lts
 在项目根目录创建 `.nvmrc` 文件：
 
 ```bash
-echo "20" > .nvmrc
+echo "24" > .nvmrc
 ```
 
 进入项目目录时执行：
@@ -385,13 +385,9 @@ brew install --cask docker
 
 ### 7.3 配置镜像加速
 
-点击 Docker Desktop → Settings → Docker Engine，添加：
+Docker Desktop → Settings → Docker Engine 中可配置 `registry-mirrors`。但注意现状：**2024 年起国内公共 Docker Hub 镜像加速器大面积停服**（中科大 `docker.mirrors.ustc.edu.cn` 已停止解析；`mirror.ccs.tencentyun.com` 仅腾讯云内网主机可用，本地 Mac 公网无效）。
 
-```json
-{
-  "registry-mirrors": ["https://mirror.ccs.tencentyun.com", "https://docker.mirrors.ustc.edu.cn"]
-}
-```
+可行的替代方案：阿里云容器镜像服务控制台按账号生成的专属加速地址、Docker Desktop 的 Proxies 设置走代理，或公司自建镜像仓库。地址随时可能失效，配置前先在浏览器里验证一次。
 
 ### 7.4 验证安装
 
@@ -549,14 +545,14 @@ xcode-select --install 2>/dev/null || echo "已安装"
 
 echo "==> 安装 Homebrew..."
 if ! command -v brew &> /dev/null; then
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh.sh)"
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
 echo "==> 安装基础工具..."
 brew install git wget curl tree jq
 
 echo "==> 安装 Node.js (nvm)..."
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.41.0/install.sh | bash
 source ~/.zshrc
 nvm install --lts
 
@@ -583,3 +579,21 @@ echo "请重启终端使所有配置生效。"
 chmod +x setup-macos.sh
 ./setup-macos.sh
 ```
+
+## 11. 动手自检：遮住命令，说出每一步
+
+先遮住参考答案，按题干自己写出验证步骤，再对照。
+
+1. Apple Silicon Mac 装完 Homebrew 后提示「brew: command not found」，两条修复路径是什么？为什么 Intel Mac 通常没这个问题？
+2. `nvm install --lts` 装完新终端里 `nvm` 找不到命令，本篇第 1 与第 4 节给出的排查顺序是什么？
+3. 写出「把公钥装到服务器并加入 macOS 钥匙串」的两条命令，并说出 `--apple-use-keychain` 的作用。
+4. pyenv 装好 3.12 后 `python --version` 仍显示系统 Python，缺了哪一步？
+
+<details>
+<summary>参考答案</summary>
+
+1. 把 `eval "$(/opt/homebrew/bin/brew shellenv)"` 写进 `~/.zshrc` 并立即 `eval` 一次；或按安装结束的官方提示执行 Next steps。Intel Mac 装在 `/usr/local`（默认已在 PATH 中），Apple Silicon 装在 `/opt/homebrew`（不在默认 PATH），这是两个架构最大的安装差异。
+2. nvm 是 shell 函数不是可执行文件：先确认安装脚本把初始化行写进了 `~/.zshrc`（brew install nvm 方式要自己加），再 `source ~/.zshrc` 或重开终端。nvm 命令在非交互 shell 里不可用也是同理。
+3. `ssh-copy-id -i ~/.ssh/id_ed25519.pub 用户@主机` 部署公钥；`ssh-add --apple-use-keychain ~/.ssh/id_ed25519` 把私钥口令存进钥匙串——重启后 agent 无需重问口令（macOS 12+ 写法）。
+4. pyenv 的 shim 没接进 PATH：初始化三行（PYENV_ROOT、PATH 前置 pyenv/bin、`eval "$(pyenv init -)"`）是否写进 `~/.zshrc` 并重开终端；还要确认 `pyenv global 3.12.x` 设置过。
+</details>

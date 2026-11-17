@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 逻辑发布订阅从原理到生产：PUBLICATION 与 SUBSCRIPTION 的语义、首次数据同步机制、复制冲突与故障排查、以及与流复制的选型对比。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/420-LogicalDecodingOutputPlugin'
   - 'postgresql/440-LogicalPhysicalReplicationCompare'
@@ -153,3 +153,41 @@ FROM pg_replication_slots;
 ## 下一步
 
 两种复制各自的边界已经清楚，系统性的维度对比见[逻辑与物理复制对比](/postgresql/440-LogicalPhysicalReplicationCompare)；做 HA 方案则继续[高可用与自动故障转移](/postgresql/472-HAFailoverPatroni)。
+
+## 教学自检
+
+遮住动手步骤，先自己写再对照参考答案。
+
+### 任务一：三步搭起库到库同步
+
+需求：主库 10.0.0.1 发布 `public.orders` 全表，备库 10.0.0.2 订阅。写出两侧最小 DDL 与前置条件（WAL 级别、复制角色、表结构要求）。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+主库：
+```sql
+-- wal_level=logical 且已重启
+CREATE PUBLICATION orders_pub FOR TABLE orders;
+```
+备库：
+```sql
+-- 表结构需先建好（逻辑复制不复制 DDL）
+CREATE SUBSCRIPTION orders_sub
+  CONNECTION 'host=10.0.0.1 dbname=app user=sub_user password=...'
+  PUBLICATION orders_pub;
+```
+前置：发布端复制角色 `WITH LOGIN REPLICATION`（或被授予 pg_create_subscription 预置角色的普通用户，PG 16 起）；备库表主键要与主库一致（无主键表 UPDATE/DELETE 复制报错）；初始快照自动同步。验证：`SELECT * FROM pg_stat_subscription;` 与 `pg_subscription_rel` 中 relstate 为 r（ready）。
+
+</details>
+
+### 任务二：订阅卡在初始同步/复制报"冲突"
+
+需求：订阅端 `pg_stat_subscription` 里 relstate 一直是 'd'（data is being copied），或日志出现 apply 冲突。说出两类根因与对应处置；PG 18 在冲突可见性上有什么改进。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+初始同步卡住：主库有长事务拖住快照建立，或 pg_dump 阶段被锁阻塞——处理主库长事务后自动继续。apply 冲突：订阅端表已有数据导致主键冲突、或 DDL 漂移——逻辑复制不会"帮你对齐"结构，需人工修数据/结构后在 `pg_replication_origin_advance` 或重建订阅恢复。PG 18 起冲突信息写入日志与 pg_stat_subscription_stats（新增列），排查不再靠翻日志；CREATE SUBSCRIPTION 默认 streaming=parallel 也让大事务按流应用。另外 PG 18 的 idle_replication_slot_timeout 能自动失效长期不消费的槽，防 WAL 堆积（跨 400/430 两篇）。
+
+</details>

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'RDS 学习笔记：把应用数据库搬到托管实例上——创建、连接、调参、高可用、备份还原与 Aurora 的完整路径。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/200-CloudDatabaseService'
   - 'cloud-computing/460-AWSVPCCommands'
@@ -337,11 +337,26 @@ aws rds delete-db-instance --db-instance-identifier mydb --skip-final-snapshot
 | 只扩不缩的存储 | 存储费用只涨不降 | 初期留合理余量，靠监控触发扩容 |
 | 存储自动扩容没开（Storage Autoscaling） | 磁盘告警半夜响 | 创建时开启 storage autoscaling |
 
-## 自检
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
 
 1. 实例状态卡在 `modifying` 很久，你怎么判断它是排队等维护窗口还是正在执行？
 2. Multi-AZ 和只读副本复制方式的本质区别是什么？分别对应什么故障场景？
 3. 从快照恢复后应用的连接串需要改哪些内容？
+4. 删除实例前必须做哪件事？「删除保护」参数叫什么？
+5. 创建只读副本的前提条件里最常被忽略的是什么？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 查 `describe-db-instances` 的 `PendingModifiedValues`：非空说明变更已排队（等维护窗口或待重启生效），为空且状态 modifying 才是正在执行；再用 `describe-events` 看事件时间线确认。
+2. Multi-AZ 是同步复制（standby 不对外服务），解决可用性——主机或可用区故障时自动 failover，端点不变；只读副本是异步复制（可读、最多 15 个、可跨区域），解决读扩展。前者保命，后者分流。
+3. 端点必须改（恢复 = 新实例、新 DNS 地址），若恢复到不同子网组/安全组还要核对网络可达性；用户名与数据不变（继承自快照），应用侧改完端点重连即可。
+4. 先打最终快照（final snapshot，名字带日期）；删除保护参数是 `--deletion-protection`。
+5. 目标（副本所在）区域/子网组已就绪且主实例已开自动备份——只读副本依赖备份机制建立复制，未开自动备份的实例建不了副本。
+
+</details>
 
 ## 练习
 

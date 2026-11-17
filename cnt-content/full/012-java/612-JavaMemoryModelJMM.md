@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: JMM 的形式化模型与诞生背景、主内存与工作内存抽象、原子性/可见性/有序性三大特性、happens-before 八条规则、内存屏障、volatile 与 final 的语义、双重检查锁定的正确写法；附 JVM 与 C++11/Go/Rust 内存模型的横向对比。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/610-JVMRuntimeDataAreasAndObjectLayout'
   - 'java/510-ConcurrencyDetailed'
@@ -491,3 +491,13 @@ public class ConfigHolder {
 - Brian Goetz 等, *Java Concurrency in Practice*（并发圣经，第 16 章为 JMM 与安全发布的系统讲解）；
 - 原模块 JVM 内存模型篇拆分：本文承接其 JMM 全部主题内容（诞生背景、形式化模型、happens-before、内存屏障、三大特性、volatile/final 语义、DCL、跨语言对比与相关速查）；
 - [JVM 运行时数据区与对象布局](/java/610-JVMRuntimeDataAreasAndObjectLayout)：运行时数据区、堆分代与 GC 的物理层视角。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. JMM 解决的是什么问题？主内存与工作内存的模型对应硬件的什么？——多线程下共享变量的可见性、有序性、原子性如何被抽象定义；工作内存对应 CPU 缓存/寄存器，主内存对应主存。
+2. 写出 happens-before 的两条最常用规则并各举一例。——程序顺序规则（单线程内按代码顺序）；解锁先于后续对同一把锁的加锁（synchronized 块的写对下一个加锁者可见）；volatile 写先于后续 volatile 读。
+3. volatile 保证哪两个语义？为什么不保证 i++ 的原子性？——可见性（写立即刷出+读失效缓存）与禁止指令重排（内存屏障）；i++ 是读-改-写三步，volatile 不提供互斥，三步可交错。
+4. 双重检查锁定为什么要给实例字段加 volatile？不加会出什么问题？——防止"引用已可见但对象构造未完成"的半初始化发布（指令重排把字段赋值提前）；不加 volatile 另一线程可能拿到非 null 但未初始化完的对象。
+5. final 字段的安全发布语义是什么？——构造函数内对 final 字段的写，在构造完成后、引用发布前的正常发布路径下对其他线程可见，无需同步。

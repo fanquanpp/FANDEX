@@ -6,13 +6,28 @@ category: 云与基础设施
 difficulty: beginner
 description: wget 下载：递归抓取与镜像站点、断点续传、限速与重试等常用参数。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/130-CurlHTTPRequest'
   - 'networking/120-HTTPProtocol'
 prerequisites:
   - 'networking/120-HTTPProtocol'
 ---
+
+## wget 与 curl 的分工
+
+同样是下载，wget 和 curl 的设计目标不同：wget 为「把东西拉下来」而生——递归抓站、断点
+续传、后台运行、默认落盘，一条命令不用想输出；curl 为「跟 HTTP 协议对话」而生——精确控制
+请求头、方法、认证，调试 API 见 [curl 实战](networking/130-CurlHTTPRequest)。经验法则：
+镜像/批量/大文件选 wget，接口调试与脚本内可控输出选 curl。
+
+递归抓站前必须理解的两件事：其一，wget 默认遵守目标站的 robots.txt（`robots=on` 是默认
+值），抓取被拒说明对方不欢迎爬取，别关闭它去绕；其二，`-r`/`-m` 的默认深度与并发可能拖垮
+小型站点，务必配合 `-l` 限深、`-w`/`--limit-rate` 限速，只对自己的站点或明确授权的站点
+执行镜像。
+
+GNU wget 1.x 仍是发行版默认安装的稳定版；下一代 wget2（异步并发、HTTP/2 支持）尚在
+推进中，生产脚本以 wget 1.x 语法为准。
 
 ## wget 基本下载
 
@@ -294,11 +309,7 @@ wget -e "http_proxy=http://proxy.example.com:8080" https://example.com/
 ```
 
 **基本写法：使用环境变量代理**
-```bash
-`export http_proxy=http://<代理>:<端口>
-export https_proxy=http://<代理>:<端口>
-wget <URL>`
-```
+`export http_proxy=<代理> && export https_proxy=<代理>`
 ```bash
 # 通过环境变量设置代理
 export http_proxy=http://proxy.example.com:8080
@@ -408,3 +419,16 @@ wget --mirror --convert-links --adjust-extension --page-requisites --no-parent h
 # 伪装浏览器来源下载
 wget --user-agent="Mozilla/5.0" --referer="https://google.com" https://example.com/file.zip
 ```
+
+## 教学自检
+
+按遮码自检法：遮住上文代码块，先自己写命令或推演答案，再对照。
+
+- 断点续传的前提是什么？服务器不支持 Range 请求时 `-c` 的行为是什么？
+  （提示：-c 依赖 HTTP Range 头，不支持时重头下）
+- `-r -l 2 -np` 三个选项合起来回答了什么问题？少了 -np 会发生什么？
+- `-k` 转换链接是把什么改成什么？离线浏览为什么还需要 `-p` 和 `-E` 配合？
+- wget 与 curl 各自适合什么任务？在脚本里读 API 响应体应该用哪个、怎么写？
+- `--spider` 除了检查 URL 还有什么用法？（递归校验死链）
+- 镜像一个不属于自己的网站前，除技术限制外还应确认什么？robots.txt 起什么作用？
+- `wget -qO- url | bash` 这个惯用法方便但有风险，风险在哪？至少要先做什么？

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 自然语言处理核心理论、spaCy/Transformers/NLTK 工程实践与 Transformer 注意力机制形式化推导
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'python/990-PythonMachineLearning'
   - 'python/1000-PythonDeepLearning'
@@ -49,7 +49,7 @@ prerequisites: []
 - 数学公式采用 KaTeX 语法
 - 代码示例标注 `python` 语言标签
 - 中文术语首次出现时附英文原词
-- Python 版本参考 3.11/3.12/3.13 主流版本
+- Python 版本参考 3.12/3.13/3.14 主流版本
 
 ## 2. 历史动机与演进时间线
 
@@ -1532,3 +1532,12 @@ NLP 是一门快速演进的学科，本模块内容会持续更新以反映最�
 ---
 
 最后审阅：2026-07-20 | 审阅人：FANDEX Content Engineering Team
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：中文分词与英文预处理的本质差异是什么？各用什么工具？要点：中文没有天然空格，需要分词模型（jieba 可开箱、spaCy 需中文模型）；英文分词靠空格但要处理大小写、词形还原。
+2. 默写题：用 transformers 加载预训练模型做一句情感推断，写出四行。要点：`tokenizer = AutoTokenizer.from_pretrained(name)`；`model = AutoModelForSequenceClassification.from_pretrained(name)`；`inputs = tokenizer(text, return_tensors="pt")`；`outputs = model(**inputs)` 后取 `logits.argmax`。
+3. 预测题：为什么「先训练后推理」要用同一个 tokenizer？要点：词表、切分规则、特殊 token 都编码在 tokenizer 里，两边不一致等于模型看到的是另一门「方言」，指标瞬间崩塌。
+4. 口述题：从微调到提示工程，任务适配的演进逻辑是什么？要点：早期全量微调（数据多、算力贵）；后来参数高效微调（LoRA 等只训少量参数）；现在大模型时代许多任务改为零样本/少样本提示——选型的分水岭是「任务与预训练目标差多远」。

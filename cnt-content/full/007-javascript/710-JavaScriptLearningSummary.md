@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 回顾 JavaScript 模块的核心知识体系：类型与作用域、闭包与原型、Promise 与事件循环、DOM 与模块化、内存管理，并用虚拟歌手音乐平台的示例串联全部要点。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'javascript/010-WhatIsJavaScript'
   - 'javascript/080-FunctionScopeClosure'
@@ -445,8 +445,8 @@ function updateProgressBar() { /* 更新播放进度条 */ }
 本模块在 2026-09 完成一次知识点补齐，回看时优先补读四篇：
 
 1. `590-ES2023To2026NewFeatures`：按年份串讲 ES2023-ES2025 全部定稿特性与 ES2026 展望；
-2. `620-ExplicitResourceManagement`：`using`/`await using` 确定性资源释放（Stage 4，ES2026 核心）；
-3. `610-TemporalJavaScriptAPI`：Temporal 已升格为 ES2026 标准，状态与旧文不同；
+2. `620-ExplicitResourceManagement`：`using`/`await using` 确定性资源释放（Stage 4 已定稿，随 ES2027 出版）；
+3. `610-TemporalJavaScriptAPI`：Temporal 已 Stage 4 定稿（随 ES2027 出版），状态与旧文不同；
 4. `630-ImmutableDataStructures`：Records & Tuples 提案已撤回，深不可变的现代替代方案；
 5. `650-IntlApi`：内置国际化（ECMA-402）；`560-PackageJsonEngineeringDeepDive`：package.json 工程契约与 lint/format 工具链。
 

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 'GitHub Packages深度解析：从 npm/Docker 包管理原理讲起，把 GitHub Packages 讲成团队私有的"软件包超市"，覆盖认证、发布、安装与 CI/CD 集成。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/320-RESTGraphQLAPI'
 prerequisites:
@@ -98,7 +98,7 @@ npm install @your-org/private-lib
 
 | 场景 | 用什么认证 | 需要的最小权限 |
 | :--- | :--- | :--- |
-| 发布包 | PAT（classic，建议设过期时间） | `write:packages` + `repo`（私有仓库） |
+| 发布包 | PAT（优先 fine-grained） | fine-grained 勾 Packages 读写；部分注册表生态对 fine-grained 支持不完整，需回退 classic（`write:packages` + `repo`，私有仓库） |
 | 下载私有包 | PAT 或 `GITHUB_TOKEN` | `read:packages` |
 | GitHub Actions 发布本仓库包 | `GITHUB_TOKEN`（自动注入） | 工作流中声明 `permissions: packages: write` |
 
@@ -194,10 +194,10 @@ jobs:
       contents: read
       packages: write          # 关键：授予写入 packages 的权限
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '22'
           registry-url: 'https://npm.pkg.github.com'
       - run: npm ci
       - run: npm publish
@@ -238,6 +238,35 @@ jobs:
 | Docker 拉私有镜像失败 | `denied: requested access to the resource is denied` | 未登录 GHCR 或无权 | `docker login ghcr.io`；确认 PAT 含 `read:packages` |
 | 权限继承不生效 | 协作者读不了包 | 包未关联仓库 | 在包设置中关联仓库，或通过 Docker 标签声明来源 |
 | 令牌泄露风险 | 发现 token 出现在代码里 | 把令牌写进了文件并提交 | 立即吊销 token，改用环境变量/Secrets |
+
+## 9. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考答案自己写，写完再对照。
+
+**任务一**：从命令行发布一个 npm 包到 GitHub Packages，前置三件事各是什么？（提示：注册表地址写在哪、认证用什么、权限给什么）
+
+**任务二**：GHCR 的镜像完整地址长什么样（组织 `my-org`、镜像 `app`、标签 `v1.0`）？用 docker 拉取它前要先做什么？
+
+**任务三**：判断——（a）Actions 里发布**本仓库**的包，用个人 PAT 还是 GITHUB_TOKEN？（b）下载私有包需要什么权限？
+
+**参考答案**（先自己写完再看）：
+
+```text
+任务一：
+1. .npmrc 里把 @my-org 作用域的 registry 指到
+   https://npm.pkg.github.com；
+2. 认证用 PAT（优先 fine-grained，部分生态需 classic），不要用账户密码；
+3. 权限给 Packages 读写（classic 对应 write:packages，私有仓库另需 repo）。
+
+任务二：ghcr.io/my-org/app:v1.0
+拉取前先 docker login ghcr.io（用户名 + PAT）。
+
+任务三：(a) GITHUB_TOKEN——同仓库操作平台自动签发，
+在工作流里声明 permissions: packages: write 即可；
+(b) read:packages（fine-grained 对应 Packages 读权限）。
+```
+
+要点自查：Packages 不是独立服务而是挂在仓库上的「货架」——包与仓库互通权限与可见性；认证分三档：本仓库 CI 用 GITHUB_TOKEN、个人操作用 PAT、跨仓库自动化上 GitHub App；`ghcr.io` 与 npm 注册表只是两个不同货架，会员卡（令牌）是同一套。
 
 ## 10. 一句话记忆
 

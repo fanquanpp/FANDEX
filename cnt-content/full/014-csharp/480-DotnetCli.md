@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 以"新机器上把一个 .NET 项目从零跑到发布"为主线串起 dotnet CLI：环境自检、建骨架、日常开发循环、依赖管理、三种发布形态、测试与工具管理，附坑点、自检清单与练习。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/020-CSharpOverviewEnvSetup'
   - 'csharp/340-CSharpTestEngineering'
@@ -19,7 +19,7 @@ prerequisites:
 
 想象你刚入职，领到一台全新电脑。导师只丢给你一句话："把 `Shop` 这个服务拉下来，跑起来，再发布一个能拷给别人用的版本。" 本篇不背命令表，而是把这条链一步步走通——走完之后，`dotnet` 的十几个子命令自然就记住了，因为每一个都出现在它该出现的位置上。
 
-（时间设定在 2026 年：.NET 10 已于 2025 年 11 月发布且是 LTS；下文的命令在 .NET 8/9/10 上行为一致。）
+（时间设定在 2026 年：.NET 10 已于 2025 年 11 月发布且是 LTS，2026 年 11 月 .NET 11 也已发布（STS）；下文的命令在 .NET 8 及以后的 SDK 上行为一致。.NET 8/9 的支持期已于 2026 年 11 月 10 日前后结束，但本篇命令不受影响。）
 
 ## 第一步：先问机器三个问题
 

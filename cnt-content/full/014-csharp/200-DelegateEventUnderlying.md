@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C#委托与事件底层原理详解：从ECMA-334类型系统到闭包与多播实现的完整指南。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/130-LINQDeferredImmediate'
   - 'csharp/100-AsyncAwaitStateMachine'
@@ -3194,3 +3194,27 @@ publisher.OnNotify -= HandleNotify;
 ```
 
 ---
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码或口述，再对照。本篇自检核心是「委托的调用列表语义」与「event 关键字到底防了什么」。
+
+**题 1（委托三合一）**：委托类型的实例在运行时可能是哪三种东西之一？`GetInvocationList()` 返回什么？
+
+参考答案：单个静态方法引用、单个实例方法引用（含目标对象）、或者一个委托链（`MulticastDelegate`，内部 `_invocationList` 数组挂多个条目）。`GetInvocationList()` 把链拆成 `Delegate[]`，每个元素可单独调用或移除——这是"逐个调用并隔离异常"的基础。
+
+**题 2（-= 的匹配规则）**：`publisher.OnNotify -= HandleNotify;` 按什么规则找到要移除的条目？匿名 lambda 订阅后还能取消吗？
+
+参考答案：按"方法相同（含目标对象）且返回类型/参数列表一致"逐个匹配，从链尾移除一个匹配项；匹配不上就什么都不发生（不报错）。匿名 lambda 每次书写都是新的编译产物，两个"看起来一样"的 lambda 不是同一方法，所以订阅后拿不到同一个引用就永远取消不掉——需要取消的场景要先把 lambda 存进变量。
+
+**题 3（event 关键字的防线）**：`public event Action OnTick;` 与 `public Action OnTick;` 字段形式相比，event 挡住了类外的哪三种操作？
+
+参考答案：类外不能直接赋值（`= ...`，防止一个订阅者覆盖别人的订阅链）、不能直接调用（`OnTick?.Invoke()`，只允许发布者触发）、不能取走整个调用链。保留的能力只有 `+=`/`-=`。这就是"发布者触发、订阅者增删"的封装边界。
+
+**题 4（多播异常中断）**：事件链上第 2 个订阅者抛异常，第 3 个还会执行吗？写出隔离写法。
+
+参考答案：不会——编译器合成的 Invoke 是顺序调用，第 2 个抛出后整个调用中断，第 3 个被跳过，异常向上抛给发布者。隔离写法：`foreach (Action h in OnTick.GetInvocationList()) { try { h(); } catch (Exception ex) { Log(ex); } }`，逐个调用、逐个兜底。
+
+**题 5（事件与内存泄漏）**：长寿命的单例服务订阅了短寿命页面的事件，会发生什么？两种修复？
+
+参考答案：单例持有页面的方法引用（`+=` 把"页面实例 + 方法"挂进调用链），页面关闭后 GC 无法回收，订阅越积越多——内存泄漏加"幽灵回调"。修复：页面销毁时 `-=`（实现 IDisposable 统一退订）；或用弱事件机制（`WeakEventManager`/弱引用委托库），让引用不阻止回收。

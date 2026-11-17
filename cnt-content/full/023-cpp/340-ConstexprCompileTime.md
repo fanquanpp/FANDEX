@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: constexpr/consteval/constinit完整原理、编译期求值模型、立即函数、constexpr if、编译期容器、与模板元编程的关系及工业级应用
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/350-TypeTraitsSFINAE'
   - 'cpp/370-VariadicTemplate'
@@ -2650,3 +2650,71 @@ constexpr double result = std::abs(-3.14);
 // C++20 constexpr vector
 constexpr std::vector<int> vec = {1, 2, 3};
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：写一个 `constexpr` 函数 `fib(int n)` 用迭代（非递归）算斐波那契第 n 项，分别在编译期（`constexpr int f10 = fib(10); static_assert(f10 == 55);`）与运行期（变量 n 来自 `argv`）调用它；然后回答：同一个函数为什么两个语境都能用？「在编译期运行」的触发条件到底是什么？
+
+**提示**：`constexpr` 函数是「可以在编译期求值」的函数，不是「只能在编译期」——触发条件是**调用它时给的是常量表达式且需要常量**（如 constexpr 变量初始化、static_assert、模板实参）。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+constexpr int fib(int n) {
+    int a = 0, b = 1;
+    for (int i = 0; i < n; ++i) { int t = a + b; a = b; b = t; }
+    return a;
+}
+
+constexpr int f10 = fib(10);        // 编译期：初始化 constexpr 变量
+static_assert(fib(10) == 55);       // 编译期：断言上下文
+int main(int argc, char**) {
+    int runtime_n = argc;           // 运行期才知道的值
+    return fib(runtime_n);          // 运行期调用同一函数
+}
+```
+
+要点自查：编译期求值的判据看**上下文**不看函数修饰；`constexpr` 对编译器只是「允许并要求在常量语境可求值」，运行期它就是普通函数。
+
+**任务二**：找出下面代码不能编译的原因并修复（两处问题：constexpr 里用了允许但编译期不能完成的事、以及 if constexpr 分支问题）：
+
+```cpp
+constexpr int sumSquares(int n) {
+    std::vector<int> v;             // (1) 这里能过吗？
+    for (int i = 1; i <= n; ++i) v.push_back(i * i);
+    int s = 0;
+    for (int x : v) s += x;
+    return s;
+}
+
+template <typename T>
+auto valueOf(T t) {
+    if (t > 0) return t;            // (2) 模板里想按类型而非值分支
+    return -t;
+}
+```
+
+**提示**：(1) C++20 起 constexpr 里**可以用** `std::vector`（constexpr 分配），但**函数返回后分配的内存必须在同一编译期求值内释放**，且这只在常量语境成立——检查你实际写的语境；(2) `if (t > 0)` 是运行期判断，两个分支都要实例化；按类型分支是 `if constexpr`。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+constexpr int sumSquares(int n) {   // C++20：编译期 vector 合法
+    std::vector<int> v;
+    for (int i = 1; i <= n; ++i) v.push_back(i * i);
+    int s = 0;
+    for (int x : v) s += x;
+    return s;                        // 求值结束时 v 已析构：满足「编译期释放」
+}
+static_assert(sumSquares(3) == 14); // 1 + 4 + 9
+
+template <typename T>
+auto valueOf(T t) {
+    if constexpr (std::is_arithmetic_v<T>) return t < T{} ? -t : t;  // 类型分支：只实例化选中的分支
+    else return t;                                                    // 非算术类型直接返回
+}
+```
+
+要点自查：`if constexpr` 的丢弃分支**不实例化**，这是「模板里按类型写不同代码」的标准开关；constexpr vector 能用的前提（C++20）与边界（编译期必须释放）要能说出来，否则就是背了半截规则。

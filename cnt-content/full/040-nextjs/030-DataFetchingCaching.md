@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 服务器组件直接取数、Next.js 15+ 的 fetch 缓存默认语义、四层缓存地图、按需失效与 ISR 增量静态再生。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'nextjs/020-AppRouterRouting'
   - 'nextjs/090-DeploymentOptimization'
@@ -191,7 +191,7 @@ export default function ContactPage() {
 
 ## 7. 预告：Cache Components 模式下的取数
 
-在 `next.config.ts` 打开 `cacheComponents: true` 后，缓存语义再次变化：**一切取数默认动态执行**，`fetch` 的 `cache`/`next.revalidate` 选项淡出，改用 `'use cache'` 指令显式声明"这个函数/组件的输出可以缓存"，用 `cacheLife('hours')` 这类 profile 声明缓存时长。传统选项与新模型并存于 16，但新项目建议直接学新模型——它把"什么被缓存"写在代码里而不是藏在默认值里。系统讲解见第 7 篇《缓存体系与 Cache Components 深入》。
+在 `next.config.ts` 打开 `cacheComponents: true` 后，缓存语义再次变化：**一切取数默认动态执行**，`fetch` 的 `cache`/`next.revalidate` 选项淡出，改用 `'use cache'` 指令显式声明"这个函数/组件的输出可以缓存"，用 `cacheLife('hours')` 这类 profile 声明缓存时长。传统选项与新模型并存于 16，但 16.4 起 `create-next-app` 新项目已默认启用 Cache Components（官方也开始推荐所有新应用采用，Next.js 17 计划设为默认），新项目可以直接学新模型——它把"什么被缓存"写在代码里而不是藏在默认值里。系统讲解见第 7 篇《缓存体系与 Cache Components 深入》。
 
 ## 8. 动手实践
 

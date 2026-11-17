@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Burp Suite 命令行与自动化：目标范围配置、爬取与主动扫描、API/扩展集成与 CI 中的 DAST 思路'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/150-WebSecurityPenetrationTesting'
   - 'cybersecurity/420-NiktoScan'
@@ -15,6 +15,10 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+- **解决什么问题**：Burp Suite 是 Web 渗透的操作中枢——代理、爬取、扫描、重放、扩展全部在一个工作台。本篇聚焦「离开 GUI 也能用」的部分：启动参数、目标范围配置、REST API 驱动的扫描任务与 CI 中的 DAST 思路。
+- **容易怎么错**：扫描范围不设 Scope 就全量爬取（打到登录页/注销链接甚至生产第三方）；主动扫描对生产环境无节制运行；把 Burp 的扫描结果当结论（需人工验证）；证书告警环境用 `--ignore-ssl-errors` 打内网服务而忘了这会掩盖中间人风险。
+- **学完能做什么**：用命令行参数与配置文件启动受控扫描；通过 REST API 把「爬取 + 主动扫描」挂进流水线；把 Burp 发现与人工测试衔接成完整报告。
 
 ## Burp Suite 启动配置
 
@@ -396,3 +400,11 @@ java -jar burpsuite_pro.jar --header="Authorization: Bearer token123"
 # 忽略 SSL 证书校验错误
 java -jar burpsuite_pro.jar --ignore-ssl-errors
 ```
+
+## 自检
+
+- 遮住「启动配置」一节，写出「无界面启动专业版 + 加载项目文件」的命令，并说明无界面模式适合什么场景（CI 定时扫描）。
+- 为什么 Scope 是 Burp 的第一道安全阀？写出配置 Scope 后「只爬授权域名」的效果差异。
+- 遮住「API/扩展集成」一节，写出「提交一个扫描任务 → 查询进度 → 导出问题列表」的三步 API 调用。
+- Burp 主动扫描在生产环境运行前要做哪三件事（授权确认、限速配置、只读账号/测试数据）？
+- 「扫描器报了 XSS」后你的验证流程是什么？（重放确认触发条件 → 排除误报（响应编码/上下文）→ 定级入库。）

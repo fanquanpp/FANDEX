@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 流程驱动掌握 Astro 样式体系：全局风格与主题变量、组件 scoped 样式、is:global 逃逸与样式方案全家桶对比
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/020-QuickStartProject'
   - 'astro/072-AstroFontsApi'
@@ -240,6 +240,51 @@ import '../styles/global.css'
 **"全局样式刷墙、scoped 样式软装：变量与 Reset 只写一份，组件细节各回各家；逃逸用 `:global()` 开小窗，不拿 `is:global` 拆整面墙。"**
 
 （系列的另外两句在姊妹篇：字体是门面交给 Fonts API——见 072；图片交给 astro:assets——见 133。）
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写"全屋打底 + 逐间软装"的两层样式代码：在全局入口定义主题色 CSS 变量，组件里引用变量并写一条 scoped 规则。
+
+   参考答案（先自己写，再对照）：
+
+   ```css
+   /* src/styles/global.css：全屋打底 */
+   :root {
+     --color-primary: #39c5bb;
+     --color-border: #e2e8f0;
+     --space-4: 1rem;
+   }
+   ```
+
+   ```astro
+   ---
+   // 组件里：逐间软装
+   import '../styles/global.css'
+   ---
+   <div class="card">...</div>
+   <style>
+     .card {
+       border: 1px solid var(--color-border);
+       padding: var(--space-4);
+     }
+   </style>
+   ```
+
+   验收点：主题变量集中定义在全局入口，组件只引用变量；组件内的 `<style>` 默认 scoped，不会污染其他组件。
+
+2. Markdown 渲染出的富文本元素（如正文里的 `<a>`）为什么 scoped 样式够不着？两种"逃逸"写法怎么选？
+
+   参考答案（先自己写，再对照）：
+
+   富文本元素不带组件的哈希属性，scoped 选择器匹配不上。逃逸写法有两种：整块 `<style is:global>` 与 scoped 块内的 `:global()` 子选择器。选 `:global()` 并把范围收窄到容器内部（如 `.prose :global(a)`），逃逸面越小越不容易踩到别的组件；`is:global` 留给确实要全局生效的少量规则。
+
+3. 说出 scoped 隔离的实现原理一句话，以及它带来的两个好处。
+
+   参考答案（先自己写，再对照）：
+
+   构建期给组件内元素与选择器附加同一个唯一哈希属性（`data-astro-cid-xxx`），选择器变成属性选择器，不同组件哈希不同。好处：无样式泄漏与全局污染；删除组件时其样式自动消失，不需要手动清理。
 
 ## 参考与致谢
 

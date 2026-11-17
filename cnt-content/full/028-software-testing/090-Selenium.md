@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Selenium Web自动化测试：WebDriver、定位策略、框架设计与最佳实践详解。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'software-testing/050-EquivalenceClassPartition'
   - 'software-testing/060-BoundaryValueAnalysis'
@@ -19,7 +19,9 @@ prerequisites:
 Selenium 是历史最悠久的浏览器自动化框架，核心是 WebDriver 协议（W3C 标准）：
 测试代码通过它驱动真实浏览器完成点击、输入、断言。适合遗留系统回归、
 跨浏览器兼容验证；新建 Web 项目则建议优先评估 Playwright 或 Cypress
-（见「自动化测试框架对比」一文）。
+（见「自动化测试框架对比」一文）。版本现状：Selenium 仍是 4.x 主线（2026-11
+已到 4.5x，按月滚动发版，暂无 Selenium 5）；4.27 起 BiDi 协议的 Script 与
+Log 模块转为稳定，需要监听控制台日志或拦截网络请求的场景可以关注。
 
 前置知识：HTML/CSS 基础（选择器）、Python 基础、pytest 基本用法。
 
@@ -254,6 +256,65 @@ actions.perform()               # 真正执行动作队列
 | 并行执行    | Grid/多线程          |
 | CI 集成     | Headless 模式        |
 | 优先 CSS    | CSS 选择器优于 XPath |
+
+## 教学自检
+
+以下题目按遮码自检法设计：先遮住参考答案自己写，再对照。
+
+### 题 1：显式等待（遮码题）
+
+任务：写一段代码，等待 ID 为 `submit-btn` 的元素变为可点击（最长 10 秒），
+然后点击它。不使用 `time.sleep`。
+
+提示：需要 `WebDriverWait` 与 `expected_conditions` 的哪个条件？
+
+参考答案：
+
+```python
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+WebDriverWait(driver, 10).until(
+    EC.element_to_be_clickable((By.ID, "submit-btn"))
+).click()
+```
+
+自检：你写的是「等元素存在」还是「等元素可点击」？两者对被遮挡或被禁用
+的按钮行为不同——`presence` 只保证进了 DOM，`clickable` 才保证交互安全。
+
+### 题 2：定位策略优先级（判断题）
+
+任务：登录表单中有三个候选定位器，你会选哪个，为什么？
+(a) `//div[2]/form/input[3]`；(b) `input[name='email']`；
+(c) `#login-form input[name='email']`。
+
+提示：回顾第 3.2 节的优先级，并考虑前端改版时哪个最不容易坏。
+
+参考答案：优先 (c)：兼顾 ID 锚点与语义属性，改版抗性最好；(b) 可接受但
+`name` 可能不唯一；(a) 是绝对 XPath，任何 DOM 结构变化都会使其失效，
+只在其他定位器都不可用时兜底。
+
+### 题 3：Page Object 边界（概念题）
+
+任务：Page Object 里应不应该写断言？为什么？测试方法里应该写什么？
+
+提示：回顾「Page Object 只封装定位与操作」的原则，从「断言属于谁的关注点」
+角度想。
+
+参考答案：断言不进 Page Object。Page Object 是「页面长什么样、能做什么」
+的建模，断言是「业务规则是否满足」的判断，属于测试方法（或专门的断言
+辅助层）。把断言埋进页面对象会让同一个页面对象无法在不同业务场景复用，
+也让失败时难以区分「页面坏了」还是「业务规则变了」。
+
+### 题 4：等待机制陷阱（概念题）
+
+任务：为什么官方不建议混用显式等待与隐式等待？`sleep(3)` 有哪两类失败方式？
+
+参考答案：混用时全局隐式等待会让每次 `find_element` 都先转一圈轮询，
+显式等待的轮询叠加其上，等待时间不可预测，偶发超时难以归因。`sleep(3)`
+的两类失败：环境慢时 3 秒不够，元素还没出现就断言失败（假红）；环境快时
+白等 3 秒，用例数量大时拖垮整条流水线（假慢）。正确做法是把「条件」交给
+显式等待，而不是把「猜测的时间」交给 sleep。
 
 ## 小结
 

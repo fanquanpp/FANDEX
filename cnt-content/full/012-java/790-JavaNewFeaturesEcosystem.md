@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java 21-26 新特性、模块系统、Spring Boot 3.x/4.0、构建工具与 GraalVM 原生镜像。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/470-JavaModuleSystem'
   - 'java/720-JavaDatabaseConnection'
@@ -650,3 +650,13 @@ Java 21+ 的新特性正在从根本上改变 Java 的编程范式：
 - **Spring Boot 3.x** 全面拥抱现代 Java 特性，提供一流的开发体验
 
 这些特性组合在一起，使得 Java 在保持向后兼容的同时，不断进化以适应现代软件开发的需求。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. JDK 21-26 的演进主线可以概括为哪三条？——并发模型（虚拟线程、结构化并发、ScopedValue）、启动与体积（AOT cache、jlink、紧凑对象头、Native Image）、语言简化与建模能力（紧凑源文件、record、sealed、模式匹配）。
+2. JPMS 给普通应用带来了什么、没带来什么？——带来了模块边界与 jlink 裁剪能力；没带来强制采用（类路径世界仍是主流运行方式）。
+3. Spring Boot 3 与 4 的大版本分界事实是什么？——Boot 3（2022）：Framework 6、Jakarta EE 9+、Java 17 基线；Boot 4（2025-11）：Framework 7、Jakarta EE 11、Java 17+ 基线首推 25。
+4. GraalVM 原生镜像与 AOT cache（Leyden 路线）的取舍各一句话。——Native Image 毫秒级启动但反射受限、构建慢；AOT cache 保留 JIT 弹性、兼容动态特性，启动收益较小。
+5. 判断：升级 JDK 只要看新特性清单。——不对；还要看 release notes 的废弃与禁用项（如 JEP 504 移除 Applet API、JEP 486 永久禁用 SecurityManager、JEP 500 收紧 final 语义）、依赖生态的版本对齐与 CI 矩阵。

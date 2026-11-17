@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: Flux 组件架构与 GitRepository/Kustomization 实配、镜像自动化、多环境仓库布局与 Promotion 促销流程
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -238,6 +238,14 @@ git log                                          # fluxbot 的自动提交
 - 能为三环境设计 base/overlay + apps 布局并说清 Promotion 的三种实现；
 - 知道 GitOps 的两条纪律（生产 PR 双评审、手工救急必须补票）；
 - 能说出本篇与 cloud-155（概念）、devops-190（ArgoCD）的分工。
+
+## 自检
+
+- 遮住心智模型图，默写 Flux 五个控制器（source/kustomize/helm/image-reflector/image-automation）各自管什么——哪两个合起来构成"镜像自动化"？
+- interval、prune、healthChecks 三个字段各维护哪一种一致性？关掉 prune 后"Git 里删了资源"集群里会怎样？
+- 镜像自动化链路五步口述：CI 推镜像 → 反射器读新 tag → 靠什么注释定位改动位置 → 自动提交 → 集群更新。锚点注释丢了会怎样？
+- base/overlay 布局里三个环境的差异放哪一层？Promotion 的三种实现各自适合什么团队规模？
+- 两条 GitOps 纪律背一遍：生产 PR 双评审防什么、手工救急必须补票防什么？
 
 ## 下一步
 

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 平台工程：平台即产品、内部开发者门户（IDP）、黄金路径、Backstage 与效能度量。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'devops/010-OverviewLinuxBasics'
   - 'devops/140-CICDPipeline'
@@ -203,3 +203,11 @@ spec:
 1. Backstage 是框架不是成品，产品化运营（模板治理、DX 访谈）才是成败关键。
 2. 度量用 DORA + 采纳率 + 开发者体验三角互证，警惕指标异化为 KPI 博弈。
 3. 平台自身的可靠性（SLO、值班、变更管理）常被忽视，却是信任的底线。
+
+## 自检
+
+- 平台工程与 DevOps 的关系一句话：为什么"每个团队自己搭流水线"会走向重复劳动，而平台工程用"产品化"破局？
+- IDP 四件套（服务目录/脚手架/自助动作/评分卡）各解决什么痛点？遮住分层能力模型图自己画一遍。
+- 黄金路径三特征默写：默认安全、开箱即用、可逃生——"可逃生"防的是什么团队反弹？
+- Backstage 三个插件类型（软件目录/Scaffolder/Search 或自定义）各对应什么日常场景？catalog-info.yaml 里 owner 与依赖为什么是"户口本"？
+- 度量三角互证（DORA 四指标 + 采纳率 + DX 调研）：单独看采纳率会催生什么博弈行为？

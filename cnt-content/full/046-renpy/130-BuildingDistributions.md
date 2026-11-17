@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 配置构建规则生成 Windows Mac Linux 安装包，了解移动端与 Web 发布路径及存档兼容要点
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'renpy/010-RenPyOverviewAndSetup'
   - 'renpy/100-SaveLoadAndRollback'
@@ -127,7 +127,7 @@ build.archive("scripts", "all")
 
 电脑三平台之外，Ren'Py 还有各自的专项发布路径，官方提供独立文档页：
 
-- Android：https://www.renpy.org/doc/html/android.html
+- Android：https://www.renpy.org/doc/html/android.html（打包机需要 JDK 21）
 - iOS：https://www.renpy.org/doc/html/ios.html
 - Web（HTML5，Beta）：https://www.renpy.org/doc/html/web.html
 - ChromeOS：https://www.renpy.org/doc/html/chromeos.html
@@ -135,7 +135,7 @@ build.archive("scripts", "all")
 
 进阶功能同样有专页：应用内购买（iap.html）、游戏更新器（updater.html）、大游戏下载器（downloader.html），完整地址形如 https://www.renpy.org/doc/html/updater.html。
 
-最后交代硬件门槛：Ren'Py 8 大致要求 Windows 10 及以上、macOS 10.10 及以上、Linux 以 Ubuntu 20.04 及以上为基准；移动端要求 Android 5.0+ 与 iOS 11+。目标玩家的设备系统低于这些版本时，发行计划要提前调整。
+最后交代硬件门槛，这些数字随发行版上调，以当下所用引擎版本的官方说明为准：8.4 起 Windows 要求 Windows 10 及以上，Linux 以 Ubuntu 20.04 为基准；8.6 起 macOS 要求 10.13 及以上、iOS 要求 15 及以上；移动端 Android 5.0+，且 Android、iOS 与 Web 都要求 GPU 支持 OpenGL ES 3.0（2013 年以后的设备基本满足），桌面端以 OpenGL 3.3 为佳、可回退 2.0。目标玩家的设备系统低于这些版本时，发行计划要提前调整。
 
 ## 为什么 old-game 能救存档：机制再深一层
 
@@ -170,6 +170,45 @@ old-game 的解法是**双版本并存**：把上一发行版的 .rpyc 原样留
 完整走一遍双版本流程：第一版只写两幕戏，构建成 v1.0（或直接跑项目当 v1.0），运行到第二幕存档；然后在两幕之间插入一幕新戏（第三幕），执行 Force Recompile 与 Update old-game 后再次运行，读取 v1.0 的存档，确认读档后继续玩五分钟，剧情衔接正确、无跳句无错乱。
 
 提示：如果读档后剧情错位，先检查新插入的语句是否改变了原 label 的语句结构，再检查 old-game 目录是否真的更新了（看目录内的 .rpyc 修改时间）。参考检查点：能用自己的话说清「为什么插入一幕后旧存档还能接着玩」，并说出这条机制的一个失效边界（比如删除旧存档正在执行的 label）。
+
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案或写出配置，再展开对照。
+
+1. 发布前的官方流程有哪五步？其中 Lint 解决什么问题？
+2. 为什么不能在 Windows 上解开 Linux/Mac 的 zip 或 tar.bz2 再重新打包上传？
+3. build.classify 的四条规则是什么？"先写特例、再写通配"为什么是标准写法？把某个文件排除出发行版的写法是什么？
+4. 旧存档兼容靠哪个目录？为什么每发一个版本就要更新它，而不是攒几个版本一起补？
+5. 当前版本 Ren'Py 对 Windows、macOS、iOS 的最低系统要求分别是什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 更新引擎并读 Incompatible Changes、跑 Check Script (Lint)、
+   Build Distributions 构建、认真测试（可加 Beta）、上架 itch.io 等平台。
+   Lint 静态扫描未定义变量、标签冲突、缺失文件等几十类问题，玩家走不到的
+   分支运行测试覆盖不到，所以"能跑"不等于"Lint 干净"。
+
+2) 包内保存着 Linux/Mac 运行所需的文件权限信息，Windows 的 zip 工具会丢掉
+   它们；二次打包后玩家在 Linux/Mac 上运行不受支持。应直接上传构建产物。
+
+3) 模式从路径开头匹配到结尾；/ 匹配根目录，* 不跨目录、** 跨目录；
+   首条命中的规则生效；未匹配文件默认进 all，分类到 None 即排除。
+   因为首条生效，特例必须排在通配之前，否则会被通配规则先"截胡"。
+   排除写法：build.classify("路径模式", None)。
+
+4) old-game/ 目录：保存上一发行版的 .rpyc 编译产物，供引擎解释旧存档的
+   执行现场。每发一版就更新一次（先 Force Recompile 再 Update old-game），
+   链式接力即可覆盖任意远的版本；攒着不补，中间任何一版的存档现场
+   都可能找不到对应的编译产物，且发布前大改脚本结构会让 old-game 也救不回。
+
+5) Windows 10+（8.4 起）、macOS 10.13+ 与 iOS 15+（8.6 起）；
+   另有移动端与 Web 需 OpenGL ES 3.0、Android 5.0+。数字随版本上调，
+   发版前以官方说明为准。
+```
+
+</details>
 
 ## 小结
 

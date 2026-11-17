@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 网络排障方法论：分层定位与二分思路、ping/traceroute/ss/tcpdump 关键用法、「网站打不开」完整案例与抓包分析流程。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/080-PingTraceroute'
   - 'networking/090-SSNetstat'
@@ -286,6 +286,22 @@ sudo tcpdump -i any -nn port 443 and host <客户端IP>
 - 「ping 通但端口不通」与「traceroute 星号」是两大经典误判，别用单一工具下结论；
 - NAT、代理、LB 环境里同一连接在不同观测点长得不一样，多点同时抓包对时间轴是唯一可靠手段；
 - 把本文流程固化成团队的故障排查 runbook，配合 mtr 报告与 pcap 归档，问题复盘才有据可查。
+
+## 教学自检
+
+按遮码自检法：遮住上文命令与流程，先自己推演，再对照。
+
+- 「curl -v 打不开网站」的固定排查序是什么？每一步各排除哪一层？（DNS -> 路由 -> TCP ->
+  监听 -> 防火墙 -> 抓包定位）
+- `curl -v` 输出里哪三种行分别代表本地注释、出方向请求、入方向响应？超时与 refused 的
+  差别指向什么故障？
+- 「ping 通但端口不通」的三个排查方向是什么？为什么不能继续 ping？
+- traceroute 出现 `*` 的两种解释是什么？靠什么证据区分它们？
+- NAT 环境为什么必须两侧同时抓包？只抓一侧会得出什么错误结论？
+- tcpdump 在生产机上裸抓有什么风险？标准姿势的三个要素是什么？
+  （BPF 收窄 + -c 限量 + -w 落盘）
+- 抓包三层信息各回答什么问题？`tcp.analysis.flags` 列出的哪两类异常分别指向链路与对端应用？
+- 多机排查前为什么先对时？流量镜像（SPAN/ERSPAN）与抓包工具是什么关系？
 
 ## 动手实践
 

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Kotlin SQL框架Exposed
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'kotlin/540-KotlinArrow'
   - 'kotlin/490-KotlinKtor'
@@ -19,7 +19,7 @@ prerequisites:
 
 ## 概述
 
-Exposed 是 JetBrains 开发的 Kotlin SQL 框架，提供两种风格来操作数据库：DSL（领域特定语言）和 DAO（数据访问对象）。DSL 风格让你用 Kotlin 代码写 SQL 查询，类型安全且直观；DAO 风格则提供了类似 ORM 的对象映射。与 Hibernate 等重量级 ORM 不同，Exposed 轻量、透明，让你对 SQL 有完全的控制。
+Exposed 是 JetBrains 开发的 Kotlin SQL 框架，提供两种风格来操作数据库：DSL（领域特定语言）和 DAO（数据访问对象）。1.0 正式版（2026 年 1 月）起包结构统一迁移到 `org.jetbrains.exposed.v1.*`，并把 JDBC 与 R2DBC 拆成独立模块，可以按驱动选型。DSL 风格让你用 Kotlin 代码写 SQL 查询，类型安全且直观；DAO 风格则提供了类似 ORM 的对象映射。与 Hibernate 等重量级 ORM 不同，Exposed 轻量、透明，让你对 SQL 有完全的控制。
 
 如果你需要在 Kotlin 项目中操作关系型数据库，Exposed 是一个 Kotlin 风格的轻量选择。
 
@@ -39,8 +39,9 @@ Exposed 是 JetBrains 开发的 Kotlin SQL 框架，提供两种风格来操作�
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("org.jetbrains.exposed:exposed-core:0.49.0")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.49.0")
+    implementation("org.jetbrains.exposed:exposed-core:1.0.0")
+    implementation("org.jetbrains.exposed:exposed-jdbc:1.0.0")
+    // Exposed 1.0（2026-01 发布）新增 R2DBC 支持：需要响应式驱动时引入 exposed-r2dbc
     // 数据库驱动
     implementation("com.h2database:h2:2.2.224")      // H2 内存数据库
     implementation("org.postgresql:postgresql:42.7.1")  // PostgreSQL
@@ -53,8 +54,9 @@ dependencies {
 最简单的使用：
 
 ```kotlin
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.jdbc.*
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 // 定义表结构
 object Users : Table() {
@@ -98,7 +100,7 @@ fun main() {
 ```kotlin
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 
 fun initDatabase(): Database {
     val config = HikariConfig().apply {
@@ -117,7 +119,7 @@ fun initDatabase(): Database {
 ### 查询操作
 
 ```kotlin
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.v1.core.*
 
 fun queryDemo() = transaction {
     // 查询所有
@@ -167,7 +169,7 @@ fun queryDemo() = transaction {
 ### 插入操作
 
 ```kotlin
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.v1.core.*
 
 fun insertDemo() = transaction {
     // 插入单条
@@ -207,7 +209,7 @@ fun insertDemo() = transaction {
 ### 更新和删除
 
 ```kotlin
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.v1.core.*
 
 fun updateDeleteDemo() = transaction {
     // 更新
@@ -231,7 +233,7 @@ fun updateDeleteDemo() = transaction {
 ### 多表关联
 
 ```kotlin
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.v1.core.*
 
 // 定义订单表
 object Orders : Table() {
@@ -268,8 +270,8 @@ fun joinDemo() = transaction {
 ### DAO 风格
 
 ```kotlin
-import org.jetbrains.exposed.dao.*
-import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.v1.dao.*
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 
 // 定义表
@@ -323,8 +325,9 @@ fun daoDemo() = transaction {
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.jdbc.*
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 fun Application.configureDatabase() {
     val db = initDatabase()
@@ -424,3 +427,33 @@ fun migrateDemo() = transaction {
     exec("ALTER TABLE users ADD COLUMN email VARCHAR(100)")
 }
 ```
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：DSL 与 DAO 选型**。同一个「查活跃用户」需求，写出 DSL 与 DAO 两个版本，并说出 DAO 版本在「批量导入十万行」场景下为什么吃亏。
+
+参考实现（DSL）：
+
+```kotlin
+transaction {
+    Users.select { Users.active eq true }
+        .map { it[Users.name] }
+}
+```
+
+参考实现（DAO）：
+
+```kotlin
+transaction {
+    User.find { Users.active eq true }.map { it.name }
+}
+```
+
+DAO 吃亏的原因：每个查询结果物化成 Entity 对象并挂进实体缓存，十万行意味着十万对象与身份跟踪开销；DSL 只拿结果行。结论：报表/批处理用 DSL，领域对象交互用 DAO，混用要清楚两个世界的缓存互不相通。
+
+**练习 2：事务边界**。`transaction { ... }` 之外的 `Table.select` 会发生什么？为什么 Exposed 强制把操作包进事务？
+
+参考答案：抛 `NoTransactionException`——Exposed 的连接管理按事务生命周期租借，事务外没有绑定连接。设计动机：把「连接获取/提交/回滚/隔离级别」收口到一个显式边界，杜绝半途泄漏连接；Web 场景通常用 `newSuspendedTransaction`（R2DBC/协程环境）或 `transaction`（JDBC 同步环境）包住一个服务方法。
+
+**练习 3：JDBC 与 R2DBC 的分界**。1.0 拆分 exposed-jdbc 与 exposed-r2dbc 后，一个协程 Web 服务想全程非阻塞，该怎么选模块与事务 API？
+
+参考答案：选 `exposed-r2dbc`（基于 R2DBC 驱动，如 r2dbc-postgresql），事务用 `newSuspendedTransaction`——挂起而非阻塞线程；JDBC 模块的 `transaction` 是阻塞 API，放进协程必须经 `Dispatchers.IO` 隔离。判别式：驱动是 R2DBC 还是 JDBC，决定模块；调用方在不在协程里，决定事务 API。

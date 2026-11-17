@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 从源码、构建到发布，讲清 Vue 3 组件库的工程骨架：目录设计、样式方案、类型导出、按需导入、测试与版本发布。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'vue3/110-ComponentSystem'
   - 'vue3/230-TypeScriptIntegration'
@@ -241,3 +241,13 @@ btn.value?.focus();
 
 组件库工程化没有玄学：目录按组件拆、构建用库模式、样式走变量、类型自动生成、测试守住契约、发布守语义化版本。
 从第一个 Button 开始就按这个骨架走，后续加组件只是"复制目录 + 导出 + 补测试"的重复劳动。
+
+## 自检
+
+回答不出的回对应小节。
+
+1. vue 为什么必须是 peerDependency？打进产物后使用方会看到什么现象？
+2. exports 字段的三类入口（import / require / types）各自解决什么解析问题？少了 types 会怎样？
+3. 组件样式丢失的两类根因（库侧没带样式 / 使用侧按需导入没配样式解析）分别怎么修？
+4. 按需导入为什么依赖 sideEffects: false？不声明时摇树为什么失效？
+5. 语义化版本里，改 CSS 变量默认值属于 patch 还是 minor？什么时候必须升 major？

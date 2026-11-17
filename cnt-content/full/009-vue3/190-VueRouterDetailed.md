@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 路由配置、导航守卫、懒加载与路由元信息。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'vue3/250-PluginDevelopment'
   - 'vue3/060-ComputedCacheWatchTiming'
@@ -153,19 +153,20 @@ const routes = [
 
 ### 4.1 全局守卫
 
+返回值风格自 Vue Router 4.0（2020-12）起就是官方推荐写法——4.0 发布公告原话「Say goodbye to `next`」，`next` 参数仅作迁移兼容保留；Vue Router 5.0.3（2026-02）起，开发环境下调用 `next` 会打印弃用警告（官方守卫指南 Deprecated 注记），官方推荐**返回值风格**：返回 `false` 取消导航，返回路由地址重定向，不返回（或返回 `true`）即放行。
+
 ```ts
 // 全局前置守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   // 检查用户是否登录
   const isLoggedIn = localStorage.getItem('token');
   if (to.meta.requiresAuth && !isLoggedIn) {
-    next('/login');
-  } else {
-    next();
+    return '/login'; // 重定向
   }
+  // 不返回即放行
 });
-// 全局后置守卫
-router.afterEach((to, from) => {
+// 全局后置守卫（无第三个参数，也不能取消导航——导航已经完成）
+router.afterEach((to) => {
   // 可以在这里添加页面标题更新等操作
   document.title = to.meta.title || '默认标题';
 });
@@ -178,13 +179,11 @@ const routes = [
   {
     path: '/admin',
     component: () => import('../views/Admin.vue'),
-    beforeEnter: (to, from, next) => {
+    beforeEnter: (to) => {
       // 检查用户是否为管理员
       const isAdmin = localStorage.getItem('role') === 'admin';
-      if (isAdmin) {
-        next();
-      } else {
-        next('/');
+      if (!isAdmin) {
+        return '/'; // 重定向到首页
       }
     },
   },
@@ -197,21 +196,17 @@ const routes = [
 <script setup lang="ts">
 import { onBeforeRouteEnter, onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router';
 // 进入路由前
-onBeforeRouteEnter((to, from, next) => {
+onBeforeRouteEnter((to, from) => {
   console.log('进入路由前');
-  next();
 });
 // 路由更新时
-onBeforeRouteUpdate((to, from, next) => {
+onBeforeRouteUpdate((to, from) => {
   console.log('路由更新时');
-  next();
 });
 // 离开路由前
-onBeforeRouteLeave((to, from, next) => {
-  if (confirm('确定要离开吗？')) {
-    next();
-  } else {
-    next(false);
+onBeforeRouteLeave((to, from) => {
+  if (!confirm('确定要离开吗？')) {
+    return false; // 取消导航
   }
 });
 </script>
@@ -249,12 +244,12 @@ function navigateReplace() {
 ### 5.2 导航守卫中的编程式导航
 
 ```ts
-router.beforeEach((to, from, next) => {
+// 已登录用户访问 /login 时踢回首页
+router.beforeEach((to) => {
   if (to.path === '/login' && isLoggedIn) {
-    next('/');
-  } else {
-    next();
+    return '/';
   }
+  // 不返回即放行
 });
 ```
 
@@ -279,27 +274,26 @@ const routes = [
 ### 6.2 使用路由元信息
 
 ```ts
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   // 检查是否需要认证
   if (to.meta.requiresAuth) {
     // 检查用户是否登录
     const isLoggedIn = localStorage.getItem('token');
     if (!isLoggedIn) {
-      next('/login');
-      return;
+      return '/login';
     }
     // 检查用户角色
     if (to.meta.role) {
       const userRole = localStorage.getItem('role');
       if (userRole !== to.meta.role) {
-        next('/');
-        return;
+        return '/';
       }
     }
   }
-  // 更新页面标题
+});
+// 页面标题更新放 afterEach：afterEach 不控制导航，只做伴随副作用
+router.afterEach((to) => {
   document.title = to.meta.title || '默认标题';
-  next();
 });
 ```
 
@@ -435,7 +429,9 @@ ts
 
 ```vue
 <script setup lang="ts">
-import { watch, useRoute } from 'vue-router';
+// watch 来自 vue，useRoute 来自 vue-router——两个包别混
+import { watch } from 'vue';
+import { useRoute } from 'vue-router';
 const route = useRoute();
 // 监听路由参数变化
 watch(
@@ -475,18 +471,18 @@ const routes = [
 **解决方案**：
 
 ```ts
-router.beforeEach((to, from, next) => {
+// 推荐返回值风格（next 回调是遗留 API）：返回 false 取消，返回路由地址重定向，不返回即放行
+router.beforeEach((to) => {
   const isLoggedIn = localStorage.getItem('token');
   if (to.path === '/login') {
     // 如果已经在登录页面，直接放行
-    next();
-  } else if (to.meta.requiresAuth && !isLoggedIn) {
-    // 如果需要认证但未登录，跳转到登录页面
-    next('/login');
-  } else {
-    // 其他情况放行
-    next();
+    return;
   }
+  if (to.meta.requiresAuth && !isLoggedIn) {
+    // 如果需要认证但未登录，重定向到登录页面
+    return '/login';
+  }
+  // 其他情况放行
 });
 ```
 
@@ -503,7 +499,22 @@ router.beforeEach((to, from, next) => {
 ## 12. 总结
 
 Vue Router 是 Vue3 生态系统中不可或缺的一部分，它提供了强大的路由管理功能，使构建单页应用变得更加简单和高效。通过本教程的学习，你应该已经掌握了 Vue Router 的核心概念和使用方法，可以在实际项目中灵活运用。
-## 路由创建
+
+> 版本提示：Vue Router 5（2026）是过渡版本——对未使用文件路由插件的 Vue Router 4 项目零破坏升级，API 与本文一致；它把文件路由能力并入核心，为下一个大版本铺路。
+
+## 自检
+
+回答不出的回对应小节；守卫题先遮住示例代码自己写，再对照。
+
+1. 守卫的返回值协议是什么？返回 false、返回字符串、不返回各代表什么导航结果？
+2. 动态路由参数变化时组件为什么默认不重新创建？onBeforeRouteUpdate 和 watch(route.params) 各适合什么场景？
+3. 全局守卫、路由独享守卫、组件内守卫的执行顺序是什么？
+4. 为什么页面标题更新应放 afterEach 而不是 beforeEach？
+5. 路由懒加载的 import() 返回什么？哪些路径该懒加载、哪些不该？
+
+## 附录：Vue Router 速查
+
+### 路由创建
 
 **createRouter 创建路由**
 `const <router> = createRouter(<options>);`
@@ -540,7 +551,7 @@ const router = createRouter({
 
 ---
 
-## 路由配置
+### 路由配置
 
 **静态路由**
 ```typescript
@@ -630,7 +641,7 @@ const routes = [
 
 ---
 
-## Router 实例 API
+### Router 实例 API
 
 **router.push 编程式跳转**
 `router.push(<location>);`
@@ -702,7 +713,7 @@ router.getRoutes();
 
 ---
 
-## 组件内 API
+### 组件内 API
 
 **useRouter 获取 router 实例**
 `const <router> = useRouter();`
@@ -767,7 +778,7 @@ console.log(route.matched);     // 匹配的路由记录数组
 
 ---
 
-## 路由元信息
+### 路由元信息
 
 **meta 定义**
 ```typescript
@@ -803,7 +814,7 @@ router.beforeEach((to) => {
 
 ---
 
-## 组件内守卫
+### 组件内守卫
 
 **onBeforeRouteUpdate 路由更新前**
 ```typescript
@@ -828,7 +839,7 @@ onBeforeRouteLeave((to, from) => {
 
 ---
 
-## 路由独享守卫
+### 路由独享守卫
 
 **beforeEnter 路由独享**
 ```typescript
@@ -850,7 +861,7 @@ const routes = [
 
 ---
 
-## 滚动行为
+### 滚动行为
 
 **scrollBehavior 控制滚动**
 ```typescript
@@ -871,7 +882,7 @@ const router = createRouter({
 
 ---
 
-## 完整示例
+### 完整示例
 
 **路由配置 + 守卫**
 ```typescript

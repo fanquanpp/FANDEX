@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL JSON 数据类型详解：JSON 存储、查询函数、JSON_TABLE 将 JSON 转为关系表、虚拟列与索引优化。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/650-ReplicationDelayCauseSolution'
   - 'mysql/670-ShardingStrategy'
@@ -327,6 +327,7 @@ SELECT * FROM users WHERE 'dev' MEMBER OF(profile->'$.tags');
 -- 使用 JSON_OVERLAPS
 SELECT * FROM users WHERE JSON_OVERLAPS(profile->'$.tags', '["dev", "java"]');
 ```
+
 ## JSON 数据类型
 
 **换行写法：创建 JSON 类型列**
@@ -648,3 +649,23 @@ SELECT * FROM users WHERE 'dev' MEMBER OF(profile->'$.tags');
 -- 使用 JSON_OVERLAPS 查询数组交集
 SELECT * FROM users WHERE JSON_OVERLAPS(profile->'$.tags', '["dev", "java"]');
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：JSON 类型与 TEXT 存 JSON 字符串，存储层的本质差异是什么？这个差异带来哪两个能力？
+
+参考答案（先自己答，再对照）：JSON 类型在写入时解析为二进制格式（键与值定位结构化），TEXT 存原始字符串。由此带来：写入即校验（非法 JSON 直接拒绝）与部分更新（修改某个成员不必重写整个文档，二进制结构可原地定位）。TEXT 存 JSON 两者皆无——任何读取都要全量解析，任何写入都无校验。
+
+2. 概念自问：`$` 路径语法里 `->` 与 `->>` 的差别是什么？各自的返回类型与典型坑？
+
+参考答案（先自己答，再对照）：`->` 等价 JSON_EXTRACT，返回 JSON 值（字符串带引号、保留 JSON 表示）；`->>` 等价 JSON_UNQUOTE(JSON_EXTRACT(...))，返回去引号的文本。高频坑：拿 `->` 的结果与字符串比较永远不等（'a' != '"a"'），或把带引号结果直接写回业务——判断准则"和字符串比较、写给人看的场景用 ->>"。
+
+3. 判断题：JSON 列可以像普通列一样建索引。
+
+参考答案（先自己答，再对照）：不能直接建。JSON 列本身只支持整体作为不透明值，不能建 B+ 树索引；索引化的三条路：生成列（把路径物化成普通列再建索引）、多值索引（8.0.17+，对数组内元素建索引，MEMBER OF/JSON_OVERLAPS 可用）、全文索引（ngram 解析文本内容）。"给 JSON 建索引"的准确说法是"给 JSON 的某个路径建索引"。
+
+4. 概念自问：JSON_TABLE 把 JSON 变成关系表，典型用法是什么？它与生成列方案的分工？
+
+参考答案（先自己答，再对照）：JSON_TABLE 在 FROM 子句里把 JSON 文档"展开"成行列表（COLUMNS 定义每列的路径与类型），配合 LATERAL 语义可对数组逐元素生成多行——处理"一个订单 JSON 里有 N 个明细"的展开场景。分工：JSON_TABLE 管"查询时展开"（灵活、按需、无存储代价）；生成列 + 索引管"高频过滤路径固化"（有写入成本、读取快）。结构稳定的高频路径用生成列，临时分析用 JSON_TABLE。

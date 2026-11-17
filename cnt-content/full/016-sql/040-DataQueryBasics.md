@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 以播客平台「回声FM」为练习场，从零学会 SELECT 的基本形状：选列、过滤、排序、分页、去重、别名与 CASE WHEN，并理解 NULL 与逻辑执行顺序这两个贯穿全模块的心智模型。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-17'
 related:
   - 'sql/030-SQLFirstSteps'
   - 'sql/050-FilterCondition'
@@ -402,6 +402,37 @@ ORDER BY CASE category WHEN '科技' THEN 1 WHEN '商业' THEN 2 ELSE 3 END;
 5. **深分页用 OFFSET 还在变慢吗？** 换游标分页。
 
 MySQL 用户补一条：MySQL 的 `<=>` 是 NULL 安全等号（`phone <=> NULL` 等价于 `IS NULL`），标准 SQL 没有它，写可移植 SQL 时别用。
+
+## 9.5 遮码自检
+
+遮住答案，把运营的四个问题重新翻译成 SQL；能说出每一步"数据库先做什么"才算过关。
+
+**第 1 题：`SELECT` 的五个基本子句各管什么？"把播放量最高的 5 个单集拉出来"最少要哪三个？**
+
+<details><summary>参考答案</summary>
+
+FROM 定位表，SELECT 选列（含改名），WHERE 过滤行，ORDER BY 排序，LIMIT 截行数。
+"播放量最高的 5 个单集"需要 FROM episodes + SELECT 列 + ORDER BY play_count DESC +
+LIMIT 5——没有 ORDER BY 的"前 5 名"是不可信的，先排序再截断。
+</details>
+
+**第 2 题："北京听众里有多少人填了手机号"，`COUNT(phone)` 和 `COUNT(*)` 一样吗？差在哪？**
+
+<details><summary>参考答案</summary>
+
+不一样。`COUNT(*)` 数行数（包括 phone 为 NULL 的行），`COUNT(phone)` 只数 phone 非
+NULL 的行——"填了手机号"恰恰是要排除 NULL 的口径，用 `COUNT(phone)` 加
+`WHERE city = '北京'`。COUNT 的三种数法是本篇最重要的分水岭。
+</details>
+
+**第 3 题：`LIMIT 10 OFFSET 20` 取的是第几页、代价随什么增长？深翻页的正确心智是什么？**
+
+<details><summary>参考答案</summary>
+
+取第 3 页（每页 10 行）：跳过前 20 行取 10 行。代价随 OFFSET 线性增长——数据库要
+扫过并丢弃前 OFFSET 行才能开始返回，翻得越深越贵。深分页用"记住上一页末尾的
+排序键"的键集分页替代（改写手法见[查询重写](/sql/440-PerformanceOptimization)）。
+</details>
 
 ## 10. 练习
 

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 异常体系、try-catch-finally、自定义异常与最佳实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/150-OOP'
   - 'java/160-AbstractClassInterface'
@@ -914,3 +914,13 @@ throw new IllegalStateException("Connection is closed");
 // 抛出不支持操作异常
 throw new UnsupportedOperationException();
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. Checked 与 Unchecked 异常的分界线是什么？各举两例。——Checked 继承 Exception 且编译器强制 try/throws（IOException、SQLException），表达可恢复的外部故障；Unchecked 继承 RuntimeException（NullPointerException、IllegalArgumentException），表达程序缺陷。
+2. catch 子句的顺序有什么规则？为什么先子类后父类？——子类异常必须写在父类之前，否则编译器报"已被捕获"；顺序决定第一个匹配的 catch，父类在前会让子类分支不可达。
+3. finally 一定会执行吗？说出两种不执行的例外，以及 finally 里 return 的后果。——System.exit、JVM 崩溃/进程被杀不执行；finally 里 return 会吞掉 try/catch 的返回值与异常，是反模式。
+4. try-with-resources 相比 try-finally 解决了什么？资源类的必要条件？——自动按逆序关闭、异常抑制（suppressed）不丢失主异常；资源类实现 AutoCloseable。
+5. 自定义业务异常继承谁？写出带错误码的最小骨架。——业务可恢复异常继承 RuntimeException（少污染调用方签名）；`class BizException extends RuntimeException { private final String code; public BizException(String code, String msg) { super(msg); this.code = code; } }`。

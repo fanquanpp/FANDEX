@@ -6,7 +6,7 @@ module: 'bigdata'
 category: 后端技术
 difficulty: advanced
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'bigdata/060-FlinkStreamingModel'
   - 'bigdata/090-ClickhouseOlap'
@@ -283,7 +283,7 @@ diff 不为零的渠道，处理分两档：小差异（迟到与浮点范围内
 
 ## 10. 动手实验
 
-综合实验（一整天，可拆四晚）：把本项目从零搭起来。环境：MySQL、Kafka（KRaft 单机）、Flink 2.x、ClickHouse 25.x、Hive 加 Spark（内存紧张可先跳过第 5 步，用 MySQL 直出离线口径做对账）。里程碑验收：M1 采集层跑通，控制台消费 ods_order 能看到 JSON 变更；M2 实时层跑通，往 MySQL 插一笔已支付订单，一分钟内 ClickHouse 明细表出现对应聚合行；M3 大屏三块内容随数据变化；M4 人为制造一条差异（直接改 ClickHouse 一行），跑通对账查询并写出演示重刷的操作步骤。每完成一个里程碑，把当时的卡点与解法记下来——这份记录就是答辩素材。
+综合实验（一整天，可拆四晚）：把本项目从零搭起来。环境：MySQL、Kafka（KRaft 单机）、Flink 2.x、ClickHouse 26.x、Hive 加 Spark（内存紧张可先跳过第 5 步，用 MySQL 直出离线口径做对账）。里程碑验收：M1 采集层跑通，控制台消费 ods_order 能看到 JSON 变更；M2 实时层跑通，往 MySQL 插一笔已支付订单，一分钟内 ClickHouse 明细表出现对应聚合行；M3 大屏三块内容随数据变化；M4 人为制造一条差异（直接改 ClickHouse 一行），跑通对账查询并写出演示重刷的操作步骤。每完成一个里程碑，把当时的卡点与解法记下来——这份记录就是答辩素材。
 
 ## 11. 自检清单
 

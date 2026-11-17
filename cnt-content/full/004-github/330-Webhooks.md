@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub Webhooks详解：按事件→Webhook→Payload→响应完整流程讲解订阅、投递、签名验证与服务器实现。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/320-RESTGraphQLAPI'
 prerequisites:
@@ -312,6 +312,35 @@ cloudflared tunnel --url http://localhost:3000
 | 订阅了全部事件导致刷屏 | 大量无关投递 | 事件选择过宽（`*`） | 改为只勾选需要的具体事件 |
 | 本地调试收不到 | 投递全部超时 | GitHub 无法访问 localhost | 用内网穿透暴露公网 URL |
 | 请求被伪造 | 恶意 POST 触发了部署 | 未设置 Secret 或未验证签名 | 设置强随机 Secret；验证 X-Hub-Signature-256 后再处理 |
+
+## 8. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考答案自己写，写完再对照。
+
+**任务一**：创建一个 Webhook 要填五个核心配置项，逐项说出它对应「订阅单」上的什么信息，以及两条「必须」建议（Content type 选什么、Secret 怎么定）。
+
+**任务二**：默写签名验证的算法链：GitHub 端用什么算法、对什么内容签名、放在哪个请求头；你服务端比对时最容易踩的两个坑是什么？
+
+**任务三**：你的处理函数先写文件再返回 2xx，但 GitHub 因为超时没收到响应会重试——这会导致什么问题？服务器该怎么设计？
+
+**参考答案**（先自己写完再看）：
+
+```text
+任务一：Payload URL（收件地址）、Content type（编码格式，选
+application/json）、Secret（暗号，随机长字符串至少 32 位）、
+Events（订哪些事件，只勾需要的）、Active（启用开关）。
+
+任务二：GitHub 端：签名 = HMAC-SHA256(secret, 原始请求体)，
+放入 X-Hub-Signature-256 头（值以 sha256= 开头）。
+两个坑：用 JSON 反序列化后重新序列化的 body 算签名（必须用
+原始字节流）；用 == 比较签名（要用恒定时间比较防时序攻击）。
+
+任务三：同一事件会投递多次，非幂等的处理会重复扣库存/重复发通知。
+服务器必须把处理设计成幂等（按 delivery id 或事件主键去重），
+并「先快返回 2xx、异步处理业务」——响应慢是重试的头号原因。
+```
+
+要点自查：Webhook 与轮询的本质区别是方向（GitHub 推给你）；验证签名的意义是确认「这扇门铃真的来自 GitHub」；重试机制意味着消费者必须幂等；调试时看 Settings → Webhooks 的 Recent Deliveries 可重发投递。
 
 ## 9. 一句话记忆
 

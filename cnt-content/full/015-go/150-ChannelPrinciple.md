@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Channel底层实现：hchan结构、send/recv状态机、select实现、close语义与CSP模型
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/250-SlicePrinciple'
   - 'go/260-MapPrinciple'
@@ -1711,3 +1711,21 @@ func main() {
 > **文档版本**：v2.0 (2026-06-14)
 > **审阅状态**：金标准教学版
 > **适用 Go 版本**：1.0 - 1.22+
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（发送与接收的完整语义表）**：不查资料，写出"发送/接收/关闭"在 nil、有缓冲未满、有缓冲已满、无缓冲、已关闭五种 channel 上的行为表。写完与附录 B 速查表对照。
+
+参考答案（速记版）：nil——发送/接收都永久阻塞；无缓冲——发送与接收必须双方就绪；有缓冲未满——发送立即成功，接收取缓冲；有缓冲已满——发送阻塞，接收立即；已关闭——接收立即返回剩余值，取完后返回零值+false，发送 panic，再 close panic。口诀：nil 卡死，closed 收不炸（收）发就炸（发）。
+
+**题 2（hchan 的两把锁与阻塞队列）**：一个 goroutine 向无缓冲 channel 发送、另一个接收。从 hchan 结构（buf、sendq、recvq、lock）的角度，描述这次交接发生了什么。
+
+参考答案：发送方先 `lock` 该 channel 的互斥锁，发现自己无缓冲、recvq 里有等待的接收者（或反之把自己挂进 sendq），于是**直接把数据从发送方栈拷贝到接收方栈**（无缓冲不走 buf），唤醒接收 goroutine，解锁。要点：无缓冲 channel 的"同步交接"是两次拷贝绕过缓冲、goroutine 直接换手，这就是它比有缓冲慢、但语义最强的原因；所有操作都要抢同一把 lock，高并发单 channel 是瓶颈。
+
+**题 3（select 的随机性来源）**：三个 case 同时就绪时 select 如何选择？这个设计防止了什么 bug？
+
+参考答案：对就绪 case 做**均匀随机**选择（实现上先锁全部 channel、洗牌 case 顺序再挑）。若按源码顺序轮询，"总是优先读 A"会造成 A 高优先、B 饿死；随机化把选择权还给调度，写代码不能依赖顺序——需要优先级就分两层 select 或显式逻辑。

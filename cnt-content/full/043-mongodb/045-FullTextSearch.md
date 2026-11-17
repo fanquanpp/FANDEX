@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: text 索引的建立与限制、$text 查询与相关性评分、与正则查询的性能取舍、Atlas Search 边界
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -16,7 +16,7 @@ prerequisites: []
 - 知识类别：MongoDB 全文检索——text 索引、$text 查询运算符、相关性评分排序，以及与正则/前缀查询的性能对比。
 - 解决什么问题："在文章标题和正文里搜关键词"这类需求——正则查询只能全表扫描，text 索引给它配上倒排索引；还要让结果按"相关程度"而不是插入顺序排。
 - 什么时候用到：博客文章搜索、商品名模糊搜、工单关键词检索；以及评估"要不要上专门的搜索引擎"。
-- 衔接：《索引与查询性能》第 5 节的特殊索引（partial/TTL）与本篇同属特殊索引家族；更大规模/更复杂的搜索需求走 Atlas Search（本篇末节带过）。
+- 衔接：《索引与查询性能》第 5 节的特殊索引（partial/TTL）与本篇同属特殊索引家族；更大规模/更复杂的搜索需求走 Atlas Search 或自管 Search（本篇第 5 节带过）。
 
 ## 前置知识
 
@@ -96,9 +96,13 @@ text 索引的默认行为与两条硬限制，是踩坑重灾区：
 
 **讲解：** 判断链是"查询形态 -> 索引能力"：锚定前缀用普通索引（免费且快），词级搜索用 text 索引，超出两者（语义、拼音、纠错）就换工具。把 text 索引当万能模糊搜索是它最常被错用的方式——它搜的是"词"，不是"字符串片段"。
 
-## 5. Atlas Search：能力边界一段带过
+## 5. Atlas Search 与自管环境
 
-Atlas Search（MongoDB Atlas 平台内置，基于 Apache Lucene）是 text 索引之上的完整搜索引擎：自定义分词器（含中文/ICU）、模糊匹配（容错拼写）、高亮、聚合分面、同义词。它与 text 索引不是竞争关系而是替代关系——**当 text 索引的分词与排序能力成为瓶颈时再上**；自建 MongoDB（非 Atlas）对应方案是接入 Elasticsearch/OpenSearch 这类外部引擎。选型口径：数据 10 万条以内、词级检索、英文为主——text 索引够用；中文搜索、纠错、自动补全——直接上专门引擎，不要在 text 索引上硬凑。
+Atlas Search（Atlas 平台内置）是 text 索引之上的完整搜索引擎：自定义分词器（含中文/ICU）、模糊匹配（容错拼写）、高亮、聚合分面、同义词。它与 text 索引不是竞争关系而是替代关系——**当 text 索引的分词与排序能力成为瓶颈时再上**。
+
+自管部署同样有官方方案：**MongoDB 8.2 起，Search 与 Vector Search 以公共预览形式进入社区版与企业进阶版**，由一个独立的 `mongot` 进程（Apache Lucene 内核）与 `mongod` 并肩运行——`mongot` 通过变更流从 `mongod` 同步数据并维护搜索索引，客户端照旧只连 `mongod`，`$search`、`$searchMeta`、`$vectorSearch` 等阶段语法与 Atlas 一致。历史惯用的替代仍是接入 Elasticsearch/OpenSearch 这类外部引擎（生态成熟），代价是数据同步链路与两套权限体系。
+
+选型口径：数据 10 万条以内、词级检索、英文为主——text 索引够用；中文搜索、纠错、自动补全——在 Atlas Search、自管 mongot、外部引擎三者中按部署形态选，不要在 text 索引上硬凑。
 
 ## 6. 三个真实场景
 
@@ -152,9 +156,28 @@ db.search_lab.find({ $text: { $search: "bluetooth" } }).explain("executionStats"
 要点：a) A 组成立的前提是索引存在且正则锚定、大小写敏感——加 i 或去掉 ^ 都会退回 COLLSCAN；b) 三种查询形态对应三种索引能力，选型先看查询形态；c) explain 的 totalKeysExamined/totalDocsExamined 比耗时更本质（不受机器状态影响），报告里两个都写。
 </details>
 
-## 8. 一句话记住
+## 8. 练习与自检
 
-> 锚定前缀用普通索引，词级搜索用 text 索引（每集合一个、text 键在复合索引最后），相关性排序靠 $meta: "textScore"；中文字义搜索、纠错补全这类需求 text 索引撑不住，那是 Atlas Search/外部引擎的活。
+遮码自检：先遮住答案栏，自己写出答案或命令，再展开对照。
+
+1. 正则 `/mongo/i` 为什么必然 COLLSCAN？改成什么形态能走普通索引？
+2. text 索引的两条硬限制是什么？想同时搜标题与正文、又要按分类过滤，索引怎么建？
+3. `$text: { $search: "mongo 索引" }` 的默认语义是 AND 还是 OR？怎么表达"必须含'复合索引'这个短语且不含 redis"？
+4. 相关性分数从哪来、怎么用、不能怎么用？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 它前缀不锚定（不以 `^` 开头）且大小写不敏感，索引前缀用不上，只能全集合扫描；改成锚定且大小写敏感的 `/^mongo/` 就能走普通 B 树索引。
+2. 一个集合只能有一个 text 索引；复合索引里 text 键必须放在非 text 键之后。建 `{ category: 1, title: "text", body: "text" }`：先按 category 等值过滤，再在组内对标题与正文全文搜——两个 text 键合并在同一个索引里。
+3. 多词默认是 OR（含任一词即命中）。短语用转义引号包起来、排除词前加 `-`：`$text: { $search: "\"复合索引\" -redis" }`。
+4. 分数由 `$meta: "textScore"` 在带 $text 的查询里附加，综合命中词数与词的稀有度等因子，是无界的经验值；用途是显式 `sort` 按相关性排序或展示；不能拿去做业务阈值判断——两次查询的分数不可跨语境比较。
+
+</details>
+
+## 9. 一句话记住
+
+> 锚定前缀用普通索引，词级搜索用 text 索引（每集合一个、text 键在复合索引最后），相关性排序靠 $meta: "textScore"；中文字义搜索、纠错补全这类需求 text 索引撑不住，那是 Atlas Search（8.2 起自管 mongot 同源）、外部引擎的活。
 
 ## 参考与致谢
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript 元编程双壁 Proxy 与 Reflect 的形式化语义、陷阱（Trap）体系、Vue3 响应式实现、Immer/MobX/Solid 对比、企业级验证/缓存/日志/RPC 代理实践，对标 MIT 6.831 与 CMU 17-445 软件工程课程水准。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'javascript/490-DebounceThrottle'
   - 'javascript/090-ArrayHigherOrderMethod'
@@ -2861,12 +2861,32 @@ state.user.address.city = 'Shanghai';  // user.address.city: "Beijing" -> "Shang
 ### 11.7 扩展主题
 
 - **Symbol 与私有字段**：ES2022 的 `#field` 私有字段是 Proxy 之外的强私有方案，理解其与 Proxy 私有代理的差异。
-- **Decorator**：ES2024 装饰器提案与 Proxy 在元编程上的协同关系。
+- **Decorator**：Stage 2.7 装饰器提案与 Proxy 在元编程上的协同关系。
 - **WebAssembly 与 Proxy**：WASM 模块的 JS 接口如何通过 Proxy 实现懒加载。
 - **Async Iterator Proxy**：通过 Proxy 拦截 `Symbol.asyncIterator` 实现可观察的异步流。
 - **Worker 通信层**：通过 Proxy 将 `postMessage` 透明化为本地方法调用。
 
 ---
+
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 手写一个「属性读取日志」代理：读取任何属性时先打印属性名再返回值——`get` 陷阱的返回值为什么必须写 `return Reflect.get(target, prop, receiver)` 而不能只写 `return target[prop]`？
+2. 说出 Proxy 的三条不变式（invariant）约束之一，并举一个「违反它会让引擎直接抛 TypeError」的例子；
+3. `Proxy.revocable` 的典型使用场景是什么？撤销后再访问会发生什么；
+4. 代理一个数组并拦截 `length` 写入：为什么「改 length 会连带删元素」这类行为需要把操作转发给 Reflect 才能不破坏？
+5. Reflect 一共约多少个静态方法、与 Proxy 陷阱是什么对应关系？写一个「用 Reflect 重写 defineProperty 老写法」的例子。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：直接 `target[prop]` 丢了两件事——receiver 绑定（getter 里的 `this` 会指向错误对象）与默认行为的一致性（原型查找、访问器触发）；`Reflect.get` 与引擎默认行为完全等价，只叠加你的日志副作用；
+- 第 2 问：例如「目标属性是 `Object.freeze` 冻结的不可写属性时，`set` 陷阱返回 true（谎报成功）会抛 TypeError」；或「get 陷阱对不可配置、不可写的访问器属性返回与 getter 不一致的值」——引擎用不变式保证代理不伪造目标状态；
+- 第 3 问：把「可被外部收回的代理」交给不可信代码（插件、调试器、权限边界），`revoke()` 之后再访问任何属性都抛 TypeError——能力吊销；
+- 第 4 问：length 与下标存在引擎内部联动（改 length 触发元素删除、改下标可能更新 length），转发给 `Reflect.set` 让引擎自己维护这套内部一致性，手写逻辑必然漏；
+- 第 5 问：Reflect 有与 Proxy 陷阱一一对应的静态方法（get/set/has/deleteProperty/defineProperty/...），是「默认行为 API 化」；`Reflect.defineProperty(obj, 'x', { value: 1 })` 等价 `Object.defineProperty(obj, 'x', { value: 1 })`，但返回布尔值而不是抛错，更适合与陷阱的返回值约定配合。
+</details>
 
 ## 附录 A：术语表
 

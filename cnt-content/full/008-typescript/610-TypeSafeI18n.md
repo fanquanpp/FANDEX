@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 构建类型安全的i18n系统
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/600-TypeSafeFormValidation'
   - 'typescript/620-TypeSafeRoute'
@@ -2020,3 +2020,11 @@ export function useI18n() {
 | 映射类型 | Mapped Type | 遍历键集合构造的类型 |
 | 类型推断 | Type Inference | 编译器自动推断类型 |
 | 类型守卫 | Type Guard | 缩小类型范围的运行时检查 |
+
+## 自检
+
+- i18n 的「键拼错」事故，TypeScript 用哪三步消灭：键联合从哪来（`as const` 语言包）、`t(key: keyof typeof ...)` 约束、缺译检查？
+- 语言包嵌套时，扁平化键联合（`'nav.home' | 'nav.about'`）怎么用模板字面量类型递归生成？遮住示例自己写一遍。
+- 插值参数怎么类型化（`{ name: string }` 对应 `'hello, {name}'`）？`infer` 在哪一步提取占位符？
+- 缺失翻译在编译期暴露的机制是什么？两种语言的结构必须满足什么关系（Partial 还是严格对齐）？
+- 运行时兜底方案（fallback 链、键校验函数）与编译期约束各挡哪半边？

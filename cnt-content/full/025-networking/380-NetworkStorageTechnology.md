@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 网络存储：DAS/NAS/SAN 架构对比、iSCSI/FC 与 NFS/SMB 实操、Ceph 分布式存储、RAID 与数据保护策略。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/180-NetworkDesignPlanning'
   - 'networking/330-NetworkNamespaceVirtualBridge'
@@ -188,6 +188,21 @@ $$PG_{num} \approx \frac{OSD 数 \times 100}{副本数}\ \text{并取 2 的幂�
   备份**（存储整体故障时快照一起没）；
 - 备份 3-2-1 原则：3 份副本、2 种介质、1 份异地；现代增强版 3-2-1-1-0 再加 1 份离线（防勒
   索）与 0 错误（定期恢复演练验证）。
+
+## 教学自检
+
+按遮码自检法：遮住上文命令与表格，先自己推演，再对照。
+
+- 「文件系统在谁那一侧」如何区分 DAS/SAN/NAS？对象存储为什么没有文件系统语义却最适合海量
+  备份归档？
+- iSCSI 的 discovery -> login -> lsblk 三步各验证了什么？ACL 限定 IQN 白名单防的是什么？
+- FC 与 iSCSI 的选型分界线是什么？FCoE 为什么退场？
+- `no_root_squash` 的安全风险是什么？生产默认值应该是什么？
+- NFSv3 与 v4 在端口模型上的差别是什么？（辅助端口 vs 单一 2049）这对防火墙策略意味着什么？
+- Ceph 的 CRUSH 为什么「数据放哪是算出来的」？MON 奇数个的原因是什么？
+- PG 经验公式里「除以副本数、取 2 的幂」各是为什么？pg-autoscaler 托管了什么？
+- RAID6 相比 RAID5 多换来了什么？「20TB 盘重建数天」为什么让 RAID5 退场？
+- 快照为什么不能替代备份？3-2-1-1-0 里的离线副本与 0 错误分别防什么？
 
 ## 6. 小结
 

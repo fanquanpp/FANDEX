@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: .NET GC 分代回收机制深度解析：Generation 0/1/2、SOH/LOH/POH、标记清除与压缩、固定对象、GCHandle、Server GC vs Workstation GC、GC 通知与调优的全链路原理。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/310-AspNetCoreMiddlewarePipeline'
   - 'csharp/270-DILifecycle'
@@ -86,7 +86,7 @@ GC.WaitForPendingFinalizers();      // 等待终结器执行
 | .NET 5 | 2020 | 区域化 GC（DATAS）实验性引入 |
 | .NET 6 | 2021 | 动态适应于内存限制（`GCHeapHardLimit`） |
 | .NET 7 | 2022 | `POH`（Pinned Object Heap）正式稳定 |
-| .NET 8 | 2023 | DATAS（Dynamic Adaptive To Application Sizes）正式启用 |
+| .NET 8 | 2023 | DATAS（Dynamic Adaptive To Application Sizes）正式引入（opt-in，.NET 9 起默认） |
 | .NET 9 | 2024 | GC 暂停时间优化，`GC.CollectAsync` 实验性 API |
 
 ### 1.7 学术背景与理论渊源
@@ -1863,8 +1863,8 @@ public sealed class GcMonitor : IDisposable
 - [ ] 服务端应用启用 Server GC。
 - [ ] 启用 Background GC（默认）。
 - [ ] 容器环境设置 `GCHeapHardLimit`。
-- [ ] .NET 8+ 启用 LOH 压缩模式。
-- [ ] .NET 8+ 启用 DATAS（动态适应）。
+- [ ] 大块内存场景考虑 LOH 压缩（`GCSettings.LargeObjectHeapCompactionMode = CompactOnce`，默认不压缩）。
+- [ ] 需要省内存时启用 DATAS（.NET 8 opt-in，.NET 9 起 Server GC 默认）。
 - [ ] 长连接服务启用 `RetainVM`。
 
 ### D.5 监控
@@ -1912,4 +1912,28 @@ $$
 $$
 
 **推论**：短命对象（局部变量）保持在 Gen0，频繁分配不会引发 Full GC。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己画代际图或写代码，再对照。本篇自检核心是"对象的一生"与"压力决定一切"。
+
+**题 1（分代假设）**：分代 GC 的立论假设是什么？Gen0 回收后存活对象去哪？"中老年对象为什么活得久"对应哪个假设的名字？
+
+参考答案：假设是"大多数对象朝生夕死"（弱分代假说），且老对象往往被新对象引用（强分代假说，因此老代不单独回收时用卡片表追踪跨代引用）。Gen0 存活者晋升到 Gen1，Gen1 存活者晋升到 Gen2——晋升本身在验证假设：反复活下来的对象大概率要活很久，早点升级到低频回收区。
+
+**题 2（根与存活）**：一个对象怎么才算"存活"？列出至少三种根。`static List<Order> History` 无限增长会造成什么？
+
+参考答案：从 GC 根出发引用可达即存活。根：线程栈上的局部变量/参数（活跃帧）、静态字段、GC Handle（含固定句柄）、终结队列（f-reachable 队列中待终结的对象）。`static List` 是永远可达的根，List 里所有订单及其引用图永远不回收——逻辑上的"缓存"变成物理上的内存泄漏（托管语言里最常见的泄漏形态）。
+
+**题 3（LOH 与代际）**：多大算大对象？大对象直接进哪？为什么"一次分配 90KB 的缓冲"比"两次 45KB"更容易造成碎片问题？
+
+参考答案：阈值 85,000 字节（约 83KB），超过直接分配在 LOH（LOH 默认不压缩；需要时显式设 `GCSettings.LargeObjectHeapCompactionMode = CompactOnce`，或由内存不足诱导的完整阻塞 GC 触发）。90KB 一次性占大块，反复分配/释放不同尺寸会在 LOH 留下空洞（碎片），导致"总空闲够用却找不到连续空间"的 OOM；45KB 走 SOH 分代管理，由压缩复制整理，无此问题。所以缓冲策略是：小块走池（ArrayPool），大块复用同一实例。
+
+**题 4（减少压力的手段）**：热路径方法每秒调用 1 万次，每次拼一个 CSV 行字符串。写出零/低分配的两条改造路径。
+
+参考答案：路一：`string.Create` 或 `Span<char>` 栈缓冲——`Span<char> buf = len <= 256 ? stackalloc char[256] : new char[len]`，用 `Utf8/Format` 系列 API 直接写进缓冲再 `ToString`（一次分配）或直接输出到流（零分配）；路二：`StringBuilder` + `StringBuilderPool`/字段复用（注意 StringBuilder 自身会扩容分配，复用才有意义）。两条路的共同思想：把"每调用一次分配一个字符串"变成"分配次数与调用次数解耦"。
+
+**题 5（GC 模式选型）**：低延迟交易服务、普通 Web API、Unity 手机游戏——三者各选什么 GC 配置？说出 DATAS 的适用面。
+
+参考答案：交易服务：Workstation/Server GC + 低延迟模式（`GCSettings.LatencyMode = SustainedLowLatency`）甚至无 GC 设计（对象池 + 全复用），杜绝 Full GC 停顿；普通 Web API：Server GC（ASP.NET Core 模板自 .NET Core 3.0 起默认）+ DATAS（按内存收缩堆，容器与小流量省内存）即可；Unity 手机游戏：Boehm GC（引擎固定，非分代），策略完全不同——靠零分配编程纪律而不是调参数。DATAS（.NET 8 引入时需显式开启，.NET 9 起默认启用）的适用面：内存敏感（容器、多实例同机），代价是堆收缩可能略增 CPU，吞吐极致场景可关。
 

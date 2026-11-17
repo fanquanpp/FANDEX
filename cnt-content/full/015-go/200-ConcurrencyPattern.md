@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go并发模式详解：工作池、扇出扇入、管道。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/160-GoroutineChannelPrinciple'
   - 'go/170-GMPModel'
@@ -1423,6 +1423,8 @@ func FanInGeneric[T any](ctx context.Context, channels ...<-chan T) <-chan T {
 | 学习成本 | 低 | 极低 |
 | 标准库 | 第三方(golang.org/x/sync) | 标准库 |
 
+补一句 1.25 的变化：`sync.WaitGroup.Go(f)` 已入标准库，`Add(1)`、`go f()`、`Done()` 三步并成一个 `wg.Go(f)`——"忘记 Done"与"Add 与 go 之间的计数窗口"两类错误从写法上被消掉。它不提供错误传播与取消，所以上表中 errgroup 的位置没有被动摇；影响的是"纯等待"场景下 WaitGroup 的样板代码。新项目里 `wg.Add` + `go` + `wg.Done` 的组合优先改用 `wg.Go`。
+
 ### 4.3 channel-based semaphore vs golang.org/x/sync/semaphore
 
 | 维度 | channel-based | x/sync/semaphore |
@@ -2304,3 +2306,82 @@ func (p *DynamicWorkerPool) Shutdown() {
 10. **演进趋势**:Go 1.22 循环变量修复、Go 1.21 `context.WithoutCancel` 等持续优化并发体验。
 
 掌握这些模式后,读者应能在生产环境中设计高吞吐、低延迟、可观测的并发系统,并避免常见的 goroutine 泄漏、数据竞争、资源耗尽等陷阱。后续可深入学习 `singleflight`、`bounded parallelism`、`scatter-gather` 等进阶模式,以及 OpenTelemetry 在并发系统中的集成。
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（fan-in 的收尾责任）**：写 `Merge(ctx, ins ...<-chan int) <-chan int`：把多个输入合并到一个输出，任一输入关闭后要把它从等待集合里摘掉，全部关闭或 ctx 取消后关闭输出。遮住后自己写，重点检查"谁负责 close"。
+
+参考实现：
+
+```go
+func Merge(ctx context.Context, ins ...<-chan int) <-chan int {
+    out := make(chan int)
+    var wg sync.WaitGroup
+    wg.Add(len(ins))
+    for _, in := range ins {
+        go func(in <-chan int) {
+            defer wg.Done()
+            for v := range in { // range 自动在输入关闭时退出
+                select {
+                case out <- v:
+                case <-ctx.Done():
+                    return
+                }
+            }
+        }(in)
+    }
+    go func() { // 唯一写关闭权：等所有生产者结束
+        wg.Wait()
+        close(out)
+    }()
+    return out
+}
+```
+
+要点：close 的所有权规则——**只由发送方关闭，且只关一次**；多个生产者时用 WaitGroup 收敛成一个"收尾 goroutine"持有关闭权。接收方永远不 close，否则生产者会 panic。
+
+**题 2（限速并发的两把刀）**：要"最多 3 个并发下载"，分别用带缓冲 channel 信号量与 errgroup.SetLimit 写出骨架，并说出两者在"获取-释放配对"上的区别。
+
+参考实现：
+
+```go
+// 信号量版：acquire 与 release 必须成对，漏一个就永久少一个名额
+sem := make(chan struct{}, 3)
+for _, u := range urls {
+    sem <- struct{}{} // 获取（阻塞直到有空位）
+    go func(u string) {
+        defer func() { <-sem }() // 释放
+        download(u)
+    }(u)
+}
+
+// errgroup 版：Go 本身阻塞到有空位，无需手动释放
+g, _ := errgroup.WithContext(ctx)
+g.SetLimit(3)
+for _, u := range urls {
+    g.Go(func() error { return download(u) })
+}
+```
+
+要点：信号量把并发数变成 channel 容量，纪律靠 `defer` 配对；errgroup 把计数收进框架，出错面更小但少一层"提前 acquire"的控制。两者都依赖 1.22 起的循环变量安全语义（goroutine 直接用循环变量 u）。
+
+**题 3（singleflight 的适用点）**：热点 key 缓存失效瞬间有一万个重复请求打到数据库。写出 singleflight 的接入位置，并说明它与"加锁"的区别。
+
+参考实现：
+
+```go
+var g singleflight.Group
+
+func GetUser(ctx context.Context, id string) (*User, error) {
+    v, err, _ := g.Do(id, func() (any, error) {
+        return loadUserFromDB(ctx, id) // 同 key 并发只有一个真的去查库
+    })
+    return v.(*User), err
+}
+```
+
+要点：singleflight 按 key 合并**相同请求**（一个执行、其余等结果共享），锁是串行化**所有进入者**。它治"惊群"，不治"慢"——同一 key 的调用者拿到同一个错误也一样共享，所以缓存穿透场景它总是和短 TTL 的负缓存一起用。

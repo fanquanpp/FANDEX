@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'OpenSSL 证书命令：生成私钥与 CSR、自签与 CA 签发、证书链查看与验证、PEM/DER/PKCS12 格式转换'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/080-DigitalCertificate'
   - 'cybersecurity/110-OpenSSLEncrypt'
@@ -15,6 +15,10 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+- **解决什么问题**：[数字证书](/cybersecurity/080-DigitalCertificate) 讲了概念，本篇是它的命令面——从生成私钥、写 CSR、自签或 CA 签发，到格式转换与链验证的完整操作闭环。所有命令围绕一个核心动作：把「一对密钥」与「一个身份」绑定成可分发的证书文件。
+- **容易怎么错**：混淆 PEM/DER/PKCS12 三种容器（报错多半是格式接错）；生成 CSR 时漏了 SAN（现代浏览器只认 SAN，CN 已不作主机名匹配）；把自签证书直接上生产；私钥生成后不加密、不控权限。
+- **学完能做什么**：不查资料跑通「私钥 → CSR → 签发 → 查看 → 验证 → 转换」全流程，并能从报错信息反推是哪一步格式错了。
 
 ## 生成私钥
 
@@ -341,3 +345,11 @@ for f in *.pem; do echo "$f: $(openssl x509 -enddate -noout -in $f)"; done
 # 从远程服务器下载证书
 echo | openssl s_client -connect example.com:443 2>/dev/null | openssl x509 -out cert.pem
 ```
+
+## 自检
+
+- 遮住正文命令，自己写出「生成 2048 位私钥 → 生成 CSR（非交互带主题） → 自签一年 → 查看内容」四步，再逐条对照。
+- 现代证书必须带 SAN：说出 CN 与 SAN 的关系，以及为什么只有 CN 的证书会被主流浏览器拒绝（CN 匹配早已不作为校验依据）。
+- PEM 与 DER 互转命令里，哪个参数管「读入格式」、哪个管「输出格式」？（`-inform` / `-outform`。）
+- 一键检查「证书与私钥是否配对」的思路是什么？（比对 modulus 摘要是否一致，见 080 的匹配验证节。）
+- `genrsa` 与 `ecparam` 各生成什么算法的密钥？生产选 RSA-2048 还是 P-256 的判断依据（兼容性 vs 体积与性能）？

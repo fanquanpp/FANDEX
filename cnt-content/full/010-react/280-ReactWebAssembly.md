@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React 集成 WebAssembly 实战：WASM 适用边界、instantiateStreaming 加载与 React 生命周期、懒加载与模块缓存、线性内存与 JS 数据传递、Rust 工具链与常见陷阱。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/260-ReactSSR'
   - 'react/270-ReactDesignPattern'
@@ -147,6 +147,19 @@ WASM 拥有自己的一块**线性内存**（`WebAssembly.Memory`），JS 与它
 - 数据传递是性能核心：数字零拷贝直传，批量粗粒度接口，避免高频小调用。
 - `instantiateStreaming` 依赖正确的 `application/wasm` MIME；编译产物可缓存（全局 Module 单例 + HTTP 长缓存）。
 - 工具链选型按源码语言定：Rust 用 wasm-pack，TS 系用 AssemblyScript，存量 C/C++ 用 Emscripten。
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：WASM 模块能直接操作 DOM 或发请求吗？JS 与 WASM 各自负责什么？
+   答案：不能——WASM 只能做计算、操作自己的线性内存，一切与页面打交道的事（DOM、网络、事件）都由 JS 桥接完成。分工：WASM 管重计算，JS 管所有 I/O 与页面交互。
+2. **预测题**：`instantiateStreaming(fetch('/wasm/math.wasm'))` 一直走慢路径或直接失败，最常见的服务端原因是什么？
+   答案：服务器没有以 `application/wasm` MIME 返回 .wasm 文件（Nginx/CDN 默认类型没配），流式编译直接失败回退到整包下载再编译的慢路径。
+3. **修 Bug 题**：一个高频交互每秒调用 WASM 导出函数上千次，页面反而比纯 JS 更卡，问题出在哪层？怎么改？
+   答案：卡在 JS/WASM 边界的高频小调用上（参数封送、内存校验开销）。改法是批量粗粒度接口——一次调用传一大块数据（数字零拷贝直传共享线性内存），让边界跨越次数降几个数量级。
+4. **规则题**：为什么「给 WASM 传函数」进 React 组件时要用 Effect 或懒加载接到生命周期，而不能在渲染体里直接 await？
+   答案：渲染必须是同步且纯的——await 会把渲染挂起；实例化是异步副作用，应放在 Effect/懒加载里，加载态与错误态用 state 兜底，Module 编译产物全局缓存避免重复编译（判据永远是先测量：CPU 密集且 JS 确实慢才值得上）。
 
 ## 速查
 

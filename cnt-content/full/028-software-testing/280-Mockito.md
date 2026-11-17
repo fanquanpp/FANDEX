@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: Mockito 实战：mock/when/verify 三件套、注解与扩展、参数匹配器与 ArgumentCaptor、spy 与 doReturn 家族、静态方法模拟的边界。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'software-testing/190-TestDouble'
   - 'software-testing/110-JUnit5'
@@ -33,7 +33,7 @@ Mockito 是 Java 生态使用最广的 Mock 框架，与 JUnit 配合完成「�
 <dependency>
     <groupId>org.mockito</groupId>
     <artifactId>mockito-junit-jupiter</artifactId>
-    <version>5.14.2</version>
+    <version>5.24.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -198,6 +198,66 @@ try (MockedStatic<Instant> instant = mockStatic(Instant.class)) {
   替身也更便宜。
 - **忘记 verifyNoMoreInteractions 的滥用**：全量断言「没有其他任何交互」
   让每次新增正常调用都要改老测试，慎用。
+
+## 教学自检
+
+以下题目按遮码自检法设计：先遮住参考答案自己写，再对照。
+
+### 题 1：三件套分工（遮码题）
+
+任务：`OrderService.checkout` 依赖 `PaymentGateway`（扣款）与 `MailSender`
+（通知）。写两条测试：(a) 网关返回 declined 时订单状态为
+`PAYMENT_FAILED`；(b) 支付成功后恰好给 `alice@example.com` 发一封邮件。
+
+参考答案：
+
+```java
+// (a) Stub：造状态
+when(gateway.charge(42L, 100)).thenReturn(ChargeResult.declined());
+assertEquals("PAYMENT_FAILED", service.checkout(42L, 100).status());
+
+// (b) Mock：验证交互
+verify(mail, times(1)).send(eq("alice@example.com"), anyString());
+```
+
+自检：(a) 验证的是「状态」（被测对象的返回值），(b) 验证的是「交互」
+（副作用有没有发生）。行为验证只留给发不出第二次的关键副作用——全部
+用 verify 会把测试焊死在实现细节上。
+
+### 题 2：桩不生效（找错题）
+
+任务：打了 `when(gateway.charge(42L, 100)).thenReturn(ok)` 的桩，实际调用
+`charge(42L, 200)` 时返回了 null。为什么？怎么排查？
+
+参考答案：`when().thenReturn()` 只对匹配的参数生效，参数不同走默认值
+（对象 null、数值 0）。排查思路：先 `anyLong(), anyInt()` 全放行确认是
+参数问题，再逐步收紧到精确值。「莫名其妙的 null」第一嫌疑就是桩参数
+没对上。
+
+### 题 3：spy 打桩（遮码题）
+
+任务：`spy(realList)` 后想把 `size()` 接管为返回 100。用哪种写法才能
+避免真实 `add` 被误执行？写出两种写法并说明差异。
+
+参考答案：
+
+```java
+doReturn(100).when(spyList).size();   // 正确：size() 不会先真执行
+when(spyList.size()).thenReturn(100); // 危险：when() 求值时真实 size() 先跑一次
+```
+
+对 spy 一律用 `doReturn().when()` 家族；`when().thenReturn()` 留给普通
+mock。口诀：mock 用 when，spy 用 doReturn。
+
+### 题 4：静态 mock 的边界（概念题）
+
+任务：`Instant.now()` 散落在被测代码里，测试需要固定时间。怎么处理？
+为什么说「到处 StaticUtil.doXxx()」时不应继续加大静态 mock？
+
+参考答案：`mockStatic(Instant.class)` 配 try-with-resources 临时固定「现在」，
+块结束自动还原。静态 mock 是改造遗留代码的权宜之计：业务代码大面积依赖
+静态调用时，说明依赖不可注入——正确方向是重构为构造器注入的依赖，否则
+每个测试都要复制一份静态替身的仪式，耦合被测试层固化。
 
 ## 小结
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React Router 7 进阶：createBrowserRouter 路由表与嵌套布局、loader/action 数据流、useNavigation 与 useRouteError、useFetcher 局部操作、懒加载与受保护路由。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/210-ReactTypeScript'
   - 'react/220-ReactTest'
@@ -207,6 +207,19 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 - 数据路由的核心是 loader（导航时取数）+ action（提交）+ `useNavigation`（pending 态）+ `errorElement`（局部错误边界），把"取数三态"从组件里移走。
 - 不触发导航的局部提交用 `useFetcher`；路由级代码分割用 `lazy`；鉴权守卫是组合 `Navigate` + `useLocation` 的普通组件。
 - React Router 7 与框架模式（Remix 合流）的边界：纯 SPA 项目用 library 模式即可，需要 SSR/预渲染时再上框架模式或 Next.js。
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **预测题**：父路由 `path: 'user'`，子路由 `path: 'orders'`，最终 URL 是什么？子路由写成 `path: '/orders'` 呢？
+   答案：`/user/orders`——不带斜杠的子路径相对父路径拼接；带前导斜杠则从根算起，变成 `/orders`（脱离父布局）。
+2. **修 Bug 题**：访问 `/user` 时 `<Outlet />` 位置一片空白，控制台也没有报错，最可能漏了什么？
+   答案：父路由没配 `index: true` 的子路由。`index` 路由定义「访问父路径本身时渲染进 Outlet 的默认页」，没有它父路径就无处渲染内容。
+3. **辨析题**：loader 取数与 075 篇的 SWR/TanStack Query 取数，分工界线在哪？
+   答案：loader 管「这一页第一次进入要什么」——导航时预取，数据到才渲染（配合 pending/errorElement）；缓存库管「页内增量刷新、按钮触发重取、跨页共享缓存」。前者解决首屏依赖，后者解决驻留期同步。
+4. **规则题**：为什么鉴权守卫是「组合 Navigate + useLocation 的普通组件」而不是新 API？
+   答案：守卫没有新机制——未登录就渲染 `<Navigate to="/login" state={{ from: location }} />`，React Router 把「渲染即导航」作为声明式能力；login 成功后用 `location.state.from` 回跳。它证明了 router 的核心模型：路由树 + Outlet 渲染，其余全是组合。
 
 ## 速查
 

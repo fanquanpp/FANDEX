@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 操作向导式讲解 gh alias 与 config：手把手教读者配置命令别名、常用设置、Shell 补全与账户状态检查，配以原理讲解、错误对策。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -323,6 +323,40 @@ gh status
 | 多主机配置混淆 | 配置"没生效" | 设置到了其他 host | 用 `--host github.com` 显式指定主机 |
 
 ---
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：为高频操作设三个别名——`pr view` 叫 `pv`、`issue list --assignee @me` 叫 `mine`、带位置参数的 `co`（等价 `pr checkout $1`）。写出三条设置命令。
+
+**任务二**：写出与 shell 联动的别名：`ilist`——把我的开放 Issue 通过管道交给 fzf 交互选择。写出命令并说明它和普通别名的机制差别。
+
+**任务三**：判断——（a）`gh pv -w 123` 的参数追加规则与 `gh co 123` 的参数插入规则分别是什么？（b）别名和配置存在哪个目录？（c）敲 `gh` 不带参数想自动列出自己待办，用别名还是补全？
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 任务一
+gh alias set pv "pr view"
+gh alias set mine "issue list --assignee @me"
+gh alias set co "pr checkout \$1"    # $1 是第一个附加参数的占位符
+
+# 任务二
+gh alias set ilist '!gh issue list --assignee @me | fzf'
+# 机制差别：普通别名只做「gh 子命令的字符串展开」，受 gh 控制；
+# 以 ! 开头的是 shell 别名——整串交给你的 shell 执行，
+# 所以能用管道、重定向、多命令。
+
+# 任务三
+# (a) 展开内容无 $1 时附加参数「追加到末尾」（gh pv -w 123 =
+#     gh pr view -w 123）；有 $1 时参数「插入占位符位置」；
+# (b) ~/.config/gh/（Windows 是 %AppData%\GitHub CLI\）；
+# (c) 都不是——那是「自定义欢迎界面」或 alias 组合的用法，
+#     补全只帮你「提示可敲什么」，alias 才是「替你敲」。
+```
+
+要点自查：别名的价值随「命令长度 x 使用频率」增长，先给最长的命令配别名；两种别名（gh 展开 vs shell 执行）的能力边界决定了能不能用管道；位置占位符 `$1` 让别名从「快捷键」升级成「函数」；配置按主机区分，GitHub.com 与企业版互不干扰。
 
 ## 一句话记忆
 

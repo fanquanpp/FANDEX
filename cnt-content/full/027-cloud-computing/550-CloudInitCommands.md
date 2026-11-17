@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'cloud-init 学习笔记：让新虚拟机在第一次开机时自动完成全部配置——user-data 语法、执行阶段、调试与三大云平台的接法。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/050-VirtualizationTech'
   - 'cloud-computing/410-IaC'
@@ -421,11 +421,26 @@ datasource:
 | runcmd 命令静默失败 | 机器"看起来好了"但服务没起 | 用 `status --long` + output.log 检查，关键服务跑自检 |
 | 密码明文写进 user-data | 密码可从元数据接口读到 | 用密钥登录，或接密钥管理系统 |
 
-## 自检
+## 教学自检
+
+遮住上面的命令与 user-data 示例，先自己默写，再展开对照。答不出的回到对应小节重读：
 
 1. `runcmd` 里的 `apt-get update` 和顶层 `package_update: true` 有什么区别？该用哪个？
 2. 实例启动 10 分钟了 SSH 还连不上，说出你排查的前三步。
 3. 为什么 write_files 放配置文件、runcmd 放启动命令，而不是全部塞进一个脚本？
+4. 默写：本地验证 user-data 渲染与实例上查看执行状态的两条命令。
+5. 数据盘挂载为什么必须加 nofail？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. `package_update: true` 是 cloud-init 的声明式开关：在包管理模块执行 apt-get update 且失败有明确记录；塞进 runcmd 是命令式脚本，失败静默、日志难查。该用顶层声明式开关，runcmd 只留真正自定义的命令。
+2. 云控制台串口/Serial Console 看启动卡在哪一步；`cloud-init status --long` 与 `/var/log/cloud-init-output.log` 看 user-data 执行进度；核对 SSH 侧：安全组 22 端口、密钥注入（authorized_keys 是否写入）、sshd 是否起来。
+3. write_files 是声明式模块：幂等（重跑内容一致）、失败有明确报错、内容可追溯；全塞一个脚本则无幂等、无失败定位、步骤间顺序耦合——模块化让每一步可单独排查与重跑。
+4. 本地验证：`cloud-init schema --config-file user-data`（校验 YAML 语法与模块键）；实例上：`cloud-init status --long`（首次启动各模块执行状态）配合 `/var/log/cloud-init-output.log` 看输出。user-data 来源则常用文件直传（`--user-data file://user-data`）或 IaC 模板渲染注入。
+5. 数据盘不在（未附加/云盘故障）时，fstab 里没有 nofail 的条目会让系统卡在 emergency mode 等盘——机器起不来；nofail 让缺盘只降级不阻断启动。
+
+</details>
 
 ## 练习
 

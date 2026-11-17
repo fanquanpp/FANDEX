@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: TypeScript中this类型与多态this
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-11-16'
 related:
   - 'typescript/530-TypeGymnasticsPracticalPatterns'
   - 'typescript/260-CovarianceContravariance'
@@ -1176,3 +1176,11 @@ const input = new InputElementBuilder()
 | TS2322 | Type 'X' is not assignable to type 'this' | 使用 `as this` 受控断言或重构 |
 | TS2526 | A 'this' type is available only in a non-static member of a class or interface | 将方法改为实例方法 |
 | TS2769 | No overload matches this call (this 类型不匹配) | 检查 `bind/call/apply` 是否开启 `strictBindCallApply` |
+
+## 自检
+
+- 遮住第 2 节，用自己的话说出 `this` 类型与「显式写接口名」的区别：它解决了哪个多态问题？
+- 方法链式调用（`this` 返回类型）为什么换个子类继承后返回类型会跟着变？遮住 4 节示例自己推一遍。
+- `ThisType<T>` 标记类型与类方法里的 `this` 类型各用在哪类场景？
+- 遮住附录 A 速查表，默写 `ThisParameterType` / `OmitThisParameter` 两个工具类型的作用。
+- `noImplicitThis` 没开时，独立函数里的 `this` 是什么类型？这个开关为什么被 strict 收编？

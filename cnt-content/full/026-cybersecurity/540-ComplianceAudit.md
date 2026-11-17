@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 合规与审计：等保2.0、GDPR、ISO27001、安全审计与合规自动化
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/060-HashAlgorithm'
   - 'cybersecurity/340-SecureDevelopment'
@@ -21,6 +21,10 @@ prerequisites:
 建议先阅读以下内容再进入本文：
 
 - [安全基础与防御](/cybersecurity/010-SecurityBasicsDefense)
+
+- **解决什么问题**：合规审计回答「我们按标准做了吗，拿得出证据吗」——等保 2.0、ISO 27001、GDPR、PCI DSS 各管一段，共同点是「控制措施 + 可核查证据」。本篇把法规地图、等保三级要求、审计工具（OpenSCAP/Lynis）与证据归档串成一条线。
+- **容易怎么错**：把合规当「测评前突击」（控制措施应常态化运行）；只留报告不留证据链（整改记录、扫描输出、流程截图要归档）；混淆「合规」与「安全」（过了测评不代表防住了攻击，见 020 篇的框架价值讨论）。
+- **学完能做什么**：为系统定级并走通等保备案流程；用 OpenSCAP/Lynis 产出可归档的核查证据；建立「差距分析 → 整改 → 复测」的证据闭环。
 
 ## 1. 合规体系
 
@@ -605,3 +609,11 @@ echo "加固评分: $(grep "Hardening index" /var/log/lynis-report.dat | cut -d=
 # 对比配置文件变更
 diff /etc/ssh/sshd_config /backup/sshd_config.backup
 ```
+
+## 自检
+
+- 遮住 1.1 的法规表，写出六个标准各自的地区与适用范围，并说出「出海业务」最常叠加的两种（ISO 27001 + GDPR）。
+- 等保 2.0 的定级流程五步是什么？三级系统为什么每年要测评（国内准入性合规的持续监督机制）。
+- 「合规 = 安全」错在哪？用 020 篇的框架价值论证与「测评是快照、攻击是持续」两个角度回答。
+- 遮住审计工具一节，写出用 Lynis 做一次基线核查并留存报告的命令，说明报告要归档哪些字段（得分、告警项、扫描时间与版本）。
+- 整改证据链应包含哪四类材料？（测评报告、整改工单与责任人、修复后的复测输出、制度与流程文档。）

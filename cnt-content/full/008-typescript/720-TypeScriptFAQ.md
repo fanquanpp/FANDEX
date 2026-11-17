@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 按主题整理 TypeScript 学习中的高频疑问：any/unknown、interface/type、as/satisfies、import type、推断与收窄等。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/020-HowToReadThisCourse'
   - 'typescript/080-BasicTypeSystem'
@@ -89,7 +89,7 @@ let x = 1; // number
 const y = 1; // 1
 ```
 
-**详细说明**：这是"字面量拓宽"规则。对象属性、数组元素默认也会拓宽；想保留字面量用 `as const`（见 `ConstAssertion`）或 `satisfies`。完整机制见 `TypeInferenceDeepDive`。
+**详细说明**：这是"字面量拓宽"规则。对象属性、数组元素默认也会拓宽；想保留字面量用 `as const`（见 [as const 完整讲解](/typescript/170-ConstAssertion)）或 `satisfies`。完整机制见 [类型推断深入](/typescript/160-TypeInferenceDeepDive)。
 
 ## 6. 为什么对象字面量多一个属性报错，变量不报错
 
@@ -106,7 +106,7 @@ const person = { name: "A", age: 1, email: "x" };
 const u2: User = person;
 ```
 
-**详细说明**：多余属性检查是防拼写错误的额外防线，兼容规则本身允许"多余属性"。详见 `TypeCompatibility`。
+**详细说明**：多余属性检查是防拼写错误的额外防线，兼容规则本身允许"多余属性"。详见 [类型兼容性](/typescript/200-TypeCompatibility)。
 
 ## 7. 函数参数什么时候协变、什么时候逆变
 
@@ -173,7 +173,7 @@ const id2 = <T extends unknown>(x: T): T => x;
 | TS2345 | 实参类型不匹配 | 传参类型与形参不兼容 |
 | TS2769 | 没有匹配的重载 | 参数组合不在重载签名内 |
 
-**详细说明**：报错信息里的"Type X is not assignable to type Y"就是兼容规则（见 `TypeCompatibility`）的应用；把两边的类型展开对比，绝大多数问题一眼可见。
+**详细说明**：报错信息里的"Type X is not assignable to type Y"就是兼容规则（见 [类型兼容性](/typescript/200-TypeCompatibility)）的应用；把两边的类型展开对比，绝大多数问题一眼可见。
 
 更完整的按错误码排查手册（触发场景、三层排查法、最小复现与修法）见[常见编译错误诊断速查](/typescript/725-TypeScriptErrorDiagnosis)，本表只是它的浓缩版。
 
@@ -196,5 +196,10 @@ const id2 = <T extends unknown>(x: T): T => x;
 ## 扩展阅读
 
 - 各问题对应正文章节已在文中给出；
-- 学习路线与阅读规则见 `typescript/020-HowToReadThisCourse`；
+- 学习路线与阅读规则见[本课程使用指南](/typescript/020-HowToReadThisCourse)；
 - 术语速查见[TypeScript 概述与环境配置](/typescript/030-TypeScriptOverviewEnvSetup)末尾的核心术语表。
+
+## 自检
+
+- 本篇的正确用法是「遮住答案先自己答」：13 个问题里随机挑 5 个，先不看正文写出自己的答案，再对照——答错的那个，立刻跳转对应专篇。
+- 三个「天字第一号」问题（any/unknown/never、interface/type、as/satisfies）你都有一句话版本吗？说不清的回去补。

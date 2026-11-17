@@ -6,14 +6,14 @@ category: 前端技术
 difficulty: beginner
 description: Tailwind CSS 交互族全集：cursor/user-select/pointer-events/touch-action、scroll-snap 零 JS 轮播与 scroll-margin 锚点让位、accent-color 原生控件重绘、sr-only 与 forced-colors 可达性，附轮播、长按防误触、表单重绘三例
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
 
 ## 知识点地图
 
-- 知识类别：Tailwind 官方分类中的 Interactivity（交互控制）一族——指针行为（cursor/pointer-events）、选择行为（user-select）、触摸行为（touch-action）、滚动行为（scroll-behavior/snap/margin/padding）、原生控件重绘（accent-color/appearance/resize）、性能声明（will-change）与可达性工具（sr-only/forced-colors-adjust）。
+- 知识类别：Tailwind 官方分类中的 Interactivity（交互控制）一族——指针行为（cursor/pointer-events）、选择行为（user-select）、触摸行为（touch-action）、滚动行为（scroll-behavior/snap/margin/padding）与滚动条样式（`scrollbar-*`，v4.3 起内置）、原生控件重绘（accent-color/appearance/resize）、性能声明（will-change）与可达性工具（sr-only/forced-colors-adjust）。
 - 解决什么问题：布局与动效之外的"交互手感"——能不能点、能不能选中、长按会不会误触、滚动停在哪个位置、原生控件颜色跟不跟主题。
 - 什么时候用到：做轮播与横向滑动列表、防文案误选、自定义表单控件颜色、做锚点导航、给屏幕阅读器补语义文本。
 - 相邻分工：状态变体（hover:/focus:）见[变体引擎与交互状态](/tailwind/055-VariantsAndStates)，过渡与动画见[过渡与动画](/tailwind/090-TailwindAnimationTransition)——本篇管"行为开关"，它们管"状态样式"。
@@ -27,6 +27,7 @@ prerequisites: []
 - 能用 `pointer-events-none` 与 `disabled:` 各解决对的问题，说清两者的语义区别。
 - 能用 `scroll-snap-*` 三件套写出零 JS 的图片轮播与横向卡片流。
 - 能用 `scroll-mt-*` 修好"锚点跳转被吸顶导航遮住"的经典 bug。
+- 能用 v4.3 内置的 `scrollbar-*` 一族定制滚动条粗细与配色，说出 `scrollbar-gutter-stable` 防布局抖动的用途。
 - 能用 `accent-color` 让原生 checkbox/radio/range 跟上品牌色，知道它与 appearance-none 全自绘的分工。
 - 会用 `sr-only` 给图标按钮补语义，用 `forced-colors-adjust` 处理高对比度模式。
 
@@ -174,6 +175,24 @@ prerequisites: []
 
 讲解：044 篇 sticky 侧栏实战里 `scroll-mt-24` 已经出现过一次——"吸附侧栏 + 锚点跳转"组合里它是必需品。区分口诀：**margin 是"目标别贴边"，padding 是"容器我要留边"**，两者选一即可达成同样效果，团队统一一种写法更好检索。
 
+### 3.4 scrollbar-*：滚动条样式内置（v4.3 起）
+
+滚动条在过去是"伪元素苦力活"：要写 `::-webkit-scrollbar` 一整套伪元素规则，而且只对 Chromium/WebKit 生效，Firefox 得另写 `scrollbar-width`/`scrollbar-color` 标准属性。v4.3（2026-05）把这件事收编为一族工具类，编译目标是标准 CSS 属性，跨浏览器一致：
+
+- `scrollbar-auto` / `scrollbar-thin` / `scrollbar-none`：滚动条宽度（编译为 `scrollbar-width`）；`scrollbar-none` 只藏外观、保留滚动能力；
+- `scrollbar-thumb-*` / `scrollbar-track-*`：滑块与轨道的颜色，直接吃全套色板并支持斜杠透明度（`scrollbar-thumb-gray-900/60`），编译为 `scrollbar-color`；
+- `scrollbar-gutter-stable`：在固定侧栏、双栏布局里给滚动条"预留沟槽"——内容没溢出时也保留滚动条占位，滚动条出现/消失时不再左右抖动。
+
+```html
+<!-- 代码块容器：细滚动条 + 灰滑块，悬停前低调 -->
+<pre class="scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 overflow-auto">...</pre>
+
+<!-- 固定侧栏：预留滚动条沟槽，展开收起时页面不抖 -->
+<aside class="scrollbar-gutter-stable h-screen overflow-y-auto">...</aside>
+```
+
+分工提醒：`scrollbar-none` 与 `overflow-auto` 的组合是"隐藏滚动条但保留滑动"（手机端轮播、评分条常见）；但如果目的是"根本不能滚"，该用的是 `overflow-hidden`。样式只管"长得怎样"，滚动能力归 overflow 管——两件事别混在一个类里解决。
+
 ## 4. 控件与可达性面板
 
 ### 4.1 accent-color：原生控件的品牌色
@@ -252,6 +271,8 @@ Windows 高对比度等强制色彩模式会用系统色重绘页面。`forced-c
 
 **任务三：原生控件重绘 + 语义补全。** 实现一个"音量设置"行：原生 range 滑杆用品牌色、旁边一个静音图标按钮（纯图标、读屏可听懂"静音"）。提示：range 用 `accent-*`；图标按钮 `aria-hidden` + `sr-only` 组合；滑杆要不要禁用交给 `disabled` 属性而不是 pointer-events。
 
+**任务四：滚动条定制与防抖。** 给一组长代码块的 `<pre>` 容器配"细滚动条 + 浅灰滑块 + 浅灰轨道"，再给固定高度的侧栏预留滚动条沟槽，验证"滚动条出现/消失时布局不抖"。提示：三行类搞定 `<pre>`（`scrollbar-thin` + `scrollbar-thumb-*` + `scrollbar-track-*`）；侧栏用 `scrollbar-gutter-stable`；对照组是"不加沟槽、另一列内容刚好在溢出边缘"的版本——来回增删一行看宽度跳变。
+
 先自己写，再对照参考实现：
 
 <details>
@@ -306,6 +327,20 @@ Windows 高对比度等强制色彩模式会用系统色重绘页面。`forced-c
 ```
 
 三个可达性细节：图标 svg 加 `aria-hidden="true"`、按钮内 `sr-only` 文本"静音"，读屏用户听到的是一个完整按钮名而不是空白；range 自身有可访问名（`aria-label="音量"`），滑杆值变化读屏会宣读；右侧数字加 `aria-hidden` 防止读屏把"滑杆 70"和"70"念两遍。`accent-blue-600` 一行完成原生滑杆的品牌色——试着把它删掉，滑杆立刻退回系统默认蓝灰，这行就是"原生控件重绘"的全部成本。若产品要求完全自定义滑杆外观，才升级到 appearance-none 自绘方案，那是一个组件工程而不是一行类的事。
+</details>
+
+<details>
+<summary>任务四参考实现（滚动条定制与防抖）</summary>
+
+```html
+<!-- 长代码块：细滚动条 + 灰阶配色，样式三行，滚动能力归 overflow-auto -->
+<pre class="scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 overflow-auto max-h-72">...</pre>
+
+<!-- 固定侧栏：预留滚动条沟槽，内容在溢出边缘反复横跳时布局不抖 -->
+<aside class="scrollbar-gutter-stable h-screen overflow-y-auto w-64">...</aside>
+```
+
+自检三问：把 `scrollbar-thin` 换成 `scrollbar-none`，滚动条是否消失但仍能滚（是——隐藏外观不剥夺滚动，"彻底不能滚"要换 `overflow-hidden`）；给 `<pre>` 加 `scrollbar-thumb-blue-600` 后滑块是否变色（是，还能写 `scrollbar-thumb-blue-600/50` 加透明度——色板与斜杠修饰符在这族类里照常可用）；删掉 `scrollbar-gutter-stable` 后，让侧栏内容恰好停在溢出边缘、再增删一行，页面是否左右抖动（是——滚动条出现/消失会挤占内容宽度，沟槽把它变成常驻占位）。这族类是 v4.3 才内置的：在此之前滚动条样式要手写 `::-webkit-scrollbar` 伪元素且只覆盖 WebKit。
 </details>
 
 ## 7. 一句话记忆

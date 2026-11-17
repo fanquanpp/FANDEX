@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 安全基线：CIS Benchmark 结构与用法、等保 2.0 分级要求、Linux/Windows/数据库/中间件加固清单、Linux 与 Windows 一键加固脚本与自动化合规工具。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/320-ZeroTrustArchitecture'
   - 'cybersecurity/300-IdentityAccessManagement'
@@ -374,3 +374,11 @@ flowchart LR
 - **进阶注意**：基线的生命力在自动化闭环——镜像预置、IaC 检查、运行时扫描、漂移修复；
   Level 2 条目按业务取舍并记录理由；等保三级系统每年测评，整改证据（扫描报告、
   流程记录）要与制度同步归档。
+
+## 自检
+
+- 用「体检正常值范围」的类比解释基线解决哪三个工程问题（一致性、可验证、可追溯）。
+- 遮住第 2 节的条目结构说明，写出 CIS 条目的五段结构，并解释「影响说明」为什么是取舍的关键。
+- 遮住第 3 节的清单，自己写出「无 UID 0 账户检查」与「SSH 强 MAC 检查」两条命令再对照。
+- Level 1 与 Level 2 的取舍依据是什么？举一个你会暂缓 Level 2 并记录理由的场景。
+- 遮住第 6 节的自动化清单，画出「镜像预置 → IaC 检查 → 运行时扫描 → 漂移修复」四环的闭环图，并指出人工环节会破坏哪一环。

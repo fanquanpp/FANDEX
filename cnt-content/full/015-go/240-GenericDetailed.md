@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go 1.18+泛型：类型参数、约束、类型推断、GC shape stenciling实现、泛型算法与生产级实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/280-MemoryEscapeAnalysis'
   - 'go/290-GCAndTuning'
@@ -38,7 +38,7 @@ prerequisites:
 - 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
 
 
-> 本文以 Go 1.22 为基准版本，深入解析 Go 1.18 引入的泛型机制：类型参数语法、约束系统、类型推断算法、runtime 实现（GC shape stenciling）、泛型算法库设计与生产级最佳实践。适用于已掌握 Go 接口与反射、希望编写可复用类型安全代码的工程师。
+> 本文以 Go 1.18 引入的泛型机制为主线（语法与实现以 Go 1.22 为基线），并覆盖截至 Go 1.27 的演进：泛型类型别名（1.24）、泛型约束自引用（1.26）、泛型方法与函数类型推断推广（1.27）。内容覆盖类型参数语法、约束系统、类型推断算法、runtime 实现（GC shape stenciling）、泛型算法库设计与生产级最佳实践。适用于已掌握 Go 接口与反射、希望编写可复用类型安全代码的工程师。
 
 ---
 
@@ -2650,7 +2650,8 @@ func main() {
 | 联合类型 | `int \| float64` | 类型集合 |
 | 底层类型 | `~string` | 底层类型匹配 |
 | 泛型类型 | `type Stack[T any] struct{}` | 泛型结构体 |
-| 泛型方法 | `func (s *Stack[T]) Push(x T)` | 泛型方法 |
+| 泛型方法 | `func (s *Stack[T]) Push(x T)` | 泛型类型的方法（接收者携带类型参数） |
+| 泛型方法（1.27+） | `func (r *Rand) N[Int intType](n Int) Int` | 方法自带类型参数，Go 1.27 起支持 |
 
 ### A.2 标准约束速查
 
@@ -2723,19 +2724,23 @@ contract Stringer(T) {
 
 ### B.3 当前限制
 
-Go 1.22 泛型仍有限制：
+Go 1.27 泛型仍有限制（下述 1.22 时代的限制已解除一条）：
 
 1. **不支持特化**：无法为特定类型提供定制实现
 2. **不支持关联类型**：无法定义 `type Item T`
 3. **不支持协变/逆变**：`[]int` 不能赋值给 `[]any`
-4. **方法接收者限制**：方法不能引入新的类型参数
-5. **类型推断局限**：某些场景需显式指定
+4. **接口方法限制仍在**：接口里的方法不能声明类型参数，泛型方法也不能用于实现接口方法——这是语言有意保留的（否则接口方法集无法静态确定）
+5. **类型推断局限**：某些场景需显式指定（1.27 已把函数类型推断推广到"泛型函数赋值/转换为函数类型"的全部场景）
+
+**已解除的限制**：
+
+- **泛型方法（Go 1.27 起）**：方法声明可以带自己的类型参数，不再只能通过"接收者携带泛型类型的类型参数"间接表达。标准库 `math/rand/v2` 的 `(*Rand).N[Int intType](Int) Int` 即按此设计。依赖方约束仍然成立：接口方法不能声明类型参数，因此需要多态的 API 依旧用包级泛型函数或泛型类型承载。
 
 **未来方向**：
 
 - 关联类型（associated types）
-- 方法上的类型参数
-- 改进类型推断
+- 特化
+- 继续改进类型推断
 - 性能优化
 
 ---
@@ -2753,3 +2758,47 @@ Go 泛型的引入是 Go 语言历史上最重要的演进之一。它解决了 
 5. **性能验证**：benchmark 确认收益
 
 > *"Generics are not a silver bullet, but they are a powerful tool in the right hands."* — Go 团队
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（GC shape stenciling 的取舍）**：`Stack[int]` 与 `Stack[string]`、`Stack[*User]` 与 `Stack[*Order]`，哪两组共享一份实例化代码？为什么 `Stack[uint64]` 与 `Stack[int64]` 不共享？
+
+参考答案：按 gcshape 分组——所有指针类型共享一份字典化实现（*User 与 *Order 同形状，运行时同一份代码，靠字典查类型信息）；非指针类型按 underlying type 分组，所以 int、string、uint64、int64 各是各的 shape——int 与 string 明显不同（string 是两字宽），uint64 与 int64 内存布局相同但 underlying type 不同，也不共享。要点：这是编译速度、二进制体积与性能之间的折中——不像 C++ 全量实例化，也不像 Java 全部擦除；字典让泛型函数仍能用 Type 参数做类型断言与内建运算。
+
+**题 2（约束的成员表达式）**：写一个约束，要求类型支持 `+` 与 `String() string`，用它实现 `Join[T Stringer](xs []T, sep string) string`。
+
+参考实现：
+
+```go
+type Stringer interface {
+    ~int | ~int64 | ~string // 含 + 运算的类型集合
+    String() string
+}
+
+func Join[T Stringer](xs []T, sep string) string {
+    var b strings.Builder
+    for i, x := range xs {
+        if i > 0 {
+            b.WriteString(sep)
+        }
+        b.WriteString(x.String())
+    }
+    return b.String()
+}
+```
+
+要点：约束接口可以同时写类型集合（限制底层类型）与方法集（限制能力）；调用处两项都检查。对比"传 fmt.Stringer 接口切片"——泛型版避免逐元素装箱为接口值。
+
+**题 3（1.27 泛型方法的边界）**：Go 1.27 允许方法带类型参数后，下面的接口能实现吗？为什么？
+
+```go
+type Codec interface {
+    Encode[T any](v T) ([]byte, error)
+}
+```
+
+参考答案：不能编译。1.27 的规则明确：接口里的方法不能声明类型参数，泛型方法也不能用于实现接口方法。原因：接口的方法集必须能在类型检查期静态确定，方法级类型参数会让"满足该接口的类型"依赖调用点的实例化，破坏接口的运行时表示（itab 无法枚举所有可能的方法实例化）。要表达"任意类型的编解码器"，正确做法是包级泛型函数 `Encode[T any](c Codec, v T)`，或约束里放类型集合。

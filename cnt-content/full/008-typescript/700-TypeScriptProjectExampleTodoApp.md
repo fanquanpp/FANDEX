@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 TypeScript 从零搭建前后端 TODO 应用：共享类型层、Node 后端、原生前端，串联类型守卫、收窄、工具类型与工程配置。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/690-TypeScriptProjectExampleTypeSafeAPIClient'
   - 'typescript/570-TypeSafeAPIClient'
@@ -20,15 +20,6 @@ prerequisites:
 ## 前置知识
 
 - [TypeScript 项目示例：类型安全的 API 客户端](/typescript/690-TypeScriptProjectExampleTypeSafeAPIClient)：建议先完成前一篇的学习
-
-## 学习目标
-
-- 掌握「0. 学习目标（可验证）」的核心机制、典型用法与常见陷阱
-- 掌握「1. 项目概览」的核心机制、典型用法与常见陷阱
-- 掌握「2. 项目结构」的核心机制、典型用法与常见陷阱
-- 掌握「3. 共享类型层（shared/types.ts）」的核心机制、典型用法与常见陷阱
-- 掌握「4. 后端（server.ts）」的核心机制、典型用法与常见陷阱
-
 
 ## 0. 学习目标（可验证）
 
@@ -518,7 +509,7 @@ void load();
 
 ## 扩展阅读
 
-- `059-TypeScriptProjectExampleTypeSafeAPIClient`：类型安全 API 客户端的完整工程示例；
-- `038-TypeSafeAPIClient`：请求层的类型设计模式；
-- `048-TypeScriptEngineeringConfig`：tsconfig 工程化配置详解；
-- `010-LocalTypeInference`：可辨识联合与收窄。
+- [类型安全 API 客户端工程示例](/typescript/690-TypeScriptProjectExampleTypeSafeAPIClient)：同款分层思路的完整工程示例；
+- [类型安全 API 客户端](/typescript/570-TypeSafeAPIClient)：请求层的类型设计模式；
+- [工程化配置](/typescript/350-TypeScriptEngineeringConfig)：tsconfig 工程化配置详解；
+- [字面量与联合类型](/typescript/110-LiteralUnionTypes)：可辨识联合与收窄。

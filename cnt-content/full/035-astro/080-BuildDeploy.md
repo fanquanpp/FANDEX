@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 旅程驱动理解从构建到上线：astro build、产物分析、适配器与按需渲染、CI 部署、域名与 HTTPS、路由缓存
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'astro/050-ContentCollections'
   - 'astro/090-Astro7Features'
@@ -409,3 +409,54 @@ jobs:
 ## 9. 一句话记忆
 
 **"构建是印刷、产物要质检、适配器定发行渠道、缓存是快速通道、CI 是物流车队、域名与 HTTPS 是最后挂牌——上线是一趟从 dist/ 到全球 CDN 的完整旅程。"**
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写"静态为主 + 少量动态"站点的关键代码：全站 server 模式，但 `/about` 页面在构建期预渲染。
+
+   参考答案（先自己写，再对照）：
+
+   ```js
+   // astro.config.mjs
+   export default defineConfig({
+     output: 'server',
+     adapter: node({ mode: 'standalone' }),
+   })
+   ```
+
+   ```astro
+   ---
+   // src/pages/about.astro
+   export const prerender = true
+   ---
+   ```
+
+   验收点：Astro 5 起没有独立的 hybrid 输出——server 模式默认全按需渲染，个别页面用 `export const prerender = true` 标记回构建期；静态模式则相反，个别页用 `prerender = false` 开按需。
+
+2. 默写一条 routeRules：`/blog/` 下任意深度路径缓存 1 小时、过期后 24 小时内可服务旧内容；并写出它对应的标准 HTTP 缓存语义。
+
+   参考答案（先自己写，再对照）：
+
+   ```js
+   export default defineConfig({
+     cache: { provider: memoryCache() },
+     routeRules: {
+       '/blog/[...path]': {
+         maxAge: 60 * 60,
+         swr: 60 * 60 * 24,
+       },
+     },
+   })
+   ```
+
+   对应 `Cache-Control: max-age=3600, stale-while-revalidate=86400`。注意路由模式是 `/blog/[...path]`（Astro 路由段语法），不是 `/blog/**` 这种 glob 通配。
+
+3. 适配器解决什么问题？安装方式与官方适配器清单是什么？纯内容站要不要装？
+
+   参考答案（先自己写，再对照）：
+
+   适配器把 Astro 产物接入特定平台的运行环境（Node 服务器、Serverless 函数、边缘 Worker），是按需渲染与服务器岛的前提。安装用 `npx astro add <name>`（自动装包、写配置），官方适配器有 Node.js、Netlify、Vercel、Cloudflare 等。纯静态内容站不需要——多装适配器多一份运行时产物，部署目标只收静态文件时反而直接失败。
+
+检查点：写完三题后回到第 4 站的取舍表对照——你的站点"内容对谁一样、变得多快"两个答案，能否直接推导出运行模式与缓存配置？推导不出，回到第 4 节重读判读方法。

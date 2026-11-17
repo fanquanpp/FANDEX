@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 存储过程与函数、触发器、游标、异常处理、动态 SQL 与方言对比
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/250-RecursiveCTETreeTraversal'
   - 'sql/440-PerformanceOptimization'
@@ -21,13 +21,41 @@ prerequisites: []
 
 主要章节：
 
+- 心智模型：库端可编程代码的四件套与取舍
 - 游标
 - 异常处理
 - 触发器
 - 存储过程
 - 动态 SQL
 - 方言对比
-- ……共 10 个章节
+- 遮码自检
+- ……共 10 个章节（含学习目标与小结）
+
+## 心智模型：库端可编程代码的四件套与取舍
+
+本篇四个主题共享一个心智：**把一段"流程化的数据操作"搬进数据库端执行**。存储过程
+是可调用的 SQL 程序块（PostgreSQL 用 plpgsql 的 `$$ ... $$`，MySQL 用
+`BEGIN ... END` 配 DELIMITER，Oracle 用 PL/SQL），函数与过程的分工从 PostgreSQL 11
+起明确：`FUNCTION` 有返回值、能出现在 SQL 表达式里（`SELECT f()`），`PROCEDURE`
+无返回值、用 `CALL` 调用、且能在体内管理事务。游标是"逐行处理结果集的指针"，触发器
+是"写路径上的隐式钩子"，动态 SQL 是"运行时才确定语句文本"。
+
+什么时候用、什么时候不用，比语法重要：
+
+- **默认把逻辑放应用层**。存储过程把代码散在库端，版本管理、测试、灰度都难做；
+  适合留下的是数据密集的批量任务（大表分批清理、报表加工）与必须贴近数据的
+  事务封装。
+- **游标与"集合思维"对立**。SQL 的强项是整批操作，游标逐行循环通常慢一个数量级；
+  写游标前先问"这能不能改成一条 INSERT ... SELECT / UPDATE ... JOIN"。只有每行都
+  要调用外部系统、或逻辑真的无法用集合表达时才动用游标。
+- **触发器是隐式副作用**。适合审计流水、时间戳兜底这类"永远该发生"的小事；
+  业务规则塞进触发器会让写路径"看不见地变重"，接手的人排查问题先翻触发器。
+- **动态 SQL 必须参数绑定**。运行时拼接语句文本就有注入风险——用
+  `EXECUTE ... USING`（PostgreSQL）或 PREPARE 的占位符（MySQL）把数据当参数传，
+  永远不把用户输入拼进 SQL 字符串。
+
+流程控制与异常语法几乎完全不可移植（MySQL 的 HANDLER 对 PG 的
+`EXCEPTION WHEN`），跨库项目把库端代码当方言资产维护，别指望一套过程三个库通用。
 
 ## 游标
 
@@ -185,7 +213,9 @@ AS $$
 BEGIN
   UPDATE accounts SET balance = balance - p_amount WHERE id = p_from;
   UPDATE accounts SET balance = balance + p_amount WHERE id = p_to;
-  COMMIT;
+  -- 转账必须原子：过程体内不写 COMMIT，提交时机交给调用方
+  -- （PG 11+ 的 PROCEDURE 虽允许体内 COMMIT/ROLLBACK，但"两条 UPDATE 缺一不可"
+  --  的转账中途提交等于放弃原子性，第二条失败时第一条已无法回滚）
 END;
 $$;
 
@@ -744,6 +774,64 @@ END LOOP;
 | 返回结果集 | RETURN QUERY | SELECT          | SELECT        | PIPELINED         |
 | 数组支持   |              |                 |               | (VARRAY)          |
 | 事务控制   |              |                 |               |                   |
+
+## 遮码自检
+
+遮住答案先写；本篇的自检重点是"选型判断 + 方言对照"两条线。
+
+**第 1 题：把"逐行读员工、逐行 INSERT 进 salary_log"的游标过程改写成集合写法。改完说说两者差在哪。**
+
+<details><summary>参考答案</summary>
+
+```sql
+INSERT INTO salary_log (name, salary)
+SELECT name, salary FROM employees WHERE active = 1;
+```
+
+一条语句替代 OPEN/FETCH/LOOP/CLOSE 整套机械，数据库可以并行、可以走索引、一次写
+批量的页——游标版逐行往返慢一个数量级。判断顺序：先找集合写法，找不到才用游标。
+</details>
+
+**第 2 题：PostgreSQL 11+ 里 PROCEDURE 和 FUNCTION 的三个差别？"转账"该用哪个？**
+
+<details><summary>参考答案</summary>
+
+函数有返回值、能嵌进 SQL 表达式（`SELECT get_dept_avg_salary('IT')`），用 SELECT 调；
+过程无返回值、用 `CALL` 调，且**体内可以 COMMIT/ROLLBACK 管理事务**（函数不行）。
+转账该用 PROCEDURE——但要记住：允许体内管理事务不等于该中途提交，原子性靠
+"过程内不提交、由调用方控制提交边界"来保证。
+</details>
+
+**第 3 题：除零防护，MySQL 的 HANDLER 与 PostgreSQL 的 EXCEPTION 各怎么写？POSTGRES 的 `WHEN OTHERS` 相当于 MySQL 的什么？**
+
+<details><summary>参考答案</summary>
+
+MySQL：`DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ... END;`（按错误码或条件声明
+处理器，声明必须排在变量之后）；PostgreSQL：`EXCEPTION WHEN division_by_zero THEN
+... WHEN OTHERS THEN ...`（块级异常分支）。`WHEN OTHERS` 对应 MySQL 的
+`SQLEXCEPTION` 通配处理——两者都要慎用：兜底吞错会把问题埋深，至少记日志。
+</details>
+
+**第 4 题：动态 SQL 拼接表名/条件时，哪些部分可以参数绑定、哪些必须白名单？"直接拼接用户输入"的后果是什么？**
+
+<details><summary>参考答案</summary>
+
+**值**永远走参数绑定（`EXECUTE ... USING p_val` / PREPARE 的 `?` 占位符）；**标识符**
+（表名、列名）与 SQL 关键字没法绑定，只能来自代码内白名单或 `quote_ident()`
+（PostgreSQL）/ `quote_ident` 等引用函数，绝不直接拼接用户输入。直接拼接的后果是
+SQL 注入：`' OR '1'='1` 一类输入改变语句语义——这是库端动态 SQL 与应用层共享的
+同一条铁律：数据是参数，结构是代码。
+</details>
+
+**第 5 题：BEFORE 触发器里改 `NEW.salary` 和 AFTER 触发器里写审计表，各自为什么是对的搭配？换过来会怎样？**
+
+<details><summary>参考答案</summary>
+
+BEFORE 阶段行还没落盘，修改 NEW.* 能改变**本次写入的最终值**（补默认值、纠偏）；
+AFTER 阶段写入已定局，适合做"对既成事实的反应"（审计、同步统计）。换过来：AFTER
+里改 NEW 无效（行已写入），BEFORE 里写审计表则审计的是"未发生的写入"——回滚后
+审计表却留了记录。选择口诀：改数据 BEFORE，记事实 AFTER。
+</details>
 
 ## 小结
 

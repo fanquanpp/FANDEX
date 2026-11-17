@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: "装好 .NET SDK 并用 dotnet new 与 dotnet run 两步跑通第一个程序：三大平台安装命令、dotnet --version 验证、csproj 与隐式 Main 预告、VS Code 与 Visual Studio 选型、dotnet 不是内部或外部命令等真实报错实录。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-16'
 related:
   - 'csharp/030-CSharpBasicSyntax'
   - 'csharp/040-CSharpOOP'
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- 已完成 [C# 是什么](/csharp/010-WhatIsCSharp)：知道 .NET 10 / C# 14 是当前 LTS、dotnet 是 .NET 的统一命令行入口。
+- 已完成 [C# 是什么](/csharp/010-WhatIsCSharp)：知道 .NET 10 / C# 14 是当前 LTS（.NET 11 / C# 15 已于 2026-11 发布，属 STS）、dotnet 是 .NET 的统一命令行入口。
 - 会打开终端（Windows 用 PowerShell，macOS/Linux 用 Terminal）并输入命令即可。完全没碰过终端的同学，[终端与 Shell 基础](/start/040-TerminalAndShellBasics) 十分钟补齐；本文每条命令都可以原样复制。
 
 ## 学习目标
@@ -43,7 +43,7 @@ prerequisites:
 
 SDK 里装着三样东西：Roslyn 编译器、.NET 运行时、dotnet 命令本身。只运行不开发的机器可以只装更小的 Runtime，学习期一律装 SDK。
 
-每个平台一行命令（版本号以官方下载页为准，写作时最新 LTS 为 .NET 10）：
+每个平台一行命令（版本号以官方下载页为准，写作时最新 LTS 为 .NET 10；2026-11 起也有 .NET 11 可选，属 STS，学习期装 LTS 即可）：
 
 Windows（PowerShell）：
 

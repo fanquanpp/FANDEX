@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: CMake、vcpkg与包管理
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/220-CppOOPAdvanced'
   - 'cpp/450-CppMemoryModel'
@@ -50,15 +50,15 @@ C++ 与 Rust、Go、Node.js 等现代语言的关键差异在于：**没有官�
 | 工具 | 首次发布 | 关键里程碑 | 当前状态（2026） |
 | :--- | :--- | :--- | :--- |
 | **Make** | 1976 | Unix 标配 | 仍在使用，但 C++ 项目多用 CMake 生成 |
-| **GCC** | 1987 | GCC 4.8 支持 C++11；GCC 9 支持 C++20 | GCC 14 支持 C++23/26 草案 |
+| **GCC** | 1987 | GCC 4.8 支持 C++11；GCC 9 支持 C++20 | GCC 16（2026-04 发布，16.2 维护中）率先落地 C++26 契约与部分反射 |
 | **CMake** | 2000 | 3.0 (2014) 引入现代风格；3.12+ (2018) target 化完善 | CMake 3.30+ 主流 |
-| **Clang** | 2007 | Clang 14 支持 C++20；Clang 17 支持 C++23 | Clang 19+ 主流 |
+| **Clang** | 2007 | Clang 14 支持 C++20；Clang 17 支持 C++23 | Clang 23 为当前稳定线（23.1.x，2026-08 起发布），开发线 24；C++26 特性按 `-std=c++26` 逐步落地 |
 | **Ninja** | 2010 | Google 出品，Chrome 项目驱动 | 1.12+ 主流 |
 | **vcpkg** | 2016 | 微软开源，2020 引入清单模式 | 3500+ 库 |
 | **Conan** | 2015 | JFrog 出品，去中心化 | Conan 2.x 重构 |
 | **Bazel** | 2015 | Google 开源，大规模多语言 | Bazel 7+ |
 | **xmake** | 2015 | 国产，Lua API | 2.9+ |
-| **MSVC** | 1993 | Visual Studio 2019 16.11 支持 C++20；2022 支持 C++23 | VS 2022 17.10+ |
+| **MSVC** | 1993 | Visual Studio 2019 16.11 支持 C++20；2022 支持 C++23 | VS 2026（2025-11 GA，toolset 14.50+） |
 | **Build2** | 2014 | 现代化构建系统 | 小众但活跃 |
 
 ### 1.4 与其他语言工具链的横向对比
@@ -1094,8 +1094,8 @@ cd build && cpack
 | 维度 | GCC | Clang | MSVC |
 | :--- | :--- | :--- | :--- |
 | 平台 | Linux/macOS/Windows | Linux/macOS/Windows | Windows |
-| C++23 支持 | GCC 14+ | Clang 18+ | VS 17.6+ |
-| C++26 草案 | GCC 15+ | Clang 19+ | VS 17.10+ |
+| C++23 支持 | GCC 14+ | Clang 18+ | VS 17.6+（VS 2022）/ VS 2026 14.50+ |
+| C++26 草案 | GCC 16+（契约/反射部分支持） | Clang 21-23（部分，`-std=c++26`） | VS 2026 14.50+（部分） |
 | Modules | 实验性 | 完整 | 完整 |
 | Concepts | GCC 10+ | Clang 10+ | VS 16.3+ |
 | 错误信息 | 中 | 优 | 中 |
@@ -1852,3 +1852,59 @@ valgrind --leak-check=full ./app
 valgrind --tool=callgrind ./app  # 性能分析
 valgrind --tool=massif ./app     # 堆分析
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：只看报错不看代码——下面三段报错分别来自编译、链接、运行三个阶段中的哪一个？给出你的判定依据与下一步动作（看哪个文件/用什么工具）：
+
+```text
+错误 A：undefined reference to `vtable for Widget'
+错误 B：error: 'cout' is not a member of 'std'
+错误 C：error while loading shared libraries: libfmt.so.10: cannot open shared object file
+```
+
+**提示**：三阶段判定口诀——编译期（语法/类型）、链接期（符号没找到）、运行期（动态库没加载）；「undefined reference」永远在链接期（编译器看不到符号，链接器收尸）。
+
+**参考实现**（先自己写完再看）：
+
+```text
+A 链接期：vtable 符号未生成 —— Widget 声明了虚函数但第一个虚函数定义缺失
+   （通常析构没写定义）。动作：补上首个虚函数的定义。
+B 编译期：类型/名字查找失败 —— 少 #include <iostream> 或没开 -std=c++23。
+   动作：查头文件与 -std 开关。
+C 运行期：动态链接器找不到 libfmt.so.10 —— 编译时 -L 有路径、运行时 ld 没
+   搜索路径。动作：ldd 二进制确认缺哪个；补 rpath/LD_LIBRARY_PATH 或改静态链接。
+```
+
+要点自查：报错的「阶段归属」决定排查方向，比看报错文本逐字搜索高效；`ldd`（动态依赖清单）、`nm -C`（符号表）是链接期两个最常用的侦查工具。
+
+**任务二**：CMake 最小工程默写——根 CMakeLists.txt + 子目录 src（含一个静态库）+ tests；要求 `target_link_libraries` 用 target 名、`target_include_directories` 带 PRIVATE/ PUBLIC 语义解释；然后回答：为什么「全局 `include_directories`」是本篇列出的反模式？
+
+**提示**：现代 CMake 的核心是「只对 target 声明属性」——依赖关系显式、可传递（PUBLIC/INTERFACE/PRIVATE 控制传播）；全局命令把头文件搜索路径泼进所有 target，依赖变成隐式。
+
+**参考实现**（先自己写完再看）：
+
+```cmake
+# 根 CMakeLists.txt
+cmake_minimum_required(VERSION 3.20)
+project(demo LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 23)
+
+add_subdirectory(src)
+add_subdirectory(tests)
+
+# src/CMakeLists.txt
+add_library(core src/widget.cpp)
+target_include_directories(core PUBLIC include)   # PUBLIC：依赖者也能用 include/
+target_link_libraries(core PRIVATE fmt::fmt)      # PRIVATE：只有 core 自己用 fmt
+
+# tests/CMakeLists.txt
+add_executable(core_test core_test.cpp)
+target_link_libraries(core_test PRIVATE core GTest::gtest_main)
+# 反模式解释：include_directories(${CMAKE_SOURCE_DIR}/include) 对所有 target 生效，
+# 谁依赖什么不再可查——构建图退化成「全局变量」，模块边界从此只能靠人脑维护。
+```
+
+要点自查：PUBLIC/PRIVATE/INTERFACE 三语义（依赖是否传递）是现代 CMake 的第一课；能默写「可执行文件 + 静态库 + 测试」的三文件骨架，就具备了 90% 教学项目的构建能力。

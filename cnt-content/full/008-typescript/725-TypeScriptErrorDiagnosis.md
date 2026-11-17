@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 按错误码组织的 TypeScript 高频编译错误速查：TS2304/TS2307/TS2339/TS2345/TS2531/TS2551/TS2769/TS18048/TS2589 的触发场景、报错原文、三层排查法与修法。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -280,3 +280,11 @@ function bindSave(state: EditorState): () => void {
 
 - TypeScript 官方文档「Understanding Errors」与 TSConfig 参考相关章节（microsoft/TypeScript-Website，文档内容 CC BY 4.0），https://www.typescriptlang.org/docs/handbook/2/narrowing.html ——错误语义以官方文档与编译器实际输出为准；报错原文样例取自 tsc 真实输出格式。
 - 各错误码的专篇链接指向本仓库 008-typescript 模块既有内容，为原创教学文档。
+
+## 自检
+
+- 遮住 12 节总表，按错误码默写排查方向：TS2304/TS2307 查什么、TS2339 与 TS2345 的差别、TS2531/TS18048 各自对应哪类空值。
+- 拿到一条报错的标准动作是什么（先读类型别名展开、`tsc --noEmit` 复现、查第一个错误而非最后一个）？
+- TS2339 在联合类型上报错时，第一反应为什么是「先收窄」而不是「加 as」？遮住第 3 节自己走一遍修法。
+- TS2589 出现时该往哪三个方向收缩（递归深度、联合规模、尾递归形态）？
+- 自己造一遍错：写出触发 TS2307 的最小代码，并给出「装 @types」「补声明文件」两种修法的适用条件。

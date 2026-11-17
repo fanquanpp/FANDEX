@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Symbol、unique symbol 与品牌类型的类型论基础、形式语义与生产级模式
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-16'
 related:
   - 'typescript/260-CovarianceContravariance'
   - 'typescript/240-ThisTypePolymorphism'
@@ -1161,7 +1161,9 @@ jobs:
       - run: npm run build
 ```
 
-### 填空题知识点讲解
+## 13. 自测练习
+
+### 13.1 填空题知识点讲解
 
 1. Symbol 是 JavaScript 自 ES6 引入的第 ______ 种基本数据类型，typeof 返回 ______。
 2. TypeScript 中 `const sym = Symbol()` 推断为 ______ 类型，`let sym = Symbol()` 推断为 ______ 类型。
@@ -1172,7 +1174,7 @@ jobs:
 7. JSON.stringify 会 ______（保留/跳过）Symbol 键的属性。
 8. 跨模块共享 Symbol 应使用 ______，而非 ______。
 
-### 13.3 代码修复题
+### 13.2 代码修复题
 
 1. 下列品牌类型实现无法通过类型校验，请修复：
 
@@ -1203,15 +1205,15 @@ const b = Symbol.for('key');
 console.log(a === b); // 期望 true
 ```
 
-### 13.4 开放题
+### 13.3 开放题
 
 1. 请用 300 字以内论述：TypeScript 选择结构子类型而非名义子类型的工程动机是什么？品牌类型如何在不修改语言的前提下补足名义类型的缺失？
 
 2. 如果让你为一家金融科技公司设计一个支持「金额不可混淆」的类型系统（如 USD 与 EUR 不可直接相加），请列出至少 4 个类型层的硬性约束，并说明每条约束的工程动机。
 
-## 16. 附录 A：API 速查表
+## 14. 附录 A：API 速查表
 
-### 16.1 Symbol 静态方法
+### 14.1 Symbol 静态方法
 
 | 方法 | 说明 |
 | ---- | ---- |
@@ -1234,7 +1236,7 @@ console.log(a === b); // 期望 true
 | `Symbol.asyncDispose` | 异步资源释放（ES2024+） |
 | `Symbol.metadata` | 装饰器元数据（TS 5.0+） |
 
-### 16.2 TypeScript 类型工具
+### 14.2 TypeScript 类型工具
 
 ```typescript
 // 品牌类型工具
@@ -1261,7 +1263,7 @@ function isBranded<T, B extends string>(
 }
 ```
 
-### 16.3 反射 API
+### 14.3 反射 API
 
 | API | 说明 |
 | --- | ---- |
@@ -1271,37 +1273,37 @@ function isBranded<T, B extends string>(
 | `Object.entries(obj)` | 仅字符串键值对 |
 | `JSON.stringify(obj)` | 跳过 Symbol 键 |
 
-## 17. 附录 B：学习路径
+## 15. 附录 B：学习路径
 
-### 17.1 入门阶段（1 周）
+### 15.1 入门阶段（1 周）
 
 1. 阅读 MDN Symbol 文档
 2. 阅读 ECMAScript 规范 6.1.5 节
 3. 完成本模块习题 1-3
 4. 实现一个使用 Symbol.iterator 的可迭代类
 
-### 17.2 进阶阶段（2 周）
+### 15.2 进阶阶段（2 周）
 
 1. 阅读 TypeScript Handbook — Symbols
 2. 阅读 Bierman《Understanding TypeScript》ECOOP 2014 论文
 3. 实现品牌类型工具，并应用于至少 3 个领域类型
 4. 完成本模块习题 4-7
 
-### 17.3 高级阶段（4 周）
+### 15.3 高级阶段（4 周）
 
 1. 阅读 Cardelli & Wegner《On Understanding Types, Data Abstraction, and Polymorphism》
 2. 研究 type-fest、Effect-TS、InversifyJS 的实现
 3. 实现一个基于 Symbol 的 IoC 容器
 4. 完成本模块所有习题与开放题
 
-### 17.4 专家阶段（持续）
+### 15.4 专家阶段（持续）
 
 1. 贡献 type-fest、Effect-TS 等开源项目
 2. 研究 TC39 Explicit Resource Management 提案
 3. 探索跨 realm Symbol 共享与跨进程序列化
 4. 发表品牌类型与名义类型系统对比的工程实践论文
 
-## 18. 结语
+## 16. 结语
 
 Symbol 与 unique symbol 是 TypeScript 类型系统中最微妙、也最强大的特性之一。它们在两个维度上扩展了 JavaScript 的能力：
 
@@ -1318,3 +1320,11 @@ Symbol 与 unique symbol 是 TypeScript 类型系统中最微妙、也最强大�
 - 实现 well-known symbols 协议（iterator、asyncIterator、toPrimitive、dispose 等）；
 - 在结构子类型与名义子类型间做出合理的工程选型；
 - 评估 Symbol 在 IoC 容器、协议抽象、私有属性等场景中的适用性与局限。
+
+## 自检
+
+- 遮住第 5 节，说出 `unique symbol` 的声明限制（只能在哪些位置出现、必须配哪个修饰符）。
+- 品牌类型的三行惯用写法（`type Brand<T, B>` 交叉 + 断言函数）遮住示例自己写一遍，并解释它为什么能绕过结构化兼容。
+- `Symbol.iterator` 与 `Symbol.asyncIterator` 分别被哪两个语言设施消费？返回类型各是什么接口？
+- `using` 声明消费的是哪个 Symbol？它是哪个 TS 版本引入的？
+- 什么时候该用品牌类型、什么时候普通别名就够？遮住第 10 节对比表，说出至少两条取舍依据。

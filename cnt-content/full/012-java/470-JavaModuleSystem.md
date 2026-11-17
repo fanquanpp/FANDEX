@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: JPMS模块系统
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/450-JavaRecordClass'
   - 'java/460-JavaTextBlock'
@@ -710,3 +710,13 @@ jdeps --generate-module-info out lib.jar
 # 简洁列出 jar 包依赖
 jdeps -s app.jar
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. module-info.java 里 requires、exports、opens、provides...with 各控制什么？——requires 声明依赖模块；exports 放行"编译与运行期可访问"的包；opens 放行"深度反射可访问"的包；provides X with Y 声明服务实现。
+2. 模块化后反射访问内部 API 失败报什么异常？两条出路？——InaccessibleObjectException；启动参数 --add-opens module/package=ALL-UNNAMED，或模块内写 opens。
+3. 强封装从哪个 JDK 起默认开启？非法访问的过渡参数经历了什么变化？——JDK 16 默认强封装（JEP 396），JDK 17 移除 --illegal-access（JEP 403），只能显式 --add-opens。
+4. unnamed module（类路径世界）与 named module 的关系是什么？——类路径上的所有 jar 合成匿名模块，可读所有模块并 export 所有包，但被命名模块反射访问内部包时仍受 opens 约束。
+5. 什么时候值得模块化自己的应用？什么时候用类路径即可？——JDK/库开发者（要收紧 API 面）与需要 jlink 裁剪运行时的场景值得；普通 Spring Boot 单体应用类路径 + 容器镜像已够用，模块化收益低摩擦高。

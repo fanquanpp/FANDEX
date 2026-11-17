@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL事务ACID特性：原子性、一致性、隔离性、持久性的原理、实现机制与保证
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/420-Index'
   - 'sql/430-ExecutionPlan'
@@ -241,6 +241,48 @@ COMMIT;  -- 一次 fsync
 - 进阶注意：`innodb_flush_log_at_trx_commit = 1`（MySQL）与 `synchronous_commit = on`（PG）
   是持久性的默认底线，调低换性能前先评估能接受丢多少数据。
 - ACID 不是免费的：隔离级别越高、刷盘越频繁，吞吐越低；按业务风险分级选择，而不是全局拉满。
+## 遮码自检
+
+遮住答案先答；ACID 题的判断标准是"每个特性都能说出'防的是哪类事故、靠什么机制'"。
+
+**第 1 题：ACID 四个字母各防哪类事故？各主要靠什么机制实现？**
+
+<details><summary>参考答案</summary>
+
+原子性防"做了一半"——undo log 记旧值，回滚时逆向恢复；持久性防"提交了又丢"——
+redo log/WAL 先落盘再返回提交成功，崩溃后重放；隔离性防"并发互相踩"——锁与 MVCC
+快照；一致性防"数据违反业务规则"——它是前三者加上约束（主外键、CHECK）与业务逻辑
+共同的结果。经典总结：A、I、D 是手段，C 是目的。
+</details>
+
+**第 2 题："一致性由数据库保证"这句话对吗？转账里"总金额不变"这条规则，数据库替你守住了吗？**
+
+<details><summary>参考答案</summary>
+
+只对一半。数据库保证结构上的一致（约束、外键、事务的 AID 让并发与崩溃不破坏已有
+规则），但"转账总额不变"是**业务规则**——你不把它写成约束或放进正确的事务边界，
+数据库无从知晓。C 需要你声明规则 + 数据库执行规则，两者缺一不可。
+</details>
+
+**第 3 题：为什么说"单条 SQL 也是原子的"？这对"忘写 WHERE 的 DELETE"意味着什么？**
+
+<details><summary>参考答案</summary>
+
+单条语句要么整条生效要么整条不生效（语句级原子性）——这对防止"半张表被更新"是
+好事。但反过来说：DELETE 不带 WHERE 时，"整条生效"= 全表被删；原子性只保证边界
+完整，不保证你想要的范围。范围靠 WHERE，边界靠事务，别指望一个替另一个兜底。
+</details>
+
+**第 4 题：隔离性"越强越好"吗？四个隔离级别大致怎么摆？**
+
+<details><summary>参考答案</summary>
+
+不是——隔离越强，并发冲突处理越重，吞吐越低。从弱到强：READ UNCOMMITTED（能读到
+脏数据，几乎没人用）→ READ COMMITTED（读不到未提交，PostgreSQL 默认）→
+REPEATABLE READ（同一事务重复读一致，MySQL 默认）→ SERIALIZABLE（完全串行语义，
+最安全最贵）。选型是"业务能容忍哪种异常"的决策，不是无脑拉满。
+</details>
+
 ## 事务基本操作
 
 **基本写法：开启事务**

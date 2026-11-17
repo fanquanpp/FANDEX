@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 承接移动语义的收官篇：万能引用 T&& 的两种形态、引用折叠规则表与 static_assert 验证实验、std::forward 与裸 std::move 的事故对照、emplace_back 与 push_back 的真实差异实验，附 forward 漏写的拷贝退化调试实录。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/100-MoveSemanticsDetailed'
   - 'cpp/090-RvalueReferenceMoveSemantics'
@@ -345,6 +345,50 @@ assert(r && *r == "aaaaaaaaaa");
 - std::forward（cppreference）：https://en.cppreference.com/w/cpp/utility/forward （中文：https://zh.cppreference.com/w/cpp/utility/forward ）
 - std::move：https://en.cppreference.com/w/cpp/utility/move
 - 转发引用的判定规则：https://en.cppreference.com/w/cpp/language/reference
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：判断下面两处 `T&&` 各是什么身份——只有一处是「万能引用」，说出判定规则与另一个的真实身份：
+
+```cpp
+template <typename T>
+void f(T&& x);            // (1)
+
+void g(Widget&& x);       // (2)
+```
+
+**提示**：万能引用的两个条件缺一不可——发生模板推导，且形如 `T&&`（原样，不是 `const T&&`）。(2) 是具体类型，没有推导。
+
+**参考实现**（先自己写完再看）：
+
+```text
+(1) 万能引用：T 在调用点推导——传左值时 T 推成 Widget&，引用折叠出 Widget&& &；
+    传右值时 T = Widget，形参就是 Widget&&。
+(2) 右值引用（具体类型）：Widget 已确定，只接受右值实参，跟推导无关。
+判定口诀：模板推导 + 原样 T&& 才是万能引用；auto&& 也是（auto 推导同理）。
+```
+
+要点自查：`void f(const T&&)` 与 `void g(Widget&&)` 长得像但都不是万能引用——推导与「原样」两个条件要逐条对。
+
+**任务二**：默写一个转发包装函数——`template <typename... Args> auto makeWidget(Args&&... args)` 内部把参数**原封不动**地传给 `Widget` 的构造（经 `std::forward`），并回答：把 `std::forward<Args>(args)` 换成 `args` 或 `std::move(args)` 各错在哪一层？
+
+**提示**：`forward` 按推导出的 T 还原值类别——左值传左值、右值传右值；直接传 `args` 一律当左值，`move` 则把左值也杀了。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+template <typename... Args>
+Widget makeWidget(Args&&... args) {
+    return Widget(std::forward<Args>(args)...);
+}
+// 换成 args：右值实参也变成左值 => Widget 走拷贝构造，移动语义丢失。
+// 换成 std::move(args)：左值实参也被夺走——调用方的对象在不知情时被搬空。
+// forward = 「按推导结果原样递下去」，move = 「无条件递右值」，二者不可互换。
+```
+
+要点自查：能说出「forward 有条件、move 无条件」这一句，引用折叠与完美转发的主线就通了；`emplace_back` 正是这条链在容器上的直接受益者（就地构造 vs 构造再拷贝）。
 
 ## 12. 自我检查
 

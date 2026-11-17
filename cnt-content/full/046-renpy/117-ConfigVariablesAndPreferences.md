@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 集中梳理 Ren'Py config.* 分类速查（窗口标题/存档目录/开发者开关/性能参数）与 preferences 运行时读写（text_cps/afm/音量），标注 config 只能在 init 阶段改、preferences 可运行时改的分界
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -69,6 +69,7 @@ config 是一个巨大的配置对象，引擎在 init 阶段读取它来决定�
 | `config.image_cache_size` | 图像缓存大小，以屏幕像素的倍数计（默认 8） |
 | `config.image_cache_size_mb` | 以 MB 计的图像缓存上限（默认 300，设了它就不看前者） |
 | `config.layers` | 图层列表与顺序（见 035 篇） |
+| `config.image_directories` | 图像搜索目录列表（8.5 起取代 config.images_directory；8.6 起音频与字体也有对应的多目录变量，见 030 篇） |
 | `config.keymap` | 按键映射表（见 [变量、define 与 default](/renpy/050-VariablesDefineAndDefault)） |
 | `config.variants` | 屏幕变体选择列表（见 [屏幕语言与界面](/renpy/080-ScreensAndScreenLanguage)） |
 | `config.default_language` / `config.language` | 默认语言与当前语言（见 [翻译与本地化](/renpy/120-TranslationLocalization)） |
@@ -234,6 +235,48 @@ init python:
 ```
 
 对照要点：静音走 `set_mixer(mixer, 0.0)` + `set_mute(mixer, True)` 双保险——只设音量为零，玩家手动拖滑杆到 50% 时会"莫名其妙变有声"；只调 set_mute 则混音器值还在、恢复时直接解除即可，但部分界面对 get_mixer 的 0.0 显示会误导。备份用 `default` 变量（随存档走），静音状态用 `persistent.all_muted`（跨会话记住"我是被静音的"）——两份数据各有归属，正是本篇 config/preferences/persistent 三层分界的微缩演练。若把备份存进 persistent，读档后备份可能来自另一个存档位；若把静音状态存进普通变量，重启游戏后按钮文字与引擎真实状态脱节。
+</details>
+
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案，再展开对照。
+
+1. config 与 preferences 的四条分界各是什么？"玩家会想调的吗"这个口诀怎么用？
+2. 运行时写 $ config.xxx = ... 会报错吗？后果是什么？
+3. 哪个 config 变量发布后绝不能改？为什么？
+4. preferences.get_mixer 在静音时返回什么？"静音"与"音量为零"是不是一个状态？
+5. 自定义设置屏绑定 preferences 字段用哪两个动作/值对象？Preference 动作与它们的分工是？
+6. "项目默认音量"为什么没有对应的 config 变量？通行做法是什么？
+7. define x = preferences.text_cps 错在哪？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 谁的意愿（创作者/玩家）、何时设定（init 一次性/运行时随时）、持久化
+   （随游戏分发/自动存玩家机器）、改错时机（运行时改不生效/随时生效）。
+   窗口标题、存档目录、缓存大小归 config；文本速度、自动播放、音量、
+   全屏归 preferences。
+
+2) 不报错，但静默不生效——引擎已按 init 时的值运转。这是"改了没反应"
+   的第一排查项。
+
+3) config.save_directory。改了它玩家就找不到旧存档，存档目录一次定终身。
+
+4) 返回 0.0 而不是真实设定值；是两个独立状态。判断玩家设置要连
+   get_mute 一起查。
+
+5) FieldValue / ToggleField 直绑 preferences 对象字段，适合自定义布局；
+   Preference 动作封装了"改哪个值"的知识，适合标准设置项。
+
+6) preferences 没有"默认值"类 config 变量——它的持久化机制本身就是
+   "老玩家保持上次设置"。通行做法：persistent 标志位做一次性初始化
+   （如首启时 set_mixer 写入推荐音量）。
+
+7) define 在 init 期求值，会把"当时的偏好值"固化成常量；读偏好必须
+   在运行期（screen、label、函数内）。
+```
+
 </details>
 
 ## 小结

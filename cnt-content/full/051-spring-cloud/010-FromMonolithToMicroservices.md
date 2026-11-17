@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/050-ConfigurationManagement'
   - 'java/880-SpringCloudMicroserviceDevelopment'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'spring-cloud/020-ServiceRegistrationDiscovery'
   - 'spring-cloud/090-DistributedTransactionSeata'
@@ -232,7 +232,9 @@ flowchart LR
 
 ```text
 主线基线：Spring Cloud 2025.0.x + Spring Boot 3.5.x + Java 21
-升级瞭望：Spring Cloud 2025.1 起可配 Spring Boot 4.0，随官方发布节奏另行迁移
+          （配套 Spring Cloud Alibaba 2025.0.x 与 Nacos Server 3.x，版本对应以官方 wiki 为准）
+升级瞭望：Spring Cloud 2025.1（Oakwood）已于 2025 年 11 月随 Spring Boot 4 GA——
+          该代起全家族升 5.0.0，主要破坏性变更是 Jackson 3 与组件改名，迁移随官方节奏另行展开
 ```
 
 **与兄弟模块的分工**：[Spring Boot 模块](/java/880-SpringCloudMicroserviceDevelopment) 那 19 篇练的是单服务内功——一个 Boot 应用如何站起来、对外提供 REST、管好数据与事务；本模块 14 篇练的是多服务协作——N 个 Boot 应用如何互相找到、互相调用、共同扛住故障。所有单服务内的功夫，本模块一律当作已知。

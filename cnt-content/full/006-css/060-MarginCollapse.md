@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 深入解析 CSS margin 合并、塌陷机制及 BFC 块格式化上下文的工程实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/170-PriorityCalculation'
   - 'css/040-StyleSheetImportMethod'
@@ -1787,6 +1787,46 @@ CSS Flexbox §4.2 与 CSS Grid §2.2 明确规定：flex item 与 grid item 的 
 - BFC 与布局：`css/210-TraditionalLayoutTech`；
 - 弹性布局：`css/240-CSS3FlexboxFlexLayout`（gap 与不合并行为）；
 - 工程化间距：Tailwind 的 `space-y-*` 与 margin 处理策略。
+
+## 11. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1 节与第 6 节的示例代码自己写，再对照参考实现。
+
+**任务一**：构造并口算三种合并——上块 `margin-bottom: 20px`、下块 `margin-top: 30px`；父元素 `margin-top: 10px` 且首个子元素 `margin-top: 25px`、父元素无 padding/border；空元素自身 `margin-top: 15px; margin-bottom: 35px`。分别写出「实际间距/表现」与现象名。
+
+**任务二**：给出三种打断合并的写法（相邻兄弟合并、父子穿透各至少一种），不许用 `!important`，并说明为什么 Flex/Grid 容器里这些问题「从未发生」。
+
+**提示**：任务一对应第 1 节三类基础场景——相邻取最大、穿透是把子的 margin 提到父级之外生效、空元素自合并取最大；任务二的打断关键词是「阻隔邻接」（padding/border/content）与「换上下文」（flow-root、Flex/Grid 的格式化上下文）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.a { margin-bottom: 20px; }
+.b { margin-top: 30px; } /* 相邻合并：间距 30px（取最大） */
+
+.parent { margin-top: 10px; }
+.parent > :first-child { margin-top: 25px; }
+/* 父子穿透：25px 与父的 10px 合并取 25px，整个 parent 被推下 25px，
+   parent 与首子之间 0 间距（父无 padding/border 阻隔） */
+
+.empty { margin-top: 15px; margin-bottom: 35px; }
+/* 空元素自合并：占位高度为 35px 的空白 */
+
+/* 任务二 */
+/* 相邻合并打断：其一改为单侧 margin（只给下方块 margin-top），
+   或中间加 padding/border 阻隔邻接 */
+.list > * + * { margin-top: 30px; } /* 只用一侧，天然不合并 */
+
+/* 父子穿透打断：给父级建立新 BFC 或加阻隔 */
+.parent { display: flow-root; } /* margin 在容器内结算，不再穿透 */
+
+/* Flex/Grid 不合并：子项是 flex/grid item，规范规定其 margin 永不合并，
+   且容器高度天然包含子项 margin——换布局模式等于换掉塌陷规则 */
+.cards { display: flex; flex-direction: column; gap: 16px; }
+```
+
+验收点：任务一里给 `.parent` 加 1px `border-top` 后穿透立刻消失、间距变成「10 + 25」的叠加——「阻隔邻接」的反证实验；任务二的 `flow-root` 若写成 `overflow: hidden`，记得它会顺手裁剪溢出内容（第 3 节副作用表）。
 
 ## 附录 A：术语表
 

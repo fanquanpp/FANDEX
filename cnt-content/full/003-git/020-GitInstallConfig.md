@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 三大系统一行命令安装 Git 并验证，讲透 user.name/user.email 为什么必须配（每个提交的署名与 GitHub 贡献图），global 常用三件套、仓库级覆盖实验与出口检查清单；SSH 与 HTTPS 的选择只做预告。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-11-16'
 related:
   - 'git/010-Git'
   - 'git/030-GitEnvConfigInit'
@@ -60,7 +60,7 @@ git --version
 预期输出（数字不必相同，`2.` 开头即正常）：
 
 ```text
-git version 2.51.0
+git version 2.56.1
 ```
 
 机器里有多份 Git 时，用 `which git`（Windows `where git`）看当前生效的那份住在哪，输出形如 `/opt/homebrew/bin/git` 都正常。装了却找不到命令的排查见第 8 节。

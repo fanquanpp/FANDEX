@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: InnoDB 锁体系一次理清：全局/表级/行级三层结构、MDL 阻塞链事故、意向锁兼容矩阵、间隙锁与临键锁的防幻读机制，以及每个锁的生产事故场景。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/430-MVCCPrinciple'
   - 'mysql/460-TransactionLockMechanism'
@@ -127,6 +127,26 @@ INSERT INTO lock_demo (id, note) VALUES (7, 'x');
 **"死锁了怎么办？"**——`SHOW ENGINE INNODB STATUS` 的 LATEST DETECTED DEADLOCK 段是案发现场；InnoDB 默认开启死锁检测并自动回滚代价小的一方，业务层捕获重试即可。系统性分析见[死锁检测与处理](/mysql/480-DeadlockDetectionHandling)。
 
 **"SELECT 不加 FOR UPDATE 也加锁吗？"**——普通一致性读不加任何锁（MVCC 快照，见 [MVCC 原理](/mysql/430-MVCCPrinciple)）；`FOR UPDATE/FOR SHARE` 才是显式加锁读。把"SELECT 会锁表"当成默认假设是老 MyISAM 时代留下的错觉。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：全局锁、表级锁、行级锁三层的典型代表是什么？各用在一个什么粒度的场景？
+
+参考答案（先自己答，再对照）：全局锁（FTWRL / --single-transaction 的全局一致性点）用于整库备份——让全库停在一个时间点；表级锁三代表：表锁（MyISAM 时代的并发单位）、元数据锁 MDL（结构变更与查询互斥，防"查询读到一半表被改"）、意向锁 IS/IX（行锁的"此表有行锁"公告牌，让表级操作不用逐行检查）；行级锁（记录锁/间隙锁/临键锁）加在索引记录上，是 InnoDB 并发的根基。粒度越大保护范围越大、并发代价越高。
+
+2. 概念自问：MDL 阻塞链是怎么形成的？为什么"一条没提交的 SELECT"能堵住后面的 ALTER 与所有新查询？
+
+参考答案（先自己答，再对照）：事务内的 SELECT 持有 MDL 读锁直到事务结束（不是语句结束）。ALTER 需要 MDL 写锁，写锁要等所有读锁释放——A 未提交的 SELECT 挡住 ALTER；ALTER 排队中，后续所有查询的 MDL 读锁也排在写锁后面（写优先防饿死）——整个表的访问队列被一个忘提交的事务堵死。处置：kill 阻塞源头或等它提交，长期方案是 ALTER 前 SET lock_wait_timeout 给 DDL 设超时。
+
+3. 判断题：普通 SELECT 会给 InnoDB 行加锁，所以高并发查询会互相阻塞。
+
+参考答案（先自己答，再对照）：不会。普通 SELECT 是一致性非锁定读——沿 MVCC 版本链找可见版本，不碰锁结构；读写互不阻塞正是 MVCC 的核心收益。加锁读（FOR UPDATE/FOR SHARE）才真的锁行。把"MySQL 的 SELECT 锁表"当成默认假设，是 MyISAM 表锁时代留下的错觉，InnoDB 上不成立。
+
+4. 概念自问：意向锁为什么不"锁"任何数据，却必不可少？
+
+参考答案（先自己答，再对照）：意向锁是表级的"占位声明"：事务对某行加了行锁前，先在表上放 IS/IX 标记，表达"本表存在行级锁"。若没有它，表级操作（如 LOCK TABLES WRITE、DDL 的表锁）要判断冲突就得逐行扫描全部行锁；有了它，表级判断只需看一个标志位。它锁的是"元信息"，冲突发生在表锁与行锁两个层面之间——是粒度桥接件而非数据保护者。
 
 ## 检验清单
 

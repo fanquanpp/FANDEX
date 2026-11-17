@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 广播域为什么要切、access 与 trunk 的分工、VLANIF 三层网关与互联 VLAN，两个可完整复现的 eNSP 实验：跨楼层单 VLAN 与多部门多 VLAN 路由互通。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/035-NetworkSimulatorLab'
   - 'networking/160-SwitchingAndRouting'
@@ -179,6 +179,19 @@ vlan40、财务 vlan50、其他 vlan60），各网段 192.168.X.0/24，每 VLAN 
   时，就需要动态路由协议接管（同上篇第 4、5 节）；
 - 本文的「先写规划表再敲命令、分层验收」来自
   [网络实验环境与模拟器](networking/035-NetworkSimulatorLab) 的实验方法论。
+
+## 教学自检
+
+按遮码自检法：遮住上文配置与表格，先自己推演，再对照。
+
+- access 口收帧与发帧时对 VLAN 标签分别做什么？终端为什么感知不到 VLAN 的存在？
+- trunk 放行列表（allow-pass）与 VLAN 创建是两件独立的事——「S1 建了 VLAN 10、S2 没建」
+  时 trunk 链路上会发生什么？
+- VRP 的 trunk 默认放行哪个 VLAN？为什么生产守则要求精确放行而不是 `all`？
+- 跨 VLAN 互通的三个必要条件是什么？排错时按什么顺序核对？
+- PC 的网关为什么必须指向**本 VLAN** 的 VLANIF 地址？填成别的 VLAN 的网关会出现什么现象？
+- 实验二没有任何静态路由为什么全通？互联 VLAN 的直连路由在数据路径里承担了哪一跳？
+- 「同 VLAN 通、跨 VLAN 断」的最高频两个原因分别是什么？各自的验证命令是什么？
 
 ## 实践
 

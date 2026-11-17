@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 分布式版本控制核心原理：集中式与分布式对比、快照存储、完整性保证与协作模型。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'git/100-GitBranchManagement'
   - 'git/150-GitRemoteRepoOperation'
@@ -162,6 +162,36 @@ git clone repo.bundle restored-repo    # 离线环境也能完整克隆
 - **「远程仓库有特殊地位」**：它与本地仓库格式完全相同；`git clone ../project` 本地互克隆一样成立。「中央」只是约定。
 - **「分布式就不需要备份」**：克隆副本会随着开发者流失、磁盘损坏而消失，官方仓库仍需正规备份策略。
 - **把 pull 当唯一同步手段**：pull 隐含合并动作，审计先行应养成 `fetch` 后看 `log main..origin/main` 的习惯（见 [远程跟踪分支](git/160-RemoteTrackingBranch)）。
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令或结论，再展开对照。
+
+1. 用一句话说清「远程仓库没有特殊地位」的依据，并给出一个不联网验证它的办法。
+2. Git 每次提交存完整快照而非差异，仓库为什么不爆炸？写出亲眼看去重的命令。
+3. 实操：用 `git bundle` 把一个小仓库完整迁移到另一个目录并 clone 回来，验证历史与标签都在。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 依据：远程仓库与本地仓库格式完全相同，也是一份普通克隆，fetch/push 才发生数据流动；
+   验证：git clone ../local-repo 本地目录互克隆，一切命令照常——「中央」只是共享约定。
+
+2) 快照里未变化的文件指向同一个 blob（内容寻址去重），配合 zlib 压缩与打包时 delta 压缩，
+   体积反而常比差异式更小：
+echo hi > a.txt && cp a.txt b.txt && git add a.txt b.txt
+git ls-files -s        # 两行哈希相同 → 同一 blob
+
+3)
+git bundle create repo.bundle main --tags HEAD
+# 末尾的 HEAD 让 bundle 自带 HEAD 引用（指向 main）——缺了它 clone 会报
+# "remote HEAD refers to nonexistent ref, unable to checkout"，工作区不会被检出
+cd ../ && git clone repo.bundle restored-repo
+cd restored-repo && git log --oneline && git tag -l   # 历史与标签完整
+```
+
+</details>
 
 ## 小结
 

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 核心标准包导览：io/bufio/fmt、os/filepath、net/http、encoding/json、time 与常用速查表——标准库入门地图；工具链专篇见 115。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/070-GoErrorHandling'
   - 'go/115-GoToolchainAndBuild'
@@ -733,3 +733,54 @@ ok := bytes.Equal([]byte("a"), []byte("a"))
 // 判断是否包含子切片
 ok := bytes.Contains([]byte("hello"), []byte("ell"))
 ```
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（io.Reader 的组合）**：不用中间缓冲变量，把"文件 + UTF-8 BOM 去除 + 最大 1MB 限制"组合成一个读取流。提示：`io.LimitReader`、`io.MultiReader`。
+
+参考实现：
+
+```go
+f, _ := os.Open("data.txt")
+defer f.Close()
+
+r := io.LimitReader(f, 1<<20)      // 最外层：截断到 1MB
+bom := []byte{0xEF, 0xBB, 0xBF}
+r = io.MultiReader(bytes.NewReader(bom), r) // 仅为演示组合顺序，实际去 BOM 需读后判断
+```
+
+要点：`io.Reader` 的组合是链式的——包装器返回的仍是 Reader，可以继续包；组合顺序即数据处理顺序。真正的 BOM 处理应先 `Peek`（bufio.Reader）判断再决定是否跳过，本题考察的是组合能力本身。
+
+**题 2（strings vs strconv 分工）**：把 `"8080"` 转成 int；把 `[]string{"a","b"}` 合并成 `"a, b"`；把 `"Hello"` 全转小写并判断是否含前缀 `"he"`。三个操作分别用哪个包的哪个函数？
+
+参考实现：
+
+```go
+n, err := strconv.Atoi("8080")           // 字符串与基本类型互转：strconv
+s := strings.Join([]string{"a", "b"}, ", ") // 拼接分隔：strings.Join
+low := strings.ToLower("Hello")           // 大小写与内容处理：strings
+has := strings.HasPrefix(low, "he")
+```
+
+要点：strconv 管"类型的字符串表示"，strings 管"文本内容本身"。转错了包名编译都过不了，这是天然的分工判据。
+
+**题 3（bufio 的价值）**：逐行读一个 2GB 的日志文件并统计行数。写出代码，并解释为什么不能直接 `ioutil.ReadAll`（Go 1.16 后为 `io.ReadAll`）。
+
+参考实现：
+
+```go
+count := 0
+sc := bufio.NewScanner(f)
+for sc.Scan() { // 默认按行切分，逐行供给
+    count++
+}
+if err := sc.Err(); err != nil {
+    log.Fatal(err)
+}
+```
+
+要点：`io.ReadAll` 会把整个文件装进内存（2GB 起步还可能翻倍）；`Scanner` 或 `bufio.Reader` 维护固定大小缓冲，内存占用恒定。超长行（超过 Scanner 默认 64KB 缓冲）要用 `sc.Buffer` 调大或换 `bufio.Reader.ReadString('\n')`。

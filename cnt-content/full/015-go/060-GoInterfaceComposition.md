@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 接口定义、隐式实现、空接口、类型断言、类型开关、接口组合、io.Reader/Writer、sort.Interface 与常见接口模式。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/040-GoFunctionMethod'
   - 'go/050-GoDataStructure'
@@ -521,3 +521,62 @@ func NewStorage(cfg Config) (Storage, error) {
     }
 }
 ```
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（隐式实现）**：定义 `Speaker` 接口（含 `Speak() string`）与 `Dog` 结构体，让 `*Dog` 满足 `Speaker`。写完解释：为什么代码里没有 `implements` 关键字？如果 `Speak` 用值接收者实现，`Speaker` 变量能装 `Dog` 值吗？
+
+参考实现：
+
+```go
+type Speaker interface{ Speak() string }
+
+type Dog struct{ Name string }
+
+func (d Dog) Speak() string { return d.Name + ": 汪汪" }
+
+var s Speaker = Dog{Name: "旺财"} // 值接收者方法：值与指针都能满足接口
+```
+
+要点：Go 的接口满足是编译器自动判定"方法集是否覆盖接口方法集"，实现关系由结构而不是声明决定。值接收者方法在值与指针的方法集里都有；指针接收者方法只在指针的方法集里。
+
+**题 2（类型开关）**：写一个 `describe(v any) string`，用类型开关区分 `int`、`string`、`error`，其余返回 `unknown`。注意把 `error` 分支放在哪个位置才安全。
+
+参考实现：
+
+```go
+func describe(v any) string {
+    switch x := v.(type) {
+    case int:
+        return fmt.Sprintf("int: %d", x)
+    case string:
+        return "string: " + x
+    case error: // 先于空接口 default；具体错误类型分支应放在它前面
+        return "error: " + x.Error()
+    default:
+        return "unknown"
+    }
+}
+```
+
+要点：类型开关按书写顺序匹配，宽类型（error、fmt.Stringer）要放在具体类型之后，否则会截胡。
+
+**题 3（接口组合）**：把 `Reader`、`Closer` 组合成 `ReadCloser`，并解释 `io.ReadCloser` 为什么不用声明任何新方法。
+
+参考实现：
+
+```go
+type Reader interface{ Read(p []byte) (int, error) }
+type Closer interface{ Close() error }
+
+type ReadCloser interface {
+    Reader
+    Closer
+}
+```
+
+要点：接口组合是嵌入语义——`ReadCloser` 的方法集是两个成员方法集的并集，满足组合接口的任何类型自动满足它；标准库 `io` 的 `ReadCloser` 正是这样定义的。

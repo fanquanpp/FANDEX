@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: print 谱系的去向差异、assert 的调试期语义与 release 裁剪、@warning_ignore 精准压警与断点调试
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -104,7 +104,7 @@ func legacy(node) -> void:   # 参数无类型标注的存量接口，动态访�
 
 ## 6. 动手实践
 
-**任务一：四个输出函数的去向实验。** 写一个脚本依次调用 print/printerr/push_warning/push_error，分别在两处观察：a) 编辑器 Output 与 Debugger Errors 面板；b) 命令行运行并重定向（`godot --headless --script res://test_out.gd > out.txt 2> err.txt`），打开两个文件对比内容归属。提示：push_error 会让命令行进程以非零码退出（编辑器错误计数变化），观察这个副作用。
+**任务一：四个输出函数的去向实验。** 写一个脚本依次调用 print/printerr/push_warning/push_error，分别在两处观察：a) 编辑器 Output 与 Debugger Errors 面板；b) 命令行运行并重定向（`godot --headless --script res://test_out.gd > out.txt 2> err.txt`），打开两个文件对比内容归属。提示：push_error 只进 stderr 并计入编辑器错误计数，本身并不改变进程退出码——CLI 工具的成败判定要靠 quit(n) 显式给出退出码（118 篇）；重定向后重点看 err.txt 里 push_error 附带的堆栈信息。
 
 **任务二：assert 的 release 裁剪证明。** 写 `assert(_record_side_effect(), "不应发生")`，其中 _record_side_effect 往文件里写一行标记。分别以调试与导出 release 版本运行，检查标记文件是否生成。提示：release 版标记文件不存在，即证明"表达式未求值"；反过来再证明一次"assert 里放副作用是错的"。
 

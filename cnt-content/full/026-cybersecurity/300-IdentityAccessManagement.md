@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 身份与访问管理：SSO 协议对比（SAML/CAS/OIDC）、OAuth 2.0 授权模型、JWT 结构与攻击面、IAM 落地实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/290-AuthenticationAuthorization'
   - 'cybersecurity/320-ZeroTrustArchitecture'
@@ -183,3 +183,11 @@ MFA         ：管理员与远程访问强制；优先 FIDO2/TOTP，短信作兜
 - **进阶注意**：授权码 + PKCE 是默认流程，隐式与密码模式已废弃（OAuth 2.1 口径）；
   JWT 的安全性取决于验签实现是否固定算法白名单，而非签名本身；账号生命周期与
   权限复核是审计最爱查的薄弱点，务必自动化。
+
+## 自检
+
+- 遮住第 1 节的框图，写出 IAM 四件事及各自的典型控制物（认证—密码/MFA、授权—RBAC/ABAC、审计—日志、生命周期—入转离流程）。
+- 为什么「离职半年仍能登录」是经典审计发现？生命周期管理里最该自动化的三个时点是什么（入职开通、转岗调整、离职回收）？
+- SAML、CAS、OIDC 各自的载体与典型场景是什么？给「企业存量系统对接」与「全新移动应用」各选一个并说明理由。
+- OAuth 与 OIDC 的分工一句话是什么？「拿 access_token 当身份用」错在哪？
+- 遮住第 6 节的落地清单，自己列出你所在项目 IAM 建设的六项必做，再对照找缺口。

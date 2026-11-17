@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: GitHub 警报块、Obsidian Callout、MkDocs 与 Docusaurus 提示框语法及跨平台兼容方案。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'markdown/110-GitHubFlavoredMarkdown'
   - 'markdown/230-HtmlEmbed'
@@ -15,7 +15,7 @@ prerequisites:
 ---
 
 > **认知导入（Layer 1 进阶层）**
-> 前置知识：031 引用与嵌套列表（GitHub/Obsidian 的提示框都建立在引用语法之上）。
+> 前置知识：070 引用块（GitHub/Obsidian 的提示框都建立在引用语法之上）。
 > 边界说明：提示框**没有跨平台的统一标准**——GitHub、Obsidian、MkDocs、Docusaurus 各有一套私有语法。本篇按平台分别讲清写法，并给出任何平台都生效的兜底方案。
 > 强制练习：在 GitHub 仓库的任意 md 文件里写一个 `> [!NOTE]` 警报块并预览，再改成小写 `[!note]` 观察差异。
 
@@ -29,7 +29,7 @@ prerequisites:
 
 ## 2. GitHub 警报块（alerts）
 
-GitHub 于 2024 年 1 月起支持五种警报块，写在引用块的第一行：
+GitHub 自 2023 年 12 月起支持五种警报块（官方 changelog 发布于 2023-12-14），写在引用块的第一行：
 
 ```markdown
 > [!NOTE]

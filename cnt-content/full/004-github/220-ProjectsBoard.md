@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 'GitHub Projects深度解析：以"项目白板与便利贴"为主线，讲解表格/看板/时间线三种视图、自定义字段、内置自动化与洞察图表。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/270-DependencySecurityOptions'
   - 'github/200-ForkWorkflow'
@@ -204,6 +204,32 @@ mutation {
 | Actions 自动化失败 | `Resource not accessible by integration` | 令牌权限不够 | 使用带 `read:project`/`write:project` 的 PAT，存在仓库 Secrets 中 |
 | 多人看到的视图不一致 | 各自字段不同 | 改了私有视图而非共享视图 | 保存视图时选择"保存到共享视图"（团队需要时可复制） |
 | 图表数据对不上 | Insights 缺条目 | 洞察不含已归档/已删除条目 | 统计期内不要归档条目，或使用筛选修正口径 |
+
+## 8. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考答案自己写，写完再对照。
+
+**任务一**：团队要看板按「状态」流转、表格批量改字段、时间线做季度汇报——这三种需求各用哪种视图？三种视图背后是几份数据？
+
+**任务二**：写出「Issue 被关闭时，卡片状态自动变 Done」的两种实现思路（一个用项目内置能力，一个说明这条规则在哪儿配置）。
+
+**任务三**：判断题——在项目表格里改了某 Issue 的负责人，Issue 页面上的负责人会变吗？在看板上把卡片拖到「待验收」，改的本质是什么？
+
+**参考答案**（先自己写完再看）：
+
+```text
+任务一：看板（Board）流转、表格（Table）批量编辑、时间线（Roadmap）汇报。
+背后是同一份数据，三种只是展示视角——改任何一处，全部视图同步生效。
+
+任务二：内置工作流（Built-in workflows）：项目顶部 Workflows 页签配置
+「Item closed -> Set status to Done」这类规则；复杂条件（按标签分流、
+跨仓库联动）则用 GitHub Actions 的 projects 相关 Action 写工作流。
+
+任务三：会——项目与 Issue 是双向同步的引用关系，不是复制；
+拖拽改的本质是该条目的 Status 字段值，数据层只有一处。
+```
+
+要点自查：Projects 与静态便利贴墙的分水岭是「双向同步」——Issue/PR 是数据源，项目只是视图加字段；草稿条目（Draft）是还没转 Issue 的想法；内置工作流覆盖高频自动化，Actions 兜复杂场景。
 
 ## 9. 一句话记忆
 

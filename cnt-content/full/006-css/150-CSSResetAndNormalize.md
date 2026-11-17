@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 浏览器默认样式差异的来源，以及 reset、normalize、现代重置方案的选择与写法。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/050-CSS3BoxModelDetailed'
   - 'css/160-CascadeInheritanceBasics'
@@ -95,7 +95,7 @@ ol[role="list"] {
 }
 ```
 
-**讲解：** 现代重置（如 Andy Bell 的现代 CSS Reset 思路）只做四件事：统一盒模型、去掉 body 外边距、媒体元素自适应、表单继承字体。保留标题层级与列表语义，配合 `role` 控制无标记列表。
+**讲解：** 现代重置（如 Andy Bell 的现代 CSS Reset 思路）只做四件事：统一盒模型、去掉 body 外边距、媒体元素自适应、表单继承字体。保留标题层级与列表语义；`ul[role="list"]` 是给 Safari/VoiceOver 的补偿——它们在 `list-style: none` 后会移除列表语义，`role="list"` 把语义补回来。
 
 ## 5. 三种方案如何选
 
@@ -140,3 +140,54 @@ ol[role="list"] {
 - 继承与层叠：`css/160-CascadeInheritanceBasics`；
 - 层叠层 @layer（重置入层）：`css/450-CascadeLayer`；
 - 架构方法论：`css/560-CSSArchitectureMethodology`。
+
+## 10. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2-4 节的示例代码自己写，再对照参考实现。
+
+**任务一**：写一份「20 行以内的现代重置」，覆盖四件事——统一盒模型、清 body 外边距并给基线字体、媒体元素不溢出、表单控件继承页面字体；每行带一句目的注释。
+
+**任务二**：回答两问——（a）经典 reset 把 `h1`-`h6` 全部清成一样大小，代价是什么；（b）为什么现代重置用 `ul[role="list"]` 而不是 `ul` 来去标记。
+
+**提示**：任务一照第 4 节默写骨架，盒模型选择器要带上伪元素；任务二(a)对应第 2 节讲解的「重建层级」，(b)对应第 4 节末句——`role="list"` 是给 Safari/VoiceOver 的「语义恢复」手段，不是「放弃语义」。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* 统一盒模型：宽高含内边距与边框（含伪元素） */
+}
+
+body {
+  margin: 0;              /* 清掉浏览器默认外边距 */
+  font-family: system-ui, "PingFang SC", sans-serif;
+  line-height: 1.5;       /* 正文基线 */
+}
+
+img,
+picture,
+video {
+  display: block;         /* 消除图片底部基线空隙 */
+  max-width: 100%;        /* 媒体永不撑破容器 */
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;          /* 表单控件跟随页面字体，不再用系统默认 */
+}
+
+/* 任务二 */
+/* (a) 标题视觉层级被抹平，之后每篇文章都要自己重建 h1-h6 字号阶梯；
+       reset 的「干净」是用重建成本换的 */
+/* (b) Safari/VoiceOver 在 list-style:none 后会把 ul 的列表语义一并移除
+       （读屏不再播报「列表共 N 项」）；role="list" 显式把列表语义补回来。
+       所以这条选择器恰恰是「去标记但保语义」的保护写法——
+       裸 ul { list-style: none } 才会把真正的数据列表语义也丢掉 */
+```
+
+验收点：任务一漏掉 `img` 的 `display: block` 时，图片下会多一条基线空隙；把盒模型选择器写成裸 `*` 时，`::before/::after` 造出的元素仍是 `content-box`，混用两种盒模型的布局误差很难排查。

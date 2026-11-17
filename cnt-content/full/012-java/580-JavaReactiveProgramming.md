@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Reactive Streams 规范、Project Reactor、Spring WebFlux 与响应式系统设计的系统性深度剖析
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/950-JavaSecurity'
   - 'java/990-JavaWebAssembly'
@@ -2126,3 +2126,13 @@ Java 21 虚拟线程的出现为"高并发 I/O"提供了另一种选择——保
 > 3. **高级**：研究自定义操作符、Reactor 内部机制、Reactive Streams 规范。
 > 4. **架构**：理解响应式微服务架构，能选型响应式 vs 命令式 + 虚拟线程。
 > 5. **持续**：关注 Spring Boot 与 Reactor 的版本演进，特别是与虚拟线程、GraalVM 的集成。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. Reactive Streams 规范的四个接口是什么？backpressure 由哪个方法承载？——Publisher、Subscriber、Subscription、Processor；Subscription.request(n) 上游拉取式背压。
+2. Flux 与 Mono 的语义边界是什么？——Flux 0..N 个元素的异步序列，Mono 0..1 个（一个值或空）；HTTP 响应用 Mono，消息流用 Flux。
+3. 写出"两路并发请求 zip 合并"的 Reactor 骨架。——`Mono.zip(callA(), callB()).map(t -> combine(t.getT1(), t.getT2()))`。
+4. 说一条"不要用响应式"的场景与一条"必须用响应式"的场景。——CPU 密集 + 虚拟线程可用的同步阻塞系统别硬上响应式（复杂度不成回报）；高扇出流式聚合/多消费者背压场景（如实时行情推送）值得用。
+5. 常见反模式：在链中调用阻塞方法会发生什么？怎么修？——阻塞调用卡死事件循环线程，整个 reactor 线程上的所有流都停摆；用 boundedElastic 调度器包装（publishOn/subscribeOn）或改造成非阻塞客户端。

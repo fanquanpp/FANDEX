@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Python上下文管理器深度剖析：with语句语义、__enter__/__exit__协议、contextlib工具集、异步上下文管理器、ExitStack动态管理、资源管理 RAII 模式与生产级工程实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'python/510-DecoratorAdvanced'
   - 'python/180-GeneratorCoroutine'
@@ -2349,3 +2349,12 @@ with (
 ):
     pass
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：手写一个计时上下文管理器，进出各打一行日志。要点：`@contextmanager` 生成器版——`yield` 前是 `__enter__`、后是 `__exit__`，配 `try/finally` 保证异常路径也执行；或类版实现 `__enter__`/`__exit__(self, exc_type, exc, tb)`。
+2. 预测题：`with` 体内抛 `ValueError`，`__exit__` 返回 `True` 与 `False` 分别发生什么？要点：`True` 抑制异常（外层看不到），`False`（或 None）正常向外传播——所以自定义管理器默认写 `return False`，只在做特殊抑制语义时才返回 True。
+3. 默写题：临时切换工作目录并保证恢复，两种写法各一行。要点：`with contextlib.chdir(path):`（3.11+）；旧版自己写管理器保存 `os.getcwd()` 并在 `__exit__` 恢复。
+4. 操作题：用 `ExitStack` 管理数量不定的文件句柄。要点：`with ExitStack() as stack: files = [stack.enter_context(open(p)) for p in paths]`——集合大小运行时才知道时这是唯一体面写法。

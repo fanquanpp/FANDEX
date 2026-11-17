@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: as const 的完整语义：字面量收窄、递归只读、数组转元组，以及与类型注解、satisfies、enum 的取舍。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'typescript/160-TypeInferenceDeepDive'
   - 'typescript/180-SatisfiesOperator'
@@ -217,7 +217,7 @@ const titles = {
 
 **Q3：enum 和 as const 对象怎么选？**
 
-需要运行时值 + 反向映射用 enum；只需要一组字面量联合和常量表时，`as const` 对象更轻量、没有运行时开销且与结构化类型更融洽。详见 `030-EnumAdvanced`。
+需要运行时值 + 反向映射用 enum；只需要一组字面量联合和常量表时，`as const` 对象更轻量、没有运行时开销且与结构化类型更融洽。详见[枚举进阶](/typescript/130-EnumAdvanced)。
 
 **Q4：as const 会影响性能吗？**
 
@@ -256,7 +256,7 @@ const titles = {
 
 ## 扩展阅读
 
-- `TypeInferenceDeepDive`：拓宽机制与 let/const 推断差异；
-- `049-SatisfiesOperator`：satisfies 与 as 的完整对比；
-- `030-EnumAdvanced`：enum 与 as const 对象的取舍；
-- `010-LocalTypeInference`：字面量类型与联合类型的应用。
+- [类型推断深入](/typescript/160-TypeInferenceDeepDive)：拓宽机制与 let/const 推断差异；
+- [satisfies 操作符](/typescript/180-SatisfiesOperator)：satisfies 与 as 的完整对比；
+- [枚举进阶](/typescript/130-EnumAdvanced)：enum 与 as const 对象的取舍；
+- [字面量与联合类型](/typescript/110-LiteralUnionTypes)：字面量类型与联合类型的应用。

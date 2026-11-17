@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 类型安全数据库访问的形式语义、Row 类型推导原理与 Kysely/Drizzle/Prisma 三大 ORM 的工程对比
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/610-TypeSafeI18n'
   - 'typescript/630-TypeSafeConfigSystem'
@@ -1495,7 +1495,9 @@ const booking = await prisma.booking.findFirst({
 // booking 的类型完全自动推导，无需手动定义
 ```
 
-### 填空题知识点讲解
+## 10. 自测练习
+
+### 10.1 填空题知识点讲解
 
 1. **（remember）** Kysely 由 ______ 在 2021 年开源，名称取自芬兰语 ______，意为"查询"。
 
@@ -1507,7 +1509,7 @@ const booking = await prisma.booking.findFirst({
 
 5. **（evaluate）** Prisma 通过 `prisma ______` 命令生成 TypeScript 类型与客户端代码，这是 schema-first 设计的核心。
 
-### 10.3 代码修正题
+### 10.2 代码修正题
 
 1. **（apply）** 下列 select 实现丢失了字段顺序信息，请修复以保留元组语义：
 
@@ -1594,7 +1596,7 @@ function groupBy<T extends Record<string, any>, K extends keyof T & string>(
 }
 ```
 
-### 10.4 开放性问题
+### 10.3 开放性问题
 
 1. **（evaluate）** 请用 300 字以内论述：为什么 Kysely 选择"纯类型推导"策略，而 Prisma 选择"代码生成"策略？从类型系统表达力、运行时性能、迁移成本、开发体验四个维度展开。
 
@@ -1613,19 +1615,21 @@ function groupBy<T extends Record<string, any>, K extends keyof T & string>(
 
 4. **（create）** 假设你要为图数据库（如 Neo4j）设计一个类型安全查询构建器，会面临哪些 TypeScript 类型系统的限制？请给出至少 3 个具体限制，并说明你将如何缓解。
 
-### 12.1 书籍
+## 11. 参考与致谢
+
+### 11.1 书籍
 
 1. **Hellerstein, J. M. et al.** *Architecture of a Database System* (Now Publishers, 2007) — 数据库系统架构的权威综述。
 2. **O'Neil, P. et al.** *Database: Principles, Programming, and Performance* (Morgan Kaufmann, 2001) — 关系模型与 SQL 的经典教材。
 3. **Klebanov, I.** *Kysely in Action* (Leanpub, 2023) — Kysely 作者的实战指南。
 
-### 12.2 论文
+### 11.2 论文
 
 1. **Codd, E. F.** *A Relational Model of Data for Large Shared Data Banks* (CACM 1970) — 关系模型的奠基论文。
 2. **Stonebraker, M.** *The Design of the POSTGRES Storage System* (VLDB 1987) — PostgreSQL 前身的存储设计。
 3. **Bierman, G. M. et al.** *Understanding TypeScript* (ECOOP 2014) — TypeScript 类型系统的形式化建模。
 
-### 12.3 开源项目
+### 11.3 开源项目
 
 1. **kysely** (kysely-org/kysely) — 类型安全 SQL 查询构建器。
 2. **drizzle-orm** (drizzle-team/drizzle-orm) — 极简类型安全 ORM。
@@ -1633,14 +1637,14 @@ function groupBy<T extends Record<string, any>, K extends keyof T & string>(
 4. **postgres** (porsager/postgres) — 现代 PostgreSQL 客户端。
 5. **slonik** (gajus/slonik) — PostgreSQL 客户端与查询构建器。
 
-### 12.5 视频课程
+### 11.4 视频课程
 
 1. **MIT 6.5830: Database Systems** — MIT 数据库系统课程，涵盖关系模型与查询优化。
 2. **Stanford CS346: Database System Implementation** — Stanford 数据库实现课程。
 3. **CMU 15-445: Database Systems** — CMU 数据库系统课程。
 4. **Theo - t3.gg YouTube 频道** — Drizzle 与 Prisma 的对比讨论。
 
-## 13. 总结
+## 12. 总结
 
 类型安全的数据库查询是现代后端开发的基石。通过本教程的学习，读者应能：
 
@@ -1651,3 +1655,11 @@ function groupBy<T extends Record<string, any>, K extends keyof T & string>(
 5. **创造** 生产级的类型安全数据库访问层，包括 Repository 模式、事务管理、连接池配置。
 
 掌握类型安全的数据库查询是构建可靠后端系统的关键技能。希望本教程能为你打开类型安全数据库访问的大门，让你在工程实践中游刃有余地选择与使用合适的 ORM。
+
+## 自检
+
+- 「SELECT 列表映射到 Row 类型」的推导链是什么？遮住第 3 节，用条件类型与 `infer` 复述从 SQL 字符串或构建器 API 到 Row 类型的每一步。
+- Schema 漂移（表结构变了、类型没跟上）靠什么机制发现？迁移工具与类型生成怎么联动？
+- Kysely、Drizzle、Prisma 三者的类型策略差异（SQL-like 构建器、schema 即类型源、client 生成）各是什么？选型时先问自己哪两个问题？
+- 原生 SQL 的查询结果怎么获得类型？为什么手写 `as Row` 是最后的选择？
+- 事务里的类型上下文（Transaction 类型参数）解决了什么问题？连接泄漏在哪类封装下最容易发生？

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: '以"运行一个 workflow 的完整生命周期"为主线，讲解 gh workflow 系列命令，涵盖查看、手动触发、参数传递、启用与禁用，配以原理讲解、错误对策。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -258,6 +258,38 @@ gh workflow enable deploy.yml
 | 误禁用导致不触发 | 明明 push 了代码却没跑 | 流水线处于 disabled 状态 | `gh workflow list` 检查状态，用 `enable` 恢复 |
 
 ---
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：手动触发一条流水线的完整链路——启动 `deploy.yml` 并传参 `environment=production`，实时跟随直到结束，失败时直接看失败步骤的日志。写出四条命令。
+
+**任务二**：写出三条管理命令——（a）列出仓库所有工作流及其状态；（b）临时停用 nightly.yml；（c）查某次运行的 job 明细。
+
+**任务三**：判断——（a）`gh workflow run` 报「workflow does not have workflow_dispatch trigger」，原因是什么？（b）不传 `--ref` 时用的是哪个分支上的 workflow 定义？
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 任务一
+gh workflow run deploy.yml -f environment=production
+gh run list --workflow deploy.yml --limit 1    # 拿到运行 ID
+gh run watch 123456789                         # 实时跟随到结束
+gh run view 123456789 --log-failed             # 失败时看日志
+
+# 任务二
+gh workflow list
+gh workflow disable nightly.yml
+gh run view 123456789
+
+# 任务三
+# (a) 该 workflow 文件没写 on: workflow_dispatch 触发器——
+#     手动触发是「平台事件」，文件里没声明就收不到；
+# (b) 远端默认分支上的定义。想跑某个分支的版本要 --ref 指定。
+```
+
+要点自查：`gh workflow run` 本质是发送 `workflow_dispatch` 事件，前提是文件声明了该触发器且已在默认分支生效；跟踪三板斧 `run list`（找 ID）→ `run watch`（盯进度）→ `run view --log-failed`（看失败日志）；disable 是「保工作流文件、暂停触发」，enable 随时恢复。
 
 ## 一句话记忆
 

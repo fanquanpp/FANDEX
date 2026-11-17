@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: MySQL 视图从零到工程化：创建替换与列别名、CHECK OPTION 的写入守卫、DEFINER/INVOKER 安全上下文、视图的四类适用场景与性能边界。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/150-AdvancedQueryMultiTableOperation'
   - 'mysql/690-AccountPermissionManagement'
@@ -229,6 +229,34 @@ SELECT * FROM v_user_public;    -- 视图无缓存，一切即时
 **"视图和临时表/汇总表怎么选？"**——要"定义复用与权限"选视图；要"算一次反复用"选汇总表（真实表 + 定时刷新或触发维护）。两者也常组合：汇总表管性能，视图管出口。
 
 **"视图能嵌套几层？"**——语法上很深都行，实践超过两层就该拆——嵌套视图的性能与可维护性问题会乘法放大，排查时 `EXPLAIN` 展开的计划也难以阅读。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出语句：把 `v_user_public` 改成"只允许通过视图写入 status='active' 的行"，并说出不加这道守卫时，通过视图插入 inactive 行会发生什么。
+
+参考答案（先自己写，再对照）：
+
+```sql
+CREATE OR REPLACE VIEW v_user_public AS
+SELECT id, name, status FROM users WHERE status = 'active'
+WITH CHECK OPTION;
+```
+
+不加 CHECK OPTION 时，WHERE 只过滤"读"——通过视图 INSERT 一行 status='inactive' 会成功落到底表，但从此这行在视图里"消失"（读不回来），写入方与读取方对数据的认知出现裂缝。CHECK OPTION 把 WHERE 从"读过滤器"升级为"写守卫"，违反即报 ERROR 1369。
+
+2. 概念自问：为什么说"视图是复用与安全的工具，不是性能工具"？
+
+参考答案（先自己答，再对照）：视图不存数据，每次查询都实时执行定义——简单视图会被优化器合并展开，等价于手写 SQL（性能不赚不亏）；聚合/去重视图则每次都要实时算一遍，大表上是真实成本。它带来的收益是定义复用（一处定义、多处引用）与权限收敛（DEFINER 模式下调用者只需视图权限），性能要么中性要么更差。
+
+3. 判断题：DEFINER 账号被删除后，它定义的视图还能被其他账号查询吗？
+
+参考答案（先自己答，再对照）：不能。DEFINER 模式下视图以定义者的权限执行，定义者失效（被删、被改密、权限被回收）会让视图执行失败，所有依赖它的调用全体报错。迁移库、换账号时要连带处理 definer 归属；8.4 起把他人设为 DEFINER 还需要 `SET_ANY_DEFINER` 权限——权限模型在持续收紧。
+
+4. 概念自问：视图嵌套两层以上为什么建议拆掉？
+
+参考答案（先自己答，再对照）：每层嵌套都让最终执行的 SQL 变得更难推断——EXPLAIN 展开后计划难以阅读、性能问题定位要穿过多层定义，而一处定义的修改会向所有下游视图扩散。两层以内清晰可控，再深就应该把中间结果实体化为汇总表或直接展开为显式 SQL。
 
 ## 检验清单
 

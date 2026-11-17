@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: useMemo、useCallback、useContext、useState、自定义 Hook、Hooks 规则与常见陷阱；useEffect 与 useRef 已拆为专篇。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/020-ComponentProps'
   - 'react/030-StateEvent'
@@ -410,6 +410,20 @@ useEffect(() => {
   /* ... */
 }, [memoizedObj]);
 ```
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **预测题**：`useMemo(() => computeHeavy(list), [{ id: 1 }])` ——依赖数组里每次渲染都内联一个新对象字面量，useMemo 还缓存得住吗？
+   答案：缓存不住。依赖比较用 `Object.is`，每次渲染的对象引用都不同，缓存形同虚设；要把对象提升到组件外、用 useMemo 包住，或拆成原始值依赖。
+2. **修 Bug 题**：父组件每次渲染内联传 `onClick={() => setId(1)}`，子组件包了 `React.memo` 还是每次都重渲染，为什么？怎么修？
+   答案：内联箭头函数每次渲染都是新引用，`memo` 的浅比较失败。用 `useCallback` 稳定回调引用（依赖用 setter 的函数式写法可为空数组），或启用 React Compiler 自动缓存（见 390 篇）。
+3. **辨析题**：useMemo 与 useCallback 各缓存什么？什么时候只能用其中一个？
+   答案：useMemo 缓存「值」（计算结果），useCallback 缓存「函数引用」。把函数作为 props 传给 memo 组件、作为其他 Hook 的依赖时只能用 useCallback（等价于 `useMemo(() => fn, deps)`）。
+4. **规则题**：为什么 Hook 不能写在 `if` 分支里？一句话理由。
+   答案：React 按调用顺序把 Hook 存进 Fiber 上的链表、靠位置匹配；条件调用让下次渲染顺序错位，状态串到别的 Hook 上（原理见 150 篇）。
+
 ## useState 状态钩子
 
 **useState**

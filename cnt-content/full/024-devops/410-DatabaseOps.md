@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 数据库运维：备份恢复、主从复制、读写分离、分库分表与数据迁移
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'devops/240-MonitorAndObservability'
   - 'devops/420-NetworkSecurityAdvanced'
@@ -105,25 +105,25 @@ super-read-only = ON
 **建立复制**：
 
 ```sql
--- 从库执行
-CHANGE MASTER TO
-  MASTER_HOST='master',
-  MASTER_USER='repl',
-  MASTER_PASSWORD='password',
-  MASTER_AUTO_POSITION=1;
-START SLAVE;
+-- 从库执行（MySQL 8.4 起旧写法 CHANGE MASTER TO/START SLAVE 已移除，8.0.22+ 用新语句）
+CHANGE REPLICATION SOURCE TO
+  SOURCE_HOST='master',
+  SOURCE_USER='repl',
+  SOURCE_PASSWORD='password',
+  SOURCE_AUTO_POSITION=1;
+START REPLICA;
 ```
 
 ### 2.2 复制延迟监控
 
 ```sql
--- 查看复制状态
-SHOW SLAVE STATUS\G
+-- 查看复制状态（8.0.22 前的旧名：SHOW SLAVE STATUS）
+SHOW REPLICA STATUS\G
 
 -- 关键指标
-Seconds_Behind_Master    # 延迟秒数
-Slave_IO_Running         # IO 线程状态
-Slave_SQL_Running        # SQL 线程状态
+Seconds_Behind_Source    # 延迟秒数
+Replica_IO_Running       # IO 线程状态
+Replica_SQL_Running      # SQL 线程状态
 Retrieved_Gtid_Set       # 已接收的 GTID
 Executed_Gtid_Set        # 已执行的 GTID
 ```
@@ -292,7 +292,7 @@ canal.instance.filter.regex=source_db\\..*
 | 锁等待   | SHOW ENGINE INNODB STATUS |
 | 表空间   | information_schema.TABLES |
 | 索引使用 | sys.schema_unused_indexes |
-| 主从延迟 | SHOW SLAVE STATUS         |
+| 主从延迟 | SHOW REPLICA STATUS       |
 | 磁盘空间 | df -h                     |
 | 备份状态 | 验证备份文件              |
 
@@ -313,5 +313,14 @@ echo "=== InnoDB 状态 ==="
 mysql -e "SHOW ENGINE INNODB STATUS\G" | grep -A5 "TRANSACTIONS"
 
 echo "=== 主从状态 ==="
-mysql -e "SHOW SLAVE STATUS\G" | grep -E "Slave_IO_Running|Slave_SQL_Running|Seconds_Behind"
+mysql -e "SHOW REPLICA STATUS\G" | grep -E "Replica_IO_Running|Replica_SQL_Running|Seconds_Behind"
 ```
+
+## 自检
+
+- 备份体系三问：全量+增量+binlog 三层各解决什么恢复场景？为什么"有备份"不等于"能恢复"——恢复演练验证的是什么？
+- 复制链路默写：GTID 自动定位下，从库 IO 线程与 SQL 线程各干什么、`Seconds_Behind_Source` 何时不可信？
+- 读写分离的两难：复制延迟下"写后立读"为什么会读旧数据？说出会话内粘主与 GTID 等待两种解法。
+- 分库分表三连：什么信号说明该分了？分片键为什么必须支撑最高频查询？扩容为什么推荐成倍扩（翻倍迁移法）？
+- 迁移演练口述：双写期的一致性靠什么校验？切读流量为什么按比例放量而不是一刀切？
+- MySQL 8.4 术语自查：`SHOW SLAVE STATUS`/`CHANGE MASTER TO` 为什么在你的 8.4 集群里会直接报错？新旧语句对应关系默写。

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: GFM 任务列表语法：复选框的识别规则、GitHub 交互行为、嵌套与实战场景。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/060-ListSyntax'
   - 'markdown/120-Strikethrough'
@@ -16,7 +16,7 @@ prerequisites:
 ---
 
 > **认知导入（Layer 1 进阶层）**
-> 前置知识：006 列表语法（本篇是列表的特例）。
+> 前置知识：060 列表语法（本篇是列表的特例）。
 > 边界说明：任务列表是 GFM 扩展，纯 CommonMark 渲染器只会显示字面的 `[ ]`；本篇讲清它在哪些平台"可点击"、哪些平台只是普通文本。
 > 强制练习：写一个三行的任务清单，把 `[ ]` 后面的空格删掉，观察复选框是否消失——空格同样是语法的一部分。
 

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: C# 异步编程全景解析：APM/EAP/TAP 三代模型、Task/ValueTask、CancellationToken、IAsyncEnumerable、await foreach、Channel、并发协调的深度原理与工程实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/380-CSharpUnityGameDev'
   - 'csharp/120-LINQDeep'
@@ -2802,3 +2802,44 @@ catch (Exception ex)
     Console.WriteLine($"捕获: {ex.Message}");
 }
 ```
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码或口述结论，再对照。本篇自检重点是「组合器选型」「取消传播」与「异常收割」三件事。
+
+**题 1（组合器选型）**：三个耗时任务：要全部成功才算成功、要凑齐所有结果但允许部分失败、要"谁先完成用谁"且取消输家——各用哪个 API？
+
+参考答案：全部成功才算成功用 `Task.WhenAll`（任一失败时聚合异常，最好再遍历 `tasks` 收割全部异常）；允许部分失败、要按完成顺序处理结果用 `Task.WhenEach`（.NET 9+）；谁先用谁用 `Task.WhenAny`，拿到赢家任务后必须显式取消/遗忘其余任务，否则输家会继续占用资源。
+
+**题 2（取消传播）**：`CancellationTokenSource` 创建后，把 token 传给了子任务但没传给孙任务，取消时孙任务会停吗？写出取消链条的正确接法。
+
+参考答案：不会自动停——取消只沿着显式传递的 token 走。正确接法：孙任务用 `cts.Token` 原样透传，或孙任务内部用 `token.Register(...)` 挂接自己的 CTS；链条上的每个异步调用（`Task.Delay`、`ReadAsync`...）都要收 token，且方法签名用 `[EnumeratorCancellation]`/`WithCancellation` 覆盖异步流场景。
+
+**题 3（超时三式）**：给一个 I/O 调用加 5 秒超时，写出三种写法并比较。
+
+参考答案：(1) `await task.WaitAsync(TimeSpan.FromSeconds(5), ct)`（.NET 6+，最直接，输家任务留在后台继续跑）；(2) `cts.CancelAfter(5000)` 后把 token 一路传进 I/O 调用（能真正中断 I/O，最彻底）；(3) 老写法 `Task.WhenAny(task, Task.Delay(5000))`（可移植但延迟任务泄漏、无 token 协作，仅维护旧代码时用）。生产首选 (2)，兜底用 (1)。
+
+**题 4（WhenAll 的异常陷阱）**：`Task.WhenAll(t1, t2)` 两个都失败，`catch (Exception ex)` 里拿到的是几个异常？怎样拿到全部？
+
+参考答案：只有第一个（`WhenAll` 抛出的 `AggregateException` 在 `await` 时被"展平"，`ex` 是首个异常）。拿全部：`var all = await Task.WhenAll(t1, t2)` 放 try 外不行时，用 `try { await Task.WhenAll(tasks); } catch { foreach (var t in tasks) if (t.IsFaulted) Log(t.Exception); }`——遍历每个任务的 `Exception`（此时已是已完成状态，访问不再抛）。
+
+**题 5（async 流水线）**：用 `Channel<T>` 写出"解析线程产出 URL，N 个下载 worker 并发消费"的骨架，并说明为什么不用 `ConcurrentQueue` + 自旋。
+
+参考答案：
+
+```csharp
+var channel = Channel.CreateBounded<string>(100);
+// 生产端
+await channel.Writer.WriteAsync(url, ct);
+channel.Writer.Complete();
+// 消费端 N 个 worker
+await Task.WhenAll(Enumerable.Range(0, n).Select(_ => DownloadWorker(channel.Reader, ct)));
+
+static async Task DownloadWorker(ChannelReader<string> reader, CancellationToken ct)
+{
+    await foreach (var url in reader.ReadAllAsync(ct))
+        await DownloadAsync(url, ct);
+}
+```
+
+要点：`Channel` 提供 `await foreach` 异步消费、`Complete()` 优雅关闭、有界容量背压，这些语义用 `ConcurrentQueue` 都要手写轮询与信号量，容易写出忙等。

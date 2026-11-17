@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 国际化实战：i18next/react-i18next 完整接入、翻译键组织与插值复数、Intl API（Collator/NumberFormat/DateTimeFormat）、RTL 布局与语言切换持久化。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/220-ReactTest'
   - 'react/230-ReactRouteAdvanced'
@@ -198,6 +198,19 @@ i18n.use(HttpBackend).use(initReactI18next).init({
 - 命名空间 + HTTP 后端插件实现按语言、按页面懒加载资源，控制首屏体积。
 - 复数交给 `count` 与键后缀（`_one`/`_other`，由 Intl.PluralRules 规则驱动），不要手写 `if (n === 1)`。
 - RTL 用 `dir` 属性 + CSS 逻辑属性解决，避免双套样式；SSR 注意语言判定的水合一致性。
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **预测题**：`t('welcome', { name: '小明' })` 对应键 `"welcome": "你好，{{name}}"`，渲染结果是什么？如果代码里写死 `` `你好，${name}` ``，翻译团队会遇到什么麻烦？
+   答案：渲染「你好，小明」。拼接字符串把语序焊死在代码里——英语语序不同、复数规则不同时，翻译团队必须改代码才能改文案；键 + 插值让文案全部可离代码维护。
+2. **修 Bug 题**：切换语言后页面没重渲染，文案停在旧语言，最可能漏了哪一步？
+   答案：`i18n.changeLanguage` 配合 react-i18next 的订阅才会触发重渲染——确认初始化时 `i18n.use(initReactI18next)` 已接入，且组件里用的是 `useTranslation()` 而不是直接读 `i18next.t()`（后者不建立订阅）。
+3. **辨析题**：英文 `"1 item"/"2 items"` 手写 `if (n === 1)` 在哪些语言会翻车？该用什么？
+   答案：复数类别不是所有语言都只有单/复——俄语有 one/few/many、阿拉伯语有六类，中文又不区分。复数规则交给 `t(key, { count: n })`（底层 Intl.PluralRules 驱动键后缀 `_one`/`_few`/`_other`），不要手写条件。
+4. **规则题**：为什么日期与数字格式化优先用 Intl API 而不是翻译键？
+   答案：Intl.DateTimeFormat/NumberFormat 由浏览器内置 CLDR 数据驱动，零体积且覆盖每个 locale 的正确格式；自己维护格式表既占包体积又必然出错。i18n 库管「文案」，Intl 管「格式」是分工常态。
 
 ## 速查
 

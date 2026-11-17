@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 保证站点质量：Vitest 单元测试与 Playwright 端到端。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'astro/100-AstroFormsActions'
   - 'astro/080-BuildDeploy'
@@ -51,7 +51,7 @@ export default getViteConfig({
 })
 ```
 
-`getViteConfig` 做的事：把 Astro 的别名、插件、TypeScript 配置注入 Vitest，让测试文件里可以像页面代码一样 `import { getCollection } from 'astro:content'` 并获得完整类型。没有这层包装，测试会大量报"找不到模块"。注意版本配合：Astro 6 起要求 Vitest 3.2 以上（或 4.1 beta 5+），版本过旧时 `getViteConfig` 会报兼容错误。配置好后加上脚本即可运行：
+`getViteConfig` 做的事：把 Astro 的别名、插件、TypeScript 配置注入 Vitest，让测试文件里可以像页面代码一样 `import { getCollection } from 'astro:content'` 并获得完整类型。没有这层包装，测试会大量报"找不到模块"。注意版本配合：Astro 6+ 请搭配 Vitest 4.1 及以上——Astro 6 早期与旧版 Vitest 存在 `getViteConfig` 报 `exports is not defined` 崩溃的兼容问题（Vitest 4.1.0-beta.6 修复），Vitest 4.1 正式版起直接复用项目安装的 Vite 版本，双 Vite 版本冲突从根上消除。配置好后加上脚本即可运行：
 
 ```bash
 # package.json scripts
@@ -262,3 +262,52 @@ jobs:
 1. **给票务逻辑补测试**：为 010 篇的 `earlyBirdDiscount` 补齐边界用例（0 张、负数、非整数），再把折扣规则改成"第 2 张半价"，体验"测试先红后绿"的节奏。提示：先把期望值写进测试再改实现。
 2. **订单页 E2E**：为订单页补一条用例——直接访问不存在的订单 id 时应显示"订单不存在"。提示：注意这条用例应访问静态可预期的 URL，不要依赖测试间共享状态。
 3. **跑通 CI 门禁**：把第 5 节的 workflow 提交到个人仓库，故意在某个 `.astro` 文件里把 `Astro.props.title` 拼错类型，观察流水线在哪一层拦住它。提示：`astro check` 应当最先变红。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写 `vitest.config.ts`：让测试复用 Astro 的 Vite 管线，node 环境、只跑 `src/**/*.test.ts`、显式导入测试函数。
+
+   参考答案（先自己写，再对照）：
+
+   ```ts
+   import { getViteConfig } from 'astro/config'
+
+   export default getViteConfig({
+     test: {
+       environment: 'node',
+       include: ['src/**/*.test.ts'],
+       globals: false,
+     },
+   })
+   ```
+
+   验收点：必须用 `getViteConfig` 包装，直接用 `vite.config.ts` 会因 `astro:content` 等虚拟模块没有实现而大量报"找不到模块"。
+
+2. 默写容器渲染测试：把 `TicketBadge.astro` 渲染成字符串，断言包含票名与应援色。
+
+   参考答案（先自己写，再对照）：
+
+   ```ts
+   import { experimental_AstroContainer as AstroContainer } from 'astro/container'
+   import { expect, test } from 'vitest'
+   import TicketBadge from './TicketBadge.astro'
+
+   test('票档徽章渲染出票名与应援色', async () => {
+     const container = await AstroContainer.create()
+     const html = await container.renderToString(TicketBadge, {
+       props: { ticket: { name: 'S 区站票', color: '#39C5BB' } },
+     })
+     expect(html).toContain('S 区站票')
+     expect(html).toContain('#39C5BB')
+   })
+   ```
+
+   验收点：容器 API 测的是"给定 Props 输出的 HTML"（服务端形态）；React/Vue 岛屿的交互行为属浏览器领域，交给框架测试库或 E2E。
+
+3. Astro 项目为什么不能直接拿 `vite.config.ts` 跑测试？
+
+   参考答案（先自己写，再对照）：
+
+   Astro 对 Vite 的扩展不只是加别名：`astro:content`、`astro:actions` 这类虚拟模块由 Astro 运行时注册模块工厂，页面构建时由框架提供实现。Vitest 拿到 `getViteConfig` 的产物后，测试里的 `import { getCollection } from 'astro:content'` 才会命中同一份工厂；绕过包装手搓别名只会让虚拟模块全部解析失败。

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub Actions 与 CI/CD 总纲：以智能工厂流水线为类比，讲透 CI/CD 概念、workflow 文件结构（name/on/jobs/steps）、Actions 市场使用与工程最佳实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/180-PullRequestCompleteCollaborationFlow'
   - 'github/360-GitHubPagesMultiSolution'
@@ -112,7 +112,7 @@ jobs:                       # 3. 任务集合（要干什么）
   build:                    #   job 标识
     runs-on: ubuntu-latest  #   在什么机器上跑
     steps:                  #   步骤列表（按顺序执行）
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: npm ci
 ```
 
@@ -132,7 +132,7 @@ jobs:
   lint:                      # job 1：静态检查
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: npm run lint
 
   test:                      # job 2：测试（依赖 lint 完成）
@@ -140,10 +140,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:                # 矩阵：多版本并行测试
       matrix:
-        node-version: [20, 22]   # 22 为当前活跃 LTS（18 已于 2025 年停止维护）
+        node-version: [22, 24, 26]  # 26 为当前活跃 LTS（2026-10 起）；20 已于 2026 年停止维护
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci && npm test
@@ -176,7 +176,7 @@ step 只有两种形态：**运行命令**（`run`）或 **调用 Action**（`us
 steps:
   # 形态一：调用市场 Action
   - name: Checkout code
-    uses: actions/checkout@v6
+    uses: actions/checkout@v7
     with:                    # 给 Action 传参
       fetch-depth: 0
 
@@ -221,24 +221,25 @@ GitHub Marketplace（https://github.com/marketplace?type=actions）是官方 Act
 
 ### 4.3 版本固定：安全第一
 
-Action 用 `@版本` 引用，建议固定**主版本号**（`@v6`）甚至**提交 SHA**（`@a1b2c3d...`）：
+Action 用 `@版本` 引用，建议固定**主版本号**（`@v7`）甚至**提交 SHA**（`@a1b2c3d...`）：
 
 ```yaml
-- uses: actions/checkout@v6          # 主版本：随 v6.x 自动更新（推荐）
+- uses: actions/checkout@v7          # 主版本：随 v7.x 自动更新（推荐）
 # - uses: actions/checkout@<完整SHA> # 最高安全：完全锁定代码
 ```
 
 固定到 SHA 是官方安全加固建议——第三方 Action 若被篡改，固定 SHA 可避免意外执行恶意版本。
 
-引用版本时还要注意**运行时兼容性**：JS Action 跑在 runner 内置的 Node.js 运行时上。2025 年起官方 Action 陆续升级到 Node 24 运行时（要求较新的 runner 版本），2026 年中 Node 20 运行时已进入弃用流程。使用较旧的大版本（如 `checkout@v4`）会随官方运行时退役而逐步失去维护，升级示例：
+引用版本时还要注意**运行时兼容性**：JS Action 跑在 runner 内置的 Node.js 运行时上。官方已于 2025 年 9 月公告弃用 Node 20 运行时：runner 已自 2026-06-16 起默认使用 Node 24，并自 2026-09-23 起从 runner 彻底移除 Node 20；各官方 Action 在 2025-2026 年间陆续把大版本升级到 Node 24 运行时（要求 runner v2.327.1 及以上）。使用较旧的大版本（如 `checkout@v4`）会随官方运行时退役而逐步失去维护，当前主线版本（2026-11）：
 
-| Action | v4/v5 时代 | 当前主线（2026-09） | 说明 |
+| Action | 旧主线（Node 20 运行时） | 当前主线（2026-11） | 说明 |
 | --- | --- | --- | --- |
-| actions/checkout | @v4（Node 20） | @v6 / @v7 | v7 起 `pull_request_target` 默认禁止检出 fork PR 代码（安全加固），需要旧行为需显式声明 `allow-unsafe-pr-checkout` |
-| actions/setup-node | @v4（Node 20） | @v6 / @v7 | v5 起自动读取 `packageManager` 字段启用缓存；v6 起自动缓存仅限 npm |
-| actions/setup-python | @v5（Node 20） | @v6 / @v7 | v6 起基于 Node 24 运行时 |
-| actions/cache | @v3/@v4 | @v5 | 语义不变，运行时升级 |
-| actions/upload-artifact | @v3（已被移除） | @v4 / 更高 | v4 是大版本重构（见 035），v6+ 基于 Node 24 |
+| actions/checkout | @v4 / @v5 / @v6 | @v7 | v7 起 `pull_request_target` 与 `workflow_run` 事件默认禁止检出 fork PR 代码（安全加固），需要旧行为需显式声明 `allow-unsafe-pr-checkout` |
+| actions/setup-node | @v4 | @v7 | v5 起自动读取 `packageManager` 字段启用缓存；v7 起迁移到 ESM |
+| actions/setup-python | @v5 | @v7 | v6 起基于 Node 24 运行时，v7 起迁移到 ESM 并移除 `pip-install` 输入 |
+| actions/cache | @v3/@v4 | @v6 | v6 起迁移到 ESM（Node 24 运行时），语义不变 |
+| actions/upload-artifact | @v3（已被移除）/@v4 | @v7 | v4 是大版本重构（制品不可变，见后文），v7 新增免压缩直传 `archive: false` |
+| actions/download-artifact | @v3/@v4 | @v8 | v8 起按 Content-Type 决定是否解压：zip 制品默认仍自动解压，非 zip 文件（upload v7 免压缩直传）原样落地；新增 `skip-decompress` 参数 |
 
 > 经验法则：新项目一律写当前主版本；维护老项目升级前看该 Action 的 Release Notes，尤其是标注 breaking 的变更。
 
@@ -258,8 +259,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm run lint
@@ -268,11 +269,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20, 22]        # 多版本测试
+        node-version: [22, 24, 26]   # 多版本测试（26 为当前活跃 LTS）
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with: { node-version: ${{ matrix.node-version }}, cache: npm }
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}   # 含 ${{ }} 的值用块写法，勿放进 { } 流式映射
+          cache: npm
       - run: npm ci
       - run: npm test
 
@@ -280,9 +283,9 @@ jobs:
     needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: npm ci && npm run build
-      - uses: actions/upload-artifact@v4   # 产物上传，供部署用
+      - uses: actions/upload-artifact@v7   # 产物上传，供部署用
         with: { name: build, path: dist/ }
 
   deploy:
@@ -290,7 +293,7 @@ jobs:
     if: github.ref == 'refs/heads/main'    # 仅 main 分支部署
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { name: build, path: dist/ }
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
@@ -310,14 +313,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
           cache: maven                 # 内置 Maven 缓存
       - run: mvn -B package --file pom.xml
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with: { name: jar, path: target/*.jar }
 ```
 
@@ -332,8 +335,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
       - run: |
           python -m pip install --upgrade pip
@@ -450,6 +453,48 @@ jobs:
 | job 并行导致乱序 | 部署先于测试完成 | 未用 `needs` 声明依赖 | 下游 job 加 `needs: [lint, test]` |
 | 私有仓库超分钟额度 | 任务排队/被拒 | 私有仓库有免费分钟限制 | 用缓存/矩阵并行优化；或自托管运行器 |
 | 只改文档也跑 CI | 浪费分钟数 | 没做路径过滤 | 加 `paths-ignore: ['docs/**', '*.md']` |
+
+## 9. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：默写 workflow 的六层组件（从文件到机器），并回答：同一 job 内的 steps 靠什么共享数据？不同 job 之间默认是并行还是串行？
+
+**任务二**：遮住示例，写一个最小 CI 工作流：push 到 main 时在 ubuntu 上跑 `npm ci && npm test`，Node 用 22。写出三要素（名称可省、触发、job）。
+
+**任务三**：判断——（a）第三方 Action 引用该固定大版本还是完整 SHA 更安全？（b）工作流里要用 API 密钥，明文写进 YAML 可以吗？正确做法？
+
+**参考实现**（先自己写完再看）：
+
+```text
+任务一：workflow -> event 触发 -> jobs -> steps -> actions/命令，
+全部跑在 runner 上。同 job 的 steps 共享同一台机器（工作区、
+环境变量可用 $GITHUB_* 传递）；不同 job 默认并行，用 needs 串行。
+
+任务二：
+name: CI
+on:
+  push:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm ci && npm test
+
+任务三：(a) 完整 SHA 最安全——大版本标签是可移动引用，作者把
+v1 指向恶意提交时 SHA 引用不受影响（常用做法：大版本引用 +
+Dependabot 提醒升级，或工具自动锁定 SHA）；
+(b) 不可以——YAML 是明文进仓库的。密钥放仓库/组织的
+Settings -> Secrets and variables -> Actions，YAML 里用
+${{ secrets.KEY_NAME }} 引用，日志中自动打码。
+```
+
+要点自查：`.github/workflows/` 目录名不可改；`runs-on` 选机器、`uses` 复用 Action、`run` 执行命令是三个最常用的键；job 独立并行是 Actions 并发模型的核心，`needs` 才能编排顺序；密钥永远走 secrets 机制而不是提交进文件。
 
 ## 10. 一句话记忆
 

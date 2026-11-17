@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Vite 构建工具概述：从 webpack 痛点出发，理解原生 ESM、依赖预构建、HMR 原理与 Vite 8 的 Rolldown 统一引擎
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related:
   - 'astro/010-AstroOverview'
   - 'vite/150-PnpmMonorepoOverview'
@@ -16,9 +16,9 @@ prerequisites: []
 
 > 本节为增量补充，帮助你选择 Vite 版本。
 
-- Vite：8.x 为当前主线（2026-09 最新为 8.2.x），依赖优化与打包已切换到 Rolldown 引擎；配套测试框架 Vitest 已迭代到 5.0（2026-09 发布）。
+- Vite：8.x 为当前主线（2026-11 最新为 8.3.x，8.3.0 发布于 2026-09），依赖优化与打包已切换到 Rolldown 引擎；配套测试框架 Vitest 已进入 5.x（5.0 发布于 2026-09，当前 5.1）。
 - 新项目 `npm create vite@latest` 默认安装 8.x；框架模板（Vue/React/Svelte）由官方维护。
-- 注意：Vite 要求 Node.js 20.19+/22.12+，推荐直接使用 Node 22 LTS。
+- 注意：Vite 要求 Node.js 20.19+/22.12+（Node 24 亦在支持范围），推荐直接使用 Node 26 LTS（当前 Active LTS；Node 24 已于 2026-10 转入维护期）。
 
 
 

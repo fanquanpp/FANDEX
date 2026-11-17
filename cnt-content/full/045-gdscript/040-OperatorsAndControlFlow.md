@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 理解运算符优先级与短路求值，掌握 if while for 与 match 模式匹配的完整语法
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-11-17'
 related:
   - 'gdscript/030-BasicDataTypesConversion'
   - 'gdscript/050-FunctionsAndCallable'
@@ -14,7 +14,7 @@ prerequisites:
   - 'gdscript/030-BasicDataTypesConversion'
 ---
 
-运算符决定"表达式怎么算"，流程控制决定"语句什么时候执行"。GDScript 在这两件事上都有自己鲜明的个性：所有二元运算符一律左结合（连幂运算也不例外）；整数除法向下取整；match 是比 switch 简洁得多的模式匹配语句。本篇把优先级表、算术与位运算细节、逻辑短路、各类分支与循环、以及 match 的全部模式形态一次讲透。
+运算符决定"表达式怎么算"，流程控制决定"语句什么时候执行"。GDScript 在这两件事上都有自己鲜明的个性：所有二元运算符一律左结合（连幂运算也不例外）；整数除法直接截断小数；match 是比 switch 简洁得多的模式匹配语句。本篇把优先级表、算术与位运算细节、逻辑短路、各类分支与循环、以及 match 的全部模式形态一次讲透。
 
 ## 学习目标
 
@@ -59,10 +59,11 @@ GDScript 运算符优先级从高到低共 23 级：
 
 ## 算术运算的细节
 
-整数除法向下取整：
+整数除法截断小数部分——是向零取整，不是向下取整（floor）：
 
 ```gdscript
-print(5 / 2)         # 2：两个 int 相除得 int，向下取整
+print(5 / 2)         # 2：两个 int 相除得 int，小数部分被截断
+print(-5 / 2)        # -2：截断朝零方向（若按 floor 会是 -3）
 print(5 / 2.0)       # 2.5：任一操作数是浮点，按浮点除
 print(float(5) / 2)  # 2.5
 ```
@@ -139,7 +140,7 @@ if body is not PlayerController:
     print("不是玩家控制器")
 ```
 
-对编译期已知类型、结果必为 false 的 is 检查，解析器会直接报编译错误——这能把"类型写错了"这类问题提前到解析期。
+is 检查对引用类型覆盖整条继承链。对编译期已知类型、结果必为 false 的 is 检查，解析器会直接报编译错误（如 `var n: Node` 后写 `if n is int:` 会得到 Parse Error: Expression is of type "Node" so it can't be of type "int".）——这能把"类型写错了"这类问题提前到解析期。
 
 ## 三元表达式
 
@@ -272,7 +273,7 @@ match point:
 ## 小结
 
 - 优先级从高到低：分组、下标、属性、调用、await、is、幂、一元正负、乘除模、加减、移位、按位与/异或/或、比较、in、not、and、or、三元、as、赋值；所有二元运算符左结合，连续幂务必加括号（2 ** 2 ** 3 是 64 不是 256）。
-- 整数除法向下取整（5 / 2 == 2）；% 仅限整数，小数用 fmod，数学余数用 posmod。
+- 整数除法截断小数（5 / 2 == 2，-5 / 2 == -2，朝零取整而非 floor）；% 仅限整数，小数用 fmod，数学余数用 posmod。
 - 标志位口诀：| 组合、& 检查、& ~ 清除、^ 翻转。
 - and/or 短路求值：先判空、再使用，顺序即安全。
 - in/not in 四用途：子串、数组成员、字典键、对象成员；is/is not 类型检查，必为 false 的检查直接编译报错。

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 项目初始化流程、脚手架工具、模板选择与项目结构规范。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'shell/090-BuildTool'
   - 'cs-fundamentals/040-ProgrammingParadigmBasics'
@@ -70,9 +70,12 @@ npx nuxi@latest init my-nuxt-app
 ### 2.2 后端脚手架
 
 ```bash
-# Python - FastAPI
-pip install fastapi[standard]
-fastapi new my-api-project
+# Python - FastAPI：官方 CLI 只有运行命令（fastapi dev / fastapi run），
+# 没有官方脚手架；骨架靠手动或第三方工具（如 uvx fastapi-new）
+pip install "fastapi[standard]"
+mkdir my-api-project && cd my-api-project
+# 写一个最小 main.py 后：
+fastapi dev main.py        # 开发模式运行（自动热重载）
 
 # Go - 标准项目
 mkdir my-go-project && cd my-go-project
@@ -83,7 +86,6 @@ go mod init github.com/user/my-go-project
 curl https://start.spring.io/starter.zip \
   -d type=maven-project \
   -d language=java \
-  -d bootVersion=3.2.0 \
   -d groupId=com.example \
   -d artifactId=demo \
   -o demo.zip
@@ -161,7 +163,7 @@ flowchart TD
     T16["App.vue             # 根组件"]
     T17["main.ts             # 入口文件"]
     T18["tests/                  # 测试文件"]
-    T19[".eslintrc.cjs           # ESLint 配置"]
+    T19["eslint.config.js       # ESLint 配置（flat config，ESLint 9+ 默认）"]
     T20[".prettierrc             # Prettier 配置"]
     T21[".gitignore              # Git 忽略规则"]
     T22["index.html              # HTML 入口"]
@@ -243,7 +245,7 @@ flowchart TD
 | `package.json`   | 项目元信息与依赖    | JSON       |
 | `tsconfig.json`  | TypeScript 编译选项 | JSON       |
 | `vite.config.ts` | Vite 构建配置       | TypeScript |
-| `.eslintrc.cjs`  | 代码检查规则        | JavaScript |
+| `eslint.config.js` | 代码检查规则（ESLint 9+ 默认 flat config；旧式 `.eslintrc.*` 已弃用） | JavaScript |
 | `.prettierrc`    | 代码格式化规则      | JSON       |
 | `.gitignore`     | Git 忽略规则        | 文本       |
 | `.env`           | 环境变量            | KEY=VALUE  |
@@ -344,3 +346,21 @@ GitHub 支持将仓库标记为**模板仓库**，其他用户可以基于模板
 1. 仓库 Settings → 勾选 "Template repository"
 2. 其他用户点击 "Use this template" 创建新仓库
 3. 新仓库不包含 Git 历史，从零开始
+
+## 7. 动手自检：遮住命令，说出每一步
+
+先遮住参考答案，按题干自己写出验证步骤，再对照。
+
+1. 不查文档，写出「新建一个 Vue 3 项目并初始化 Git、打好首个提交」的完整命令序列。
+2. `.gitignore` 里 `node_modules/` 与 `.env` 这两条分别防什么？为什么 `.env.example` 反而要提交？
+3. 为什么脚手架初始化的项目不建议直接 `git init` 在已有 README 的目录里？init 时 `main` 分支名靠什么配置保证？
+4. Monorepo 把多个应用放进一个仓库，`.gitignore`、`package.json` 这类文件会怎么变化？
+
+<details>
+<summary>参考答案</summary>
+
+1. `npm create vue@latest my-app && cd my-app && git init && git add . && git commit -m "chore: initial project setup"`——关键在 init.defaultBranch 已配为 main 时 init 即得 main，否则需要 `git branch -M main`（第 5 节）。
+2. `node_modules/` 防把可再生的依赖目录提交进仓库（体积巨大且可由 lockfile 重建）；`.env` 防把密钥提交进历史（改文件删不掉历史里的密钥）。`.env.example` 只列变量名不含真实值，给协作者当配置模板（第 1.2 节与 100 篇的安全规则）。
+3. 脚手架本身会生成 `.gitignore` 与初始 README，自己先 init 会让脚手架往「已提交历史」的目录里覆盖生成文件，容易产生混合状态；干净目录交给脚手架一次性生成是更可控的路径。
+4. 会从「每仓一份」变成「仓库根共享一份」：根 package.json 只声明工作区（pnpm-workspace.yaml / turbo.json），`.gitignore` 也要补上各工作区共用的构建产物路径——单仓库的配置思维从「每项目自治」变成「根统一管理」。
+</details>

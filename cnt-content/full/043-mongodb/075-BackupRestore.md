@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: mongodump/mongorestore 的范围与压缩、文件系统快照与 journal 一致性、oplog 时间点恢复（PIT）
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -172,7 +172,28 @@ mongorestore --host rs0/localhost:27017 --oplogReplay \
 要点：a) --oplogLimit 的参数是 `秒:序号`，取"drop 前最后一条 oplog 的 ts"意味着重放在 drop 之前停止；b) drop 后写入的数据不复活——PIT 恢复的是时间点，不是 undone 的未来；c) 若第 6 步报 oplog 空档错误，说明备份间隔超过了 oplog 窗口，这正是场景二说的巡检项。
 </details>
 
-## 8. 一句话记住
+## 8. 练习与自检
+
+遮码自检：先遮住答案栏，自己写出答案或命令，再展开对照。
+
+1. mongodump 逻辑备份的三大代价是什么？据此判断数据量多大数据量该换方案。
+2. `mongorestore` 忘写 `--drop` 会在什么场景造成什么后果？
+3. 文件系统快照的一致性前提是什么？为什么"分卷先后打快照"会得到撕裂状态？
+4. 写出 PIT 恢复的公式，并说出它的一个硬前提（与 oplog 有关的巡检项）。
+5. 备份为什么跑在 hidden 成员上？备份与恢复为什么用两个账号？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 大集合导出慢、恢复时要重建全部索引（时间加倍）、备份期间的全表读挤占缓存。GB 级以内、允许分钟级恢复窗口用 mongodump；TB 级或要求更快恢复换快照/延迟成员/专业方案。
+2. 目标集合里有数据时（例如恢复演练重跑），不写 `--drop` 是在现有数据上追加插入，文档数翻倍——恢复演练最经典的二次事故。
+3. 快照必须捕捉到"journal 与数据文件在同一瞬间"的状态，恢复时引擎重放 journal 才能一致；分卷先后快照意味着各卷数据不在同一瞬间，重放任何一份 journal 都对不上另一卷的文件状态。
+4. 公式：全量备份 + `mongorestore --oplogReplay --oplogLimit <误删前时刻>`，跳过 drop 那条 oplog。硬前提：备份间隔小于 oplog 窗口，否则两次备份之间有空档接不上——"oplog 窗口与备份间隔匹配检查"要进巡检清单。
+5. hidden 成员不接业务读流量，全表读不拖累线上查询；备份（backup 角色，含读 oplog）与恢复（restore 角色）是两个权限，分账号才能既最小权限又防误操作——备份账号本身不该具备写业务数据的能力。
+
+</details>
+
+## 9. 一句话记住
 
 > mongodump 管小库与演练（--gzip 压缩、--drop 防重复恢复），快照管大库但要 journal 一致且异地落袋，oplog 把恢复粒度从"昨晚"推到"误删前 1 秒"；备份跑在 hidden 成员上、用 backup/restore 专用角色，恢复演练每季度实跑一次。
 

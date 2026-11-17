@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++23新特性详解：std::print、std::expected、std::flat_map、deducing this、std::mdspan、std::generator 等。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/420-Cpp20Coroutine'
   - 'cpp/410-Cpp20Concept'
@@ -75,7 +75,7 @@ C++23 于 2023 年完成技术定稿，以 **ISO/IEC 14882:2024** 的名义于 2
 | **C++17** | 2017 | `std::optional`、`std::variant`、`std::string_view`、`if constexpr` |
 | **C++20** | 2020 | concepts、ranges、coroutines、modules、`<=>` |
 | **C++23** | 2024（ISO/IEC 14882:2024） | `std::print`、`std::expected`、`std::flat_map`、`std::mdspan`、deducing this |
-| **C++26** | 草案（预计 2026 年底前后发布） | 静态反射、契约、`std::execution`、pack indexing、`std::inplace_vector`、`std::hive` |
+| **C++26** | 技术定稿（2026-03），DIS 国民团体投票未通过（2026-10），出版推迟 | 静态反射、契约、`std::execution`、pack indexing、`std::inplace_vector`、`std::hive` |
 
 ### 1.4 与其他语言对比
 
@@ -967,12 +967,12 @@ void stringImprovements() {
 
 | 特性 | GCC | Clang | MSVC |
 | :--- | :--- | :--- | :--- |
-| `std::print`/`println` | 14+ | 17+ | 19.34+ |
+| `std::print`/`println` | 14+ | 18+（17 部分） | 19.37+ |
 | `std::expected` | 12+ | 16+ | 19.33+ |
-| `std::flat_map`/`flat_set` | 14+ | 17+ | 19.37+ |
+| `std::flat_map`/`flat_set` | 15+ | 20+（早期需 `-fexperimental-library`） | 19.51+ |
 | `std::mdspan` | 14+ (`-fexperimental-library`) | 17+ | 19.32+ |
 | `std::generator` | 14+ (`-fexperimental-library`) | 17+ (`-std=c++23`) | 19.34+ |
-| deducing this | 14+ | 18+ | 19.32+ |
+| deducing this | 14+ | 19+（18 部分） | 19.43+（19.32 部分） |
 | `if consteval` | 12+ | 15+ | 19.32+ |
 | `static operator()` | 13+ | 16+ | 19.32+ |
 | `std::move_only_function` | 12+ | 17+ | 19.32+ |
@@ -1622,11 +1622,11 @@ int main() {
 
 ## 附录 B：编译器支持矩阵
 
-| 编译器 | C++23 部分支持 | C++23 完整支持 |
+| 编译器 | C++23 部分支持 | C++23 常用特性完整支持 |
 | :--- | :--- | :--- |
 | GCC | 12 | 14+ |
-| Clang | 15 | 18+ |
-| MSVC | 19.32 (VS 17.2) | 19.36 (VS 17.6) |
+| Clang | 15 | 18+（deducing this 需 19，flat_map 需 20） |
+| MSVC | 19.32 (VS 17.2) | 19.37+（deducing this 完整需 19.43，flat_map 需 19.51） |
 
 启用选项：
 
@@ -1888,3 +1888,62 @@ uint32_t be = std::byteswap(host_val);
 // 给编译器提供假设以辅助优化
 [[assume(n > 0)]];
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：默写 C++23 四个「日常最高频」特性的一句话语法——`std::print`（带格式串输出）、`if consteval`（编译期/运行期分支）、deducing this（显式对象形参）、`std::expected`（错误值返回）；每个写出 2-3 行最小示例，并回答：`std::expected<T, E>` 与 `std::optional<T>` 的分界线是什么？
+
+**提示**：`expected` 携带**失败原因**，optional 只表达「有没有」——「解析失败，因为第 3 行非法」只能用 expected 表达。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <print>
+#include <expected>
+#include <string_view>
+
+std::expected<int, std::string> parsePort(std::string_view s) {
+    if (s.empty()) return std::unexpected("empty input");
+    return 8080;
+}
+
+struct Widget {
+    int v;
+    int get() &       { return v; }              // deducing this 可统一 & && 版本
+    int get() const & { return v; }
+};
+
+constexpr int twice(int n) {
+    if consteval { return n * 2; }               // 编译期走这里
+    else return n * 2;                           // 运行期走这里
+}
+
+int main() {
+    std::print("{}\n", twice(21));               // 42
+    auto r = parsePort("");
+    std::println("{}", r.error());               // empty input
+}
+```
+
+要点自查：四个特性各自的「为什么」——print 消除 iostream 的 locale 坑、expected 让错误类型化、deducing this 收敛重复重载、if consteval 显式区分编译期路径；四者都与「错误处理/编译期意识」相关，不是孤立的语法糖。
+
+**任务二**：版本门槛题——以下特性各需要什么编译器版本（按本篇附录 B 的支持矩阵回答，另可对照 5.4 节的特性表）：`std::print`、`std::expected`、`std::flat_map`、deducing this；写出 GCC/Clang/MSVC 三个数，并说明「标准已定稿（2024 出版）但生态未跟上」在本篇的具体体现。
+
+**提示**：`print` 要 GCC 14+/libc++ 17 起（17 为部分、18 完整）/MSVC 19.37+；`expected` 是 GCC 12+/Clang 16+/MSVC 19.33+——不同特性的落地节奏不同，这正是「按特性查支持页」的必要性。
+
+**参考实现**（先自己写完再看）：
+
+```text
+std::print：      GCC 14+ / libc++ 17（部分）、18 完整 / MSVC 19.37+
+std::expected：   GCC 12+ / Clang 16+ / MSVC 19.33+
+std::flat_map：   最晚落地（GCC 15+ / libc++ 20+ / MSVC 19.51+）；
+                  libc++ 早期版本需 -fexperimental-library
+deducing this：   GCC 14+ 完整 / Clang 18（部分）、19 完整 /
+                  MSVC 19.32（部分）、19.43 完整
+「定稿不等于可用」的体现：ISO/IEC 14882:2024 已出版，但 flat_map 在 GCC 14、
+Clang 18 时代仍不可用——写代码前按特性查 cppreference 编译器支持页是唯一可靠流程。
+```
+
+要点自查：能背出四个特性的大致版本门槛不算重点，重点是养成「特性 -> 查支持页 -> 选 -std 与回退方案」的习惯；`std::print` 落地晚于 `expected` 这类「库特性快慢不齐」的现象要能解释（print 依赖 format 基础设施）。

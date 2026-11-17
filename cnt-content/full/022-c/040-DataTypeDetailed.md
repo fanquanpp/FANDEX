@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 用 sizeof 打印实验走进类型系统：整型家族的最小宽度与 limits.h、stdint.h 定宽类型的选型速查、无符号回绕与有符号溢出的 UBSan 实录、IEEE 754 浮点心智模型与 0.1 + 0.2 不等于 0.3 的 epsilon 解法。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/050-VariableConstant'
   - 'c/060-OperatorExpression'
@@ -439,13 +439,32 @@ bool nearly_equal(double a, double b, double epsilon) {
 - 算术类型与整数提升规则（cppreference C）：https://zh.cppreference.com/w/c/language/arithmetic_types
 - IEEE 754 位布局图解（Steve Hollasch）：https://steve.hollasch.net/cgindex/coding/ieeefloat.html
 
-## 15. 自我检查
+## 15. 遮码自检
 
-- 能解释同一份 sizes.c 为什么在 64 位 Windows 与 Linux 上打印出不同的 long 大小；
-- 能说出 int 的最小宽度保证，并用 limits.h 在自己机器上验证真实边界；
-- 能演示无符号回绕与有符号溢出的区别，并用 UBSan 抓到一行带文件名与行号的实录；
-- 能画出 double 的 1 + 11 + 52 位段图，解释 0.1 + 0.2 为什么不等于 0.3，并写出 epsilon 比较；
-- 拿到一个新需求，能按第 4 节速查表选对类型并说出理由。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 同一份 sizes.c，为什么 64 位 Windows 与 64 位 Linux 打印出的 long 大小不同？
+2. int 的最小宽度保证是多少？用 limits.h 在自己机器上验证真实边界（默写关键两行）。
+3. 无符号回绕与有符号溢出的行为差在哪？UBSan 命令怎么写？
+4. 画出 double 的位段图，解释 0.1 + 0.2 为什么不等于 0.3，并写出 epsilon 比较。
+5. 拿到「存文件尺寸」的需求，按第 4 节速查表选哪个类型？为什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 数据模型不同：Windows 是 LLP64，long 只有 32 位；Linux/macOS 是 LP64，long 64 位。两边 long long 都是 64 位，指针都是 64 位。
+2. 标准只承诺最小宽度：int 至少 16 位，long long 至少 64 位。验证：
+
+```c
+#include <limits.h>
+printf("INT_MIN=%d INT_MAX=%d\n", INT_MIN, INT_MAX);
+```
+
+3. 无符号按 2^N 回绕，是良定义行为；有符号溢出是未定义行为。UBSan 开关：`gcc -fsanitize=undefined -g`，报错自带文件名与行号。
+4. double = 1 位符号 + 11 位指数 + 52 位尾数；0.1 的二进制是无限循环小数，存进去就有舍入误差，所以 `fabs(a - b) < 1e-9`（epsilon）比较，不用 `==`。
+5. `size_t`（或 `uint64_t`）：尺寸天然非负、与指针同宽，`sizeof` 的返回类型就是它。
+
+</details>
 
 ## 本章总结
 

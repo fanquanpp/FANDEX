@@ -9,7 +9,7 @@ prerequisites:
   - 'start/040-TerminalAndShellBasics'
   - 'start/050-LearnHowToLearnProgramming'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'javascript/010-WhatIsJavaScript'
   - 'start/070-FirstProgramPython'
@@ -253,6 +253,46 @@ while (true) {
 ```
 
 要点：a) `Math.random()` 给 0-1 小数，乘 100 取整加 1 才是 1-100 整数——这个"配比公式"值得记；b) `Number(prompt(...))` 把输入转成数字，`Number.isNaN` 拦下取消/乱输——输入检查从第一个程序就该有；c) `count = count + 1` 就是计步器模式，与实战项目的"次数统计"同源；二分策略（每次猜区间中点）能把这个次数压到 7 次以内，试完可以想想为什么。
+</details>
+
+<details>
+<summary>任务二参考实现</summary>
+
+```javascript
+function timesRow(a) {
+  let row = "";
+  for (let b = 1; b <= 9; b++) {
+    row = row + a + " x " + b + " = " + a * b + "    ";
+  }
+  console.log(row);
+}
+
+for (let a = 1; a <= 9; a++) {
+  timesRow(a);
+}
+```
+
+要点：a) 外层 for 让被乘数 a 从 1 数到 9，内层 for 把一整行攒进 row 字符串，循环结束后才 `console.log` 一次——"攒一批再输出"是控制输出节奏的常用手法；b) `a * b` 会先于字符串拼接完成计算（乘法优先级高于加号），所以等号后面是正确的乘积；c) "打印一行"封装成 `timesRow` 后，主循环只剩两行——函数把"怎么做"藏起来，调用处只看"做什么"。
+</details>
+
+<details>
+<summary>任务三参考实现</summary>
+
+```javascript
+for (let i = 1; i <= 30; i++) {
+  if (i % 3 === 0 && i % 5 === 0) {
+    console.log("FizzBuzz");
+  } else if (i % 3 === 0) {
+    console.log("Fizz");
+  } else if (i % 5 === 0) {
+    console.log("Buzz");
+  } else {
+    console.log(i);
+  }
+}
+```
+
+要点：a) `&&` 把"都能整除"的组合条件放在第一个分支——if/else if 从上往下第一个命中即止，顺序反了 15 就会被 `i % 3 === 0` 截胡打印成 Fizz；b) 判整除用的还是取余（`i % 3 === 0`），本题唯一的数学在第一课就学过，难的全在条件顺序上。
 </details>
 
 ## 检验清单

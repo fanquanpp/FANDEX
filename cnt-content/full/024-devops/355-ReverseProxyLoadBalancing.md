@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: nginx 核心配置逐段解释（upstream/proxy_pass/超时重试）、四层与七层负载均衡、健康检查、限流，以及作为金丝雀发布流量入口的角色
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -220,6 +220,14 @@ for i in $(seq 1 20); do curl -s http://127.0.0.1:8080/ | grep Hostname; done | 
 - 能配置限流两层闸并解释 burst/nodelay 的行为；
 - 能用 split_clients 实现用户粘滞的金丝雀切流，并说出它与 weight 的差别；
 - 能区分 502 与 504 的排障方向，知道本篇与 cloud-250、devops-145 的分工。
+
+## 自检
+
+- 遮住心智模型图，画出"客户端 → 反向代理 → upstream"的链路，并回答：对外只暴露 443、后端全部内网化，安全与灵活各得什么？
+- upstream 块默写：轮询/权重/least_conn/ip_hash 四种算法的适用场景；`max_fails` + `fail_timeout` 的被动健康检查各是什么意思？
+- 超时三件套（connect/read/send）各卡哪一段？504 由哪个超时触发、502 为什么是"上游应答不对"？
+- 限流两层闸（limit_conn + limit_req）各防什么？rate=10r/s、burst=20、nodelay 时瞬时 30 个请求的行为口算。
+- 金丝雀切流：split_clients 按什么哈希、为什么用户粘滞性比 weight 好？怎么验证"同一用户永远看到同一版本"？
 
 ## 下一步
 

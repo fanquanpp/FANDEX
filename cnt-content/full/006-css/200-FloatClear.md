@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: CSS 浮动与清除的完整原理：float/clear 属性、BFC 与 flow-root、clearfix 演进与现代布局替代方案。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/060-MarginCollapse'
   - 'css/220-PositionDetailed'
@@ -392,3 +392,44 @@ p {
 - 盒模型与 BFC：`css/050-CSS3BoxModelDetailed`、`css/060-MarginCollapse`；
 - 现代布局：`css/240-CSS3FlexboxFlexLayout`、`css/250-CSS3GridGridLayout`；
 - 响应式图文：`css/370-ResponsiveDesign`。
+
+## 13. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 3、4、8 节的示例代码自己写，再对照参考实现。
+
+**任务一**：写一个「媒体对象」——左侧 120px 头像浮动、右侧文字环绕；文章结束后必须有一段「作者声明」完全恢复整行排列，不再环绕；父容器不许塌陷。
+
+**任务二**：判断并修复——同事把一个旧卡片组件的 `.card { overflow: hidden; }` 注释成「清浮动用的」，现在卡片里的下拉菜单被裁掉了。写出根因与两种修法（保留清浮动效果、不裁内容）。
+
+**提示**：任务一的三段需求分别对应「float + margin 拉开间距」「clear: both 断开环绕」「flow-root 防塌陷」（第 3.3、4.1、4.3 节）；任务二的根因是第 6 节第 2 条——`overflow: hidden` 建 BFC 的副作用是裁剪溢出，替代触发器要不带这个副作用。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.media {
+  display: flow-root;      /* 父容器把浮动头像算进高度，不塌陷 */
+}
+
+.media .avatar {
+  float: left;
+  width: 120px;
+  margin-right: 1rem;
+}
+
+.media .statement {
+  clear: both;             /* 声明段移到头像下方，恢复整行 */
+}
+
+/* 任务二 */
+/* 根因：overflow: hidden 靠「裁剪溢出」这一行为顺便创建了 BFC，
+   下拉菜单属于溢出内容，自然被裁 */
+.card {
+  display: flow-root;      /* 修法：专用 BFC 触发器，无裁剪副作用 */
+}
+
+/* 边界提示：换成 overflow: clip 依然裁剪（clip 家族都裁溢出）；
+   若菜单必须溢出容器显示，只能把菜单挪出该容器（DOM 层面解耦） */
+```
+
+验收点：任务一里删掉 `flow-root` 后容器高度应塌为 0（背景色消失）；`clear: both` 写在「作者声明」自己身上而不是父容器上——clear 作用对象是「其后」的元素（第 6 节第 5 条）；任务二里换成 `overflow: clip` 依然裁剪，这条边界能防止「换个 overflow 值就好」的错误直觉。

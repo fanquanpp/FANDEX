@@ -10,7 +10,7 @@ prerequisites:
   - 'java/720-JavaDatabaseConnection'
   - 'mysql/110-SQLDataOperationQuery'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related:
   - 'mybatis/030-DynamicSql'
   - 'mybatis/060-PluginInterceptor'
@@ -56,13 +56,13 @@ public interface ProductMapper {
 
 ## 2. 准备现场：五分钟搭出可跑工程
 
-Spring Boot 3.5.x 工程，pom 加两个依赖（mybatis-spring-boot-starter 选 3.x 线，与 Boot 3 配套）：
+Spring Boot 3.5.x 工程，pom 加两个依赖（mybatis-spring-boot-starter 选 3.x 线，官方配套表标明 3.0.x 对应 Boot 3.2-3.5；Boot 4 工程请改用 4.x 线，Java 17 起步）：
 
 ```xml
 <dependency>
     <groupId>org.mybatis.spring.boot</groupId>
     <artifactId>mybatis-spring-boot-starter</artifactId>
-    <version>3.0.4</version>
+    <version>3.0.5</version>
 </dependency>
 <dependency>
     <groupId>com.mysql</groupId>

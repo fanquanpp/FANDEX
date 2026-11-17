@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: client-go 与 Kubernetes 开发：Informer 机制、Controller 模式、CRD、Operator、Workqueue 与生产级最佳实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/530-GoGraphQL'
   - 'go/600-GoDocker'
@@ -1434,3 +1434,65 @@ reconcile 函数应设计为幂等：基于 spec 计算期望状态，对比 sta
 ---
 
 > 本文档基于 Kubernetes 1.28 与 client-go 0.28 编写，部分内容涉及 1.29+ 的实验性特性。实际使用时请参考官方最新文档与版本变更日志。
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（Informer 的三层缓存）**：client-go 的 Informer 由 Reflector、DeltaFIFO、本地 Store 组成。写出一个最小 SharedInformer 用法，并解释"为什么 ListAndWatch 先全量 List 再增量 Watch"。
+
+参考实现：
+
+```go
+factory := informers.NewSharedInformerFactory(clientset, 30*time.Second)
+podInf := factory.Core().V1().Pods().Informer()
+factory.Start(ctx.Done())
+
+podInf.AddEventHandler(cache.ResourceEventHandlerFuncs{
+    AddFunc:    func(obj any) { ... },
+    UpdateFunc: func(old, new any) { ... },
+    DeleteFunc: func(obj any) { ... },
+})
+```
+
+要点：List 提供初始状态基线（缓存热身，避免冷启动时对每个对象单独 GET），Watch 承接后续增量（事件流）。两段之间可能丢事件，靠定期 Resync 与 resourceVersion 续传兜底。直接裸用 `Watch` 不 List 的 controller 会漏掉"启动前就存在"的对象。
+
+**题 2（调谐循环的幂等性）**：写一个 Controller 的 Reconcile 骨架：期望状态 = "Deployment 带 annotation X"，实际状态可能缺失/正确/漂移。写出三种情况的处理，并解释为什么不记录"我已经创建过"。
+
+参考实现：
+
+```go
+func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+    var dep appsv1.Deployment
+    if err := r.Get(ctx, req.NamespacedName, &dep); err != nil {
+        return ctrl.Result{}, client.IgnoreNotFound(err) // 已删除：无需动作
+    }
+    want := "true"
+    if dep.Annotations["my/x"] != want { // 与期望状态比对，而不是比对"我做过没有"
+        dep.Annotations["my/x"] = want
+        return ctrl.Result{}, r.Update(ctx, &dep)
+    }
+    return ctrl.Result{}, nil // 已收敛
+}
+```
+
+要点：声明式调谐的核心是"每次都从期望状态重算"，不做有状态记忆——任何一轮（重启、事件丢失、手动改动）都能收敛到同一终态。"记录做过没有"的命令式思维正是 controller bug 的主要来源（状态库与集群漂移）。
+
+**题 3（Finalizer 的删除协议）**：有 Finalizer 的对象 delete 时发生什么？写出 Finalizer 的清理与摘除代码，并说出忘记摘除的后果。
+
+参考实现：
+
+```go
+// 清理完成后必须摘除 Finalizer，否则对象卡在 Terminating
+if controllerutil.ContainsFinalizer(&obj, "my.example.com/cleanup") {
+    if err := r.cleanupExternal(ctx, &obj); err != nil {
+        return ctrl.Result{}, err // 失败重试：直到成功才允许摘除
+    }
+    controllerutil.RemoveFinalizer(&obj, "my.example.com/cleanup")
+    return ctrl.Result{}, r.Update(ctx, &obj)
+}
+```
+
+要点：带 Finalizer 的对象 deletionTimestamp 已设置但对象不真正删除，直到所有 Finalizer 摘除——这给了 controller 同步清理外部资源（LB、DNS、外部数据库）的机会。忘记摘除 = 对象永久 Terminating，删除操作被卡死，只能手工 patch。cleanup 必须幂等（可能被重试多次）。

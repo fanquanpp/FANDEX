@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 磁盘调度算法：FCFS、SSTF、SCAN、C-SCAN、LOOK、C-LOOK 的原理与对比。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/220-PageReplacementAlgorithm'
   - 'cs-fundamentals/230-FileSystemInode'
@@ -230,3 +230,11 @@ C-LOOK: 322
 - SSD 上调度目标从"减寻道"变为"合并写、防饥饿、透传 TRIM"；NVMe 通常选 none 或 kyber，mq-deadline 是通用安全选择。
 - 合并与预读在调度之前就消化了大量请求，`iostat` 的 rrqm/wrqm 与 await 是观察窗口。
 - 考试与面试推演务必先确认约定（折返点、初始方向）。
+
+## 自检
+
+- 遮住一次 I/O 的耗时构成，先自己写出「寻道 + 旋转 + 传输」三段，再回答：为什么机械盘调度的主要矛盾是寻道而不是旋转？
+- 遮住六种算法的推演过程，只用「磁头 53、请求队列 98/183/37/122/14/124/65/67」自己算一遍 SSTF 与 SCAN 的总寻道距离，再对照文中的 236 与 331——每个请求被服务的顺序对吗？
+- 遮住 SSTF 的饥饿分析，先自己构造一个「远处请求永远轮不到」的请求序列，再对照文中的说法。
+- 遮住 C-SCAN 与 C-LOOK 的对比，回答：两者差异在哪一步？为什么 C-SCAN 的等待时间更均匀？
+- 遮住 SSD 小节，回答：SSD 上「减寻道」为什么失效？none、kyber、mq-deadline 各自适合什么场景？

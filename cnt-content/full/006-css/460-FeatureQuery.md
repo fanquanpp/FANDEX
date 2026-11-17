@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 @supports 与 CSS.supports() 检测浏览器能力，配合渐进增强把新特性安全引入生产环境。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/650-CSSNewFeatures'
   - 'css/120-CSSFunctions'
@@ -160,7 +160,7 @@ if (CSS.supports('selector(:has(*))')) {
   transform: translateX(-50%);
 }
 
-/* 增强层：支持锚点定位时切换为精确方案（css/051） */
+/* 增强层：支持锚点定位时切换为精确方案（css/470-CSSAnchorPositioning） */
 @supports (anchor-name: --a) {
   .tooltip {
     bottom: auto;
@@ -181,7 +181,7 @@ if (CSS.supports('selector(:has(*))')) {
 
 ## 6. 实战：锚点定位 + 弹层的完整降级链
 
-把本篇与 `css/051` 串起来，一个生产级弹层的样式决策链：
+把本篇与 `css/470-CSSAnchorPositioning` 串起来，一个生产级弹层的样式决策链：
 
 ```mermaid
 flowchart TD
@@ -208,10 +208,55 @@ flowchart TD
 ## 动手试试
 
 1. 在控制台执行 `CSS.supports('selector(:has(*))')` 与 `CSS.supports('(text-box-trim: trim-both)')`，对比当前浏览器的能力；
-2. 用 `@supports (anchor-name: --a)` 给一个 tooltip 做渐进增强（完整对照 `css/051`）；
+2. 用 `@supports (anchor-name: --a)` 给一个 tooltip 做渐进增强（完整对照 `css/470-CSSAnchorPositioning`）；
 3. 写一个 `and` + `not` 的组合检测，验证括号分组；
 4. 故意把增强层写在基础层前面，观察覆盖失效；
 5. 进阶挑战：结合 `@supports` 与 `prefers-reduced-motion`，做一个“支持且允许动效才启用动画”的样式开关。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 4-5 节的示例代码自己写，再对照参考实现。
+
+**任务一**：写一个「动画双门控开关」——只有当浏览器支持滚动驱动动画且用户未要求减少动效时，才对 `.banner` 启用视差动画；条件用一条 `@supports` + `@media` 的组合（`and` 连接、括号分组）。
+
+**任务二**：写出标准渐进增强结构——`.card` 基础层用普通阴影，支持 `text-box-trim` 的环境切换为「文字裁边 + 精确阴影」，并回答增强层为什么必须复位基础层的哪些声明。
+
+**提示**：任务一是 `@supports (animation-timeline: scroll())` 嵌套或并列 `@media (prefers-reduced-motion: no-preference)` 的组合题（第 3 节逻辑操作符）；任务二照第 5 节「基础层在前、增强层在后、全量复位」三要点默写，检测值要「这个特性独有」才有效。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一：能力与偏好同时满足才启用 */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .banner {
+      animation: parallax linear both;
+      animation-timeline: scroll();
+    }
+  }
+}
+
+/* 任务二 */
+/* 基础层：所有浏览器可用 */
+.card {
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+}
+
+/* 增强层：写在基础层之后才能覆盖 */
+@supports (text-box-trim: trim-both) {
+  .card h2 {
+    text-box: trim-both cap alphabetic;
+  }
+  .card {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.12);
+  }
+}
+
+/* 必须复位的是「新旧方案冲突」的声明：位置、变换、间距这类
+   基础层的定位手段（如 bottom/left/transform），不清零会叠加出诡异布局 */
+```
+
+验收点：任务一里把 `@media` 与 `@supports` 的嵌套层级写反（supports 在外、media 在内）行为相同，但两者并列逗号连接却是「或」语义——组合逻辑必须显式分组；任务二把增强层挪到基础层前面后，增强声明会被基础层盖掉——层叠顺序就是渐进增强的物理基础。
 
 ## 核心知识点
 

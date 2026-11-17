@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: SLF4J、Logback、Log4j 2、JUL 与结构化日志的全景式深度解析
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/330-JavaFunctionalProgramming'
   - 'java/690-JavaNetworkProgramming'
@@ -2276,3 +2276,13 @@ if (log.isDebugEnabled()) {
     log.debug("data={}", expensiveSerialize());
 }
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 日志门面与实现的分界是什么？SLF4J 在其中扮演什么？——门面（API/SLF4J、JUL）统一调用姿势，实现（Logback、Log4j2）负责输出；SLF4J 是事实标准的门面，靠绑定 jar 桥接到实现。
+2. 用参数化占位符而非字符串拼接的理由是什么？——`log.debug("id={}", id)` 在 DEBUG 关闭时不做字符串拼接（无性能税），且保留结构化信息。
+3. 异常日志的正确姿势是什么？两处反例各错在哪？——`log.error("ctx {}", id, e);`（占位符后直接传 throwable）；反例：e.getMessage() 丢堆栈、e.printStackTrace() 打到 stderr 绕过日志框架。
+4. MDC 是什么机制？虚拟线程下要注意什么？——线程绑定的上下文 map（如 traceId），layout 里 %X{traceId} 取出；虚拟线程 ThreadLocal 依旧可用但量大时注意清理，或迁移 ScopedValue/框架适配。
+5. 滚动策略"按天 + 按大小双条件"在 Logback 里怎么配？核心元素名？——RollingFileAppender 里 SizeAndTimeBasedRollingPolicy，配 fileNamePattern 与 maxFileSize/maxHistory。

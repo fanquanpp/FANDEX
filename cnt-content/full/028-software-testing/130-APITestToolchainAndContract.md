@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 三大技术栈的 API 自动化实战：Postman/Newman 集合工程化、REST Assured Given-When-Then、Supertest 进程内测试，含 JSON Schema 校验与契约测试。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'software-testing/120-APIAutomationTest'
   - 'software-testing/135-InterfaceTestingMethod'
@@ -223,6 +223,70 @@ with pact:
   每条用例事务回滚或用一次性容器数据库。
 - **契约文件无人维护**：契约测试的价值在「两端同时跑」，只跑一端等于
   没跑；接入 Pact Broker 并在部署流程校验 `can-i-deploy`。
+
+## 教学自检
+
+以下题目按遮码自检法设计：先遮住参考答案自己写，再对照。
+
+### 题 1：集合工程化（遮码题）
+
+任务：写出把 Postman 集合跑进 CI 的 Newman 命令：应用环境文件
+`test-env.json`，输出 JUnit 报告。并说明敏感凭据该怎么注入。
+
+参考答案：
+
+```bash
+npx newman run users.postman_collection.json \
+  -e test-env.json \
+  --reporters cli,junit --reporter-junit-export results.xml
+```
+
+凭据不进仓库，走 CI 变量注入（如 `--env-var token=$API_TOKEN`）。集合与
+环境文件本体入库版本管理——「集合即代码」的前提是它真的被当代码管。
+
+### 题 2：进程内测试（概念题）
+
+任务：Supertest 测试为什么不起端口？这条路线覆盖不到什么问题？
+
+参考答案：`request(app)` 直接把 Express 实例交给测试，HTTP 层在同进程内
+模拟，省去 listen 与真实网络往返——速度接近单元测试，也便于对依赖打桩。
+但它覆盖不到真实部署拓扑的问题：网关路由、TLS、跨服务鉴权、负载均衡——
+这些需要少量真环境集成测试兜底。
+
+### 题 3：Given-When-Then（遮码题）
+
+任务：用 REST Assured 写「创建用户返回 201、响应体 name 为 Alice、id 非
+空」，并提取 id 供后续使用。
+
+参考答案：
+
+```java
+int id =
+given()
+    .baseUri("https://api.example.com")
+    .contentType("application/json")
+    .body("{\"name\":\"Alice\"}")
+.when()
+    .post("/api/users")
+.then()
+    .statusCode(201)
+    .body("name", equalTo("Alice"))
+    .body("id", notNullValue())
+    .extract().path("id");
+```
+
+自检：`extract().path("id")` 是请求与请求之间的关联手段；公共的
+baseUri/鉴权应抽进 `RequestSpecification`，否则每个用例都在重复样板。
+
+### 题 4：契约测试的价值（概念题）
+
+任务：消费者已经用 Stub Mock 了提供方接口，测试全绿。契约测试在这个
+场景里补上了什么缺口？
+
+参考答案：Stub 的「假设」（提供方会返回什么）只有消费者单方面书写，提供方
+改字段时 Stub 不会红——假绿。契约测试把假设固化为 pact 文件，提供方 CI
+用同一份契约回放验证：两端同时变绿才算绿；Broker 的 `can-i-deploy`
+进一步回答「这个版本能否安全上线」。前提是两端都在跑——只跑一端等于没跑。
 
 ## 小结
 

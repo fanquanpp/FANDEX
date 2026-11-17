@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 编译流程、增量编译、类型检查优化与构建工具集成：编译器架构、性能模型、复杂度分析、tsconfig 调优、项目引用、CI/CD 策略与生产级性能优化。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/390-TypeScriptMigrationPractice'
   - 'typescript/440-ConditionalTypeInfer'
@@ -109,7 +109,9 @@ TypeScript 3.4 引入 `incremental` 选项，使增量编译可用于生产构�
 | 2020 | esbuild | Go 实现的转译器 | 极快（1s） |
 | 2021 | swc | Rust 实现的转译器 | 极快（0.5s） |
 | 2022 | Vite | esbuild + Rollup | 极快（0.1s HMR） |
-| 2024 | tsgo | Go 实现的类型检查器 | 极快（10x） |
+| 2025-03 | tsgo（Native Preview） | 微软宣布 Go 原生移植，预览包试用 | 约 10x（预览） |
+| 2026-03 | TypeScript 6.0 | JS 实现的收官版，默认值翻转与弃用清理 | 基线 |
+| 2026-07 | TypeScript 7.0 | Go 原生编译器正式版（tsgo 转正），`latest` 即 7.x | 8-12x（官方口径） |
 
 ---
 
@@ -847,7 +849,7 @@ type SimplifiedType<T> = UnwrapArray<UnwrapPromise<UnwrapArray<UnwrapPromise<T>>
 | ForkTsChecker | JavaScript | 是（独立进程） | 快（10x） | Webpack |
 | esbuild | Go | 否 | 极快（100x） | Vite/独立 |
 | swc | Rust | 否 | 极快（100x） | Next.js/独立 |
-| tsgo | Go | 是 | 极快（10x tsc） | 实验性 |
+| tsgo / TypeScript 7.0 | Go | 是 | 极快（8-12x tsc） | 正式版（2026-07 GA，原预览包 tsgo；`--checkers`/`--builders` 可调并行度） |
 
 ### 5.3 增量编译 vs 项目引用
 
@@ -1575,7 +1577,8 @@ jobs:
 
 - [TypeScript Compiler Internals](https://github.com/microsoft/TypeScript/wiki/Architectural-Overview)
 - [Tail-Recursive Type Inference](https://devblogs.microsoft.com/typescript/announcing-typescript-4-5/#tail-rec-recursive-inference)
-- [TypeScript 5.0: tsgo Preview](https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/)
+- [A 10x Faster TypeScript（Go 原生移植公告，2025-03）](https://devblogs.microsoft.com/typescript/typescript-native-port/)
+- [Announcing TypeScript 7.0（2026-07）](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/)
 - [Incremental Compilation Algorithm](https://github.com/microsoft/TypeScript/blob/main/src/compiler/watch.ts)
 
 ### 11.6 相关论文
@@ -1637,6 +1640,14 @@ npx tsc --generateTrace ./trace-dir
 # 清理缓存
 npx tsc -b --clean
 ```
+
+## 自检
+
+- `isolatedModules`/`isolatedDeclarations` 为什么能提速？各自的约束与代价是什么？
+- `skipLibCheck`、`incremental`、`composite` 三个开关的提速原理与副作用分别是什么？
+- 类型体操里「递归深度」与「联合规模」哪类更容易把检查时间推爆？TS 4.5 起的尾递归优化上限大约是多少层？
+- project references 的增量判定靠什么文件？`.tsbuildinfo` 什么时候该删、什么时候该进 `.gitignore`？
+- TS 7.0（Go 原生编译器）的提速来自哪三重红利？CI 脚本要不要为它改命令、调并行度用什么参数？
 
 ---
 

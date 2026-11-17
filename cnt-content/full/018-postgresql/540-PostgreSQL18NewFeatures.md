@@ -6,7 +6,7 @@ module: 'postgresql'
 category: 数据库
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/010-OverviewInstallConfig'
   - 'postgresql/150-GeneratedColumn'
@@ -21,7 +21,9 @@ prerequisites:
 PostgreSQL 18 于 2025 年 9 月 25 日发布。它不是"17 的常规迭代"，
 而是包含了近年少见的底层重构（异步 I/O 子系统）与一组直接改变
 日常开发习惯的特性（uuidv7、虚拟生成列、跳跃扫描）。本文按
-"影响面从大到小"逐个展开，示例均在 18 上可直接运行。
+"影响面从大到小"逐个展开，示例均在 18 上可直接运行。截至 2026-11，
+18 仍是当前稳定主力（最新小版本 18.7，2026-11-12 发布），19 已进入 RC 阶段
+（RC 2 于 2026-11-12 发布，GA 目标 2026-11-19，尚未正式发布）。
 
 ## 2. 异步 I/O：读取路径的重构
 
@@ -83,8 +85,9 @@ SELECT uuidv7();
 --  01987e6a-4c2f-7cc0-9a1b-3d5e7f9a2b4c
 --  ^~~~ 48位毫秒时间戳
 
--- 可指定时间戳保留位数（12 是默认, 介于 0-12 之间可调唯一性/有序性权衡）
-SELECT uuidv7(12);
+-- 可选参数是 interval 类型的 shift: 把时间戳整体偏移,
+-- 便于"补发"历史时间点或修正时钟漂移; 不能是无限区间
+SELECT uuidv7('-1 hour');   -- 生成"1 小时前"的时间戳 UUID
 
 -- 新表推荐写法
 CREATE TABLE events (
@@ -127,7 +130,7 @@ SELECT subtotal FROM order_items WHERE id = 1;
 选型：读多、要建索引 -> STORED（PG 18 起存储生成列还可被逻辑复制）；
 写多、计算廉价、省存储 -> VIRTUAL。VIRTUAL 列不能直接建索引，
 需要索引时改用表达式索引或 STORED。详见
-[生成列](postgresql/150-GeneratedColumn)一文。
+[生成列](/postgresql/150-GeneratedColumn)一文。
 
 ## 5. B-tree 跳跃扫描（Skip Scan）
 
@@ -221,7 +224,9 @@ RETURNING id, OLD.status AS old_status, NEW.status AS new_status;
 2. **校验和默认值变化**：新 initdb 的集群默认开校验和；从旧集群
    pg_upgrade 时会保持旧集群设置，如需开启用 `pg_checksums`。
 3. **全文检索与 pg_trgm 索引**：18 改用集群默认 collation provider
-   构建 FTS，升级后相关索引需要 REINDEX（升级日志与文档有明确提示）。
+   读取 FTS 配置与词典（不再固定用 libc）。默认 provider 非 libc
+   （如 ICU、builtin）的集群升级后，官方建议 REINDEX 全文检索与
+   pg_trgm 相关索引（升级日志与文档有明确提示）。
 4. **驱动兼容**：新线上协议 3.2，旧驱动仍可用 3.0 连接；建议同步
    升级 libpq/JDBC/psycopg 以获得完整特性。
 5. **回滚预案**：pg_upgrade --swap 模式下保留旧目录即可快速回切，
@@ -235,4 +240,52 @@ RETURNING id, OLD.status AS old_status, NEW.status AS new_status;
 - 进阶注意：时态约束（WITHOUT OVERLAPS / PERIOD）可替代大量手写
   排他校验；md5 认证已弃用应尽快迁移；pg_upgrade 保留统计信息
   显著缩短升级窗口；开启增量备份仍需 PG 17+ 的 WAL 摘要机制
-  （见[增量备份](postgresql/450-IncrementalBackup)一文）。
+  （见[增量备份](/postgresql/450-IncrementalBackup)一文）。
+
+## 教学自检
+
+遮住本节示例代码，先自己回答再对照参考答案。逐题覆盖：AIO、uuidv7、VIRTUAL 列、skip scan、升级兼容。
+
+### 任务一：为什么 uuidv7 适合做主键而 uuidv4 不适合
+
+需求：一句话说清两者在 B-tree 索引中的行为差异；再说出 uuidv7 可选参数的类型与作用。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+uuidv4 完全随机，新行落在 B-tree 的任意位置，缓存命中率低、写放大明显；uuidv7 的高位是 48 位毫秒时间戳，插入永远集中在索引最右端（append-only 写入模式），热点页常驻内存。可选参数是 interval 类型的 shift，用于整体偏移时间戳（如 `uuidv7('-1 hour')` 生成"1 小时前"的 UUID），不是"保留位数"。
+
+</details>
+
+### 任务二：一张表的生成列该怎么选
+
+需求：`order_items(price, quantity)` 有两个派生需求——(a) 报表频繁按"小计"范围过滤；(b) 展示层总想看"合计"但从不按它过滤。写入都很频繁。分别选 STORED 还是 VIRTUAL，并说明 PG 18 省略关键字时的默认值。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+(a) 选 STORED：VIRTUAL 列不能直接建索引，范围过滤需要把值物化下来。 (b) 选 VIRTUAL：读时计算、不占存储、写入零额外开销，计算廉价时更优。PG 18 里 `GENERATED ALWAYS AS (...)` 省略关键字默认 VIRTUAL，PG 17 及以前 STORED 是强制项——升级前要逐个确认建表脚本的意图（详见 150 篇）。
+
+</details>
+
+### 任务三：skip scan 什么时候不会救你
+
+需求：复合索引 `(user_group, amount)`，`WHERE amount = 199` 在 PG 18 能用上索引。什么情况下优化器仍会选全表扫描？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+前导列 user_group 的不同值数量很大时，"虚拟枚举每个前导列值再逐段探测"的代价超过顺序扫描，优化器会放弃 skip scan。另外后续列条件的选择性太差（命中行太多）也不会用。经验值：前导列基数小（状态位、国家代码级别）且后续列条件选择性好时收益最明显。
+
+</details>
+
+### 任务四：pg_upgrade 从 17 升 18 前要检查的三件事
+
+需求：列出至少三项 17 -> 18 升级前需要确认的兼容性变化。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+任选三项：(1) md5 密码认证已弃用，先迁移存量 md5 账号到 scram-sha-256；(2) initdb 默认开数据页校验和，升级无校验和旧集群需注意 pg_upgrade 对校验和设置一致的要求（新集群可用 --no-data-checksums）；(3) 非 libc collation provider 的集群升级后 REINDEX 全文检索与 pg_trgm 相关索引；(4) COPY FROM 读取 CSV 时 `\.` 不再当 EOF 处理，旧 psql 客户端 `\copy` 可能受影响；(5) AFTER 触发器改为以"事件排队时"的角色执行，角色切换场景行为变化。
+
+</details>

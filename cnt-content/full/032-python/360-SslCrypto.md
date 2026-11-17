@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: ssl 模块速查：SSL/TLS 上下文、证书加载与校验模式，含禁用校验的风险警告。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -215,3 +215,12 @@ ctx.maximum_version = ssl.TLSVersion.TLSv1_3
 # 证书验证模式
 ctx.verify_mode = ssl.CERT_REQUIRED
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：创建一个「校验证书 + 校验主机名」的安全客户端上下文，并用它包一个 socket。要点：`ctx = ssl.create_default_context()` 一行即默认 `CERT_REQUIRED` 且开启主机名校验；`with socket.create_connection((host, 443)) as raw: with ctx.wrap_socket(raw, server_hostname=host) as s: ...`。
+2. 纠错题：`ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)` 后请求仍被中间人截获。最可能漏了什么？要点：漏了 `check_hostname = True` 或 `verify_mode = ssl.CERT_REQUIRED`（手写 SSLContext 不带默认校验），或者更糟——写了 `CERT_NONE` 自关验证；自签测试环境才允许放宽，生产禁止。
+3. 默写题：把上下文限制为只接受 TLS 1.2 及以上。要点：`ctx.minimum_version = ssl.TLSVersion.TLSv1_2`。
+4. 口述题：`CERT_NONE`、`CERT_OPTIONAL`、`CERT_REQUIRED` 各自的适用场景？要点：客户端侧只允许 `CERT_REQUIRED`；`CERT_NONE` 仅用于诊断受控环境；`OPTIONAL` 基本只出现在服务端「可选客户端证书」场景。

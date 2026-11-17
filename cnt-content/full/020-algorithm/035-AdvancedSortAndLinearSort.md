@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 排序算法进阶篇：堆排序（Williams 1964，最坏 $O(n \log n)$ 且原地）、希尔排序（Shell 1959，首个突破 $O(n^2)$）、计数/基数/桶三种线性时间非比较排序的适用条件与实验，内省排序（Musser 1997）、Timsort（Peters 2002）与 pdqsort 的工业级混合方案及 Python/Java/C++ 标准库排序源码分析，数据库外部归并排序与 MapReduce TeraSort 工程实践。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-11-17'
 related:
   - 'algorithm/030-SortAlgorithm'
   - 'algorithm/090-HeapAndPriorityQueue'
@@ -91,7 +91,7 @@ Timsort 的核心流程：
 
 Timsort 是**稳定排序**，最坏 $O(n \log n)$，最好 $O(n)$（已有序数据）。自 **Python 2.3**（2003）起成为 `list.sort` 默认实现，**Java 7** 起作为对象排序（`Arrays.sort(Object[])`），**Android 平台**、**V8 7.0+**（2018）、**Rust `slice::sort`** 均采用。
 
-**2015 年**，Auger-Nicaud-Pivoteau 在 arXiv:1805.04154 发现 Java 7 Timsort 实现的合并不变式有 bug，可能在特定输入下触发数组越界，Java 9 修复。这一事件印证了"实现复杂度是算法采用的隐形门槛"。
+**2015 年**，de Gouw-Rot-de Boer-Bubel-Hähnle 在 CAV 2015 论文《OpenJDK's java.utils.Collection.sort() is broken: The Good, the Bad and the Worst Case》中用 KeY 证明器对 Timsort 做形式化验证时，发现 Java 7 实现的 `mergeCollapse` 不维护合并不变式，特定输入（约 $2^{25}$ 量级元素）可触发数组越界（JDK-8072909；同类崩溃报告最早出现于 2011 年，当时被归咎于违规比较器），修复进入 Java 9。这一事件印证了"实现复杂度是算法采用的隐形门槛"。
 
 ### 2.6 演进时间线（1887-2015）
 
@@ -110,7 +110,7 @@ timeline
     1997 : Musser 内省排序 (Software Practice & Experience)
     2002 : Peters Timsort (Python list.sort)
     2009 : Yaroslavskiy Dual-Pivot Quicksort (Java 7)
-    2015 : Auger 发现 Timsort 不变式 bug (Java 9 修复)
+    2015 : de Gouw 等用 KeY 发现 Timsort 不变式 bug (Java 9 修复)
 ```
 
 ---
@@ -185,7 +185,7 @@ def heap_sort(arr: list[int]) -> list[int]:
 1. **introsort 的回退方案**：快排递归过深时切换到堆排；
 2. **嵌入式系统**：$O(1)$ 空间、最坏 $O(n \log n)$，适合资源受限场景；
 3. **Top-K 问题**：建堆后取前 $k$ 个，$O(n + k \log n)$；
-4. **Linux kernel `lib/sort.c`**：早期希尔排序，2017 年后改用 introsort 变体。
+4. **Linux kernel `lib/sort.c`**：2005 年由 Matt Mackall 引入即为堆排序（补丁系列标题即「lib/sort: Heapsort implementation of sort()」，规避快排最坏情况与递归栈溢出），2019 年的后续改动是堆化方式与 swap 实现的性能优化（自底向上堆化变体、消除间接调用开销），算法本身从未更换。
 
 ---
 
@@ -292,7 +292,7 @@ def shell_sort(arr: list[int], gaps: str = "ciura") -> list[int]:
 
 **希尔排序不稳定**：相同元素可能因步长分组跨越彼此，破坏相对顺序。
 
-**工程地位**：希尔排序因实现简单、原地、$O(n^{1.3})$ 在嵌入式系统、低开销场景仍被使用。Linux kernel `lib/sort.c` 在 2017 年前使用希尔排序（后改用 introsort 变体）。
+**工程地位**：希尔排序因实现简单、原地、$O(n^{1.3})$ 在嵌入式系统、低开销场景仍被使用。注意一个常见误传：Linux kernel `lib/sort.c` 自 2005 年引入起即为堆排序（Matt Mackall 实现），从未使用过希尔排序，不能作为希尔排序的工程应用案例。
 
 ---
 
@@ -635,7 +635,7 @@ Timsort 的复杂度分析依赖**run 长度与归并栈不变式**。
 - **最好情形**（已有序）：扫描一次得一个长度 $n$ 的 run，无需合并，$O(n)$；
 - **最坏情形**：run 长度全为 `minrun`，栈深度 $O(n/\text{minrun}) = O(n/32)$，每层归并代价 $O(n)$，总复杂度 $O(n \log n)$。
 
-更精细的分析（Auger et al. 2015）证明 Timsort 最坏比较次数上界为 $n \log_2 n - n \log_2 \phi + O(n)$（$\phi = (1+\sqrt{5})/2$），略优于归并排序的 $n \log_2 n - n + O(1)$。
+更精细的分析：Auger-Jugé-Nicaud-Pivoteau（2018，arXiv:1805.08612）证明 Timsort 最坏运行时间 $O(n \log n)$，且更精确地为 $O(n + n \log \rho)$（$\rho$ 为 run 的个数）——run 越少越接近线性；Munro-Wild（2018，arXiv:1805.04154）随后证明利用已有序 run 求近乎最优的合并顺序只需可忽略的额外开销。
 
 **简化实现**：
 
@@ -1089,7 +1089,7 @@ void sort(void *base, size_t num, size_t size,
 ```
 
 **实现特点**：
-1. **堆排序 + 插入排序混合**：小数据切到插入排序，大数据用堆排；
+1. **纯堆排序**：迭代式 trickle-down（非递归、$O(1)$ 额外空间），无小数组插入排序回退，也非 introsort 式混合——源文件头注释即自述 "A fast, small, non-recursive $O(n \log n)$ sort … This function does a heapsort on the given array"；
 2. **不使用快排**：内核环境不能容忍栈深 $O(n)$ 的最坏情况；
 3. **swap_func 回调**：允许调用者提供高效 swap（如 swap_entry 用于页表项）。
 
@@ -1159,9 +1159,9 @@ def radix_msd(arr, digit):
 
 ### 9.5 Timsort 不变式 bug（Java 9 修复）
 
-**陷阱**：Timsort 归并栈原不变式 $A > B + C$ 且 $B > C$ 不充分，存在极端输入触发 `ArrayIndexOutOfBoundsException`。Auger-Nicaud-Pivoteau 2015 论文证明 Java 7/8 中此 bug 可触发。
+**陷阱**：Timsort 归并栈原不变式 $A > B + C$ 且 $B > C$ 不充分，存在极端输入触发 `ArrayIndexOutOfBoundsException`。de Gouw 等 2015 用 KeY 形式化验证 OpenJDK 的 Timsort 时证明 Java 7/8 中此 bug 可触发。
 
-**修复**：Java 9 改用更强的不变式 $A > B + C$ 且 $B > C$ 且 $A > 2B + C$（详见 de Gouw et al. 2015《Specification and verification of the Timsort》）。
+**修复**：Java 9 改用更强的不变式 $A > B + C$ 且 $B > C$ 且 $A > 2B + C$（详见 de Gouw et al. 2015《OpenJDK's java.utils.Collection.sort() is broken: The Good, the Bad and the Worst Case》，CAV 2015）。
 
 ---
 
@@ -1175,7 +1175,7 @@ def radix_msd(arr, digit):
 
 **常见疑问 9**：Dual-Pivot Quicksort（Yaroslavskiy 2009）平均比较次数 $\frac{2}{5}n \ln n$，由 Wild 与 Nebel 在 **2012** 年严格证明，比单轴快排少约 **20%** 的比较。
 
-**常见疑问 10**：Timsort 的归并栈维护不变式 $A > B + C$ 且 $B > C$，其中 $A, B, C$ 是栈顶三个 **run 的长度**。Auger-Nicaud-Pivoteau 2015 发现此不变式不充分，**Java 9** 改用更强的 $A > 2B + C$。
+**常见疑问 10**：Timsort 的归并栈维护不变式 $A > B + C$ 且 $B > C$，其中 $A, B, C$ 是栈顶三个 **run 的长度**。de Gouw 等 2015 在 KeY 形式化验证中发现此不变式不充分，**Java 9** 改用更强的 $A > 2B + C$。
 
 ### 10.2 开放论述题
 
@@ -1185,10 +1185,10 @@ def radix_msd(arr, digit):
 
 1. **真实数据并非完全随机**：Timsort 检测自然 run，对部分有序数据（如日志时间戳、用户输入的递增序列）达到 $O(n)$ 至 $O(n \log n)$ 之间，而传统快排/归并无论数据是否有序都是 $O(n \log n)$；
 2. **稳定性需求**：Python 对象、Java 对象、JS 对象排序通常依赖 `equals` 语义，需稳定排序保证业务逻辑正确性。原快排不稳定，对象排序必须改归并（占 $O(n)$ 空间）或 Timsort；
-3. **工程可预测性**：Timsort 最坏 $O(n \log n)$，避免快排的最坏 $O(n^2)$ 在生产环境的不可预测性（如 Google 2015 年曾因快排在特定输入上退化导致服务延迟尖峰）；
+3. **工程可预测性**：Timsort 最坏 $O(n \log n)$，避免快排的最坏 $O(n^2)$ 在生产环境的不可预测性——对抗性或巧合的构造输入都能触发退化（这也是通用库普遍在快排中加入随机化主元或中位数取样防御的原因）；
 4. **实现复杂度可控**：Timsort 虽然复杂但 Peters 在 listsort.txt 中提供了详尽规范，各语言实现可移植；
 5. **缓存友好**：归并阶段顺序访问，比快排的跳跃式分区更友好；
-6. **教训**：Auger 2015 发现 Java 7/8 Timsort 不变式 bug，说明复杂算法需形式化验证。Java 9 在 de Gouw 等人帮助下用 KeY 验证后修复。
+6. **教训**：de Gouw 等 2015 在用 KeY 形式化验证 Java 7/8 Timsort 时发现不变式 bug（JDK-8072909），说明复杂算法需形式化验证，修复进入 Java 9。
 
 **常见疑问 14**：论述为什么 C++ `std::sort` 选择 introsort 而非 Timsort？
 
@@ -1231,10 +1231,11 @@ def radix_msd(arr, digit):
 7. Peters, Tim (2002). "Timsort - List sort for Python". *Python Developer Mailing List*. https://github.com/python/cpython/blob/main/Objects/listsort.txt. Timsort 设计文档。
 8. Yaroslavskiy, Vladimir (2009). "Dual-Pivot Quicksort Algorithm". *Java Developer Connection*. https://codeblab.com/wp-content/uploads/2009/09/DualPivotQuicksort.pdf. 双轴快排，Java 7 Arrays.sort 默认实现。
 9. Wild, Sebastian; Nebel, Markus E. (2012). "Average Case Analysis of Java 7's Dual Pivot Quicksort". *European Symposium on Algorithms (ESA)*. Springer LNCS 7501: 830-842. DOI:10.1007/978-3-642-33090-2_71. 双轴快排平均复杂度严格证明 $\frac{2}{5}n \ln n$。
-10. Auger, Nicolas; Nicaud, Cyril; Pivoteau, Carine (2015). "Merge Strategies: Implementing Timsort Efficiently and In-Place". *arXiv:1805.04154*. https://arxiv.org/abs/1805.04154. Timsort 不变式 bug 与 Java 9 修复。
+10. Auger, Nicolas; Jugé, Vincent; Nicaud, Cyril; Pivoteau, Carine (2018). "On the Worst-Case Complexity of TimSort". *arXiv:1805.08612*. https://arxiv.org/abs/1805.08612. 证明 Timsort 最坏 $O(n \log n)$，更精确为 $O(n + n \log \rho)$（$\rho$ 为 run 数）；同组 2015 年 HAL 报告《Merge Strategies: from Merge Sort to TimSort》（hal-01212839）分析合并策略复杂度。
 11. Peters, Orson (2015). "pdqsort - Pattern-Defeating Quicksort". https://github.com/orlp/pdqsort. Rust `slice::sort_unstable`、Go `slices.Sort` 默认实现。
 12. McIlroy, Peter M.; Bostic, Keith; McIlroy, M. Douglas (1993). "Engineering radix sort". *Computing Systems* 6(1): 5-27. American flag sort 与基数排序的工业级实现。
-13. de Gouw, Stijn; Rot, Jurriaan; de Boer, Frank S.; Bubel, Richard; Hähnle, Reiner (2015). "OpenJDK's Java.utils.Collection.sort() is Broken: The Double Bubble". *International Conference on Computer Aided Verification (CAV)*. Springer LNCS 9206: 243-259. Timsort 形式化验证。
+13. de Gouw, Stijn; Rot, Jurriaan; de Boer, Frank S.; Bubel, Richard; Hähnle, Reiner (2015). "OpenJDK's java.utils.Collection.sort() is broken: The Good, the Bad and the Worst Case". *International Conference on Computer Aided Verification (CAV)*. Springer LNCS 9206: 273-289. DOI:10.1007/978-3-319-21690-4_16. 用 KeY 形式化验证 Timsort 时发现合并不变式 bug（JDK-8072909）。
+14. Munro, J. Ian; Wild, Sebastian (2018). "Nearly-Optimal Mergesorts: Fast, Practical Sorting Methods That Optimally Adapt to Existing Runs". *arXiv:1805.04154*. https://arxiv.org/abs/1805.04154. peeksort/powersort：利用已有序 run 以可忽略开销求近乎最优的合并顺序。
 
 ---
 
@@ -1242,7 +1243,7 @@ def radix_msd(arr, digit):
 
 ### 12.1 理论深入（进阶篇相关）
 
-- **Timsort 复杂度证明**：Auger et al. 2015 给出 Timsort 最坏 $O(n \log n)$ 的严格证明，并指出原不变式不充分的 bug。
+- **Timsort 复杂度证明**：Auger-Jugé-Nicaud-Pivoteau 2018（arXiv:1805.08612）给出 Timsort 最坏 $O(n \log n)$ 的严格证明；原不变式不充分的 bug 由 de Gouw 等 2015 发现。
 - **排序网络的下界**：AKS 排序网络（Ajtai-Komlós-Szemerédi 1983）给出 $O(n \log n)$ 深度、$O(n \log n)$ 比较器的理论构造，但常数过大不可实用；Batcher 奇偶归并排序 $O(n \log^2 n)$ 深度是实用排序网络的基础。
 - **量子排序**：Høyer-Neerbek-Shi 2001 证明量子比较排序下界 $\Omega(n \log n)$，与经典相同。
 
@@ -1267,7 +1268,7 @@ def radix_msd(arr, digit):
 
 **历史教训**：
 - **Bloch 2006 整数溢出 bug**：Java `Arrays.binarySearch` 的 `mid = (low+high)/2` 自 1997 年存在至 2006 年才被发现。教训：即使最简单的算法也可能藏 bug；
-- **Auger 2015 Timsort bug**：Java 7/8 的 Timsort 在极端输入下崩溃。教训：复杂不变式需形式化验证；
+- **de Gouw 2015 Timsort bug**：Java 7/8 的 Timsort 在极端输入下崩溃（KeY 形式化验证发现，JDK-8072909）。教训：复杂不变式需形式化验证；
 - **V8 2018 Timsort 切换**：V8 自 7.0 起从快排切到 Timsort。教训：稳定排序在 Web 应用中需求高于性能。
 
 **未来趋势**：

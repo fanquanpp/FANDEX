@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: regex库与模式匹配
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/520-CppSerialization'
   - 'cpp/530-CppNetworkProgramming'
@@ -568,3 +568,57 @@ std::regex re("^start.*end$");
 // 捕获组与非捕获组
 std::regex re("(\\d+)(?:\\.\\d+)?");
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：不查文档先写——从 `"订单号: ABC-2026-0721, 状态: 已发货"` 中用 `std::regex` 提取订单号（模式：大写字母 2-3 个 + 横线 + 4 位数字 + 横线 + 4 位数字），写出正则串、`std::smatch` 解包与输出；然后回答：`regex_search` 与 `regex_match` 的差别是什么？
+
+**提示**：`smatch` 的 `[0]` 是整个匹配，`[1]` 起是捕获组；`regex_match` 要求**整串**匹配，`regex_search` 找**任意位置**的第一个匹配——选错会把能匹配的情形判成不匹配。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <regex>
+#include <string>
+#include <iostream>
+
+std::string text = "订单号: ABC-2026-0721, 状态: 已发货";
+std::regex  pattern("([A-Z]{2,3})-(\d{4})-(\d{4})");
+
+std::smatch m;
+if (std::regex_search(text, m, pattern)) {
+    std::cout << "整体: " << m[0] << "\n"
+              << "前缀: " << m[1] << "\n"
+              << "年段: " << m[2] << "\n"
+              << "序号: " << m[3] << "\n";
+}
+// regex_match(text, m, pattern) 在这里返回 false：整串里有 "订单号:" 等前后缀。
+```
+
+要点自查：`regex_match` 是「全文契约」、`regex_search` 是「找第一个」、`sregex_iterator` 是「全部」——三个入口按语义选；`smatch` 绑定的是 `std::string`，对 `string_view`/C 串要用 `match_results<const char*>`（`cmatch`）。
+
+**任务二**：性能辨析——为什么本篇反复强调「循环外构造 `std::regex` 对象」？写一个反例（循环里每次构造）与正解，并给出正则之外的替代思路（`from_chars`/手写状态机）在什么情况下更合适。
+
+**提示**：`std::regex` 构造要编译正则（NFA 构建），成本常常是匹配本身的几十倍；简单格式（固定前缀数字）手写解析远快于正则。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// 反例：每轮重编译正则（热点循环里性能杀手）
+for (const auto& line : lines) {
+    std::regex pat("([A-Z]{2,3})-\d{4}-\d{4}");   // 每次 100 行都重新编译
+    std::regex_search(line, pat);
+}
+
+// 正解：pattern 提到循环外，或用 regex_constants::optimize 提示实现
+const std::regex pat("([A-Z]{2,3})-\d{4}-\d{4}",
+                     std::regex_constants::optimize);
+for (const auto& line : lines) std::regex_search(line, pat);
+
+// 替代：固定格式如 "YYYY-MM-DD" 用 std::from_chars 三段数字直接解析，
+// 无异常无分配；正则值得用的场景是「模式复杂且输入不可控」。
+```
+
+要点自查：regex 的设计定位是「表达力换性能」——表达式编译一次、匹配多次是底线；输入格式固定且简单时，`from_chars`/手写解析是更快的答案。

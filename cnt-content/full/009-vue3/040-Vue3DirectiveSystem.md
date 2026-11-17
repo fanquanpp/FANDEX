@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 内置指令、自定义指令与指令钩子函数。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'vue3/020-Vue3QuickStartGuide'
   - 'vue3/030-Vue3TemplateSyntax'
@@ -21,16 +21,19 @@ prerequisites: []
 
 ## 学习目标
 
-- 掌握「1. 指令概述」的核心机制、典型用法与常见陷阱
-- 掌握「2. 内置指令」的核心机制、典型用法与常见陷阱
-- 掌握「3. 自定义指令」的核心机制、典型用法与常见陷阱
-- 掌握「4. 指令的应用场景」的核心机制、典型用法与常见陷阱
-- 掌握「5. 最佳实践」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
+
+- 说清指令与手写 DOM 操作的对应关系：v-if/v-for/v-model 各收编了哪类命令式行为；
+- 在 v-if 与 v-show、下标 key 与 id key 之间做出正确选择并解释原因；
+- 用 `<script setup>` 的 vFocus 命名约定写出带完整生命周期的局部自定义指令，并处理好监听器清理；
+- 判断一个 DOM 操作该用内置指令、自定义指令还是组合式函数来封装。
 
 
 ## 1. 指令概述
 
-指令是 Vue 模板中特殊的标记，以 `v-` 前缀开头，用于在 DOM 上应用特殊的响应式行为。Vue3 提供了丰富的内置指令，同时支持自定义指令。
+先回答为什么需要指令。模板里你写的 `<p>{{ text }}</p>` 是纯插值——把值放到那里。但大量界面行为不是「放个值」能表达的：这段内容「可能不出现」（条件）、这段要「重复 N 份」（列表）、这个输入要「和状态双向同步」（表单）。这些行为如果手写，就是 010 篇刚淘汰的命令式 DOM 操作：判断再增删节点、循环再克隆节点、监听 input 再回写状态。指令的作用是**把这些常见 DOM 行为声明成一个标记**，让编译器替你生成对应的命令式代码——你写 `v-if`，编译器生成增删节点；你写 `v-for`，编译器生成循环克隆。所以指令不是「模板里多出来的功能」，而是「本该手写的 DOM 操作的声明式收编」。
+
+指令是 Vue 模板中特殊的标记，以 `v-` 前缀开头，用于在 DOM 上应用特殊的响应式行为。Vue3 提供了丰富的内置指令，同时支持自定义指令——当内置指令覆盖不了某个「操作 DOM 的通用行为」（如自动聚焦、拖拽）时，自定义指令让你把自己的命令式操作也收编成声明式标记。学习时按三问推进：这个指令解决什么 DOM 行为？和近邻指令的分工边界在哪（v-if 与 v-show、v-for 的 key）？什么场景该改用自定义指令而不是堆逻辑？
 
 ## 2. 内置指令
 
@@ -426,6 +429,8 @@ const valueB = ref(2);
 </script>
 ```
 
+**依赖数组的语义**：依赖数组里的值都没变时，Vue 跳过该子树的整体更新——依赖数组为空数组 `[ ]` 是极端情况：没有任何依赖参与比较，子树**只随父级首次渲染一次**，之后即使父组件重渲染也不再更新，等价于 `v-once` 的「渲染一次」语义（区别在 v-once 缓存的是渲染结果本身，v-memo `[ ]` 缓存的是 vnode 引用）。因此 `[ ]` 只适合「内容完全由初始数据决定、永不变化」的节点；只要节点里有任何会变的插值，就必须把它列进依赖数组，否则界面会停在旧值——这是 v-memo 最常见的误用。
+
 ## 3. 自定义指令
 
 ### 3.1 全局自定义指令
@@ -442,7 +447,7 @@ const valueB = ref(2);
   mounted(el) {
   el.focus()
   }
- }
+ })
  app.mount('#app')
 ```
 
@@ -458,7 +463,7 @@ const valueB = ref(2);
 
 ### 3.2 局部自定义指令
 
-**定义**：
+**定义**：`<script setup>` 里不需要任何导入，也不用注册函数——只要声明一个以 `v` 开头的驼峰变量（如 `vFocus`），模板里就能直接用 `v-focus`。这是编译器的命名约定，`<script setup>` 会在编译时自动识别 `vXxx` 形式的变量并把它当指令绑定到对应模板。
 
 ```vue
 <template>
@@ -468,23 +473,24 @@ const valueB = ref(2);
   </div>
 </template>
 <script setup lang="ts">
-import { directive } from 'vue'
-// 定义局部自定义指令
-const vFocus = directive('focus', {
- mounted(el) {
- el.focus()
- }
+// 定义局部自定义指令：变量名 vFocus 对应模板里的 v-focus
+const vFocus = {
+  mounted(el) {
+    el.focus()
+  }
 }
-const vHighlight = directive('highlight', {
- mounted(el, binding) {
- el.style.color = binding.value.color
- },
- updated(el, binding) {
- el.style.color = binding.value.color
- }
+const vHighlight = {
+  mounted(el, binding) {
+    el.style.color = binding.value.color
+  },
+  updated(el, binding) {
+    el.style.color = binding.value.color
+  }
 }
 </script>
 ```
+
+这不是简写，而是 `<script setup>` 的正式用法：指令对象就是一个普通对象常量。若要在非 setup 组件（选项式）里用局部指令，则通过 `directives` 选项注册——两种写法背后的指令对象结构完全一致。
 
 ### 3.3 指令生命周期钩子
 
@@ -504,29 +510,29 @@ const vHighlight = directive('highlight', {
   </div>
 </template>
 <script setup lang="ts">
-import { directive } from 'vue'
-const vExample = directive('example', {
- created(el) {
- console.log('指令创建')
- },
- beforeMount(el) {
- console.log('元素插入前')
- },
- mounted(el) {
- console.log('元素插入后')
- },
- beforeUpdate(el) {
- console.log('元素更新前')
- },
- updated(el) {
- console.log('元素更新后')
- },
- beforeUnmount(el) {
- console.log('元素卸载前')
- },
- unmounted(el) {
- console.log('元素卸载后')
- }
+// vXxx 命名约定：无需导入，<script setup> 自动识别为局部指令
+const vExample = {
+  created(el) {
+    console.log('指令创建')
+  },
+  beforeMount(el) {
+    console.log('元素插入前')
+  },
+  mounted(el) {
+    console.log('元素插入后')
+  },
+  beforeUpdate(el) {
+    console.log('元素更新前')
+  },
+  updated(el) {
+    console.log('元素更新后')
+  },
+  beforeUnmount(el) {
+    console.log('元素卸载前')
+  },
+  unmounted(el) {
+    console.log('元素卸载后')
+  }
 }
 </script>
 ```
@@ -543,30 +549,30 @@ const vExample = directive('example', {
   </div>
 </template>
 <script setup lang="ts">
-import { ref, directive } from 'vue'
+import { ref } from 'vue'
 const email = ref('')
 const emailError = ref('')
-const vValidate = directive('validate', {
- mounted(el, binding) {
- el.addEventListener('blur', () => {
- validate(el, binding)
- })
- },
- updated(el, binding) {
- validate(el, binding)
- }
+const vValidate = {
+  mounted(el, binding) {
+    el.addEventListener('blur', () => {
+      validate(el, binding)
+    })
+  },
+  updated(el, binding) {
+    validate(el, binding)
+  }
 }
 function validate(el: HTMLInputElement, binding: any) {
- const value = el.value
- const type = binding.arg
- if (type === 'email') {
- const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
- if (!emailRegex.test(value)) {
- emailError.value = '请输入有效的邮箱地址'
- } else {
- emailError.value = ''
- }
- }
+  const value = el.value
+  const type = binding.arg
+  if (type === 'email') {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(value)) {
+      emailError.value = '请输入有效的邮箱地址'
+    } else {
+      emailError.value = ''
+    }
+  }
 }
 </script>
 ```
@@ -583,19 +589,19 @@ function validate(el: HTMLInputElement, binding: any) {
   </div>
 </template>
 <script setup lang="ts">
-import { ref, directive } from 'vue'
+import { ref } from 'vue'
 const scrollTop = ref(0)
-const vScroll = directive('scroll', {
- mounted(el, binding) {
- el.addEventListener('scroll', binding.value)
- },
- unmounted(el, binding) {
- el.removeEventListener('scroll', binding.value)
- }
+const vScroll = {
+  mounted(el, binding) {
+    el.addEventListener('scroll', binding.value)
+  },
+  unmounted(el, binding) {
+    el.removeEventListener('scroll', binding.value)
+  }
 }
 function handleScroll(event: Event) {
- const target = event.target as HTMLElement
- scrollTop.value = target.scrollTop
+  const target = event.target as HTMLElement
+  scrollTop.value = target.scrollTop
 }
 </script>
 ```
@@ -614,34 +620,45 @@ function handleScroll(event: Event) {
   </div>
 </template>
 <script setup lang="ts">
-import { directive } from 'vue'
-const vDraggable = directive('draggable', {
- mounted(el) {
- let isDragging = false
- let startX = 0
- let startY = 0
- let initialLeft = 0
- let initialTop = 0
- el.addEventListener('mousedown', (e) => {
- isDragging =
- startX = e.clientX
- startY = e.clientY
- initialLeft = el.offsetLeft
- initialTop = el.offsetTop
- el.style.cursor = 'grabbing'
- })
- document.addEventListener('mousemove', (e) => {
- if (!isDragging) return
- const deltaX = e.clientX - startX
- const deltaY = e.clientY - startY
- el.style.left = `${initialLeft + deltaX}px`
- el.style.top = `${initialTop + deltaY}px`
- })
- document.addEventListener('mouseup', () => {
- isDragging = false
- el.style.cursor = 'move'
- })
- }
+const vDraggable = {
+  mounted(el) {
+    let isDragging = false
+    let startX = 0
+    let startY = 0
+    let initialLeft = 0
+    let initialTop = 0
+    const onMove = (e) => {
+      if (!isDragging) return
+      const deltaX = e.clientX - startX
+      const deltaY = e.clientY - startY
+      el.style.left = `${initialLeft + deltaX}px`
+      el.style.top = `${initialTop + deltaY}px`
+    }
+    const onUp = () => {
+      isDragging = false
+      el.style.cursor = 'move'
+    }
+    const onDown = (e) => {
+      isDragging = true
+      startX = e.clientX
+      startY = e.clientY
+      initialLeft = el.offsetLeft
+      initialTop = el.offsetTop
+      el.style.cursor = 'grabbing'
+    }
+    el.addEventListener('mousedown', onDown)
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+    // 卸载时清掉挂在 document 上的监听——元素没了，监听还在就是泄漏
+    el._dragCleanup = () => {
+      el.removeEventListener('mousedown', onDown)
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+  },
+  unmounted(el) {
+    el._dragCleanup?.()
+  }
 }
 </script>
 ```
@@ -702,7 +719,21 @@ const vDraggable = directive('draggable', {
 ## 7. 总结
 
 Vue3 的指令系统提供了丰富的功能，从基本的条件渲染、列表渲染到复杂的表单处理和自定义指令，为开发者提供了强大的工具。通过本教程的学习，你应该已经掌握了 Vue3 指令系统的基本使用方法和最佳实践，可以在实际项目中灵活运用。
-## 条件渲染指令
+
+## 自检
+
+回答不出的回对应小节；模板题先遮住示例代码自己写，再对照。
+
+1. v-if 与 v-show 的本质区别是什么？各适合什么切换频率？首屏渲染成本谁更低？
+2. v-for 的 key 为什么不能省、不能用数组下标凑数？下标作 key 在「中间插入」时会发生什么？
+3. `v-bind="obj"` 与 `:prop="obj.prop"` 的区别是什么？class 与 style 绑定支持哪些数据形态？
+4. `<script setup>` 里写局部自定义指令需要导入什么？`vFocus` 变量是怎么变成 `v-focus` 指令的？
+5. 自定义指令的钩子里，适合分别在 mounted 与 unmounted 做什么？为什么 document 级监听必须在 unmounted 清理？
+6. v-memo 的依赖数组为空数组 `[ ]` 时行为是什么？什么场景才值得用它？
+
+## 附录：内置指令速查
+
+### 条件渲染指令
 
 **v-if 条件渲染**
 `v-if="<expression>"`
@@ -728,7 +759,7 @@ Vue3 的指令系统提供了丰富的功能，从基本的条件渲染、列表
 
 ---
 
-## 列表渲染指令
+### 列表渲染指令
 
 **v-for 数组遍历**
 `v-for="(<item>, [index]) in <list>" :key="<key>"`
@@ -760,7 +791,7 @@ Vue3 的指令系统提供了丰富的功能，从基本的条件渲染、列表
 
 ---
 
-## 属性与事件指令
+### 属性与事件指令
 
 **v-bind 属性绑定**
 `v-bind:<attr>="<value>"` / `:<attr>="<value>"`
@@ -793,7 +824,7 @@ Vue3 的指令系统提供了丰富的功能，从基本的条件渲染、列表
 
 ---
 
-## 双向绑定指令
+### 双向绑定指令
 
 **v-model 基础用法**
 `v-model[.<modifier>]="<variable>"`
@@ -825,7 +856,7 @@ Vue3 的指令系统提供了丰富的功能，从基本的条件渲染、列表
 
 ---
 
-## 文本渲染指令
+### 文本渲染指令
 
 **v-text 设置文本**
 `v-text="<expression>"`
@@ -849,7 +880,7 @@ Vue3 的指令系统提供了丰富的功能，从基本的条件渲染、列表
 
 ---
 
-## 性能优化指令
+### 性能优化指令
 
 **v-once 一次性渲染**
 `v-once`
@@ -890,7 +921,7 @@ Vue3 的指令系统提供了丰富的功能，从基本的条件渲染、列表
 
 ---
 
-## 指令缩写
+### 指令缩写
 
 **v-bind 缩写**
 ```vue

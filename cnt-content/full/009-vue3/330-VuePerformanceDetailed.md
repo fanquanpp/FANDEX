@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Vue 3 性能优化详解：shallowRef/markRaw 响应式减负、v-memo/v-once 渲染跳过、虚拟滚动与异步组件，附完整可运行示例与陷阱清单。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'vue3/220-PiniaPersistencePlugin'
   - 'vue3/200-VueRouterNavigationGuard'
@@ -264,3 +264,13 @@ Vue 3 编译器在构建期已经做了大量工作，理解它们有助于写�
 4. **编译层**：信任静态提升与补丁标记，保持模板"静态信息"清晰。
 
 所有优化的前提是测量：先用 DevTools 与 Performance API 定位热点，再从上述四层中选对应工具，避免过早优化把代码搅复杂。
+
+## 自检
+
+回答不出的回对应小节。
+
+1. shallowRef 下 push 一个元素会触发更新吗？什么时候才触发？triggerRef 补的是哪个环节？
+2. markRaw 与 Object.freeze 都能「跳出代理」，边界怎么分（第三方实例 vs 只读展示数据）？
+3. v-memo 的依赖数组写 `[item.id]` 和 `[ ]` 分别意味着什么？空数组适合哪类节点？
+4. 虚拟滚动的三个必备件（总高占位、可视区切片、位移补偿）各解决什么？少了哪件会看到什么现象？
+5. 「稳定 key」为什么不只是正确性问题，也是性能问题？下标 key 在排序场景多付什么代价？

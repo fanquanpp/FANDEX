@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java CompletableFuture 异步编排的形式语义、CompletionStage 接口代数、Completion 栈内部结构、Java 9 API 增强、Project Loom 与虚拟线程场景下的演进路径
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/510-ConcurrencyDetailed'
   - 'java/530-ThreadLocalMemoryLeak'
@@ -1056,11 +1056,13 @@ public class VirtualThreadExecutorDemo {
 }
 ```
 
-### 4.10 结构化并发（JEP 453 Preview）
+### 4.10 结构化并发对照：JEP 453 → JEP 525（截至 JDK 26 仍为预览）
+
+结构化并发（`StructuredTaskScope`）要解决的正是 CompletableFuture 的先天短板：`thenCombine` 组合出的子任务没有生命周期绑定——上游失败或调用方取消，下游任务照跑不误。JDK 25（JEP 505）重设计了这套 API：构造函数时代的 `new StructuredTaskScope.ShutdownOnFailure()` 被 `StructuredTaskScope.open(...)` + `Joiner` 静态工厂取代，旧 API 已从预览 API 中移除。
 
 ```java
 import java.util.concurrent.StructuredTaskScope;
-import java.util.concurrent.StructuredTaskScope.ShutdownOnFailure;
+import java.util.concurrent.StructuredTaskScope.Joiner;
 
 public class StructuredConcurrencyDemo {
 
@@ -1073,40 +1075,38 @@ public class StructuredConcurrencyDemo {
         return userF.thenCombine(orderF, UserProfile::new);
     }
 
-    // JEP 453 结构化并发：子任务生命周期与父作用域绑定
+    // JDK 25/26 新 API（JEP 505 → JEP 525，预览，需 --enable-preview）：
+    // open() 默认策略即"全部成功、任一失败取消其余并抛异常"
     UserProfile structuredFetch(Long userId) throws Exception {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-            // 启动子任务：生命周期与 scope 绑定
-            StructuredTaskScope.Subtask<User> userTask = 
+        try (var scope = StructuredTaskScope.<Object>open()) {
+            StructuredTaskScope.Subtask<User> userTask =
                 scope.fork(() -> userService.findById(userId));
-            StructuredTaskScope.Subtask<Order> orderTask = 
+            StructuredTaskScope.Subtask<Order> orderTask =
                 scope.fork(() -> orderService.findByUserId(userId));
-            
-            // 等待全部完成（或任一失败）
-            scope.join();
-            
-            // 若任一失败，抛异常（自动取消其他子任务）
-            scope.throwIfFailed();
-            
+
+            scope.join();  // 任一子任务失败时已自动取消其余，并在此抛出
+
             return new UserProfile(userTask.get(), orderTask.get());
         }
     }
 
-    // ShutdownOnSuccess：任一成功即返回（用于冗余请求）
+    // 竞速：任一成功即返回（镜像冗余请求），对应旧 ShutdownOnSuccess
+    // 注意 Joiner 工厂名在 JDK 25（JEP 505）中是 anySuccessfulResultOrThrow()，
+    // JDK 26（JEP 525）更名为 anySuccessfulOrThrow()——本示例按 JDK 26 命名，
+    // 在 JDK 25 --enable-preview 下编译需改用旧名
     String fastestMirror() throws Exception {
-        try (var scope = new StructuredTaskScope.ShutdownOnSuccess<String>()) {
+        try (var scope = StructuredTaskScope.open(Joiner.<String>anySuccessfulOrThrow())) {
             scope.fork(() -> fetchFromMirror("mirror1"));
             scope.fork(() -> fetchFromMirror("mirror2"));
             scope.fork(() -> fetchFromMirror("mirror3"));
-            scope.join();
-            return scope.result();
+            return scope.join();  // 首个成功结果；全部失败抛 FailedException
         }
     }
 
     // 权衡：CompletableFuture vs StructuredTaskScope
     void migrationConsiderations() {
         // CompletableFuture 优势：
-        //   1. JDK 8+ 通用，无 Preview 限制
+        //   1. JDK 8+ 通用，正式 API，无预览开关
         //   2. 丰富的组合原语（50+ 方法）
         //   3. 与 Reactor / RxJava 互操作成熟
         //   4. 异步回调语义清晰
@@ -1114,12 +1114,14 @@ public class StructuredConcurrencyDemo {
         // StructuredTaskScope 优势：
         //   1. 原生取消传播（无需手动 cancel）
         //   2. 作用域边界明确（try-with-resources）
-        //   3. 错误传播自动（ShutdownOnFailure）
+        //   3. 错误传播自动（完成策略内建）
         //   4. 配合虚拟线程表现最佳
         //
-        // 迁移策略：
-        //   JDK 21 LTS：保留 CompletableFuture，新场景试点 StructuredTaskScope
-        //   JDK 25+ GA：新代码优先 StructuredTaskScope，老代码保持 CompletableFuture
+        // 迁移策略（以官方演进为准）：
+        //   截至 JDK 26 结构化并发仍是第 6 次预览（JEP 525），未转正；
+        //   生产编排继续用 CompletableFuture；试用/教学场景才启用 --enable-preview。
+        //   注意历史包袱：JDK 21-24 的 ShutdownOnFailure 写法在 JDK 25+ 编译不过，
+        //   老代码要迁到 open() + Joiner（对照表见 [虚拟线程内幕](/java/570-JavaVirtualThreadInternals)）。
     }
 }
 ```
@@ -1799,24 +1801,23 @@ UserProfile loadProfile(Long userId) throws Exception {
 2. 主线程中断时，子任务不受影响；
 3. 异常堆栈跨线程，调试困难。
 
-**迁移后**（StructuredTaskScope，JDK 21 Preview）：
+**迁移后**（StructuredTaskScope，JDK 25/26 新 API，JEP 505，预览需 `--enable-preview`）：
 
 ```java
 UserProfile loadProfile(Long userId) throws Exception {
-    try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-        StructuredTaskScope.Subtask<User> userTask = 
+    try (var scope = StructuredTaskScope.<Object>open()) {  // 默认策略：全部成功，任一失败取消其余
+        StructuredTaskScope.Subtask<User> userTask =
             scope.fork(() -> userService.findById(userId));
-        StructuredTaskScope.Subtask<Order> orderTask = 
+        StructuredTaskScope.Subtask<Order> orderTask =
             scope.fork(() -> orderService.findByUser(userId));
-        StructuredTaskScope.Subtask<Integer> pointsTask = 
+        StructuredTaskScope.Subtask<Integer> pointsTask =
             scope.fork(() -> pointsService.findByUser(userId));
-        
-        scope.join();              // 等待全部完成
-        scope.throwIfFailed();     // 若任一失败，抛异常并取消其他
-        
+
+        scope.join();              // 任一失败时其余子任务已被取消，并在此抛出
+
         return new UserProfile(
-            userTask.get(), 
-            orderTask.get(), 
+            userTask.get(),
+            orderTask.get(),
             pointsTask.get()
         );
     }
@@ -1828,17 +1829,17 @@ UserProfile loadProfile(Long userId) throws Exception {
 
 | 维度 | CompletableFuture | StructuredTaskScope |
 | ---- | ---- | ---- |
-| 失败传播 | 需手动 exceptionally | ShutdownOnFailure 自动 |
+| 失败传播 | 需手动 exceptionally | 完成策略（open 默认/Joiner）自动 |
 | 取消传播 | 需手动 cancel | try-with-resources 自动 |
 | 子任务泄漏 | 可能 | 不可能（作用域约束） |
 | 堆栈可读性 | 跨线程断裂 | 连续 |
 | 代码可读性 | 链式回调 | 顺序结构化 |
-| JDK 版本要求 | JDK 8+ | JDK 21+（Preview）/ JDK 24+ GA |
+| JDK 版本要求 | JDK 8+ | JDK 21+ 预览；25/26 仍预览（JEP 505/525） |
 
 **迁移策略**：
 
-- JDK 21 LTS：新代码试点 `StructuredTaskScope.preview()`，老代码保持 CompletableFuture；
-- JDK 25+ GA：新代码优先 StructuredTaskScope；
+- JDK 21-26：生产编排保持 CompletableFuture，试用场景才启用预览；
+- 结构化并发转正后再做大规模切换；JDK 21-24 的 `new StructuredTaskScope.ShutdownOnFailure()` 旧写法在 JDK 25+ 已编译不过，迁移写法见 [虚拟线程内幕](/java/570-JavaVirtualThreadInternals)；
 - 长期：CompletableFuture 退居"组合原语"角色，不再承担"任务调度"职责。
 
 ## 9. 未来演进
@@ -1881,14 +1882,14 @@ JEP 446（Scoped Values）对 CompletableFuture 的影响：
 - **Post-Scoped Values**：Scoped Values 在虚拟线程下自动传播，配合 StructuredTaskScope 使用，无需 TTL。
 
 ```java
-// 未来模式（JDK 21+ Preview）
+// ScopedValue：JDK 25 起正式（JEP 506）；结构化并发仍为预览（JEP 505/525）
 private static final ScopedValue<String> TRACE_ID = ScopedValue.newInstance();
 
 void fetchWithScopedValues(Long userId) {
     ScopedValue.where(TRACE_ID, "trace-123").run(() -> {
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+        try (var scope = StructuredTaskScope.<Object>open()) {  // 需 --enable-preview
             var userTask = scope.fork(() -> {
-                String trace = TRACE_ID.get();  // 自动传递
+                String trace = TRACE_ID.get();  // fork 的子任务自动继承绑定
                 return userService.findById(userId);
             });
             scope.join();
@@ -2001,8 +2002,8 @@ class ApiGateway {
 ```
 
 **虚拟线程迁移权衡**：
-- JDK 21 LTS：保留 CompletableFuture（生态成熟、Preview 风险低）；
-- JDK 25+ GA：可试点 `StructuredTaskScope.ShutdownOnFailure` 获得原生取消传播；
+- JDK 21-26：保留 CompletableFuture（正式 API、生态成熟；结构化并发截至 JDK 26 仍是第 6 次预览）；
+- 转正后：可用 `StructuredTaskScope.open()` + `Joiner` 获得原生取消传播（旧 ShutdownOnFailure 写法已被 JEP 505 移除）；
 - CompletableFuture 的组合原语（allOf / thenCombine）在两种模式下都有效，迁移成本低。
 
 ### ex-cf-08
@@ -2347,3 +2348,13 @@ future1.runAfterEither(future2, () -> {
 // 取先完成的 Future 结果转换
 CompletableFuture<String> next = future1.applyToEither(future2, s -> s + "!");
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 写出"两个异步任务并行，都完成后合并结果"的最小链。——`CompletableFuture.supplyAsync(s1).thenCombine(CompletableFuture.supplyAsync(s2), (a, b) -> merge(a, b))`。
+2. exceptionally、handle、whenComplete 的返回值语义差异是什么？——exceptionally 只在异常时给替代值；handle 无论如何都执行且可返回新值（成功/失败两路）；whenComplete 只观察不改变结果。
+3. thenApply 与 thenApplyAsync 的线程语义差别是什么？——thenApply 在"前序完成的线程"或调用线程上同步执行；thenApplyAsync 提交到指定 executor（默认 ForkJoinPool.commonPool）。
+4. 说出 allOf 返回类型的特点与"拿全部结果"的标准收尾写法。——allOf 返回 CompletableFuture<Void>，只当同步栅栏；收尾 `CompletableFuture.allOf(f1, f2, f3).thenApply(v -> List.of(f1.join(), f2.join(), f3.join()))`。
+5. cancel() 与结构化并发的取消传播差在哪？——CompletableFuture.cancel 只标记自身异常完成，不中断正在运行的子任务；结构化并发（StructuredTaskScope，截至 JDK 26 仍预览）作用域退出自动取消全部子任务。

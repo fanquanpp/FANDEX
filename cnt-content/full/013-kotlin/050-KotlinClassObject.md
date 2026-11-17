@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 类定义、构造函数、继承、接口、数据类、密封类、枚举与伴生对象。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'kotlin/030-KotlinBasicSyntax'
   - 'kotlin/040-KotlinFunctionAndLambda'
@@ -21,12 +21,15 @@ prerequisites: []
 
 ## 学习目标
 
-- 掌握「1. 类定义」的核心机制、典型用法与常见陷阱
-- 掌握「2. 构造函数」的核心机制、典型用法与常见陷阱
-- 掌握「3. 继承」的核心机制、典型用法与常见陷阱
-- 掌握「4. 抽象类」的核心机制、典型用法与常见陷阱
-- 掌握「5. 接口」的核心机制、典型用法与常见陷阱
+- 能写出带自定义 getter/setter 的属性，并说清 `field`（幕后字段）为什么能避免 setter 递归
+- 能区分主构造函数与次构造函数，说出次构造函数必须 `this(...)` 委托的原因
+- 能解释 Kotlin 类默认 `final` 的设计动机，以及 `open`/`abstract`/`sealed` 各自放开了什么
+- 能用 `data class` 与 `sealed class`/`sealed interface` 建模「值对象 + 受限继承」，并知道 `when` 穷尽匹配的前提
+- 能选择 `companion object`、`object` 声明与对象表达式，并用 `by` 做类委托
 
+## 为什么值得单独一篇
+
+Java 的类语法把「怎么写」和「怎么设计」混在一起：构造器样板、getter/setter 样板、equals/hashCode 样板、单例样板都要手写。Kotlin 的做法是把常见设计意图**编译成语言能力**——主构造函数直接声明属性、`data class` 自动生成值语义、`object` 一行单例、`by` 一行委托。这一篇的主线是「每个关键字替你省掉了哪一类样板」，代码只展示触发点，生成物用 [Kotlin 数据类详解](/kotlin/060-KotlinDataClassDeepDive) 的反编译视角去看。
 
 ## 1. 类定义
 
@@ -303,7 +306,7 @@ val (name, age, email) = user1
 
 ## 7. 密封类
 
-密封类限制类的继承层次，所有子类必须在同一文件中声明：
+密封类限制类的继承层次：所有直接子类必须与密封类在**同一个模块、同一个包**中声明（Kotlin 1.5 起放宽为同包同模块，不再要求同一文件）：
 
 ```kotlin
 sealed class Result<out T> {
@@ -554,572 +557,58 @@ class Settings {
     var fontSize: Int by Preference("fontSize", 14)
 }
 ```
-## 类定义
+## 小练习（先自己做，再展开参考实现）
 
-**基本写法：基本类定义**
-`class <Name> { <body> }`
+**练习 1：属性与幕后字段**。写一个 `class Grade`，属性 `score: Int`（0 到 100，setter 里做范围钳制），只读属性 `passed: Boolean`（score >= 60 时为真）。要求 setter 用 `field` 完成，不用 `score = ...` 自赋值。
+
+参考实现：
+
 ```kotlin
-// 基本类定义
-class Person {
-    var name: String = "";
-    var age: Int = 0;
+class Grade {
+    var score: Int = 0
+        set(value) { field = value.coerceIn(0, 100) }
+
+    val passed: Boolean
+        get() = score >= 60
 }
 ```
 
-**基本写法：可变属性与自定义 getter**
-`var <name>: <Type> = <init> get() = <expr>`
+自检问题：setter 里若写成 `score = value.coerceIn(0, 100)` 会发生什么？（答：`score = ...` 会再次调用 setter 自己，形成无限递归直到栈溢出；`field` 指向编译器生成的幕后字段，绕过自定义 setter——这就是它的存在理由。）
+
+**练习 2：默认 final 的设计**。不运行，判断下面三处分别能不能编译：
+
 ```kotlin
-// 可变属性自定义 getter
-class User {
-    var name: String = "Unknown"
-        get() = field.uppercase();
-}
+class A
+class B : A()                    // (1)
+open class C { fun f() {} }
+class D : C() { override fun f() {} }   // (2)
+open class E { open fun f() {} }
+class F : E() { override fun f() {} }   // (3)
 ```
 
-**基本写法：可变属性与自定义 setter**
-`var <name>: <Type> = <init> set(value) { field = <expr> }`
-```kotlin
-// 可变属性自定义 setter
-class User {
-    var name: String = "Unknown"
-        set(value) { field = value.trim(); }
-}
-```
+参考答案：(1) 编译失败——`A` 默认 `final`，不可继承；(2) 编译失败——`C` 可以继承，但 `f()` 没标 `open`，不可重写；(3) 通过。设计动机：默认 `final` 让「哪些行为允许被改」成为作者显式的决定，这是 Effective Java「要么为继承设计并文档化，要么禁止继承」的语法化。
 
-**基本写法：只读属性**
-`val <name>: <Type> = <init>`
-```kotlin
-// 只读属性
-class User {
-    val createdAt: Long = System.currentTimeMillis();
-}
-```
+**练习 3：when 穷尽匹配的前提**。把上一节 `Result<Int>` 的 `handleResult` 里 `Result.Loading` 分支删掉，编译器报什么错？如果 `Result` 从 `sealed class` 改成普通 `open class`，`when` 又会怎样？
 
-**基本写法：幕后字段**
-`set(value) { field = <expr> }`
-```kotlin
-// field 引用幕后字段，避免递归调用 setter
-class Temperature {
-    var celsius: Double = 0.0
-        set(value) {
-            field = value;
-        }
-}
-```
+参考答案：报「when 表达式必须穷尽所有分支」（`'when' expression must be exhaustive`）。改成普通 `open class` 后，编译器无法静态枚举所有子类，`when` 必须补 `else` 分支——穷尽匹配是密封继承层次换来的编译期保证，子类一旦加了新分支，所有漏掉的 `when` 会立刻编译报错而不是静默漏判。
 
-**基本写法：lateinit 延迟初始化属性**
-`lateinit var <name>: <Type>`
+**练习 4：委托的一行样板**。给 `interface Log { fun info(msg: String) }` 与已有实现 `FileLog : Log`，写一个 `AuditedLog`：调用 `info` 前先打一条审计日志，其余行为不变。
+
+参考实现：
+
 ```kotlin
-// lateinit 延迟初始化
-class Service {
-    lateinit var repository: Repository;
-    fun init() {
-        repository = Repository();
+interface Log { fun info(msg: String) }
+
+class FileLog : Log {
+    override fun info(msg: String) = println("[file] $msg")
+}
+
+class AuditedLog(private val inner: Log) : Log by inner {
+    override fun info(msg: String) {
+        println("[audit] info called")
+        inner.info(msg)
     }
 }
 ```
 
-**基本写法：检查 lateinit 是否初始化**
-`::<name>.isInitialized`
-```kotlin
-// 检查 lateinit 属性是否已初始化
-if (::repository.isInitialized) {
-    repository.query();
-}
-```
-
----
-
-## 构造函数
-
-**单行写法：主构造函数**
-`class <Name>(val <prop>: <Type>, val <prop2>: <Type>)`
-```kotlin
-// 单行主构造函数声明属性
-class Person(val name: String, val age: Int);
-```
-
-**单行写法：constructor 关键字主构造函数**
-`class <Name> constructor(val <prop>: <Type>)`
-```kotlin
-// 显式 constructor 关键字
-class Person constructor(val name: String, val age: Int);
-```
-
-**换行写法：多参数主构造函数**
-`class <Name>(val <prop1>: <Type>, val <prop2>: <Type>, val <prop3>: <Type>)`
-```kotlin
-// 换行声明多参数主构造函数
-class Person(
-    val name: String,
-    val age: Int,
-    val email: String
-);
-```
-
-**基本写法：init 块**
-`init { <body> }`
-```kotlin
-// init 块执行初始化逻辑
-class Person(val name: String, val age: Int) {
-    init {
-        require(age >= 0) { "Age cannot be negative" };
-    }
-}
-```
-
-**基本写法：次构造函数**
-`constructor(<params>) : this(<args>)`
-```kotlin
-// 次构造函数委托给主构造函数
-class Person(val name: String, val age: Int) {
-    constructor(name: String) : this(name, 0);
-}
-```
-
-**基本写法：私有主构造函数**
-`class <Name> private constructor() { <body> }`
-```kotlin
-// 私有主构造函数实现单例
-class Singleton private constructor() {
-    companion object {
-        val instance: Singleton by lazy { Singleton(); }
-    }
-}
-```
-
----
-
-## 继承
-
-**基本写法：open 类继承**
-`open class <Name>(<params>) { open fun <name>(): <ReturnType> }`
-```kotlin
-// open 修饰类允许继承
-open class Animal(val name: String) {
-    open fun sound() = "Some sound";
-}
-```
-
-**基本写法：子类继承**
-`class <SubName>(<params>) : <BaseName>(<args>) { override fun <name>(): <ReturnType> }`
-```kotlin
-// 子类重写方法
-class Dog(name: String) : Animal(name) {
-    override fun sound() = "Woof";
-}
-```
-
-**基本写法：属性重写**
-`override val <name>: <Type> = <value>`
-```kotlin
-// 重写父类属性
-open class Base {
-    open val value: Int = 0;
-}
-class Derived : Base() {
-    override val value: Int = 42;
-}
-```
-
-**基本写法：主构造函数属性重写**
-`class <SubName>(override val <prop>: <Type>) : <BaseName>()`
-```kotlin
-// 主构造函数中重写属性
-class Derived2(override val value: Int) : Base();
-```
-
-**基本写法：调用父类实现**
-`super.<method>()`
-```kotlin
-// 调用父类方法
-class Button : View() {
-    override fun draw() {
-        super.draw();
-        println("Drawing button");
-    }
-}
-```
-
----
-
-## 抽象类
-
-**基本写法：抽象类定义**
-`abstract class <Name> { abstract fun <name>(): <ReturnType> }`
-```kotlin
-// 抽象类定义抽象方法
-abstract class Shape {
-    abstract fun perimeter(): Double;
-}
-```
-
-**基本写法：抽象属性**
-`abstract class <Name> { abstract val <prop>: <Type> }`
-```kotlin
-// 抽象类定义抽象属性
-abstract class Shape {
-    abstract val area: Double;
-}
-```
-
-**基本写法：抽象类实现**
-`class <SubName>(<params>) : <BaseName>() { override val <prop>: <Type> = <value> }`
-```kotlin
-// 实现抽象类
-class Circle(val radius: Double) : Shape() {
-    override val area: Double = Math.PI * radius * radius;
-    override fun perimeter(): Double = 2 * Math.PI * radius;
-}
-```
-
----
-
-## 接口
-
-**基本写法：接口定义**
-`interface <Name> { fun <method>(<params>): <ReturnType> }`
-```kotlin
-// 接口定义抽象方法
-interface Clickable {
-    fun click();
-}
-```
-
-**基本写法：接口默认实现**
-`interface <Name> { fun <method>(): <ReturnType> = <expr> }`
-```kotlin
-// 接口方法默认实现
-interface Clickable {
-    fun showOff() = "Clickable!";
-}
-```
-
-**换行写法：实现多个接口**
-`class <Name> : <Interface1>, <Interface2> { override fun <method> }`
-```kotlin
-// 实现多个接口并解决冲突
-class Button : Clickable, Focusable {
-    override fun click() = println("Button clicked");
-    override fun showOff(): String {
-        return super<Clickable>.showOff() + " & " + super<Focusable>.showOff();
-    }
-}
-```
-
-**基本写法：接口中的属性**
-`interface <Name> { val <prop>: <Type> }`
-```kotlin
-// 接口定义抽象属性
-interface Config {
-    val host: String;
-    val port: Int;
-}
-```
-
-**基本写法：接口属性默认 getter**
-`interface <Name> { val <prop>: <Type> get() = <expr> }`
-```kotlin
-// 接口属性提供默认 getter
-interface Config {
-    val url: String
-        get() = "$host:$port";
-}
-```
-
----
-
-## 数据类
-
-**单行写法：data class**
-`data class <Name>(val <prop>: <Type>, val <prop2>: <Type>)`
-```kotlin
-// 单行数据类
-data class User(val name: String, val age: Int);
-```
-
-**换行写法：多参数 data class**
-`data class <Name>(val <prop1>: <Type>, val <prop2>: <Type>, val <prop3>: <Type>)`
-```kotlin
-// 换行声明多参数数据类
-data class User(
-    val name: String,
-    val age: Int,
-    val email: String
-);
-```
-
-**基本写法：copy 复制并修改**
-`<obj>.copy(<prop> = <value>)`
-```kotlin
-// copy 创建副本并修改部分属性
-val user3 = user1.copy(age = 26);
-```
-
-**基本写法：解构声明**
-`val (<a>, <b>, <c>) = <obj>`
-```kotlin
-// 解构声明提取属性
-val (name, age, email) = user1;
-```
-
----
-
-## 密封类
-
-**基本写法：密封类定义**
-`sealed class <Name> { <subclasses> }`
-```kotlin
-// 密封类定义子类
-sealed class Result<out T> {
-    data class Success<T>(val value: T) : Result<T>();
-    object Loading : Result<Nothing>();
-}
-```
-
-**基本写法：when 穷举密封类**
-`fun <name>(<param>: <SealedClass>) = when (<param>) { is <Type> -> <expr> }`
-```kotlin
-// when 穷举所有子类，无需 else
-fun handle(result: Result<Int>) = when (result) {
-    is Result.Success -> println("Success: ${result.value}");
-    Result.Loading -> println("Loading...");
-}
-```
-
-**基本写法：密封接口定义**
-`sealed interface <Name>`
-```kotlin
-// 密封接口定义
-sealed interface Action {
-    data class Click(val x: Int, val y: Int) : Action;
-    object Idle : Action;
-}
-```
-
-**基本写法：密封接口组合**
-`sealed interface <Name> : <Other>`
-```kotlin
-// 密封接口继承其他密封接口
-sealed interface Drawable {
-    fun draw();
-}
-```
-
----
-
-## 枚举类
-
-**单行写法：枚举定义**
-`enum class <Name> { <VALUES> }`
-```kotlin
-// 单行枚举定义
-enum class Direction {
-    NORTH, SOUTH, EAST, WEST
-}
-```
-
-**换行写法：带属性的枚举**
-`enum class <Name>(val <prop>: <Type>) { <VALUE>(<args>), ... }`
-```kotlin
-// 换行声明带属性的枚举
-enum class Planet(val mass: Double, val radius: Double) {
-    EARTH(5.97e24, 6371.0),
-    MARS(6.42e23, 3390.0),
-    JUPITER(1.90e27, 69911.0)
-}
-```
-
-**基本写法：枚举实现接口**
-`enum class <Name> : <Interface> { <VALUE> { override fun <method>() } }`
-```kotlin
-// 枚举实现接口
-enum class Format : Runnable {
-    JSON {
-        override fun run() = println("Formatting as JSON");
-    }
-}
-```
-
-**基本写法：枚举 values 获取所有值**
-`<EnumClass>.values()`
-```kotlin
-// 获取所有枚举值
-Direction.values();
-```
-
-**基本写法：枚举 valueOf 根据名称获取**
-`<EnumClass>.valueOf("<name>")`
-```kotlin
-// 根据名称获取枚举值
-Direction.valueOf("NORTH");
-```
-
-**基本写法：枚举 name 属性**
-`<EnumValue>.name`
-```kotlin
-// 获取枚举值名称
-Direction.NORTH.name;
-```
-
-**基本写法：枚举 ordinal 属性**
-`<EnumValue>.ordinal`
-```kotlin
-// 获取枚举值序号
-Direction.NORTH.ordinal;
-```
-
----
-
-## 伴生对象
-
-**基本写法：companion object**
-`class <Name> { companion object { <members> } }`
-```kotlin
-// 伴生对象定义静态成员
-class MyClass {
-    companion object {
-        const val CONSTANT = "Hello";
-        fun create(): MyClass = MyClass();
-    }
-}
-```
-
-**基本写法：伴生对象实现接口**
-`companion object : <Interface> { override fun <method>(): <ReturnType> }`
-```kotlin
-// 伴生对象实现工厂接口
-class Product(val name: String) {
-    companion object : Factory<Product> {
-        override fun create(): Product = Product("Default");
-    }
-}
-```
-
-**基本写法：伴生对象扩展**
-`fun <Class>.Companion.<name>(<params>): <ReturnType>`
-```kotlin
-// 为伴生对象添加扩展函数
-fun Product.Companion.fromJson(json: String): Product {
-    return Product(json);
-}
-```
-
----
-
-## 对象表达式与声明
-
-**基本写法：对象表达式**
-`object : <Class>(), <Interface> { <overrides> }`
-```kotlin
-// 对象表达式替代匿名内部类
-window.addMouseListener(object : MouseAdapter() {
-    override fun mouseClicked(e: MouseEvent) {
-        println("Clicked at ${e.point}");
-    }
-})
-```
-
-**基本写法：简单对象表达式**
-`val <name> = object { <members> }`
-```kotlin
-// 无继承的简单对象表达式
-val config = object {
-    val host = "localhost";
-    val port = 8080;
-}
-```
-
-**基本写法：对象声明（单例）**
-`object <Name> { <body> }`
-```kotlin
-// 对象声明实现单例
-object Database {
-    fun getSchema(name: String): String? = tables[name];
-}
-```
-
-**基本写法：嵌套对象**
-`class <Outer> { object <Nested> { <body> } }`
-```kotlin
-// 嵌套对象（静态内部类）
-class Outer {
-    object Nested {
-        fun greet() = "Hello from Nested";
-    }
-}
-```
-
-**基本写法：内部类**
-`class <Outer> { inner class <Inner> { <body> } }`
-```kotlin
-// inner class 内部类（持有外部类引用）
-class Outer {
-    inner class Inner {
-        fun greet() = "Hello from Inner";
-    }
-}
-```
-
----
-
-## 委托
-
-**基本写法：类委托**
-`class <Name>(<val delegate>: <Interface>) : <Interface> by <delegate>`
-```kotlin
-// 类委托实现装饰器模式
-class LoggingRepository(private val repo: Repository) : Repository by repo {
-    override fun findAll(): List<String> {
-        println("Finding all items...");
-        return repo.findAll();
-    }
-}
-```
-
-**基本写法：observable 属性委托**
-`var <name>: <Type> by Delegates.observable(<init>) { _, old, new -> <body> }`
-```kotlin
-// observable 属性变化时回调
-class Config {
-    var name: String by Delegates.observable("initial") { _, old, new ->
-        println("Name changed from $old to $new");
-    }
-}
-```
-
-**基本写法：vetoable 属性委托**
-`var <name>: <Type> by Delegates.vetoable(<init>) { _, _, new -> <cond> }`
-```kotlin
-// vetoable 可否决属性变化
-class Config {
-    var age: Int by Delegates.vetoable(0) { _, _, new ->
-        new >= 0;
-    }
-}
-```
-
-**基本写法：lazy 属性委托**
-`val <name>: <Type> by lazy { <init> }`
-```kotlin
-// lazy 延迟初始化
-class Config {
-    val heavyData: List<String> by lazy {
-        (1..1000).map { "Item $it" };
-    }
-}
-```
-
-**换行写法：自定义属性委托**
-`class <Delegate><T> { operator fun getValue(...) / setValue(...) }`
-```kotlin
-// 自定义属性委托实现
-class Preference<T>(private val key: String, private val default: T) {
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        return prefs[key] as? T ?: default;
-    }
-    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        prefs[key] = value;
-    }
-}
-```
+自检问题：`Log by inner` 生成的转发方法覆盖了哪些成员？（答：接口的全部成员——编译器替你写完手写装饰器里那些「只调用 inner 同名方法」的样板，你只需要 override 真正要改的 `info`。）

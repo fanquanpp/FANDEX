@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 用一个完整的"虚拟歌手曲库"项目串起 DDL、DML、DQL：从表设计到 12 道实战查询。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/030-SQLFirstSteps'
   - 'sql/150-JoinQuery'
@@ -332,6 +332,53 @@ SELECT (SELECT COUNT(*) FROM music) AS src_rows,
 - `UPDATE`/`DELETE` 先 `SELECT` 验证 `WHERE` 命中的行，能用主键就用主键。
 - 物理删除前先备份表；线上业务优先软删除（`deleted_at` 标记）。
 - `TRUNCATE` 不可回滚且重置自增，只用于开发期清空测试数据。
+
+## 遮码自检
+
+综合实战的自检方式：遮住参考答案，把阶段三的题目重新做一遍；能不看答案写出、并能
+说出"为什么连这几张表"才算过关。
+
+**第 1 题：`music` 表为什么同时有 `vsinger_id` 和 `producer_id` 两个外键？如果只留一个，曲库会缺什么事实？**
+
+<details><summary>参考答案</summary>
+
+一首歌有"谁唱"与"谁创作"两个独立事实，各引用一张父表——这是典型的"双外键从表"。
+只留 vsinger_id，P 主与歌曲的关系就断了（无法回答"DECO*27 写过哪些歌"）；只留
+producer_id 则查不出任何歌姬的演唱目录。多对多拆桥表、一实体多关系各占一列外键，
+是建表阶段的骨架判断。
+</details>
+
+**第 2 题："按公司统计作品数，并列出每个公司最新的录入时间"——遮住答案写出 GROUP BY 与聚合列。**
+
+<details><summary>参考答案</summary>
+
+```sql
+SELECT company, COUNT(*) AS track_cnt, MAX(created_at) AS latest_time
+FROM vsinger v JOIN music m ON v.vsinger_id = m.vsinger_id
+GROUP BY company;
+```
+
+要点：GROUP BY 的列（company）与聚合列（COUNT/MAX）各司其职；"最新的录入时间"是
+对组内取 MAX，而不是先排序再取第一行——那是窗口函数或子查询的事。
+</details>
+
+**第 3 题：建这四张表的顺序必须先 `logo`、`producer`，最后 `music`，为什么？删表时顺序又要反过来，为什么？**
+
+<details><summary>参考答案</summary>
+
+外键引用的父表必须先存在：`vsinger` 引用 `logo`、`music` 引用 `vsinger` 与 `producer`，
+所以按"父表在前、从表在后"建。删表时外键还在，从表行引用着父表，先删父表会被 RESTRICT
+拦住（或留下孤儿行）——反向先删子表。建删顺序互为镜像，是外键完整性的直接推论。
+</details>
+
+**第 4 题：`CHECK (vsinger_height BETWEEN 120 AND 220)` 这条约束在 MySQL 5.7 里写上有效吗？为什么项目仍建议写上？**
+
+<details><summary>参考答案</summary>
+
+MySQL 5.7 会解析但忽略 CHECK（8.0.16 起才真正强制），所以 5.7 上写了等于没写。仍建议
+写：一是 8.0+ 上它就是写入时的拦截网；二是约束写在表结构里是**声明**，换库、升级、
+他人接手时都能读到这条业务规则——数据库兜底业务规则，应用层校验只管体验。
+</details>
 
 ## 小结与延伸
 

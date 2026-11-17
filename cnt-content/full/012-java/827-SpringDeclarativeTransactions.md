@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: '@Transactional 的代理实现原理（TransactionInterceptor）、七种传播行为的语义与选型、隔离级别与数据库的关系、事务失效六场景（自调用、private、final、异常被吞、checked 不回滚、多线程）；用转账 REQUIRES_NEW 日志、下单多表一致性、并发转账死锁三个场景落地。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/820-SpringIoCContainerBeansAndDI'
   - 'java/825-SpringAOP'
@@ -508,3 +508,13 @@ public void transfer(String from, String to, BigDecimal amount) {
 - Spring Framework 官方文档：*Transaction Management* 一章（https://docs.spring.io/spring-framework/reference/data-access/transaction.html ），传播行为七常量与默认回滚规则的官方语义以此为准（Apache 2.0 许可项目文档，本文仅参照其概念表述，代码为原创示例）；
 - 原模块 Spring 基础篇拆分：本文承接其事务全部主题内容（传播行为形式化、TransactionInterceptor 原理、声明式事务实战、管理方式对比、失效反模式四连、死锁案例、相关习题）；
 - 隔离级别的数据库侧语义见 [MySQL 事务与锁机制](/mysql/460-TransactionLockMechanism)。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. @Transactional 默认回滚条件是什么？checked 异常怎么让它回滚？——只回滚 RuntimeException 与 Error；`@Transactional(rollbackFor = Exception.class)` 显式扩大。
+2. REQUIRED 与 REQUIRES_NEW 的语义差异各一句话。——REQUIRED：有事务就加入、没有就新建（默认）；REQUIRES_NEW：一律挂起当前事务新建独立事务，互不影响回滚。
+3. 自调用为什么让 @Transactional 失效？两种解法？——this.method() 不经过代理，事务拦截器不在场；解法：注入自身代理（或 AopContext）、把事务方法挪到另一个 Bean。
+4. 事务方法里 catch 了异常但没抛出，事务回滚吗？——不回滚；拦截器看不到异常，事务正常提交。需要标记回滚用 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly()。
+5. readOnly=true 的两个作用是什么？——驱动方言优化（MySQL 只读会话等）与提示框架不做脏检查（省 flush 开销）；不是强制安全边界，写操作仍可能成功。

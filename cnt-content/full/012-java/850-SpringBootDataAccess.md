@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Spring Data JPA、MyBatis、R2DBC、JdbcTemplate 与事务、缓存、连接池的系统性深度剖析
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/830-SpringBootAdvanced'
   - 'java/840-SpringBootSecurity'
@@ -112,6 +112,9 @@ Spring Data 项目的核心设计哲学：
 | Spring Boot 3.0（2022） | Jakarta EE 9+（javax → jakarta） |
 | Spring Boot 3.2（2023） | 虚拟线程支持，JDBC 高并发回归 |
 | Spring Boot 3.3（2024） | JPA Batch Size 改进、CRUD Repository 重构 |
+| Spring Boot 3.5（2025-05） | 3.x 线最终特性版本，升级到 4.0 的官方基线 |
+| Spring Boot 4.0（2025-11） | 基于 Spring Framework 7 / Jakarta EE 11；Hibernate ORM 7、JDBC 路由与虚拟线程进一步整合 |
+| Spring Boot 4.1（2026-06） | Framework 7.1 / Spring Security 7.1 跟进 |
 
 ### 1.4 设计哲学：抽象与控制的平衡
 
@@ -2388,3 +2391,13 @@ Spring Boot 数据访问栈是 Java 企业级开发的核心能力。从底层�
 > 3. **高级**：学习 MyBatis 动态 SQL、多数据源、读写分离、分库分表。
 > 4. **架构**：理解响应式数据访问（R2DBC）、分布式事务、缓存架构。
 > 5. **持续**：关注虚拟线程、GraalVM、Spring Boot 3.x 的演进，及时调整技术选型。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. JPA 实体的默认生命周期回调中，@PrePersist/@PostLoad 各在什么时机触发？——插入前；从数据库加载后。
+2. 方法名派生查询 findByStatusAndCreatedDateAfter 的 SQL 语义是什么？——WHERE status = ? AND created_date > ?（状态等于参数且创建时间晚于参数）。
+3. N+1 问题怎么产生？两条修复路径是什么？——列表查询后逐条触发关联加载；用 JOIN FETCH（JPQL）或 @EntityGraph 一次取关联，另配 batchSize 缓解。
+4. 一级缓存与二级缓存的范围各是什么？同一个事务里两次 findById 的第二次走哪？——一级缓存 EntityManager/事务级，二级缓存SessionFactory/应用级；第二次命中一级缓存，不发 SQL。
+5. 虚拟线程时代连接池怎么配才不拖后腿？——连接池大小按数据库真实并发上限配（几十），虚拟线程并发远高于池上限时用信号量排队，不要盲目把池开到几百。

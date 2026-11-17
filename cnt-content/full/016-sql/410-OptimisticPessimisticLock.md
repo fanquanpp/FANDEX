@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL 并发控制核心机制：乐观锁（版本号/CAS）与悲观锁（SELECT FOR UPDATE）的原理、适用场景与实现细节。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/270-WindowFunctionFramework'
   - 'sql/250-RecursiveCTETreeTraversal'
@@ -292,3 +292,47 @@ WHERE id IN (1, 2, 3)
     OR id = 3 AND stock >= 3);
 -- 检查影响行数是否等于 3
 ```
+
+## 遮码自检
+
+遮住答案先写；并发控制题的判断标准是"能说出冲突发生时两个事务各自看到什么"。
+
+**第 1 题：A、B 两个事务同时 SELECT 到 `stock=100, version=3`，都改库存后各自 UPDATE——没有版本号时会发生什么？加版本号后呢？**
+
+<details><summary>参考答案</summary>
+
+没有版本号：A 先提交（stock=99），B 基于过期的 100 再算，提交后把 A 的修改整个
+覆盖——丢失更新，且不报任何错。加版本号后 A 成功（version 3→4），B 的
+`WHERE version = 3` 匹配不上，影响行数为 0——冲突被显式检测出来，B 读最新数据重试
+即可。乐观锁的全部机制就一条：把"我基于哪个版本做的决定"带进 UPDATE 的 WHERE。
+</details>
+
+**第 2 题：UPDATE 返回影响行数 0，一定是"没这行数据"吗？应用层该怎么处理？**
+
+<details><summary>参考答案</summary>
+
+不一定——在乐观锁写法里 0 行意味着**版本冲突**（行存在但 version 对不上）。处理
+不是报错而是重试：重新 SELECT 拿最新 version 与数据，重算业务值，再带新版本号
+UPDATE；重试要有上限，超过上限说明该数据就是热点，要换悲观锁或队列串行化。
+"影响行数"是乐观锁唯一的信号通道，不读它等于没上锁。
+</details>
+
+**第 3 题：`SELECT ... FOR UPDATE` 和乐观锁怎么选？说出冲突率之外还要考虑的两个因素。**
+
+<details><summary>参考答案</summary>
+
+核心看冲突率：高冲突热点（秒杀同一商品、余额扣减）用悲观锁——先锁住再算，省去
+大量无效重试；低冲突用乐观锁——不加锁、吞吐高。另两个因素：事务时长（悲观锁持有
+时间长会放大排队，长事务慎用）；跨系统协作（乐观锁的 version 天然适合"读-改-写"
+跨服务边界，FOR UPDATE 锁不出数据库连接之外）。
+</details>
+
+**第 4 题：库存扣减还有一种"不发版本号"的写法：`UPDATE products SET stock = stock - 1 WHERE id = 1 AND stock >= 1;`——它为什么天然防超卖？和乐观锁的分工是什么？**
+
+<details><summary>参考答案</summary>
+
+UPDATE 是**当前读**：对行的加锁判断基于最新已提交值，`stock >= 1` 的条件在数据库
+行锁保护下原子地完成"判断 + 扣减"，扣不动就 0 行，不超卖。它适合"只减不加、条件
+自包含"的扣减；乐观锁适合"基于读到的旧值做复杂计算再写回"的场景（改价格、改
+配置）。一个是条件原子写，一个是版本化读改写，别混为一谈。
+</details>

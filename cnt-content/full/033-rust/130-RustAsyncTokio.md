@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: "以音乐平台并发拉取千张专辑封面为任务背景，讲透 Future 的惰性本质、tokio 运行时、join!/spawn/select!/timeout 四种并发模式与四大陷阱（同步阻塞、跨 await 持锁、非 Send、递归 async），附前后耗时对比实测。"
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'rust/140-RustEcosystemProject'
   - 'rust/100-RustGenericTrait'
@@ -330,11 +330,35 @@ async fn main() {
 
 ## 10. 自我检查
 
+遮码自检：先遮住答案栏，自己作答，再展开对照。
+
 1. `async fn` 的函数体什么时候执行？`.await` 时线程在做什么？
 2. 连续两次 `.await` 是并发吗？三种并发写法（顺序、`join!`、`spawn`）的耗时各由什么决定？
 3. 为什么持锁跨 await 必须用 `tokio::sync::Mutex`？什么情况应该反过来选 std 锁？
 4. `spawn_blocking` 解决什么问题？它和 `tokio::spawn` 的任务跑在哪？
 5. 递归 async 函数为什么必须 `Box::pin`？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1. 调用 async fn 只构建 Future、不执行函数体（惰性）；执行到 .await 时
+   当前任务挂起，线程被运行时调度去跑其他任务，等待条件就绪后再唤醒续跑。
+2. 不是。顺序 await 的总耗时 = 各任务等待之和；join! 约等于最慢者（多个
+   Future 在同一任务体内并发推进）；spawn 约等于最慢者且任务独立调度，
+   实际耗时还受 worker 线程数与共享资源竞争影响。
+3. std 的 MutexGuard 不是 Send，跨 await 持有会让 Future 被多线程运行时
+   拒收（编译错误），在单线程 block_on 下则可能真死锁；tokio 锁的守卫
+   允许跨 await。反过来，临界区是纯同步代码、不跨 await 时，选 std 锁
+   ——更轻更快。
+4. spawn_blocking 把同步阻塞与 CPU 密集代码移到专用阻塞线程池，避免卡死
+   异步 worker。tokio::spawn 的任务跑在异步 worker 池上，spawn_blocking
+   的任务跑在独立的 blocking 池上。
+5. 递归 Future 的大小会包含自身，形成"类型大小含自身"的死循环，编译器
+   无法确定大小；Box::pin 把 Future 固定到堆上，大小退化为确定的指针。
+```
+
+</details>
 
 ## 本章总结
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从 350 篇的手搭链路出发学 Nuxt 3/4：约定式路由替代手动注册、useAsyncData 与 useFetch 替代数据预取注水、server/api 用 Nitro 写后端、渲染模式按路由切换与静态生成、useHead 管 SEO、error.vue 兜底，附水合随机值与 useAsyncData 键名两则实录。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -18,7 +18,7 @@ prerequisites: []
 
 ## 1. Nuxt 在解决什么
 
-350 篇手搭的链路补上路由、构建、分割、部署，就是一个框架——Nuxt 3（2022 年发布，2025 年起 4.x 为当前主线）就是这份工作二十年沉淀的社区标准版。它给 SSR 全链路一个约定：
+350 篇手搭的链路补上路由、构建、分割、部署，就是一个框架——Nuxt（3 于 2022 年发布，2025 年起 4.x 为当前主线；2026-11 当前为 4.6.x 线，Nuxt 3 已于 2026-07-31 EOL）就是这份工作二十年沉淀的社区标准版。它给 SSR 全链路一个约定：
 
 ```text
 手搭件                        Nuxt 约定

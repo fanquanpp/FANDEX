@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 客户端与服务器端钩子自动化——pre-commit、commit-msg、pre-receive 与 husky 管理
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -154,6 +154,22 @@ echo "Hooks installed successfully"
 ```
 
 每名成员 clone 后跑一次 `bash hooks/install.sh`。更现代的替代是 Git 2.9+ 的 `git config core.hooksPath hooks`——一行配置让 Git 直接去仓库目录找钩子，省去复制，也保证改钩子立即对所有人生效。
+
+### 4.2 配置式钩子：hook.<名字>.command（Git 2.54+）
+
+Git 2.54 起官方支持**直接在配置文件里定义钩子命令**，同一事件可挂多个钩子、可集中管理（写进系统级或全局配置即可对全部仓库生效），Git 2.55 又补充了并行执行开关。语法见 `git help git-hook`：
+
+```bash
+# 等价于把 ~/bin/linter 挂到 pre-commit 事件
+git config --global --append hook.linter.command "~/bin/linter --cpp20"
+git config --global --append hook.linter.event "pre-commit"
+
+# 同一事件挂多个钩子：再定义一个 friendly-name 即可，按配置解析顺序依次执行
+git config set hook.docs-check.command "bash scripts/check-docs.sh"
+git config set hook.docs-check.event "pre-commit"
+```
+
+要点：`hook.<名字>.command` 的值可以是可执行文件路径或 shell 单行命令；`.event` 是多值键，决定这个钩子挂在哪些事件上。与之配套的开关还有 `hook.<名字>.parallel`（同名钩子并行跑）与 `hook.jobs`（并行上限）。传统「可执行脚本放 `.git/hooks/`」的方式继续有效，两者可混用；对「一处配置、全机生效」的诉求，配置式是官方给出的答案。
 
 ## 5. 高级钩子示例
 

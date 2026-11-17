@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 构建端到端类型安全的HTTP客户端
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/315-PackageExportsEsmInterop'
   - 'typescript/560-TypeSafeEventSystem'
@@ -3011,7 +3011,9 @@ npm install -D openapi-typescript
 
 # 生成类型
 npx openapi-typescript ./openapi.yaml -o ./src/api/generated.ts
-typescript
+```
+
+```typescript
 // 使用生成的类型
 import type { paths } from './api/generated';
 
@@ -3022,3 +3024,11 @@ const user = await request('/users/{id}', {
 });
 // 自动推断为 User 类型
 ```
+
+## 自检
+
+- 「运行时数据没有类型」的根因是类型擦除——API 客户端的类型安全要从哪一端建立（请求参数、响应体还是错误码）？
+- 遮住第 5 章的核心泛型，自己写出 `request<T>(url: string): Promise<T>` 并指出它「哪里还不可靠」（URL 拼写、方法约束、错误形状）。
+- 路径参数怎么类型化？遮住 5 章中 `'/users/${number}'` 或模板字面量类型方案，自己复现一遍。
+- OpenAPI schema 驱动与手写接口驱动两条路线的取舍是什么？生成类型放在 `generated.ts` 后，人工改它会发生什么？
+- 错误分支（4xx/5xx）怎么进类型？遮住错误码映射的示例，用判别联合把 `{ ok: true } | { ok: false; code }` 写出来。

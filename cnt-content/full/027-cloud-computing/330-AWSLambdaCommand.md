@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Lambda 命令实战：函数增删改查、同步/异步调用、版本与别名、层管理与常见报错。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/270-AWSCore'
   - 'cloud-computing/260-ServerlessArchitecture'
@@ -209,3 +209,36 @@ aws logs tail /aws/lambda/my-function --since 10m
 | `NODE_OPTIONS` 不生效 | 运行时保留变量 | 用启动属性或镜像部署绕行 |
 | 无法调用 | 执行角色缺权限 | `aws lambda get-function-configuration --query Role` 核对角色 |
 | zip 上传报 413 | 包体超限（直传上限 50MB） | 减依赖、用 Layers 或容器镜像部署 |
+
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. 创建函数的四个必填要素是什么？哪一个是「函数能访问 AWS 资源」的钥匙？
+2. 同步与异步调用的参数差异是什么？异步调用的输出文件里拿得到业务结果吗？
+3. 灰度发布的标准组合拳是什么（三步）？调用时怎么指定打 prod 别名？
+4. 层（Layer）解决什么问题？附加层的命令改的是函数的哪类配置？
+5. 超时但日志无异常，第一反应调什么参数、为什么？
+6. `ResourceConflictException` 的原因与确认方式是什么？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 函数名、运行时（--runtime）、执行角色（--role 的 ARN）、处理器入口（--handler）+ 代码包（--zip-file fileb://）。执行角色决定函数能访问哪些 AWS 资源——缺权限表现为「无法调用」。
+2. 同步 `aws lambda invoke` 等结果（响应写进输出文件）；异步加 `--invocation-type Event` 入队即返回。异步拿不到业务结果——输出只有状态码（202），结果要走回调/DLQ/下游。
+3. `publish-version` 发布不可变版本 → `create-alias`（或 `update-alias`）把 prod 别名指向新版本 → 调用/事件源都配 `my-function:prod`。回滚 = 把别名改回旧版本号。
+4. 把共享依赖（SDK/工具链）从函数包里拆出去复用，突破 50MB 直传限制。附加层是改「配置」不是「代码」：`update-function-configuration --layers <层ARN>`。
+5. 调 `--memory-size`。Lambda 的 CPU 配额随内存线性分配，内存不足即 CPU 不足——加内存往往比加超时更快也更省（跑得快计费毫秒少）。
+6. 上一次代码/配置更新还没完成又提交了新更新。确认：查 `LastUpdateStatus` 变 Successful 后再继续。
+
+</details>
+
+## 小结
+
+- 初学者要点：创建函数四要素（runtime/role/handler/zip）；同步 invoke 等
+  结果、异步 Event 入队即返回；版本不可变、别名可重指向，灰度与回滚都
+  是改别名；共享依赖进层（Layer），附加层属于配置更新。
+- 进阶注意：CPU 随内存线性增长，超时无日志先加内存；更新要等
+  `LastUpdateStatus` 成功再提交下一次；zip 直传上限 50MB，大依赖走
+  Layers 或容器镜像；排权限问题先核对执行角色（`get-function-configuration
+  --query Role`）。

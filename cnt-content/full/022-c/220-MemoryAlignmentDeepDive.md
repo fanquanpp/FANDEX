@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从「三个成员手算 6 字节，sizeof 却说 12」出发理解对齐动机，用 alignof 与 offsetof 实验量出三条 padding 规则，学会 #pragma pack 与 C11 _Alignas，附栈溢出调试实录。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/230-AlignmentMemoryLayout'
   - 'c/130-StructAndUnion'
@@ -247,12 +247,24 @@ int load(FILE *f, struct Packet *p) {
 - _Alignas（cppreference C）：https://zh.cppreference.com/w/c/language/_Alignas
 - offsetof 手册页：https://man7.org/linux/man-pages/man3/offsetof.3.html
 
-## 12. 自我检查
+## 12. 遮码自检
 
-- 能向同事解释 CPU 为什么要求对齐，以及 x86 与部分 ARM 对不对齐访问的两种态度；
-- 能用三条规则手工推算 struct Parse 这类结构体的 sizeof，并说出尾部填充为谁而设；
-- 能用 alignof 与 offsetof 验证自己的推算；
-- 能说出 #pragma pack 的适用场景与代价，以及 _Alignas 的方向（把对齐调大）。
+遮住上文示例代码与下面的答案栏，先自己算、先自己答，再展开对照。
+
+1. CPU 为什么要求对齐？x86 与部分 ARM 对「不对齐访问」各是什么态度？
+2. 用三条规则手工推算一个 char + int + short 顺序排列的结构体的 sizeof，并说出尾部填充为谁而设。
+3. 用 alignof 与 offsetof 写验证代码，核对自己的推算。
+4. #pragma pack 的适用场景与代价是什么？_Alignas 往哪个方向调？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. CPU 按整字/整块读写内存，跨块的访问要么多花一次访存、要么直接故障——对齐让一次访存拿完整数据。x86 宽容（不对齐也能跑，只是变慢，SSE 等指令仍要求对齐）；部分 ARM 严格（不对齐触发总线错误，直接崩溃）。
+2. 规则：成员对齐（每个成员放在自身对齐值的倍数上）、整体补齐（总大小是最大对齐值的倍数）、对齐值取最大成员。char 在偏移 0，int 对齐 4 → 跳到偏移 4 占 4 字节，short 对齐 2 → 偏移 8 占 2 字节，尾部补 2 字节凑成 12（最大对齐 4 的倍数）。尾部填充为的是数组里下一个元素也落在 4 的倍数上。
+3. `printf("%zu %zu %zu", sizeof(struct S), _Alignof(struct S), offsetof(struct S, member));`——三个数字与手算逐一对照。
+4. `#pragma pack(1)` 取消填充，用于与文件格式、协议、寄存器逐字节对话；代价是不对齐访问变慢甚至崩溃，只在文件与协议必需时使用。_Alignas 把对齐调大（如 16/32/64），服务 SIMD 与 DMA 的整行对齐——它不会把对齐调小。
+
+</details>
 
 ## 本章总结
 

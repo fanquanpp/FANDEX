@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: XXE（XML 外部实体注入）：实体机制原理、文件读取与 SSRF 利用链、盲注带外技巧与逐语言防御。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/230-SSRFAttack'
   - 'cybersecurity/160-OWASPTop10Detailed'
@@ -15,6 +15,10 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+- **解决什么问题**：XXE 的本体是「XML 解析器被诱骗去加载外部资源」——一个 20 年前的规范特性（外部实体）变成现代攻击面，因为它同时打开三条通道：本地文件读取、内网 SSRF、盲注带外。
+- **容易怎么错**：以为「有输入校验」就安全（XXE 绕的是解析器配置，不是应用校验）；只防回显型 XXE 而漏掉盲注（OOB）；忘了 JSON API 时代仍会中招——很多文件解析（Office、SVG、SOAP）底层都是 XML。
+- **学完能做什么**：解释实体机制为什么天然危险；在授权靶场复现文件读取与带外盲注；按第 3 节把自己语言/框架的 XML 解析器配置改成「禁外部实体」。
 
 ## 1. 从 XML 实体说起
 
@@ -40,7 +44,7 @@ XML 允许在文档类型定义（DTD）里声明**实体（Entity）**——可
 
 如果解析器允许加载外部实体，且把解析结果回显到响应里，那么攻击者提交的 XML
 就能让服务器**自己把本地文件读出来**——这就是 XXE（XML eXternal Entity injection）。
-它属于 OWASP Top 10 2021 的 A05（配置错误）与 A08 范畴，当前对应 CWE-611。
+它对应 OWASP Top 10:2025 的 A02（安全配置错误）与 A05（注入）范畴（2021 版归在 A05/A08），当前对应 CWE-611。
 
 > 类比：XML 解析器像一个收到「取货单」的仓库管理员。合法单据只让他分拣已有货物，
 > 但 XXE 单据里夹了一句「顺路去档案室把 3 号柜的文件复印一份附在回执里」——
@@ -269,3 +273,11 @@ parser.dtdHandling(false);              // 不处理 DTD
 - **进阶注意**：盲 XXE 用参数实体 + 远程 DTD 外带数据，务必用带外测试确认；DOCX/SVG 等复合
   文档是隐蔽入口；修复必须三层叠加（禁 DTD、Schema 校验、出网管控），云环境同时启用
   IMDSv2 以防元数据凭证被一键带走。
+
+## 自检
+
+- 遮住 1.1 的 XML 示例，自己写出「内部实体」与「外部实体」的声明语法，并解释为什么后者等于把文件读取接口开给了提交者。
+- XXE 的三条利用通道分别通向什么（文件读取、SSRF 打内网、盲注 OOB 带外回传）？
+- 遮住第 3 节的表格，写出你自己语言的禁外部实体配置，并说明为什么禁 DTD 是「一刀切」的正解。
+- 盲注型 XXE 怎么确认存在？（构造指向自建/协作平台的远程 DTD，看是否收到外带请求。）
+- 「我们 API 只收 JSON」——这句话为什么不能推出「没有 XXE 风险」？（上传的 DOCX/XLSX/SVG、SOAP 端点、SAML 等底层都是 XML。）

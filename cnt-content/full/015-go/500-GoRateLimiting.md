@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go限流与熔断详解：令牌桶、漏桶、滑动窗口、分布式限流、熔断器、自适应限流与工程实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/490-GoOAuth2'
   - 'go/510-GoDistributedTracing'
@@ -2489,3 +2489,46 @@ default:
     fmt.Println("未超时")
 }
 ```
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（令牌桶 vs 漏桶的语义差异）**：一个接口要"平均 100 QPS、允许突发 200"，另一个要"严格恒定 10ms 间隔打给下游"。两个需求分别用什么算法？写出令牌桶的核心字段。
+
+参考实现：
+
+```go
+// 需求一：令牌桶（rate=100/s，burst=200）——允许攒额度
+type TokenBucket struct {
+    tokens float64    // 当前令牌
+    last   time.Time  // 上次补充时间
+    rate   float64    // 每秒补充速率
+    burst  float64    // 桶容量（突发上限）
+}
+
+func (b *TokenBucket) Allow(n float64) bool {
+    now := time.Now()
+    b.tokens = min(b.burst, b.tokens+now.Sub(b.last).Seconds()*b.rate)
+    b.last = now
+    if b.tokens < n {
+        return false
+    }
+    b.tokens -= n
+    return true
+}
+
+// 需求二：漏桶/固定间隔队列——整形（shaping），强制均匀间隔
+```
+
+要点：令牌桶管"平均速率 + 突发上限"（限流），漏桶管"恒定间隔"（整形）。混用是最常见的设计错误——下游要均匀、上游限突发，两层各司其职。
+
+**题 2（单机到分布式的迁移点）**：单机 golang.org/x/time/rate 什么时候必须换成集中式（Redis）限流？写出 Redis 版必须处理的两个问题。
+
+参考答案：迁移点——多实例部署后单机限流 N 台就是 N 倍总限额，且负载不均时单机各自打满；全局配额必须集中计数。Redis 版的两个必答题：(1) 原子性——"读计数 + 判断 + 写回"必须原子（Lua 脚本或事务），否则并发下限流失效；(2) 时钟——多个实例与 Redis 的时钟偏差会改变窗口语义，滑动窗口要基于 Redis 侧时间或用 ZSET 时间戳排序而不是依赖客户端 now。要点：分布式限流的正确性 = 原子操作 + 单一时钟源，两者缺一就是"看起来限了实际没限"。
+
+**题 3（429 与退避）**：服务端返回 429 时应附什么头？客户端收到后怎么重试才不会造成重试风暴？
+
+参考答案：服务端附 `Retry-After`（秒数或 HTTP 日期），可加 `X-RateLimit-Remaining/Limit` 让调用方自适应；客户端按 Retry-After 等待 + 指数退避 + 抖动（jitter），并遵守"熔断"——连续 429 时暂停该端点请求而不是每请求都重试。要点：重试风暴的机制是"限流响应本身也是流量"，无退避的重试在过载时把 RPS 翻倍，指数退避+抖动把重试在时间上打散。

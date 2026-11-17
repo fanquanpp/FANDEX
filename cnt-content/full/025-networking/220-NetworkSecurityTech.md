@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 网络安全技术：防火墙、IDS/IPS、VPN、NAT与访问控制
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/020-OSITCPIPModel'
   - 'networking/160-SwitchingAndRouting'
@@ -259,3 +259,18 @@ router bgp 65001
 - 启用 Syslog 审计
 - NTP 认证
 - 配置变更管理
+
+## 教学自检
+
+按遮码自检法：遮住上文命令与表格，先自己推演，再对照。
+
+- 包过滤、状态检测、应用网关三类防火墙的检查深度递进关系是什么？「状态检测」比包过滤多
+  看了什么信息（为什么放行出站后回包不用单独放行）？
+- DMZ 的设计目的是什么？Web 服务器放 DMZ 而不是内网，被攻破后的爆炸半径差在哪？
+- NIDS 旁路部署与 IPS 内联部署的根本差别是什么？各自牺牲了什么（告警 vs 阻断）？
+- Snort 规则的 `content`/`nocase`/`sid` 各管什么？特征检测为什么挡不住 0day？
+- IPsec 两个阶段的 SA 各保护什么流量？`group 14` 指什么参数族？
+- NAT 对 FTP/SIP/IPsec 的破坏点各在哪一层？NAT-T 为什么能救 IPsec（AH 为什么救不了）？
+- 标准 ACL 与扩展 ACL 的编号段与过滤能力差别？「靠近目的端放标准 ACL」的理由？
+- 设备加固清单里 `no cdp run`、`transport input ssh`、`service password-encryption`
+  各防哪一类暴露？为什么说 `enable secret` 而不是 `enable password`？

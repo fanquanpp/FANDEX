@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 screen 语句构建菜单与 HUD，掌握按钮容器控制语句与 call screen 的交互返回
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'renpy/040-LabelsControlFlowAndMenus'
   - 'renpy/085-ScreenActionsAndInteraction'
@@ -195,6 +195,49 @@ screen hello_world():
 ```
 
 给小屏设备写一份布局更紧凑的屏幕、给电脑写一份完整版，是移动适配的标准做法。
+
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案或写出代码，再展开对照。
+
+1. 屏幕的两条重要约束是什么？为什么屏幕代码里不能直接赋值改状态？
+2. show screen 与 call screen 的生命周期差别是什么？call screen 结束交互的触发条件与返回值通道分别是什么？
+3. 屏幕内 default 与剧本 default 的作用域差异？SetVariable 与 SetScreenVariable 各改哪个作用域？屏幕参数为什么不能被 action 直接改？
+4. say 屏幕必须包含哪两个 id？choice 屏幕的 items 每项含哪些字段？
+5. imagebutton auto "save_%s.png" 会按什么规则找图？for 循环在屏幕里支持哪些子句？
+6. showif 与 if 的区别是什么？什么情况下必须用 showif？
+7. variant 属性怎么选？给手机写紧凑版设置屏时标什么变体名？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 每次交互开始时按当前变量重新求值；不得产生对外可见的副作用。图像预测
+   期间屏幕代码会被多次运行，赋值会被反复执行，改状态必须交给 action。
+
+2) show screen 常驻直到显式 hide screen（按 tag）；call screen 接管一次
+   交互，屏幕中某个 action 调用 Return() 时结束并自动隐藏屏幕，
+   Return(值) 存入 _return，剧本接着用；call screen 还支持 with 转场。
+
+3) 屏幕内 default 定义的是屏幕局部变量，每次交互重建；剧本 default 是
+   全局 store 变量、随存档保存。SetVariable 改全局，SetScreenVariable 改
+   屏幕局部。屏幕参数是每次调用的实参副本，action 改它无效——这是
+   "改了没反应"类 bug 的来源。
+
+4) id "who" 与 id "what"（通常还有 id "window"）；items 每项含 caption、
+   action 与 chosen。
+
+5) 用 save_idle.png、save_hover.png 等把 %s 替换成状态名；for 支持 index
+   子句与 continue、break。
+
+6) if 干脆不渲染；showif 控制显示隐藏并触发 appear/show/hide ATL 事件，
+   需要显隐动画过渡时用 showif。
+
+7) 运行时按 config.variants 顺序取第一个存在的变体；手机标 small 或
+   phone（touch 也可叠加），完整版不标或标 large。
+```
+
+</details>
 
 ## 小结
 

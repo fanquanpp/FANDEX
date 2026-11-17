@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 承接多线程入门的深水区篇：condition_variable 生产者消费者完整实现与谓词防虚假唤醒、两把锁的死锁最小实验与锁排序纪律（ASan 与 TSan 都抓不到死锁，用线程序评审）、future/promise/async 取舍实验（默认策略可能根本不开线程）、shared_mutex 读写场景一句话，附忘发通知与线程 join 自己的真实报错。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cpp/430-MultithreadingConcurrency'
   - 'cpp/450-CppMemoryModel'
@@ -260,6 +260,61 @@ std::cout << f.get() << '\n';
 - cppreference scoped_lock：https://en.cppreference.com/w/cpp/thread/scoped_lock
 - cppreference async：https://en.cppreference.com/w/cpp/thread/async
 - cppreference shared_mutex：https://en.cppreference.com/w/cpp/thread/shared_mutex
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：默写「生产者通知消费者」的最小条件变量四件套——`std::mutex`、`std::condition_variable`、`std::unique_lock`、共享数据；要求消费者用**带谓词的 `wait`**，并回答：为什么裸 `wait` 会被虚假唤醒（spurious wakeup）击穿？忘记 `notify_one` 的症状是什么？
+
+**提示**：谓词版 `cv.wait(lk, pred)` 等价于「while (!pred()) wait(lk)」；虚假唤醒由实现允许，谓词是唯一防盾。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+std::mutex m;
+std::condition_variable cv;
+bool ready = false;
+
+void consumer() {
+    std::unique_lock<std::mutex> lk(m);
+    cv.wait(lk, [] { return ready; });    // 谓词版：防虚假唤醒 + 防错过通知
+    // ... 使用数据
+}
+void producer() {
+    { std::lock_guard<std::mutex> lk(m); ready = true; }
+    cv.notify_one();                       // 忘写：消费者可能永远睡着
+}
+// 裸 wait 被虚假唤醒击穿：醒来时条件未必成立——必须把「检查-睡眠」包成循环；
+// 谓词版就是编译成 while 循环的语法糖。
+```
+
+要点自查：condition_variable 的纪律三条——修改共享状态必须持锁、唤醒只提示「可能变了」、谓词必须重查；漏 notify 与漏谓词是它的两大经典事故。
+
+**任务二**：`std::promise`/`std::future` 与 `std::packaged_task` 各自的一次性传值场景——默写「子线程算 42 返回给主线程」的 promise 版与 packaged_task 版各一份，并回答：future 的 `get()` 为什么只能调用一次？异常怎么穿过 future 传回？
+
+**提示**：promise 在工作线程 `set_value`，主线程 `get`；packaged_task 包整个可调用对象；get 只能一次因为「结果被取走就转移了」；set_exception 让异常在 get 处重抛。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+std::promise<int> p;
+std::future<int> f = p.get_future();
+std::thread t([&p] { p.set_value(42); });
+std::cout << f.get() << '\n';    // 42；get() 只能一次：结果取走即失效（future_state 转移）
+t.join();
+
+// packaged_task 版：把「调用」打包，future 自动绑定
+std::packaged_task<int()> task([] { return 42; });
+auto f2 = task.get_future();
+std::thread t2(std::move(task));
+std::cout << f2.get() << '\n';
+t2.join();
+// 异常传递：p.set_exception(std::current_exception())，
+// 在 f.get() 处原样重抛——「错误也走 future」，这是比返回 bool 可靠的地方。
+```
+
+要点自查：一次性的 promise/future 适合「单次结果回传」，多次通信该用条件变量或队列；`get()` 的单次语义与异常重抛机制要能各自说出原因。
 
 ## 11. 自我检查
 

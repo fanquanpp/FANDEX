@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用一句话和三条规则快速掌握 CSS 覆盖规则，是深入学习优先级前的入门速查。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/130-CSS3SelectorSystem'
   - 'css/170-PriorityCalculation'
@@ -108,3 +108,33 @@ p {
 - 优先级深入版：`css/170-PriorityCalculation`；
 - 样式表引入方式：`css/040-StyleSheetImportMethod`；
 - 层叠层 @layer：`css/450-CascadeLayer`。
+
+## 9. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1-3 节的示例与表格自己答，再对照参考实现。
+
+**任务一**：口算胜负——五组规则都命中同一个 `<p id="main" class="note">`，先写下每组的赢家：`div p` 与 `.note`；`.note` 与 `#main`；`.a .b .c .d .e .f .g .h .i .j`（十个类）与 `#main`；`.note` 与行内 `style="color: green"`；`.note { color: red !important }` 与行内 `style="color: green"`。
+
+**任务二**：写出「能在第三方样式之后生效」的覆盖规则——第三方写了 `.menu a { color: gray; }`，你的 HTML 是 `<nav class="menu"><a>`，只允许改样式表，写出两条都能赢的方案并标注各自的四元组档位。
+
+**提示**：任务一考第 2 节速查表的三个边界——「十个类不如一个 ID」「行内样式压过一切普通规则」「`!important` 反转后在同层比具体与顺序」；任务二考「同权重后写赢」与「升一档更稳」两条路线（第 3 节）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一答案 */
+/* 1. .note 赢（类 > 标签） */
+/* 2. #main 赢（ID > 类） */
+/* 3. #main 赢（任意数量的类都凑不出一个 ID） */
+/* 4. 行内样式赢 */
+/* 5. .note 赢（!important 作者规则 > 行内普通声明） */
+
+/* 任务二方案一：同权重，靠后写（保证加载顺序在第三方之后） */
+.menu a { color: #2563eb; }
+
+/* 任务二方案二：升一档，不依赖加载顺序 */
+nav.menu a { color: #2563eb; } /* 一个类加两个元素（nav、a），比对方的
+                                  「一个类一标签」多算一个元素档，整体更高 */
+```
+
+验收点：任务二方案一若被工具合并打包后加载顺序反转就会输——所以「不依赖顺序的升档」是工程上更稳的选择；两方案都不要用 `!important`，那会堵死后续真正需要它的场景（第 7 节第一条）。

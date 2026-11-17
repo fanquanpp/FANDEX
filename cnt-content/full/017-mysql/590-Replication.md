@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL主从复制：异步复制、半同步复制、全同步复制的原理、配置与切换
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/570-PhysicalBackup'
   - 'mysql/580-PITR'
@@ -79,12 +79,12 @@ SHOW REPLICA STATUS\G
 ## 3. 半同步复制
 
 半同步复制始终以**插件**形式提供：8.0.26 起插件更名为
-`rpl_semi_sync_source` / `rpl_semi_sync_replica`（对应变量与状态项同步改名），
-旧的 master/slave 拼写插件已在 8.4 中移除——从 8.0 升级到 8.4 前必须先
-UNINSTALL 旧插件，改装新插件。
+`rpl_semi_sync_source` / `rpl_semi_sync_replica`（对应变量与状态项同步改名）。
+旧的 master/slave 拼写插件自 8.0.26 起废弃、新旧名并存，到 9.5.0 才正式
+移除——新部署直接用新名，存量脚本在升 9.5 前完成迁移即可。
 
 ```sql
--- 两端先安装新插件（8.4 唯一可用的名字）
+-- 两端先安装新插件（新名；旧名 semisync_master/semisync_slave 已废弃）
 INSTALL PLUGIN rpl_semi_sync_source SONAME 'semisync_source.so';  -- 主库
 INSTALL PLUGIN rpl_semi_sync_replica SONAME 'semisync_replica.so'; -- 从库
 
@@ -116,6 +116,27 @@ SHOW REPLICA STATUS\G
 pt-heartbeat -D test --update -h master
 pt-heartbeat -D test --monitor -h replica
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：异步、半同步、组复制三种方式的"数据安全承诺"分别到哪一步？各自牺牲了什么？
+
+参考答案（先自己答，再对照）：异步——主库提交即返回客户端，binlog 异步送达从库：性能最高、崩溃时可能丢未送达的事务；半同步——至少一个从库确认收到 binlog 后才返回：崩溃不丢已提交数据（AFTER_SYNC 模式），提交延迟多一次网络往返；组复制——多数派认证后才提交：容忍少数派故障且零脑裂，写延迟与事务大小、网络 RTT 强耦合。三者是"延迟换安全谱系"上的三个停靠点。
+
+2. 概念自问：复制线程有哪几个？Seconds_Behind_Source 异常时怎么区分"接收慢"还是"回放慢"？
+
+参考答案（先自己答，再对照）：主库 log dump 线程推送，从库 IO 线程接收写 relay log，SQL（applier）线程回放。判别看一对坐标：Received 的位点远超 Executed 的位点 → 回放慢（上并行复制、拆大事务）；两者接近但延迟仍大 → IO/网络慢（查主库 IO 与带宽）。分不清这两条路径，加并发、换硬件都是乱枪打鸟。
+
+3. 判断题：从库上建了和主库一模一样的表并开启复制，一定不会出主从不一致。
+
+参考答案（先自己答，再对照）：不一定。结构一致是前提，但破坏一致性的常见路径有三个：从库被业务直写（要 super_read_only=ON）；主从的 sql_mode/字符集/版本行为差异让同一语句重放结果不同；复制过滤（REPLICATE_DO_DB 等）让某些事务只在一侧生效。结构一致只是第一关，行为一致与"从库只读"才是长期保证。
+
+4. 概念自问：8.4 的术语迁移（SOURCE/REPLICA）对老脚本意味着什么？升级前要做什么？
+
+参考答案（先自己答，再对照）：CHANGE MASTER TO、START SLAVE、SHOW SLAVE STATUS、REPLICATION SLAVE 权限与 master/slave 系列变量在 8.4 已移除——写死旧拼写的脚本会直接报错；半同步插件旧名（semisync_master/semisync_slave）则是 8.0.26 起废弃、9.5.0 起才移除，8.4 中新旧并存但新名是推荐项。升级前清单：把部署/巡检脚本全部替换为 CHANGE REPLICATION SOURCE TO / START REPLICA / SHOW REPLICA STATUS / REPLICATION REPLICA；清理已移除的服务器选项；用 8.0.22+ 先把脚本改成新名验证一遍（8.0.22 起新旧拼写并存，是演练期）。
+
 ## 复制术语（8.4 SOURCE/REPLICA）
 
 **基本写法：查看源库二进制日志状态**

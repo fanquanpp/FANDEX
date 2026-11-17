@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: GitHub Actions矩阵策略原理详解：从一次配置多环境测试的痛点出发，深入 strategy.matrix 语法、include/exclude、fail-fast 与动态矩阵。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/380-ActionsTrigger'
   - 'github/570-FAQTroubleshoot'
@@ -28,32 +28,32 @@ GitHub Actions 的**矩阵构建（Matrix Strategy）** 正是这条"柔性生�
 
 ### 1.1 没有矩阵时的痛苦
 
-假设你要在 Node.js 18、20、22 三个版本上跑测试。没有矩阵，你只能**复制粘贴三份 job**：
+假设你要在 Node.js 22、24、26 三个版本上跑测试。没有矩阵，你只能**复制粘贴三份 job**：
 
 ```yaml
 jobs:
-  test-node20:                 # 第一份：Node 20
+  test-node22:                 # 第一份：Node 22
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with: { node-version: '20' }
-      - run: npm test
-
-  test-node22:                 # 第二份：Node 22（几乎一样的代码）
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: '22' }
       - run: npm test
 
-  test-node24:                 # 第三份：Node 24
+  test-node24:                 # 第二份：Node 24（几乎一样的代码）
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: '24' }
+      - run: npm test
+
+  test-node26:                 # 第三份：Node 26
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: { node-version: '26' }
       - run: npm test
 ```
 
@@ -71,11 +71,11 @@ jobs:
     strategy:
       matrix:                  # 声明两个"维度"
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node-version: [20, 22, 24]   # 24 为最新 LTS；18 已于 2025 年停止维护
+        node-version: [22, 24, 26]  # 26 为当前活跃 LTS（2026-10 起）；20 已于 2026 年停止维护
     runs-on: ${{ matrix.os }}              # 读取当前组合的 os
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}  # 读取当前组合的 node-version
       - run: npm test
@@ -140,11 +140,11 @@ jobs:
 strategy:
   matrix:
     os: [ubuntu-latest, windows-latest]
-    node-version: [20, 22]
+    node-version: [24, 26]
     include:
-      # 场景一：匹配已有组合（ubuntu + node 20），追加 experimental 变量
+      # 场景一：匹配已有组合（ubuntu + node 24），追加 experimental 变量
       - os: ubuntu-latest
-        node-version: 20
+        node-version: 24
         experimental: true
 
       # 场景二：不匹配任何组合，新增一个独立 job（macos + node 22）
@@ -153,7 +153,7 @@ strategy:
         experimental: true
 
       # 场景三：只写部分键，其余键取 include 条目中补充的默认值
-      - node-version: 22
+      - node-version: 26
         os: ubuntu-latest
         flag: nightly
 # 最终 job 数：基础 2×2=4 个 + include 新增 2 个 = 6 个
@@ -222,13 +222,13 @@ jobs:
       fail-fast: false          # 收集所有环境的失败信息
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: [20, 22, 24]   # 24 为最新 LTS；18 已于 2025 年停止维护
-        exclude:                # Windows + Node 18 已知有问题，跳过
+        node-version: [22, 24, 26]  # 26 为当前活跃 LTS（2026-10 起）；20 已于 2026 年停止维护
+        exclude:                # Windows + Node 22 已知有问题，跳过
           - os: windows-latest
-            node-version: 18
+            node-version: 22
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
@@ -258,7 +258,7 @@ jobs:
             test: go test ./...
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Build
         run: ${{ matrix.build }}
       - name: Test
@@ -279,7 +279,7 @@ jobs:
         shard: [1/4, 2/4, 3/4, 4/4]     # 4 个分片
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: npx playwright test --project=${{ matrix.browser }} --shard=${{ matrix.shard }}
 ```
 
@@ -339,8 +339,8 @@ jobs:
     outputs:
       services: ${{ steps.filter.outputs.changes }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -378,6 +378,35 @@ jobs:
 | Windows 上跑 Linux 命令失败 | `Command not found` | 没按系统区分命令 | 用 `if: runner.os == 'Windows'` 等条件分支，或使用跨平台写法 |
 | fail-fast 导致信息丢失 | 第一个失败后其余 job 全被取消 | fail-fast 默认为 true | CI 场景显式设置 `fail-fast: false` |
 | 在 `runs-on` 中引用错误变量名 | job 无法启动 | `${{ matrix.os }}` 与矩阵定义中变量名不一致 | 核对矩阵变量名与引用处拼写一致 |
+
+## 7. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：不用矩阵时三份 job 的痛点是哪三条？矩阵用哪个配置键声明？写出「ubuntu/windows 两个系统 × Node 24/26 两个版本」的 matrix 定义。
+
+**任务二**：矩阵会生成几个 job？`runs-on` 怎么写成动态的？
+
+**任务三**：三个矩阵玩法各写一条用途——`fail-fast`、`exclude`、`include`（只说它们分别解决什么）。
+
+**参考实现**（先自己写完再看）：
+
+```text
+任务一：痛点——改一处要改三处、难扩展（组合数爆炸）、可读性差。
+声明键：jobs.<id>.strategy.matrix。
+matrix:
+  os: [ubuntu-latest, windows-latest]
+  node-version: [24, 26]
+
+任务二：2 x 2 = 4 个 job；runs-on: ${{ matrix.os }}。
+
+任务三：
+fail-fast: false  —— 一个组合失败后不再取消其余 job（要收集全部失败信息时用）
+exclude           —— 从笛卡尔积里去掉已知有问题的组合
+include           —— 追加变量到已有组合，或补进全新组合
+```
+
+要点自查：矩阵是「配置循环」，每个组合一个独立 job、独立虚拟环境；`runs-on`/`node-version` 读 `${{ matrix.<键> }}` 取当前组合值；include 的匹配规则是「能套进已有组合就追加，套不进就新增」——这是最容易被误解的点。
 
 ## 8. 一句话记忆
 

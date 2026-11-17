@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/010-ProgrammingStartGuide'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'cs-fundamentals/010-ComputerOverview'
 ---
@@ -91,7 +91,7 @@ related:
 
 **包管理器（进阶预告）**：开发者的主流方式是用命令行安装软件——Windows 有 `winget`，macOS 有 `brew`。好处是可脚本化、版本可控。零基础阶段先会双击安装，包管理器会在 [终端与命令行入门](/start/040-TerminalAndShellBasics) 之后的实践中自然引入。
 
-**安装后验证**：装完不等于装好。验证的标准做法是打开终端输入软件的命令加版本参数，例如装完 Node.js 后运行 `node --version`，能看到版本号（如 `v22.x.x`）才算成功。这个"安装即验证"的动作以后会重复上百次，现在就养成习惯。
+**安装后验证**：装完不等于装好。验证的标准做法是打开终端输入软件的命令加版本参数，例如装完 Node.js 后运行 `node --version`，能看到版本号（如 `v26.x.x`）才算成功。这个"安装即验证"的动作以后会重复上百次，现在就养成习惯。
 
 ## 管理员权限：很多报错的真正原因
 

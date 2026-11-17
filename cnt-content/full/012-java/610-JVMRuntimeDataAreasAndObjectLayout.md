@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 运行时数据区五大区域、对象内存布局（Mark Word/压缩指针/对齐填充）、堆分代与对象晋升、垃圾回收算法与现代收集器（G1/ZGC/Shenandoah）、生产内存问题排查与调优案例；JMM 规范层内容见 612 篇。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/612-JavaMemoryModelJMM'
   - 'java/600-JVMGC'
@@ -2232,3 +2232,11 @@ class MyLoader extends ClassLoader {
 ```
 
 ---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 运行时数据区五件套各放什么？哪两个线程私有、哪三个共享？——堆（对象）、方法区/元空间（类元数据、运行时常量池）共享；虚拟机栈（栈帧：局部变量表、操作数栈）、程序计数器、本地方法栈线程私有。
+2. 64 位 JVM 上 `new Object()` 实际占多少字节？由哪三部分组成？——16 字节（无压缩指针时）；对象头（Mark Word 8B + Klass Pointer 8B）+ 实例数据 0B + 填充对齐到 8 倍数。
+3. 紧凑对象头（JEP 519）把什么压到多少位？收益是什么？——Klass Pointer 压到 32 位（无压缩 Oops 前提下对象头 64→32B 减半预期之一），海量小对象场景内存密度大幅提升，JDK 25 正式。
+4. 对象什么条件下直接进入老年代而不经历新生代？列出两条规则。——大对象（超过 -XX:PretenureSizeThreshold 或 G1 的 Humongous 阈值）直接进老代；长期存活对象（Minor GC 年龄计数达到 MaxTenuringThreshold，默认 15）晋升。
+5. StackOverflowError 与 OutOfMemoryError 各对应哪个区域？常见触发各举一例。——前者虚拟机栈深度超限（无终止递归）；后者堆/元空间/直接内存耗尽（缓存无上限、动态生成类）。

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub 常见问题排查：权限问题、大文件、换行符、子模块、GPG 签名、Actions 配额。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/370-GitHubActionsCICD'
   - 'github/380-ActionsTrigger'
@@ -456,13 +456,13 @@ pull-requests: write
 4. **添加调试信息**：
 
 ```yaml
- steps:
- - name: Debug information
- run: |
- echo "Node version: $(node -v)"
- echo "npm version: $(npm -v)"
- echo "Current directory: $(pwd)"
- ls -la
+steps:
+  - name: Debug information
+    run: |
+      echo "Node version: $(node -v)"
+      echo "npm version: $(npm -v)"
+      echo "Current directory: $(pwd)"
+      ls -la
 ```
 
 ## 8. 其他常见问题
@@ -640,3 +640,37 @@ pull-requests: write
 2. 配置缓存
 3. 添加重试机制
 4. 检查网络连接
+
+## 11. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。排障篇的自检不是背命令，而是练「报错 -> 定位方向」的条件反射。
+
+**任务一**：三个报错各指向哪一类问题、第一条诊断命令是什么——（a）`Permission denied (publickey)`；（b）`Authentication failed`（HTTPS 反复要求输入凭据）；（c）`error: RPC failed` + 推送卡死在中途。
+
+**任务二**：写出三个「一次配置、终身受益」的预防命令——SSH 公钥指纹确认、Windows/macOS 换行符配置、大文件走 LFS。
+
+**任务三**：Actions 构建失败，给出你的排查顺序（至少四步）。
+
+**参考实现**（先自己写完再看）：
+
+```text
+任务一：
+(a) SSH 密钥问题——第一条：ssh -vT git@github.com（看用了哪把
+    密钥、密钥是否被接受），再 ssh-add -l 确认已加载；
+(b) HTTPS 凭据问题——第一条：git remote -v 确认协议与地址，
+    再查 credential.helper 是否配置、PAT 是否过期；
+(c) 网络或大文件问题——第一条：git status 与最近提交内容
+    （是否引入超大文件），网络受限时考虑代理或 SSH over 443。
+
+任务二：
+ssh-keygen -t ed25519 -C "you@example.com"   # 密钥用 Ed25519
+git config --global core.autocrlf input      # Windows 常用 true，
+                                             # 跨平台团队用 input
+git lfs install && git lfs track "*.psd"     # 大文件先 track 再 add
+
+任务三：gh run view <ID> --log-failed 定位失败步骤 ->
+检查依赖文件（lock 文件与 Node/包管理器版本是否匹配）->
+配置依赖缓存（actions/cache）-> 检查网络/重试。
+```
+
+要点自查：排障的通用次序是「读报错原文 -> 定位协议/环节 -> 单一变量验证（ssh -T、gh api、git ls-remote）-> 修 -> 复现确认」；`Permission denied (publickey)` 与 `Authentication failed` 是两种协议的同一类病（凭据不对），但诊断入口完全不同——前者查 SSH 密钥链路，后者查凭据管理器与 PAT；预防（autocrlf、LFS、强密码实践）永远比救火便宜。

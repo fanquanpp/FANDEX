@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 用游戏排行榜的完整生命周期串起 INSERT/SELECT/UPDATE/DELETE：建表脚本、批量插入、带条件更新、事务防误操作、聚合统计，附真实报错调试与梯度练习。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/100-DML'
   - 'mysql/120-DQL'
@@ -259,6 +259,36 @@ SELECTE name, score FORM players ORDER BY score DESC LIMIT 3;
 - SELECT 语法（含 LIMIT/OFFSET）：https://dev.mysql.com/doc/refman/8.4/en/select.html
 - 事务语法（START TRANSACTION/COMMIT/ROLLBACK）：https://dev.mysql.com/doc/refman/8.4/en/commit.html
 - 服务端错误码总表（1064/1054/1364 都在这查）：https://dev.mysql.com/doc/mysql-errors/8.4/en/server-error-reference.html
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出"带保险的排行榜更新"脚本：把分数低于 500 的玩家每人加 100 分，要求先验证命中行、事务内执行、确认后提交。
+
+参考答案（先自己写，再对照）：
+
+```sql
+START TRANSACTION;
+SELECT COUNT(*) FROM players WHERE score < 500;   -- ① 心里有数：会改几行
+UPDATE players SET score = score + 100 WHERE score < 500;
+-- ② 核对 rows affected 是否与上一步一致；SELECT 抽查改动结果
+COMMIT;   -- ③ 确认无误再提交；有疑问先 ROLLBACK
+```
+
+三步的顺序不可乱：验证在前（改的是谁）、核对在中（改了几行）、提交在后（落库或回滚）。UPDATE 本身不加任何新保险，保险全部来自这套操作纪律。
+
+2. 概念自问：客户端报 `2 rows affected`、服务器提示 `Rows matched: 3 Changed: 2`——两者数字不同说明什么？
+
+参考答案（先自己答，再对照）：matched 是 WHERE 命中的行数，changed 是值真的发生变化的行数。差的那 1 行命中了条件但新值与旧值相同（如 score 已经是目标值），MySQL 不做无谓写入，也不计入 changed。看到两个数字不一致先想到"值未变"，而不是怀疑统计错了。
+
+3. 概念自问：`ERROR 1064` 与 `ERROR 1054` 都在说"写错了"，分别错在哪一层？
+
+参考答案（先自己答，再对照）：1064 是语法层错误（SELECTE 拼错、FORM 写成 FROM——服务器根本解析不出合法语句）；1054 是语义层错误（语法正确但列名不存在）。遇到报错先分清层级：1064 逐个检查关键字拼写与标点，1054 用 `SHOW COLUMNS FROM 表名` 对照列名。找错方向不同，修法就不同。
+
+4. 判断题：`DELETE FROM players;`（无 WHERE）和 `TRUNCATE TABLE players;` 效果一样，随便用哪个。
+
+参考答案（先自己答，再对照）：不一样。DELETE 逐行删、事务内可回滚、不触发 AUTO_INCREMENT 复位；TRUNCATE 秒级清空、隐式提交不可回滚、AUTO_INCREMENT 复位。"效果一样"只是行数归零这一点相同，回滚能力与速度特性完全不同——生产上哪个都不能裸奔。
 
 ## 13. 自我检查
 

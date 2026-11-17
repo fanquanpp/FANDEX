@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL递归公用表表达式：WITH RECURSIVE语法、层级遍历、图遍历、斐波那契数列与终止条件控制
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/190-Subquery'
   - 'sql/280-PivotUnpivot'
@@ -351,6 +351,49 @@ WITH RECURSIVE tree AS (...)
 | 调试     | 困难               | 较容易       |
 | 性能     | 单次查询，减少往返 | 可能多次查询 |
 | 适用场景 | 简单层级遍历       | 复杂递归逻辑 |
+## 遮码自检
+
+遮住答案先写；递归 CTE 题的判断标准是"能说出锚点、递归步、终止条件各在哪一行"。
+
+**第 1 题：`WITH RECURSIVE` 的结构分几部分？数据库怎么决定"停止迭代"？**
+
+<details><summary>参考答案</summary>
+
+两部分：锚点查询（非递归，产生初始结果集 R0）与递归查询（引用 CTE 自身，吃 R(n-1)
+产出 R(n)），两者用 UNION [ALL] 连接。终止条件是**递归查询返回空集**——上一轮没有
+新行，迭代自然结束。所以递归成员里必须有一个"逐步逼近终点"的谓词（n < 10、
+manager_id IS NOT NULL、depth < 上限），否则永远产不出空集。
+</details>
+
+**第 2 题：生成 1 到 10 的数列，忘了递归成员里的 `WHERE n < 10` 会发生什么？各数据库的兜底是什么？**
+
+<details><summary>参考答案</summary>
+
+无限递归：数列永远 +1，查询不停。MySQL 有 `cte_max_recursion_depth`（默认 1000），
+超限报错兜底；PostgreSQL 默认没有层数上限，会一直跑到资源耗尽——所以 PG 上更要把
+终止谓词写对，必要时用 `statement_timeout` 兜底，或在外层加 LIMIT 截断。自检习惯：
+写完递归 CTE 先问"哪一行让结果集最终为空"。
+</details>
+
+**第 3 题：图遍历遇上环（A 的下级最终指向 A 自己）怎么防死循环？说出两种手段。**
+
+<details><summary>参考答案</summary>
+
+手段一：路径列——每步把当前节点 id 追加进 path 字符串，递归成员加
+`WHERE path NOT LIKE '%' || node_id || '%'` 之类的"不走回头路"判断；手段二：
+PostgreSQL 14+ 的 `CYCLE id SET is_cycle USING path` 子句，让数据库自动标记并剪断环。
+两者本质相同：把"访问过的状态"带进结果集参与判断。
+</details>
+
+**第 4 题：递归 CTE 里 UNION 与 UNION ALL 有什么语义差别？什么场景必须用 UNION？**
+
+<details><summary>参考答案</summary>
+
+UNION 每轮迭代对结果去重：重复行不再进入下一轮，某些无界递归（如图上互相可达的
+节点）会因"没有新行"而终止，同时省内存；代价是每轮排序/哈希去重。确定无重复的
+树形遍历用 UNION ALL 更快；图遍历怕环、怕行爆炸时用 UNION 换确定性。
+</details>
+
 ## 递归 CTE 基本结构
 
 **基本写法：递归 CTE 框架**

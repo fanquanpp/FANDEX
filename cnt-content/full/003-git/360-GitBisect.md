@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git bisect 详解：二分定位首坏提交、自动化 bisect run 与实战脚本。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'git/180-GitLogDetailed'
   - 'git/190-GitBlame'
@@ -179,6 +179,35 @@ git bisect run npm test
 | `git bisect replay 文件` | 按记录重放二分（协作移交现场）             |
 | `git bisect run ...`     | 全自动判定循环                             |
 | `git bisect terms`       | 查看/自定义 good/bad 的术语别名            |
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令或结论，再展开对照。
+
+1. bisect 成立的前提是什么？`git bisect run` 的退出码约定里，0 / 125 / 其他非 0 各代表什么？
+2. 二分结束后必做哪条命令？不做的话后续提交会发生什么？
+3. 实操：写一个 5 提交的小仓库，其中第 3 个提交埋入坏行（脚本里 `grep` 判定），分别用手动二分与 `bisect run` 各定位一次，验证结论一致。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 前提：「坏」这个属性在历史上单调——一旦出现之后每个提交都坏（回归 Bug 通常成立，
+   偶发问题要先稳定复现）。退出码：0 = good；125 = skip（该提交不可测试）；
+   其他非 0（1-124、126-127）= bad；128 及以上会中止整个 bisect。
+
+2) git bisect reset。不做的话 HEAD 一直停在首坏提交的分离状态，
+   后续提交进不了任何分支，看起来像「提交都丢了」。
+
+3)
+git bisect start HEAD v1.0.0
+git bisect run bash scripts/check.sh    # check.sh: grep -q bad-line app.txt 退出码取反
+# → <哈希> is the first bad commit
+git bisect reset
+# 手动二分同结论：start → bad → good v1.0.0 → 逐轮 good/bad → reset
+```
+
+</details>
 
 ## 小结
 

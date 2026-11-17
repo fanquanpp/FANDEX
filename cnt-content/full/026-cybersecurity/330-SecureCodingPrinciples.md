@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 六条安全编码原则各自在防什么：把「攻击者视角 + 失败模式思维」变成写代码时的默认反射，用数据流视角串起 OWASP Top 10，附时序攻击等底层原理与动手练习。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/170-InputValidation'
   - 'cybersecurity/340-SecureDevelopment'
@@ -257,3 +257,11 @@ def verify_token(submitted, stored):
   「慢」与会话 Cookie 三属性各对一类攻击；时序侧信道与 CSPRNG 是两个容易被
   忽略的底层细节；SDL、威胁建模与工具链在 340-SecureDevelopment，输入验证
   语法细节在 170-InputValidation。
+
+## 自检
+
+- 遮住第 2 节的六条原则，凭默写出每条的名称与「在防什么」，并用一个真实漏洞形态各对应一条。
+- 用「恶意数据沿没设防的路径抵达有杀伤力的终点」这句话，把 SQL 注入、XSS、越权、SSRF 四个漏洞各还原一遍（路径三段：入口/使用点/出口）。
+- 为什么参数化查询不是「包治注入」？说出它管不了的两类终点（命令执行、输出端编码）。
+- 遮住第 5 节的原理段，解释时序攻击为什么能用响应时间差异读出密钥，以及「常数时间比较」挡住了什么。
+- 「失败即拒绝」具体到代码是什么？写出一次「权限校验函数抛异常后继续执行」的 fail-open 反例与 fail-closed 正确写法（这正是 160 篇 A10 的新条目）。

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C++ chrono 库全解：duration、time_point、clock、C++20 日历与时区、C++23 时区数据库、leap second、计时基准、跨平台精度，含类型安全设计、UB 场景与企业级实战。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/140-CppSmartPointer'
   - 'cpp/490-CppRegex'
@@ -2088,3 +2088,50 @@ std::tm* tm = std::localtime(&t);
 char buf[64];
 std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", tm);
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：用 chrono 日历类型完成「下个月的今天是几号」——先 `std::chrono::year_month_day` 构造今天，再 `+months(1)` 得 `year_month`，处理「1-31 撞上小月」的溢出（用 `std::chrono::last` 收到月末）；写出完整代码并回答：为什么不能直接对 `year_month_day` 做 `+months(1)`？
+
+**提示**：`year_month_day + months(1)` 得到的是「字段级的年月」而非合法日期——31 号 + 一个月是 31 号的「2 月」，不存在；chrono 的字段类型做**日历算术**（年月），时长类型做**物理时间**，两者不能混。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <chrono>
+#include <print>
+namespace chr = std::chrono;
+
+chr::year_month_day today{chr::year{2026}, chr::month{1}, chr::day{31}};
+chr::year_month ym = today.year() / today.month() + chr::months(1);
+chr::year_month_day next = ym / std::min(today.day(), ym / chr::last).day();
+
+std::println("今天: {}", today);      // 2026-01-31
+std::println("下月: {}", next);       // 2026-02-28（收到 2 月最后一天）
+```
+
+要点自查：`ym / last` 先算出「下月最后一天」再取 `min` 是处理月算术溢出的标准套路；chrono 的类型分层（year_month / year_month_day / sys_days）就是为了让「非法日期」表达不出来。
+
+**任务二**：辨析三个概念——`sys_time`（UTC 时间线）、`local_time`（无时区标签）、`zoned_time`（带时区标签）各是什么？把「纽约 2026-07-21 14:00 本地时间」转换成 UTC 写出代码；并解释为什么 `local_time` 转 `sys_time` **必须**经过 `zoned_time`。
+
+**提示**：local_time 只是「一串字段」，没有时区信息无法解释成物理时刻；夏令时切换的同一本地时间可能出现两次或不存在——这个歧义只能由时区数据库解决。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+using namespace std::chrono;
+using namespace std::chrono_literals;
+
+auto lt = local_days{2026y / July / 21} + 14h;            // 无时区标签的本地时间
+zoned_time zt{"America/New_York", lt};                    // 挂上时区 → 有确定时刻
+sys_time<std::chrono::seconds> utc = zt.get_sys_time();
+std::println("UTC: {}", utc);                             // 2026-07-21 18:00:00（夏令时 EDT, UTC-4）
+
+// 概念链：local_time（字段） → zoned_time（字段 + 时区规则） → sys_time（物理时间线）
+// 必须经过 zoned_time：同一 local_time 在 DST 切换处可能对应 0 个或 2 个时刻，
+// 只有 tzdb（IANA 数据库）能裁决。
+```
+
+要点自查：三种时间的递进关系（字段 → 字段+规则 → 物理时刻）是本篇的核心心智模型；时区名用 IANA 标识（"America/New_York"），时区数据库随系统 tzdb 更新——夏令时规则变了代码不用改。

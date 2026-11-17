@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 元类驱动的单例模式深度剖析：从 __call__ 拦截到线程安全、测试可重置性与企业级应用。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'python/590-Metaclass'
   - 'python/180-GeneratorCoroutine'
@@ -2773,4 +2773,11 @@ Python 之禅（PEP 20）："Explicit is better than implicit." 单例模式隐�
 
 关键在于：**理解单例的成本，在收益超过成本时使用，并提供充分的测试与隔离机制。**
 
----
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：模块级单例的写法——为什么它通常是 Python 首选？要点：`config.py` 里定义 `config = Settings()`，模块导入天然只执行一次且 import 系统自带缓存；无锁、无继承复杂度、测试时可 `monkeypatch`。
+2. 默写题：`__new__` 版单例并解释 `cls._instance` 的归属。要点：`def __new__(cls): if not hasattr(cls, "_instance"): cls._instance = super().__new__(cls); return cls._instance`——`hasattr` 查的是类属性而非实例属性；多线程下要加锁。
+3. 预测题：单例类写了 `__init__`，每次 `Config()` 调用会执行几次 `__init__`？要点：每次「构造」都会执行（`__new__` 返回旧对象后仍会调 `__init__`），状态可能被重复初始化——这是 `__new__` 版最常见的隐性坑。
+4. 口述题：为什么单元测试讨厌硬编码单例？两条出路是什么？要点：单例状态跨测试泄漏、无法并行；出路是依赖注入（构造时传入）与测试期重置钩子（`reset()` 或用 `reload`）。

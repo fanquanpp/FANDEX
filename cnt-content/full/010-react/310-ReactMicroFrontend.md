@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React 微前端架构：适用场景与三大流派（Module Federation、single-spa/qiankun、iframe）、Webpack Module Federation 完整配置、共享 React 单例、样式与状态隔离、落地陷阱。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/290-ReactWebSocket'
   - 'react/300-ReactGraphQL'
@@ -144,6 +144,19 @@ window.addEventListener('cart:updated', handler); // 子应用卸载时记得移
 - 版本公约 + CI 检查守住共享依赖；样式靠局部化方案 + 设计 token 消毒。
 - 通信从轻：props/Context 上移 > 事件广播 > 共享 store；子应用互不直连。
 - iframe 只用于天然隔离场景；single-spa/qiankun 在多技术栈共存时与 federation 并用。
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：微前端解决的到底是谁的问题？三五人小团队、一套技术栈该用什么？
+   答案：解决「多团队独立技术栈与独立部署」的组织问题，不以模块为单位。小团队直接 monorepo + 模块边界——为微前端而微前端只会得到双份运行时与版本协调成本。
+2. **修 Bug 题**：子应用加载后 `Invalid hook call` 且事件系统错乱，`window.__REACT_VERSION__` 显示两个版本，原因与修法是什么？
+   答案：双 React 事故——某子应用没把 react 声明为 shared singleton（或版本公约被 CI 绕过），把 React 打进了自己的代码块。修法：host 与 remote 的 `shared` 里 react/react-dom 均 `singleton: true` 并约定 `requiredVersion`，CI 校验共享配置一致性。
+3. **预测题**：host 用 `remotes` 引用、remote 用 `exposes` 暴露——两个子应用想互发一条「购物车已更新」消息，推荐的通信方式按优先级怎么排？
+   答案：能上移就上移——共享状态放 host 用 props/Context 下发；不行再用事件广播（各自监听、互不直连）；共享 store 是最后手段，因为它让子应用之间产生代码级耦合。
+4. **规则题**：为什么「页面级集成」比「任意组件级拼装」更可控？
+   答案：页面级以路由前缀划界，子应用的挂载/卸载边界与路由切换对齐，样式与全局状态的影响面天然收敛；组件级拼装要求两套应用在同一页面共享 DOM、样式与事件系统，隔离成本陡增。
 
 ## 速查
 

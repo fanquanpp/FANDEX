@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 数字证书原理：X.509 标准、PKI 体系、证书链验证与证书管理详解。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/340-SecureDevelopment'
   - 'cybersecurity/540-ComplianceAudit'
@@ -15,6 +15,10 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+- **解决什么问题**：公钥算法只保证了「数学上安全」，没回答「这把公钥真的属于 example.com 吗」——数字证书用 CA 的签名回答这个问题。本篇讲清证书里有什么、信任从哪来、链怎么验、吊销怎么查，以及日常运维中最常出事的「过期与续期」。
+- **容易怎么错**：把「有证书」当「安全」（过期、链不全、域名不匹配都是常见翻车点）；服务器漏发中间证书导致部分客户端报错；以为 EV 证书还能带来地址栏公司名（浏览器 2019 年起已移除视觉区分）；仍在配置早已废弃的 Expect-CT/HPKP 头。
+- **学完能做什么**：看懂一张 X.509 证书的每个关键字段；排查「证书不可信/链不完整」类故障；用 ACME 全自动化证书生命周期，并理解证书寿命持续缩短的运维含义（见 090-HTTPSPrinciple）。
 
 ## 前置知识
 
@@ -126,6 +130,10 @@ TBSCertificate ::= SEQUENCE {
 | DV（域名验证） | 仅验证域名控制权 | 个人网站  |
 | OV（组织验证） | 验证组织身份     | 企业网站  |
 | EV（扩展验证） | 严格身份验证     | 金融/电商 |
+
+注意：主流浏览器已移除 EV 的地址栏视觉区分（Chrome 77 与 Firefox 70，均为 2019 年），
+EV 与 DV 在用户界面上不再有差别——选证书的标准回归「管理需求与担保流程」，
+而不是「绿色地址栏」。
 
 ## 4. 证书链验证
 
@@ -243,11 +251,18 @@ Public-Key-Pins: pin-sha256="base64=="; max-age=5184000
 
 ### 6.4 证书透明度（CT）
 
-所有公开可信证书必须记录在 CT 日志中，可被公开审计。
+所有公开可信证书必须记录在 CT 日志中，可被公开审计。曾经用于站点侧开启 CT 校验的
+`Expect-CT` 头已被浏览器移除（Chrome 107，2022-10）：Chrome 对 2018-04-30 之后签发的
+公开可信证书默认强制 CT 校验，站点侧无需也不应再发送该头（HPKP 同理早已废弃，
+见 6.3）。今天 CT 的正确用法是**监测**：用 crt.sh、证书监控服务或 CT 日志 API，
+盯住「有没有人替你的域名签发你不知道的证书」——异常签发本身就是攻击信号。
 
-```http
-Expect-CT: enforce, max-age=86400, report-uri="https://example.com/ct-report"
-```
+## 连接测试与证书运维命令
+
+上面六节是概念与机制；本篇后半部分是一组运维命令——测握手、验链、查信息、
+核对匹配、盯过期。命令是配角：每条都对应前面某一节的一个验证步骤，
+用之前先想清楚自己在验证第几步。
+
 ## SSL/TLS 连接测试
 
 **基本写法：测试 HTTPS 连接**
@@ -425,26 +440,26 @@ openssl x509 -text -noout -in cert.pem | grep -A1 "Subject Alternative Name"
 ## 证书匹配验证
 
 **基本写法：验证证书和私钥匹配**
-`openssl x509 -noout -modulus -in <证书> | openssl md5; openssl rsa -noout -modulus -in <私钥> | openssl md5`
+`openssl x509 -noout -modulus -in <证书> | openssl sha256; openssl rsa -noout -modulus -in <私钥> | openssl sha256`
 ```bash
-# 对比证书和私钥的 modulus 是否一致
-openssl x509 -noout -modulus -in cert.pem | openssl md5
-openssl rsa -noout -modulus -in private.key | openssl md5
+# 对比证书和私钥的 modulus 是否一致（用 sha256 摘要对比，不引入弱哈希依赖）
+openssl x509 -noout -modulus -in cert.pem | openssl sha256
+openssl rsa -noout -modulus -in private.key | openssl sha256
 ```
 
 **基本写法：验证 CSR 和私钥匹配**
-`openssl req -noout -modulus -in <CSR> | openssl md5; openssl rsa -noout -modulus -in <私钥> | openssl md5`
+`openssl req -noout -modulus -in <CSR> | openssl sha256; openssl rsa -noout -modulus -in <私钥> | openssl sha256`
 ```bash
 # 对比 CSR 和私钥的 modulus
-openssl req -noout -modulus -in request.csr | openssl md5
-openssl rsa -noout -modulus -in private.key | openssl md5
+openssl req -noout -modulus -in request.csr | openssl sha256
+openssl rsa -noout -modulus -in private.key | openssl sha256
 ```
 
 **基本写法：一键验证匹配**
-`[ "$(openssl x509 -noout -modulus -in cert.pem | openssl md5)" = "$(openssl rsa -noout -modulus -in private.key | openssl md5)" ] && echo "匹配" || echo "不匹配"`
+`[ "$(openssl x509 -noout -modulus -in cert.pem | openssl sha256)" = "$(openssl rsa -noout -modulus -in private.key | openssl sha256)" ] && echo "匹配" || echo "不匹配"`
 ```bash
 # 一键检查证书和私钥是否匹配
-[ "$(openssl x509 -noout -modulus -in cert.pem | openssl md5)" = "$(openssl rsa -noout -modulus -in private.key | openssl md5)" ] && echo "匹配" || echo "不匹配"
+[ "$(openssl x509 -noout -modulus -in cert.pem | openssl sha256)" = "$(openssl rsa -noout -modulus -in private.key | openssl sha256)" ] && echo "匹配" || echo "不匹配"
 ```
 
 ---
@@ -585,3 +600,11 @@ openssl x509 -text -noout -in cert.pem | grep "OCSP - URI"
 # 查看证书吊销列表内容
 openssl crl -text -noout -in crl.pem
 ```
+
+## 自检
+
+- 遮住 4.1 的验证清单，凭记忆写出浏览器验证证书链的六步，并指出「域名不匹配」检查的是哪一步（SAN 匹配，第 6 步）。
+- 一个站点部分客户端报证书不可信、部分正常：先检查什么？（服务器漏发中间证书——`openssl s_client -showcerts` 看握手是否下发完整链。）
+- 有了 CRL/OCSP 为什么还需要 CT？（吊销机制回答「这张证书被吊销了吗」，CT 回答「有没有 CA 替我的域名签发过我不知情的证书」——威胁不同，互不替代。）
+- 遮住 6.1/6.2 的命令块，自己写出「生成私钥 → 生成 CSR → 用 Let's Encrypt 获取证书 → 查看过期时间」的命令序列再对照。
+- 证书生命周期（3.2 的七步）里，哪两步最常被遗忘？（续期自动化——短寿命时代靠 ACME；吊销——离职/换机后的旧证书处置。）

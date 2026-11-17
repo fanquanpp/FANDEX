@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 单一主题：查询重写（SELECT *、子查询改 JOIN、深分页、EXISTS 替代 IN）、参数化查询与计划缓存、统计信息——先改写、再验证的闭环
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/430-ExecutionPlan'
   - 'sql/435-SQLPartitionedTable'
@@ -192,6 +192,51 @@ SELECT COUNT(*) FROM users;                                                  -- 
 ```
 
 纪律：**大表批量导入/大删除之后 ANALYZE**；执行计划里估算行数与实际差一个量级，第一怀疑对象就是统计信息。深水区（代价参数、扩展统计、pg_stat_statements 巡检）见 [PG 查询优化](/postgresql/250-QueryOptimization)与 [PG 统计视图](/postgresql/255-MonitoringStatisticsViews)。
+
+## 遮码自检
+
+遮住答案先答；改写题的判断标准是"每条改写能归结到三条原理中的哪一条"。
+
+**第 1 题：`SELECT *` 的四宗罪分别是什么？哪种场景写 `*` 无伤大雅？**
+
+<details><summary>参考答案</summary>
+
+网络与内存浪费（拉回 30 列只用 3 列）；覆盖索引失效（* 强制回表）；脆弱性（表加列
+后 `INSERT INTO t2 SELECT *` 悄悄变型）；视图与 ORM 的位置取值灾难。例外：全列
+都要用且列少的小表、`EXISTS (SELECT 1 ...)` 这类根本不看投影的地方。纪律：默认
+写列名，例外才用 *。
+</details>
+
+**第 2 题：第 100 万页的分页 `LIMIT 20 OFFSET 1000000` 为什么慢？说出改写思路。**
+
+<details><summary>参考答案</summary>
+
+OFFSET 要先扫过并**丢弃**前 100 万行，再取 20 行——丢弃的扫描是纯浪费。改写：
+记住上一页的最后一个排序键，下一页用
+`WHERE (sort_key, id) > (上一页末尾值) ORDER BY sort_key, id LIMIT 20`
+（键集分页/游标分页），每次都从索引定位直接取，扫描量与页深无关。代价是只能
+顺序翻页、要携带游标，不适合跳页。
+</details>
+
+**第 3 题：`UNION` 改成 `UNION ALL` 依据哪条原理？什么时候**不能**改？**
+
+<details><summary>参考答案</summary>
+
+依据"让数据早点变少/少做重复劳动"：UNION 的去重要对整份合并结果排序或哈希，
+UNION ALL 直接拼接。两侧结果集按业务语义不可能有重复（按月分块、按类型分块、
+两侧键集合互斥）时才能改；拿不准就保留 UNION——正确性永远优先于性能，去重
+语义是查询契约的一部分。
+</details>
+
+**第 4 题：应用层传参 `WHERE id = ?` 除了防注入，还赚了什么？这条收益的前提是什么？**
+
+<details><summary>参考答案</summary>
+
+同一形状的语句（只有参数不同）可以复用解析与执行计划——服务端与数据库都省掉
+重复解析/规划，语句缓存命中率高。前提是语句**形状稳定**：不要把值拼进 SQL 字符串
+（每个值都造出一条新语句，缓存全失效），也不要为了凑形状在 SQL 里做类型转换。
+参数化是安全与性能一箭双雕的少数"免费午餐"。
+</details>
 
 ## 动手实践：一次可验证的改写闭环
 

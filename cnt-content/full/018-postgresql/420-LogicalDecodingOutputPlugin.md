@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 逻辑解码的原理与应用：逻辑复制槽、test_decoding 与 wal2json/pgoutput 插件对比、pg_recvlogical 实操、以及消费端重连与槽膨胀的生产注意事项。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/390-StreamingReplication'
   - 'postgresql/400-PhysicalReplicationSlot'
@@ -119,3 +119,29 @@ SELECT pg_drop_replication_slot('demo_slot');
 ## 下一步
 
 理解了地基之后，原生发布订阅只是薄薄一层封装：进入[订阅与发布](/postgresql/430-SubscribePublish)，几条命令搭起库到库的同步。
+
+## 教学自检
+
+遮住动手步骤，先自己写再对照参考答案。
+
+### 任务一：跑通一次逻辑解码的完整清单
+
+需求：按顺序写出：WAL 级别要求、建逻辑槽（pgoutput 与 test_decoding 两种）、消费方式（SQL 与 pg_recvlogical 各一种）、删除槽。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+前置：`wal_level = logical`（重启）、max_replication_slots/max_wal_senders 预留。建槽：`SELECT pg_create_logical_replication_slot('my_slot', 'pgoutput');`（给订阅/Debezium 用）或 'test_decoding'（人读文本）。消费：SQL 端 `SELECT pg_logical_slot_get_changes('my_slot', NULL, NULL);`（get = 消费即确认）；进程端 `pg_recvlogical -d db --slot my_slot --start -f -`。删除：`SELECT pg_drop_replication_slot('my_slot');`。逻辑槽与物理槽一样"不消费不释放"，WAL 无限保留——消费方挂了同样撑爆主库。
+
+</details>
+
+### 任务二：两个插件怎么选
+
+需求：CDC 管道（Debezium/Kafka）与"人工看一眼变更"各选什么插件？wal2json 与 pgoutput 的分工是什么？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+CDC 管道用 pgoutput：PG 内置、二进制协议、是逻辑订阅（430 篇）与 Debezium 的原生协议，最稳定。人工调试/简单 JSON 管道用 wal2json 或 test_decoding：前者输出结构化 JSON，后者输出人读文本，都不参与标准订阅协议。选型口诀：接官方订阅机制走 pgoutput；接自研消费端按"要结构化 JSON 用 wal2json、要看懂用 test_decoding"。插件在建槽时固定，换插件要重建槽（会丢未消费位置——先消费完）。
+
+</details>

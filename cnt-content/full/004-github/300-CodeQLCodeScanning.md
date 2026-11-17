@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 从「一行语法完全正常的代码，其实是 SQL 注入」这个真实问题切入，动手用 Default Setup 十分钟开启代码扫描，讲清 CodeQL 数据库与查询的原理、告警怎么读怎么关，以及什么时候才需要自定义查询。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/290-SecretScanning'
   - 'github/280-Dependabot'
@@ -94,7 +94,7 @@ jobs:
       actions: read
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript

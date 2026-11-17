@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: typescript-eslint 与类型感知规则：flat config 接入、parserOptions.project 的代价与收益、no-floating-promises 明星规则、与 tsc 严格模式的分工，以 FANDEX 仓库真实配置为例。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -206,6 +206,8 @@ async function handler() {
 
 工程顺序建议：先开 strict（编译期收益最大、无运行成本），再接 recommended（lint 秒级成本），最后按包评估 TypeChecked（分钟级成本换异步安全网）。三者全开的项目里，"这代码为什么报错"的排查入口是：**先看 tsc 报什么，再看 eslint 报什么**——两者用同一个 tsconfig，但规则编号体系完全独立（tsc 是 TS2339 这类错误码，eslint 是规则名），本模块的[错误诊断速查](/typescript/725-TypeScriptErrorDiagnosis)按前者组织。
 
+> 版本坐标（2026-11）：typescript-eslint 属于编译器 API 消费者，而 TypeScript 7.0（Go 原生编译器）未提供程序化 API——所以 lint 工具链当前必须运行在 TS 6.0 上（API 与 5.9 兼容），7.1 起才会提供一套新的 API（Beta 已于 2026-10 发布，正式版计划 2026-11-24）。工程上不必做任何改动：lint 与 `tsc` 可以分别钉在 6.0 与 7.0 双轨运行，见 [TS 6.0 与 7.0](/typescript/680-TypeScript6And7CompilerEvolution) 第 5 节。
+
 ## 7. 常见接入陷阱
 
 - **规则不生效**：flat config 里 `ignores` 必须是**只有 `ignores` 一个键的独立配置项**；混进带 `rules` 的块里就变成"对这些文件生效的排除"，含义反转。
@@ -275,6 +277,14 @@ save();
 ```
 
 `no-restricted-imports` 是原生规则、零成本，先用它能解决八成边界诉求；需要按"层"（ui 不得依赖 api，api 不得依赖 ui）建模时再上专业插件。选型原则与 CI 卡口一致：**先让最便宜的规则挡住最贵的错误**。
+
+## 自检
+
+- 遮住第 1 节的分工表，自己填三行：`x: number = 'a'`、漂浮 Promise、空 catch 各由哪把尺子管？
+- 为什么 `no-floating-promises` 必须类型感知？遮住 4.1 节，说出三种修法各自的语义与适用场景。
+- `parserOptions.project` 与 `projectService` 两条路线的取舍是什么？哪个报错提示你「文件不在 tsconfig include 里」？
+- `recommended` 与 `recommendedTypeChecked` 的分界线是什么？FANDEX 为什么选前者？你的项目该选哪个？
+- flat config 里 `ignores` 单独成项与混进 `rules` 块的含义差别是什么？这是哪类接入事故的高发区？
 
 ## 参考与致谢
 

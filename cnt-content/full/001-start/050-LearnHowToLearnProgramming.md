@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/010-ProgrammingStartGuide'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'start/060-FirstProgramJavaScript'
   - 'start/080-LearningRouteOverview'
@@ -110,7 +110,7 @@ NameError: name 'prnt' is not defined
 
 ```text
 1. 目标：我想实现什么
-2. 环境：语言/版本/操作系统（如 Python 3.13 + Windows 11）
+2. 环境：语言/版本/操作系统（如 Python 3.15 + Windows 11）
 3. 最小复现代码：能触发问题的最短代码（这一步经常自己就把问题找出来了）
 4. 完整报错：原文，不截图，用文本
 5. 已尝试：我试过 A 和 B，现象是……
@@ -170,7 +170,7 @@ NameError: name 'prnt' is not defined
 <summary>任务四参考样例（五要素提问）</summary>
 
 > 【目标】我想让 Python 脚本读取桌面上的 notes.txt 并打印内容。
-> 【环境】Windows 11，Python 3.13，VS Code 内置终端。
+> 【环境】Windows 11，Python 3.15，VS Code 内置终端。
 > 【完整报错】
 > ```text
 > FileNotFoundError: [Errno 2] No such file or directory: 'notes.txt'

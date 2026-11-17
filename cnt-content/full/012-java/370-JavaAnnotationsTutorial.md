@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: "Java 枚举类型与注解系统的形式化定义、源码生成机制、注解处理器工作原理、与 C#/Kotlin/Scala 对比及工程实践"
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/050-DataTypeConversion'
   - 'java/070-VariableConstant'
@@ -2211,3 +2211,13 @@ MyAnnotation ann = method.getAnnotation(MyAnnotation.class);
 // 获取注解成员的值
 String value = ann.value();
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 写出自定义运行期注解的最小骨架（含两个元注解）。——`@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD) public @interface Loggable { String value() default ""; }`。
+2. Retention 与 Target 各控制什么？CLASS 与 RUNTIME 的差异一句话？——Retention 控制注解存活期（源码/class/运行期）；Target 控制可标注位置；CLASS 进字节码但不被运行期反射读取，RUNTIME 才能反射拿到。
+3. 注解的默认值语法怎么写？数组参数怎么传？——`String value() default "x";`；数组 `String[] names() default {};` 传参用花括号 `{...}`，单元素可省略花括号。
+4. 运行期读取方法注解的反射骨架怎么写？——`for (Method m : clazz.getDeclaredMethods()) { Loggable lg = m.getAnnotation(Loggable.class); if (lg != null) ... }`。
+5. 注解本身不执行任何逻辑，框架是怎么"响应"注解的？——运行期反射扫描（Spring @Component）或编译期注解处理器生成代码（Lombok/MapStruct）；注解只是元数据，处理逻辑在处理器里。

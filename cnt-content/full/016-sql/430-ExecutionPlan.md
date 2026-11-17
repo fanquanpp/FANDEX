@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: EXPLAIN 与 EXPLAIN ANALYZE：PostgreSQL/MySQL 计划输出解读、扫描与连接节点、估算偏差诊断与慢查询定位工作流。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/440-PerformanceOptimization'
   - 'sql/420-Index'
@@ -59,8 +59,9 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 
 > **重要**：`EXPLAIN ANALYZE UPDATE/DELETE` 会真的改数据。PostgreSQL 的标准做法是
 > 包在事务里回滚：`BEGIN; EXPLAIN ANALYZE UPDATE ...; ROLLBACK;`。
-> MySQL 8.0.18+ 的 EXPLAIN ANALYZE 仅支持 SELECT（以及 8.0.21+ 的部分 DML 场景），
-> 生产数据上验证 DML 计划请先备份或用等价 SELECT。
+> MySQL 的 EXPLAIN ANALYZE 从 8.0.18 引入，最初仅支持 SELECT；按官方手册（8.4 版），
+> 当前可用于 SELECT、多表 UPDATE/DELETE 与 TABLE 语句——单表 UPDATE/DELETE 与
+> INSERT 不在支持之列。生产数据上验证 DML 计划请先备份或用等价 SELECT。
 
 ### 2.1 输出格式控制
 
@@ -259,6 +260,52 @@ SET enable_hashjoin = off;   -- 逼优化器用 Nested Loop / Merge Join
 
 > PostgreSQL 没有 Oracle/MySQL 式的语句级 hint（扩展除外），干预计划主要靠
 > 统计信息、索引设计与（必要时）会话开关。
+
+## 5.5 遮码自检
+
+遮住答案先答；执行计划题的判断标准是"能对着计划树说出数据从哪来、在哪一步膨胀"。
+
+**第 1 题：`EXPLAIN` 与 `EXPLAIN ANALYZE` 的本质差别是什么？用后者验证 UPDATE 计划要防什么？**
+
+<details><summary>参考答案</summary>
+
+EXPLAIN 只让优化器"估"——不执行语句，只有估算行数与代价；EXPLAIN ANALYZE 真的
+执行一遍，报告每节点的实际耗时与实际行数。用 ANALYZE 验证 UPDATE/DELETE 时语句
+**真的会改数据**——PostgreSQL 的标准做法是包在事务里回滚
+（`BEGIN; EXPLAIN ANALYZE UPDATE ...; ROLLBACK;`）；MySQL 的 EXPLAIN ANALYZE 支持
+SELECT、多表 UPDATE/DELETE 与 TABLE 语句，验证 DML 前先备份或用等价 SELECT。
+</details>
+
+**第 2 题：计划里 `rows=10` 而实际返回 10 万行，该怀疑什么？怎么修？**
+
+<details><summary>参考答案</summary>
+
+怀疑统计信息过时（表大改之后没重新收集）或估算模型对复杂谓词失灵。修法：先
+`ANALYZE 表`（PG）刷新统计信息再看计划；还不准就检查谓词是否可估算（函数、类型
+转换、跨列相关性都是估算黑洞）。rows 偏差是"计划突然变差"的头号常见原因——嵌套
+循环选错内外表、该走索引的没走，多半源于它。
+</details>
+
+**第 3 题：PostgreSQL 计划里 Seq Scan、Index Scan、Bitmap Heap Scan 各适合什么形状的查询？**
+
+<details><summary>参考答案</summary>
+
+Seq Scan 全表顺序读：命中行占比高或表很小时反而最优，见到它别条件反射地说"坏"；
+Index Scan：少量行、按索引逐行回表（随机 IO）；Bitmap Heap Scan：中间情形——先按
+索引把所有命中的页标成位图，再按页顺序取（把随机读合并成顺序读），适合"中等
+命中量 + 多条件组合"。选哪种是代价估算的结果，看的是比例不是名字。
+</details>
+
+**第 4 题：拿到一条慢查询，你的前三步诊断动作是什么？**
+
+<details><summary>参考答案</summary>
+
+第一步 EXPLAIN（或 ANALYZE）拿计划，看三样：扫描方式是否合理、rows 估算与实际
+偏差大不大、哪一步耗时占大头；第二步对照 Schema 检查连接列/过滤列有没有索引、
+谓词是否 SARGable（函数、隐式转换、前导通配都是索引杀手）；第三步做**一次只改
+一件事**的实验（补索引或改写语句）并用同样的 EXPLAIN 验证改善——"性能优化的第一
+步永远是看执行计划，而不是凭感觉改写 SQL"。
+</details>
 
 ## 6. 小结
 

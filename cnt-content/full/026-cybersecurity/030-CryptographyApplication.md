@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 密码学应用：PKI体系、数字证书、TLS协议、密钥管理与密码工程
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/020-SecurityModelFramework'
   - 'cybersecurity/210-CSRFAttack'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+本篇是「网络安全」模块密码学块的收官篇：把前面散落在对称、非对称、哈希、证书各篇的概念，收拢成「一套体系怎么协同工作」的工程视角。
+
+- **解决什么问题**：单独学过 AES、RSA、哈希之后，最常见的困惑是「这些算法到底怎么拼成一个能用的系统」——谁来签证书、握手时谁先说话、密钥存在哪里、什么时候轮换。本篇按 PKI、TLS、密钥管理、密码工程四层回答这个问题。
+- **容易怎么错**：把「编码」当「加密」是最经典的认知错误——Base64、十六进制、URL 编码都是可逆的表示变换，密钥参与度为零，任何人都能解开；它们出现在本篇后半部分，只是为了让你做分析时能一眼认出「这不是加密」。
+- **学完能做什么**：画出一次 HTTPS 请求背后完整的证书链验证流程；判断一段「乱码」是编码还是密文；为应用选择密钥的存储与轮换方案。
 
 ## 1. PKI 体系
 
@@ -103,6 +109,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 key = AESGCM.generate_key(bit_length=256)
 aesgcm = AESGCM(key)
+import os
 nonce = os.urandom(12)
 ct = aesgcm.encrypt(nonce, plaintext, associated_data)
 pt = aesgcm.decrypt(nonce, ct, associated_data)
@@ -115,6 +122,11 @@ pt = aesgcm.decrypt(nonce, ct, associated_data)
 - 不要重复使用nonce
 - 不要使用MD5/SHA1
 - 不要硬编码密钥
+
+## 编码与解码：把「可逆变换」和「加密」分清楚
+
+从本节到文末是一组**编码工具**，它们与上面四节的密码工程有本质区别：**没有密钥、完全可逆、不提供任何机密性**。Base64 不是加密，只是把二进制变成可打印文本的表示法；十六进制、URL 编码、HTML 实体同理。安全工作中它们有两个用途：一是**识别**——看到一串以 `=` 结尾的字母数字，先按 Base64 试解再判断是不是密文，别上来就当加密数据处理；二是**构造**——理解目标解析器如何阅读你的输入（这部分攻防展开见 170-InputValidation 与 190-XSSAttack）。唯一红线：**任何需要保密的场合，只套一层编码都等于明文**。
+
 ## Base64 编码解码
 
 **基本写法：Base64 编码**
@@ -436,3 +448,11 @@ while read line; do echo "$line" | base64 -d 2>/dev/null; echo; done < b64list.t
 # 使用 chardet 检测文件编码
 python3 -c "import chardet; print(chardet.detect(open('file.txt','rb').read()))"
 ```
+
+## 自检
+
+- 遮住 1.2 的验证图，自己写出证书链从终端证书到根 CA 的验证顺序，并回答：为什么浏览器只内置根 CA 证书，不内置中间 CA 证书？（中间证书按需下发轮换，根私钥离线保存，信任锚最小化。）
+- 遮住 2.1 的握手过程，凭记忆写出 TLS 1.3 握手双方各发送什么，并说出它比 TLS 1.2 少一次往返的原因（密钥交换材料随 ClientHello 一起发出）。
+- 不看 4.3 的清单，自己先写下五条密码学禁忌再对照；并各举一个真实事故形态（ECB 泄露模式、nonce 重用、硬编码密钥入库）。
+- 拿到一串 `aGVsbG8gd29ybGQ=`：遮住正文，写出你的判定流程——先试什么命令、怎么从结果判断它是编码还是密文？（`base64 -d`；解开即明文说明只是编码。）
+- 遮住 3.1 的生命周期，说出密钥六个阶段里最容易出事的两步（分发与存储/销毁），以及 HSM 与 KMS 分别在管什么。

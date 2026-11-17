@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第三课：类成员、继承与 super、public/private/protected、readonly、参数属性、访问器与抽象类，对齐官方 TypeScript Handbook。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/050-TSBasicsFunctions'
   - 'typescript/070-TSBasicsGenerics'
@@ -209,5 +209,12 @@ class AccountingDepartment extends Department {
 ## 8. 一句话记住
 
 > 类 = 属性 + 构造函数 + 方法；继承用 `extends` 且先 `super()`；`private` 藏起来、`protected` 传后代、`readonly` 定死、`abstract` 留作业。
+
+## 自检
+
+- 遮住第 2 节代码，自己写一个带属性、构造函数与方法的 `Greeter` 类，并说出 `new` 时发生的三件事。
+- 子类构造函数里，`super()` 必须在什么位置调用？为什么？
+- `private` 与 `protected` 的可访问范围差在哪？TypeScript 的 `private` 是编译期还是运行时约束？
+- 遮住 5 节代码，用「参数属性」把「声明字段 + 构造函数赋值」压缩成一行构造函数。
 
 下一篇进入泛型基础。

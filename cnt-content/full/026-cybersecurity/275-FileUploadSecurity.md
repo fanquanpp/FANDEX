@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 文件上传漏洞与安全上传实现：客户端校验绕过、MIME 与扩展名黑名单、双扩展与截断、解析漏洞、竞态上传，逐项给出白名单校验、随机重命名、存储与执行隔离、病毒扫描的安全实现（Python/Java/Nginx 配置），附头像接口 webshell 复现与修复。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/160-OWASPTop10Detailed'
   - 'cybersecurity/270-CommandInjection'

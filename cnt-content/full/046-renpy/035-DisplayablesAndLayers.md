@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: Image Solid Composite ConditionSwitch 等 displayable 族与 layer zorder camera 的全局调度
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -40,7 +40,7 @@ show expression Composite((1920, 1080), (0, 0), "bg_room.png", (960, 540), "prop
 - 第二行用 expression 子句直接给一个表达式求值结果——Solid 纯色块，as backdrop 给它起 tag；
 - 第三行 Composite 把多张子图按坐标拼成一张固定尺寸的合成图。
 
-易错点：expression 后面写 displayable 表达式，不是字符串路径；写 show expression "bg_room.png" 时显示的是字符串本身会被当作文件名再包一层，与直接 show bg_room.png 等价，但 show expression Solid(...) 这种对象表达式则必须用 expression。
+易错点：expression 后面写 displayable 表达式，不是字符串路径；写 show expression "bg_room.png" 时，8.4 起字符串按图像名解释、与直接 show bg_room.png 等价（此前版本把表达式结果当 tag 名，行为不同），而 show expression Solid(...) 这种对象表达式则必须用 expression。
 
 ## 常用显示件族
 
@@ -240,6 +240,43 @@ screen popup(title, body, on_yes):
                 textbutton "确定" action Return(on_yes)
                 textbutton "取消" action Return(None)
 ```
+
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案或写出代码，再展开对照。
+
+1. show 语句显示的"真正对象"是什么？Image、Solid、Composite 三者分别对应什么场景？
+2. "换装系统"里身体不动、服装随 affection 变量变化：Composite、LiveComposite、ConditionSwitch、DynamicDisplayable 各适合哪部分？用错 Composite 会看到什么现象？
+3. ConditionSwitch 的条件书写顺序有什么讲究？它什么时候求值——变量改变后立刻，还是下一次交互开始时？
+4. master、transient、screens、overlay 四个图层的职责分别是什么？为什么跨图层不能比 zorder？
+5. camera master at shake_transform 与 show eileen happy at shake_transform 的效果差别是什么？两者叠加时变换如何计算？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) displayable——一切可被绘制对象的统称。Image 包装图片文件；Solid 画纯色
+   （常做遮罩/底板）；Composite 把多张子图按坐标静态拼合成一张图。
+
+2) 身体用静态部分，服装部分用 ConditionSwitch（按 affection 选图）即可，
+   连续变化的量（如颜色渐变）才需要 DynamicDisplayable。整个组合要用
+   LiveComposite——子件表达式每次交互重新求值；错用 Composite 则子件在
+   构建时拼死，变量变了画面不更新。
+
+3) 最严格的条件放最前、True 兜底放最后，自上而下短路匹配；条件在交互
+   开始时求值，$ 改变量后要等下一次交互（say/menu）画面才切换。
+
+4) master 放场景与立绘（show/scene 默认落点）；transient 放转场与临时元素
+   （引擎自管）；screens 是屏幕默认图层；overlay 是界面覆盖层。zorder 只
+   在同层内排序，master 上 zorder 99 的元素仍在 screens 层之下，跨层
+   只能改图层结构（config.layers）。
+
+5) 前者把变换施加到整个 master 图层——所有立绘与背景一起抖动，screens 层
+   的 HUD 不动；后者只抖动 eileen 一个显示件。叠加时变换复合（如 zoom
+   相乘），排查"立绘比预想大"先查 camera。
+```
+
+</details>
 
 ## 小结
 

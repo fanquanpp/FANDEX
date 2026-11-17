@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 依赖数组语义、清理函数时序、useEffectEvent，以及官方反模式判例：链式 state、派生数据进 Effect、事件逻辑误放 Effect。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'react/040-HooksDeep'
   - 'react/042-UseReducerAndStateLogic'
@@ -98,9 +98,9 @@ useEffect(() => {
 
 第二条注释里的错误在岛屿切换时表现为「消息数跳动」：旧连接还在推数据，旧回调虽被置空，但 socket 层仍持有引用不释放。判断清理是否写全的土办法：把组件挂载/卸载一百次，看 DevTools 的 Network/WS 面板里连接数是否归零。
 
-### 2.2 用 useEffectEvent 抽出「非响应式逻辑」（React 19 稳定化中）
+### 2.2 用 useEffectEvent 抽出「非响应式逻辑」（React 19.2 起稳定）
 
-有一类代码：Effect 内要调用，但它读的值**不应该**作为依赖（比如「每次收到消息都上报当前阅读位置」——上报动作需要读到最新 position，但 position 变化不该重启订阅）。React 19 的 `useEffectEvent`（实验名 `useEffectEvent`，早期称 `useEvent`）为此而生：
+有一类代码：Effect 内要调用，但它读的值**不应该**作为依赖（比如「每次收到消息都上报当前阅读位置」——上报动作需要读到最新 position，但 position 变化不该重启订阅）。React 19.2（2025-10）起 `useEffectEvent` 从实验 API 转正（早期社区称 `useEvent`，旧文章两种名字都会出现）：
 
 ```tsx
 useEffect(() => {
@@ -384,4 +384,4 @@ function RecentReads({ userId }: { userId: string }) {
 
 - react.dev *Synchronizing with Effects*（CC-BY 4.0）：https://react.dev/learn/synchronizing-with-effects
 - react.dev *You Might Not Need an Effect*（CC-BY 4.0）：https://react.dev/learn/you-might-not-need-an-effect
-- react.dev *useEffectEvent*（实验特性文档，CC-BY 4.0）：https://react.dev/reference/react/experimental_useEffectEvent
+- react.dev *useEffectEvent*（React 19.2 起稳定，CC-BY 4.0）：https://react.dev/reference/react/useEffectEvent

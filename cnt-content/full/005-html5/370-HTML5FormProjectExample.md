@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 综合运用表单验证、Canvas 与本地存储的交互式应用。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/280-CrossDocumentCommunication'
   - 'html5/360-ViewportConfigMobileFirst'
@@ -2025,6 +2025,18 @@ const data = {
 - **FileReader 异步**:`readAsDataURL` 等方法为异步,需在 `onload` 回调中处理结果
 - **accept 仅提示**:`accept` 属性只是浏览器提示,用户仍可选择其他类型,服务端必须再次校验
 - **大文件上传**:大文件建议分片上传,避免使用 FileReader 一次性读取
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 不看正文，列出「表单毕业设计」必须做对的五件事：每个提交控件的结构要求、原生校验开关、草稿持久化的 API 与键名设计、文件预览的对象 URL 生命周期、异步提交的数据载体。
+
+参考答案（先自己写，再对照）：每个控件有 `label for` 关联 + `name`（后端字段名）+ 合适的 `type`；要么用原生校验（required/pattern），要么 `novalidate` + JS 统一校验，二选一别混着写；草稿用 `localStorage.setItem('form-draft', JSON.stringify(data))`，键名带项目前缀防冲突；`URL.createObjectURL(file)` 生成预览，组件销毁或重新上传时 `revokeObjectURL` 防内存泄漏；异步提交用 `FormData`（文件上传自动 `multipart/form-data`）交给 `fetch`，提交中禁用按钮防重复。
+
+2. 概念自问：多步表单「每步校验通过才能下一步」该怎么组织状态？签名板 Canvas 为什么要处理 DPR？自动保存与提交分别用什么时机触发？
+
+参考答案（先自己答，再对照）：维护一个 current step 状态与每步的校验函数数组，`Next` 按钮先跑当前步校验再前进，返回步不重置已完成数据；Canvas 若不按 `devicePixelRatio` 放大坐标系，高分屏上笔画会错位且模糊；自动保存用 `input` 事件 + 防抖（如 500ms）写草稿，正式提交只在 submit 时发生——两者职责分离，草稿不是数据源，以提交成功为准。
 
 ## 动手试试
 

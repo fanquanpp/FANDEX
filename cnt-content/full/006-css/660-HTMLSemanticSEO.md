@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: HTML语义化标签与SEO优化详解：结构化标记、Schema.org、无障碍与搜索引擎友好实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/650-CSSNewFeatures'
   - 'css/540-CSSPerformanceOptimizationDetailed'
@@ -343,3 +343,41 @@ Sitemap: https://example.com/sitemap.xml
 - 语义：`html5/170-SemanticTag`；
 - 元数据：`html5/060-MetadataCharacterEncoding`；
 - 结构化数据：`html5/350-MicrodataJSONLD`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2-4 节的示例自己写，再对照参考实现。
+
+**任务一**：给一篇「文章详情页」写 SEO 骨架——head 三件（title/description/canonical）、一个 h1 与连续标题层级、图片描述性 alt；并用一句话说清 title 与 description 各自出现在搜索结果的哪个位置。
+
+**任务二**：修一份「大纲断裂」的页面——HTML 里是 `h1 → h4 → h2`，指出两处层级问题与修法；再说明「section 里再嵌 section」与「article 里嵌 article」的语义差异。
+
+**提示**：任务一对应第 2 节核心要素清单；title 是搜索结果蓝色的可点击标题行、description 是其下的摘要文字（但搜索引擎可能用页面内容改写）；任务二考「层级不跳级」纪律与 article 的可独立成篇语义（第 2 节）。
+
+**参考实现**（先自己写完再看）：
+
+```html
+<!-- 任务一 -->
+<head>
+  <title>2026 秋季 CSS 体系课：从盒模型到容器查询 | FANDEX 学堂</title>
+  <meta name="description" content="12 周掌握现代 CSS：盒模型、Grid、容器查询与设计令牌，每篇配遮码自检。" />
+  <link rel="canonical" href="https://fandex.example/css-course" />
+</head>
+<body>
+  <article>
+    <h1>2026 秋季 CSS 体系课</h1>
+    <h2>课程大纲</h2>
+    <h3>第一阶段：盒模型与层叠</h3>
+    <img src="cover.jpg" alt="课程封面：深蓝底色上的 CSS 网格示意图" />
+  </article>
+</body>
+
+<!-- 任务二 -->
+<!-- h1 → h4 是跳级：大纲里 h2/h3 层级空缺，读屏与爬虫都拿不到结构层次；
+     修法：h4 提为 h2，或在其前补齐 h2/h3；同级内容各归各的父级 -->
+<!-- section 嵌 section：主题性分区的再分区（章节与小节）；
+     article 嵌 article：内部是一篇「可独立成篇」的内容（如评论卡片），
+     摘出去单独看依然完整 -->
+```
+
+验收点：任务一里 description 若写成关键词堆砌，搜索结果会截断甚至改写——它要写成「一句完整的人话」；任务二里若用 `div` 加 CSS 字号伪造标题层级，大纲与读屏导航将完全失效——语义是给机器读的，样式是给人看的，两者不可互相替代。

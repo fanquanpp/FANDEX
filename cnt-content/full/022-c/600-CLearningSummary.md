@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 回顾 C 语言模块的核心知识体系：编译模型、类型与内存布局、指针、动态内存、多文件构建、并发与调试工具，并用虚拟歌手音乐平台的示例串联全部要点。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/010-CZeroBasisStart'
   - 'c/200-DynamicMemoryManagement'
@@ -458,7 +458,9 @@ printf("%d\n", total_plays);   /* 值不确定 */
 int total_plays = 0;
 ```
 
-## 自检清单
+## 遮码自检
+
+遮住上文示例与下面的答案栏，逐条自问自答；打不了勾的条目，回到对应篇章补课。
 
 - [ ] 能说出 gcc 预处理、编译、汇编、链接四个阶段各自的产物与典型报错
 - [ ] 能手算一个结构体的字段偏移与总大小，并解释对齐填充
@@ -470,6 +472,22 @@ int total_plays = 0;
 - [ ] 能用 `valgrind --leak-check=full` 验证程序零泄漏，并读懂泄漏报告
 - [ ] 能用 gdb 设置断点、单步执行、打印指针指向的内容
 - [ ] 至少说出 C23 的三个新特性（`constexpr`、`nullptr`、`#embed` 等）及其用途
+
+<details>
+<summary>参考答案（先自己答再看）</summary>
+
+- 四阶段：预处理产出 .i（宏展开/头文件内联，报 unknown type name 多半在这）、编译产出 .s、汇编产出 .o（undefined reference 不在这层）、链接产出可执行（undefined reference 与 multiple definition 都在这层）。
+- 三条规则：成员对齐（放自身对齐值倍数）、整体补齐（总大小是最大对齐倍数）、对齐值取最大——尾部填充为的是数组里下一个元素仍对齐。
+- `sizeof(数组)` 是整个数组的字节数，`sizeof(指针)` 是 8；数组传参退化为指针，长度必须另传。
+- 分配即判 NULL → 使用 → free → 置 NULL；realloc 失败返回 NULL 但原块还在，直接 `p = realloc(p, n)` 会把原地址永久弄丢——临时变量接住、成功才覆盖。
+- `typedef int (*Cmp)(const void *, const void *); void sort(int a[], int n, Cmp cmp);`——回调让「怎么比」由调用方注入。
+- 守卫挡同一 TU 重复包含；extern 声明说「定义在别处」；链接器按符号表把 U 与 T/D 配对——声明管编译期、定义管链接期。
+- `mtx_t m; mtx_init(&m, mtx_plain); mtx_lock(&m); counter++; mtx_unlock(&m);`——成对加锁，所有访问点同一把锁。
+- `valgrind --leak-check=full ./prog`：报告里「definitely lost」是要修的泄漏，#0 帧的 文件:行号 就是分配点。
+- gdb 三步：`break 文件:行` 设断点、`n`/`s` 单步（s 进函数）、`p *ptr` 解引用打印。
+- `constexpr` 编译期常量进类型系统；`nullptr` 有类型的空指针；`#embed` 把文件当字节列表嵌进源码。
+
+</details>
 
 ## 后续学习路径
 

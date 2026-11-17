@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用一个可运行的菜单式项目把前 20 篇串起来：动态数组、qsort 回调、二进制持久化与安全输入，并亲手修掉初版代码里的四个经典 bug——比较器里读输入、信任文件里的 count、fread 不查返回值、realloc 直接赋值。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/200-DynamicMemoryManagement'
   - 'c/170-FunctionPointerCallback'
@@ -448,12 +448,40 @@ int main(void) {
 - scanf 宽度说明（cppreference C）：https://en.cppreference.com/w/c/io/scanf
 - fscanf 系列的手册页（man7）：https://man7.org/linux/man-pages/man3/scanf.3.html
 
-## 14. 自我检查
+## 14. 遮码自检
 
-- 能从需求白板直接画出 Student/StudentList 的数据模型，说出不用链表的理由；
-- 能复述本篇四个 bug 各自的机制：比较器副作用、信任文件长度、fread 不查返回值、realloc 直接赋值；
-- 能说出二进制存档的两个可移植性坑，并给「随手存档」与「跨机交换」各选一种格式并说明理由；
-- 能把本程序拆成三个文件并配一个增量编译的 Makefile。
+遮住上文示例代码与下面的答案栏，先自己画、先自己写，再展开对照。
+
+1. 从需求白板直接画出 Student/StudentList 的数据模型，说出不用链表的理由。
+2. 复述本篇四个 bug 的机制：比较器副作用、信任文件长度、fread 不查返回值、realloc 直接赋值。
+3. 二进制存档的两个可移植性坑是什么？「随手存档」与「跨机交换」各选什么格式、为什么？
+4. 把本程序拆成三个文件并配一个增量编译的 Makefile。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `typedef struct { char name[32]; int id; double score; } Student; typedef struct { Student *items; size_t count, cap; } StudentList;`——动态数组而非链表：数据量按行读写、要下标遍历与 qsort，连续内存对缓存友好，且省去逐节点 malloc/free 的复杂度。
+2. 比较器副作用：qsort 的比较器会被调用任意次、任意顺序，里面改全局状态输出就乱套；信任文件长度：文件头里的 count 直接拿来 malloc/read，坏文件当场堆溢出——先验范围再用；fread 不查返回值：读一半的文件继续用，数据残缺也不自知——返回值必须等于请求项数；realloc 直接赋值：失败返回 NULL 覆盖原指针，数据全丢——临时指针接。
+3. 两坑：结构体 padding 不定值与类型宽度随平台变（long/指针）；字节序随平台变。随手存档用二进制 fwrite——快、省事，只在本机自产自销；跨机交换用文本（每行一条记录，字段定界）——人类可查、平台无关。
+4. student.h（类型 + 原型 + 守卫）、student.c（实现）、main.c（菜单与 main）；Makefile：
+
+```makefile
+CC = gcc
+CFLAGS = -Wall -Wextra -g -MMD -MP
+OBJS = main.o student.o
+DEPS = $(OBJS:.o=.d)
+
+grade: $(OBJS)
+	$(CC) $(OBJS) -o $@
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+-include $(DEPS)
+.PHONY: clean
+clean:
+	rm -f grade *.o *.d
+```
+
+</details>
 
 ## 本章总结
 

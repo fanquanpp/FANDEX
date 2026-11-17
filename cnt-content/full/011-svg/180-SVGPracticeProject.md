@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 综合运用：仪表盘、环形进度、动画 Logo、数据可视化。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'svg/140-SVGAnimationBasics'
   - 'svg/150-SVGJavaScriptInteraction'
@@ -842,6 +842,41 @@ prerequisites:
   });
 </script>
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 预测题：`<circle pathLength="100" stroke-dasharray="70 100" stroke-dashoffset="25" />` 的进度环显示百分之几？dashoffset 在这里起了什么作用？
+
+2. 修 Bug 题：饼图扇形 `d="M cx cy L p1 A r r 0 0 1 p2"` 结尾忘了 `Z`，填充和描边各会出什么问题？
+
+3. 概念自问：折线图用 polyline 还是 path？什么需求出现时必须换成 path？
+
+4. 手写题：用 JS 把 [10, 40, 25] 画成三根柱（rect），数据更新到 [30, 20, 50] 时高度随之变化——写出 update 分支的核心循环。
+
+<details>
+<summary>参考答案（先自己写，再展开对照）</summary>
+
+1. 45%。这道题不能直觉相减：dasharray="70 100" 的完整 pattern 长 170（70 实 + 100 空），dashoffset=25 让路径起点从 pattern 的第 25 单位进入——起点落在实段内（25 < 70），走到 p = 45 时相位到达 70 进入空段；而 pattern 剩下的实段部分要等相位绕满 170 才出现，已超出 pathLength=100 的范围。所以可见弧是「起点起的 45 单位」，缺口在末端——与 040 篇「正的 stroke-dashoffset 让实线段从末端缩回」一致。把 dashoffset 归零才是 70%；减小 dashoffset 可见段变长，配合动画就是画进度的标准手法（项目一与附录）。
+
+2. fill 会按"终点直连起点"隐式闭合，扇形看起来仍是实心的；但 stroke 只描写的部分，缺 p2 到圆心的那条半径边，且描边边界与填充边界不一致。务必写 Z（项目七与附录）。
+
+3. 纯折线用 polyline 的 points 最省事；出现"线下区域填充"（面积图）、需要 pathLength/虚线起止精确控制或与弧线混排时换 path（项目六与附录）。
+
+4. 参考：
+
+   ```js
+   bars.forEach((bar, i) => {
+     const h = (data[i] / max) * 150;
+     bar.setAttribute('height', h);
+     bar.setAttribute('y', 180 - h);
+   });
+   ```
+
+   考点：柱子从底边向上长，y 要同步改成「底边 y − h」（上面的 180 是自设画布的示意底边；项目二实际底边是 y=324，即刻度 0 所在的位置，替换数值即可）；只更新现有节点而不是重建，事件与过渡得以保留（项目二与 150 篇 enter/update/exit）。
+
+</details>
 
 ## 8. 总结
 

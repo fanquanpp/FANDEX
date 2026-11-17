@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以"修过的 bug 一个月后复发"为主线学 go test：表驱动测试、子测试与并行、基准测试 b.Loop、httptest 与接口 mock、覆盖率、Go 1.24 测试工具箱（t.Chdir/synctest），附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/360-UnitTestBenchmark'
   - 'go/370-GoFuzzing'
@@ -232,7 +232,7 @@ func TestFileWrite(t *testing.T) {
 }
 ```
 
-Go 1.24 还带来两件新工具：`go test -json` 让 CI 以结构化流消费测试结果（构建输出同样 JSON 化）；实验性的 `testing/synctest` 能在"气泡"里测试并发代码，时间虚拟化，不用真等 5 秒就能测超时逻辑（`synctest.Run(func() { ... })` + `synctest.Wait()`）。模糊测试（`FuzzXxx` + `go test -fuzz`）是发现解析器边角 bug 的利器，系统展开见 [Go 模糊测试](/go/370-GoFuzzing)。
+Go 1.24 还带来两件新工具：`go test -json` 让 CI 以结构化流消费测试结果（构建输出同样 JSON 化）；`testing/synctest`（Go 1.25 转正）能在"气泡"里测试并发代码，时间虚拟化，不用真等 5 秒就能测超时逻辑（入口是 `synctest.Test(t, func(t *testing.T) { ... })`，气泡内用 `synctest.Wait()` 等待所有 goroutine 暂停，Go 1.27 又补了 `synctest.Sleep`）。模糊测试（`FuzzXxx` + `go test -fuzz`）是发现解析器边角 bug 的利器，系统展开见 [Go 模糊测试](/go/370-GoFuzzing)。
 
 两件工程上的收尾：集成测试用构建标签隔离——文件头写 `//go:build integration`，日常 `go test ./...` 自动跳过，CI 单独 `go test -tags=integration ./...` 跑；测试结果默认有缓存（输入未变直接显示 cached），要强制重跑用 `go test -count=1`，排查"测试是不是真的在跑"时常用。
 

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 以「排行榜要按分数、名字、等级排序，为每个字段写一个函数？」引入，五段拆解最小 Lambda [](){}，讲透与 std::sort 的配合（附预期输出）、捕获列表 [] / [=] / [&] / [x] 的取值时机与悬垂引用陷阱（-Wshadow 真实警告与逃逸作用域的运行时事故），附 'x' is not captured、capture of non-variable、use of deleted function 三类真实报错的调试实录，mutable 与尾置返回类型各一句话。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/070-LambdaCaptureDetailed'
   - 'cpp/080-CppReferenceTypes'
@@ -337,6 +337,53 @@ Coco 772
 - Lambda 表达式：https://en.cppreference.com/w/cpp/language/lambda
 - std::sort：https://en.cppreference.com/w/cpp/algorithm/sort
 - std::function：https://en.cppreference.com/w/cpp/utility/functional/function
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：只看 `[](){}()` 这个空 lambda 立即调用，把它的五个组成部分各写一行注释（捕获列表、参数表、返回类型、函数体、调用）；然后默写一个「按分数从高到低排序」的 `std::sort` + lambda 调用（`std::vector<std::pair<std::string,int>> students`）。
+
+**提示**：排序比较器是一个「比较两个元素」的谓词——升序写 `a.second < b.second`，降序反过来；`std::sort` 要求比较器满足严格弱序，别写成 `<=`。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+[](){}();
+// [] 捕获列表（这里为空，不用外部变量）
+// () 参数表（空）
+// {} 函数体（空）
+// 末尾的 () 立即调用它
+// 返回类型省略，由函数体推导
+
+std::sort(students.begin(), students.end(),
+          [](const auto& a, const auto& b) { return a.second > b.second; });
+```
+
+要点自查：比较器用 `>` 是降序；lambda 的本质是「匿名函数对象」——第 3 节与算法配合的场景里，比较器是它最高频的用法。
+
+**任务二**：判断下面三个 lambda 各能不能编译、为什么——把「捕获列表就是使用外部变量前必须登记」这条规则说出来：
+
+```cpp
+int bonus = 10;
+auto f1 = []() { return bonus; };          // (1)
+auto f2 = [bonus]() { return bonus; };     // (2)
+auto f3 = [&]() { bonus += 1; };           // (3)
+```
+
+**提示**：(1) 空捕获列表却用了外部变量；(2) 按值捕获是副本；(3) `[&]` 全部按引用——改的是原变量本身。
+
+**参考实现**（先自己写完再看）：
+
+```text
+(1) 编译失败：空捕获列表 => lambda 内看不到 bonus（需要先登记再使用）。
+(2) 合法：bonus 是构造时拷入闭包的副本，函数内改它不影响外部。
+(3) 合法：按引用捕获，bonus += 1 直接改外部原值。
+规则：lambda 里每用到一个外部变量，捕获列表都要给出「按值 [=] 还按引用 [&]」的交代；
+默认模板是「就地用谁捕获谁」，[=]/[&] 全量捕获留给短小的局部代码。
+```
+
+要点自查：捕获列表不是语法装饰，是「闭包要用哪些外部状态」的显式声明；按值副本与按引用原值的差异会在下一节的取值时机里放大——先记住登记规则。
 
 ## 13. 自我检查
 

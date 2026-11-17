@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以问题驱动方式讲解 Git 合并冲突的产生原理、冲突标记解读、完整解决流程与预防策略，覆盖 merge/rebase/cherry-pick 冲突场景，适合零基础学习者。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -249,6 +249,36 @@ git merge-base main feature
 | 解决冲突时误删对方代码 | 功能上线后缺失对方的功能 | 裁决时只留了自己那份 | 融合双方内容，而不是简单二选一；重大合并建议先讨论 |
 
 ---
+
+## 七、动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：`git pull` 后 `config.py` 冲突，文件里出现了三行标记。遮住参考实现，答出：三行标记各代表哪一方的内容？写出「裁决 → 标记已解决 → 收尾提交」的完整命令链。
+
+**任务二**：两个场合写命令——（a）合并进行到一半想整体放弃；（b）你想让某冲突文件直接整体采用**对方**分支的版本。
+
+**提示**：三行标记是 `<<<<<<<`、`=======`、`>>>>>>>`；（b）考 `--theirs` 的用法，别和 `git checkout 分支名` 混淆。
+
+**参考实现**（先自己写完再看）：
+
+```text
+<<<<<<< HEAD 到 ======= 之间：当前分支（我方）的改动
+======= 到 >>>>>>> 分支名 之间：被合并进来一方（对方）的改动
+```
+
+```bash
+# 任务一：编辑 config.py，融合双方内容并删除全部冲突标记，然后
+git add config.py
+git commit            # 合并场景收尾（rebase 场景则是 git rebase --continue）
+
+# 任务二
+git merge --abort                     # (a) 放弃本次合并，回到合并前
+git checkout --theirs config.py       # (b) 整个文件采用对方版本，随后 add
+git add config.py
+```
+
+要点自查：冲突的本质是「双方改了同一处且不一致」，Git 把裁决权交还给你，标记行本身必须全部删除；`--ours`/`--theirs` 在 merge 中我方永远是 HEAD 一侧；解决到一半的编辑想保留就继续走 add+commit，想全部放弃才 `--abort`；预防永远比解决便宜——小步提交、提交前先 pull。
 
 ## 八、一句话记忆
 

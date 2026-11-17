@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'BigQuery 命令实战：bq 工具、数据集与表管理、查询作业、数据加载导出与流式插入。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -706,3 +706,32 @@ bq query \
   --use_legacy_sql=false \
   'SELECT * FROM my_dataset.users WHERE age > 18'
 ```
+
+---
+
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. BigQuery 的三层结构（项目/数据集/表）与计费模型是什么？为什么说「查询便宜、扫描贵」？
+2. bq 的默认项目与位置怎么设置？为什么数据集建错区域后查询要显式 `--location`？
+3. 默写：建数据集、建按天分区表、只查某一天分区的三步命令。
+4. 分区裁剪（partition pruning）靠什么生效？「对分区字段套函数」会怎样？
+5. 加载与流式插入的选择标准是什么？流式插入的费用特征是什么？
+6. 视图与物化视图的差异是什么？各自的成本与刷新语义？
+7. 降低扫描量的两个工程手段是什么（提示：分区 + 聚簇；`--maximum_bytes_billed`）？
+8. 外部查询（EXTERNAL_QUERY/BigLake）适合什么场景，不适合什么场景？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 项目 > 数据集 > 表。按扫描量计费（每月免费额度外约 $5-7/TB 量级，以定价页为准）+ 存储费——成本与 SQL 写得好坏直接挂钩：SELECT * 全表扫描按整表算钱。
+2. `gcloud config set project <项目>`；数据集有位置属性，跨位置查询会报错，显式 `bq --location <区域>` 指定执行位置。
+3. `bq mk --dataset my_dataset`；`bq mk --table --time_partitioning_type=DAY --time_partitioning_field=timestamp my_dataset.events <schema>`；`bq query --use_legacy_sql=false 'SELECT ... WHERE DATE(timestamp)="2026-07-31"'`。
+4. 靠 WHERE 里出现裸的分区字段过滤。套函数后优化器无法裁剪分区，扫描退化为全表——分区过滤要用 `DATE(timestamp)` 可裁剪的等值/范围写法或 `_PARTITIONTIME` 伪列。
+5. 批量加载（bq load，免费）适合文件导入；流式插入按 GB 收流式费、适合实时看板。能批量就别流式。
+6. 视图是保存的查询，每次都重新计算、成本随查询走；物化视图预计算存储，自动增量刷新，读便宜写（维护）有成本。
+7. 分区 + 聚簇让扫描只碰相关数据块；`--maximum_bytes_billed` 给查询设扫描量硬上限（超限直接拒绝），防止写错 SQL 花大钱的保险丝。
+8. 适合低频联邦查询（CloudSQL/外部 Parquet 的少量 join）；不适合高频大数据量查询——外部数据不走 BigQuery 列式存储与缓存，性能与成本都吃亏，大数据量先 load/物化。
+
+</details>

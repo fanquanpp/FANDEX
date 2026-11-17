@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: '以"三个真实使用场景"为主线讲解 gh gist 系列命令：快速分享代码、备份个人笔记、管理与复用片段，涵盖创建、查看、编辑、克隆、重命名与删除，配以原理讲解、错误对策。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -247,6 +247,37 @@ gh gist list --json visibility --jq '[.[] | select(.visibility == "public")] | l
 | 无权限编辑他人 gist | `not found` 或权限错误 | 只能编辑自己的 gist | 对他人片段先 `clone` 修改再作为新 gist 创建 |
 
 ---
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：两种创建各写一条——（a）把 `notes.md` 以**私密**方式创建并写描述；（b）把上一条命令的输出直接变成 gist（管道方式），内容是 JS 脚本，指定文件名 `script.js`。
+
+**任务二**：写出三条管理命令——（a）列出自己的全部 gist；（b）查看某个 gist 内容；（c）浏览器打开它。
+
+**任务三**：判断——私密（secret）gist 是「加密」的吗？别人拿到链接能看吗？ gist 能不能像仓库一样克隆？
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 任务一
+gh gist create notes.md -d "学习笔记备份"           # 默认即私密
+cat script.js | gh gist create -f script.js          # 管道创建，-f 给文件名
+
+# 任务二
+gh gist list
+gh gist view 8f1a2b3c4d5e6f7a8b9c0d1e
+gh gist view 8f1a2b3c4d5e6f7a8b9c0d1e --web
+
+# 任务三
+# 不是加密——secret 只是「不列入公开搜索」，链接拿到就能看；
+# 真正要保密的内容（密钥、密码）绝不能进任何 gist。
+# 能：每个 gist 本质是一个 Git 仓库，gh gist clone <ID 或 URL>
+# 即可克隆，改完 push 还能更新。
+```
+
+要点自查：`--public` 与默认私密的真实区别是**可搜索性**而非访问控制——两者都是「知链接者可见」；管道创建忘写 `-f` 会得到无名文件；gist 的定位是「轻量片段」：分享代码、备份配置、嵌入网页，超过它就建仓库。
 
 ## 一句话记忆
 

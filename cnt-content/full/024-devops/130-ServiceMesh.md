@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 服务网格：Istio架构、流量管理、安全策略、可观测性与Envoy代理
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'devops/020-ShellScriptProgramming'
   - 'devops/030-PackageManagementRepository'
@@ -70,14 +70,20 @@ Istio 1.5+ 将 Pilot、Citadel、Galley 合并为 istiod：
 - **Citadel**：证书管理、mTLS
 - **Galley**：配置验证和分发
 
+### 2.4 ambient 模式：sidecar 的下一代形态
+
+Sidecar 模式的主要代价是每 Pod 一个代理的资源开销与升级复杂度（升级 Istio = 重建所有注入 Pod）。Istio 的答案是 **ambient 模式**（1.24 起GA，2024-11）：数据面不再给每个 Pod 注入 Envoy，而是在每个节点跑一个轻量的 **ztunnel**（L4 mTLS 与遥测），需要 L7 路由时再按命名空间部署 **waypoint** 代理。两个模式怎么选：起步与 L4 场景用 ambient（资源省、升级与 Pod 解耦），需要细粒度 L7 流量治理的场景为对应命名空间开 waypoint。本篇其余示例（VirtualService 等 API）在两种模式下通用。截至 2026-11 Istio 已演进到 1.3x 系列。
+
 ## 3. 流量管理
+
+流量管理是网格最直接的收益来源：路由、灰度、熔断、重试这些原来要 SDK 实现的能力，全部下沉为声明式 YAML。两个对象各管一段——**VirtualService 定"请求怎么走"（条件路由/按权重分流/重试超时），DestinationRule 定"到了之后怎么办"（负载均衡策略/连接池/熔断/子集定义）**，子集（subset）是两者之间的桥。
 
 ### 3.1 VirtualService
 
 定义请求路由规则：
 
 ```yaml
-apiVersion: networking.istio.io/v1beta1
+apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
   name: my-service
@@ -109,7 +115,7 @@ spec:
 定义目标服务的策略（负载均衡、连接池等）：
 
 ```yaml
-apiVersion: networking.istio.io/v1beta1
+apiVersion: networking.istio.io/v1
 kind: DestinationRule
 metadata:
   name: my-service
@@ -142,7 +148,7 @@ spec:
 
 ```yaml
 # 90% v1, 10% v2
-apiVersion: networking.istio.io/v1beta1
+apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
   name: canary
@@ -211,7 +217,7 @@ spec:
 Istio 自动为服务间通信启用 mTLS：
 
 ```yaml
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: PeerAuthentication
 metadata:
   name: default
@@ -231,7 +237,7 @@ spec:
 ### 4.2 授权策略
 
 ```yaml
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: httpbin-policy
@@ -257,7 +263,7 @@ spec:
 ### 4.3 网关
 
 ```yaml
-apiVersion: networking.istio.io/v1beta1
+apiVersion: networking.istio.io/v1
 kind: Gateway
 metadata:
   name: my-gateway
@@ -315,7 +321,7 @@ Istio 自动为请求添加追踪头并上报：
 ### 5.3 访问日志
 
 ```yaml
-apiVersion: telemetry.istio.io/v1alpha1
+apiVersion: telemetry.istio.io/v1
 kind: Telemetry
 metadata:
   name: default
@@ -353,3 +359,11 @@ spec:
 | 功能     | 最全面 | 核心功能       | 核心功能       |
 | 性能开销 | 较高   | 低             | 中             |
 | 社区     | 最大   | 活跃           | 活跃           |
+
+## 自检
+
+- 遮住 1.1 的两个通信图，画出"传统直连"与"网格模式"的数据路径，并说出网格三收益（流量管理/安全/可观测性）分别由哪类组件实现。
+- VirtualService 与 DestinationRule 各管什么？subset 由谁定义、谁引用？遮住 YAML 只看这句话自己补出一个 90/10 金丝雀配置的骨架。
+- PeerAuthentication 四种 mTLS 模式默写，并回答：迁移期该用哪个模式、收口后用哪个？
+- ambient 与 sidecar 模式的取舍：ztunnel 与 waypoint 分别负责 L 几？为什么说 ambient 让"升级 Istio"不再等于"重建所有 Pod"？
+- 故障注入（延迟/中断）用于什么演练？它和你熟悉的压测区别在哪？

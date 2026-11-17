@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS 视觉格式化模型速查：渲染流水线、层叠上下文、包含块、BFC/IFC——渲染与布局规则的深读-速查双层中的速查层。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'css/630-CSSInJS'
   - 'css/560-CSSArchitectureMethodology'
@@ -423,3 +423,29 @@ HTML 结构与语义，见 006-html5 模块。
 - 盒模型：`css/050-CSS3BoxModelDetailed`；
 - 优先级：`css/170-PriorityCalculation`；
 - 层叠上下文：`css/230-StackingContext`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住「理论速查表」自己答，再对照参考实现。
+
+**任务一**：口答四基石各管什么——层叠、盒模型、格式化上下文、包含块与定位；每个基石配一个「只有理解它才能解释」的现象。
+
+**任务二**：把四个现象归因——同事报了四个 bug：「宽度设 200px 却占了 250px」「footer 突然被推下去 40px」「z-index 999 被压住」「fixed 按钮跟着滚动」。用本篇的框架给出每个 bug 的第一排查动作。
+
+**提示**：任务一考「理论必须能解释现象」（第 1 节的定位）；任务二是四基石的实战映射——盒模型查 box-sizing、margin 穿透查 BFC（060 篇）、z-index 查层叠上下文（230 篇）、fixed 查 transform 祖先（220 篇）。
+
+**参考实现**（先自己写完再看）：
+
+```text
+/* 任务二归因 */
+/* 1. 占宽 250 = box-sizing: content-box（默认）：width 只算内容，
+      再加 padding/border —— 第一动作：查全局有没有 border-box 重置 */
+/* 2. footer 被推下 40px = 父子 margin 穿透（塌陷）：
+      第一动作：给容器建 BFC（flow-root）或加阻隔 */
+/* 3. z-index 999 被压住 = 不在同一层叠上下文内比较：
+      第一动作：逐层向上找创建上下文的祖先（opacity/transform 等） */
+/* 4. fixed 跟着滚 = 包含块被改写：
+      第一动作：查祖先链的 transform/filter/will-change */
+```
+
+验收点：任务二里四个现象若都先去改代码碰运气，各要花一小时；按「现象 → 基石 → 排查动作」走一遍各只需一分钟——理论框架的价值就是把调试变成映射而不是猜谜。

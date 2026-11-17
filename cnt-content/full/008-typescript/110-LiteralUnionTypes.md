@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 字面量类型、联合类型、可辨识联合的形式语义、类型论基础与穷尽性检查的工程实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/100-InterfaceTypeAlias'
   - 'typescript/220-FunctionGeneric'
@@ -2168,3 +2168,11 @@ function get_status_message(status: Status): string {
     }
 }
 ```
+
+## 自检
+
+- 遮住 3.1 节代码，自己写出「把 `'idle' | 'loading' | 'success'` 变成类型、再做成函数参数」的完整示例，并解释字面量类型为什么能挡住拼写错误。
+- 联合类型的「或」与交叉类型的「且」分别怎么写？属性冲突时交叉类型的成员会变成什么？
+- 什么是可辨识联合？判别字段（如 `status`）在收窄里起什么作用？
+- 遮住 4.3 节，解释穷尽性检查为什么依赖 `never`：新增一个联合成员而忘了处理时，报错出现在哪里？
+- `as const` 对字面量推断的作用是什么？`let mode = 'dev'` 与 `const mode = 'dev'` 推断出的类型差在哪？

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: WebSocket 协议帧格式与心跳机制：帧结构、控制帧、数据帧与 Ping/Pong。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/340-DNSFlow'
   - 'cs-fundamentals/350-CDNPrinciple'
@@ -191,3 +191,11 @@ console.log({ fin, opcode, masked, len, payload: unmasked.toString() });
 - 掩码是防代理缓存投毒的安全设计而非加密；方向、长度上限（控制帧 125）都是协议硬约束。
 - WS 在 TCP 字节流上定义了帧边界，自研服务端仍需完整实现缓冲、分片重组与 UTF-8 校验。
 - 工程侧关注点在心跳参数（按链路超时折半）、重连退避、发布期平滑迁移，以及 wss 场景下的 TLS 与证书管理。
+
+## 自检
+
+- 遮住握手小节的请求/响应报文，先自己写出升级握手需要的四个关键要素（`Upgrade: websocket`、`Connection: Upgrade`、`Sec-WebSocket-Key`、响应 101 + `Sec-WebSocket-Accept`），再对照。
+- 遮住 Accept 计算小节，先自己写出 `Base64(SHA-1(Key + GUID))` 的固定 GUID，再回答：这一步防的是什么（普通 HTTP 代理误应答），为什么它不是加密？
+- 遮住帧头布局图，先默写前两字节的字段划分（FIN/Rsv/opcode、MASK/长度），再回答：为什么客户端到服务器的帧必须带掩码（防代理缓存投毒），服务器下行却不用？
+- 遮住三级长度编码，自己写出 125、126、127 三个临界值的含义，并说出控制帧为什么上限 125。
+- 遮住 Ping/Pong 小节，回答：心跳的两重作用是什么（探活 + 防中间设备掐断空闲连接）？心跳间隔按什么经验规则折半？

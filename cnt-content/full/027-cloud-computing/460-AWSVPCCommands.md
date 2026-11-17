@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'VPC 学习笔记：从零搭一个"公有子网 + 私有子网"的生产形网络，理解路由、网关、安全组每一层在干什么。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/220-CloudNetworkService'
   - 'cloud-computing/450-AWSRDSCommands'
@@ -341,11 +341,26 @@ EIP/实例 → NAT 网关 → IGW 分离并删除 → 子网（先解除路由�
 | EIP 闲置没释放 | 每月固定一笔小账单 | 用完 release |
 | 删除 VPC 报依赖错误 | 里面还有隐藏资源 | 先 `describe-subnets`/`describe-internet-gateways` 清单式排查 |
 
-## 自检
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
 
 1. 一个子网里既有能上公网又有不能上公网的实例，问题出在哪一层？（提示：安全组 vs 路由）
 2. 数据库安全组的入站规则应该写 IP 还是引用安全组？为什么？
 3. 私有子网访问 S3 有几种路径？成本从高到低排个序。
+4. 默写：创建一条「只允许来自应用安全组的 3306 入站」的命令骨架。
+5. 路由表与 VPC 流日志各回答什么问题？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 出在实例层的安全组：同一子网共享同一路由表与 NACL，出网能力却在实例间不同，只能是各自 ENI 挂的安全组规则不同——路由层不按实例区分。
+2. 引用安全组（source-group）。后端实例随扩缩容漂移，IP 白名单要人肉维护且写不住未来地址；安全组引用自动跟随实例集合，天然最小权限。
+3. NAT 网关（小时费 + 每 GB 数据处理费，最贵）> Interface Endpoint（PrivateLink，按小时 + 数据费）> Gateway Endpoint（S3/DynamoDB 专属，免费）。大流量的私有子网访问 S3 一律配 Gateway Endpoint。
+4. `aws ec2 authorize-security-group-ingress --group-id sg-db --protocol tcp --port 3306 --source-group sg-app`。
+5. 路由表回答「这个目的地的流量走哪条路」（有没有 igw/nat/endpoint 路由）；流日志回答「流量实际发生了什么」（ACCEPT/REJECT、方向、字节数）——被拒流量在流日志里留下 REJECT 记录，用来定位安全组/NACL 拦截。
+
+</details>
 
 ## 练习
 

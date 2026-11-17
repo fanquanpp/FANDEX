@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 用一个真实接口场景学会 record：一行声明替代 30 行样板，紧凑构造器做校验，List.copyOf 防御可变字段，再看字节码与序列化层面的底层行为。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/800-JavaSealedClassesPatternMatching'
   - 'java/200-EqualsHashCodeContract'
@@ -213,7 +213,7 @@ p.tags().add("热门");   // 运行时 UnsupportedOperationException，改不动
 
 ## 6. 实战：放进 Spring Boot 接口
 
-2026 年的 Spring Boot 3.x 项目里，record 是接口层 DTO 的默认选择，框架支持已经是"开箱即用"：
+Spring Boot 3.x/4.x 项目里（2026-11 时点的主线是 Boot 4.0，基于 Framework 7），record 是接口层 DTO 的默认选择，框架支持已经是"开箱即用"：
 
 ```java
 @RestController
@@ -352,3 +352,13 @@ public record CartSnapshot(String userId, List<String> itemIds, Date createdAt) 
 - [密封类与模式匹配](/java/800-JavaSealedClassesPatternMatching)：record（乘积类型）+ sealed（和类型）+ switch 解构，Java 的代数数据类型全家桶；
 - [equals 与 hashCode 契约](/java/200-EqualsHashCodeContract)：想知道自动生成的 equals 在 HashMap 里怎么工作的，读它；
 - [Spring Boot 数据访问](/java/850-SpringBootDataAccess)：record 作为投影类配合 JDBC/JPA 的工程用法。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 写出含两个字段的 record 声明，并说出编译器自动生成了哪些成员。——`record Point(int x, int y) {}`；私有 final 字段、全参构造器、访问器 x()/y()（不是 getX）、equals/hashCode/toString。
+2. record 的紧凑构造器适合做什么？写出参数归一化的骨架。——校验与归一化；`record Range(int lo, int hi) { Range { if (lo > hi) throw new IllegalArgumentException(); } }`（紧凑形参直接赋值，无需 this.x = x）。
+3. record 能继承类或被继承吗？能实现接口吗？——不能 extends（隐式继承 java.lang.Record），不能被继承（隐式 final）；可以实现接口。
+4. record 与 Lombok @Data 的三条本质差异？——语言级 vs 编译器插件；不可变 vs 可变；语义受规范保障（equals 全组件、final）vs 生成逻辑由插件决定。
+5. 判断：record 组件是可变对象（如 List）时它就是不可变的。——不对；record 的字段引用不可变，但对象内部可变，equals 用 List.equals 仍一致；要不可变需在紧凑构造器里 List.copyOf 防御拷贝。

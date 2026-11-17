@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: GC算法与垃圾回收器
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/500-ThreadPoolExecutorPractice'
   - 'java/590-JVMClassLoadingMechanism'
@@ -69,7 +69,8 @@ prerequisites:
 | JDK 21 | 2023 | 分代 ZGC（`-XX:+ZGenerational`）正式 GA | 分代 + 低延迟双优 |
 | JDK 23 | 2024-09 | 分代 ZGC 成为默认模式（JEP 474） | 大堆低延迟开箱即用 |
 | JDK 24 | 2025-03 | 移除 ZGC 非分代模式（JEP 490） | 实现简化，只保留分代 |
-| JDK 25 | 2025-09 | Generational Shenandoah | 代际假说推广到 Shenandoah |
+| JDK 25 | 2025-09 | Generational Shenandoah 正式（JEP 521）；紧凑对象头正式（JEP 519，GC 元数据成本显著下降） | 代际假说全收集器化；小对象堆密度提升 |
+| JDK 26 | 2026-03 | G1 减少同步提升吞吐（JEP 522） | 默认收集器的吞吐短板针对性优化 |
 
 ### 设计动机的三个维度
 
@@ -910,3 +911,13 @@ public final class NativeResource implements AutoCloseable {
 - **Stanford CS140 Operating Systems**：内存分配与回收章节。
 - **CMU 15-440 Distributed Systems**：分布式系统中的内存与状态管理。
 - **Berkeley CS162 Operating Systems**：GC 与运行时系统讲座。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 说出标记-清除、标记-复制、标记-整理三种算法的空间代价与停顿特征，并指出各自对应的典型收集器。——标记-清除：有碎片、停顿中清除；标记-复制：牺牲一半空间（新生代 eden + 两 survivor 换来无碎片）；标记-整理：无碎片但移动对象成本高；对应 Serial/Parallel 的分代组合、CMS（清除）、Serial Old/Parallel Old（整理）、G1/ZGC/Shenandoah 用复制（region 化）。
+2. G1 是什么意义上的"优先回收垃圾最多的 region"？为什么叫 Garbage-First？——把堆划分为等大 region，每轮混合回收优先挑回收收益（垃圾占比）最高的 region；这样用有限的停顿预算先收回最多空间。
+3. 三色标记的两道写屏障分别应对什么问题？CMS/G1 与 ZGC/Shenandoah 各用哪一道？——增量更新（黑色对象新增白色引用时把白染灰）与 SATB（快照开始后黑到白引用改写时保留旧引用）；CMS/G1 用增量更新（G1 部分阶段 SATB），Shenandoah/ZGC 用 SATB。
+4. 分代 ZGC 从哪个 JDK 起成为唯一模式？非分代开关发生什么？——JDK 24（JEP 490）起移除非分代模式；`-XX:-ZGenerational` 等旧开关失效，JVM 拒绝启动。
+5. 判断：JDK 26 对 G1 的改进（JEP 522）方向是什么？——减少同步开销提升吞吐（而非继续压停顿），补 G1 在吞吐维度的短板。

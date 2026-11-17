@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 手写 @font-face 的四个坑、fonts 配置与 fontProviders 全表、Font 组件与预加载、回退字体与 CLS，以及中文站点多字重子集策略
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -187,6 +187,54 @@ preload 的使用纪律：**只给首屏关键字体加 `preload`**。每个 pre
 ## 8. 一句话记忆
 
 字体是门面，交给 Fonts API 这个专业团队：你只声明「用哪个（provider）、叫什么（name）、变量名是什么（cssVariable）」——托管、回退对齐、预加载全是它的活；中文先自管子集，再入伙。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写最小 fonts 配置：从 Google Fonts 接入 Inter，注入 CSS 变量 `--font-inter`，字重 400/500/700，拉丁子集。
+
+   参考答案（先自己写，再对照）：
+
+   ```js
+   // astro.config.mjs
+   import { defineConfig, fontProviders } from 'astro/config'
+
+   export default defineConfig({
+     fonts: [
+       {
+         provider: fontProviders.google(),
+         name: 'Inter',
+         cssVariable: '--font-inter',
+         weights: [400, 500, 700],
+         subsets: ['latin'],
+       },
+     ],
+   })
+   ```
+
+   验收点：三个必填项是 `name`、`cssVariable`、`provider`；字体文件构建期下载进产物自托管，站点运行期不依赖第三方域名。
+
+2. 默写布局里启用字体并说明 preload 的使用纪律：哪些字体该加 `preload`？
+
+   参考答案（先自己写，再对照）：
+
+   ```astro
+   ---
+   import { Font } from 'astro:assets'
+   ---
+   <head>
+     <Font cssVariable="--font-inter" preload />
+   </head>
+   ```
+
+   纪律：只给首屏关键字体加 `preload`。每个 preload 都是"无论用户会不会看到都要提前下载"的强承诺，正文多种字重全部 preload 等于把字体优化变成字体灾难；判断标准是"首屏用户第一眼看到的文字用什么字体"。
+
+3. 手写 `@font-face` 的四个坑分别是什么？Fonts API 如何逐个化解？
+
+   参考答案（先自己写，再对照）：
+
+   坑与解法一一对应：字体文件要从第三方域名加载（API 构建期下载自托管，无第三方请求）；回退字体度量不匹配导致布局跳动（API 自动生成度量对齐的优化回退，消除 CLS）；忘了写 `font-display` 与预加载（API 自动输出）；多字重配置繁琐易漏（API 用 `weights` 数组声明）。
 
 ## 参考与致谢
 

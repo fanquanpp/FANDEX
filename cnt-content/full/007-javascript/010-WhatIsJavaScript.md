@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 面向完全零基础读者，讲清 JavaScript 的定位、能做什么、在哪里运行，并写出第一段可执行的代码。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-11-16'
 related:
   - 'javascript/020-JavaScriptOverviewRuntimeEnv'
   - 'javascript/520-NodeJsInstall'
@@ -119,6 +119,24 @@ Uncaught ReferenceError: abc is not defined
 1. **大小写敏感**：`console.log` 写成 `Console.log` 会直接报错。`userName` 和 `username` 是两个不同的名字；
 2. **中英文标点混用**：引号、括号、分号必须是英文半角。中文引号 `"..."` 会让引擎直接无法解析；
 3. **改了代码没生效**：控制台里的代码是临时的，刷新页面就没了；真实项目代码要写进 `.js` 文件（这一步在下一篇与 [Node.js 安装](/javascript/520-NodeJsInstall) 之后展开）。
+
+## 教学自检
+
+用法：遮住上面"动手环节"的示例代码，先自己写一遍再对照；下面四问答得出，本篇就算过关。
+
+1. 不看正文，用一句话说清 HTML、CSS、JS 三层的分工，并各举一个例子；
+2. 打开控制台写一个函数 `double(n)`，返回 `n` 的两倍，并用 `console.log` 验证 `double(21)`；
+3. 故意把 `console` 拼成 `consol` 运行，读出报错的三要素（类型、消息、位置）各是什么；
+4. `document`、`fetch`、读写文件这三种能力分别属于语言核心还是哪个运行环境？
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：HTML 管页面上有什么（标题、按钮），CSS 管长什么样（颜色、布局），JS 管怎么动（点击弹窗、表单校验）；
+- 第 2 问：`function double(n) { return n * 2; }` 然后 `console.log(double(21))` 输出 42——定义、参数、return、调用四步走全；
+- 第 3 问：类型是 `ReferenceError`（引用了不存在的名字），消息是 `consol is not defined`，位置在报错末尾的文件与行号；
+- 第 4 问：三者都是运行环境能力，不属于语言核心——`document` 与 `fetch` 属于浏览器环境（Node 18+ 也有 `fetch`），读写文件属于 Node.js 环境；语言核心只有变量、函数、循环这些。
+</details>
 
 ## 下一步
 

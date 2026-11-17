@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 列表、元组、字典、集合的操作与性能特征。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'python/142-CollectionsSpecializedContainers'
   - 'python/780-PythonCICD'
@@ -537,3 +537,13 @@ print(matrix["row2"]["col1"]) # 输出: 3
 ## 8. 延伸：collections 专用容器
 
 本文只讲四个内置容器。当代码里反复出现「缺键先造默认值」「计数再取排行」「两端进出队」这几种模式时，标准库 `collections` 提供了现成的专用容器（`defaultdict`、`Counter`、`deque`、`OrderedDict`、`namedtuple`），按场景的逐个对比见 [collections 专用容器](/python/142-CollectionsSpecializedContainers)。
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：一句话说出四种容器的定妆照——list、tuple、dict、set 各自的关键特征。要点：有序可变序列、有序不可变序列、键值映射（3.7+ 保持插入序）、无序去重集合；后两者要求元素可哈希。
+2. 预测题：`t = (1, 2)`；`t[0] = 9` 会发生什么？`t = ([1], 2)`；`t[0].append(9)` 呢？要点：前者 `TypeError`（tuple 不可变）；后者成功——tuple 里存的是「指向列表的引用」，引用本身不变，被指向的对象照样可变，「不可变的是引用不是内容」。
+3. 默写题：去重且保序写出两行代码。要点：`list(dict.fromkeys(items))`；`sorted(set(items))` 是去重但改序的常见错误答案。
+4. 排错题：`users = [{"age": 1}]`；`u = users.copy()`；`u[0]["age"] = 9` 后 `users[0]["age"]` 是多少？为什么？要点：是 `9`——浅拷贝只复制最外层容器，内层字典仍是同一对象；完全独立要 `copy.deepcopy`。
+5. 操作题：把 `[("a", 1), ("b", 2)]` 转成 `{"a": 1, "b": 2}`，再统计一个词列表里每个词的出现次数。要点：`dict(pairs)`；`Counter(words)`，别手写循环字典。

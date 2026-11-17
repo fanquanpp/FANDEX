@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 2024-2026 CSS 现代特性总览：if() 条件取值、text-box 文本裁剪、shape() 与 corner-shape、field-sizing、滚动条样式、跨文档视图过渡、@starting-style 等，附支持状态与渐进增强策略。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/390-ContainerQuery'
   - 'css/450-CascadeLayer'
@@ -97,7 +97,7 @@ padding: 8px; /* 回退：不支持 if() 的浏览器用这条 */
 padding: if(media(width < 700px): 4px; else: 8px);
 ```
 
-支持状态：2025 年起在 Chrome 137+ 可用；其他引擎的支持仍在推进中，生产使用前务必查 MDN/caniuse，并按上面的“回退声明在前”模式写。它与容器查询的 `@container style(...)` 是两套互补机制——`@container` 只能改**子元素**样式，`if()` 直接在**当前元素**的任意属性值里分支。
+支持状态：2025 年起在 Chrome 137+ 可用；截至 2026-11 仍是 Chromium 系独有（Safari、Firefox 均未落地，且未进入 Interop 2026 工作计划），生产使用前务必查 MDN/caniuse，并按上面的“回退声明在前”模式写。它与容器查询的 `@container style(...)` 是两套互补机制——`@container` 只能改**子元素**样式，`if()` 直接在**当前元素**的任意属性值里分支。
 
 ## 4. text-box：修剪文本框的“多余空隙”
 
@@ -125,7 +125,7 @@ h1 {
 
 典型收益：标题在卡片里“视觉垂直居中”、按钮文字上下留白对称、竖排标题与容器严丝合缝。
 
-支持状态：Chrome 128 / Safari 18.2 起可用，Firefox 落地较晚（以 MDN 为准）。它是纯视觉增强，不支持的浏览器只是“多留一点空隙”，可直接使用、无需 JS 回退。
+支持状态：Safari 18.2（2024-12）与 Chrome/Edge 133（2025-02）起可用，Firefox 的落地进度以 MDN/caniuse 为准。它是纯视觉增强，不支持的浏览器只是“多留一点空隙”，可直接使用、无需 JS 回退。
 
 ## 5. shape()：clip-path 有了可读、可动画的绘制语法
 
@@ -160,7 +160,7 @@ h1 {
 
 支持的命令族：`move` / `line` / `hline` / `vline` / `curve`（贝塞尔）/ `smooth` / `arc` / `close`，坐标可用 `px`、`%`、`calc()`。与 `clip-path: polygon()` 相比，`shape()` 能画曲线、能精确控制每个点的单位。
 
-支持状态：2025 年起 Chromium 系率先支持，其他引擎以 MDN/caniuse 为准；不支持时 `clip-path` 整条无效，先用 `polygon()` 或不裁剪做回退。
+支持状态：Chrome/Edge 135（2025-04）率先支持，Safari 18.4（2025-03/04）跟进；Firefox 的落地进度以 MDN/caniuse 为准。不支持时 `clip-path` 整条无效，先用 `polygon()` 或不裁剪做回退。
 
 ## 6. corner-shape：border-radius 的形状升级
 
@@ -211,7 +211,7 @@ h1 {
 }
 ```
 
-支持状态：2025 年起 Chromium 系率先支持，其他引擎以 MDN/caniuse 为准。注意两个函数都只统计“同一父元素下的元素子节点”，文本节点不计入。
+支持状态：2025 年起 Chromium 系率先支持，Safari 26.2（2025-12）与 Firefox 154（2026-08）跟进后，三大引擎均已可用。注意两个函数都只统计“同一父元素下的元素子节点”，文本节点不计入。
 
 ## 8. @function：自定义 CSS 函数（早期）
 
@@ -255,7 +255,7 @@ input {
 
 对 `input` / `textarea` / `select` 均有效。`lh`（行高单位）与 `ch`（"0"字宽单位）在这里特别好用——尺寸语义与文字直接挂钩。
 
-支持状态：Chromium 系 2024 年起支持；Firefox/Safari 跟进情况以 MDN 为准。回退表现友好：不支持时控件保持默认尺寸，功能不受影响。
+支持状态：Chrome/Edge 123（2024-03）起支持，Safari 26.2（2025-12）跟进；Firefox 的落地进度以 MDN/caniuse 为准。回退表现友好：不支持时控件保持默认尺寸，功能不受影响。
 
 ## 10. scrollbar-color / scrollbar-width：滚动条进入标准
 
@@ -293,7 +293,7 @@ input {
 
 视图过渡（View Transitions）让“新旧两个界面状态”之间自动生成补间动画。它分两个层级，成熟度不同：
 
-**同文档过渡（single-document）**——已经进入 Baseline（Chrome/Edge/Safari 均支持），适合 SPA 内的状态切换：
+**同文档过渡（single-document）**——三大引擎均已支持：Chrome/Edge 111（2023-03）率先，Safari 18（2024-09）、Firefox 144（2025-10）跟进，2025-10 起进入 Baseline Newly Available，适合 SPA 内的状态切换：
 
 ```js
 // 点击切换主题时，包一层过渡即可
@@ -308,7 +308,7 @@ document.startViewTransition(() => {
 }
 ```
 
-**跨文档过渡（cross-document）**——新兴能力，Chromium 系自 2024 年中起、Safari 较新版本已跟进，Firefox 以 MDN 为准。它服务于传统的**多页面跳转**（MPA）：无需 JS，只要两页都声明下面的规则，浏览器会在导航时自动衔接：
+**跨文档过渡（cross-document）**——新兴能力，Chromium 系自 2024 年中（Chrome 126）起支持，Safari 18.2（2024-12）跟进；Firefox 尚未落地（截至 2026-11，标准立场讨论仍在进行），使用前以 MDN/caniuse 复核。它服务于传统的**多页面跳转**（MPA）：无需 JS，只要两页都声明下面的规则，浏览器会在导航时自动衔接：
 
 ```css
 /* A 页（列表）与 B 页（详情）都写：启用跨文档过渡 */
@@ -365,19 +365,19 @@ document.startViewTransition(() => {
 
 ## 13. 已普及的基石特性速览
 
-以下特性均已 Baseline，本模块有独立文档，此处只列“一句话定位”供索引：
+以下特性均已 Baseline（Newly Available 及以上），本模块有独立文档，此处只列“一句话定位”供索引：
 
 | 特性 | 一句话定位 | 独立文档 |
 | --- | --- | --- |
 | 容器查询 `@container` | 组件按父容器尺寸响应，cqw/cqi 单位 | `css/390-ContainerQuery` |
-| 样式查询 `style()` | 按容器自定义属性值选择样式 | `css/390-ContainerQuery` |
+| 样式查询 `style()` | 按容器自定义属性值选择样式（Firefox 151、2026-05 起三大引擎可用） | `css/390-ContainerQuery` |
 | 层叠层 `@layer` | 声明式控制优先级，收纳第三方样式 | `css/450-CascadeLayer` |
 | 原生嵌套 + `&` | 无预处理器写嵌套选择器 | `css/480-CSSNativeNesting` |
 | `:has()` | 按后代/兄弟状态选父级与前辈 | `css/130-CSS3SelectorSystem` |
 | 逻辑属性 `margin-inline-*` | 书写模式无关的方向语义 | `css/420-LogicalProperty` |
 | `color-mix()` / oklch / 相对颜色 / `light-dark()` | 现代颜色系统 | `css/400-ModernColorSpace` |
-| 滚动驱动动画 `scroll()` / `view()` | 动画进度跟随滚动 | `css/350-CSSScrollDrivenAnimations` |
-| 锚点定位 `position-area` / `anchor()` | 纯 CSS 弹层定位 | `css/470-CSSAnchorPositioning` |
+| 滚动驱动动画 `scroll()` / `view()` | 动画进度跟随滚动（Firefox 159、2026-10-27 起默认启用，已进入 Baseline Newly Available） | `css/350-CSSScrollDrivenAnimations` |
+| 锚点定位 `position-area` / `anchor()` | 纯 CSS 弹层定位（Firefox 147、2026-01 起三大引擎可用） | `css/470-CSSAnchorPositioning` |
 | `@scope` | 选择器作用域限定（Don't/Scope 区间） | `css/710-ScopeAtRule` |
 | `@property` | 注册带类型/初始值/可动画的自定义属性 | `css/410-CSSVariableCustomAttribute` |
 | `text-wrap: balance` / `pretty` | 标题平衡折行、避免孤行 | `css/070-TextAndFontsBasics` |
@@ -420,9 +420,56 @@ flowchart LR
 6. 给 `textarea` 加 `field-sizing: content`，体验免 JS 自动增高；
 7. 进阶挑战：把本文的新特性按“基础层/增强层/前沿层”给自己当前的项目做一次分层盘点。
 
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 3、12 节的示例代码自己写，再对照参考实现。
+
+**任务一**：写一个由 `--density` 自定义属性驱动的紧凑模式——当 `--density` 等于 `compact` 时卡片内边距 8px，否则 24px。要求：必须先写一条普通 `padding` 声明兜底；分支用 `if()` 的 `style()` 条件加 `else` 兜底实现；`if(` 与括号之间不留空格。
+
+**任务二**：写一个对话框的「打开淡入、关闭淡出」——对话框默认隐藏（`display: none`），打开时透明度从 0 过渡到 1、向上位移 16px 归位，关闭时反向播放完毕才真正隐藏。只用 CSS：`transition` + `@starting-style` + `transition-behavior: allow-discrete`。
+
+**提示**：任务一的坑在「回退声明在前」——不支持 `if()` 的浏览器会把整条声明当无效丢弃，没有前一条普通声明就什么都没有（第 3 节）；任务二的关键是让 `display` 参与过渡，否则关闭瞬间没有「退出动画」可言（第 12 节）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.card {
+  padding: 24px; /* 回退：不支持 if() 的浏览器用这条 */
+  padding: if(
+    style(--density: compact): 8px;
+    else: 24px
+  );
+}
+
+/* 任务二 */
+.dialog {
+  display: none;
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.dialog.open {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s, transform 0.3s, display 0.3s allow-discrete;
+}
+
+/* 首次渲染 / 从 display:none 变为可见时，从这里开始过渡 */
+@starting-style {
+  .dialog.open {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+```
+
+验收点：任务二里 `.dialog.open` 自身的 `opacity: 1 / transform: translateY(0)` 是「停留状态」，`@starting-style` 只描述进入瞬间的起点；关闭时由于 `display` 带 `allow-discrete`，浏览器会等 opacity 过渡播完才切回 `none`，肉眼应看到完整淡出。
+
 ## 核心知识点
 
-> 一句话记住本文：Baseline 分三档看支持状态；`if()` 值内分支、`text-box` 裁文本空隙、`shape()`/`corner-shape` 形状升级、`field-sizing` 控件自适应、`scrollbar-color/width` 滚动条标准化已可用；`@function`、`sibling-count()`、跨文档视图过渡仍属新兴。
+> 一句话记住本文：Baseline 分三档看支持状态；`if()` 值内分支、`text-box` 裁文本空隙、`shape()`/`corner-shape` 形状升级、`field-sizing` 控件自适应、`scrollbar-color/width` 滚动条标准化已可用；`@function`、`if()` 的 Firefox/Safari 侧、跨文档视图过渡仍属新兴。
 
 - 判断可用性看 Baseline 档位，不背版本号；`@supports` 是标准落地手段；
 - `if()`：`style()/media()/supports()` 三种条件，必须先写回退声明；

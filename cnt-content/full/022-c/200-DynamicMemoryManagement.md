@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用「玩家人数运行时才知道」的积分榜场景掌握 malloc/calloc/realloc/free 四件套：分配即判 NULL、用 LeakSanitizer 当场抓泄漏、free 后置 NULL 纪律，附预测题与调试实录。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/210-ProcessMemoryLayoutAndErrors'
   - 'c/140-PointerDeep'
@@ -310,12 +310,34 @@ int main(void) {
 - malloc / calloc / realloc / free（cppreference C）：https://zh.cppreference.com/w/c/memory/malloc
 - malloc 手册页（含实现细节、陷阱与环境变量）：https://man7.org/linux/man-pages/man3/malloc.3.html
 
-## 12. 自我检查
+## 12. 遮码自检
 
-- 能不看资料写出「分配 n 个 int、判 NULL、用完 free、置 NULL」的完整片段；
-- 能说出 malloc 与 calloc 各适合什么场合，realloc 为什么必须用临时指针接返回值；
-- 能用 ASan 跑出自己的泄漏，并指出报告里「分配于哪一行」；
-- 能向同事讲清 free 后置 NULL 防住哪两类事故。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 不看资料写出「分配 n 个 int、判 NULL、用完 free、置 NULL」的完整片段。
+2. malloc 与 calloc 各适合什么场合？realloc 为什么必须用临时指针接返回值？
+3. 用 ASan 跑出自己的泄漏，指出报告里「分配于哪一行」的位置。
+4. free 后置 NULL 防住哪两类事故？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```c
+int *p = malloc((size_t)n * sizeof *p);
+if (p == NULL) {
+    /* 分配失败：降级或退出，绝不解引用 */
+    return -1;
+}
+/* ... 使用 p ... */
+free(p);
+p = NULL;
+```
+
+2. malloc 要快、要不清零的原始内存；calloc 要清零的内存（且对 n*size 的乘法溢出做检查）。realloc 可能整块搬迁：用 `p = realloc(p, ...)` 接时，若 realloc 返回 NULL，原地址已丢失——泄漏且悬空。临时指针接住返回值，成功才覆盖原指针。
+3. `gcc -fsanitize=address -g demo.c -o demo && ./demo`。泄漏报告里 #0 帧的 `文件:行号` 就是分配发生的那一行——LeakSanitizer 把「分配于哪一行」直接写给你。
+4. 事故一：同一块内存 free 两次（double free，分配器当场报错或静默损坏）；事故二：use-after-free（读到作废内存里的垃圾，行为未定义）。置 NULL 后这两种误用都变成一眼可见的空指针解引用崩溃。
+
+</details>
 
 ## 本章总结
 

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 主教学之后的机制与工程细节——控制块与 make_shared 缓存友好实验、shared_ptr 线程安全三级边界与 TSan 实录、enable_shared_from_this 的必要场景与误用崩溃、weak_ptr 全套操作与循环引用破环、双向链表/观察者/缓存/树四类典型结构、FILE* 自定义删除器，以及性能敏感路径上连 shared_ptr 都不用的纪律。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/130-SmartPointerDeepDive'
   - 'cpp/160-RAIIResourceManagement'
@@ -762,6 +762,49 @@ std::cout << (revived == nullptr) << '\n';
 - cppreference enable_shared_from_this：https://en.cppreference.com/w/cpp/memory/enable_shared_from_this
 - cppreference unique_ptr（删除器语义）：https://en.cppreference.com/w/cpp/memory/unique_ptr
 - C++ Core Guidelines R.30（智能指针传参纪律）：https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rr-smartptrparam
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：说出 `make_shared<T>()` 相对 `shared_ptr<T>(new T)` 省掉的那一次分配发生在哪，并画出控制块里放了什么（强计数、弱计数、删除器）；然后回答：`make_shared` 有一个「内存延迟释放」的副作用，是什么？
+
+**提示**：`shared_ptr<T>(new T)` = new T 一次分配 + 控制块一次分配；make_shared 合并成一次。副作用与大对象相关。
+
+**参考实现**（先自己写完再看）：
+
+```text
+make_shared：一次分配同时容纳 T 对象 + 控制块（强计数/弱计数/删除器）。
+shared_ptr<T>(new T)：对象一次、控制块一次，两次堆分配。
+
+副作用：只要还有 weak_ptr 活着，弱计数 > 0，控制块不能释放——
+而控制块与 T 同一块内存，所以 T 的内存也一起被拖住。
+大对象 + 长命 weak_ptr 的场景应改用 shared_ptr<T>(new T) 分开分配。
+```
+
+要点自查：控制块三件套（强/弱计数、删除器）与「两次分配合并」是本篇第 1 节的主干；「weak_ptr 拖住大对象内存」是 make_shared 的选型反例，能说出它才算全面。
+
+**任务二**：写一个「对象内部拿自己的 shared_ptr」的正确写法——类 `Session` 的成员函数 `self()` 返回 `shared_ptr<Session>`；先写出裸 `shared_ptr<Session>(this)` 的错误后果，再用 `enable_shared_from_this` 修好，并说明 `shared_from_this()` 为什么不能在构造函数里调用。
+
+**提示**：裸构造会造出**第二个独立控制块**——两份计数各自归零时 double free；`shared_from_this` 依赖的是「对象已被某个 shared_ptr 接管」这一前提，构造函数执行时还没发生。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+class Session : public std::enable_shared_from_this<Session> {
+public:
+    std::shared_ptr<Session> self() { return shared_from_this(); }
+};
+
+auto s = std::make_shared<Session>();
+auto same = s->self();                    // 同一控制块，计数 +1
+// 错误版：return std::shared_ptr<Session>(this);
+//   => 两个控制块管同一对象，先到的先 delete，后到的 double free。
+// shared_from_this 在构造函数里调用：对象尚未被任何 shared_ptr 接管，
+//   内部 weak 引用未就绪 —— 抛 bad_weak_ptr 或 UB。
+```
+
+要点自查：「同一对象只允许一个控制块」是本篇第 2 节线程安全边界讨论的前提；`enable_shared_from_this` 的内部机制正是靠一个挂在对象里的 weak_ptr 找回控制块——这也解释了构造期不可用的原因。
 
 ## 17. 自我检查
 

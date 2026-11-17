@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: viewport、移动优先设计
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/340-CustomDataAttribute'
   - 'html5/280-CrossDocumentCommunication'
@@ -373,6 +373,28 @@ el.addEventListener('gesturechange', (e) => {
 | `touchmove`     | 手指在屏幕移动 |
 | `touchend`      | 手指离开屏幕   |
 | `touchcancel`   | 触摸被打断     |
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写「移动端页面标配」的 viewport meta，并说明每个字段的含义。
+
+参考答案（先自己写，再对照）：
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+```
+
+`width=device-width` 让布局视口等于理想视口（不按桌面 980px 渲染）；`initial-scale=1.0` 初始不缩放。不写它，手机浏览器会按桌面宽度渲染、文字小得没法看。
+
+2. 概念自问：布局视口、视觉视口、理想视口三者差在哪？为什么不要写 `user-scalable=no`？刘海屏内容被挡该怎么适配？
+
+参考答案（先自己答，再对照）：布局视口是 CSS 计算布局的画框，视觉视口是用户当前真正看到的区域，理想视口是设备自己的标准宽度；禁缩放剥夺了低视力用户放大的权利，WCAG 要求支持 200% 缩放；`viewport-fit=cover` + `env(safe-area-inset-*)` 给顶部/底部留出安全区域。
+
+3. 概念自问：「移动优先」的写法顺序是什么？媒体查询与容器查询的判断对象差在哪？
+
+参考答案（先自己答，再对照）：先写单列基础样式，再用 `min-width` 媒体查询逐级增强到平板/桌面——基础层天然适配最小屏幕；媒体查询看视口宽度，容器查询（`@container`）看父容器宽度，后者让组件在不同区域自适应，是组件化时代的增强方向。
 
 ## 动手试试
 

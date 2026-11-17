@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 把 Markdown 变成文档站点的完整工具链：静态站点生成器、构建管线、代码生成文档与质量门禁
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'markdown/300-LintFormatTooling'
   - 'markdown/290-ConversionTool'
@@ -188,8 +188,8 @@ pandoc input.md -o output.docx   # 转 Word，走评审/归档流程时常用
 
 易错点：转 PDF 依赖系统里装有 LaTeX 或 `wkhtmltopdf` 一类引擎，报错
 `pdflatex not found` 时先装引擎再重试，而不是怀疑命令写错。另外 Pandoc
-对 GFM 扩展（任务列表、删除线）需要显式开启：`pandoc -f gfm input.md`，
-否则按严格 Markdown 解析，表格之外的扩展语法会原样漏出。
+对部分 GFM 扩展（如任务列表）需要显式开启：`pandoc -f gfm input.md`，
+否则按 pandoc 默认方言解析，任务列表这类扩展语法会原样漏出。
 
 ### 3.2 Node 脚本转换：把渲染嵌进自己的流程
 

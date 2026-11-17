@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: action 协议、动作族清单、keysym 与 focus 导航、draggroup 拖放：屏幕交互的完整协议层
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -230,6 +230,46 @@ screen bag_grid():
 ```
 
 drag_name 用槽位序号字符串，回调里转回 int 做下标——图标显示始终读 store.bag_items[i]，拖拽交换的是数据而非控件，读档自然还原。
+
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案或写出代码，再展开对照。
+
+1. action 的"返回值语义"是什么？call screen 的 _return 从哪来？
+2. 动作列表的敏感状态与选中状态各按什么规则合并？想"列表部分可用时仍整颗可点"用哪个动作？
+3. `action=fn()` 与 `action=Function(fn, arg)` 的差别是什么？为什么前者是新手第一大坑？
+4. 自定义动作继承哪个类？get_sensitive、get_selected、__call__ 各在什么时机被引擎调用？
+5. keysym 与 key 语句的分工是什么？
+6. draggroup 的 dropped 回调签名是什么？改完数据后为什么要调 renpy.restart_interaction()？
+7. Show 与 ShowTransient 的差别是什么？主菜单按钮该用哪个？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 动作被调用后返回非 None 值，该值从当前交互返回；Return(值) 动作就是
+   这个协议的直白实现，call screen 后 _return 拿到它。
+
+2) 敏感取所有动作的交集、选中取并集（除非列表里写了 SensitiveIf /
+   SelectedIf）。用 SensitiveIf 显式接管敏感度。
+
+3) fn() 立即执行函数、把返回值当动作——副作用在构建屏幕时就发生；
+   Function(fn, arg) 延迟到点击时执行且支持参数。
+
+4) Action 类。按钮每帧构建 action 时调 get_sensitive 决定可点（变灰）、
+   get_selected 决定选中态，点击时调 __call__。
+
+5) keysym 绑控件的"激活"，随焦点语义走（按它等价于激活当前焦点控件）；
+   key 语句是屏幕级热键，直接把按键绑到 action，与焦点无关。
+
+6) (drag, dropped_onto)——被拖件与被丢上的对象。改的是数据而非控件，
+   restart_interaction 让屏幕按新数据重排，保持数据驱动界面。
+
+7) Show 按 tag 注册进屏幕栈（ShowMenu 能返回），ShowTransient 临时显示
+   不走栈；主菜单导航用 ShowMenu("save") 这类。
+```
+
+</details>
 
 ## 小结
 

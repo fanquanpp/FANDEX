@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go HTTP 中间件：Handler/HandlerFunc 接口、洋葱模型、Chain 组合律、context 传播、企业级网关实战
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/470-GoHTTP'
   - 'go/490-GoOAuth2'
@@ -1908,3 +1908,55 @@ func (c *counter) Get() int64 {
 | ResponseWriter | ResponseWriter | 响应写入接口 |
 | Context | Context | 请求作用域数据与取消信号 |
 | 自同态 | Endomorphism | 类型到自身的函数 |
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（中间件签名与洋葱模型）**：写出 Go 中间件的标准签名，并实现一个"记录请求耗时"的中间件。指出耗时计算的起止点为什么必须在 handler 调用两侧而不是 defer 之外。
+
+参考实现：
+
+```go
+func Logging(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        start := time.Now()
+        next.ServeHTTP(w, r) // 洋葱的内核：调用下一层
+        log.Printf("%s %s %v", r.Method, r.URL.Path, time.Since(start))
+    })
+}
+```
+
+要点：签名 `func(http.Handler) http.Handler`——输入输出都是 Handler，才能无限嵌套成洋葱。`next.ServeHTTP` 同步返回意味着"响应写完"（对非流式响应成立），计时包住它才是完整请求耗时；写在 defer 外/函数外会把中间件自身装配时间算进去。
+
+**题 2（响应拦截）**：实现一个中间件，能拿到 handler 写出的状态码（提示：包一层 ResponseWriter，劫持 WriteHeader）。写出代码并说明 Flush/Hijack 接口为什么要透传。
+
+参考实现：
+
+```go
+type statusRecorder struct {
+    http.ResponseWriter
+    status int
+}
+
+func (r *statusRecorder) WriteHeader(code int) {
+    r.status = code
+    r.ResponseWriter.WriteHeader(code)
+}
+
+func StatusLogger(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        rec := &statusRecorder{ResponseWriter: w, status: 200}
+        next.ServeHTTP(rec, r)
+        log.Println("status:", rec.status)
+    })
+}
+```
+
+要点：嵌入原 ResponseWriter，未劫持的方法全部透传；但显式劫持了 WriteHeader 后，`http.Flusher`/`http.Hijacker` 的能力断在包装层——handler 内断言 Flusher 会失败。需要完整透传时要同时实现这两个接口（或用标准库 `http.NewResponseController`，1.20+ 让透传变得系统化）。
+
+**题 3（顺序敏感的三件套）**：Recover、RequestID、AccessLog 三个中间件，注册顺序应该怎样（外到内）？说出至少一个"顺序错了会怎样"的具体后果。
+
+参考答案：外到内 Recover -> RequestID -> AccessLog。后果例：AccessLog 若在 Recover 外层，panic 发生时 AccessLog 看不到响应耗时与状态（panic 跳过了它后面的写日志行），且 500 状态码不会出现在访问日志里；RequestID 若在 Recover 内层，panic 日志里没有 request_id，排障断链。通用规则：Recover 最外层兜底、RequestID 紧随（让一切日志可关联）、业务/鉴权在内层。

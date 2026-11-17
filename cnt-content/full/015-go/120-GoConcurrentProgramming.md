@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: goroutine 原理、channel、select、sync 包、context 包、并发模式与竞态检测。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/050-GoDataStructure'
   - 'go/060-GoInterfaceComposition'
@@ -1237,3 +1237,68 @@ race 检查：`urls` 各 goroutine 只读、`results` 是通信不共享内存�
 `ok/fail` 只在收尾单协程累加——三者共同保证 `-race` 干净。
 
 </details>
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（WaitGroup 的正确姿势）**：并发抓取 5 个 URL（忽略结果），主函数等全部完成再退出。分别用 Go 1.25 的 `wg.Go` 与传统 `Add/Done` 写两版，并说明传统版最容易踩的坑。
+
+参考实现：
+
+```go
+// Go 1.25+：三步并一步，不可能忘记 Done
+// 签名：func (wg *WaitGroup) Go(f func())——不返回 error，那是 errgroup 的 Go
+var wg sync.WaitGroup
+for _, u := range urls {
+    wg.Go(func() { fetch(u) })
+}
+wg.Wait()
+
+// 传统写法：Add 必须在 go 语句之前、Done 必须 defer
+var wg sync.WaitGroup
+for _, u := range urls {
+    wg.Add(1)
+    go func(u string) {
+        defer wg.Done()
+        fetch(u)
+    }(u)
+}
+wg.Wait()
+```
+
+要点：传统版的坑——`wg.Add(1)` 写进 goroutine 里（Wait 可能在 Add 前跑完就返回）、忘记 `Done`（永久阻塞）、1.22 前循环变量共享。`wg.Go` 从写法上消掉这三类错误。
+
+**题 2（互斥锁 vs channel 的选择）**：(a) 保护一个全局配置结构体的读写；(b) 统计"已处理请求数"且每个 worker 结束时累加。分别选 mutex 还是 channel？说明理由。
+
+参考答案：(a) 用 `sync.RWMutex`——共享状态的读多写少场景，锁表达"谁在什么时候可以碰这份数据"，比"状态在 channel 上流转"直观得多；(b) 用 `atomic.AddInt64` 或分片累加再汇总，根本不需要锁或 channel——单个计数器的最优解是原子操作。channel 适合的是"数据所有权转移"（把数据从一个阶段交给另一个阶段），不是"保护共享变量"。Go 谚语：Share memory by communicating, but don't communicate by sharing memory——后半句常被忽略，它警告的正是把 channel 当锁用。
+
+**题 3（泄漏自查）**：写一个会泄漏 goroutine 的函数（一句话说明漏在哪），再写出修复版。
+
+参考实现：
+
+```go
+// 泄漏版：ctx 取消后 goroutine 仍阻塞在 ch 的接收上
+func leaky(ctx context.Context) <-chan int {
+    ch := make(chan int)
+    go func() {
+        v := expensive()
+        ch <- v // ctx 已取消时没人收，永久阻塞
+    }()
+    return ch
+}
+
+// 修复版：select 监听 ctx.Done
+go func() {
+    v := expensive()
+    select {
+    case ch <- v:
+    case <-ctx.Done():
+        return
+    }
+}()
+```
+
+要点：发送/接收两端只要有一端可能提前消失，另一端就必须能感知取消——`select` + `ctx.Done()` 是标准答案；`go vet`/`-race` 抓不到泄漏，靠 `runtime.NumGoroutine` 或 1.27 的 goroutineleak profile。

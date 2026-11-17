@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 中协变、逆变、双变与不变的型变关系，涵盖函数子类型理论、Liskov 替换原则、严格函数类型检查、数组协变陷阱与 React props 逆变等核心议题
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/530-TypeGymnasticsPracticalPatterns'
   - 'typescript/240-ThisTypePolymorphism'
@@ -1722,3 +1722,11 @@ flowchart TD
 | TS2416 | Property 'X' in type 'Y' is not assignable to the same property in base type 'Z'. | 方法重写型变失败 | 检查返回类型协变与参数逆变 |
 | TS2554 | Expected N arguments, but got M. | 参数数量型变失败 | 检查可选参数与剩余参数 |
 | TS2741 | Property 'X' is missing in type 'Y' but required in type 'Z'. | 结构子类型化失败 | 补全缺失的必选属性 |
+
+## 自检
+
+- 遮住第 3 节，用自己的话定义协变、逆变、不变三个方向：子类型关系在哪个位置上保持、反转、切断？
+- 为什么函数参数天然倾向逆变、返回值天然倾向协变？用「回调拿到的是更宽的数据」这句话展开推导一遍。
+- `strictFunctionTypes` 开启前后，方法简写与函数属性的类型检查行为差在哪？遮住 7 节示例自己复现一遍。
+- `in out` 修饰符（TS 4.7+）解决什么问题？什么情况下编译器会拒绝推断并把不变性交给你标注？
+- 数组协变为什么是「类型系统为了实用性开的口子」？遮住 9 节，写出那个运行时才爆的写入示例。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Django 核心：MVT 架构、ORM、Admin、表单、认证与 DRF 集成。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'python/790-PythonDocker'
   - 'python/860-PythonCeleryDistributedTaskQueue'
@@ -522,3 +522,12 @@ def notify_subscribers(sender, instance, created, **kwargs):
     if created and instance.is_published:
         send_notification_email.delay(instance.id)
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：定义一个文章模型（标题、正文、发布时间）并生成迁移。要点：`class Article(models.Model): title = models.CharField(max_length=200); body = models.TextField(); published_at = models.DateTimeField(null=True)`；`makemigrations` 与 `migrate` 的分工——前者生成迁移文件、后者执行到数据库。
+2. 口述题：MTV 与 MVC 的对应关系？要点：Model 对应 M，Template 对应 V（展示），View 对应 C（控制器）——Django 的「View」是控制器不是视图层，这是翻译造成的经典混淆。
+3. 预测题：ORM 查询 `Article.objects.filter(is_published=True)` 在循环里再取 `article.author.name` 会发生什么？要点：每篇触发一次额外查询（N+1）；用 `select_related("author")`（外键 JOIN）或 `prefetch_related`（多对多）一次取齐。
+4. 默写题：Django 请求进来到响应出去经过哪些层？要点：中间件链 -> URL 路由 -> 视图函数 ->（ORM/模板）-> 响应；中间件按注册顺序进出成对执行，鉴权类逻辑放中间件而非每个视图重复写。

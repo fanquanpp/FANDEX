@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/060-SpringMvcRestApi'
   - 'java/920-JavaMessageQueue'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'java/920-JavaMessageQueue'
   - 'redis/250-RedlockDistributedLock'
@@ -114,7 +114,7 @@ JSON 收发。默认的 JDK 序列化有 [Spring Cache 与 Redis](/spring-boot/1
 ```java
 @Bean
 public MessageConverter jacksonMessageConverter() {
-    return new Jackson2JsonMessageConverter();
+    return new Jackson2JsonMessageConverter();   // Boot 4.x / Spring AMQP 4.0 起改用 JacksonJsonMessageConverter（Jackson 3）
 }
 ```
 
@@ -307,6 +307,10 @@ IllegalStateException: 积分服务炸了        ← 第 3 次，耗尽，不再
 ```
 
 亲手走完这条链，「失败消息去哪了」就不再是文档里的一句话：重试三次、间隔翻倍、耗尽不重回、死信落队、告警消费——每一步都在管理台上看得见。
+
+## 升级瞭望（Spring Boot 4.0）
+
+Boot 4.x 配套的 Spring AMQP 4.0 把 JSON 消息转换器换到 Jackson 3：Jackson2JsonMessageConverter 已标记弃用待移除，替代者是 JacksonJsonMessageConverter（接收 tools.jackson 包的 JsonMapper）。本篇的收发链路、__TypeId__ 头机制与可靠性套路全部不变，迁移时替换转换器类名即可；重试定制钩子在 4.0 也从 RabbitRetryTemplateCustomizer 换成了 RabbitTemplateRetrySettingsCustomizer 与 RabbitListenerRetrySettingsCustomizer，细节以 Spring AMQP 官方文档为准。
 
 ## 8. 官方参考
 

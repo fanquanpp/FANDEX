@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL 9 VECTOR 类型：声明与存储成本、三个转换函数、社区版与 HeatWave 的能力边界、应用层相似度检索的完整工作流与选型对照。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/820-MySQL9NewFeatures'
   - 'postgresql/320-KNNVectorIndex'
@@ -19,7 +19,7 @@ prerequisites:
 
 ## 前置知识
 
-- 新特性版本策略（[MySQL 9 新特性](/mysql/820-MySQL9NewFeatures)）——VECTOR 是 9.0 创新版引入的类型；
+- 新特性版本策略（[MySQL 9 新特性](/mysql/820-MySQL9NewFeatures)）——VECTOR 是 9.0 创新版引入的类型；注意 8.4 LTS **没有** VECTOR，能力表只适用于 9.x 全系（含 9.7 LTS）与 26.x 创新版；
 - AI 应用背景（嵌入向量的来历见 [Python 与 AI 路线](/roadmap/050-BackendPythonAIRoute)）有助于理解用途，但不强制。
 
 ## 问题引入：向量塞 JSON 的土办法为什么不行
@@ -40,7 +40,8 @@ AI 应用要把文本/图片的嵌入向量（embedding，几百到几千个浮�
 ## 声明与读写
 
 ```sql
--- VECTOR(N)：N 为维度；上限 16383 维。写入时维度不符直接报错（类型价值所在）
+-- VECTOR(N)：N 为维度；上限 16383 维；不带 N 的裸 VECTOR 默认 2048 维
+-- （VECTOR() 空括号是语法错误——要么写 N 要么裸写）
 CREATE TABLE documents (
   id INT AUTO_INCREMENT PRIMARY KEY,
   content TEXT,
@@ -137,6 +138,35 @@ SELECT txt, VECTOR_TO_STRING(vec), VECTOR_DIM(vec) FROM vec_demo;
 **"MySQL 会把向量索引下放到社区版吗？"**—— Oracle 的商业策略上向量检索（HeatWave）与 MySQL HeatWave 产品深度绑定，社区版短期内大概率维持"只存不搜"。做技术选型按现状评估，别按路线图赌。
 
 **"该选 MySQL+向量库 还是直接 PostgreSQL+pgvector？"**——若项目本来就以 MySQL 为主、向量规模在 pgvector 舒适区之外，方案 B（MySQL 业务库 + 独立向量库）干净直接；新项目且向量检索是核心能力，[pgvector](/postgresql/320-KNNVectorIndex) 把存储与检索收在一个库里，工程链路更短。判据是"检索在业务里的权重"，不是数据库偏好之争。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出语句：建一张"文档 + 768 维嵌入向量"的表，写入一条向量并读回其维度。说出每个函数的角色。
+
+参考答案（先自己写，再对照）：
+
+```sql
+CREATE TABLE docs (id INT AUTO_INCREMENT PRIMARY KEY, body TEXT, emb VECTOR(768));
+INSERT INTO docs (body, emb)
+VALUES ('MySQL 向量类型', STRING_TO_VECTOR('[0.1, 0.2]'));
+SELECT id, body, VECTOR_TO_STRING(emb), VECTOR_DIM(emb) FROM docs;
+```
+
+STRING_TO_VECTOR（别名 TO_VECTOR）把 JSON 数组形式的字符串转成二进制向量写入；VECTOR_TO_STRING（别名 FROM_VECTOR）把二进制转回可读字符串；VECTOR_DIM 返回维度。三函数就是社区版 VECTOR 的全部函数面。
+
+2. 概念自问："社区版能存不能搜"的具体含义是什么？方案 A/B/C 各自的适用数据量与代价？
+
+参考答案（先自己答，再对照）：社区版没有 DISTANCE 类距离函数、没有向量索引——SQL 层算不了相似度，"找最相似的 K 条"只能出库自己算。方案 A（万行级）：全量取回 + 应用层余弦，零额外组件但每次检索扫全量；方案 B（十万行以上）：向量进专业向量库（pgvector/Milvus/Qdrant），MySQL 只管业务字段，两段式召回 + 补全；方案 C：HeatWave 有 DISTANCE 与向量索引，库内检索但绑定 OCI 商业栈。
+
+3. 判断题：VECTOR(768) 列可以加唯一约束防止重复向量入库。
+
+参考答案（先自己答，再对照）：不行。VECTOR 列不能用作任何键——主键、外键、唯一键、分区键都不允许（也不能进直方图）。去重只能在应用层（对向量做哈希摘要存普通列加唯一键），或把"向量指纹"作为派生数据管理。这也是"VECTOR 是存储类型不是索引类型"的直接体现。
+
+4. 概念自问：为什么说"选嵌入模型的维度就是在选存储账"？算一笔 1536 维百万行的账。
+
+参考答案（先自己答，再对照）：每分量 4 字节单精度浮点——1536 维一行约 6KB，百万行纯向量就是约 6GB，加上页开销与元数据更高；容量规划、缓冲池命中率、备份时长都按这个量级放大。768 维直接减半，3072 维翻倍。维度由嵌入模型决定，所以"选模型"就是"选存储与检索成本"，降维或 Matryoshka 类模型是真实的成本杠杆。
 
 ## 检验清单
 

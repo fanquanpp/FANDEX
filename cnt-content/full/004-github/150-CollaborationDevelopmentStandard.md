@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 协作开发规范：Commit Message 约定、分支命名、PR 模板、代码审查清单与 CLA/DCO 合规。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-16'
 related:
   - 'github/030-RepositoryCreateCloneArchiveDelete'
   - 'github/040-SSHHTTPS'
@@ -243,6 +243,35 @@ jobs:
 | 分支命名随意 | 分支堆积难维护 | 无命名规范 | 统一 `<type>/<description>`；合并后及时删除分支 |
 | 审查意见无回应 | PR 长时间无人跟进 | 作者未回复或修改 | 作者及时回复每条评论；设置提醒；必要时礼貌催促 |
 | 合并冲突反复出现 | PR 冲突不断 | 功能分支长期未同步 main | 定期 `git pull origin main` 同步；保持 PR 小而聚焦 |
+
+## 7. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：你给登录模块的限流逻辑修了一个 bug，还顺带更新了相关文档。按 Conventional Commits 写出这次提交的标题（只写标题一行）。
+
+**任务二**：按分支命名惯例，给「为支付模块添加退款接口的功能分支」「修复首页白屏的临时补丁分支」各起一个名字。
+
+**任务三**：项目要求 DCO 合规——写出带签名的提交命令，并说明 `Signed-off-by` 这行证的是什么。
+
+**提示**：标题结构是 `type(scope): subject`；一个提交里出现两类改动时选更主要的一个 type（文档顺带更新不单独拆 docs）；DCO 的签名开关是 `-s`（小写），它不是 GPG 签名。
+
+**参考实现**（先自己写完再看）：
+
+```text
+任务一：fix(auth): throttle login attempts after repeated failures
+
+任务二：
+feature/payment-refund-api
+hotfix/homepage-blank-screen
+
+任务三：
+git commit -s -m "fix(auth): throttle login attempts"
+```
+
+`Signed-off-by` 证明的是**贡献来源声明**（Developer Certificate of Origin）：我声明这段代码是我本人写的或我有权以项目许可提交，与专利/版权无纠纷——它靠提交信息末尾那行文字成立，验证由 CI 的 DCO 检查完成，与证明「代码没被篡改」的 GPG 签名是两回事。
+
+要点自查：type 决定历史可检索性，subject 用祈使句、不加句号、小写开头是常见约定；分支名前缀（feature/、fix/、hotfix/）让分支列表一眼可读；CLA 是「签协议」、DCO 是「每笔提交带声明」，轻量贡献用 DCO 更普遍。
 
 ## 8. 一句话记忆
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 模块声明与全局类型增强：declare module、声明合并、全局扩展与 DefinitelyRoots 类型生态的形式语义、工程实践与生产级模式。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/500-TemplateLiteralType'
   - 'typescript/540-TypeGymnasticsBoundaries'
@@ -2090,3 +2090,11 @@ interface ImportMeta {
 // 要求类型导入显式标注
 export type { User }
 ```
+
+## 自检
+
+- `declare module "pkg"` 与 `declare module`（无引号、模块内）各在什么场景使用？后者命名的是什么空间？
+- `declare global` 为什么必须出现在模块文件里？遮住第 4 节示例，自己给 `window` 增加一个自定义属性的类型。
+- 声明合并的三对组合（interface+interface、namespace+function、namespace+class）各自解决什么惯用法？
+- 库发布时 `types`/`typings` 字段的查找优先级如何？`@types` 作用域包的对应规则是什么？
+- 全局增强的风险是什么？为什么说「能 import 类型就不要 declare global」？

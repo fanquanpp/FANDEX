@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 面向运维排障的 TCP/UDP——握手挥手、状态机、TIME_WAIT/CLOSE_WAIT 治理、可靠传输与选型
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -110,6 +110,19 @@ UDP 只做「把数据报发出去」：无连接、无确认、无序、无拥�
 **例三：游戏状态同步的频率折衷**。多人对战游戏把玩家位置以固定频率广播（如 20 次/秒），服务器与带宽之间做折衷：频率翻倍流畅度上升但带宽翻倍，且小包过密时 Nagle 类攒包反而加延迟。这类「状态同步频率 x 带宽」的常量通常在项目网络配置里集中定义（本仓库 c-projects 素材项目的 `net_config.gd` 即以 20Hz 常量约束状态同步），改它之前必须先测带宽预算。
 
 **例四：CLOSE_WAIT 抓 bug**。某服务 `ss -tanp state close-wait` 显示对某下游 API 的连接稳定堆积不释放，且 CLOSE_WAIT 的进程是网关。review 发现异常分支里 HTTP 客户端 response body 没 close，连接不归还池。修复：defer close 统一收口。CLOSE_WAIT 数量与某条代码路径强相关，是定位内存外「连接泄漏」的最快路径。
+
+## 教学自检
+
+按遮码自检法：遮住上文命令与表格，先自己推演，再对照。
+
+- 大量 SYN-SENT 与大量 SYN-RECV 分别挂在谁身上、各指向什么故障？
+- TIME_WAIT 为什么挂在主动关闭方？2MSL 的两重理由各防什么？
+- CLOSE_WAIT 堆积的第一反应为什么是「查应用代码」而不是「调内核参数」？
+- `tcp_tw_reuse` 为什么只对客户端出站方向安全？`tcp_tw_recycle` 为什么被移除（Linux 4.12）？
+- 滑动窗口如何同时解释 TCP 的吞吐量来源与 TCP ZeroWindow 的成因？
+- Nagle 算法提吞吐但加延迟的机制是什么？哪些协议应该禁用它（TCP_NODELAY）？
+- 「UDP 不可靠」与「UDP 丢包率高」的差别是什么？应用层用 UDP 必须自答哪三个问题？
+- 弱网实时音视频选 UDP 的根本原因，从 TCP 的哪两个机制推出来？
 
 ## 动手实践
 

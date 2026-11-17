@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 浏览器对象模型（BOM）原理、API 体系、工程实践与规范演进
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'javascript/080-FunctionScopeClosure'
   - 'javascript/140-CustomErrorTypes'
@@ -1513,6 +1513,26 @@ class SafeMessageChannel {
 - **zloirock/core-js**: BOM/ES Polyfill 集合。https://github.com/zloirock/core-js
 - **pillarjs/path-to-regexp**: 路由模式解析（BOM 路由底层）。https://github.com/pillarjs/path-to-regexp
 - **GoogleChrome/workbox**: PWA Service Worker 工具集。https://github.com/GoogleChrome/workbox
+
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. window 对象的「双重身份」是什么？分别举一个「全局命名空间」与「浏览器窗口控制」的例子；
+2. `location.href = url`、`location.assign(url)`、`location.replace(url)` 三者的差异是什么？哪个不留历史记录；
+3. 写出「无刷新改地址栏并插入一条历史记录」的代码（history API），并说明刷新后为什么会 404、怎么解决；
+4. `postMessage` 跨窗口通信，接收方必须做的两步安全校验是什么？不做会怎样；
+5. 判断题：`navigator.platform` 可以用来判断移动端并据此切换功能——说出这条实践的问题与替代品。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：既是 ECMAScript 全局对象（`window.x = 1` 后裸写 `x` 可见），又是浏览器窗口的门面（`window.open`、`innerWidth`、滚动）；前者应避免滥用（污染全局），后者才是正经用途；
+- 第 2 问：三者都导航；`replace` 不产生新历史条目（回退键跳过当前页），另两个产生——适合登录后替换掉中转页；
+- 第 3 问：`history.pushState(state, '', '/new-url')`；刷新时服务器没有该路径的路由就 404——服务端要把所有路由回退到 index.html（SPA fallback）或用前端 404 兜底；
+- 第 4 问：先校验 `event.origin` 是否在白名单，再校验消息内容的结构（`typeof`/schema）；不做校验时恶意站点可伪造来源发送指令，触发 XSS 或逻辑越权；
+- 第 5 问：`navigator.platform` 已废弃且值不可靠（Windows 桌面浏览器也返回过 `Linux armv8l` 等历史脏值）；功能探测（检测能力而非推断平台）或 `navigator.userAgentData`（新 API）才是正路。
+</details>
 
 ## 15. 附录
 

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: "以「50 岁仍是 TIOBE 前三」引入，讲清 C 的设计哲学（信任程序员、小标准库、无运行时）、标准演进 C89 到 C23、编译四阶段，并给出 C 与其他语言的能力对照。"
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/010-CZeroBasisStart'
   - 'c/030-ProgramStructureBasicSyntax'
@@ -67,6 +67,8 @@ gcc hello.o -o hello         # 阶段四：链接（把库里的 printf 接进�
 | C17 | 2017 | 仅缺陷修订，无新特性 |
 | C23 | 2023 | `nullptr`、`auto`、数字分隔符、`bool` 成关键字（[专篇详解](/c/520-C23CoreFeatures)） |
 
+表中取约定俗成的「名字年份」（C17 草稿 2017 年定稿、C23 特性 2023 年冻结）；正式发布年份看 ISO 编号——C17 是 ISO/IEC 9899:2018，C23 是 ISO/IEC 9899:2024（2024 年 10 月 31 日发布，本模块各篇的口径与此一致）。
+
 编译器对标准的支持度随版本不同，写代码前用 `gcc -std=c23` 这类开关显式声明目标标准；支持矩阵的查法在 C23 深水区篇有完整演示（验证于 2026-09，以 [cppreference C 页](https://en.cppreference.com/w/c) 为准）。
 
 ## 5. 对照表：C 在语言地图上的位置
@@ -114,12 +116,24 @@ gcc hello.o -o hello         # 阶段四：链接（把库里的 printf 接进�
 - cppreference C 语言参考（每篇的权威查证处）：https://en.cppreference.com/w/c
 - GCC 手册（分阶段开关都在这里）：https://gcc.gnu.org/onlinedocs/
 
-## 11. 自我检查
+## 11. 遮码自检
 
-- 能用三个关键词说出 C 的哲学并各举一个「代价」例子；
-- 能不看表说出五个标准里至少三个的年份与代表作；
-- 能独立走完四阶段流水线并说出每步产物是什么；
-- 能对「为什么内核用 C 不用 Python」给出三层理由。
+遮住上文示例与表格、先自己答，再展开对照。
+
+1. 用三个关键词说出 C 的哲学，并各举一个「代价」的例子。
+2. 不看表说出五个标准里至少三个的年份与代表作。
+3. 独立走完四阶段流水线，说出每步的产物。
+4. 「为什么内核用 C 不用 Python」给三层理由。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 小（标准库小 → 一切基础设施自己造）、快（零运行时 → 没有护栏，错误直接进机器）、信任程序员（自由 → UB 不设防，坑就是代价）。
+2. 任选：C89/C90（1989/1990，第一版 ISO 标准）、C99（1999，stdint.h/行注释）、C11（2011，threads.h/_Atomic）、C17（2018，纯缺陷修订）、C23（2024 发布，nullptr/constexpr/#embed）。
+3. 预处理（.i：宏展开、头文件内联）→ 编译（.s：汇编）→ 汇编（.o：目标文件）→ 链接（可执行文件）；编译报错在中间两层，链接报错（undefined reference）在最后。
+4. 内核要直接摸硬件（Python 有 VM 与 GC 垫层）、内存与时间每一字节都可预算（Python 的对象头与解释器调度不可预算）、几十年的 C 代码与 ABI 生态要延续（语言迁移成本大于收益）。
+
+</details>
 
 ## 本章总结
 

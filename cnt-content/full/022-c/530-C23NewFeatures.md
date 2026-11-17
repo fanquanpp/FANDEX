@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 接着 C23 上手往深处走：#embed、typeof、constexpr、ckd_* 四个编译期深水特性，查编译器支持矩阵的三板斧、C2y 草案现状，以及旧代码库「先开警告再切标准」的升级路线。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/520-C23CoreFeatures'
   - 'c/290-PreprocessorMacro'
@@ -357,13 +357,36 @@ assert(add_score(1000, 233, &out) == 1 && out == 1233);
 - cppreference #embed 与 `<stdckdint.h>`：https://en.cppreference.com/w/c/preprocessor/embed 、https://en.cppreference.com/w/c/header/stdckdint.h
 - WG14 官方文档库（C2y 草案与提案原文）：https://www.open-std.org/jtc1/sc22/wg14/
 
-## 16. 自我检查
+## 16. 遮码自检
 
-- 能不看资料写出 `#embed` 嵌入文件并用 `sizeof` 打印大小的最小程序；
-- 能说清 `#define`、`const`、`constexpr` 三者的边界，并解释 `constexpr int m = n;`（n 为运行期变量）为什么不合法；
-- 能说出「陌生机器确认特性可用性」的三个命令各查什么；
-- 能按顺序复述三步升级法，并说明警告清零为什么必须发生在切标准之前；
-- 面对一条「C2y 新特性」资讯，能判断它处在提案、草案还是定稿层。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 不看资料写出 `#embed` 嵌入文件并用 sizeof 打印大小的最小程序。
+2. `#define`、`const`、`constexpr` 三者的边界在哪？`constexpr int m = n;`（n 为运行期变量）为什么不合法？
+3. 「陌生机器确认特性可用性」的三个命令各查什么？
+4. 按顺序复述三步升级法；警告清零为什么必须发生在切标准之前？
+5. 面对一条「C2y 新特性」资讯，怎么判断它在提案、草案还是定稿层？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```c
+#include <stdio.h>
+static const unsigned char logo[] = {
+#embed "logo.bin"
+};
+int main(void) {
+    printf("size = %zu\n", sizeof logo);
+    return 0;
+}
+```
+
+2. #define 是预处理期无类型文本替换；const 是有类型的只读变量（本编译单元可见时才折叠）；constexpr 是真编译期常量、可进类型系统（数组维度、静态断言）。运行期变量 n 在编译期没有值，constexpr 要求初始化器在翻译期可求值——不合法。
+3. `printf __STDC_VERSION__` 探针程序查标准模式；`gcc --version` / `clang --version` 查编译器能力；`#if __has_include(<stdckdint.h>)` 或查 cppreference 支持页查具体特性的实现状态。
+4. 三步：先在新编译器同标准下把警告清零（-Wall -Wextra -Werror）→ 逐目录切新标准并固化（_Static_assert 钉住行为）→ 最后才碰语言新特性。警告清零先行：切标准会让旧代码的新警告淹没真正的问题，先把「基线安静」建立起来才有判断力。
+5. 看它在 WG14 文档库的编号与阶段：编号 N 开头是提案/工作文件（还在讨论）；进入工作草案（如 C2y 的 n34xx 系列文本）是草案层；只有 ISO 正式发布（像 C23 的 ISO/IEC 9899:2024）才是定稿——编译器开关（-std=c2y）只是提前验证，不代表稳定。
+
+</details>
 
 ## 本章总结
 

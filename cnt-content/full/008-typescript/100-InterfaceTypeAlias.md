@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: interface 与 type 的定义、扩展、交叉与合并。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/030-TypeScriptOverviewEnvSetup'
   - 'typescript/080-BasicTypeSystem'
@@ -666,7 +666,7 @@ const map: StringMap = {
 
 两者都支持泛型。
 
-> 衔接说明：泛型的完整体系（约束、默认值、泛型类、工具类型）在 `008-FunctionGeneric` 讲解；本节的泛型接口只需记住"T 在使用时替换"。
+> 衔接说明：泛型的完整体系（约束、默认值、泛型类、工具类型）在[泛型函数](/typescript/220-FunctionGeneric)讲解；本节的泛型接口只需记住"T 在使用时替换"。
 
 ```typescript
 // 泛型接口
@@ -1630,3 +1630,11 @@ interface Note { source: string } // 合并后 Note 多了 source
 3. 自动合并（声明合并），所有字段取并集；这是 type 不具备的能力。
 
 </details>
+
+## 自检
+
+- 遮住 1.1 节，自己写一个含可选属性（`?`）与只读属性（`readonly`）的接口，并说出两者在赋值与修改时各自的行为差异。
+- `interface` 与 `type` 的三条硬差别（声明合并、联合/元组表达、extends vs 交叉）分别是什么？遮住 4.1 的对比表自己默写。
+- 类实现接口（`implements`）与接口继承（`extends`）的方向差别是什么？接口能约束什么、约束不了什么？
+- 遮住 1.5 节，写出索引签名的两种写法，并解释「多余属性检查」为什么绕不过对象字面量。
+- 什么时候选 interface、什么时候选 type？遮住 5.1 节，用自己的话给出决策线。

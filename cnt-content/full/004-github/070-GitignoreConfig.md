@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: .gitignore配置详解：忽略规则清单、语法、优先级、全局配置与官方模板库使用。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-11-16'
 related:
   - 'github/160-READMEFile'
   - 'github/170-BranchModelBranchRule'
@@ -386,6 +386,38 @@ desktop.ini
 | 在 `.gitignore` 里写了 `/temp/`，其他目录的同名文件也被忽略了 | 表现不一致 | 对 `/temp/`（锚定根目录）与 `temp/`（匹配所有层级）的理解混淆 | 记住：**开头斜杠 = 锚定当前层级**，不带斜杠 = 匹配所有层级 |
 | `.env` 里的密钥还是被推送了，事后才发现 | 安全事故 | 忽略了 `.env` 但密钥硬编码在 `src/config.js` 中 | 全局搜索密钥（`git grep "sk_live"`），轮换密钥，并使用环境变量 + GitHub Secrets |
 | `git status` 不显示某文件，但 `git add` 报错 | `The following paths are ignored by one of your .gitignore files` | 想添加一个被忽略的文件 | 确认是否真的要添加；若要添加，用 `git add -f 文件名` 强制添加，或调整忽略规则 |
+
+## 8. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：一个 Node.js 项目要配 `.gitignore`：忽略依赖目录、构建产物、所有 `.env` 开头的环境文件（根目录的 `.env` 和 `.env.local` 都要拦住）、日志，但**例外保留** `logs/keep.log`。
+
+**任务二**：同事抱怨「写了 `build/` 再写 `!build/app.min.js` 取反不生效」，写出修正写法并解释原因。
+
+**任务三**：`.env` 已经被提交过 3 次了，现在补进 `.gitignore` 还没生效——写出让它停止跟踪（本地文件保留）的命令。
+
+**参考实现**（先自己写完再看）：
+
+```gitignore
+node_modules/
+dist/
+build/
+.env*
+*.log
+!logs/keep.log
+```
+
+任务二修正：`build/` 改为 `build/*`，再写 `!build/app.min.js`。原因：父目录整体被忽略后，Git 出于性能不会进入该目录，内部的取反规则根本没机会被检查；`build/*` 只忽略目录内容、目录本身可见，取反才有机会命中。
+
+任务三：
+
+```bash
+git rm --cached .env
+git commit -m "chore: stop tracking .env"
+```
+
+要点自查：`.gitignore` 只对**未跟踪**的文件生效；`/` 开头锚定当前层级、结尾 `/` 只匹配目录；取反 `!` 要写在对应忽略规则**之后**且父目录不能整体被忽略；验证规则命中的利器是 `git check-ignore -v 文件名`。另注意：任务一里 `.env` 只是「以后不再进来」，历史提交里的密钥仍需轮换。
 
 ## 9. 一句话记忆
 

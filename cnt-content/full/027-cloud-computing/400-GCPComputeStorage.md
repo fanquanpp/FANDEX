@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'GCP 命令实战：Compute Engine 实例、Cloud Storage 对象操作与 Cloud Run 部署。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/390-GCPCliConfigure'
   - 'cloud-computing/510-GCPGKECommands'
@@ -262,6 +262,29 @@ gcloud run services delete my-service --region us-central1
 ```
 
 ---
+
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. `e2/m/n/c` 机器系列怎么分档？入门与日常 Web 服务各选哪档？
+2. `--image-family` + `--image-project` 的组合好在哪？裸写 `--image` 的缺点是什么？
+3. GCP 怎么 SSH 到实例（命令是什么）？它相对自管 SSH 密钥的优势是什么？
+4. 开 80 端口的防火墙规则命令骨架是什么？GCP 防火墙的单位是什么（实例级还是网络级）？
+5. 建桶时哪两个属性创建后不可改？`gsutil` 与 `gcloud storage` 什么关系？
+6. Cloud Run「默认缩容到 0」对成本与延迟各意味着什么？防冷启动改哪个参数？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. e2 成本优化、n 通用平衡、c 计算优化、m 内存优化。入门/测试 e2，日常 Web 服务 e2 或 n2。
+2. 镜像族自动取族内最新稳定版（如 ubuntu-2204-lts），不用追具体镜像名失效；裸写 --image 固定到某个具体镜像，官方镜像更新后旧名可能不可用。
+3. `gcloud compute ssh <实例名>`。自动管理 SSH 密钥（生成/注入/轮换走 OS Login 或元数据），不用手动分发公钥。
+4. `gcloud compute firewall-rules create allow-80 --allow tcp:80 --source-ranges 0.0.0.0/0`（生产应收窄来源）。GCP 防火墙是 VPC 网络级规则，按标签/服务账号选目标实例，不是实例级安全组模型。
+5. 桶名（全局唯一）与位置类型（region/dual-region/multi-region）。gsutil 是传统工具，官方已统一到 `gcloud storage`（新脚本直接用后者）。
+6. 没请求时不计费（成本甜区），但每次冷启动增加首请求延迟。设 `--min-instances`（保底常驻实例，付最低底薪换无冷启动），并可用 `--concurrency` 调单实例并发。
+
+</details>
 
 ## 小结
 

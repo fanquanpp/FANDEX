@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: '@layer'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/410-CSSVariableCustomAttribute'
   - 'css/460-FeatureQuery'
@@ -16,7 +16,7 @@ prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
 
-> 前置依赖：先读 009 优先级计算，理解层叠顺序。
+> 前置依赖：先读 [优先级计算](/css/170-PriorityCalculation)，理解层叠顺序。
 
 ## 1. @layer 概述
 
@@ -517,3 +517,38 @@ p {
 - 优先级：`css/170-PriorityCalculation`；
 - 架构：`css/560-CSSArchitectureMethodology`；
 - 新特性：`css/650-CSSNewFeatures`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住「层叠层与级联」「实际应用模式」两节的示例代码自己写，再对照参考实现。
+
+**任务一**：搭一套四层体系——`reset / base / components / utilities`：声明一次层顺序；各层写一条 `.text { color: ... }` 同权重规则；先写下「谁最终生效」，再回答「未分层的 `.text` 规则」会排到哪。
+
+**任务二**：用 @layer 解决一次「第三方覆盖不掉」——第三方（未分层）写了 `.btn { padding: 4px 8px; }`，你的业务规则 `.btn { padding: 12px 24px; }` 写在前面却输了。不许删改第三方文件、不许 `!important`，写出层的修复方案并说明为什么它稳。
+
+**提示**：任务一考「层顺序优先于层内一切」（后声明的层赢），未分层样式永远排在所有分层之前（最高话语权在普通规则里）（「层叠层与级联」一节）；任务二考「第三方进低层」——把它挪进 `@layer vendor` 后，未分层的业务样式天然赢，与书写顺序无关。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+@layer reset, base, components, utilities;
+
+@layer reset       { .text { color: black; } }
+@layer base        { .text { color: gray; } }
+@layer components  { .text { color: blue; } }
+@layer utilities   { .text { color: red; } }   /* 最终生效：后声明的层赢 */
+
+.text { color: green; } /* 未分层：压过上面全部四层 */
+
+/* 任务二：先把第三方样式包进低层（构建期或 @import layer()） */
+@layer vendor;
+@import url("third-party.css") layer(vendor);
+
+/* 业务样式保持未分层：天然赢过 vendor 层，无需 !important */
+.btn {
+  padding: 12px 24px;
+}
+```
+
+验收点：任务一里把 `utilities` 挪到声明列表最前面再刷新，红色会变成蓝色被压——层内权重相同、书写顺序也救不了它，赢的永远是层顺序；任务二这正是 `!important` 军备竞赛的机制层解法：层的裁决发生在权重比较之前。

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: GoF设计模式的C++实现
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/340-ConstexprCompileTime'
   - 'cpp/050-NamespaceLinkage'
@@ -672,3 +672,66 @@ std::sort(v.begin(), v.end(), [](int a, int b){ return a > b; });
 std::vector<std::function<void()>> actions;
 actions.push_back([]{ std::cout << "hi"; });
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：用 C++20 的现代写法重写两个经典模式——策略模式不用继承（`std::function` 或 concepts 约束的模板参数二选一），工厂不用 new（`std::unique_ptr<Shape>` + `make_unique`）；写出策略版「不同税率计算」与工厂版「按名字创建形状」，并回答：`std::function` 版与模板版的取舍（运行时切换 vs 编译期定死、二进制体积）。
+
+**提示**：策略模式的核心是「把变化的算法参数化」——`std::function<double(double)>` 是运行时换绑，`template <TaxPolicy P>` 是编译期换绑（零开销 + 每策略一份代码）。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <functional>
+#include <memory>
+#include <print>
+
+// 策略（运行时版）
+double taxWith(std::function<double(double)> policy, double income) {
+    return policy(income);
+}
+auto flat   = [](double x) { return x * 0.1; };
+auto tiered = [](double x) { return x <= 5000 ? 0.0 : (x - 5000) * 0.2; };
+
+// 工厂（RAII 版）
+struct Shape { virtual ~Shape() = default; virtual const char* name() const = 0; };
+struct Circle : Shape { const char* name() const override { return "circle"; } };
+struct Square : Shape { const char* name() const override { return "square"; } };
+
+std::unique_ptr<Shape> makeShape(std::string_view n) {
+    if (n == "circle") return std::make_unique<Circle>();
+    if (n == "square") return std::make_unique<Square>();
+    return nullptr;
+}
+```
+
+要点自查：`std::function` 的代价（类型擦除 + 可能的堆）换来运行时灵活；模板策略零开销但「策略在编译期写死」——按「策略会不会在运行时换」来选；工厂返回 `unique_ptr` 把所有权责任一起交出去。
+
+**任务二**：反模式辨析——单例在本篇为什么被列为「慎用」？写出线程安全的最小单例（Meyers singleton，C++11 起线程安全）与它的三个问题（全局状态、测试隔离、初始化顺序），再给出「何时仍然合理」的判断（日志、配置这类「天然全局」是否豁免）。
+
+**提示**：C++11 起局部静态变量初始化是线程安全的（magic static），双检锁手写版反而不必再写；单例的本质问题不是「实现难」而是「调用点无法注入替身」。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+class Config {
+    Config() = default;
+public:
+    Config(const Config&) = delete;
+    Config& operator=(const Config&) = delete;
+    static Config& get() {
+        static Config inst;      // C++11 起初始化线程安全
+        return inst;
+    }
+    int timeout() const { return 30; }
+};
+
+// 三个问题：调用点 Config::get() 硬编码 → 测试无法注入假配置；
+// 全局可变状态 → 多线程竞态风险集中在暗处；析构顺序跨翻译单元不可控。
+// 合理场景：真正全局且无状态可替换的基础设施（日志门面、进程级缓存）；
+// 业务配置等「理论上会变」的依赖用参数传递，别用单例。
+```
+
+要点自查：Meyers singleton 四行写法（私有构造 + delete 拷贝 + 静态局部 get）是面试高频；「能不能给测试造个假的」是单例合理性的最终判据——答不上就别用。

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 字符串、数值、日期、条件表达式四族函数：CONCAT_WS 跳 NULL、字节与字符之别、DATEDIFF 与 TIMESTAMPDIFF、NULLIF 除零保护与 CASE 两形态
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -185,6 +185,47 @@ GROUP BY c.company;
 ```
 
 判读要点：任务 2 若出现 `#null`，说明 CONCAT 把 NULL 拼了进来——这正是 CONCAT_WS 登场的信号。任务 4 的经验法则：IF() 嵌套超过两层就该换 CASE。
+</details>
+
+## 遮码自检
+
+遮住答案先写；判断标准是能说出每行的"为什么"。
+
+**第 1 题：`CONCAT('初音', NULL, '未来')` 与 `CONCAT_WS('-', '初音', NULL, '未来')` 各返回什么？报表拼展示列该用哪个，为什么？**
+
+<details><summary>参考答案</summary>
+
+前者返回 NULL——CONCAT 里只要有一个 NULL 整体变 NULL；后者返回 `'初音-未来'`——
+CONCAT_WS 跳过 NULL。报表拼列（电话、邮箱随时可能没填）用 CONCAT_WS：有几段显示几段，
+不会因为一段缺失把整列清空。
+</details>
+
+**第 2 题：utf8mb4 下 `LENGTH('洛天依')` 和 `CHAR_LENGTH('洛天依')` 各是多少？做"名字不超过 2 个字"的校验用哪个？**
+
+<details><summary>参考答案</summary>
+
+LENGTH 数字节：9（'洛天依' 3 个汉字，每个汉字 3 字节）；CHAR_LENGTH 数字符：3。
+做字符数限制用 CHAR_LENGTH——口径错成字节后，"不超过 2 个字"就变成"不超过 6 字节"，
+校验结果随字符集漂移。业务口径一律 CHAR_LENGTH；LENGTH 只在算存储/协议长度时用。
+</details>
+
+**第 3 题：统计"失败率 = failed / cnt"，cnt 为 0 时怎么写才跨方言安全？**
+
+<details><summary>参考答案</summary>
+
+`failed / NULLIF(cnt, 0)`。NULLIF 两参相等时返回 NULL，除法得到 NULL 而不是报错——
+PG 与标准 SQL 里 `total / 0` 直接抛错，会打断整条查询。`x / NULLIF(y, 0)` 是除零保护的
+通用模板，比先 WHERE 过滤掉 cnt=0 再除更不容易漏分支。
+</details>
+
+**第 4 题：按"身高区间打标"和按"公司等值映射"各该用 CASE 的哪种形态？漏写 ELSE 会怎样？**
+
+<details><summary>参考答案</summary>
+
+区间/多列条件只能用搜索 CASE（`CASE WHEN height >= 160 THEN ...`）；单列等值映射用简单
+CASE（`CASE company WHEN ... `）更清爽。漏写 ELSE 且条件全不中时结果是 NULL——报表上
+神秘缺数。CASE 是表达式不是语句，可以进 SELECT、ORDER BY 甚至 SUM 内部，这是条件计数的
+通用写法。
 </details>
 
 ## 检验清单

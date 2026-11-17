@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 'GitHub社区健康文件深度解析：以"社区公约"清单为主线，逐一讲解 CONTRIBUTING、CODE_OF_CONDUCT、SUPPORT、SECURITY、CODEOWNERS 等文件与默认文件机制。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/180-PullRequestCompleteCollaborationFlow'
   - 'github/360-GitHubPagesMultiSolution'
@@ -255,6 +255,38 @@ graph TD
 | 许可证缺失 | 访客不敢使用代码 | 未添加 LICENSE | LICENSE 必须每个仓库单独添加，不能走默认文件 |
 | 模板文件名不对 | 新建 Issue 时模板不出现 | 模板未放对目录 | Issue 模板必须位于 `.github/ISSUE_TEMPLATE/` |
 | 内容与现实脱节 | 新人按指南操作失败 | 文件写完从不更新 | 每轮迭代同步检查健康文件，用社区标准页面体检 |
+
+## 9. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考答案自己写，写完再对照。
+
+**任务一**：社区健康四件套各答一问——CONTRIBUTING、CODE_OF_CONDUCT、SECURITY、SUPPORT 分别回答访客的什么问题？其中哪个文件的存在决定了「漏洞该走私密通道而不是公开 Issue」？
+
+**任务二**：组织下 40 个仓库都要默认 CONTRIBUTING，怎么配？写出仓库名、位置、可见性三个条件，并指出哪个文件**不能**走这种默认机制。
+
+**任务三**：SECURITY.md 里「支持的版本」一节为什么必须是一张表？安全漏洞报告渠道应指向哪里？
+
+**参考答案**（先自己写完再看）：
+
+```text
+任务一：
+CONTRIBUTING      —— 想贡献代码，流程是什么？
+CODE_OF_CONDUCT   —— 社区里什么行为可以/不可以，违规怎么处理？
+SECURITY          —— 发现了安全漏洞，报给谁、怎么报？
+SUPPORT           —— 遇到问题去哪求助（避免全涌向 Issue）？
+决定漏洞走私密通道的是 SECURITY.md（配合 Security advisories）。
+
+任务二：建一个名为 .github 的公开仓库，社区健康文件放根目录；
+组织内没有自带同名文件的仓库自动继承。
+例外：LICENSE 不能默认继承，必须每个仓库单独放。
+
+任务三：版本支持表一眼说明「哪些版本还有安全补丁」（如
+v2.x 支持中 / v1.x 仅关键修复 / v0.x 不再支持），避免报告者
+拿着过期版本浪费双方时间；渠道指向私密漏洞报告（Security
+advisories），绝不留公开 Issue 入口。
+```
+
+要点自查：健康文件是「给访客的第一份契约」，文件名大小写必须规范（CONTRIBUTING.md）；单仓库内查找顺序为 `.github/` → 根目录 → `docs/`，都没有才落到组织级 `.github` 仓库；写完不更新等于没写，社区标准检查页定期体检。
 
 ## 10. 一句话记忆
 

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 从 mongosh 到业务代码：MongoClient 连接与连接池、CRUD 语法对照、事务回调 API、Change Stream、重试写与错误处理，以及与 Mongoose 的分工。
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'mongodb/030-MongoDBAggregationPipeline'
   - 'mongodb/050-MongoDBSchemaDesign'
@@ -38,7 +38,7 @@ prerequisites:
 
 ## 1. 为什么需要这一篇
 
-前面所有篇章都在 mongosh 里操作数据——它是最好的学习工具，但业务代码不会跑在 shell 里。Node 服务要用官方驱动包 `mongodb` 与数据库通信。版本基线：**npm 上的 `mongodb` 包当前主线是 7.x（写作时实测最新为 7.7.0，用 `npm view mongodb version` 可复核）**，本篇示例兼容 6/7 两代，凡 6.0 起有行为变化处都会标注。
+前面所有篇章都在 mongosh 里操作数据——它是最好的学习工具，但业务代码不会跑在 shell 里。Node 服务要用官方驱动包 `mongodb` 与数据库通信。版本基线：**npm 上的 `mongodb` 包当前主线是 7.x（2026-11 经 `npm view mongodb version` 复核最新为 7.9.0）**；驱动 7.x 最低要求 Node.js 20.19.0，对 MongoDB Server 9.0 的支持始于 7.3，Server 4.2 支持已在 7.6 移除。本篇示例兼容 6/7 两代，凡 6.0 起有行为变化处都会标注。
 
 心智模型一句话：驱动就是"可编程的 mongosh"。你在 shell 里写的查询文档、更新运算符、聚合管道数组，在驱动里是同样的数据结构；差异只在三处——操作是异步的（返回 Promise）、BSON 类型是类而不是 shell 里的字面量糖、连接与资源管理要自己负责。前两处是小改，第三处是本篇的重心。
 
@@ -330,6 +330,27 @@ for await (const change of stream) {
 验证方法：启动监听后另开一个终端往 `orders` 插入一条文档，确认日志出现；`Ctrl+C` 杀掉进程再插入一条，重新启动监听——重启后那条"错过的"订单应当出现在日志里，这就是 `resumeAfter` 在续听。
 </details>
 
-## 10. 一句话记住
+## 10. 练习与自检
+
+遮码自检：先遮住答案栏，自己写出答案或代码，再展开对照。
+
+1. 为什么"每个请求 new 一个 MongoClient"是最常见也最昂贵的错误？正确做法是什么？
+2. 路由参数里的 `_id` 字符串直接拿去 `findOne` 会发生什么？写出正确写法与配套校验。
+3. 驱动 6.0 起 `findOneAndUpdate` 的返回值发生了什么变化？旧写法在 6/7 上的症状是什么、为什么难排查？
+4. `withTransaction` 的回调为什么必须可重入？列举两个"不能写进回调"的操作。
+5. 捕获到错误码 `11000` 时，它通常意味着什么？应该按错误处理还是按业务分支处理？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 每个客户端自带独立的连接池与监控连接，按请求新建会把连接数打成请求量，内存与握手开销全部翻倍；正确做法是模块级单例，整个进程共享一个 `MongoClient`。
+2. 直接查永远返回 null（`_id` 是 ObjectId 不是字符串），且不报错——静默失败。正确写法：`if (!ObjectId.isValid(id)) { /* 返回 400 */ }`，再 `findOne({ _id: new ObjectId(id) })`。
+3. 6.0 移除了 `includeResultMetadata`，`findOneAndUpdate` 一律直接返回文档或 null；旧写法 `result.value` 在 6/7 上拿到 undefined，表现为"抢占永远失败"但不报任何错——静默、难排查，升级依赖时要全局搜索 `.value`。
+4. 瞬态事务错误会让驱动重试整个回调，所以回调里不能有不可重复的外部副作用：发 HTTP 请求、写外部消息队列、依赖"上一行执行过"的进程内状态都不行——回调只应包含对数据库的操作。
+5. `11000` 是重复键冲突（唯一索引），例如注册接口撞邮箱唯一索引；它属于"正常业务分支"，应按冲突返回业务结果（如"该邮箱已注册"），而不是当 500 错误抛出。
+
+</details>
+
+## 11. 一句话记住
 
 > 一个进程一个 MongoClient，条件文档从 mongosh 原样照搬；`_id` 记得转 ObjectId，6.0 起 `findOneAndUpdate` 直接返回文档；事务用 `withTransaction`、监听用 token 续听、错误按 code 分流。

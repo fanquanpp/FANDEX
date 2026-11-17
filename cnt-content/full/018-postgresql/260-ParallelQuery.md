@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL 并行查询机制：并行顺序扫描、并行索引扫描、并行聚合、Gather 节点与并行度配置。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/150-GeneratedColumn'
   - 'postgresql/140-UpdatableView'
@@ -212,16 +212,16 @@ SET parallel_setup_cost = 1000.0;  -- 启动 Worker 的代价
 ### 5.2 并行度计算
 
 ```
-优化器按"表每增大 3 倍, 多加 1 个 Worker"的规则推导默认并行度:
+优化器按"超过阈值先给 1 个基数 Worker, 此后表每增大 3 倍, 多加 1 个 Worker"的规则推导默认并行度:
 
 表大小: 1GB = 1024MB
 min_parallel_table_scan_size: 8MB
 
-并行度 = floor(log_3(1024 / 8))
-       = floor(log(128) / log(3))
-       = 4
+并行度 = 1 + floor(log_3(1024 / 8))
+       = 1 + floor(log(128) / log(3))
+       = 5
 
-实际并行度 = min(4, max_parallel_workers_per_gather, max_parallel_workers, 表页数)
+实际并行度 = min(5, max_parallel_workers_per_gather, max_parallel_workers, 表页数)
 ```
 
 ### 5.3 强制并行
@@ -277,3 +277,29 @@ SELECT pid, backend_type, wait_event_type, wait_event
 FROM pg_stat_activity
 WHERE backend_type = 'parallel worker';
 ```
+
+## 教学自检
+
+遮住正文公式与参数表，先自己算再对照参考答案。
+
+### 任务一：算出默认并行度
+
+需求：min_parallel_table_scan_size=8MB，表 512MB。按"表每增大 3 倍加 1 个 Worker"的规则，默认并行度是多少？最终生效值还受哪两个参数约束？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+512/8 = 64 = 2^6；超过阈值即有 1 个基数 Worker，此后每 3 倍加 1 个：1 + floor(log_3(64)) = 4 个 Worker（8MB→1、24MB→2、72MB→3、216MB→4、648MB→5，与官方文档 "one more worker for every tripling" 一致）。最终值还要与 max_parallel_workers_per_gather（单查询上限，默认 2）、max_parallel_workers（全局上限，默认 8）取最小——所以不调参数时往往只有 2 个 Worker 起来。想让报表吃满核，三个参数要一起看。
+
+</details>
+
+### 任务二：哪些操作永远不会并行
+
+需求：至少说出四类无法并行化的查询，并说明事务内为什么拿不到并行 Worker。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+典型不可并行：写操作（INSERT/UPDATE/DELETE 主执行体）、游标（DECLARE CURSOR）、含易变函数或副作用函数（SEQUENCE nextval）的查询、REPEATABLE READ 以下持有的并行事务边界外的 SELECT FOR UPDATE 行锁场景、以及事务已进入"进行中"状态后（PG 11 起放宽为并行计划可用，但 cursor 与子事务边界仍受限）。本质原因：并行 Worker 是独立进程，无法共享游标状态、副作用与行锁语义。验证方法：EXPLAIN 计划里没有 Gather 节点即未并行，先排除这些限制再调参数。
+
+</details>

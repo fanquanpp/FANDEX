@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Java 8 至 26 现代语言特性、API 演进与 JVM 改进全景式深度解析（特性时间线与取舍导览本位）
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/680-JavaSerialization'
   - 'java/650-JavaIONIO'
@@ -2519,3 +2519,13 @@ list.add("x"); // 抛出 UnsupportedOperationException
 NumberFormat fmt = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
 String s = fmt.format(1000);
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 按时间线说出 LTS 版本与各自标志性特性。——8：Lambda/Stream/新时间 API；11：模块化成熟、HttpClient；17：sealed、强封装默认；21：虚拟线程、模式匹配 switch、record 模式；25：ScopedValue、紧凑源文件、灵活构造器主体、紧凑对象头。
+2. record 解决了"数据载体"的什么痛点？与 Lombok 的本质差异？——样板代码（构造/equals/hashCode/toString）进语言且不可变语义明确；Lombok 是编译期插件（生成可变类亦可），record 是语言级不可变类型。
+3. 灵活构造器主体（JDK 25 正式）允许 super(...) 之前做什么？解决什么老问题？——允许参数校验与字段预处理后再调 super；老规则要求 super 必须第一行，导致"先校验后委托"无法表达，参数校验只能延迟到父类构造完。
+4. 紧凑源文件与实例 main（JEP 512）让"Hello World"短到什么程度？谁还该写完整类？——`void main() { println("hi"); }` 单文件直接 java 运行；正式项目、需要包结构与依赖的代码仍写完整类与 module/package。
+5. 判断：JDK 26 的 Lazy Constants（JEP 526）已可生产使用。——不对，仍是第二预览；生产可用的是 Stable Values 概念的后续正式化路线，预览特性需 --enable-preview 且随时可能再变。

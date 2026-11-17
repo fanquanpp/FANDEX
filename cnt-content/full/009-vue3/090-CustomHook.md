@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Vue3组合式函数（Composables/自定义Hook）设计模式、最佳实践与常用Hook实现。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'vue3/320-Vue3PerformancePractice'
   - 'vue3/050-ReactiveSystem'
@@ -20,7 +20,7 @@ prerequisites: []
 
 ### 1.1 什么是组合式函数
 
-组合式函数（Composable）是利用Vue组合式API封装的可复用状态逻辑。习惯上以 `use` 前缀命名。
+先看它解决什么问题。组件里总有一类逻辑不属于任何单一业务：鼠标位置、窗口尺寸、防抖搜索、请求竞态——三个页面要用，你就得在三个组件里各写一遍 setup + onMounted + onBeforeUnmount，漏一处清理就泄漏。把「状态 + 操作 + 生命周期」打包成普通函数，哪个组件需要就调用一次，钩子会自动挂到当前组件实例上——这就是组合式函数（Composable）：**利用组合式 API 封装的可复用状态逻辑**。它和普通工具函数的边界在于：工具函数只有逻辑没有状态与生命周期，组合式函数三者都管。习惯上以 `use` 前缀命名。
 
 ```typescript
 // 基本结构
@@ -507,3 +507,13 @@ export function useSearch(props: { query: string }) {
 3. **SSR安全**：浏览器API只在onMounted中使用
 4. **灵活组合**：composable之间可以互相调用
 5. **类型安全**：使用泛型提供完整TypeScript支持
+
+## 自检
+
+回答不出的回对应小节；实现题先遮住示例代码自己写，再对照。
+
+1. 组合式函数与普通工具函数的本质区别是什么？onMounted 写在 useXxx 内部，为什么能挂到调用方的组件实例上？
+2. useMouse 的坐标为什么返回 ref 而不是普通变量？在 setup 里解构 `const { x, y } = useMouse()` 后还保持响应吗？
+3. useFetch 要防住哪些竞态问题？请求 A 还没回来参数就变成 B 了，旧响应怎么作废？
+4. 为什么传入 composable 的 props 要先 toRefs 才能被 watch 追踪？
+5. 一个在 SSR 下会炸的 composable 有什么特征？怎么改（window 访问挪进 onMounted / 提供环境判断）？

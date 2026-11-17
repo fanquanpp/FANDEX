@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 构造与析构、多重继承与虚继承、CRTP 静态多态、对象生命周期、拷贝与移动控制、接口设计——OOP 进阶本位；操作符重载/模板/STL/虚函数表见各自专篇。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/200-CppOOPBasics'
   - 'cpp/210-OperatorOverloading'
@@ -433,3 +433,65 @@ private:
     void afterWork() {}
 };
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：用 NVI（非虚接口）惯用法重构下面的「全虚公开」设计：把 `process` 改成公开非虚函数，负责日志与计时；把真正的定制点收进**受保护的纯虚** `doWork`。要求说明每一步为什么这么做。
+
+```cpp
+class Task {
+public:
+    virtual void process() = 0;   // 派生类必须重写，且直接暴露给用户
+};
+```
+
+**提示**：NVI 的核心是「接口（能不能调）与定制点（怎么定制）分离」——不变式由基类在 `process` 里集中维护，派生类只能覆盖受保护的 `doWork`，无法绕过前后处理。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+class Task {
+public:
+    void process() {              // 公开非虚：模板方法
+        beforeWork();
+        doWork();                 // 定制点
+        afterWork();
+    }
+    virtual ~Task() = default;
+protected:
+    virtual void doWork() = 0;    // 受保护：只给派生类覆盖，不给外部调用
+private:
+    void beforeWork() { /* 计时/日志等不变式 */ }
+    void afterWork()  { /* 清理/统计 */ }
+};
+```
+
+要点自查：虚函数放进 protected 甚至 private 都合法（虚机制看的是动态类型，不是访问级别）；`process` 非虚保证「前后处理无法被绕过」，这正是模板方法模式的骨架。
+
+**任务二**：解释下面两种写法的差异——`dynamic_cast` 向下转型与 `static_cast` 向下转型各在什么前提下安全？`dynamic_cast` 转换失败返回什么（指针版与引用版）？
+
+```cpp
+struct Base { virtual ~Base() = default; };
+struct Derived : Base { int extra = 42; };
+
+void f(Base* p, Base& r) {
+    auto* d1 = dynamic_cast<Derived*>(p);   // 指针版
+    auto& d2 = dynamic_cast<Derived&>(r);   // 引用版
+    auto* d3 = static_cast<Derived*>(p);    // 无检查
+}
+```
+
+**提示**：`static_cast` 向下转型的安全前提是「你**确定**动态类型确实是 Derived」；`dynamic_cast` 靠 RTTI 在运行时查——指针失败给 `nullptr`，引用失败抛 `std::bad_cast`。
+
+**参考实现**（先自己写完再看）：
+
+```text
+- static_cast<Derived*>(p)：编译期强转，前提由程序员保证（通常出现在「上游已判定类型」的分支）；判断错了是 UB。
+- dynamic_cast<Derived*>(p)：运行时检查，p 指向的不是 Derived（含其派生）时返回 nullptr——适合「试一试」语义。
+- dynamic_cast<Derived&>(r)：引用没有空值，失败只能抛 std::bad_cast——适合「必须是 Derived」的契约语义。
+- 前提条件：基类必须多态（至少一个虚函数，通常即虚析构），否则 dynamic_cast 编译不通过。
+```
+
+要点自查：先问「失败可不可能」再选 cast——可能失败且需要分支处理的用指针版 `dynamic_cast`；不可能失败的用 `static_cast` 并留注释；代码里成片的 `dynamic_cast` 是「该用虚函数而不是 switch 类型判断」的信号。

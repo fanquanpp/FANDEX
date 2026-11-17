@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: "从「老板要求换个主色，你却要全文替换 30 处色值」出发，用自定义属性把值抽成语义令牌，吃透运行时变量与预处理器变量的本质区别、作用域继承的层叠规则、var() 回退与无效化陷阱，最终搭出 JS 可实时改写的双主题系统。"
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/120-CSSFunctions'
   - 'css/360-MediaQuery'
@@ -215,6 +215,64 @@ box-shadow: var(--shadow, 0 2px 8px rgb(0 0 0 / 0.1));
 - 给一个嵌套结构能口算每个节点读到的变量值；
 - 「变量拼错页面没报错但样式丢了」能解释无效化机制并说出排查路径；
 - 能写出「跟随系统加手动覆盖」的主题切换骨架，并解释两者优先级如何安排。
+
+## 11. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 3.1-3.4 节的示例代码自己写，再对照参考实现。
+
+**任务一**：实现「局部换肤」——`.card` 定义 `--card-accent`（默认蓝），卡片内按钮取用；另一张卡片只覆写这一个变量就整体变绿；并写出「变量拼错时按钮变透明而不是报错」的验证代码（带兜底与不带兜底各一行）。
+
+**任务二**：注册一个可过渡的角度变量——`--spin` 从 0deg 过渡到 360deg 驱动图标旋转；回答「删掉 @property 注册后过渡为什么消失」。
+
+**提示**：任务一考「变量就是属性」：覆写发生在祖先上、取值走继承链（第 3.2 节），兜底语法是 `var(--x, fallback)`（第 3.3 节）；任务二考 @property 的 syntax/initial-value/inherits 三件套（第 3.4 节），未注册变量是「整体替换、无法插值」。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.card {
+  --card-accent: #2563eb; /* 默认令牌：蓝色 */
+}
+
+.card .btn {
+  background: var(--card-accent);
+}
+
+.card--green {
+  --card-accent: #16a34a; /* 只改一个变量，整棵子树换肤 */
+}
+
+/* 兜底验证 */
+.btn-safe {
+  background: var(--card-aksent, gray); /* 拼错 + 兜底：灰色生效 */
+}
+
+.btn-broken {
+  background: var(--card-aksent); /* 拼错无兜底：声明无效，退回初始值透明 */
+}
+
+/* 任务二 */
+@property --spin {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.icon {
+  --spin: 0deg;
+  transform: rotate(var(--spin));
+  transition: --spin 0.6s ease;
+}
+
+.icon:hover {
+  --spin: 360deg;
+}
+
+/* 删掉注册块后：--spin 变回无类型 token，transition 无法对它插值，
+   hover 时角度直接瞬变——类型注册是插值能力的前提 */
+```
+
+验收点：任务一里 `.btn-broken` 在 DevTools 里显示「Invalid property value」且背景退到透明而不是黑或白——「静默失效」的现场；任务二若把 syntax 写成 `'<number>'` 而值带 `deg`，整条注册不合法，过渡同样消失。
 
 ## 本章总结
 

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 构建工具对比：Make、CMake、Vite的工作原理、配置方法与适用场景。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'shell/080-ProjectInit'
   - 'cs-fundamentals/040-ProgrammingParadigmBasics'
@@ -210,11 +210,11 @@ Vite 利用浏览器原生 ES Module 实现极速开发体验：
 
 - 不打包，直接利用浏览器 ESM 加载
 - 按需编译，只编译当前页面用到的模块
-- 使用 esbuild 预构建依赖（比 Webpack 快 10-100 倍）
+- Vite 7 及以前用 esbuild 预构建依赖（比 Webpack 快 10-100 倍）
 
 **生产构建**：
 
-- 使用 Rollup 打包
+- 打包：Vite 8（2026-03 发布）起由 **Rolldown**（Rust 实现）统一承担开发与生产的打包；Vite 7 及以前是 esbuild（开发预构建）+ Rollup（生产打包）的双引擎组合
 - Tree Shaking、代码分割、CSS 代码分割
 
 ```
@@ -314,11 +314,11 @@ export default function myPlugin() {
 
 | 特性             | Vite     | Webpack  | Rollup | esbuild  |
 | :--------------- | :------- | :------- | :----- | :------- |
-| **开发服务器**   | 原生 ESM | 需配置   |        |          |
+| **开发服务器**   | 原生 ESM | 需配置   | 无     | 无       |
 | **HMR 速度**     | 极快     | 中等     | —      | —        |
 | **构建速度**     | 快       | 慢       | 中等   | 极快     |
-| **Tree Shaking** |          |          | 最佳   |          |
-| **代码分割**     |          |          |        |          |
+| **Tree Shaking** | 好（继承打包器能力） | 支持 | 最佳 | 有限 |
+| **代码分割**     | 内置自动 | 支持但需配置 | 支持 | 有限 |
 | **插件生态**     | 丰富     | 最丰富   | 中等   | 较少     |
 | **适用场景**     | 应用开发 | 复杂应用 | 库开发 | 极速编译 |
 
@@ -371,3 +371,21 @@ export default defineConfig({
 - **动态导入**：`import()` 实现懒加载
 - **资源压缩**：图片（Sharp）、CSS（cssnano）、HTML（html-minifier）
 - **CDN 外置**：大型库（Vue、React）使用 CDN 加载
+
+## 7. 动手自检：遮住配置，说出每一步
+
+先遮住参考答案，按题干自己写出，再对照。
+
+1. CMake 项目的标准构建流程四步（从 mkdir 到 install），遮住第 3.2 节写出来。
+2. Makefile 里 `.PHONY: clean` 不写会发生什么？触发条件是什么？
+3. 为什么「开发组件库」推荐 Rollup/Vite lib 模式而不是 Webpack？
+4. Vite 为什么开发快（浏览器 ESM 按需）而生产仍要打包？如果生产也直接发 ESM 给浏览器会有什么问题？
+
+<details>
+<summary>参考答案</summary>
+
+1. `mkdir build && cd build` → `cmake ..`（生成构建文件）→ `cmake --build .`（编译）→ `ctest` 与 `cmake --install . --prefix=/usr`（测试与安装）。核心心智模型：CMake 是「元构建系统」，只负责生成 Makefile/Ninja/VS 工程等具体构建文件。
+2. 若当前目录恰好存在名为 clean 的文件，`make clean` 会认为目标已是最新而拒绝执行删除任务。`.PHONY` 声明这是伪目标（不对应文件），让 make 跳过文件时间戳检查。
+3. 库的产物要被其他项目消费，关键指标是产物干净与 Tree Shaking 友好——Rollup 对 ES Module 的静态分析最彻底，去掉未引用代码最干净；Webpack 面向应用运行时（loader/HMR/runtime 注入），产物里会带额外运行时代码。
+4. 开发时按需编译只需极短的冷启动；生产环境如果直接发裸 ESM，浏览器要对每个模块发一次请求（数百个请求的瀑布）、也无法做 Tree Shaking、压缩与产物指纹——打包把「按需」换成了「传输效率」，这是开发体验与生产性能两条优化目标的不同取舍。
+</details>

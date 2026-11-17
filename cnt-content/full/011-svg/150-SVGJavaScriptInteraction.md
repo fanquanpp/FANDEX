@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: DOM 操作、事件绑定、属性读写、动态生成与数据驱动可视化。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'svg/130-SVGCSSStyling'
   - 'svg/140-SVGAnimationBasics'
@@ -22,7 +22,7 @@ prerequisites:
 
 ---
 
-> 前置知识：CSS 样式化的优先级规则（《SVG CSS 样式化》，014-SVGCSSStyling）、基本的 DOM 与事件模型。
+> 前置知识：CSS 样式化的优先级规则（《SVG CSS 样式化》，130-SVGCSSStyling）、基本的 DOM 与事件模型。
 >
 > 学习目标：掌握 SVG DOM 与 HTML DOM 的差异（className、createElementNS、几何属性读写）；能把鼠标事件坐标正确换算为用户坐标（拖拽）；会做数据驱动的 enter/update/exit 渲染；了解 SVG 与 Canvas/位图互转的路径与限制。
 
@@ -514,6 +514,31 @@ document.querySelectorAll('svg *').forEach((el) => {
   el.addEventListener('click', (e) => console.log(e.target.tagName, e));
 });
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 手写题：动态创建一个半径 30 的圆并挂进 svg。为什么必须用 createElementNS？用 createElement 会得到什么？
+
+2. 修 Bug 题：`rect.className = 'active'` 之后样式没生效——SVG 上 className 的坑是什么？正确写法？
+
+3. 预测题：`path.getTotalLength()` 返回的是什么坐标系里的长度？配合哪两个属性能做出"画线动画"？
+
+4. 概念自问：数据驱动图表的 enter/update/exit 三分支各干什么？为什么不能每次都"清空重画"？
+
+<details>
+<summary>参考答案（先自己写，再展开对照）</summary>
+
+1. SVG 元素属于 SVG 命名空间：`document.createElementNS('http://www.w3.org/2000/svg', 'circle')`。createElement 造出的元素不在 SVG 命名空间里，放进 svg 不按图形渲染（正文第 3 节）。
+
+2. SVG 元素的 className 是 SVGAnimatedString 对象而非字符串，直接赋值无效；用 `el.setAttribute('class', 'active')` 或 classList API（正文 1.1 与 1.2）。
+
+3. 用户坐标系里的路径总长。配合 `stroke-dasharray = 路径长`、`stroke-dashoffset` 从路径长过渡到 0，即"画线动画"（正文第 5 节）。
+
+4. update 改现有元素属性、exit 移除多余元素、enter 补建新元素。保住已复用的 DOM 节点与绑定的事件、过渡状态；清空重画丢状态、丢动画、成本也高（正文 6.2）。
+
+</details>
 
 ## 小结
 

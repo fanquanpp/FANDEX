@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Java容器化部署
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/920-JavaMessageQueue'
   - 'java/910-JavaRedis'
@@ -59,14 +59,14 @@ Docker 在 2013 年发布时，Java 已是 18 岁的成熟语言，其内存模�
 | 2018 | JDK 8u191 | 反向移植容器感知到 8u |
 | 2019 | Jib 1.0 | Google 推出无 Dockerfile 的 Java 镜像构建工具 |
 | 2020 | Spring Boot 2.3 Layered JAR | 依赖层与应用层分离，缓存命中率大幅提升 |
-| 2021 | JDK 17 LTS | 增强调的容器检测、cgroups v2 支持 |
+| 2021 | JDK 17 LTS | 增强调的容器检测、cgroups v2 支持（memory.min/low 纳入感知） |
 | 2021 | Distroless Java 镜像普及 | Google 推出无 shell 极简镜像 |
 | 2022 | Spring Boot 3 + GraalVM Native Image | 启动时间从秒级降到毫秒级 |
 | 2023 | JDK 21 + 虚拟线程 | 容器内高并发密度提升 10 倍 |
-| 2023 | CRaC（JEP 423） | Checkpoint/Restore，冷启动毫秒级 |
+| — | CRaC 生态 | OpenJDK CRaC 项目（Coordinated Restore at Checkpoint，openjdk.org/projects/crac）持续研究 Checkpoint/Restore，但其 JEP 草案始终处于 draft 状态、从未 targeted 任何版本，因此从未进入 mainline JDK；该能力由 Azul Zulu with CRaC、BellSoft Liberica with CRaC 等下游发行版提供，冷启动可达毫秒级。注意：JEP 423 是 Region Pinning for G1（JDK 22），与 CRaC 无关 |
 | 2024 | Buildpacks 进入 CNCF Graduated | 标准化应用转镜像流程 |
-| 2024 | JDK 23 + cgroups v2 完整支持 | 容器检测稳定性提升 |
-| 2025 | JEP 510: Generational Shenandoah in Containers | 容器内低延迟 GC 进一步优化 |
+| 2025 | JDK 25 | 紧凑对象头转正（JEP 519，JDK 24 为 JEP 450 实验版），容器内小对象内存密度显著提升；Generational Shenandoah 正式（JEP 521） |
+| 2026 | JDK 26 | AOT 对象缓存（JEP 516，Leyden 路线）等冷启动优化与 Native Image 叠加 |
 
 ### 三大设计动机
 
@@ -722,6 +722,8 @@ ENTRYPOINT ["/app/demo-app"]
 | JIT 预热 | 需要 | 无（AOT） |
 
 ### 示例 6：CRaC 检查点恢复
+
+前置说明：`-XX:CRaCCheckpointTo` / `-XX:CRaCRestoreFrom` 参数与 checkpoint/restore 能力不在 mainline OpenJDK 中（CRaC 的 JEP 草案始终处于 draft 状态、从未 targeted 任何版本），需要使用 CRaC 兼容发行版，如 Azul Zulu with CRaC 或 BellSoft Liberica with CRaC（下方示例即用 Liberica CRaC 运行时镜像）。
 
 `Dockerfile.crac`：
 
@@ -1684,3 +1686,13 @@ spec:
 ```
 
 </details>
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 多阶段构建的两阶段各放什么？镜像体积差多少量级？——builder 阶段放 JDK+依赖做编译，runtime 阶段只拷产物 + JRE/jlink 运行时；GB 级降到百 MB 级。
+2. JVM 容器感知的两条关键参数与默认值是什么？——UseContainerSupport 默认开（JDK 10+）；MaxRAMPercentage 建议 70% 左右，替代手算 -Xmx。
+3. Java 应用镜像层的最佳排布顺序是什么？为什么？——先 COPY pom/build 文件下载依赖，再 COPY 源码编译；依赖层不因源码改动失效，缓存命中率高。
+4. Distroless 镜像的收益与代价？——收益：无 shell 极小攻击面；代价：不能 exec 进容器调试，排查要靠日志与 sidecar。
+5. CRaC 解决什么问题？在 K8s 里落地要注意什么？——checkpoint/restore 让 JVM 快照恢复到毫秒级启动；注意 restore 后网络连接、随机数种子等状态重建，需要 CRaC 兼容运行时。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 双向调用规则：空安全映射、静态成员与 @Jvm 系列注解。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'kotlin/030-KotlinBasicSyntax'
   - 'kotlin/130-NullSafetyDetailed'
@@ -315,3 +315,23 @@ info.setActive(false);       // 正确：setter 名为 setActive
 1. **网关加固**：给第 1 节的 Java `TicketGateway` 逐一加上 `@Nullable`/`@NotNull` 注解，重新编译 Kotlin 调用方，观察哪些原本"能编译"的用法变成了编译错误。思路：重点看返回值与参数两侧注解对平台类型推断的影响。
 2. **工具类重塑**：把一段 Kotlin 顶层工具函数（含一个默认参数函数）从 `XxxKt` 类名改为 `MusicUtils`，并让 Java 侧可以以最少参数调用。思路：组合使用 `@file:JvmName` 与 `@JvmOverloads`，写一个 Java main 验证全部重载。
 3. **SAM 双向验证**：定义一个 Kotlin `fun interface` 与一个 Java `Comparator` 使用场景，分别在 Kotlin 与 Java 侧用 lambda 调用对方语言定义的接口，记录哪一侧需要 `fun interface`、哪一侧开箱即用。思路：Java 侧所有 SAM 接口对 Kotlin lambda 开放；Kotlin 接口必须显式 `fun interface` 才能被 Java lambda 实现。
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：平台类型的三次暴露**。Java 方法 `String getConfig(String key)` 未注解可空性。Kotlin 侧分别以「直接用返回值」「赋给 `String`」「赋给 `String?`」三种方式消费，各会发生什么？
+
+参考答案：直接链式调用 `config.length`——编译通过（平台类型信任调用方），null 时运行时 NPE；赋给 `String`——null 时在赋值点抛 `NullPointerException`（类型断言失败）；赋给 `String?`——编译通过且安全，由调用方判空。结论：平台类型的空检查责任被推迟到「第一次类型收窄」，越晚收窄越危险，接 Java API 的第一件事就是用注解或显式可空类型收口。
+
+**练习 2：@JvmOverloads 展开**。写一个 Kotlin 函数 `fun connect(host: String, port: Int = 3306, timeout: Long = 5_000)`，让它从 Java 以 1、2、3 个参数都能调用，并写出 Java 侧实际生成的重载数量。
+
+参考实现：
+
+```kotlin
+@JvmOverloads
+fun connect(host: String, port: Int = 3306, timeout: Long = 5_000) { /* ... */ }
+```
+
+参考答案：生成 3 个重载（connect(String)、connect(String, int)、connect(String, int, long)）——默认值每省略一个就多一个重载。追问：不加 @JvmOverloads 时 Java 调用 connect("db") 会怎样？（答：编译错——Kotlin 默认参数只在 Kotlin 调用方展开，字节码里只有一个全参方法。）
+
+**练习 3：默认方法双轨**。Kotlin 接口带默认实现 `interface Api { fun ping() = println("pong") }`。在 Kotlin 1.4 前后，Java 实现该接口的行为差异是什么？2.2 的 `-jvm-default` 选项把生成物变成了什么？
+
+参考答案：1.4 之前默认实现只进 `Api$DefaultImpls` 类，Java 实现者无法继承默认行为（且接口需留 `@JvmDefault` 兼容模式）；1.4 起经 `-Xjvm-default=all` 编译成 JVM 默认方法，Java 类不重写也自动获得实现；2.2 起 `-jvm-default` 转正并提供 enable/disable 档位——它决定的是「Kotlin 接口的默认实现编译成 JVM default 方法还是兼容代理类」。

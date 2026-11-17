@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL基于角色的权限管理：角色继承、组角色、默认权限与权限审计
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/430-SubscribePublish'
   - 'postgresql/480-SSLEncryptionConnection'
@@ -292,3 +292,38 @@ WHERE table_name = 'users';
 -- 查看数据库权限信息
 SELECT datname, datacl FROM pg_database WHERE datname = 'mydb';
 ```
+
+## 教学自检
+
+遮住示例代码，先自己回答再对照参考答案。
+
+### 任务一：角色、组、继承三件事说清楚
+
+需求：建一个不可登录的组角色 `dev_team`，把 `alice` 加入并让 alice 继承其权限。写出 DDL； alice 退出后怎么收回？SET ROLE 的作用是什么？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+CREATE ROLE dev_team NOLOGIN;
+GRANT dev_team TO alice;          -- alice 成为成员
+REVOKE dev_team FROM alice;       -- 收回成员资格
+```
+成员身份默认自动继承（INHERIT 属性开启时）组的全部权限；`SET ROLE dev_team;` 让当前会话临时"以组的身份"行使权限（便于测试权限面、也用于非继承成员临时取权），`RESET ROLE;` 退出。"用户"与"组"在 PG 里都是 ROLE，LOGIN 属性是唯一区别——权限挂在组上、人加入组，是权限管理的标准拓扑（新人入职一条 GRANT 搞定）。
+
+</details>
+
+### 任务二：默认权限给"未来的表"
+
+需求：readonly 角色要能自动读上未来新建的所有表。写出 ALTER DEFAULT PRIVILEGES；它对"已经存在的表"生效吗？作用范围由谁决定？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT SELECT ON TABLES TO readonly;
+```
+只对未来创建的表生效，存量表仍需显式 GRANT（或一次性补授 ALL TABLES）。作用范围由"执行该语句的角色"决定：以 app_owner 身份执行，只有 app_owner 建的表自动带上授权——别人的建表不会。这正是它容易被误解的点：默认权限是"某个创建者视角的模板"，不是库级开关，必要时按创建者分别设置。
+
+</details>

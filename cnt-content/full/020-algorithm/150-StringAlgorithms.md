@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 字符串匹配的形式化定义（模式串在主串中的出现位置搜索）、KMP/Boyer-Moore/Rabin-Karp/Sunday/Z 函数等单模式匹配、Aho-Corasick 多模式匹配、后缀数组（倍增/DC3/SA-IS 线性算法）、后缀自动机（endpos 等价类）、后缀树（Ukkonen 线性算法）以及字符串动态规划（LCS、编辑距离、最长回文）的系统化讲解，覆盖复杂度证明、多语言实现（Python/C++/Java）。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'algorithm/160-DynamicProgramming'
   - 'algorithm/140-RecursionAndBacktracking'
@@ -139,7 +139,7 @@ Robert S. Boyer 与 J. Strother Moore（均任职于 SRI International）在 _Co
 
 ### 2.7 2003：DC3 线性后缀排序
 
-2003 年，Juha Kärkkäinen（Helsinki 大学）与 Peter Sanders（Karlsruhe 工业大学）在 _Journal of the ACM_ 第 53 卷第 6 期发表论文《Simple linear work suffix array construction》（DC3 算法，又称 skew algorithm）。
+2003 年，Juha Kärkkäinen（Helsinki 大学）与 Peter Sanders（Karlsruhe 工业大学）在 ICALP 2003 会议发表论文《Simple linear work suffix array construction》（DC3 算法，又称 skew algorithm）；期刊扩展版更名为《Linear Work Suffix Array Construction》、加入第三作者 Stefan Burkhardt，发表于 _Journal of the ACM_ 2006 年第 53 卷第 6 期（53(6):918-936）。
 
 - **动机**：Manber-Myers 倍增法 $O(n \log n)$ 在基因组规模（$10^9$）下仍较慢，需线性算法。
 - **核心思想**：将后缀按下标 $\bmod 3$ 分为两组：$S_{12}$（下标 mod 3 ≠ 0）与 $S_0$（下标 mod 3 = 0）。先递归排序 $S_{12}$，再利用 $S_{12}$ 的排序结果线性排序 $S_0$，最后归并。
@@ -3303,9 +3303,9 @@ def height_array(s: str, sa: list[int]) -> list[int]:
 
     后缀数组的奠基论文，提出后缀数组作为后缀树的空间高效替代，含 $O(n \log n)$ 倍增构造算法。
 
-13. **Kärkkäinen, J., & Sanders, P.** (2003). Simple linear work suffix array construction. _Journal of the ACM_, 53(6), 918-936. https://doi.org/10.1145/1217856.1217858
+13. **Kärkkäinen, J., Sanders, P., & Burkhardt, S.** (2006). Linear work suffix array construction. _Journal of the ACM_, 53(6), 918-936. https://doi.org/10.1145/1217856.1217858
 
-    DC3 算法的奠基论文，首次给出简单且实用的线性后缀数组构造算法。
+    DC3 算法的期刊扩展版（会议版为 Kärkkäinen & Sanders 2003，ICALP 2003，题为 "Simple linear work suffix array construction"），首次给出简单且实用的线性后缀数组构造算法。
 
 14. **Nong, G., Zhang, S., & Chan, W. H.** (2009). Linear suffix array construction by almost pure induced-sorting. _Data Compression Conference_, 193-202. https://doi.org/10.1109/DCC.2009.42
 

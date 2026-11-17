@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Vite 8 单引擎架构：版本演进时间线、Rolldown（Rust 打包器）、Oxc、Lightning CSS、Bundled Dev Mode 与升级迁移指南
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'vite/080-BuildSplit'
   - 'vite/100-PluginSystem'
@@ -44,8 +44,10 @@ Vite 的旧架构正是这样一辆"双引擎跑车"：开发时用 esbuild 快�
 | Vite 7 | 2025 年 6 月 | 要求 Node 20.19+ / 22.12+ 并转为纯 ESM 包、默认浏览器目标改为 `baseline-widely-available`、提供 `rolldown-vite` 实验包 |
 | **Vite 8** | **2026 年 3 月 12 日** | **Rolldown + Oxc 取代 esbuild + Rollup**，单引擎时代开启 |
 | Vite 8.1 | 2026 年 6 月 23 日 | 实验性 **Bundled Dev Mode**、Chunk Import Map、Wasm ESM 等 |
+| Vite 8.2 | 2026 年 7 月 30 日 | 增量小版本：顶层 `input` 选项等配置便利性改进 |
+| Vite 8.3 | 2026 年 9 月 10 日 | 增量小版本：顶层 `tsconfig` 选项、Devtools 迭代、Bundled Dev Mode 稳定性修复 |
 
-讲解：Vite 从 4 到 7 是"量变"（性能与体验持续打磨），Vite 8 是"质变"——官方博客称之为 **"自 Vite 2 以来最重大的架构变更"**（The most significant architectural change since Vite 2）。发布时 Vite 周下载量已达 6500 万次，是生态覆盖面最广的前端构建工具。截至 2026 年 9 月，最新的小版本线是 Vite 8.2.x。
+讲解：Vite 从 4 到 7 是"量变"（性能与体验持续打磨），Vite 8 是"质变"——官方博客称之为 **"自 Vite 2 以来最重大的架构变更"**（The most significant architectural change since Vite 2）。发布时 Vite 周下载量已达 6500 万次，是生态覆盖面最广的前端构建工具。8.2/8.3 属于增量小版本，没有单独的公告博客，发布说明见官方 releases 页；截至 2026 年 11 月，最新的小版本线是 Vite 8.3.x。
 
 ## 2. 双引擎时代的困境
 
@@ -133,6 +135,7 @@ Rolldown 的设计目标就是**集两家之长**：esbuild 的速度 + Rollup �
 | **2026 年 3 月** | **Vite 8 稳定版发布**，所有 Vite 用户底层都是 Rolldown |
 | **2026 年 5 月** | **Rolldown 1.0 稳定版发布**，正式达到生产就绪 |
 | 2026 年 7 月 | Rolldown 1.2.x 持续迭代 |
+| 2026 年 11 月 | Rolldown 1.3.x（当前 1.3.2）持续迭代 |
 
 讲解：注意顺序——Vite 8 稳定版（2026 年 3 月）先于 Rolldown 1.0（2026 年 5 月）发布，说明 Vite 团队对 Rolldown 的可靠性有足够信心。Rolldown 1.0 采用语义化版本管理：`^1.0.0` 的 API 已锁定，选项名、类型与插件钩子签名向后兼容，升级无需改代码。
 

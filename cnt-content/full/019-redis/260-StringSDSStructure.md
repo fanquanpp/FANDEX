@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: Redis SDS（Simple Dynamic String）数据结构详解：预分配策略、惰性删除、与 C 字符串的差异及二进制安全。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'redis/190-DisklessReplication'
   - 'redis/280-ModuleSystem'
@@ -118,7 +118,7 @@ sds sdsMakeRoomFor(sds s, size_t addlen) {
 
 ### 3.1 空间释放策略
 
-当 SDS 缩短字符串时，不立即释放多余内存，而是通过 `free` 字段记录：
+当 SDS 缩短字符串时，不立即释放多余内存，而是把剩余容量记在 `alloc` 里（当前 `alloc - len` 就是可复用的空间；早期版本的 SDS 才有独立 `free` 字段，5.0 起的五类型结构用 alloc 隐式表达）：
 
 ```c
 // sds.c - sdstrim
@@ -213,6 +213,31 @@ static inline char sdsReqType(size_t string_size) {
 ```
 
 短字符串使用小 header，节省内存。例如存储 "key"（3字节），使用 SDS_TYPE_8，header 仅 3 字节。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：SDS 相比 C 字符串解决了哪四个痛点？「二进制安全」具体指什么？
+
+参考答案（先自己答，再对照）：四个痛点：O(1) 取长度（len 字段，C 要遍历到 \0）；杜绝缓冲区溢出（写入前按 alloc 检查扩容）；修改减少内存重分配（预分配 + 惰性释放）；可存任意字节。二进制安全指「内容里出现 \0 不截断」——长度由 len 决定而非结尾符，所以图片字节、序列化对象都能直接存；同时 buf 末尾仍补一个 \0 兼容 C 函数。
+
+2. 动手自问：为什么 String 值的 embstr 与 raw 编码分界是 44 字节？这个数字怎么推出来的？
+
+参考答案（先自己答，再对照）：jemalloc 的分配单元是 64 字节：redisObject 头 16 字节 + sdshdr8 头 3 字节（len+alloc+flags）+ 内容 44 字节 + 结尾符 1 字节 = 64，恰好一块内存放下，读时一次 cache line 命中。超过 44 字节后拆成 redisObject 与 SDS 两块独立分配（raw），多一次指针跳转但可就地修改。推法比数字本身重要——encoding 阈值都是内存分配器的产物。
+
+3. 判断题：对 embstr 编码的键执行 APPEND 后，长度若缩回 44 字节以内，编码会转回 embstr。
+
+参考答案（先自己答，再对照）：错。embstr 是只读设计，任何写命令（APPEND、SETRANGE 等预分配路径）都会把它转成 raw，且转换是**单向**的——即使 APPEND 后长度回落，编码仍是 raw。频繁追加的值从第一个字节起就按 raw 对待，不必纠结。
+
+4. 概念自问：预分配的「翻倍」与「+1MB」两档各在什么时候生效？大值场景为什么用 +1MB？
+
+参考答案（先自己答，再对照）：扩容后新长度小于 SDS_MAX_PREALLOC（1MB）时翻倍分配，给连续追加留倍增空间；达到或超过 1MB 后只追加固定 1MB——翻倍在 MB 级会把内存峰值放大一倍（3MB 变 6MB 的瞬时开销），固定增量把浪费压到常数。策略本质：小字符串用倍增摊平追加成本，大字符串用常数增量控制内存放大。
+
+5. 动手自问：五种 SDS 类型（5/8/16/32/64）按什么选型？header 各占几字节？
+
+参考答案（先自己答，再对照）：按字符串**长度上限**选最小够用的类型：TYPE_5（<32 字节，header 1 字节，只有 flags 没有独立 len/alloc）；TYPE_8（<256 字节，header 3 字节）；TYPE_16（<64KB，header 5 字节）；TYPE_32（<4GB，header 9 字节）；TYPE_64（更高，header 17 字节）。header 沿 len/alloc 字段宽度翻倍而增长——这就是「短字符串省内存」的结构基础。
+
 ## 结构定义
 
 **结构定义写法：sdshdr8 头部**

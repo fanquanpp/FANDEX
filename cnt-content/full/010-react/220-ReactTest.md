@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 组件测试与 E2E 专篇：Vitest + Testing Library 技术栈、按角色查询的行为测试法、异步与网络 mock（MSW）、Hook 测试、Playwright 端到端测试、常见反模式与调试技巧。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'react/200-ReactForm'
   - 'react/210-ReactTypeScript'
@@ -444,6 +444,19 @@ E2E job 依赖构建产物、失败要留证据，编排细节（`needs: verify`
 - MSW 在网络层拦截，测试与生产代码同路径；handlers 可按用例覆写（`server.use`）。
 - 自定义 Hook 用 `renderHook` 测试；组件级无障碍与文案问题顺带由 `getByRole` 与 jest-axe 兜住。
 - E2E 只保关键路径，`webServer` 自动起服务、CI 重试 + trace 留证据；组件测试、Storybook 与 E2E 三者的分工见各专篇。
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **预测题**：点击按钮后异步弹出一个提示条，用 `getByText('提示')` 断言，为什么大概率失败？该用哪个查询？
+   答案：`getBy*` 是同步查询，只查当前 DOM 快照；异步出现的元素要用 `await screen.findByText('提示')`（或 `waitFor`），它们会轮询直到出现或超时。
+2. **修 Bug 题**：`expect(screen.getByText('删除')).not.toBeInTheDocument()` 想断言按钮不存在，这条测试为什么是错的？
+   答案：`getBy*` 在找不到元素时直接抛错，断言根本走不到 `expect`。断言「不存在」必须用 `queryBy*`（找不到返回 null）——`expect(screen.queryByText('删除')).not.toBeInTheDocument()`。
+3. **辨析题**：MSW mock 网络与直接替换 `globalThis.fetch`，本质差别是什么？
+   答案：替换 fetch 是 mock 实现细节，假响应的形状靠想象（`ok`、headers 缺失），换封装库全部重写；MSW 在 service worker 层拦截请求，测试代码与生产代码走同一条路径，handlers 可按用例覆写（`server.use`）。
+4. **规则题**：为什么测试断言应落在「角色、文本、行为」而不是 state 与 props？
+   答案：用户不关心组件里叫 `isOpen` 还是 `visible`，只看按钮文字与交互结果；断言实现细节的测试在重构时大量假红，断言可见行为的测试重构后依然成立——这就是「像用户一样测试」。
 
 ## 速查
 

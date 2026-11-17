@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 带索引遍历与并行遍历：两个最常用内置组合函数。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'python/140-BuiltinDataStructure'
 prerequisites:
@@ -271,3 +271,12 @@ assert len(keys) == len(set(keys)), "键必须唯一"
 1. **榜单渲染器**：给定歌曲与票数两个列表，输出"前 3 名 + 并列名次"的榜单（票数相同名次相同）。提示：先 `sorted(zip(votes_list, songs), reverse=True)`，再用 enumerate 编号，处理并列时比较相邻票数。
 2. **对照表校验器**：实现 `validate_pairs(singers, themes)`，用 strict=True 校验两列长度，捕获 ValueError 后返回"第几列多/少了什么"的友好报错。提示：`len()` 先比总量，再用 zip_longest 找出补齐侧的具体差异项。
 3. **循环重构**：找一段自己写过的 `range(len(...))` 循环（比如批量修改歌姬档案），分别用 enumerate 与 items()/zip() 重构，对比三版代码行数与可读性。提示：重构后用同一份输入验证三版输出完全一致再替换旧代码。重构后给三个版本各跑一次计时，把性能结论与可读性放在一起评估。
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：遍历列表同时拿到从 1 开始的序号，写出循环头。要点：`for i, name in enumerate(names, start=1)`——`start` 只改显示编号，底层数据下标不受影响。
+2. 预测题：`zip([1, 2, 3], ["a", "b"])` 产出几组？如何让长度不一致直接报错？要点：两组（按最短截断）；传 `strict=True`（3.10+）会在长度不齐时抛 `ValueError`。
+3. 默写题：把矩阵 `[[1,2],[3,4],[5,6]]` 转置成 `[(1,3,5),(2,4,6)]`。要点：`list(zip(*matrix))`——`zip(*)` 先把行拆成三个独立序列，再按列重新配对。
+4. 排错题：`pairs = zip(names, scores)`；`print(list(pairs))` 正常，再 `print(list(pairs))` 输出空。为什么？要点：zip 返回惰性迭代器，单次消费；要复用先 `list(pairs)` 物化。

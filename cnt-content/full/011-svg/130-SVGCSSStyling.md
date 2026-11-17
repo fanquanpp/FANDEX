@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 内联样式、style 标签、外部 CSS、CSS 变量、伪类与媒体查询。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'svg/070-SVGColorFill'
   - 'svg/120-SVGSymbolReuse'
@@ -23,7 +23,7 @@ prerequisites:
 
 ---
 
-> 前置知识：颜色与填充属性（《SVG 颜色与填充》，007-SVGColorFill）、CSS 选择器与变量基础。
+> 前置知识：颜色与填充属性（《SVG 颜色与填充》，070-SVGColorFill）、CSS 选择器与变量基础。
 >
 > 学习目标：掌握"表现属性 < CSS 规则 < inline style"这条 SVG 特有的级联规则；知道哪些 SVG 属性能被 CSS 控制（含 SVG 2 几何属性）；会用 CSS 变量、伪类、媒体查询给 SVG 做状态与主题；理解四种嵌入方式对 CSS 的影响。
 
@@ -109,7 +109,7 @@ SVG 元素样式的来源与 HTML 一致，都走 CSS 级联（cascade）规则�
 | ------------ | ------------------------------------------------------------------------------------------------------------------------ |
 | 填充         | `fill`、`fill-opacity`、`fill-rule`                                                                                      |
 | 描边         | `stroke`、`stroke-width`、`stroke-opacity`、`stroke-linecap`、`stroke-linejoin`、`stroke-dasharray`、`stroke-dashoffset` |
-| 几何（部分） | `cx`、`cy`、`r`、`x`、`y`、`width`、`height`（SVG 2 几何属性，现代浏览器支持；`d` 的 CSS 化目前仅 Chromium）             |
+| 几何（部分） | `cx`、`cy`、`r`、`x`、`y`、`width`、`height`（SVG 2 几何属性，现代浏览器支持；`d` 的 CSS 化 Chromium 与 Firefox 97+ 支持，Safari 稳定版尚未）             |
 | 文本         | `font-family`、`font-size`、`font-weight`、`text-anchor`、`letter-spacing`                                               |
 | 视觉         | `opacity`、`visibility`、`display`、`filter`、`clip-path`、`mask`                                                        |
 | 变换         | `transform`、`transform-origin`、`transform-box`                                                                         |
@@ -430,6 +430,31 @@ path {
   stroke-width: 1 !important;
 }
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 排序题：按优先级从低到高排——`fill="#d63031"` 表现属性、外部 CSS 类规则、元素 `style` 属性、作者 `!important` 声明。
+
+2. 预测题：`<rect class="box" width="100" height="50" fill="#d63031" />` 加上 `.box { fill: #4f5bd5 }` 后显示什么颜色？这和"标签属性写死了"的 HTML 直觉差在哪？
+
+3. 手写题：symbol 内部形状画成 `fill="var(--icon, #999)"`，如何在某个实例上染成红色、另一个实例保持灰色？
+
+4. 概念自问：`<img src="icon.svg">` 引用的图标，为什么页面 CSS 改不了它的颜色？想可主题化该怎么办？
+
+<details>
+<summary>参考答案（先自己写，再展开对照）</summary>
+
+1. 表现属性 < 外部/内部 CSS 类 < inline style < !important。关键点：表现属性参与级联但特殊性为 0，任何作者规则都能盖过它（正文第 1 节）。
+
+2. #4f5bd5（CSS 赢）。差异：HTML 的标签属性不进级联，SVG 的表现属性却是级联里最低的一层——"颜色改不动"时先查是不是 CSS 压过了属性（正文第 1 节）。
+
+3. 在实例的宿主 svg 或祖先上设变量：`<svg class="icon" style="--icon: #d63031"><use href="#icon-x" /></svg>`；变量穿透 use 的 shadow tree，未设变量的实例落到 fallback #999（正文 4.1）。
+
+4. img 引入的是独立文档：外部 CSS 进不去，文档内部的样式表又被"静态安全模式"隔离。可主题化必须改用 inline SVG 或 sprite + use（正文第 9 节与 128 篇）。
+
+</details>
 
 ## 小结
 

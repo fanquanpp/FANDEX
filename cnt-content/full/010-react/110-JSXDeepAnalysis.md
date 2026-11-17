@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: JSX 语法原理与编译过程：标签即函数调用、属性命名差异、表达式插值边界与工具链选项。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/090-LintFormatAndProjectStructure'
   - 'react/100-NextJSFullStack'
@@ -482,3 +482,16 @@ const boxStyle: React.CSSProperties = {
 ```tsx
 <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
 ```
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **预测题**：`<p>{age > 18 && '成年'}</p>`，当 `age = 0` 时页面上渲染出什么？为什么？
+   答案：渲染出字符 `0`。`&&` 表达式的值是 `0`——假但可渲染，JSX 会把数字画出来。条件是数字时改用三元 `age > 18 ? '成年' : null`，短路结果为逻辑值才安全。
+2. **预测题**：`{items.map(i => <li>{i.title}</li>)}` 少了 `key`，控制台出现什么警告？用数组下标当 key，在「列表头部插入」时会出什么问题？
+   答案：`Each child in a list should have a unique "key" prop`。下标作 key 时头部插入后 key 与元素整体错位，React 复用错误节点的 DOM 状态（输入框内容、勾选态串行）；应使用稳定业务 id。
+3. **辨析题**：JSX 里 `{/* 注释 */}` 与 HTML 的 `<!-- -->` 有什么本质区别？
+   答案：前者是 JS 花括号里的块注释，后者是模板语法。JSX 本质是 JS 表达式、编译成函数调用，编译器只认 JS 语法，所以不存在 HTML 注释的写法。
+4. **规则题**：组件名为什么必须大写开头？`<app />` 会发生什么？
+   答案：编译器以大小写区分「组件引用」与「原生标签」：大写按 JS 变量查找组件函数，小写当字符串标签输出。`<app />` 渲染成一个未知 HTML 标签，页面不显示内容且无报错。

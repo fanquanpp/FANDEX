@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 不写 API 也能改数据：'use server'、useActionState 与安全校验。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'nextjs/030-DataFetchingCaching'
   - 'nextjs/090-DeploymentOptimization'
@@ -315,6 +315,12 @@ export async function deleteUser(formData: FormData) {
 1. 把第 3 篇的"订阅邮箱"表单升级为 `useActionState` 版本：支持字段错误提示、输入回填与提交中禁用。
 2. 用 zod 重写文章创建 Action：标题 1-50 字、正文至少 10 字，错误逐字段展示。
 3. 给文章删除按钮加 `useTransition` 的 pending 反馈，并在 Action 内部加管理员校验。
+
+## 自检
+
+- 遮住第 1、2 节代码，从零写出三件套：`'use server'` 的 Action、`<form action>` 绑定、`useActionState` 回显错误并保留输入——写完再对照示例。
+- 用一句话回答：`revalidatePath` 与 `revalidateTag`（16 的双参数签名）各适合什么失效时机？"写后立读"该换哪个 API？
+- 为什么说 Action 是公开端点？据此推演：校验和鉴权分别必须放在哪一侧，proxy 的拦截为什么不算数？
 
 ## 小结与延伸
 

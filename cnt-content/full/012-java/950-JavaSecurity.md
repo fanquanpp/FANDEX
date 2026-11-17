@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Java安全编程
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/960-JavaPerformanceTuning'
   - 'java/940-JavaAI'
@@ -62,11 +62,14 @@ Java 自 1995 年诞生即引入"沙箱"概念，初衷是让浏览器中的 App
 | 2018 | JDK 11 `HttpClient` | 原生 HTTP/2 + TLS 1.3 客户端 |
 | 2019 | JDK 13 EdDSA（JEP 339） | 现代椭圆曲线签名 |
 | 2020 | Spring Security 5.4 | OAuth2/OIDC 一等公民 |
-| 2021 | JDK 17 LTS | 弃用 SecurityManager（JEP 411） |
+| 2021 | JDK 17 LTS | 弃用 SecurityManager（JEP 411），宣告沙箱模型退场 |
 | 2022 | Spring Security 6 | 移除 WebSecurityConfigurerAdapter |
 | 2023 | JDK 21 + 虚拟线程 | 高并发 TLS 握手性能提升 |
-| 2024 | JDK 23 | 增强密钥派生 API（JEP 471 草案） |
+| 2024 | JDK 24 | **永久禁用 SecurityManager（JEP 486：无法启用、setSecurityManager 抛 UnsupportedOperationException；API 类保留待未来删除）**——三十年沙箱模型终结，隔离责任转向容器/进程级 |
+| 2025 | JDK 25 LTS | 密钥派生 API 正式（JEP 510）、PEM 编码预览（JEP 470） |
 | 2025 | Spring Authorization Server 1.3 | 生产级 OIDC Provider |
+| 2025-11 | Spring Boot 4.0 / Spring Security 7 | Jakarta EE 11 基座，Security 7 延续声明式路线 |
+| 2026 | JDK 26 | PEM 编码二预览（JEP 524） |
 
 ### 四大设计动机
 
@@ -2090,3 +2093,13 @@ sig.initSign(privateKey);
 sig.update("data".getBytes());
 byte[] sign = sig.sign();
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. SecurityManager 为什么被弃用（JEP 411）并在 JDK 24 永久禁用（JEP 486）？——Applet 生态消亡后它几乎不再承担真实防线；维护成本高、默认不可用（需策略文件显式开启）、与现代隔离手段（容器/VM）重叠，OpenJDK 决定把隔离责任交回运行环境。注意 486 的准确含义是「永久禁用」（无法启用，API 类保留待未来删除），不是立即删除 API。
+2. JCA/JCE/JSSE 三者的分工各用一句话说出。——JCA：引擎与 Provider 抽象（MessageDigest、Signature 等）；JCE：对称/非对称加密与密钥协商（Cipher、KeyGenerator）；JSSE：TLS 协议实现（SSLContext、SSLSocket）。
+3. 为什么"哈希口令"是错的，"盐 + 慢哈希（bcrypt/scrypt/Argon2）"才是对的？——裸哈希可被彩虹表批量反查；盐使同口令哈希不同，慢哈希把单次猜测成本放大百万倍，使暴力破解失去经济性。
+4. mTLS 里客户端证书与服务端证书的校验方向分别是什么？——服务端校验客户端证书（客户端身份认证），客户端校验服务端证书（防中间人）；双向都要在握手链上验证签发链与有效期。
+5. 判断：依赖里引入了带 CVE 的传递依赖，升级自己代码就能解决。——不能。要定位是哪个传递依赖、升级到哪个修复版本（`mvn dependency:tree` + OWASP Dependency-Check/ Renovate），或用 exclusion/直接声明新版本强制 mediation。

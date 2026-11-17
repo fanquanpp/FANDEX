@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL MyISAM存储引擎：非事务表级锁、静态/动态行格式、全文索引、修复与适用场景
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/070-MySQLDataTypeConstraint'
   - 'mysql/090-SQLDataDefinitionAdvanced'
@@ -37,14 +37,16 @@ MyISAM 是 MySQL 最早的默认存储引擎（5.5 之前），以简单高效�
 
 ```mermaid
 flowchart TD
-    T0["MyISAM 表由三个文件组成："]
-    T1["table_name.frm   — 表结构定义"]
-    T2["table_name.MYD   — 数据文件（MYData）"]
-    T3["table_name.MYI   — 索引文件（MYIndex）"]
+    T0["MyISAM 表的物理组成："]
+    T1["table_name.MYD   — 数据文件（MYData）"]
+    T2["table_name.MYI   — 索引文件（MYIndex）"]
+    T3["table_name.sdi   — 序列化数据字典（8.0+；此前是 .frm）"]
     T0 --> T1
     T0 --> T2
     T0 --> T3
 ```
+
+> 版本注：8.0 起 `.frm` 被数据字典取代，MyISAM 表的结构信息改存为 `.sdi` 文件（也可只存数据字典里、落盘可选）。老资料里"三件套 frm/MYD/MYI"的说法要更新。
 
 ## 2. 表级锁机制
 
@@ -185,6 +187,27 @@ OPTIMIZE TABLE myisam_table;
 -- 3. 需要外键约束
 -- 4. 对数据安全要求高
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：MyISAM 的 `COUNT(*)` 为什么"极快"，InnoDB 为什么做不到？
+
+参考答案（先自己答，再对照）：MyISAM 维护了每张表的精确行数元数据，无 WHERE 的 COUNT(*) 直接读它，O(1)；InnoDB 的行数要按 MVCC 快照算——同一时刻不同事务看到的行数都可能不同（有未提交的插入/删除），不存在一个全局精确的"当前行数"，只能索引扫描实数。带 WHERE 的 COUNT(*) 两家都要老老实实扫。
+
+2. 概念自问：崩溃恢复一栏，MyISAM "需要手动修复"、InnoDB "自动恢复"，根子上差的是什么机制？
+
+参考答案（先自己答，再对照）：InnoDB 有 redo log + 崩溃恢复流程，重启时重放日志把数据页恢复到一致状态；MyISAM 没有 WAL 机制，宕机时数据文件与索引文件可能不一致，只能 CHECK TABLE 发现问题、REPAIR TABLE 修复（以丢数据为代价换结构一致）。"写日志"这一层是事务型引擎与非事务型引擎的分水岭。
+
+3. 判断题：8.0 之后 MyISAM 被官方废弃，新建表会报错？
+
+参考答案（先自己答，再对照）：不会。MyISAM 至今仍是受支持的引擎（`SHOW ENGINES` 可见，8.0/8.4/9.x 均可 ENGINE=MyISAM 建表），只是 InnoDB 从 5.5 起一直是默认引擎、官方推荐全面转向 InnoDB。真正的历史节点是：5.5 默认引擎换为 InnoDB、8.0 移除 MyISAM 的分区支持（8.0 前建的分区 MyISAM 表在新版本不可用）。
+
+4. 概念自问：什么场景今天还真的会选 MyISAM？
+
+参考答案（先自己答，再对照）：极少，且有更优替代——只读归档数据可用压缩 MyISAM（myisampack，省 40-70% 空间、只读），或 InnoDB + 页压缩；"COUNT(*) 快"的需求可由计数表/Redis 兜底。判断标准：任何需要事务、崩溃安全、行级锁的场景都直接排除 MyISAM；新项目选它需要给出"为什么 InnoDB 不行"的明确论证，而不是习惯。
+
 ## 引擎查看
 
 **基本写法：查看服务器支持的引擎**

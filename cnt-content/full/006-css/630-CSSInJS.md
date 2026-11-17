@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: CSS-in-JS 本体：styled-components/Emotion/JSS 三派写法、零运行时方案对比、RSC 下的取舍与 SSR 样式抽取——组件样式专篇。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/480-CSSNativeNesting'
   - 'css/620-CSSModules'
@@ -131,7 +131,7 @@ const { classes } = jss.createStyleSheet(styles).attach();
 document.body.innerHTML = `<button class="${classes.button}">Click me</button>`;
 ```
 
-## 10. 最佳实践
+## 3. 最佳实践
 
 通用 CSS 架构（命名规范、模块化、性能）见 [560-CSSArchitectureMethodology](/css/560-CSSArchitectureMethodology)
 与 [540-CSSPerformanceOptimizationDetailed](/css/540-CSSPerformanceOptimizationDetailed)。
@@ -144,9 +144,9 @@ CSS-in-JS 语境下的三条专属纪律：
 3. **禁止在 render 里定义 styled 组件**：每次渲染生成新组件导致
    子树重挂载——组件定义必须提到模块顶层。
 
-## 11. 项目实战
+## 4. 项目实战
 
-### 11.1 CSS-in-JS 项目结构
+### 4.1 CSS-in-JS 项目结构
 
 ```mermaid
 flowchart TD
@@ -172,9 +172,9 @@ flowchart TD
     T13 --> T15
 ```
 
-## 12. 常见问题与解决方案
+## 5. 常见问题与解决方案
 
-### 12.1 2026 年的生态：零运行时与 RSC
+### 5.1 2026 年的生态：零运行时与 RSC
 
 运行时 CSS-in-JS 的两个固有成本——**组件渲染期生成样式的 CPU 开销**
 与 **SSR 首屏样式闪烁**——催生了「零运行时（compile-time）」路线：
@@ -224,6 +224,48 @@ RSC 项目默认 vanilla-extract / Panda / CSS Modules + CSS 变量，
 2. 引入 styled-components，用组件方式写样式；
 3. 对比 CSS-in-JS 与 CSS Modules 的动态主题实现；
 4. 进阶挑战：用 CSS 变量 + CSS-in-JS 做主题切换。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2、5 节的示例代码自己写，再对照参考实现。
+
+**任务一**：用 styled-components 写一个 `Button`——`primary` 为真时蓝底白字、为假时白底蓝字，hover 时加深背景；要求组件定义写在模块顶层（不是 render 里），并说明为什么。
+
+**任务二**：用 vanilla-extract 重写任务一的静态部分（不含 props 插值），体会「构建期产出 CSS、组件里只剩类名」的形态。
+
+**提示**：任务一的坑在第 3 节纪律三——styled 组件写在函数体里每次渲染都生成新组件类型，子树整个重挂载；任务二回忆第 5.1 节的代码骨架：`styles.css.ts` 导出 `style()` 调用结果，组件 import 这个常量当 `className`。
+
+**参考实现**（先自己写完再看）：
+
+```tsx
+// 任务一
+import styled from "styled-components";
+
+// 模块顶层定义：组件类型稳定，重渲染不会重挂载子树
+export const Button = styled.button<{ primary?: boolean }>`
+  background: ${(p) => (p.primary ? "blue" : "white")};
+  color: ${(p) => (p.primary ? "white" : "blue")};
+  padding: 8px 16px;
+  border: 1px solid blue;
+  cursor: pointer;
+  &:hover {
+    background: ${(p) => (p.primary ? "darkblue" : "lightblue")};
+  }
+`;
+
+// 任务二：styles.css.ts
+import { style } from "@vanilla-extract/css";
+
+export const button = style({
+  background: "white",
+  color: "blue",
+  padding: "8px 16px",
+  border: "1px solid blue",
+  ":hover": { background: "lightblue" },
+});
+```
+
+验收点：任务一如果把定义挪进组件函数体，React DevTools 里每次父组件渲染都会看到新的组件树；任务二构建产物里应出现一个普通 CSS 文件与一个哈希类名——运行时不再有任何样式生成逻辑，这正是 RSC 项目偏爱它的原因。
 
 ## 核心知识点
 

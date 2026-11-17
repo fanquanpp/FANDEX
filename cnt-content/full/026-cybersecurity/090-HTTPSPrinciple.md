@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: HTTPS 学习笔记：动手观察一次真实 TLS 握手，理解 TLS 1.2/1.3 握手差异、ECDHE 前向保密、证书链验证与套件命名，掌握 Nginx 安全配置与 2026 年证书短寿命、后量子混合密钥交换动态。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/540-ComplianceAudit'
   - 'cybersecurity/080-DigitalCertificate'
@@ -15,6 +15,10 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+- **解决什么问题**：HTTPS = TLS 夹在 TCP 与 HTTP 之间的加密层。本篇通过动手观察一次真实握手，理解 TLS 1.2 与 1.3 的握手差异、ECDHE 前向保密从哪来、证书链怎么验，再把 Nginx 配置与 2026 年的短寿命证书、后量子混合密钥交换落成运维动作。
+- **容易怎么错**：把「有证书」当「安全」（协议版本、套件、链完整性都要主动验证）；为「兼容老客户端」保留 TLS 1.0/1.1；以为证书短寿命时代还能靠手动续期；忽略服务端 TLS 栈是否支持混合密钥交换。
+- **学完能做什么**：用 `openssl s_client` 读懂一次握手的每个字段；写出「TLS 1.2+ / 强套件 / HSTS / ACME 自动续期」的 Nginx 配置；像第 5 节那样主动验证自己的部署而不是默认它正确。
 
 ## 场景：给自己的服务上 HTTPS
 
@@ -295,3 +299,11 @@ openssl s_client -brief -connect www.cloudflare.com:443 </dev/null 2>&1 | grep -
 - cybersecurity/080-DigitalCertificate：证书格式、证书链与 CA 体系的完整展开。
 - cybersecurity/100-OpenSSLCert：openssl 命令行生成与自查证书的实操手册。
 - cybersecurity/030-CryptographyApplication：本文反复出现的 ECDHE、HKDF、AEAD 的密码学底层。
+
+## 自检
+
+- 遮住握手对比表，自己写出 TLS 1.2 与 1.3 各自的消息序列，并解释 1.3 为什么只要 1-RTT（Key Share 随 ClientHello 一并发出）。
+- ECDHE 的「E」与前向保密的关系是什么？服务器长期私钥日后泄露，为什么历史会话仍然安全？
+- 遮住证书链验证清单，写出浏览器验证链的步骤，并说出「服务器漏发中间证书」的故障现象与复现命令（`s_client -showcerts`）。
+- 遮住证书寿命表，说出 2026-03 起的最大有效期（200 天）与 2029 目标（47 天），以及唯一可行的运维对策（ACME 全自动化续期）。
+- 遮住 Nginx 配置段，自己写出「TLS 1.2+ / 强套件 / HSTS / 会话复用」的 server 块再对照，并说出旧协议（TLS 1.0/1.1、RSA 静态交换、CBC）为什么必须移除。

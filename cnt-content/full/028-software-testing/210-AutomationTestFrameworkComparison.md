@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 浏览器自动化框架对比：Selenium、Cypress、Playwright、Puppeteer 的架构差异、能力边界与选型决策，附 Playwright 实战示例。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'software-testing/090-Selenium'
   - 'software-testing/160-StressAndStabilityTest'
@@ -142,6 +142,62 @@ flowchart TD
   框架支持边界再选型，避免中途迁移。
 - **忽视无头/有头差异**：本地有头通过、CI 无头失败的案例常见（视口尺寸、
   字体、动画）。统一 viewport、禁用动画、固定时钟可显著减少环境差异。
+
+## 教学自检
+
+以下题目按遮码自检法设计：先遮住参考答案自己写，再对照。
+
+### 题 1：两种架构（概念题）
+
+任务：Selenium 与 Playwright 驱动浏览器的根本差异是什么？这个差异如何
+解释两者在速度与 flaky 表现上的差距？
+
+参考答案：Selenium 走进程外的 WebDriver HTTP 协议——每条指令一次网络
+往返，等待要自己写；Playwright 通过调试协议与浏览器深度集成——指令直达、
+可注入脚本与拦截网络，等待内建在定位器里。慢与 flaky 的来源因此不同：
+前者是协议开销叠加手工等待的误差，后者把「等条件满足」做成了机制。
+
+### 题 2：框架定位（判断题）
+
+任务：以下需求各选什么工具？(a) Java + Python 两个团队共用一套遗留系统
+回归；(b) 爬取页面生成 PDF；(c) 新建 React 项目的 E2E；(d) 已有大量
+Cypress 用例的纯前端项目。
+
+参考答案：(a) Selenium（异构语言 + 遗留兼容是它的主场）；(b) Puppeteer
+（控制库，做测试才需要运行器）；(c) Playwright（新项目默认候选）；
+(d) Cypress 存量延续——迁移有成本，框架本身没有淘汰；新用例是否继续
+Cypress 按团队路线决定。选型先看约束再看体验。
+
+### 题 3：Puppeteer 的身份（概念题）
+
+任务：「Puppeteer 是免费的 E2E 测试框架」这句话错在哪？
+
+参考答案：Puppeteer 是浏览器控制**库**——没有测试运行器、断言与报告；
+用它做 E2E 要自行与 Jest/Vitest 组合并自建等待逻辑。同样需要精细控制
+浏览器的场景（爬虫、PDF、截图、性能采集）它才是直接可用的工具；「要做
+测试」的需求上 Playwright 通常更完整。
+
+### 题 4：等待机制（遮码题）
+
+任务：分别用 Selenium 与 Playwright 的思路写出「点击提交后等待成功提示
+出现」，体会两者等待策略的差异。
+
+参考答案：
+
+```python
+# Selenium：显式等待，条件由你挑
+WebDriverWait(driver, 10).until(
+    EC.visibility_of_element_located((By.ID, "success-toast"))
+)
+```
+
+```typescript
+// Playwright：web-first 断言，自动重试
+await expect(page.getByText('提交成功')).toBeVisible();
+```
+
+自检：Selenium 的等待写在使用处、条件靠 `expected_conditions` 组合；
+Playwright 把重试做进断言——同样是「等条件」，一个靠人写，一个是机制。
 
 ## 小结
 

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: File/Path/Directory、FileStream、StreamReader/Writer、BinaryReader/Writer 与 using 资源管理的速查手册，附完整示例与易错点解析。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/460-JsonSerialization'
   - 'csharp/230-SpanMemory'
@@ -14,6 +14,16 @@ related:
 prerequisites:
   - 'csharp/030-CSharpBasicSyntax'
 ---
+
+## 先分清三个层次再查表
+
+文件 I/O 的 API 名字很多，但层次只有三层，查表时先定位自己在哪一层：
+
+1. **路径层（Path/Directory/File 的静态便捷方法）**："一次性读写整个小文件"用它，一行搞定、内部帮你开流关流——代价是全量载入内存，不适合大文件；
+2. **流层（FileStream/StreamReader/Writer）**："大文件逐行流式处理"或"控制缓冲与异步"用它，用完必须释放（`using`）；
+3. **字节层（BinaryReader/Writer、MemoryStream）**："精确控制字节序与二进制格式"才用它。
+
+一条贯穿全篇的纪律：**谁打开谁关闭**——`using` 声明是默认写法，忘了它文件句柄会一直占着，Windows 上连删除文件都会失败。
 
 ## 文件路径
 
@@ -475,3 +485,50 @@ using (var reader = new BinaryReader(fs))
 - **记住**：`File.ReadAllText/WriteAllText/AppendAllText` 三板斧；`using` 托管一切流；`Path.Combine` 拼路径。
 - **理解**：`ReadLines` 惰性与 `ReadAllLines` 一次性的取舍；流的位置（Position/Seek）与缓冲区语义；UTF-8 默认编码。
 - **应用**：日志追加、配置读取、CSV 逐行解析、二进制格式读写分别选用本篇对应工具；高性能内存切片场景进阶到 [Span/Memory](/csharp/230-SpanMemory)。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码，再对照。本篇自检核心是"按数据规模选对 API"与"资源释放零失误"。
+
+**题 1（选型题）**：三个需求各选一个 API：读 2KB 的配置文件全文；逐行处理 2GB 的日志；往日志追加一行。
+
+参考答案：配置文件用 `File.ReadAllText(path)`（小文件全量读最简单）；2GB 日志用 `File.ReadLines(path)`（惰性逐行，不整载内存；要异步用 `StreamReader.ReadLineAsync` 循环）；追加一行用 `File.AppendAllText(path, line)`（打开-写-关一步到位）。共同判据：数据规模 × 是否需要流式处理。
+
+**题 2（路径题）**：`"C:\logs" + "/" + "app.txt"` 手工拼路径有两个坑，是什么？写出正确写法。
+
+参考答案：坑一：分隔符平台化——Linux 用 `/`，Windows 用 `\`，手工拼在跨平台部署上直接出错；坑二：`+` 不处理"前段末尾有没有分隔符"与"空段"。正确写法：`Path.Combine("C:", "logs", "app.txt")` 或基于已有路径 `Path.Combine(baseDir, "logs", "app.txt")`；取文件名/扩展名同理用 `Path.GetFileName`/`GetExtension`，不手写字符串切割。
+
+**题 3（流与缓冲）**：`FileStream` 直接按字节读 vs `StreamReader` 逐行读，各自适合什么？写出"带默认 UTF-8 的逐行异步读取"骨架。
+
+参考答案：`FileStream` 只认字节，适合二进制或自己管解码的场景；`StreamReader` 在流上包一层解码与按行缓冲，适合文本。骨架：
+
+```csharp
+using var reader = new StreamReader(path);   // UTF-8 默认
+while (await reader.ReadLineAsync() is { } line)
+    Process(line);
+```
+
+要点：`is { } line` 同时完成非空判断与绑定；`using` 保证文件句柄在块尾释放。
+
+**题 4（二进制）**：写"用 BinaryWriter 写一个 int + 一个 string，再用 BinaryReader 顺序读回"的对称代码，并说出"顺序"为什么是铁律。
+
+参考答案：
+
+```csharp
+using (var w = new BinaryWriter(File.Create("data.bin")))
+{
+    w.Write(42);
+    w.Write("hello");
+}
+using (var r = new BinaryReader(File.OpenRead("data.bin")))
+{
+    int n = r.ReadInt32();
+    string s = r.ReadString();   // 长度前缀编码
+}
+```
+
+二进制格式没有自描述边界——`ReadInt32` 就是固定取 4 字节，读写的顺序与编码（长度前缀字符串、7 位变长整数）必须严格对称，错一个字段后面全部错位且不报错。
+
+**题 5（释放事故）**：`var content = new StreamReader(path).ReadToEnd();` 这行哪里错了？两种修法？
+
+参考答案：`StreamReader` 没有 Dispose——对象脱离引用后等 GC 兜底回收才关句柄，期间 Windows 上该文件被锁（删除/覆盖失败），高频调用还会句柄耗尽。修法一：`using var reader = new StreamReader(path); var content = reader.ReadToEnd();`；修法二：小文件直接 `File.ReadAllText(path)`，让便捷方法内部用完即关。原则：实现了 IDisposable 的流一律 `using`，或者干脆用 File 静态方法省掉流。

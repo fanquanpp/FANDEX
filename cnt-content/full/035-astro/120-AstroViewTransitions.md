@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 用 ClientRouter 实现跨页面共享元素动画、持久化音乐播放器岛屿与导航生命周期脚本。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'astro/030-PagesRouting'
   - 'astro/060-IslandsClientComponents'
@@ -34,7 +34,7 @@ prerequisites:
 
 Astro 默认输出多页面应用：每次点击链接，浏览器丢弃旧文档、加载新文档。这种方式天然快（零 JS、按需加载），但有两个体验短板：切换瞬间是"白屏一闪"，且页面间的 JS 状态（比如正在播放的歌曲）全部清零。SPA 用整页接管的方式换来了丝滑切换与状态存续，代价是把所有页面逻辑都搬进浏览器。
 
-浏览器的 **View Transitions API** 给出了第三条路：文档照常加载（保留 MPA 的简单），但浏览器在旧文档与新文档之间录制一帧"旧画面"、渲染一帧"新画面"，然后由合成器把两帧做动画。整个过程发生在像素层，不依赖框架，开销极低。Astro 的 **ClientRouter**（早期版本叫 ViewTransitions 组件）把这个浏览器能力接管了下来：拦截同源链接点击，用 `fetch` 拿到新页面 HTML，替换 `<head>` 与 `<body>`，同时触发视图过渡——于是 MPA 拥有了接近 SPA 的切换体验，而不用把整个站点重写成 SPA。
+浏览器的 **View Transitions API** 给出了第三条路：文档照常加载（保留 MPA 的简单），但浏览器在旧文档与新文档之间录制一帧"旧画面"、渲染一帧"新画面"，然后由合成器把两帧做动画。整个过程发生在像素层，不依赖框架，开销极低。Astro 的 **ClientRouter**（早期版本叫 ViewTransitions 组件，旧名组件与配套内部 API 已在 Astro 6 中移除，现行写法一律用 ClientRouter 与事件名字符串字面量）把这个浏览器能力接管了下来：拦截同源链接点击，用 `fetch` 拿到新页面 HTML，替换 `<head>` 与 `<body>`，同时触发视图过渡——于是 MPA 拥有了接近 SPA 的切换体验，而不用把整个站点重写成 SPA。
 
 对"虚拟歌手音乐平台"来说，这正合适：站点主体是歌曲页、歌姬主页这类内容页面，适合静态输出；只有底部播放器需要状态。与其为了一句动画引入整站 SPA，不如开一个路由器加几条指令。
 
@@ -263,3 +263,35 @@ export default function Player() {
 1. **封面飞行**：给歌曲列表页与详情页的封面、标题加上 `transition:name`，再用 `slide` 改造整页过渡，对比三种 `duration`（0.2s / 0.35s / 0.6s）下的观感差异。提示：列表页名字必须含歌曲 id，否则会撞名。
 2. **不停播的播放器**：把第 5 节的 Player 挂到全局布局并持久化，然后在三个页面之间连续跳转，验证歌曲不中断；再试试去掉 `transition:persist="global-player"` 观察差异。提示：注意持久化后 Props 不再变化的影响。
 3. **倒计时不失灵**：实现歌姬主页的演唱会倒计时，从主页跳到歌曲页再返回，确认倒计时仍在走且只有一个定时器在跑。提示：用 `astro:page-load` 启动、在启动前先清理旧定时器。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写"一次导入全站生效"的 ClientRouter 启用代码，并写出当前版本的导入来源。
+
+   参考答案（先自己写，再对照）：
+
+   ```astro
+   ---
+   // src/layouts/BaseLayout.astro
+   import { ClientRouter } from 'astro:transitions'
+   ---
+   <head>
+     <ClientRouter />
+   </head>
+   ```
+
+   验收点：放在公共布局的 `<head>` 里，用该布局的页面之间导航即触发过渡；早期 `<ViewTransitions />` 旧名组件已在 Astro 6 移除，现行 API 是 ClientRouter。
+
+2. 写出共享元素动画的配对规则：列表页封面与详情页封面要"飞行"，两边的代码长什么样？同一页面 30 个封面要注意什么？
+
+   参考答案（先自己写，再对照）：
+
+   两边元素写相同的 `transition:name`，例如列表页 `transition:name={`song-cover-${id}`}`、详情页同名。规则：同一页面内名字必须唯一——循环里用稳定的业务 id 拼接（禁止数组下标），名字会被编译成 CSS `view-transition-name`，不能含空格，kebab-case 最稳；配对的两元素必须都真实渲染，条件互斥时配对静默失败、退回整页过渡。
+
+3. 启用 ClientRouter 后模块脚本为什么不重跑？业务脚本应该挂在哪个事件上？
+
+   参考答案（先自己写，再对照）：
+
+   ClientRouter 导航不刷新文档，模块脚本每个页面只执行一次；`DOMContentLoaded`/`load` 在过渡导航中也不再触发。业务脚本统一挂 `astro:page-load`——它在首次加载与每次导航完成时都会触发，写法统一。配套事件按顺序是 before-preparation、after-preparation、before-swap、after-swap、page-load（事件对象用 `event.type` 与字符串字面量比较）。

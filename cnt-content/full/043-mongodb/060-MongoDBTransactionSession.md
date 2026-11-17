@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 多文档事务、会话与因果一致性——在文档数据库里获得确定性。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mongodb/050-MongoDBSchemaDesign'
 prerequisites:
@@ -175,6 +175,7 @@ function transfer(fromId, toId, amount) {
 | --- | --- |
 | 运行环境 | 必须是副本集或分片集群，单机 mongod 不支持多文档事务 |
 | 默认 60 秒 | `transactionLifetimeLimitSeconds` 默认 60，超时自动中止；长事务还会拖累 oplog 与缓存 |
+| 并发事务数 | 9.0 起并发活动的多文档事务受 `maxConcurrentMultiDocumentTransactions` 上限约束（默认 10000），超限报 `TooManyOpenTransactions`——"开了不提交"的事务泄漏会先撞到这道墙 |
 | oplog 16MB | 整个事务提交后作为一条 oplog 记录写入，总大小超 16MB 直接失败，大批量写不要塞进事务 |
 | 会话绑定 | 一个会话同一时刻只能有一个活动事务；事务内的读固定走主节点 |
 | 集合与索引 | 早期版本不允许在事务内创建集合与索引（4.4 起放开）；实践仍是"提前建好，事务只做读写"，完整限制以官方文档为准 |

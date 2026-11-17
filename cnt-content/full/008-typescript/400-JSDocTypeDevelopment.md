@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 JSDoc 注释获得 TypeScript 级类型检查：checkJs、@type/@typedef/@import、dts 生成与适用边界。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/030-TypeScriptOverviewEnvSetup'
   - 'typescript/300-DeclarationFileWriting'
@@ -112,7 +112,7 @@ function validate(user) {}
 function save(user) {}
 ```
 
-比 `import()` 内联类型更整洁，且 `@import * as ns from './x.js'` 支持命名空间形式。另有 `@satisfies`（对齐 `satisfies` 操作符，见 `typescript/180-SatisfiesOperator`）。
+比 `import()` 内联类型更整洁，且 `@import * as ns from './x.js'` 支持命名空间形式。另有 `@satisfies`（对齐 `satisfies` 操作符，见 [satisfies 操作符](/typescript/180-SatisfiesOperator)）。
 
 ## 4. 类型收窄在 JS 里同样生效
 
@@ -145,7 +145,7 @@ if (el) el.textContent = 'ok';     // DOM 类型自动收窄
 }
 ```
 
-`tsc` 从带 JSDoc 的 JS 源码直接产出声明文件——即"JSDoc 写类型、tsc 出 dts"的库发布路线。配合 TS 5.5 的 `isolatedDeclarations`（见 `typescript/670-TypeScript5xNewFeatures`），产出更快、更可预测。发布卫生（exports/files 字段）见 `javascript/560-PackageJsonEngineeringDeepDive`。
+`tsc` 从带 JSDoc 的 JS 源码直接产出声明文件——即"JSDoc 写类型、tsc 出 dts"的库发布路线。配合 TS 5.5 的 `isolatedDeclarations`（见 [TypeScript 5.x 新特性演进](/typescript/670-TypeScript5xNewFeatures)），产出更快、更可预测。发布卫生（exports/files 字段）见 [package.json 深入与前端工程化配置](/javascript/560-PackageJsonEngineeringDeepDive)。
 
 ## 6. 与 Node 类型剥离的关系
 
@@ -171,3 +171,11 @@ Node 的原生类型剥离要求 `.ts` 文件只含"可擦除"语法（枚举、
 ## 9. 一句话记住
 
 > JSDoc 是"注释里的 TypeScript"：checkJs 打开即得完整检查，@type/@typedef/@import 覆盖九成需求，tsc 还能从 JS 源码直接产出 .d.ts——类型复杂度一旦越界，再迁 .ts 不迟。
+
+## 自检
+
+- 「什么时候选 JSDoc 而不是 .ts」的判断依据有哪几条？遮住第 1 节，说出至少三条。
+- 遮住第 3 节示例，自己用 `@type` 标一个「字符串枚举」参数、用 `@typedef` 定义一个配置对象类型——JSDoc 里写不了 interface 声明体，你用什么替代？
+- `checkJs` 忘开时会发生什么？为什么说「注释写了但从不检查」是 JSDoc 路线的头号陷阱？
+- Node 类型剥离为什么与 JSDoc 天然契合？「Node 直跑 + 完整类型」的最稳组合是哪三样？
+- 哪两条信号出现时，说明该从 JSDoc 迁回 .ts 了？

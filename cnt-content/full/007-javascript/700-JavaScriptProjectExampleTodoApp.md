@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 综合运用 DOM 操作、事件处理与本地存储的待办事项应用。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'javascript/690-JavaScriptProjectPractice'
   - 'javascript/570-NodeJsPerformanceOptimization'
@@ -960,6 +960,26 @@ const pubsub = {
   animation: slideIn 0.3s ease forwards;
 }
 ```
+
+## 教学自检
+
+> 用法：遮住正文里的代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 遮住代码，自己写出「新增一条待办」的完整链路：状态数组更新、渲染、事件绑定三步各干什么——为什么「先改数据、再整体渲染」比「直接往 DOM 里插一个节点」更可维护；
+2. 用事件委托实现「点击删除按钮删除对应待办」：为什么监听器只绑在列表容器上也能拿到每一条？说出 `event.target` 与 `closest` 的分工；
+3. 写出待办数据持久化到 localStorage 的保存与恢复两行核心代码，并说出「存 JSON 字符串而不是对象」的原因；
+4. 「全选/清空已完成」这两个批量操作，怎么复用同一个渲染函数而不写重复 DOM 代码；
+5. 扩展挑战：给应用加「编辑」功能——双击标题变成输入框，回车保存失焦取消。先列你要改的三个位置（状态、渲染、事件），再动手。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：更新数组（纯数据）、用数据整体重建列表 DOM（单一渲染函数）、事件绑定保持不变（委托）；数据是唯一事实源，任何操作都走同一条「改数据 → 重渲染」路径，出问题时只有一个地方要查；
+- 第 2 问：点击事件会冒泡到容器；容器上的监听器用 `event.target.closest('.todo-item')` 找到被点中的条目，再读 `dataset.id` 删除——新增的条目天然生效，无需重新绑监听器；
+- 第 3 问：`localStorage.setItem('todos', JSON.stringify(todos))` 与 `JSON.parse(localStorage.getItem('todos') ?? '[]')`；存储接口只接受字符串，对象必须序列化；恢复时给默认值防「首次访问拿到 null」；
+- 第 4 问：这两个操作本质上都是「改数组 + 调同一个 render」——`todos = todos.map(t => ({ ...t, done: true }))`、`todos = todos.filter(t => !t.done)`，然后 `render(todos)`；渲染函数与操作解耦是复用的关键；
+- 第 5 问：状态层加 `editingId` 字段；渲染层对 editing 的条目渲染 input 而不是文本；事件层加 dblclick（进入编辑）与 input 的 keydown/blur（保存/取消）三类委托——列完三处再动手，改起来就是三条小改动而不是重写。
+</details>
 
 ## 知识点缝合图：这个项目用了什么
 

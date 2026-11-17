@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CommonJS、ES Modules 与模块打包工具。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'javascript/410-DOMOperationEvent'
   - 'javascript/600-NewFeatureAdoptionStrategy'
@@ -841,11 +841,11 @@ async function main() {
 main();
 ```
 
-**限制**：CJS 中只能使用动态 `import()` 引入 ESM，不能使用 `require()`（Node.js 22 的 `require(esm)` 实验特性除外）。
+**限制**：CJS 中只能使用动态 `import()` 引入 ESM；直接 `require()` 一个 ESM 在 Node.js 22.12.0+（LTS 起默认启用，20.19.0+ 回移植）已可用，但有前提——目标 ESM 模块不含顶层 `await`。
 
-#### Node.js 22 的 `require(esm)`
+#### Node.js 22.12+ 的 `require(esm)`
 
-Node.js 22 引入了实验性的 `require(esm)` 特性，允许 CJS 直接 `require` ESM 模块：
+Node.js 22.12.0（2024-12）起 `require(esm)` 不再需要 `--experimental-require-module` 标志，直接默认启用，后来已转正为稳定特性，允许 CJS 直接 `require` ESM 模块：
 
 ```javascript
 // ESM 模块
@@ -863,7 +863,7 @@ console.log(esmMod.greeting); // 'Hello from ESM'
 console.log(esmMod.greet('World')); // 'Hello, World!'
 ```
 
-**限制**：仅支持无顶层 await 的 ESM 模块；需启用 `--experimental-require-module` 标志。
+**限制**：仅支持无顶层 `await` 的 ESM 模块（Node.js 22.12.0+ 默认启用，无需任何标志）。
 
 ### 8.4 `package.json` 的 `exports` 字段
 
@@ -2214,6 +2214,26 @@ console.log(loader.require('./main.js')); // 3
 - **TypeScript 模块配置**：https://www.typescriptlang.org/docs/handbook/modules.html
 - **Babel 模块转换**：https://babeljs.io/docs/en/babel-plugin-transform-modules-commonjs
 
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 不看表格，说出 CJS 与 ESM 的三条本质差异：加载时机、导出绑定（值的拷贝还是活的绑定）、可 tree-shaking 的原因；
+2. 写出 ESM 的最小骨架：`lib.mjs` 导出一个函数、`main.mjs` 导入并调用；再把 `main.mjs` 改成 CJS 文件用 `require` 引入——需要什么 Node 版本与什么前提；
+3. 循环依赖 `a.js ↔ b.js` 在 CJS 与 ESM 下分别发生什么？为什么 ESM 的函数声明循环引用通常能跑通；
+4. `package.json` 的 `exports` 字段解决什么问题？写出「入口指向 `./dist/index.js`、类型文件指向 `./dist/index.d.ts`」的最小配置；
+5. 判断题：`import()` 动态导入可以放在 `if` 里、说明符可以是变量——静态 `import` 可以吗？
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：CJS 运行时加载（require 到哪执行到哪），ESM 编译期确定依赖图；CJS 导出是值的拷贝（后续修改不联动），ESM 是活的绑定（只读视图随源更新）；ESM 的 import/export 是语法结构、依赖图静态可分析，打包器才能安全删除未引用导出；
+- 第 2 问：`export function hi() { ... }` 与 `import { hi } from './lib.mjs'`；CJS 侧 `require('./lib.mjs')` 要求 Node 22.12.0+（默认启用、无需标志），前提是该 ESM 模块没有顶层 `await`；
+- 第 3 问：CJS 执行到 require 环点时拿到缓存里的「半成品 exports」（空对象），**不抛错**——缺失的属性此刻就是 undefined（正文 3.5 节的双向实验可验证）；函数型导出若在环点后才赋值，调用方拿到 undefined 再调用才炸，惯用解法是把导出前置或在函数体内延迟解引用；ESM 有提升（hoisting）机制，函数声明在求值前已初始化，互调时两边都已就绪；访问器/常量环点仍可能 TDZ 报错；
+- 第 4 问：`exports` 是包的公共 API 边界（替代 main，禁止深路径导入）：`"exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } }`；
+- 第 5 问：动态 import 都可以（返回 Promise，是表达式，可出现在任何地方、说明符可运行时构造）；静态 import 必须在模块顶层且说明符必须是字符串字面量——这正是 tree-shaking 依赖静态结构的原因。
+</details>
+
 ## 附录 A：模块系统 API 速查
 
 ### A.1 CommonJS
@@ -2395,7 +2415,7 @@ flowchart TD
 | 场景 | 支持情况 | 说明 |
 | :--- | :--- | :--- |
 | ESM `import` CJS | 支持 | CJS 的 `module.exports` 作为 `default` |
-| CJS `require` ESM | Node.js 22+ 支持 | 需 `--experimental-require-module` |
+| CJS `require` ESM | Node.js 22.12.0+ 默认支持 | 无需标志；目标模块不得含顶层 `await` |
 | CJS 动态 `import()` ESM | 支持 | 返回 Promise |
 | ESM `import` CJS 具名 | 部分支持 | 需 CJS 模块静态分析可识别导出 |
 | ESM 顶层 await | 支持 | CJS `require` 不支持顶层 await 模块 |
@@ -2524,12 +2544,12 @@ new ModuleFederationPlugin({
 import Button from 'app1/Button';
 ```
 
-### F.5 Node.js 22 的 `require(esm)`
+### F.5 Node.js 22.12+ 的 `require(esm)`
 
 打破 CJS 与 ESM 的最后壁垒：
 
 ```javascript
-// CJS 直接 require ESM（Node.js 22+，实验性）
+// CJS 直接 require ESM（Node.js 22.12.0+ 默认启用，无需标志）
 const esmMod = require('./esm-mod.mjs');
 ```
 

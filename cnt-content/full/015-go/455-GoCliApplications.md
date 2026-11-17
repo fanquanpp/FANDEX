@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 从 os.Args 到 flag 再到 cobra 的命令行演进、配置优先级合并、go:embed 打包静态资源——手写一个 frontmatter 校验 CLI（--check 与 --fix 子命令）的全过程
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -378,3 +378,78 @@ func main() {
 - go:embed 提案与文档（https://pkg.go.dev/embed ，BSD 三条款许可）
 - 场景素材：本仓库 app-web/scripts/content-audit.mjs 与
   content-sync.mjs 的校验思路
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（退出码的语义）**：CLI 校验工具在"参数错误"、"校验失败"、"内部错误"三种情况下分别该返回什么退出码？写出 main 的骨架。
+
+参考实现：
+
+```go
+func main() {
+    if err := run(os.Args[1:]); err != nil {
+        var uerr *UsageError
+        if errors.As(err, &uerr) {
+            fmt.Fprintln(os.Stderr, "usage:", uerr)
+            os.Exit(2) // 用法错误：2（与 Go 工具链惯例一致）
+        }
+        if errors.Is(err, ErrValidation) {
+            os.Exit(1) // 业务校验失败：1
+        }
+        fmt.Fprintln(os.Stderr, err)
+        os.Exit(70) // 内部错误：与 BSD sysexits 对齐也可统一 1
+    }
+}
+```
+
+要点：退出码是 CLI 的 API——脚本用 `$?` 分支，0 恒为成功；把"业务失败"与"工具自身坏了"区分开（1 与 2），CI 才能做正确判断。main 只做装配与退出码映射，逻辑放 `run() error`（错误返回而非 os.Exit 散布，defer 才有机会执行）。
+
+**题 2（flag 与子命令）**：`tool validate --strict path` 与 `tool fmt -w path` 两个子命令，用标准库 flag 写出子命令分发骨架。
+
+参考实现：
+
+```go
+func run(args []string) error {
+    if len(args) < 1 {
+        return &UsageError{msg: "missing subcommand"}
+    }
+    fs := flag.NewFlagSet(args[0], flag.ExitOnError)
+    switch args[0] {
+    case "validate":
+        strict := fs.Bool("strict", false, "fail on warnings")
+        fs.Parse(args[1:])
+        return validate(fs.Args(), *strict)
+    case "fmt":
+        write := fs.Bool("w", false, "write back")
+        fs.Parse(args[1:])
+        return formatFiles(fs.Args(), *write)
+    default:
+        return &UsageError{msg: "unknown subcommand " + args[0]}
+    }
+}
+```
+
+要点：每个子命令独立的 FlagSet，解析各自参数；`flag.ExitOnError` 在 CLI 场景合适（库代码用 ContinueOnError 才能把错误包装起来）。第三方框架（cobra）解决的是补全、help 一致性与嵌套子命令，机制本质相同。
+
+**题 3（管道友好）**：让工具同时支持 `tool file.txt` 与 `cat file.txt | tool`（stdin 无参数时自动读管道）。写出判断与读取骨架。
+
+参考实现：
+
+```go
+stat, _ := os.Stdin.Stat()
+if len(paths) == 0 && (stat.Mode()&os.ModeCharDevice) == 0 {
+    // stdin 是管道/重定向而非终端：读 stdin
+    r = os.Stdin
+} else if len(paths) > 0 {
+    f, err := os.Open(paths[0])
+    ...
+} else {
+    return &UsageError{msg: "no input"}
+}
+```
+
+要点：`ModeCharDevice` 区分"终端"与"管道"，这是 Unix 工具链互操作的关键——`grep | tool | grep` 的中间件身份靠它识别。输出同理：stdout 被重定向时避免彩色转义码（`term.IsTerminal` 判断）。

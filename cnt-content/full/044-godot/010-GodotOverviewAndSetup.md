@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 认识 Godot 4.7 免费开源游戏引擎，完成下载安装并创建第一个项目，熟悉编辑器界面与运行流程
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-11-17'
 related: ['godot/020-NodesScenesAndInstancing', 'godot/030-FirstScriptAndLifecycle']
 prerequisites: []
 ---
@@ -30,9 +30,9 @@ Godot 是一个完全免费开源的 2D/3D 游戏引擎，核心特点可以概�
 
 对初学者来说，这意味着两件实际的好处：入门没有任何成本门槛，遇到问题时官方文档、源代码与社区资源都是完全开放的。
 
-## 版本现状：4.7 与 4.7.1
+## 版本现状：4.7 与 4.7.2
 
-截至 2026 年 9 月，Godot 的当前稳定版是 4.7，主题为 "Lights, Camera, Action!"，于 2026 年 6 月 18 日发布，有超过 300 位贡献者和 1600 多个合并请求（Pull Request）参与。同年 7 月 14 日发布了维护版本 4.7.1，主要修复渲染问题，例如网格实例光照闪烁、正交相机下方向光阴影剔除等。
+截至 2026 年 11 月，Godot 的当前稳定版是 4.7，主题为 "Lights, Camera, Action!"，于 2026 年 6 月 18 日发布，有超过 300 位贡献者和 1600 多个合并请求（Pull Request）参与。同年 7 月 14 日发布了维护版本 4.7.1，主要修复渲染问题，例如网格实例光照闪烁、正交相机下方向光阴影剔除等；8 月 18 日又发布了 4.7.2，由 39 位贡献者提交 57 项修复，覆盖高轮询率鼠标的输入性能、多人同步与导航调试等，官方确认与 4.7.1 没有已知不兼容并建议所有用户升级。
 
 上一个稳定版 4.6 于 2026 年 1 月发布，主题为 "All about your flow"，代表性变化包括：Jolt Physics 物理引擎转正（新建 3D 项目默认使用它）、完整的 3D IK（反向动力学）回归，以及编辑器停靠面板（Dock）支持浮动与重排。如果你在网上看到旧版本相关的教程，4.6 与 4.7 的这些差异值得留意。
 
@@ -152,9 +152,16 @@ Godot 运行的永远是一个场景（Scene）。每个项目必须指定一个
 
 这一篇完成了三件事。其一，认识 Godot：完全免费开源（MIT 许可证）的 2D/3D 引擎，一套编辑器覆盖 Windows、macOS、Linux、Android、iOS 与 Web 导出，当前稳定版为 4.7。其二，跑通了起步流程：下载解压即用，通过项目管理器创建或导入项目，理解 Forward Plus、Mobile、Compatibility 三种渲染器的取舍，知道崩溃时有恢复模式兜底。其三，熟悉了编辑器：场景与文件系统停靠栏、检查器（分组、搜索、还原图标、Make Sub-Resources Unique）、底部面板，以及 F5/F6/F8 的运行节奏，并理解了主场景与 res:// 两个约定。下一篇将进入 Godot 最核心的模型：节点、场景与实例化。
 
+## 自检
+
+- 遮住"三种渲染器怎么选"一节，口头回答：要做桌面 3D 游戏、只跑手机、还要发浏览器试玩版，各选哪个渲染器？为什么？（答案：Forward Plus / Mobile / Compatibility——Compatibility 是唯一支持 Web 导出的渲染器。）
+- 遮住快捷键清单默写：运行主场景、运行当前场景、停止运行分别是哪三个键？它们解决的是哪两类调试需求？
+- 不翻正文回答：res:// 是什么？主场景路径记录在哪个文件的哪个条目下？项目崩溃打不开时还有什么兜底手段？（答案：项目根目录前缀；project.godot 的 application/run/main_scene；恢复模式。）
+
 ## 参考链接
 
 - [Godot 4.7 发布说明](https://godotengine.org/releases/4.7/)
+- [Godot 4.7.2 维护版本公告](https://godotengine.org/article/maintenance-release-godot-4-7-2)
 - [Godot 4.6 发布说明](https://godotengine.org/releases/4.6)
 - [项目管理器](https://docs.godotengine.org/en/stable/tutorials/editor/project_manager.html)
 - [检查器停靠栏](https://docs.godotengine.org/en/stable/tutorials/editor/inspector_dock.html)

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: GDB/LLDB 调试、性能剖析工具与内存泄漏检测。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/460-MemoryOrderLockFree'
   - 'cpp/770-CppProjectPractice'
@@ -738,3 +738,57 @@ std::clock_t start = std::clock();
 work();
 double seconds = double(std::clock() - start) / CLOCKS_PER_SEC;
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：把「断点调试」的流程走一遍——针对下面「计数错误」的函数：先写出你怀疑的三行（只看代码不运行），再设计条件断点（`i == 5` 时停下）与观察点（watch `total` 变化）两种方案；最后给出 `std::print` 打桩版的完整代码并说明「打桩定位到哪一步删除」的纪律。
+
+```cpp
+int sumWithSkip(const std::vector<int>& v) {
+    int total = 0;
+    bool skip = false;
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        if (v[i] == 999) skip = true;
+        if (!skip) total += v[i];
+    }
+    return total;
+}
+// 期望：遇到 999 后跳过，但实际返回值把 999 之后所有元素丢了（bug：skip 只置不清）
+```
+
+**提示**：三个怀疑点——`skip` 的初始化、999 的比较、`skip` 是否复位；条件断点成本高（每次迭代都停机判定），热点循环优先观察点或打桩。
+
+**参考实现**（先自己写完再看）：
+
+```text
+怀疑点：(1) skip 从未复位 → 999 之后全跳过（真因）；(2) v[i]==999 的比较写错位；(3) 索引越界。
+条件断点：断在 if (v[i] == 999) 行，条件 v[i] == 999——只在命中时停，慢但精准。
+观察点：对 total 设 data breakpoint（写入即停），看是哪一步写入让结果偏离预期。
+打桩版：
+    if (v[i] == 999) std::print("skip on at i={}\n", i);   // 事件级日志
+    修复后打桩要全部移除或转成可开关的日志宏——「遗留 print」是代码坏味道。
+```
+
+要点自查：调试的第一动作是「形成可证伪的假设」而不是瞎停；修复 `if (v[i] == 999) skip = true; else skip = false;`（或 `skip = (v[i] == 999);`）后用同一测试用例回归——没回归步骤的调试不算完成。
+
+**任务二**：生产环境调试辨析——写出 `assert`、`static_assert`、异常日志三者各自的生效阶段与适用场景；为什么 `assert` 必须无副作用（用 `assert(x++ == 1)` 演示 NDEBUG 差异）？再给 core dump 定位的一个最小流程（ulimit -c / gdb 打开 bt）。
+
+**提示**：assert 在 NDEBUG 下整句消失——带副作用的断言在 Release 里悄悄改变行为，这是它最大的坑；core dump 是「崩溃现场快照」，bt 看栈帧要带符号（-g 编译）。
+
+**参考实现**（先自己写完再看）：
+
+```text
+- static_assert(编译期)：模板约束、常量检查，零运行时成本。
+- assert(运行期调试版)：内部不变式；NDEBUG 定义后整句消失（不执行、不求值）。
+  assert(x++ == 1)：Debug 里 x 变 2，Release 里 x 保持 1 —— 副作用被吃掉。
+  纪律：assert 里只放无副作用的布尔表达式。
+- 日志/异常追踪：生产可观测性；错误要带上下文（输入、路径、线程）。
+core dump 最小流程：
+  ulimit -c unlimited && ./a.out          # 允许生成 core
+  gdb ./a.out core                        # 带符号编译（-g -O0 或 -g -O2）
+  (gdb) bt                                # 崩溃栈；frame N 逐帧看变量
+```
+
+要点自查：三个工具按「越早发现越便宜」排列——static_assert 在编译期、assert 在调试运行、日志在生产行为；assert 的 NDEBUG 消失语义决定了它绝不能承载程序逻辑。

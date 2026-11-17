@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: GoF设计模式Java实现
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/840-SpringBootSecurity'
   - 'java/850-SpringBootDataAccess'
@@ -694,3 +694,13 @@ src.add(new File("Utils.java", 2));
 root.add(src);
 root.print("");  // 打印目录树
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 单例的双重检查锁定写法中，实例字段为什么要 volatile？——防止半初始化对象发布（构造未完成引用已可见）。
+2. 静态内部类单例为什么线程安全且懒加载？——类加载的 JLS 保证（JVM 初始化内部类时加锁且只一次），首次引用 Holder 才触发加载，天然懒加载。
+3. 工厂方法与抽象工厂的分界是什么？——工厂方法：一个产品等级、子类决定造哪个产品；抽象工厂：一族相关产品、一个工厂提供成套创建方法。
+4. JDK 里 Builder、Decorator、Observer 各对应哪个真实 API？——StringBuilder、BufferedInputStream/集合不可变包装、Swing listener 或 Flow API。
+5. 策略模式在 Java 8 之后的"轻量化"形态是什么？——直接传 Lambda（Comparator 接口），省去每个策略一个类的样板代码。

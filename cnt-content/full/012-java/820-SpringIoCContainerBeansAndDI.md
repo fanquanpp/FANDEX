@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: IoC 容器的形式化模型与依赖图构建、BeanDefinition 注册、循环依赖三级缓存、Bean 生命周期全流程、三种依赖注入方式、作用域与条件装配、自动配置机制；含 BeanPostProcessor 实战与 Bean 内存泄漏、启动慢优化案例。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/825-SpringAOP'
   - 'java/827-SpringDeclarativeTransactions'
@@ -92,6 +92,9 @@ Rod Johnson 在 2002 年出版的 *Expert One-on-One J2EE Design and Development
 | Spring 5.0 | 2017 | 响应式编程（WebFlux）、JDK 9+ |
 | Spring 6.0 | 2022 | JDK 17+ 基线、Jakarta EE 9+ 迁移 |
 | Spring Boot 3.0 | 2022 | 原生镜像支持、Jakarta EE 迁移 |
+| Spring Framework 6.2 / Boot 3.4-3.5 | 2024-2025 | 3.x 线维护收尾（3.5 为 3.x 最终特性线） |
+| Spring Framework 7.0 | 2025-11 | Jakarta EE 11 基线、API 版本化与空安全类型收紧 |
+| Spring Boot 4.0 | 2025-11 | 基于 Framework 7，最低 Java 17、首推 JDK 25；4.1 于 2026-06 跟进 |
 
 ### 1.4 Spring Boot 的革命
 
@@ -1505,3 +1508,13 @@ public CacheService cacheService() { }
 
 - Spring Framework 官方文档：*Core Technologies / IoC container*（https://docs.spring.io/spring-framework/reference/core/beans.html ），容器与 Bean 生命周期的官方语义以此为准（Apache 2.0 许可项目文档，本文仅参照其概念表述，代码为原创示例）；
 - 原模块 Spring 基础篇拆分说明：AOP 内容已迁至 [825-SpringAOP](/java/825-SpringAOP)，事务内容已迁至 [827-SpringDeclarativeTransactions](/java/827-SpringDeclarativeTransactions)，Spring MVC 请求处理流程与 RESTful 接口实战已迁至 [860-SpringBootDeepDive](/java/860-SpringBootDeepDive) 第 6 章。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. IoC 容器管理的对象默认作用域是什么？原型作用域注入到单例里会发生什么？——单例 singleton；原型 bean 只在注入那一刻创建一次，之后容器不再管理（要每次新实例需 ObjectProvider 或 @Lookup）。
+2. @Autowired 按什么顺序找 Bean？两个候选 Bean 时怎么消歧？——先按类型，多个候选再按字段/参数名当 bean 名匹配；用 @Primary 指定默认、@Qualifier 指名。
+3. 构造器注入相比字段注入的两大优势是什么？——依赖显式且不可变（final，测试直接 new）；依赖过多时构造器爆炸是"坏味道信号"，字段注入掩盖问题。
+4. @Configuration 类里 @Bean 方法互调为什么不会走两次创建？——CGLib 代理了配置类，方法调用被拦截回容器单例注册表。
+5. Bean 生命周期四步（实例化、属性填充、初始化回调、销毁回调）中，@PostConstruct 归在哪一步？ Aware 接口回调在它之前还是之后？——初始化回调步；BeanNameAware/BeanFactoryAware 等 Aware 回调在 @PostConstruct 之前。

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Next.js App Router 组件边界系统讲解：use client 指令的传播规则、服务器组件作为 children/props 穿过客户端组件的组合模式、props 序列化边界（函数为什么传不了）、第三方库缺 use client 时的包装层写法
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -138,7 +138,7 @@ export function InteractiveCard({
 - **这个模式反过来读也成立**：看到"整个页面 use client"的提交，第一反应应该是——哪个子块其实是静态的？把它提出去当 children。
 - 交互壳从 React.ReactNode 类型的 props 接 children/插槽，`React.ReactNode` 是可序列化 props 的官方类型表达。
 
-同一思想最常见的三个变体：**主题切换器**（客户端组件包 `<html>`，`{children}` 透传整页内容）、**轮播/标签页容器**（客户端交互壳包服务器渲染的卡片列表）、**Suspense 边界内的骨架**（客户端骨架配合服务器流式内容，见第 3 篇）。
+同一思想最常见的三个变体：**主题切换器**（客户端组件包 `<html>`，`{children}` 透传整页内容）、**轮播/标签页容器**（客户端交互壳包服务器渲染的卡片列表）、**Suspense 边界内的骨架**（客户端骨架配合服务器流式内容，流式机制见第 6 篇《渲染策略与缓存》）。
 
 ## 3. 第三方库包装层：补上缺失的 "use client"
 

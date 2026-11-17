@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 综合运用面向对象、模板与 STL 的实战项目。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/630-CppDebugPerformanceAnalysis'
 prerequisites:
@@ -1342,3 +1342,55 @@ Checks: >
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：默写一个新 C++ 项目的「第一小时」目录骨架——CMakeLists.txt（root）、`src/main.cpp`、`include/project/`、`tests/`、`.gitignore` 各自该放什么；写出 root CMakeLists 的 10 行以内骨架（project 声明、C++ 标准、子目录、测试开关），并回答：`include/project/` 这层同名目录为什么要多套一层？
+
+**提示**：`include/project/foo.hpp` 让 `#include "project/foo.hpp"` 在「安装后」与「源码树内」一致——用户安装你的头文件时不需要特殊 include 路径。
+
+**参考实现**（先自己写完再看）：
+
+```text
+myproject/
+  CMakeLists.txt        # project(myproject CXX) + CXX 标准 + add_subdirectory
+  src/                  # .cpp 实现文件
+  include/myproject/    # 对外头文件（带模块名一层目录）
+  tests/                # 单元测试（gtest/catch2）
+  .gitignore            # build/、compile_commands.json、.cache/
+
+# CMakeLists.txt（root，骨架）
+cmake_minimum_required(VERSION 3.20)
+project(myproject LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 23)
+enable_testing()
+add_subdirectory(src)
+add_subdirectory(tests)
+# include/myproject/ 的理由：#include 路径在源码树与安装后完全一致，
+# 避免用 include/myproject.hpp 与 include/foo.hpp 混出歧义。
+```
+
+要点自查：骨架每一项都能答出「为什么存在」（比如 enable_testing 在 add_subdirectory(tests) 之前）；`compile_commands.json` 进 .gitignore 但要让 clangd 用它——开发体验的关键一环。
+
+**任务二**：工程纪律题——写出「从功能想法到合并」的完整清单：分支命名、提交信息、CI 检查项（编译矩阵 + 测试 + clang-tidy + clang-format 校验）、code review 关注点（所有权、异常安全、ABI）；再回答：为什么「编译矩阵」要包含至少一个 Debug/UBSan 构建？
+
+**提示**：编译矩阵的意义是「不同 -O 级别暴露不同 bug」——UB 与越界在 -O2 下可能被优化掉而不复现，Debug/UBSan 才能抓到。
+
+**参考实现**（先自己写完再看）：
+
+```text
+清单：
+- 分支：feat/<topic>、fix/<issue-id>；主分支保护 + PR 强制。
+- 提交信息：conventional commits（feat/fix/docs/chore + 范围 + 祈使句）。
+- CI：gcc/clang 双编译器 x Debug/Release x（含 -fsanitize=address,undefined 一档）
+  + ctest + clang-tidy 新代码零警告 + clang-format --dry-run 校验。
+- review 关注点：所有权归属（谁 delete）、异常安全等级、接口 ABI 稳定性。
+
+UBSan 构建的理由：Release -O2 下 UB（有符号溢出、越界）可能被优化掉，
+「测试通过」只是「UB 未在本次编译中显形」；Debug + sanitizer 让 UB 现场报文件行号，
+这是把 635 篇的 UB 知识变成 CI 门槛的落点。
+```
+
+要点自查：能把「分支 -> CI 矩阵 -> review 清单」串成一条流程并说出每一环防什么事故，工程实践就闭环了；sanitizer 一档不是可选项，是本模块多处内容（UB、内存管理）的 CI 化终点。

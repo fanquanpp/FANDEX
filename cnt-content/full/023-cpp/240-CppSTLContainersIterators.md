@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 顺序容器、关联容器、无序容器及迭代器体系。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/480-CppFormatOutput'
   - 'cpp/750-CppModernStandardEvolution'
@@ -475,3 +475,64 @@ prerequisites:
   return 0;
  }
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：为「频繁按值查找、也要顺序遍历」的场景选容器并实现：用 `std::map` 还是 `vector + 排序 + binary_search`？写出两版查找代码，说清各自的时间复杂度与选择依据（提示：先想数据规模与是否需要有序遍历）。
+
+**提示**：`std::map` 查找 O(log n) 且天然有序但每节点一次堆分配；排序数组查找同样 O(log n)，缓存友好，代价是插入 O(n)。数据「读多写少」时排序数组常常更快——这就是本篇「容器选型不看接口看访问模式」的核心案例。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <algorithm>
+#include <map>
+#include <vector>
+#include <string>
+
+// 版本 A：map（写多读也多、需要稳定迭代器时）
+bool findA(const std::map<int, std::string>& m, int key) {
+    return m.find(key) != m.end();
+}
+
+// 版本 B：排序 vector（读多写少：一次排序，多次二分）
+bool findB(const std::vector<std::pair<int, std::string>>& v, int key) {
+    return std::binary_search(v.begin(), v.end(), key,
+        [](const auto& a, const auto& b) { return a.first < b.first; });
+}
+```
+
+要点自查：两版查找都是 O(log n)，但 B 的常数更小（连续内存 + 无指针追踪）；若还要「找得到且返回元素」，B 用 `std::lower_bound` 再比对 key，A 用 `m.find` 直接拿——接口差异也要写进选型。
+
+**任务二**：迭代器失效找错——下面代码有两个失效 bug，指出来并给出修复：
+
+```cpp
+std::vector<int> v{1, 2, 3, 4};
+for (auto it = v.begin(); it != v.end(); ++it) {
+    if (*it % 2 == 0) v.erase(it);          // bug 1
+}
+std::vector<int> w{1, 2, 3, 4};
+int* first = w.data();
+w.push_back(5);
+std::cout << *first;                        // bug 2
+```
+
+**提示**：`erase` 返回「下一个有效迭代器」；`push_back` 扩容会让所有指针/迭代器失效——持有裸指针跨越容量变化就是悬垂。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// 修 1：erase-erase 惯用法（或 erase_if）
+v.erase(std::remove_if(v.begin(), v.end(),
+                       [](int x) { return x % 2 == 0; }),
+        v.end());
+// C++20 起一行：std::erase_if(v, [](int x) { return x % 2 == 0; });
+
+// 修 2：不要跨修改持有指针；需要位置就存下标，或用不因扩容失效的容器
+w.reserve(8);          // 预留容量后 push_back 不再挪动（本例可，但治标）
+std::size_t idx = 0;   // 治本：存下标而非指针
+```
+
+要点自查：`erase` 之后 `++it` 是双重失效；`deque` 的插入失效规则与 `vector` 不同（中部失效、两端不一定）；遍历中删除的第一反应应是 `erase_if`/remove-erase 惯用法。

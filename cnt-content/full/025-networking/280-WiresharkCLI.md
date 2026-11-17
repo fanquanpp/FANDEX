@@ -6,13 +6,29 @@ category: 云与基础设施
 difficulty: beginner
 description: Wireshark 抓包分析：显示过滤器与流跟踪、统计面板定位时延重传、tshark 命令行。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/270-Tcpdump'
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/020-OSITCPIPModel'
 prerequisites: []
 ---
+
+## 工具定位与版本背景
+
+tshark 是 Wireshark 的命令行形态：GUI 版擅长交互式探索，tshark 擅长自动化与服务器端（无
+图形环境）取证，两者共享同一套协议解析引擎和过滤语言。截至 2026 年末，Wireshark 稳定版
+处于 4.6.x 系列（5.0 进入 RC），tshark 随 Wireshark 一同发版，版本号一致。
+
+学习本篇前要先分清两种过滤器，这是 tshark 新手最大的混淆点：
+
+- **捕获过滤器（`-f`）**：BPF 语法，运行在抓包阶段，条件不满足的包根本不会落盘——用于
+  减量，语法与 [tcpdump](networking/270-Tcpdump) 相同；
+- **显示过滤器（`-Y`）**：Wireshark 专有语法，只筛选显示、不影响已抓到的数据——用于
+  分析，可以精确到协议字段（如 `http.request.method == GET`）。
+
+记忆法则：抓的时候用 `-f` 省磁盘，看的时候用 `-Y` 保数据。「抓完发现想要的包被 `-f` 滤掉
+了」不可逆，所以不确定时抓宽、显示时再收紧。
 
 ## tshark 基础抓包
 
@@ -330,11 +346,17 @@ tshark -i eth0 -Y "tcp.flags.syn == 1 and tcp.flags.ack == 0"
 ## tshark 高级应用
 
 **基本写法:解密 TLS 流量**
-`tshark -r <文件> -o ssl.keys_list:<IP>,<端口>,http,<密钥文件>`
+`tshark -r <文件> -o tls.keylog_file:<密钥文件>`
 ```bash
-# 使用私钥解密 HTTPS 流量
-tshark -r capture.pcap -o "ssl.keys_list:443,http,/path/to/server.key"
+# 用 TLS 密钥日志文件解密 HTTPS 流量（浏览器场景）
+tshark -r capture.pcap -o "tls.keylog_file:/tmp/sslkeys.log"
+# 服务端私钥方式（仅适用于 RSA 密钥交换的旧 TLS 1.2 流量）
+tshark -r capture.pcap -o "tls.keys_list:0.0.0.0,443,http,/path/to/server.key"
 ```
+版本与原理注意：Wireshark 3.0 起 SSL 解析器更名为 TLS，旧写法 `ssl.keys_list`/`ssl.keylog_file`
+在 4.x/5.x 上已不识别；私钥解密只对 RSA 密钥交换有效，而 TLS 1.3 与主流 TLS 1.2 套件都用
+（EC）DHE 前向保密，服务端私钥解不出来——现代抓包的标准姿势是拿 `SSLKEYLOGFILE` 密钥日志
+（浏览器或 curl 等客户端可导出），前提是抓包对象是你自己有权限审计的流量。
 
 **基本写法:提取文件**
 `tshark -r <文件> --export-objects http,<目录>`
@@ -397,3 +419,17 @@ tshark -r capture.pcap -T fields -e frame.number -e ip.src -e ip.dst -e tcp.dstp
 # 静默模式不显示包,只显示统计
 tshark -i eth0 -q -z io,stat,10
 ```
+
+## 教学自检
+
+按遮码自检法：遮住上文代码块，先自己写命令或推演答案，再对照。
+
+- `-f` 与 `-Y` 各用什么语法、各工作在哪个阶段？为什么说「抓错了想重抓」比「显示条件写错」代价大得多？
+- 想看服务器上每秒流量曲线，用 `-Y` 还是 `-z`？为什么前者做不到这件事？
+- `dumpcap` 与 tshark 的分工是什么？什么场景下长跑抓包必须用 dumpcap 而不是 tshark？
+  （提示：资源占用与权限模型——tshark 每包都要解析，dumpcap 只落盘）
+- `tcp.flags.syn == 1` 会把三次握手的第几个包也匹配进来？怎么把「只看客户端发起的 SYN」写完整？
+- 从 pcap 里把「谁访问了哪些域名」提取成两列，需要哪三个参数组合？
+  （`-Y` 过滤 dns、`-T fields`、`-e dns.qry.name`）
+- TLS 1.3 流量为什么拿服务端 RSA 私钥解不开？现代替代方案靠什么文件、由谁导出？
+- Wireshark 3.0 之后解析 TLS 的首选项前缀是 `ssl.` 还是 `tls.`？用错会发生什么？

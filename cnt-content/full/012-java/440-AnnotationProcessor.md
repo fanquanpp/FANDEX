@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java注解处理器详解：Annotation Processor编译时生成代码。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/530-ThreadLocalMemoryLeak'
   - 'java/430-ReflectionDynamicProxy'
@@ -1110,7 +1110,7 @@ File → Project Structure → Modules → Sources
 
 ### 7.6 跨编译缓存
 
-使用 Gradle 6+ 的 `compile-local` 缓存或 `compile-avoidance`：
+使用 Gradle 的增量编译与编译规避（compile avoidance，Gradle 6+ 默认对合法场景自动生效）：
 
 ```kotlin
 tasks.withType<JavaCompile> {
@@ -1699,3 +1699,13 @@ String v = processingEnv.getOptions().get("myOption");
 # 通过 -A 选项向处理器传参
 javac -AmyOption=value -processor com.example.BuilderProcessor src/Main.java
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 注解处理器处理的是源码还是字节码？它注册进 javac 的两种方式是什么？——源码级（编译期，注解处理器读 Element 树而非运行期反射）；META-INF/services/javax.annotation.processing.Processor 服务文件，或 Google auto-service 的 @AutoService 注解自动生成。
+2. Retention 的三种取值分别让注解活到什么时候？写处理器必须用哪种？——SOURCE（仅源码，编译后丢弃）、CLASS（进 class 文件但运行期不加载）、RUNTIME（运行期可反射读取）；处理器工作在编译期，用 SOURCE 即可（多数用 CLASS 兼容）。
+3. RoundEnvironment 与 Messager 的职责各是什么？报错为什么不能用抛异常？——RoundEnvironment 提供本轮被注解的元素集合；Messager 是给编译器报 error/warning 的正道（异常会中断编译且无位置信息）。
+4. 处理器生成代码用什么库？为什么不能用 Files.writeString 直接写？——JavaPoet（或 JavaParser）；生成物必须登记到 Filer 让 javac 感知并参与后续轮次，绕过 Filer 的文件 javac 不识别、增量编译会丢。
+5. @Inherited 与元注解 @Target 各控制什么？——@Inherited 让类的注解被子类继承（仅类级）；@Target 限定注解能贴的位置（TYPE/METHOD/FIELD 等）。

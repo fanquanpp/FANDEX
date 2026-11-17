@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: HTML 超链接与锚点完整指南：href 协议、target/rel 属性、路径系统、安全与可访问性。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-11-16'
 related:
   - 'html5/110-TextSemantic'
   - 'html5/120-List'
@@ -26,7 +26,7 @@ prerequisites:
 
 超链接是万维网诞生的核心概念。1989 年 Tim Berners-Lee 提出“信息管理提议”，把“链接”作为 Web 的根本机制；1991 年 HTML Tags 中 `<A>` 元素即已存在，`HREF` 属性从一开始就承担“超文本引用”职责。HTML 2.0（1995）正式标准化 `<a>`；HTML 4.01（1999）引入 `target`、`rel`、`type` 等属性并支持 `name` 锚点；HTML5（2014）移除了 `name` 锚点（统一用全局 `id`），为 `<a>` 增加 `download` 属性，并明确了 `target="_blank"` 的 `rel="noopener"` 安全要求。
 
-浏览器安全模型也在演进：Safari 12.1（2019）、Firefox 79（2020）、Chrome 88（2021）起对 `target="_blank"` 的链接默认隐式启用 `noopener` 行为（HTML 规范同步更新），但为了兼容旧浏览器与明确语义，现代代码仍显式书写 `rel="noopener"`。
+浏览器安全模型也在演进：Safari 12.1（iOS，2019；macOS 桌面版为 13.1）、Firefox 79（2020）、Chrome 88（2021）起对 `target="_blank"` 的链接默认隐式启用 `noopener` 行为（HTML 规范同步更新），但为了兼容旧浏览器与明确语义，现代代码仍显式书写 `rel="noopener"`。
 
 ```mermaid
 timeline
@@ -59,7 +59,7 @@ timeline
 
 `target` 属性取值：`_self`（默认，当前浏览上下文）、`_blank`（新浏览上下文）、`_parent`（父上下文）、`_top`（顶层上下文）、任意名称（命名浏览上下文，若不存在则新建）。
 
-`rel` 属性声明链接与目标的关系，空格分隔多个关键字：`noopener`（新窗口不继承 opener 引用）、`noreferrer`（不发送 Referer 且隐式 noopener）、`external`、`nofollow`（SEO 指示）、`nofollow` 等。
+`rel` 属性声明链接与目标的关系，空格分隔多个关键字：`noopener`（新窗口不继承 opener 引用）、`noreferrer`（不发送 Referer 且隐式 noopener）、`external`、`nofollow`（SEO 指示）、`ugc`（用户生成内容）、`sponsored`（付费/赞助链接）等。
 
 `download` 属性：提示浏览器下载目标而不是导航，值可作为建议文件名。受同源策略限制，跨域下载名可能被忽略。
 
@@ -687,6 +687,35 @@ a:active  { color: orange; }     /* 点击时 */
 <!-- 浏览器会向 ping 指定的 URL 发送 POST 请求 -->
 <a href="https://example.com" ping="https://track.example.com/click">链接</a>
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写出实现，再展开参考答案对照。
+
+1. 默写一行「安全的外部链接」：新标签页打开、切断 opener、不发送 Referer，并解释这套组合的攻防逻辑。
+
+参考答案（先自己写，再对照）：
+
+```html
+<a href="https://example.com/report" target="_blank" rel="noopener noreferrer">查看报告</a>
+```
+
+不加 `rel` 时新窗口持有 `window.opener`，恶意页面可用它改写原页面地址（反向 tabnabbing）；`noopener` 置空 opener、`noreferrer` 连 Referer 也不发。现代浏览器虽已对 `_blank` 隐式启用 noopener，显式书写仍是兼容旧环境的安全基线。
+
+2. 写一个「跳到本页第 3 章」的锚点链接与目标元素各一行，并说出锚点跳转的工作原理。
+
+参考答案（先自己写，再对照）：
+
+```html
+<a href="#chapter-3">跳到第 3 章</a>
+<h2 id="chapter-3">第 3 章</h2>
+```
+
+浏览器执行「滚动到片段」算法：在文档中找 `id="chapter-3"` 的元素并滚动过去，URL 的 hash 写入历史记录（支持前进后退）；固定导航遮挡时用 CSS `scroll-margin-top` 让出空间。
+
+3. 概念自问：为什么「页面内动作」该用 `<button>` 而不是 `<a href="#">`？链接文案为什么不能写「点击这里」？
+
+参考答案（先自己答，再对照）：`<a>` 的语义是导航到某个资源，`href="#"` 会跳页顶、无法表达动作语义，键盘与读屏用户得到的是「链接」角色——动作语义归 `<button>`；读屏用户常按链接列表遍历页面，文案要能独立描述目的地或动作结果。
 
 ## 动手试试
 

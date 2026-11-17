@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 常见环境配置错误的集中排查手册：命令找不到、权限拒绝、端口占用、代理、乱码等。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-17'
 related:
   - 'shell/100-EnvVarPath'
   - 'shell/110-EnvVerificationChecklist'
@@ -111,6 +111,24 @@ where.exe node      # Windows
 - 已尝试过的解决方案。
 
 > 一句话记住排查：先重开终端，再看 PATH，再看权限；报错全文比“不行”两个字有用得多。
+
+## 自检：遮住命令，说出排查路径
+
+先遮住参考答案，按症状自己写出排查步骤，再对照。
+
+1. `npm run dev` 报 `EADDRINUSE :3000`，写出 macOS/Linux 与 Windows 各一条「找出占用进程」的命令，以及杀进程前的确认动作。
+2. 公司网络里 `npm install` 反复超时，按第 3 节的顺序说出前两个排查动作。
+3. 改了 `~/.zshrc` 加了新 PATH，重开终端仍然 `command not found`，说出三个可能原因。
+4. WSL 安装报错 0x80070003，第一个检查点是什么？
+
+<details>
+<summary>参考答案</summary>
+
+1. `lsof -i :3000`（macOS/Linux）；`netstat -ano | findstr :3000`（Windows，最后一列是 PID，可配 `tasklist /fi "PID eq <PID>"` 看进程名）。确认是残留进程后先 TERM 后 KILL（`kill <PID>` 无效再 `kill -9`）。
+2. 先浏览器打开镜像地址确认可达，再换 npm 源（`npm config set registry https://registry.npmmirror.com`）；两者都正常才考虑代理配置（第 3 节）。
+3. 三个候选：配置文件里写错语法导致该行静默失败（`source ~/.zshrc` 看报错）；写进了错误的文件（如 zsh 用户写进了 `~/.bashrc`）；写的是当前会话式的 `$env:Path=` 临时改法而根本没落盘（第 7 节）。
+4. 任务管理器 → 性能 → CPU 确认虚拟化已开启；未开启则进 BIOS 开 Intel VT-x / AMD SVM，同时确认「虚拟机平台」与「适用于 Linux 的 Windows 子系统」两个 Windows 功能已启用并重启（第 6 节）。
+</details>
 
 ## 扩展学习
 

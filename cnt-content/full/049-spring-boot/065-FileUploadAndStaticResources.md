@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/060-SpringMvcRestApi'
   - 'spring-boot/050-ConfigurationManagement'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'spring-boot/070-UnifiedResponseExceptionHandling'
   - 'spring-boot/190-CapstoneBlogApi'
@@ -251,6 +251,8 @@ public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
 重写 PathResourceResolver 的价值在 SPA（Vue/React）路由：用户直接访问 `/articles/42` 时磁盘上并没有这个文件，默认返回 404；回退到 index.html 后前端路由接管，刷新不再 404。API 与静态资源共存时注意次序：`/api/**` 的控制器优先于 `/**` 的资源映射，Spring MVC 本来就是这个次序，不要为静态资源抢 `/api` 前缀。
 
+托管字体顺带一提：前端构建产物常带 /fonts/ 目录，Boot 4.0 起静态资源 common locations 清单已把它收入——如果你的安全配置用了 pathRequest.toStaticResources().atCommonLocations() 放行静态资源，升级后字体文件自动随之放行；不想放行要用 excluding(StaticResourceLocation.FONTS) 显式排除（官方迁移指南）。
+
 ## 7. 动手实践
 
 **任务一：给博客项目加头像上传。** 实现 `POST /api/users/{id}/avatar`：接收图片、白名单 + 魔数双校验、UUID 落盘、返回访问 URL，并把 URL 存到用户表。超限与类型错误返回统一错误体。提示：这正好是 [Capstone 博客 API](/spring-boot/190-CapstoneBlogApi) 的扩展点；先写异常路径的测试（上传 10MB 文件断言 400）再写正常路径。
@@ -325,3 +327,15 @@ public class AvatarController {
 - 统一错误体与全局异常处理：[统一响应与异常处理](/spring-boot/070-UnifiedResponseExceptionHandling)
 - 头像字段的落点（用户表与关联查询）：[Spring Data JPA](/spring-boot/090-SpringDataJpa)
 - 多实例部署下的共享存储背景：[打包部署](/spring-boot/180-PackagingDeployment)
+
+## 自检
+
+不看上文，凭记忆回答。答不出的，回到对应小节重读。
+
+1. MultipartFile 是谁解析出来的？前端 FormData 的字段名与 @RequestParam 的名字对不上，会报什么错？
+2. 上传大小限制在哪一组配置里设？超限异常从哪一层抛出、由谁翻译成统一错误体？
+3. 为什么不能只信 Content-Type？扩展名白名单与魔数校验各防的是哪一类伪造？
+4. 存储文件名为什么一律由服务器生成？路径穿越攻击的入口长什么样，UUID 命名挡掉了它的哪一半？
+5. 本地磁盘方案在多实例部署下为什么失效？正式答案是什么？
+6. 下载响应的三件套是什么？中文文件名要做什么处理？
+7. SPA 托管为什么要重写 PathResourceResolver？没有回退时刷新深层路由会发生什么？

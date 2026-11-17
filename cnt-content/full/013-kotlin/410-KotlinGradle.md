@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 用 Gradle Kotlin DSL 构建 Kotlin 项目：依赖管理、版本目录、多模块、K2 编译器配置与构建提速。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'kotlin/420-KotlinCompilerPlugin'
   - 'kotlin/440-KotlinAndroid'
@@ -44,7 +44,7 @@ rootProject.name = "my-app"
 ```kotlin
 // build.gradle.kts
 plugins {
-    kotlin("jvm") version "2.2.0"   // K2 时代版本线，2.0+ 默认 K2 编译器
+    kotlin("jvm") version "2.4.21"   // K2 时代版本线，2.0+ 默认 K2 编译器
     application
 }
 
@@ -98,7 +98,7 @@ my-app/
 // build.gradle.kts
 dependencies {
     // implementation：编译和运行时都需要，但不会传递给依赖此模块的模块
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
     // api：编译和运行时都需要，且会传递给依赖此模块的模块（需应用 kotlin("jvm") 的 api 配置）
     api("com.example:shared-library:1.0.0")
@@ -113,7 +113,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testImplementation("io.mockk:mockk:1.13.16")
     // 协程测试：runTest 虚拟时间的入口（用法见协程测试篇）
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
 }
 ```
 
@@ -126,9 +126,9 @@ dependencies {
 ```toml
 # gradle/libs.versions.toml
 [versions]
-kotlin = "2.2.0"
-coroutines = "1.10.2"
-ktor = "3.2.0"
+kotlin = "2.4.21"
+coroutines = "1.11.0"
+ktor = "3.6.1"
 
 [libraries]
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
@@ -164,7 +164,7 @@ include("server")
 ```kotlin
 // build.gradle.kts（根项目）
 plugins {
-    kotlin("jvm") version "2.2.0" apply false  // 版本只声明一次，子模块不写版本
+    kotlin("jvm") version "2.4.21" apply false  // 版本只声明一次，子模块不写版本
 }
 ```
 
@@ -189,7 +189,7 @@ plugins {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(project(":shared"))          // 依赖 shared 模块
-    implementation("io.ktor:ktor-server-netty-jvm:3.2.0")
+    implementation("io.ktor:ktor-server-netty-jvm:3.6.1")
 }
 
 application {
@@ -199,7 +199,7 @@ application {
 
 ### Kotlin 2.x 编译器选项：compilerOptions DSL
 
-Kotlin 2.x 推荐 `compilerOptions {}` 扩展（类型安全、可复用）；旧的 `kotlinOptions {}` 已进入维护状态并在向新 DSL 迁移：
+Kotlin 2.x 推荐 `compilerOptions {}` 扩展（类型安全、可复用）；注意 Kotlin 2.2 起 `kotlinOptions {}` DSL 直接报编译错误，旧教程里的字符串赋值写法要整体迁移：
 
 ```kotlin
 // build.gradle.kts
@@ -270,9 +270,9 @@ tasks.register("buildAndCopy") {
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "2.2.0"
-    kotlin("plugin.spring") version "2.2.0"  // open 化 Spring Bean 类，绕过 final-by-default
-    kotlin("plugin.jpa") version "2.2.0"     // JPA 实体无参构造与延迟加载适配
+    kotlin("jvm") version "2.4.21"
+    kotlin("plugin.spring") version "2.4.21"  // open 化 Spring Bean 类，绕过 final-by-default
+    kotlin("plugin.jpa") version "2.4.21"     // JPA 实体无参构造与延迟加载适配
     id("org.springframework.boot") version "3.4.0"
     id("io.spring.dependency-management") version "1.1.7"
 }
@@ -297,9 +297,9 @@ Ktor 3.x 的插件与依赖坐标（`-jvm` 后缀）：
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "2.2.0"
-    kotlin("plugin.serialization") version "2.2.0"
-    id("io.ktor.plugin") version "3.2.0"
+    kotlin("jvm") version "2.4.21"
+    kotlin("plugin.serialization") version "2.4.21"
+    id("io.ktor.plugin") version "3.6.1"
     application
 }
 
@@ -323,8 +323,8 @@ Kotlin 2.0 起 Compose 编译器随 Kotlin 版本一起发布，改用官方 Com
 
 ```kotlin
 plugins {
-    id("com.android.application") version "8.7.0"
-    kotlin("android") version "2.2.0"
+    id("com.android.application") version "8.7.0"   // AGP 8.x 存量写法；AGP 9（9.5.0 为 2026-10 稳定线）起内置 Kotlin，kotlin-android 插件应移除
+    kotlin("android") version "2.4.21"
     alias(libs.plugins.kotlin.compose)  // 即 org.jetbrains.kotlin.plugin.compose，版本随 Kotlin
 }
 
@@ -441,7 +441,7 @@ kover {
 
 1. **依赖坐标字符串拼错是最高频错误**：优先使用版本目录，坐标集中在一处；`./gradlew dependencies` 查看依赖树排查版本冲突。
 2. **脚本内定义的变量作用域只在当前块**：在 `dependencies {}` 里定义的 `val` 不能在其他块引用（这也是旧教程常出现的复制粘贴 bug），跨脚本共享请用版本目录。
-3. **`kotlinOptions` 逐步退役**：新项目一律用 `compilerOptions {}`；网上旧教程（含 `jvmTarget = "17"` 字符串赋值写法）迁移时注意 API 差异。
+3. **`kotlinOptions` 已退役**：2.2 起该 DSL 报错，只能用 `compilerOptions {}`；网上旧教程（含 `jvmTarget = "17"` 字符串赋值写法）迁移时注意 API 差异（字符串改枚举、add 换 addAll）。
 4. **Kotlin DSL 需要学习成本**：如果你之前用 Groovy，切换到 Kotlin DSL 需要适应"类型检查更严、脚本在配置阶段编译"的差异——好处是写错立刻在 IDE 与构建时报错。
 5. **不要在构建脚本中写复杂逻辑**：构建脚本应该简洁，复杂逻辑放在 buildSrc 或 Convention Plugin 中；但 buildSrc 的任何改动会使所有模块重新编译，纯版本常量优先迁去版本目录。
 6. **Gradle Wrapper**：始终使用 Gradle Wrapper（`./gradlew`），确保团队成员使用相同的 Gradle 版本；Kotlin 2.2 需要较新的 Gradle（8.10+ 为宜），升级 Kotlin 与升级 Gradle 常需要成对进行。
@@ -517,7 +517,7 @@ kover {
 ```toml
 # gradle/libs.versions.toml
 [versions]
-kotlin = "2.2.0"
+kotlin = "2.4.21"
 
 [libraries]
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
@@ -566,8 +566,8 @@ tasks.jar {
 
 ```kotlin
 // build.gradle.kts（问题版）
-val coroutinesVersion = "1.10.2"
-val ktorVersion = "3.2.0"
+val coroutinesVersion = "1.11.0"
+val ktorVersion = "3.6.1"
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
@@ -591,6 +591,6 @@ server-tests 坐标用在了依赖 ktor 的项目里却缺少主依赖声明（�
 
 - Kotlin DSL + 版本目录 + Wrapper 是当前 Kotlin 工程的三件套：类型安全、集中管理、版本一致。
 - 依赖配置按传递性选择：`implementation` 默认首选，`api` 用于库的公开类型，`runtimeOnly`/`compileOnly` 处理特例。
-- Kotlin 2.x 用 `compilerOptions {}` 配置编译器，`kotlinOptions` 不再用于新项目；Compose 编译器改用 `org.jetbrains.kotlin.plugin.compose` 插件。
+- Kotlin 2.x 用 `compilerOptions {}` 配置编译器，`kotlinOptions` DSL 已在 2.2 移除可用性；Compose 编译器改用 `org.jetbrains.kotlin.plugin.compose` 插件。
 - 提速三板斧：并行构建、构建缓存、配置缓存（Gradle 8.1+ 稳定）。
 - 编译器插件的原理与更多选项见 [Kotlin 编译器插件](/kotlin/420-KotlinCompilerPlugin)；Android 工程完整实践见 [Kotlin 与 Android](/kotlin/440-KotlinAndroid)。

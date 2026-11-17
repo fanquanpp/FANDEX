@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: "以「给编趣 Quaver 画下落音符」引入：跑通第一个跨边界调用，弄清 godot 模块提供什么、三条命名规则、Variant 桥接的两条实践准则，以及最重要的一课——Godot 拥有 Godot 对象，跨帧引用必须先验有效性。"
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'gode/020-FirstTypeScriptScript'
   - 'gode/050-MetadataExportsSignalsRpc'
@@ -79,6 +79,8 @@ TypeScript 与 Godot 是两个类型世界，中间靠 Variant（Godot 的通用
 
 第二，**高频代码别在紧密循环里反复做 Variant 转换**。每次跨界转换都有成本，把"每帧 new 一批 Vector3"改成复用成员变量，能在 Godot 类型体系内完成的计算就别搬回 JS。Quaver 的钢琴卷帘每帧重绘上百个音符，这类代码对转换次数敏感，移动平台尤甚。
 
+第二条准则在 2.4.5 之后有了一条官方快车道：五个数值 Packed 数组直接接受对应的 JavaScript TypedArray——PackedByteArray 收 Uint8Array（含 Uint8ClampedArray）、PackedInt32Array 收 Int32Array、PackedInt64Array 收 BigInt64Array、PackedFloat32Array 收 Float32Array、PackedFloat64Array 收 Float64Array。Gode 按视图的 offset 与 length 一次性把连续内存整块拷入 Godot 侧，调用之后再改源数组不影响已提交的数据；Int64 值完整保留 64 位，类型不匹配直接抛 TypeError。读档字节流、网格顶点、音频采样这类密集数值交换，都应该走这条整块拷贝的路，而不是逐元素 push。
+
 ## 对象归谁管：本篇最重要的一课
 
 官方文档一句话说完："Godot owns Godot objects. TypeScript wrappers provide access to those objects, but they do not make Godot nodes immortal."——Godot 拥有 Godot 对象，TypeScript 侧的引用只是访问通道，不会让节点永生。
@@ -101,6 +103,8 @@ export default class TargetTracker extends Node {
 
 两道关卡缺一不可：`this.target` 判断"我到底存没存过引用"，`GD.is_instance_valid(this.target)` 判断"对象还活着吗"。把这两行背下来，它能挡住一大类"对象已被释放"的运行时崩溃。GD 命名空间常用的就四个：`print`（日志）、`printerr`（错误日志，同样保证进 Godot 输出面板）、`is_instance_valid`（有效性检查）、`var_to_str`（值转字符串）。
 
+2.4.5 还细化了这条边界的另一半：JavaScript 包装器只释放它自己成功获取的原生引用，被 Godot 侧持有的资源在包装器被垃圾回收后依然有效——官方的例子是把 StyleBoxFlat 通过 `add_theme_stylebox_override` 交给按钮之后，不需要再靠额外的引用数组给它"续命"。两个方向合起来才是完整的所有权图景：TS 引用救不了 Godot 已释放的对象（上一段的两道关卡），TS 包装器被 GC 也带不走 Godot 还握着的资源。谁持有，谁负责——这条判断在任何边界上都成立。
+
 顺带看上例最后一行：`call("refresh")` 是任意 Godot 对象都支持的动态调用——字符串方法名、动态派发、松耦合，但编辑器无法校验方法名拼写与参数匹配。它适合边界场景（跨语言、配置驱动、信号回调），不适合当日常首选：能直接 `node.refresh()` 就直接调，让编译器帮你把关。
 
 ## 与 GDScript 怎么分工
@@ -113,6 +117,7 @@ export default class TargetTracker extends Node {
 - 裸 JS 对象当 Vector3 传给引擎 API，行为不符预期——显式 `new Vector3(...)`，Variant 桥接不做猜测；
 - 节点被释放后调用其方法崩溃——跨帧引用先过 `GD.is_instance_valid` 这道闸；释放节点的一方才是根因，检查你的队列里是否缓存了没有清理的引用；
 - 打印复杂对象得到 `[object Object]`——那是 JS 对象；Godot 值用 `GD.var_to_str` 打；
+- 密集数值数据逐元素 push 进 Packed 数组——2.4.5 起直接传对应 TypedArray（Float32Array 等）整块拷贝过界，类型不匹配会抛 TypeError；
 - 自检问题一：`godot` 模块五类成员分别是什么？（类、单例、Variant 类型、集合、工具函数）
 - 自检问题二：为什么补全和 Godot 官方文档长得一样？（绑定由 extension_api.json 同源生成）
 - 自检问题三：`this.target` 非空为什么还要 `is_instance_valid`？（TS 引用不延长对象寿命，Godot 释放后引用依然"非空"）

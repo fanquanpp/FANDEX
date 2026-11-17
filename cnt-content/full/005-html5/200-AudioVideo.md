@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: audio、video、source、track字幕
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/130-LinksAndAnchors'
   - 'html5/140-ImagesAndResponsiveImages'
@@ -511,6 +511,33 @@ oscillator.stop(audioCtx.currentTime + 2); // 2 秒后停止
 - `OscillatorNode` 生成基础波形，`GainNode` 控制音量，两者可自由组合出合成器；
 - `AudioContext` 必须由用户手势触发创建或恢复（浏览器禁止页面自动发声），常见做法是在首个点击事件里 `audioCtx.resume()`；
 - 典型应用：音频可视化（AnalyserNode 取频谱画到 Canvas，见 [235-Canvas2DDrawing](/html5/235-Canvas2DDrawing)）、游戏音效、提示音。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写出实现，再展开参考答案对照。
+
+1. 写一个兼容性最稳的视频标签：MP4 + WebM 双格式、有封面图、预留尺寸、带中英文字幕（中文默认显示）、移动端内联播放。
+
+参考答案（先自己写，再对照）：
+
+```html
+<video controls width="640" height="360" poster="cover.jpg" playsinline>
+  <source src="movie.mp4" type="video/mp4" />
+  <source src="movie.webm" type="video/webm" />
+  <track kind="subtitles" src="subs/zh.vtt" srclang="zh" label="中文" default />
+  <track kind="subtitles" src="subs/en.vtt" srclang="en" label="English" />
+</video>
+```
+
+要点：`<source>` 按顺序降级（MP4 最稳放前面）；`poster` 防加载前黑屏；宽高防布局抖动；`playsinline` 防移动端强制全屏；`track` + WebVTT 补字幕。
+
+2. 概念自问：为什么「有声视频直接 autoplay」在浏览器里基本无效？`play()` 调用为什么必须处理 Promise 失败？`subtitles` 与 `captions` 的语义差别？
+
+参考答案（先自己答，再对照）：浏览器的自动播放策略把「用户未交互 + 有声」视为打扰而默认禁止，静音视频才放行，或者等用户手势后再调 `play()`；被策略拦截时 `play()` 返回的 Promise 会 reject，不处理就是未捕获错误；`subtitles` 是给听得见声音的人看的翻译字幕，`captions` 是给听障用户的说明文字（含环境音描述）。
+
+3. 判断题：只提供 MP4 一种格式，最大风险是什么？视频固定 `width="1920"` 会出什么问题？
+
+参考答案（先自己答，再对照）：部分浏览器/环境不支持该容器编码时完全无法播放——双 `<source>` 是兼容性基本盘；固定大宽度在移动端撑爆布局，应 `max-width: 100%` 自适应。
 
 ## 动手试试
 

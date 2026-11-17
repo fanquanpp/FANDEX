@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL MERGE语句：条件分支UPSERT、WHEN NOT MATCHED BY SOURCE、RETURNING与merge_action（PG17增强）
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/280-PartitionPruningPartitionJoin'
   - 'postgresql/080-AdvancedSQL'
@@ -216,3 +216,35 @@ RETURNING merge_action() AS action, s.sku;
 - 进阶注意：PG 17 起才有 `WHEN NOT MATCHED BY SOURCE`、RETURNING 与
   `merge_action()`，且 MERGE 开始支持视图（含 INSTEAD OF 触发器）；
   使用前先保证源数据按连接键唯一；条件分支的书写顺序就是执行顺序。
+
+## 教学自检
+
+遮住语法示例，先自己写再对照参考答案。
+
+### 任务一：一次 MERGE 三种去向
+
+需求：目标表 `inventory(sku, qty)`，源表为当日入库记录。要求：SKU 已存在则累加 qty；目标有、源没有的 SKU 且 qty=0 则删除；全新 SKU 插入。写出 MERGE（PG 15/16 可运行吗？哪些分支不行？）。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+MERGE INTO inventory t
+USING daily_receipts s ON t.sku = s.sku
+WHEN MATCHED THEN UPDATE SET qty = t.qty + s.qty
+WHEN NOT MATCHED THEN INSERT (sku, qty) VALUES (s.sku, s.qty);
+```
+"目标有、源没有则删除"需要第四个分支 `WHEN NOT MATCHED BY SOURCE THEN DELETE`，PG 17 起支持——PG 15/16 该需求要拆两条语句（MERGE + DELETE WHERE NOT EXISTS）。注意 BY SOURCE 分支不能写 INSERT（源缺行无处可插），语法上 INSERT 只属于 NOT MATCHED 分支。
+
+</details>
+
+### 任务二：MERGE 还是 INSERT ON CONFLICT
+
+需求：同步场景只需"不存在则插入、存在则更新"，且要拿到每行的回执（新值或旧值）。两个方案各写出关键子句，说明取舍。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+ON CONFLICT：`INSERT ... VALUES (...) ON CONFLICT (sku) DO UPDATE SET qty = inventory.qty + excluded.qty RETURNING sku, qty;` —— 简单 upsert 首选，冲突键天然处理并发，且 PG 15 起对 MERGE 的 RETURNING 不可用，ON CONFLICT 的 RETURNING 直接可用；PG 17 的 MERGE 补了 RETURNING（可用 merge_action() 函数区分去向）后两者差距缩小。MERGE 的优势在"多条件多去向"（含 BY SOURCE 删除、附加 WHEN 条件）；ON CONFLICT 优势在简单场景语义更窄、并发冲突行为更可预期。一句话：单键 upsert 用 ON CONFLICT，复杂分支同步用 MERGE。
+
+</details>

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL Event Scheduler 实战：一次性与周期事件、ON COMPLETION 保留策略、错误处理与排查，以及"数据库定时任务 vs 系统 crontab"的选型判断。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/770-StoredProcedureAndFunction'
   - 'mysql/780-TriggerEvent'
@@ -146,6 +146,37 @@ DROP TABLE evt_heartbeat; DROP TABLE evt_sessions;
 **"事件执行到一半失败了会重试吗？"**——不会，错过就错过（下个周期才再跑）。需要必达语义的任务用应用层队列方案，事件的定位是"尽力而为的周期维护"。
 
 **"为什么我的事件状态是 SLAVESIDE_DISABLED？"**——这是复制防御：主库上 `REPLICATE_DO_DB` 相关策略或备份恢复时事件被标记为"从库侧禁用"。含义与处理见复制相关篇；自己建的库出现它，多半是从库 dump 恢复过来的。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出语句：每天凌晨 2:30 清理 90 天前的日志表数据，事件要保留定义、失败可查。逐个子句说明它防什么坑。
+
+参考答案（先自己写，再对照）：
+
+```sql
+CREATE EVENT ev_clean_logs
+ON SCHEDULE EVERY 1 DAY
+STARTS '2026-11-13 02:30:00'
+ON COMPLETION PRESERVE
+DO DELETE FROM event_logs WHERE created_at < NOW() - INTERVAL 90 DAY
+LIMIT 5000;
+```
+
+STARTS 锚定首次执行时间（不写则随创建时刻，"半夜建的事件白天就跑"）；ON COMPLETION PRESERVE 让一次性（AT）事件跑完不自动删除——留尸排查；DELETE 带 LIMIT 分批——大表清理一晚上跑不完会连环堆积，分批可控。另两件配套：event_scheduler 默认 OFF 要显式开启；只建主库（从库事件会被禁用标记，防双跑）。
+
+2. 概念自问：怎么验证"事件真的在跑"？三层证据各是什么？
+
+参考答案（先自己答，再对照）：一层，`SHOW EVENTS` 看定义与状态（ENABLED/DISABLED）；二层，information_schema.EVENTS 的 LAST_EXECUTED 看最近执行时间戳；三层，业务证据——心跳表（事件每次执行更新一行时间戳）或日志表记录执行结果。三层递进：定义存在 → 系统说跑过 → 数据真的变了。只看第一层是"配置了"，看到第三层才是"在工作"。
+
+3. 判断题：事件调度器和 crontab 都能定时执行，选哪个没有实质差别。
+
+参考答案（先自己答，再对照）：差别实质在三点。执行环境：事件在数据库进程内执行，天然共享事务、锁与权限体系，适合"纯数据操作"；crontab 在 OS 层，适合要调用外部脚本/工具的任务。部署面：事件随库迁移（dump 带走）、有 ON COMPLETION 生命周期；crontab 在机器上，换机要迁移脚本。故障定位：事件执行历史在 performance_schema，crontab 靠自己写日志。选型口诀：纯 SQL 用事件、碰外部世界用 crontab、需要复杂编排用应用调度。
+
+4. 概念自问：事件在从库上是什么状态？为什么规范要求"只建主库"？
+
+参考答案（先自己答，再对照）：复制拓扑里从库上的事件被置为 SLAVESIDE_DISABLED——防止主从各跑一份造成双写冲突。但备份恢复、主从切换的边界场景会让事件定义"意外出现在"从库或新主上：新主提升后若事件未被重新启用，定时任务静默停摆。规范"只建主库 + 心跳表监控新鲜度"正是为了在切换后第一时间发现"任务没人跑了"。
 
 ## 检验清单
 

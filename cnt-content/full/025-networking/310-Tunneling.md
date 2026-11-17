@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 隧道封装原理：GRE/IPIP/VXLAN/WireGuard/IPsec 隧道模式对比、TUN 设备、MTU 与防火墙陷阱、双私网互通完整实验。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/340-SDN'
@@ -151,6 +151,23 @@ WireGuard 后，同样的位置只能看到密文。抓包工具的使用见
    级，二者通过网桥/VLAN 子接口映射；别把 VLAN 号直接当 VNI 用；
 6. **TTL 与环路**：GRE 配置遗漏 `ttl` 时默认 64，进入路由环路时内层包无法靠 TTL 自杀，排查
    环路时注意外层 TTL。
+
+## 教学自检
+
+按遮码自检法：遮住上文命令与表格，先自己推演，再对照。
+
+- 隧道的「外层/内层」各自负责什么？「报文套报文」后内层报文的 TTL 在中间网络递减吗？
+  （提示：中间路由器只处理外层，内层原样携带——这也是排障注意点）
+- TUN 与 TAP 的三层/二层差别各对应哪些真实工具？（WireGuard/OpenVPN vs 网桥模式）
+- GRE 头里的 protocol type 字段回答什么问题？IPIP 为什么不需要类似字段？
+  （提示：IPIP 只运 IP）
+- GRE/IPIP/VXLAN 都不加密——「打了隧道就安全」错在哪？GRE over IPsec 加固的是什么？
+- GRE 隧道四步配置（建接口、互联地址、路由牵引、开转发）漏掉「路由牵引」或「对称性」
+  各是什么症状？
+- MTU 黑洞的完整因果链：内层 1500 + GRE 24 字节超 MTU 后，PMTUD 的 ICMP 3/4 又被挡——
+  发送方看到什么现象？「SSH 能连上、scp 卡死」为什么？
+- 为什么很多云安全组放不了 GRE（协议号 47）？VXLAN 走 UDP 4789 在这一点上有什么优势？
+- VNI 与 VLAN 的位数与数量级差别是什么？VXLAN 为什么挂在网桥上工作？
 
 ## 7. 练习
 

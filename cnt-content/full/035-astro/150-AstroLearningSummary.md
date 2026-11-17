@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 串联 Astro 模块全部文档，回顾岛屿架构、内容集合、文件路由、集成体系与构建发布的核心脉络。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'astro/010-AstroOverview'
   - 'astro/050-ContentCollections'
@@ -365,6 +365,60 @@ export default defineConfig({ base: '/repo/' })
 - [ ] 能用 Astro Action 实现粉丝团报名，并说清 zod 校验失败时的返回路径。
 - [ ] 能说出静态输出与 SSR 适配器的差异，并为平台选定部署形态。
 - [ ] 能用构建产物目录结构说明"为什么这个页面没有加载任何 JS"。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。下面三道是贯穿全模块的组合题，对应上方自检清单中最重要的三项。
+
+1. 组合默写：为歌曲评测集合定义 schema（标题必填、评分 1-10、标签默认空数组），并用动态路由为每篇评测生成页面。
+
+   参考答案（先自己写，再对照）：
+
+   ```ts
+   // src/content.config.ts
+   import { defineCollection } from 'astro:content'
+   import { z } from 'astro/zod'
+   import { glob } from 'astro/loaders'
+
+   const reviews = defineCollection({
+     loader: glob({ pattern: '**/*.md', base: './src/content/reviews' }),
+     schema: z.object({
+       title: z.string(),
+       rating: z.number().min(1).max(10),
+       tags: z.array(z.string()).default([]),
+     }),
+   })
+   export const collections = { reviews }
+   ```
+
+   ```astro
+   ---
+   // src/pages/reviews/[...slug].astro
+   import { getCollection, render } from 'astro:content'
+   export async function getStaticPaths() {
+     const reviews = await getCollection('reviews')
+     return reviews.map((r) => ({ params: { slug: r.id }, props: { review: r } }))
+   }
+   const { review } = Astro.props
+   const { Content } = await render(review)
+   ---
+   <h1>{review.data.title}</h1>
+   <Content />
+   ```
+
+   验收点：schema 校验失败构建期即报错；getStaticPaths 枚举页面集合；渲染入口是 `render(entry)`；数据经 props 传递、frontmatter 经 `data` 读取。
+
+2. 选型问答：以下组件各用哪条指令——首屏导航搜索框、页面底部评论区、仅移动端的抽屉菜单、依赖 window 的第三方挂件？
+
+   参考答案（先自己写，再对照）：
+
+   搜索框 `client:load`（首屏关键交互）；评论区 `client:visible`（滚动到才水合）；抽屉菜单 `client:media="(max-width: 768px)"`；第三方挂件 `client:only="react"`（服务端跑不了，代价是首屏空白与 SEO 缺内容，能用其他指令就不用它）。
+
+3. 说出 Astro 7 相对 5.x 时代的三个最重要变化，并各配一句"对写代码的人意味着什么"。
+
+   参考答案（先自己写，再对照）：
+
+   Markdown/MDX 默认走 Sätteri 原生管线——用 remark/rehype 插件的项目要装 `@astrojs/markdown-remark` 走 legacy unified 路径或迁移；模板解析更严格（未闭合标签构建报错、空白按 JSX 折叠，`compressHTML` 默认 `'jsx'`，需要空格显式写 `{' '}`）；Vite 8 + Rolldown 与 Rust 编译器让构建提速——普通项目零配置受益，依赖 Vite 内部 API 的集成需对照迁移指南验证。
 
 ## 后续学习路径
 

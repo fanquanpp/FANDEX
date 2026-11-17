@@ -6,13 +6,34 @@ category: 云与基础设施
 difficulty: beginner
 description: iptables 防火墙：四表五链与报文流向、常见放行与 NAT 规则、规则持久化。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/320-VPNConfig'
 prerequisites: []
 ---
+
+## 为什么还要学 iptables
+
+Linux 防火墙的本体是内核里的 netfilter 框架，iptables 只是配置它的用户态工具。要理解什么时候用
+它：Docker 的端口映射、Kubernetes 的 Service 转发、LVS-NAT（见
+[高可用与 LVS](networking/240-HighAvailabilityLVS)）底层都还在用 iptables/nftables 规则，
+排查这类系统的问题绕不开这套语法。
+
+一个 2026 年必须知道的现状：RHEL 8+/Debian 10+ 等
+主流发行版的内核默认表后端已是 **nftables**，你敲的 `iptables` 命令实际由 iptables-nft 兼容层
+翻译成 nftables 规则执行。语法仍然完全可用、完全值得学，但要分清三件事的关系：
+
+- **iptables 语法**：本篇学的四表五链与规则写法，兼容层保证它在所有现代发行版上都能跑；
+- **firewalld/ufw**：发行版预装的前端管理器，帮你动态管理规则——手动敲 iptables 前先确认
+  没有前端在同时管理（冲突的典型症状是规则「莫名消失」）；
+- **nftables 原生语法**：新写防火墙方案可以考虑，但本篇以 iptables 语法为主线，因为它是
+  上面所有系统的公共底层语言。
+
+四表五链是读懂下面所有命令的心智模型：报文进入主机依次经过 PREROUTING -> INPUT（发给本机）
+或 FORWARD（转发出去），本机发出的报文走 OUTPUT -> POSTROUTING；每条链上规则**自上而下逐条
+匹配，命中即停止**——所以「插在第 1 条」与「追加到最后」结果完全不同，这是初学者最高频的坑。
 
 ## iptables 查看规则
 
@@ -309,6 +330,8 @@ netfilter-persistent save
 # CentOS 保存规则
 service iptables save
 ```
+注意前提：RHEL 7+ 默认装的是 firewalld，这个命令需要先 `dnf install iptables-services`
+并停用 firewalld 才可用；不然直接用上面 iptables-save 的通用写法。
 
 ---
 
@@ -354,17 +377,7 @@ iptables -Z
 ## 常用防火墙配置
 
 **基本写法：完整基础防火墙**
-```bash
-`iptables -F
-iptables -A INPUT -i lo -j ACCEPT
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-iptables -A INPUT -p tcp --dport 22 -j ACCEPT
-iptables -A INPUT -p tcp --dport 80 -j ACCEPT
-iptables -A INPUT -p tcp --dport 443 -j ACCEPT
-iptables -P INPUT DROP
-iptables -P FORWARD DROP
-iptables -P OUTPUT ACCEPT`
-```
+`允许 SSH/HTTP/HTTPS，拒绝其他入站`
 ```bash
 # 基础防火墙配置：允许 SSH/HTTP/HTTPS，拒绝其他入站
 iptables -F
@@ -377,3 +390,24 @@ iptables -P INPUT DROP
 iptables -P FORWARD DROP
 iptables -P OUTPUT ACCEPT
 ```
+
+这段规则要按「顺序敏感性」来读：放行条目必须全部 `-A` 追加完之后**最后**才把默认策略改成
+DROP。如果先 `-P INPUT DROP` 再逐条追加，追加的每条命令执行完的瞬间连接仍然放行不受影响
+（策略只对未命中规则的报文生效），但顺序写反会让人误判规则生效边界；更要命的是远程操作时
+顺序错误（先 DROP 后加放行）会直接把自己锁在外面。所以远程改防火墙的铁律是：先放行 SSH，
+再改默认策略，或者干脆用 `iptables-restore` 一次性原子载入。
+
+## 教学自检
+
+按遮码自检法：遮住上文代码块，先自己写命令或推演答案，再对照。
+
+- 一条报文从网卡进来到达本机 web 服务，依次经过哪些链？要放行它，规则必须加在哪条链上？
+- `-P INPUT DROP` 之后没有放行规则，本机还能 ping 通别人吗？（提示：OUTPUT 默认策略是
+  ACCEPT，但回包走哪条链、会命中哪条已放行规则？）
+- `-A` 与 `-I INPUT 1` 的区别是什么？为什么「规则加上了却不生效」的第一反应应该是
+  `iptables -L -n --line-numbers` 查位置？
+- REJECT 与 DROP 的可见差别是什么？排错时为什么先用 REJECT 定位再换成 DROP？
+- SNAT 用在哪个链、DNAT 用在哪个链？为什么 NAT 规则要写在 `-t nat` 表里？
+- `-m state --state ESTABLISHED,RELATED` 这条规则为什么应该放在 INPUT 链靠前的位置，
+  不放会损失什么性能？
+- 你的规则重启后没了，说明缺了哪一步？Debian 系与 RHEL 系分别用什么命令持久化？

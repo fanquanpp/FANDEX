@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'html5/010-WhatIsWebpage'
   - 'css/010-WhatIsCSS'
@@ -119,6 +119,28 @@ flowchart TD
 3. **收藏教程当学习**：看 10 个视频不如做 1 个项目。路线中每个项目的完成标准都写死了，按标准来；
 4. **React 和 Vue 同时学**：初学阶段组件化思想学一遍就够，双框架是进阶后的广度扩展；
 5. **项目躺在 localhost 里**：没有线上地址的项目在简历上等于不存在。部署是肌肉记忆，第 6 个月起每个项目都上线。
+
+## 教学自检
+
+遮住对应小节先自己作答，再展开对照；答不出的小节回到原文重读：
+
+**自检一：主线顺序与理由。** 不看「技能树」，默写必学主线的五层顺序，并解释为什么「CSS 没练够就冲框架」与「JS 半吊子上 React」被列为头两条弯路。
+
+<details>
+<summary>参考答案（先写完再展开）</summary>
+
+主线：HTML5 → CSS → JavaScript → TypeScript → React → Vite。布局手感不足的人在框架里只会抄样式，遇到自定义布局立刻瘫痪；闭包与异步没通，Hooks 的心智模型就是玄学——框架放大的是地基，地基不牢框架只会放大问题。
+
+</details>
+
+**自检二：检验项目验收点。** 不看「阶段 1」「阶段 3」的描述，分别说出：弹幕播放器（项目二）要练的核心能力至少三条，作品集主项目（项目四）的硬性验收标准至少五条。
+
+<details>
+<summary>参考答案（先写完再展开）</summary>
+
+弹幕播放器：事件监听与定时器全程手写、增删改查与状态渲染同步、localStorage 持久化、无框架。项目四：TS 编写、真实后端（BaaS 也算）、登录态、CRUD、响应式、Lighthouse 性能分 85 以上、部署上线、README 含截图与架构说明——少一条就是验收未过。
+
+</details>
 
 ## 求职准备清单
 

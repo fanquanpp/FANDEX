@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: LVS/IPVS 四层负载均衡：NAT、DR、TUN 三种转发模式原理与配置、调度算法落地、与 Keepalived 组合实现高可用。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/200-LoadBalanceTech'
   - 'networking/210-LoadBalanceAlgorithm'
@@ -202,6 +202,20 @@ sudo tcpdump -i eth0 -qn host 203.0.113.10
    必要时调整；
 6. **VIP 漂移与 ARP 缓存**：主备切换后部分交换机仍缓存旧 MAC，Keepalived 的 `vrrp_strict` 与
    `gratuitous_arp` 相关默认行为一般能处理，异常时手工发免费 ARP。
+
+## 教学自检
+
+按遮码自检法：遮住上文命令与表格，先自己写配置或推演，再对照。
+
+- VIP/DIP/RIP/CIP 各挂在哪台设备上？「调度器上没有 VIP 对应的服务进程」怎么理解？
+- NAT 模式改写报文的哪一层？RS 网关为什么必须指向 DIP？不改的话客户端收到什么、为什么丢弃？
+- DR 模式「响应不过调度器」靠什么实现？RS 的 loopback 上配 VIP 后，为什么必须 ARP 抑制？
+- `arp_ignore=1` 与 `arp_announce=2` 分别抑制什么行为？漏配的故障表现是什么？
+  （客户端 ARP 直接学到 RS 的 MAC，绕过调度器）
+- TUN 模式与 DR 一样响应直发，多出来的能力与代价各是什么？
+- IPVS 为什么不做健康检查？生产形态「Keepalived + LVS」各补了什么短板？
+- IPVS 持久化模板（-p 600）能保证什么、不能保证什么？
+- NAT 模式忘开 ip_forward 与 DR 模式误开 ip_forward，各有什么后果？
 
 ## 8. 小结
 

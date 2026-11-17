@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Service Worker 全生命周期（注册/安装/激活/fetch 拦截）、Cache Storage 缓存策略、Web App Manifest 完整字段、推送通知与后台同步、安装体验与 PWA 最佳实践的完整专项。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'html5/245-WebStorage'
   - 'html5/310-WebComponentsPWADevelopment'
@@ -394,6 +394,8 @@ await caches.delete('my-cache-v1');
 ```html
 <link rel="manifest" href="/manifest.json" />
 <meta name="theme-color" content="#1976d2" />
+<!-- 以下两行是旧版 iOS 的兼容写法：Safari 17.4 起已废弃，
+     是否全屏由 Manifest 的 display: standalone 决定，新项目可不再写 -->
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <link rel="apple-touch-icon" href="/icons/apple-180.png" />
@@ -442,15 +444,6 @@ notification.onclick = () => {
   notification.close();
 };
 ```
-  body: '通知正文',
-  icon: '/icons/192.png',
-  badge: '/icons/badge.png',
-  tag: 'unique-id', // 相同 tag 会替换
-  data: { url: '/page' },
-  vibrate: [100, 50, 100],
-  requireInteraction: true, // 用户必须手动关闭
-});
-```
 
 **Push API(服务端推送)**
 ```javascript
@@ -491,6 +484,8 @@ self.addEventListener('notificationclick', (event) => {
 ---
 
 ## 后台同步
+
+支持面提醒：Background Sync（含下方 Periodic Sync）目前仅 Chromium 系浏览器支持，Firefox/Safari 未实现——生产代码要按本节的特性检测写法处理，不支持时退化为「页面在前台时同步」。
 
 **注册后台同步**
 ```javascript
@@ -637,6 +632,49 @@ flowchart TD
 - **网络请求**：正确处理网络请求，避免无限循环
 - **调试**：使用 Chrome DevTools 进行 Service Worker 调试
 - **更新**：正确处理 Service Worker 的更新流程
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写出实现，再展开参考答案对照。答不出就回到对应小节重读。
+
+1. 默写「生产写法」的最小 SW 注册代码：带特性检测，且等页面 load 后再注册。
+
+参考答案（先自己写，再对照）：
+
+```javascript
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' });
+  });
+}
+```
+
+2. 写出 install 与 activate 两个事件的骨架：install 预缓存三个资源，activate 删掉所有旧版本缓存并立即接管页面。
+
+参考答案（先自己写，再对照）：
+
+```javascript
+const CACHE_NAME = 'app-v1';
+const CACHE_URLS = ['/', '/index.html', '/app.js'];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(CACHE_URLS))
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((names) =>
+      Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)))
+    ).then(() => self.clients.claim())
+  );
+});
+```
+
+3. 概念自问：API 请求该用哪种缓存策略？把响应写进缓存前为什么要 `clone()`？SW 更新后用户为什么常常要刷新两次？后台同步在 Safari 里能用吗？
+
+参考答案（先自己答，再对照）：API 用 Network First（数据必须新，缓存只兜离线）；响应体只能消费一次，不 clone 先 put 会报错；第一次刷新让新 SW 等待并接管，第二次刷新才能拿到新资源（可用 `clients.claim()` 与提示刷新缓解）；不能，Background Sync 仅 Chromium 系支持。
 
 ## 动手试试
 

@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/050-ConfigurationManagement'
   - 'spring-boot/040-AutoConfigurationInternals'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'spring-boot/150-AsyncScheduling'
   - 'spring-boot/180-PackagingDeployment'
@@ -138,7 +138,7 @@ management:
   endpoint:
     health:
       probes:
-        enabled: true     # 部署在 K8s 上时 Boot 通常自动开启；显式写便于本地演练
+        enabled: true     # 3.x：部署在 K8s 上时 Boot 通常自动开启；Boot 4.0 起默认启用（K8s 内外都开），显式写便于本地演练
 ```
 
 ```bash

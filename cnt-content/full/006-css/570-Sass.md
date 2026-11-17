@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Sass 预处理器教学：变量、嵌套、混合、占位符继承、函数与 @use 模块系统，以及与原生 CSS（变量/嵌套/@layer）的分工与选型。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/580-LessStylus'
   - 'css/480-CSSNativeNesting'
@@ -271,10 +271,10 @@ $radius: 6px !default;
 
 | Sass 能力 | 原生替代 | 保留建议 |
 | --- | --- | --- |
-| 嵌套 | 原生嵌套（`css/042`） | 可替代 |
-| 变量 | 自定义属性（`css/036`） | 按语义分工 |
+| 嵌套 | 原生嵌套（`css/480-CSSNativeNesting`） | 可替代 |
+| 变量 | 自定义属性（`css/410-CSSVariableCustomAttribute`） | 按语义分工 |
 | 简单 mixin | 工具类 + `@layer`（`css/040`） | 大多可替代 |
-| 颜色函数 | `color-mix()` / 相对颜色（`css/035`） | 可替代 |
+| 颜色函数 | `color-mix()` / 相对颜色（`css/400-ModernColorSpace`） | 可替代 |
 | `@each`/`@for` 生成 | 无 | 保留 |
 | `@extend` | 无直接等价 | 保留或改多类名 |
 | `@use` 模块 | 原生 `@import` + 打包器 | 视工具链 |
@@ -327,3 +327,53 @@ $radius: 6px !default;
 - 原生嵌套与迁移策略：`css/480-CSSNativeNesting`、`css/720-CSSNestingInPractice`；
 - CSS 自定义属性：`css/410-CSSVariableCustomAttribute`；
 - 架构方法论：`css/560-CSSArchitectureMethodology`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住正文中的变量、混合与模块示例自己写，再对照参考实现。
+
+**任务一**：写一个带参数与 `@content` 的响应式混合 `@mixin bp($name)`——接收 `sm/md/lg` 三个断点名，内部用 map 查出断点值并生成 `@media`，调用块通过 `@content` 注入规则；再写一个 `@function rem($px)` 把 px 转成 rem。
+
+**任务二**：判断取舍——同一套「主色加深 10%」的 hover 需求，分别用 Sass 的 `darken()` 与原生 `color-mix()` 实现，写出两者并回答「哪个能随运行时变量换色、哪个只能编译期定值」。
+
+**提示**：任务一考 map + `map.get`（记得 `@use "sass:map"`）与 `@content` 的模板化能力；任务二对应第 10 节的分工结论——Sass 函数在编译期把值算死，`color-mix(in oklch, var(--brand), black 10%)` 引用运行时变量，主题切换时跟着变。
+
+**参考实现**（先自己写完再看）：
+
+```scss
+/* 任务一 */
+@use "sass:map";
+
+$breakpoints: (sm: 640px, md: 1024px, lg: 1280px);
+
+@mixin bp($name) {
+  @media (width >= map.get($breakpoints, $name)) {
+    @content;
+  }
+}
+
+.card {
+  display: grid;
+  @include bp(md) {
+    grid-template-columns: 240px 1fr;
+  }
+}
+
+@function rem($px) {
+  @return math.div($px, 16) * 1rem; // 需要 @use "sass:math"
+}
+
+/* 任务二 */
+.btn-sass {
+  /* 编译期：产物里是一个写死的十六进制值，换主题无效 */
+  background: darken(#2563eb, 10%);
+}
+
+.btn-native {
+  /* 运行时：跟随 --brand 的当前值，主题切换自动更新 */
+  --brand: #2563eb;
+  background: color-mix(in srgb, var(--brand), black 10%);
+}
+```
+
+验收点：任务一里忘写 `@use "sass:map"` 时 `map.get` 直接编译报错——这是 Dart Sass 模块化的第一课；任务二在 `data-theme` 切换后，`.btn-sass` 纹丝不动而 `.btn-native` 跟着变色，正是「编译期 vs 运行时」的目视证据。

@@ -6,7 +6,7 @@ module: 'bigdata'
 category: 后端技术
 difficulty: beginner
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'bigdata/020-HadoopHdfsMapReduce'
   - 'bigdata/120-CapstoneOfflineRealtime'
@@ -164,13 +164,13 @@ flowchart LR
 
 这张地图不是静态的，2026 年有三条清晰的迁移线：
 
-- **Hadoop 让位存储层**。Hadoop 3.4.x 仍在维护，但它的定位逐渐收缩为「存储层」：HDFS 依然是事实标准，而 MapReduce 计算引擎基本退出新项目。学 HDFS 与 MapReduce 是为了地基，不是为了日常写它。
+- **Hadoop 让位存储层**。Hadoop 3.4.x 仍在维护（3.5.0 已发布），但它的定位逐渐收缩为「存储层」：HDFS 依然是事实标准，而 MapReduce 计算引擎基本退出新项目。学 HDFS 与 MapReduce 是为了地基，不是为了日常写它。
 - **计算归于 Spark 与 Flink**。Spark 4.x 是当前批处理主力（2026 年 7 月发布 4.2.0，要求 Java 17），Flink 2.x 主攻流处理（最新 2.3.0）。两者的 API 也趋于稳定，学习投资不会白费。
 - **湖表格式兴起**。Iceberg、Delta Lake 这类「湖表格式」给 HDFS 或对象存储上的裸文件补上了「表」的语义：事务、schema 演进、时间旅行。新建数仓越来越多地用湖表替代传统 Hive 表。另外 Kafka 4.x 已彻底移除 ZooKeeper，改为纯 KRaft 架构，部署模型大幅简化。
 
 | 组件 | 写作时基线 | 一句话定位 |
 | --- | --- | --- |
-| Hadoop | 3.4.x | HDFS 存储底座仍是事实标准，MapReduce 引擎淡出 |
+| Hadoop | 3.4.x（3.5.0 已发布） | HDFS 存储底座仍是事实标准，MapReduce 引擎淡出 |
 | Spark | 4.x（4.2.0，要求 Java 17） | 批处理与数仓计算主力 |
 | Flink | 2.x（最新 2.3.0） | 流处理主力，流批一体 |
 | Kafka | 4.x（纯 KRaft） | 实时数据管道事实标准 |

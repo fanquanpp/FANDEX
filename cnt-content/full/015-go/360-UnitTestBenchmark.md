@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go单元测试与基准测试详解：go test -bench。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/290-GCAndTuning'
   - 'go/240-GenericDetailed'
@@ -225,6 +225,19 @@ $$
 $$
 
 `-benchtime=Nx` 可强制固定循环次数,`-benchtime=10s` 可调整目标时间。
+
+**Go 1.24 起优先用 `b.Loop()` 替代 `for i := 0; i < b.N; i++`。** 手写 `b.N` 循环有两个经典坑：一是循环前的 setup（构造输入、建立连接）默认计入计时，需要手动 `b.ResetTimer()` 修正；二是编译器可能把"结果未被使用"的循环体当作死代码优化掉，测出来的是空循环。`b.Loop()` 把两件事都收进框架——首次调用时重置计时器（setup 不计时），并且保证循环体调用不会被编译器消除：
+
+```go
+func BenchmarkParse(b *testing.B) {
+    data := loadSample() // setup，不计入计时
+    for b.Loop() { // Go 1.24+，取代手写 b.N 循环
+        _ = parse(data)
+    }
+}
+```
+
+循环次数仍由框架按 `-benchtime` 自适应决定，语义与 `b.N` 一致。旧写法继续有效（存量基准不受影响），新基准一律用 `b.Loop()`。
 
 ### 1.4 覆盖率插桩的形式化模型
 
@@ -2448,3 +2461,78 @@ func BenchmarkConcat(b *testing.B) {
 Go 测试生态的设计哲学——"测试是语言一等公民"——深刻影响了社区的工程文化。掌握 `testing` 包的全部能力,理解其背后的形式化模型,并能在工程实践中权衡各种工具与方法,是每一位 Go 工程师迈向高级水准的必经之路。
 
 未来,随着 Go 语言的演进(如 Go 1.23+ 的迭代器、`slices`/`maps` 包扩展),测试工具与方法也将持续发展。建议读者关注 Go 官方博客、GopherCon 演讲、以及 testify/gomock 等核心库的 release notes,持续更新知识体系。
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（表驱动测试）**：为 `func SplitHostPort(addr string) (host string, port int, err error)` 写表驱动测试（覆盖 IPv4、IPv6、缺端口、非法端口四类），并用 t.Run 命名子用例。
+
+参考实现：
+
+```go
+func TestSplitHostPort(t *testing.T) {
+    tests := []struct {
+        name string
+        addr string
+        host string
+        port int
+        wantErr bool
+    }{
+        {"ipv4", "1.2.3.4:80", "1.2.3.4", 80, false},
+        {"ipv6", "[::1]:80", "::1", 80, false},
+        {"no port", "1.2.3.4", "", 0, true},
+        {"bad port", "h:abc", "", 0, true},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            host, port, err := SplitHostPort(tt.addr)
+            if tt.wantErr {
+                if err == nil {
+                    t.Fatalf("want error, got host=%q port=%d", host, port)
+                }
+                return
+            }
+            if host != tt.host || port != tt.port {
+                t.Errorf("got (%q, %d), want (%q, %d)", host, port, tt.host, tt.port)
+            }
+        })
+    }
+}
+```
+
+要点：表结构把"用例数据"与"断言逻辑"分离，新增用例只加一行；`t.Run` 让失败输出精确到用例名。错误路径与正常路径都要进表。
+
+**题 2（并行子测试的变量捕获）**：把上题的循环体加 `t.Parallel()` 后，直接引用循环变量 tt 会发生什么？写出正确写法。
+
+参考实现：
+
+```go
+for _, tt := range tests {
+    tt := tt // Go 1.21 及以前的指令行下必须重新绑定；go 1.22+ 可省略
+    t.Run(tt.name, func(t *testing.T) {
+        t.Parallel()
+        ...
+    })
+}
+```
+
+要点：并行子测试在循环结束后才执行，旧语义下所有闭包共享同一个 tt（最终全用最后一个用例断言）——这是 1.22 循环变量修复经典翻车点；抬到 go 1.22+ 指令行后重新绑定行可以删掉。
+
+**题 3（b.Loop 与基准的有效性）**：一个基准函数把 `result = append(result, x)` 放进循环、result 定义在循环外。跑出来的 ns/op 为什么不可信？用 b.Loop 重写。
+
+参考实现：
+
+```go
+func BenchmarkAppend(b *testing.B) {
+    var sink []int
+    for b.Loop() { // setup 不计时 + 防止循环体被优化掉
+        sink = append(sink[:0], 42)
+    }
+    _ = sink
+}
+```
+
+要点：原写法两个问题——result 无限增长让后续 append 全是"找新数组+拷贝"，ns/op 随轮次漂移；且编译器可能认为 append 结果未被观察而消除部分工作。基准的纪律：每次迭代做等量工作、把结果"泄漏"到包级或通过 b.Loop 防消除、循环外只放 setup。

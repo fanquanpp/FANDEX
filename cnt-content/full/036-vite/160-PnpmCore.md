@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: pnpm 核心机制：内容寻址存储、符号链接与严格依赖隔离
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'vite/170-WorkspaceSetup'
   - 'vite/180-WorkspaceProtocol'
@@ -37,7 +37,7 @@ prerequisites: []
 | 磁盘浪费 | 每个项目各存一份依赖 | 内容寻址存储 + 硬链接复用 |
 | 幽灵依赖 | 项目能 import 未声明的包 | 符号链接 + 严格依赖隔离 |
 
-pnpm 11 要求 Node.js 22+，本身为纯 ESM 实现（pnpm 11.0 起的标志性变化：SQLite 索引的 store v11、默认开启的供应链保护、原生发布流程；2026 年最新的稳定线是 pnpm 12）。它的优势不只是"安装快"，而是**整体安装模型更正确**：每个项目只声明并访问自己真正依赖的包。
+pnpm 11 要求 Node.js 22.13+，本身为纯 ESM 实现（pnpm 11.0 起的标志性变化：SQLite 索引的 store v11、默认开启的供应链保护、原生发布流程；2026 年 8 月起最新的稳定线是 pnpm 12）。它的优势不只是"安装快"，而是**整体安装模型更正确**：每个项目只声明并访问自己真正依赖的包。
 
 ### 1.3 与 npm 的定位差异
 

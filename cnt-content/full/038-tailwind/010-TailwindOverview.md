@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Tailwind CSS 概述：从传统 CSS 到 utility-first 的演进对比、Tailwind 与 Bootstrap 的区别、Tailwind 4 新特性与适用场景
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-17'
 related:
   - 'tailwind/020-InstallConfig'
   - 'tailwind/030-UtilityCore'
@@ -171,7 +171,7 @@ Tailwind CSS 由 Adam Wathan 于 2017 年创建，是一个"实用优先"（util
 | v3 | 2021-12 | JIT 引擎成为默认，构建速度大幅提升 |
 | v4 | 2025 年 1 月 | 从零重写：Rust 编写的 Oxide 引擎、CSS-first 配置、自动内容检测 |
 
-其中 v4 是里程碑式的重构。它把配置从 `tailwind.config.js` 迁入 CSS 文件（`@theme` 指令），把三行 `@tailwind` 指令简化为一行 `@import "tailwindcss"`，并把编译引擎换成 Rust 实现的 Oxide——完整构建提速数倍，增量构建最高提升 100 倍以上。v4 之后仍在快速迭代：v4.1（2025-04）新增 `text-shadow-*`、`mask-*` 等工具类；v4.2（2026-02）新增 mauve、olive、mist、taupe 四个中性色板与逻辑属性工具类；v4.3（2026-05）内置滚动条样式（`scrollbar-*`）、尺寸容器（`@container-size`）、`zoom-*` 缩放与 `tab-*` 制表符宽度。截至本文写作时，最新稳定版为 v4.3.x。
+其中 v4 是里程碑式的重构。它把配置从 `tailwind.config.js` 迁入 CSS 文件（`@theme` 指令），把三行 `@tailwind` 指令简化为一行 `@import "tailwindcss"`，并把编译引擎换成 Rust 实现的 Oxide——完整构建提速数倍，增量构建最高提升 100 倍以上。v4 之后仍在快速迭代：v4.1（2025-04）新增 `text-shadow-*`、`mask-*` 等工具类；v4.2（2026-02）新增 mauve、olive、mist、taupe 四个中性色板与逻辑属性工具类；v4.3（2026-05）内置滚动条样式（`scrollbar-*`）、尺寸容器（`@container-size`）、`zoom-*` 缩放与 `tab-*` 制表符宽度。截至本文写作时，最新稳定版为 v4.3.x。团队层面还有一个大事件：2026 年 9 月，Tailwind Labs 宣布加入 Shopify，框架继续以 MIT 许可开源维护，v4.3 线保持常规补丁更新（npm 最新为 v4.3.5）——对日常写法没有影响，旧资料里作为卖点出现的付费产品 Tailwind Plus 则已停止接受新客户。
 
 ## 6. Tailwind vs Bootstrap：两套截然不同的哲学
 
@@ -284,6 +284,16 @@ v3 要在配置文件里手动填写 `content` 数组，告诉框架去哪里扫
 1. **亲眼对比两种写法**：手写一个"传统 CSS + 语义类"的卡片（HTML + CSS 两个文件），再把它改写成纯工具类版本（只动 HTML）。改一个需求："卡片圆角从 8px 改成 12px，标题颜色换成品牌蓝"——数一数两种版本各要动几个文件、几处代码。
 2. **认出 v3 教程**：随机打开一篇旧 Tailwind 教程，判断它面向 v3 还是 v4（看配置写在 JS 文件还是 CSS 的 `@theme`）。提示：v4 判断口诀见第 1 节。
 3. **生态位匹配**：为自己手头的项目（或假想项目）做一次第 8 节的适用性判断，写下"用/不用 Tailwind"的结论与两条依据——这条判断练习在真实选型会上会原样复用。
+
+**遮码自检：默写两类核心写法。** 遮住 4.1 节的对比表，自己写出"卡片圆角 8px、白色背景、16px 内边距、中等阴影"四个需求的两种写法（传统 CSS 声明 + Tailwind 工具类）；再遮住 7.2/7.3 节的代码块，默写 v4 的 `@theme` 令牌与一行导入。写完展开对照：
+
+<details>
+<summary>自检参考要点</summary>
+
+四个需求对应的工具类是 `rounded-lg`、`bg-white`、`p-4`、`shadow-md`，规律即"属性前缀 + 刻度值"；传统 CSS 一侧对应 border-radius、background-color、padding、box-shadow 四条声明。如果工具类一侧你写出了别的色阶或档位（如 `rounded-xl`），先检查是不是混入了记忆里的 Bootstrap 直觉——Tailwind 的档位对应关系要在第 3 篇系统校准。
+
+v4 关键写法两条：入口 `@import "tailwindcss";`（一行取代 v3 三行 `@tailwind` 指令）；令牌 `@theme { --color-brand-500: ...; }`（写进 CSS，不是 JS 文件）。若你默写出的配置长在 JS 文件里，那就是 v3 语法——这正是任务二"认出 v3 教程"的判别标准。
+</details>
 
 ## 11. 一句话记忆
 

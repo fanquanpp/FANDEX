@@ -8,7 +8,7 @@ difficulty: advanced
 prerequisites:
   - 'spring-cloud/090-DistributedTransactionSeata'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'spring-cloud/120-MicroserviceAuth'
   - 'spring-cloud/130-MonitoringAlerting'
@@ -198,10 +198,10 @@ OutboxBacklog 是本链路最有价值的一条：MQ 挂掉、扫表任务死亡
 ```yaml
 services:
   nacos:
-    image: nacos/nacos-server           # 环境变量与鉴权配置以官方镜像文档为准
+    image: nacos/nacos-server:v3.3.0    # 环境变量与鉴权配置以官方镜像文档为准
     environment:
       MODE: standalone
-    ports: ["8848:8848"]
+    ports: ["8848:8848", "9848:9848", "8080:8080"]   # 9848 gRPC、8080 控制台（020 篇）
   rabbitmq:
     image: rabbitmq:4-management
     ports: ["5672:5672", "15672:15672"]
@@ -257,7 +257,7 @@ services:
 
 ## 官方参考
 
-- Spring Cloud 官方文档（2025.0.x）：https://spring.io/projects/spring-cloud
+- Spring Cloud 官方文档：https://spring.io/projects/spring-cloud（各版本与 Spring Boot 的兼容矩阵以项目页为准）
 - Spring Cloud Alibaba 文档（Nacos、Sentinel、Seata 接入）：https://sca.aliyun.com/
 - 各镜像（Nacos、RabbitMQ、Zipkin、Prometheus、Grafana）以 Docker Hub 官方页为准，本篇 compose 为示意。
 

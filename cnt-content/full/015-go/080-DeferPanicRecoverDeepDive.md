@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 延迟调用的执行时机、panic 传播与 recover 的正确姿势。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'go/070-GoErrorHandling'
   - 'go/030-GoBasicSyntax'
@@ -235,3 +235,44 @@ defer func() {
 1. 写一个"散场清场"函数：注册三条 defer（熄灭灯牌、归还耳返、锁上后台门），运行并记录打印顺序，随后交换注册顺序再观察，用一句话解释 LIFO 与资源释放顺序的对应关系。
 2. 实现 `func Guard(fn func()) (err error)`：用命名返回值与 defer/recover 把 fn 的 panic 转换为 `error` 返回，再写一个会 panic 的灯控函数接入测试，验证 panic 被转换且进程存活。
 3. 给票务服务写一个使用 `sync.Mutex` 的购票函数，故意在某个分支提前 return 而漏写 `mu.Unlock()`，加上 `defer mu.Unlock()` 前后分别用 `go test` 与竞态检测器对比结果，记录 defer 在锁管理中的价值。
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照（"动手实践"三题偏工程综合，这三题偏语义细节，两组互补）。
+
+**题 1（defer 参数求值时机）**：不运行代码，写出下面程序的输出并解释：
+
+```go
+func main() {
+    x := 1
+    defer fmt.Println("A:", x)
+    x = 2
+    defer func() { fmt.Println("B:", x) }()
+}
+```
+
+参考答案：输出 `B: 2` 再 `A: 1`。defer 语句执行时**求值实参**——`A` 打印的 x 在注册瞬间已确定为 1；`B` 注册的是闭包，捕获变量本身，函数返回时 x 已是 2。记忆句：参数取注册时的值，闭包看返回时的值。
+
+**题 2（命名返回值与 defer 的配合）**：写 `func div(a, b int) (result int, err error)`，在 b 为 0 时 panic，用 defer/recover 把 panic 转换成 err 返回。遮住后自己写，重点检查 recover 里怎么改写返回值。
+
+参考实现：
+
+```go
+func div(a, b int) (result int, err error) {
+    defer func() {
+        if r := recover(); r != nil {
+            err = fmt.Errorf("div failed: %v", r)
+        }
+    }()
+    result = a / b // b == 0 时 panic: integer divide by zero
+    return
+}
+```
+
+要点：只有**命名返回值**才能被 defer 中的闭包改写——匿名返回值的返回值槽在 defer 执行前已固定。这是 recover 与返回值交互的关键。
+
+**题 3（defer 的资源管理）**：一个函数要打开文件、加互斥锁、向 metrics 上报耗时，三种资源的 defer 注册顺序应该怎么安排？说出理由。
+
+参考答案：注册顺序（代码顺序）为：上报 defer 最先、锁其次、文件最后——按"注册顺序与执行顺序相反（LIFO）"推，执行时先关文件、再解锁、最后上报。原则：先注册的 defer 依赖后注册的资源（上报要统计总耗时，必须在其他清理之后执行）；同一资源的加锁与解锁要成对出现在相邻位置。register 的顺序反过来读就是释放的顺序。

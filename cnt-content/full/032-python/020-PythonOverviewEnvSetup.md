@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 用「给电脑雇翻译官」讲清解释器是什么、官网安装包与 uv/pyenv 版本管理器的分工、三系统安装要点与两条验证命令，附装机高频报错的真实调试实录与练习。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-11-17'
 related:
   - 'python/030-PyenvUvManage'
   - 'python/040-PythonVirtualEnv'
@@ -60,7 +60,7 @@ python --version
 预期输出（数字随你装的版本不同，重点是 `Python 3` 开头）：
 
 ```text
-Python 3.14.1
+Python 3.15.0
 ```
 
 对照结果做判断：
@@ -102,7 +102,7 @@ python -c "print('翻译官就位')"
 
 **路线二：版本管理器 pyenv 与 uv。** 什么时候才需要？当你同时维护两个项目——A 项目要求 3.10、B 项目要求 3.13——就需要一条命令切换版本的工具。现在不用装、不用学，知道有这回事即可，细节见 [pyenv 与 uv 版本管理](/python/030-PyenvUvManage)；与它配套的「每个项目一套独立依赖」叫虚拟环境，见 [Python 与虚拟环境](/python/040-PythonVirtualEnv)。
 
-**版本怎么选：** 装 3.12 及以上的最新稳定版，当前稳定主线是 3.14.x。Python 每年 10 月发一个大版本，安全补丁只发给受支持的版本线，新项目不要用已停维护的旧版本——与 010 篇口径一致。
+**版本怎么选：** 装 3.12 及以上的最新稳定版，当前稳定主线是 3.15.x。Python 每年 10 月发一个大版本，安全补丁只发给受支持的版本线，新项目不要用已停维护的旧版本——与 010 篇口径一致。
 
 ## 5. 三大系统安装要点
 
@@ -152,7 +152,7 @@ python --version
 预期输出（你的数字可能更新）：
 
 ```text
-Python 3.14.1
+Python 3.15.0
 ```
 
 第二条，让它真干活：
@@ -176,7 +176,7 @@ pip --version
 预期输出（路径与数字因机器而异，关键是括号里显示的 Python 版本与你刚装的对得上）：
 
 ```text
-pip 26.1.2 from C:\Users\you\...\site-packages\pip (python 3.14)
+pip 26.1.2 from C:\Users\you\...\site-packages\pip (python 3.15)
 ```
 
 判断标准一句话：**版本号是 Python 3 开头且不低于 3.12，三条命令都正常回应——环境合格，随时开工。**
@@ -224,7 +224,7 @@ python: can't open file 'C:\Users\you\ledger.py': [Errno 2] No such file or dire
 
 ## 9. 实际项目中的使用场景
 
-- 你今天装的这套解释器，与生产环境里跑的是同一个概念：服务器用 Docker 镜像（比如 `python:3.14`）部署时，镜像里装的就是这位翻译官，你的代码原样能跑；
+- 你今天装的这套解释器，与生产环境里跑的是同一个概念：服务器用 Docker 镜像（比如 `python:3.15`）部署时，镜像里装的就是这位翻译官，你的代码原样能跑；
 - 团队里「为什么你机器上好好的」这类纠纷，一半源于两人 Python 版本不同——排查的第一句话永远是互报 `python --version`；
 - CI 流水线（如 GitHub Actions 的 setup-python 步骤）做的事和本文一样：报一个版本号，把解释器装到构建机上。
 
@@ -269,7 +269,7 @@ python -c "print('3' + '14')"
 
 ## 本章总结
 
-电脑不认识 Python 代码，认识它的是解释器——一个装进电脑的翻译官程序。入门期用官网安装包装一个 3.12 及以上的稳定版（当前主线 3.14.x）即可，Windows 记住勾选「Add python.exe to PATH」，macOS 与 Linux 用 `python3` 呼叫且不动系统自带版本；`python --version` 与 `python -c "print(...)"` 两条命令是你的验证标准；多版本与依赖管理是 uv/pyenv 和虚拟环境的分工，需要时再去学。
+电脑不认识 Python 代码，认识它的是解释器——一个装进电脑的翻译官程序。入门期用官网安装包装一个 3.12 及以上的稳定版（当前主线 3.15.x）即可，Windows 记住勾选「Add python.exe to PATH」，macOS 与 Linux 用 `python3` 呼叫且不动系统自带版本；`python --version` 与 `python -c "print(...)"` 两条命令是你的验证标准；多版本与依赖管理是 uv/pyenv 和虚拟环境的分工，需要时再去学。
 
 ## 下一步
 

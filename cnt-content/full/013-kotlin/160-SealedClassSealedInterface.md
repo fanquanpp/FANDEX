@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: "Kotlin 密封类型深水参考：封闭继承的编译期约束、when 穷举检查与智能转换的编译器实现（K1/K2、@Metadata）、协变与 Nothing、密封接口多继承、多态序列化，附真实编译报错与调试实录。"
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'kotlin/150-SealedClassAlgebraicDataType'
   - 'kotlin/060-KotlinDataClassDeepDive'
@@ -550,3 +550,16 @@ val reducer: (ScreenState<User>, Wish) -> ScreenState<User> = { state, wish ->
 ## 总结
 
 密封类型把「子类集合」从运行时的开放问题变成编译期的封闭事实，`when` 穷举检查、智能转换、多态序列化全部建立在这个事实上。掌握本篇后应能：写出通过穷举检查且不需要 `else` 的 `when`；在密封类、密封接口、枚举之间按「是否需要共享实现/多能力/同构单例」选型；读懂穷举失败、构造器可见性、子类位置、智能转换失效四类高频编译报错并按固定套路修复；警惕 Java 互操作与混淆环境两个让防线失效的缺口。进阶主题（模式匹配增强、KEEP 演进动向）关注 kotlinlang.org 路线图即可，本篇不展开。
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：穷举判别**。三个 `when`，先判断各自能否通过穷举检查：(a) `when` 主体是密封接口 + 全部 `data class` 子类；(b) 密封类子类分布在不同 Gradle 模块；(c) 对 `sealed interface Shape?` 做穷举但没写 `null` 分支。
+
+参考答案：(a) 通过；(b) 编译报错——穷举的前提是子类全集在同包同模块内可静态枚举；(c) 报错——接收者是可空类型，`null` 也是一个待覆盖的「值分支」，要么补 `null ->` 要么补 `else`。
+
+**练习 2：三兄弟选型**。HTTP 状态分类、星期几、支付渠道（每个渠道带不同配置字段），各用枚举、密封类还是密封接口？
+
+参考答案：星期几用枚举——同构单例、无字段差异、固定全集；HTTP 状态分类可用密封类/枚举视是否需要携带 payload；支付渠道用密封接口 + `data class`——各渠道携带不同字段，且不同渠道可能要共享部分能力（接口的多实现能力），枚举无法表达。
+
+**练习 3：漏洞排查**。Kotlin 密封接口在编译期保证穷举，但混淆（R8/ProGuard）后的运行时 `sealedSubclasses` 反射可能漏子类。说出受影响的功能场景与一条防御措施。
+
+参考答案：多态序列化（kotlinx.serialization 按子类注册 serializer）、运行时路由分发等依赖 `sealedSubclasses` 的功能；防御：对参与反射的密封层次加 keep 规则，或改用编译期生成的子类清单（如注解处理器/KSP）替代反射枚举。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Python GraphQL API 开发完整指南：Strawberry + FastAPI、Schema/Query/Mutation/Subscription、DataLoader 与工程实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'python/880-PythonFastAPI'
   - 'python/870-PythonOAuth2'
@@ -909,3 +909,12 @@ class Subscription:
                 yield message
             await asyncio.sleep(1)
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 口述题：GraphQL 相对 REST 的两个根本差异与代价。要点：客户端按需声明字段（一次请求取全，避免 over/under-fetch）；单一入口单端点、类型系统即契约；代价是服务端解析与 N+1 需要 DataLoader、缓存与限流都更复杂——不是所有场景都该换。
+2. 默写题：Strawberry 里定义一个查询返回书名列表，写出 schema 端点。要点：`@strawberry.type class Query: @strawberry.field def books(self) -> list[str]: ...`；`schema = strawberry.Schema(query=Query)`；路由挂到 ASGI 应用。
+3. 预测题：一个查询里循环解析 100 个作者的 `friends` 字段，会发生什么？怎么救？要点：100 次逐个查询（GraphQL N+1）；用 DataLoader 批量收集同一轮解析里的键、一次 IN 查询回填并缓存。
+4. 纠错题：把客户端传来的 GraphQL 查询字符串原样执行且不限深度。错在哪？要点：恶意嵌套查询能把服务端 CPU/内存打爆（查询深度与复杂度攻击）——必须设最大深度/复杂度上限并做字段级鉴权，introspection 在生产关闭。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 抽象类设计、接口定义、默认方法与函数式接口。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/630-GenerationalZGCDetailed'
   - 'java/150-OOP'
@@ -711,3 +711,13 @@ public class MyClass implements InterfaceA, InterfaceB {
     }
 }
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 抽象类能不能有构造器和字段？接口呢（JDK 8/9 之后）？——抽象类可以（供子类 super 调用）；接口只能有 public static final 常量，JDK 8 起可含 default/static 方法，JDK 9 起可含 private 方法，但无实例状态。
+2. 一个类能继承几个抽象类、实现几个接口？——继承一个（单继承），实现多个接口。
+3. default 方法解决什么演化问题？两个接口的 default 方法冲突怎么办？——给既有接口安全地加新方法（实现类不必立刻改）；类必须重写冲突方法，否则编译错。
+4. "是什么"与"能做什么"分别建模给谁？说一条"何时选抽象类"的判据。——抽象类建模"是什么"（is-a，共享状态与模板流程），接口建模"能做什么"（can-do 契约）；需要共享字段/构造逻辑或模板方法骨架时选抽象类。
+5. 抽象方法可以是 private 或 static 吗？为什么？——不能；private 无法被覆写、static 不参与虚分派，都让"必须由子类实现"失去意义。

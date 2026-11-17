@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Ktor HTTP客户端
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'kotlin/520-KotlinExposed'
   - 'kotlin/530-KotlinKoin'
@@ -22,11 +22,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「基础概念」的核心机制、典型用法与常见陷阱
-- 掌握「快速上手」的核心机制、典型用法与常见陷阱
-- 掌握「详细用法」的核心机制、典型用法与常见陷阱
-- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+- 能说出 Ktor 客户端的插件模型：HttpClient 引擎与 install 插件正交，能力（序列化/超时/鉴权/日志）全部插件化
+- 能写出发送 JSON 请求并反序列化响应的最小调用链（ContentNegotiation + kotlinx.serialization）
+- 能配置超时与重试并解释「连接超时、请求超时、整体超时」三层的差异
+- 能按平台选引擎（CIO/OkHttp/Darwin/JS）并说明 Ktor 3 起多平台默认引擎的简化
 
 
 ## 概述
@@ -49,11 +48,11 @@ Ktor Client 是 JetBrains 开发的 Kotlin HTTP 客户端库。它完全基于�
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.ktor:ktor-client-core:2.3.7")
-    implementation("io.ktor:ktor-client-cio:2.3.7")
+    implementation("io.ktor:ktor-client-core:3.6.1")
+    implementation("io.ktor:ktor-client-cio:3.6.1")
     // JSON 支持
-    implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
+    implementation("io.ktor:ktor-client-content-negotiation:3.6.1")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.6.1")
 }
 ```
 
@@ -758,3 +757,27 @@ HttpClient(CIO).use { c -> c.get("...") }
 // KMP 跨平台默认引擎
 val client = HttpClient()
 ```
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：超时三层**。给 HttpClient 配置「连接建立 5 秒、单次请求 30 秒、Socket 空闲 15 秒」，并回答：请求在 25 秒才返回，哪个超时先触发？
+
+参考实现：
+
+```kotlin
+install(HttpTimeout) {
+    connectTimeoutMillis = 5_000
+    requestTimeoutMillis = 30_000
+    socketTimeoutMillis = 15_000
+}
+```
+
+答案：都不触发——25 秒总时长小于 requestTimeout；但若服务器中途 15 秒没有任何字节返回，socketTimeout 会先炸（它管的是「两次数据包之间的间隔」不是总时长）。三层语义：connect 管 TCP 握手，socket 管读空闲，request 管整体。
+
+**练习 2：重试的幂等前提**。给客户端装 HttpRequestRetry 插件重试 3 次。哪些请求不能开重试？为什么？
+
+参考答案：非幂等请求（POST 下单、扣款）不能盲目重试——超时不代表失败，重试可能双扣。做法：只对 GET/幂等写操作开重试，或服务端生成幂等键（Idempotency-Key header）让重试安全。这也是网关层与客户端层重试策略必须对齐的原因。
+
+**练习 3：跨平台引擎**。一份 KMP 共享网络模块，iOS/Android/桌面各自用什么引擎？Ktor 3 的默认引擎机制改变了什么？
+
+参考答案：Android 用 OkHttp（成熟连接池与拦截器生态）、iOS 用 Darwin（系统 NSURLSession）、桌面/测试用 CIO 或 JVM 引擎；Ktor 3 起为多平台目标提供默认引擎——不显式声明引擎也能跑，显式选型留给需要定制连接池/代理的场景。这把「忘了加平台引擎依赖」这类 KMP 高频启动错误消掉了。

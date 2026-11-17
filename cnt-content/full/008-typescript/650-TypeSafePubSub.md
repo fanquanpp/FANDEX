@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 发布订阅模式的形式语义、TypeScript 类型级实现、与主流事件库对比及生产级工程实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/630-TypeSafeConfigSystem'
   - 'typescript/640-TypeSafeDatabaseQuery'
@@ -1804,6 +1804,8 @@ Map 是更安全的选择。
 
 聚合错误保证所有订阅者都执行后错误不被丢失，便于上层捕获与日志。Node.js 12+ 与所有现代浏览器原生支持 `AggregateError`。
 
+## 14. 参考与致谢
+
 ### 14.1 经典论文
 
 1. Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994). *Design Patterns: Elements of Reusable Object-Oriented Software*. Addison-Wesley. DOI: 10.5555/186897
@@ -1830,6 +1832,8 @@ Map 是更安全的选择。
 13. Jeffrey, A. (1998). *A Distributed Object-Oriented Calculus with Subtyping*. Electronic Notes in Theoretical Computer Science, 16(1), 47-72. DOI: 10.1016/S1571-0661(04)00054-3
 14. Okasaki, C. (1999). *Purely Functional Data Structures*. Cambridge University Press. ISBN: 978-0-521-66350-2
 
+## 15. 延伸阅读
+
 ### 15.1 书籍
 
 - Pierce, B. C. *Types and Programming Languages*（第 11 章 Subtyping）
@@ -1849,7 +1853,7 @@ Map 是更安全的选择。
 - [typed-emitter](https://github.com/andywer/typed-emitter)：TypeScript 类型安全 EventEmitter 包装器
 - [Effect-Ts PubSub](https://effect.website/docs/infra/pubsub)：Schema 驱动的事件总线
 
-### 15.5 视频课程
+### 15.4 视频课程
 
 - MIT 6.5810: Software Construction - [Lecture on Events and Callbacks](https://ocw.mit.edu/)
 - Stanford CS107: Programming Paradigms - [Event-Driven Programming](https://see.stanford.edu/Course/CS107)
@@ -1876,3 +1880,11 @@ Map 是更安全的选择。
 - **生产环境必须提供 Disposable 接口**，避免内存泄漏。
 
 掌握类型安全发布订阅系统的设计与实现，是构建大型 TypeScript 应用（编辑器、IDE、状态管理库、分布式系统）的关键基础。后续模块将基于这一基础设施，探讨更高级的事件驱动架构（事件溯源、CQRS、Saga 模式）。
+
+## 自检
+
+- 「EventMap 是单一类型参数」是什么意思？`on/off/emit` 的类型都能从它推导出什么？
+- 为什么 `strictFunctionTypes` 是这套实现的硬性前提？关掉后哪条保证失效？
+- `emit` 时为什么要复制订阅者数组？错误聚合的顺序保证是什么？
+- 遮住第 4 节，自己写出最小 `PubSub<EventMap>`，并用 `[Symbol.dispose]` 补上退订接口。
+- 进程内 PubSub 与跨进程消息（Redis、NATS）的分界线在哪？哪些类型保证跨进程后必须由 schema 重新接管？

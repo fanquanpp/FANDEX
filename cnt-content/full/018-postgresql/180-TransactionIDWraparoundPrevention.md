@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL事务ID回卷预防：XID环形比较空间、FREEZE冻结、autovacuum_freeze_max_age与紧急处理
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/200-DeadlockDetectionHandling'
   - 'postgresql/210-VACUUMMechanism'
@@ -206,3 +206,40 @@ VACUUM (FREEZE, PARALLEL 4, VERBOSE) giant_table;
   `vacuum_freeze_table_age`（1.5 亿）、`autovacuum_freeze_max_age`（2 亿）、
   `vacuum_failsafe_age`（16 亿）层层组成；年龄监控是必做告警项；
   长事务与死复制槽是防线上最常被忽视的两个漏洞。
+
+## 教学自检
+
+遮住上文示例代码，先自己回答再对照参考答案。
+
+### 任务一：为什么防回卷的空间是 21.5 亿而不是 42.9 亿
+
+需求：XID 是 32 位，官方却按"2^31 的环"解释先后关系。说出这个半圈的原因，以及 2^32 全用完时会发生什么。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+可见性判断只需要"过去/未来"二值结论，把 32 位空间对半分：距离当前 XID 小于 2^31 的算过去、大于的算未来——这样任何两行都能无歧义比较，代价是"过去"的空间上限只有约 21.5 亿。若无 FREEZE 机制，XID 一路走到当前值再次逼近起点时，最老的行会被误判成"未来"，导致数据凭空消失（官方报错 "database system must be vacuumed within N transactions" 就是在这条路上报警）。FREEZE 把不再需要比较的老行盖章为特殊冻结 XID，退出这场比较，环就永远转不完。
+
+</details>
+
+### 任务二：四道防线从松到紧排个序
+
+需求：写出 `vacuum_freeze_min_age`、`vacuum_freeze_table_age`、`autovacuum_freeze_max_age`、`vacuum_failsafe_age` 四个参数的默认值与触发含义，并解释为什么它们要分层。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+5000 万（日常冻结阈值：老于它的行顺路冻结）/ 1.5 亿（表年龄超过它，VACUUM 转为激进扫描全表冻结）/ 2 亿（autovacuum 强制触发的硬线，同时是 WAL 中防回卷清理的截止线）/ 16 亿（failsafe：忽略开销限制、放弃索引做紧急冻结）。分层的原因是成本权衡：绝大多数 VACUUM 按最小阈值"顺路"冻结即可；越接近危险线，动作越激进、越不计成本——避免"平时不做、最后停机抢救"。
+
+</details>
+
+### 任务三：上线告警"relfrozenxid 年龄 19 亿"怎么办
+
+需求：一条告警触达后，按顺序说出排查与处置动作，以及"千万不要做"的事。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+顺序：查长事务（`pg_stat_activity` 中 idle in transaction 与 xact_start 超天的会话，终止之）；查死复制槽（`pg_replication_slots WHERE NOT active`，删除废弃槽）；手动 `VACUUM FREEZE` 最老的表。千万不要做的：关 autovacuum"省资源"（防回卷清理会无视开关强制运行）；重启库（回卷挡板触发后重启仍卡在同一状态）；拔掉 VACUUM 进程。分区表先定位最老分区，父表年龄高不代表每一片都危险。
+
+</details>

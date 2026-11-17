@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: ctypes、cffi 与 CPython 扩展：让 Python 调用原生代码。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'python/630-MultiprocessingMultithreading'
   - 'python/690-PythonPerformance'
@@ -333,3 +333,12 @@ for off in range(0, total, 44100):
 1. **ctypes 版响度库**：把 volume.c 编译成三平台可用的动态库（至少本机一种），用 ctypes 声明签名调用，并与纯 Python 版、`math.fsum` 版各跑一次 100 万采样的基准。提示：转换 C 数组的时间单独立项计时，看清"转换成本 vs 计算收益"的构成。
 2. **cffi API 模式构建**：把同一份 C 函数用 build_cffi.py 的 API 模式编译成 _volume 模块，对比 ABI 模式与 API 模式的调用耗时与错误暴露时机。提示：故意在 cdef 里把 int 写成 long，观察 API 模式在构建期的报错。
 3. **wheel 发布演练**：为 _volume 扩展配置 pyproject.toml，`python -m build` 产出 wheel 并在另一个虚拟环境安装验证，确认无需编译器即可使用。提示：`pip install dist/*.whl` 后在全新目录 `python -c "import _volume"` 测试。再用包管理器查看 wheel 的文件清单，确认编译产物确实随包分发。
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：ctypes 加载动态库并声明 `double process(double x)` 签名的三行模板。要点：`lib = ctypes.CDLL("./volume.so")`；`lib.process.argtypes = [ctypes.c_double]`；`lib.process.restype = ctypes.c_double`——不声明 restype 默认按 int 截断返回值，是静默错误的头号来源。
+2. 排错题：ctypes 调用后得到天文数字或段错误，按什么顺序排查？要点：先查 argtypes/restype 声明与 C 原型是否一致，再查传的是 `byref` 还是值，最后查数组内存生命周期（Python 侧临时对象可能已被回收）。
+3. 口述题：ABI 与 API（cffi API 模式 / Cython）两条路线的根本差异？要点：ABI 模式运行时加载已编译库、按平台约定调用，错误在运行期暴露；API 模式构建期把声明编译进 C，类型错误在编译期就炸，换来更快调用与更早报错。
+4. 判断题：扩展里跑 3 秒的纯计算，要不要管 GIL？要点：要——用 `Py_BEGIN_ALLOW_THREADS ... Py_END_ALLOW_THREADS` 包住长计算段释放 GIL，否则宿主解释器的其他线程全程阻塞。

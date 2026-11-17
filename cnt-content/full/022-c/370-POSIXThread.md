@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 把 360 的计数器事故亲手复现再亲手修复：-pthread 编译纪律、pthread_create 的错误码契约与传参陷阱、join 与 detach 的取舍、互斥锁四件套、条件变量的虚假唤醒与 while 重查，最终写完有界队列版生产者消费者，附 pthread_cancel 争议与同步原语全家福一瞥。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/350-SharedMemorySemaphore'
   - 'c/380-AtomicAndMemoryModel'
@@ -380,12 +380,24 @@ worker 里 `int *p = (int *)arg; printf("got %d\n", *p);`，期望 0 到 3 各�
 - GCC -pthread 选项（预处理与链接两头生效的官方口径）：https://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html
 - glibc 2.34 发布说明（libpthread 并入 libc 的来龙去脉）：https://sourceware.org/glibc/wiki/Release/2.34
 
-## 自我检查
+## 遮码自检
 
-- 能默写 pthread_create 的四参数表，并用 strerror 写出正确的错误处理；
-- 能向同事讲清 join 与 detach 的取舍、忘 join 的资源后果、main return 对所有线程意味着什么；
-- 能徒手写出「等待方 while 加 wait、通知方先改条件再 signal」的条件变量骨架，并解释两个「必须」；
-- 拿到一份生产者消费者代码，能逐行指出锁、两个条件变量各自的等待方与通知方，并用 TSan 验收。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 默写 pthread_create 的四参数表；用 strerror 写出正确的错误处理。
+2. join 与 detach 怎么取舍？忘 join 的资源后果是什么？main return 对所有线程意味着什么？
+3. 徒手写「等待方 while 加 wait、通知方先改条件再 signal」的条件变量骨架，解释两个「必须」。
+4. 给一份生产者消费者代码，逐行指出锁与两个条件变量各自的等待方、通知方，并用 TSan 验收。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `int rc = pthread_create(&tid, NULL, worker, arg); if (rc != 0) { fprintf(stderr, "create: %s\n", strerror(rc)); }`。四参数：线程 ID 出参、属性（NULL 为默认）、起点函数（`void *(*fn)(void *)`）、传给它的唯一 void * 参数。
+2. join：需要拿返回值/确认收尾时用；detach：后台线程永不汇合时用，二选一。忘 join：线程描述符与栈资源挂着（等同僵尸），泄漏。main 一 return（或 exit）整个进程终结、所有线程当场死亡——要等线程先 pthread_exit。
+3. `pthread_mutex_lock(&m); while (!ready) pthread_cond_wait(&cv, &m); /* 用数据 */ pthread_mutex_unlock(&m);` / `pthread_mutex_lock(&m); ready = 1; pthread_cond_signal(&cv); pthread_mutex_unlock(&m);`。必须 while：wait 可能虚假唤醒或条件又被抢走，醒来必须重查；必须先改条件再 signal：先 signal 后改条件，等待方醒来一看条件没变又睡回去，通知永久丢失。
+4. 锁保护队列两端；not_full 的等待方是生产者、通知方是消费者（取出后）；not_empty 的等待方是消费者、通知方是生产者（放入后）。验收：`gcc -fsanitize=thread -g` 编译跑全量用例，报告安静即过。
+
+</details>
 
 ## 本章总结
 

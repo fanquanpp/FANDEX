@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go包管理详解：go mod replace、vendor。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/360-UnitTestBenchmark'
   - 'go/190-RaceDetectionAtomic'
@@ -110,7 +110,7 @@ GO111MODULE=on go mod init github.com/user/project
 
 - 引入 `GOPROXY` 环境变量，支持代理链
 - 引入 `GOSUMDB=sum.golang.org`，集中校验依赖哈希
-- 引入 `GOPRIVATE`、`GONOSUMCHECK` 跳过私有模块检查
+- 引入 `GOPRIVATE` 跳过私有模块检查（它是 `GONOPROXY` 与 `GONOSUMDB` 两个更细粒度变量的默认值，见 `go.dev/ref/mod` 环境变量表）
 
 ### Go 1.16（2021 年 2 月）：Module 模式默认
 
@@ -609,7 +609,7 @@ github.com/gin-contrib/sse
 ```bash
 # 配置私有仓库跳过 proxy 与 sumdb
 go env -w GOPRIVATE=github.com/fandex/*,gitlab.fandex.com/*
-go env -w GONOSUMCHECK=github.com/fandex/*
+# GOPRIVATE 已隐含 GONOPROXY/GONOSUMDB 的相同模式，无需再单独设置
 
 # 配置 Git 走 SSH
 git config --global url."git@github.com:".insteadOf "https://github.com/"
@@ -1149,7 +1149,6 @@ services:
     environment:
       - ATHENS_DISK_STORAGE_ROOT=/var/lib/athens
       - ATHENS_STORAGE_TYPE=disk
-      - ATHENS_GONOSUMCHECK_PATTERNS=github.com/fandex/*
       - ATHENS_GOPROXY=https://goproxy.cn,https://proxy.golang.org,direct
     volumes:
       - athens-data:/var/lib/athens
@@ -1724,3 +1723,21 @@ Go Modules 是 Go 语言在工程化道路上最关键的演进之一。通过 M
 本章从历史演进、形式化定义、代码实践、对比分析、案例研究五个维度系统介绍了 Go 包管理机制，对标 MIT/Stanford 的工具链教学深度。理解 Go Modules 的设计哲学（MVS、replace 不传递、import path 版本化）不仅有助于日常开发，更是设计企业级 monorepo、CI/CD 流水线、依赖安全策略的基础。
 
 完成本章学习后，建议继续阅读《单元测试与基准测试》《竞态检测与原子操作》《概述与环境配置》等章节，深入理解 Go 工具链与测试生态的协同工作方式。
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考命令，按题目自己写一遍，再对照。
+
+**题 1（MVS 的最小化）**：模块 A 依赖 X@v1.2 与 Y@v1.0，Y 也依赖 X@v1.5。最终构建用哪个 X？为什么这个算法叫"最小版本选择"而不是"选最新"？
+
+参考答案：用 X@v1.5（所有约束里满足的最高版本，MVS 对每个模块取需求列表中的最大值）。"最小"的含义是：在**满足全部约束的前提下**不主动升到更新的版本——若删除对 Y 的依赖，X 会自动降回 v1.2，不会停留在 v1.5。对比其他生态"选已知最高版本"的策略，MVS 的版本集由 go.mod 完全决定、可复现，升级永远是显式动作（`go get -u`）。
+
+**题 2（replace 的不传递性）**：A 模块在自己的 go.mod 里 replace B -> 本地路径。B 的下游使用者 C 会受影响吗？开发期想在 monorepo 里同时改 A 与 B，正确用什么机制？
+
+参考答案：C 完全不受影响——replace 只作用于声明它的主模块（go.mod 的 replace 不随依赖传播，防止下游被上游的本地路径劫持）。monorepo 场景用 go.work 工作区：`go work init . ./a ./b`，工作区文件不入库给 CI 用，或者直接单仓库多模块 + tag 协同。要点：go.work 是"我的开发环境"，go.mod 是"所有人的构建契约"，两者别混用。
+
+**题 3（go.sum 与供应链）**：go.sum 里出现两行同模块同版本不同哈希的记录是坏了吗？`GOFLAGS=-mod=readonly`、`GOPRIVATE` 各管什么？
+
+参考答案：不是坏——go.sum 每个 module@version 可同时存 hash 与 go.mod 树的哈希两行（`/go.mod` 后缀行），这是正常形态。`-mod=readonly` 禁止命令悄悄改 go.mod/go.sum（CI 防御性默认，Go 1.16 起是默认行为）；`GOPRIVATE=corp.example/*` 让公司私有模块同时跳过 proxy 与 sumdb 校验——它是 `GONOPROXY`（不走代理）与 `GONOSUMDB`（不查校验库）两个变量的默认值，需要"只跳校验、仍走代理"这类细粒度控制时再单独设置这两个变量。要点：公共模块的完整性靠 sumdb（透明日志）背书，私有模块的完整性靠你的内部代理——两条链路要分清。

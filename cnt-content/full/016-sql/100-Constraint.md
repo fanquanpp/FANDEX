@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL约束机制：NOT NULL、UNIQUE、PRIMARY KEY、FOREIGN KEY、CHECK约束的语法、行为与最佳实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/450-SQLPracticeInterview'
   - 'sql/090-DataType'
@@ -354,6 +354,49 @@ ALTER TABLE orders DROP FOREIGN KEY fk_orders_user_id;
 ALTER TABLE orders ADD CONSTRAINT fk_orders_user_id
     FOREIGN KEY (user_id) REFERENCES users(id);
 ```
+## 遮码自检
+
+遮住答案先答；约束题的判断标准是"说出这条约束替你拦住了什么事故"。
+
+**第 1 题：PRIMARY KEY 和 UNIQUE 有哪两点关键区别？一张表能各有几个？**
+
+<details><summary>参考答案</summary>
+
+区别一：主键一表至多一个且列必须 NOT NULL；UNIQUE 一表可建多个，标准 SQL 允许 NULL
+（MySQL 允许多行 NULL，PostgreSQL 默认 NULL 互不相等，SQL:2023 才有
+`UNIQUE NULLS NOT DISTINCT` 可选语义）。区别二：主键是表的"身份"（常被外键引用、
+聚簇组织），UNIQUE 只是业务唯一性断言（如手机号）。两者都会生成唯一索引。
+</details>
+
+**第 2 题：外键的 ON DELETE 有 RESTRICT、CASCADE、SET NULL 三种常见行为。"删部门连带删所有员工"该用哪种？什么时候 CASCADE 是危险的？**
+
+<details><summary>参考答案</summary>
+
+该场景用 CASCADE 才符合业务（子行没有独立存在意义）。危险场景：子行自身有业务价值
+（删用户连带删订单历史），CASCADE 会让一次误删放大成数据事故——这时该用 RESTRICT 让
+删除先失败，靠业务流程归档后再删。选型口诀：子行是父行的附属品用 CASCADE，子行是
+独立事实用 RESTRICT/SET NULL。
+</details>
+
+**第 3 题：CHECK 约束在 MySQL 5.7 和 8.0 里行为有什么不同？"CHECK 拦截"发生在写入时还是查询时？**
+
+<details><summary>参考答案</summary>
+
+MySQL 5.7 会解析但**忽略** CHECK（写入非法值不报错），8.0.16 起才真正强制执行；
+PostgreSQL 一直支持。CHECK 在写入时拦截（INSERT/UPDATE 直接报错），这比查询时发现脏
+数据便宜得多——错误在离源头最近的位置暴露。
+</details>
+
+**第 4 题：应用层已经校验了"手机号必填、状态只能取三个值"，数据库还要加 NOT NULL 和 CHECK 吗？为什么？**
+
+<details><summary>参考答案</summary>
+
+要。应用层校验只覆盖"走这个应用的数据"：手工修数、其他服务、迁移脚本都能绕过它；
+约束是数据库在**所有**写入路径上的最后防线。正确分工：应用层管体验（提前给出友好
+报错），约束管兜底（保证库里永远不会有非法数据）。这也是"约束在 DDL 层面保证数据
+质量，比应用层验证更可靠"的含义。
+</details>
+
 ## PRIMARY KEY 主键
 
 **单行写法：列级主键约束**

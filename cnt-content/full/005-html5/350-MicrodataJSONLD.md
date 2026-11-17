@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Microdata与JSON-LD
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/340-CustomDataAttribute'
   - 'html5/280-CrossDocumentCommunication'
@@ -121,7 +121,6 @@ prerequisites:
 | `itemprop`    | 项目属性名                        |
 | `itemid`      | 项目全局标识符(如 URL)           |
 | `itemref`     | 引用其他元素作为项目属性          |
-| `itemlist`    | 列表容器                          |
 
 **嵌套对象**
 `<div itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">`
@@ -384,6 +383,36 @@ prerequisites:
 - **@context 必填**:JSON-LD 必须包含 `@context: "https://schema.org"`
 - **类型一致性**:`@type` 必须是 Schema.org 中定义的合法类型
 - **富摘要审核**:部分类型(如 JobPosting、Event)需额外审核才能在搜索结果中显示
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写一篇博客文章的 JSON-LD：类型 Article，含标题、作者（嵌套 Person）、发布日期。
+
+参考答案（先自己写，再对照）：
+
+```html
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "深入理解 HTML5",
+  "author": { "@type": "Person", "name": "张三" },
+  "datePublished": "2026-06-14"
+}
+</script>
+```
+
+`@context` 声明词汇表、`@type` 声明实体类型、字段按 Schema.org 词法定义——三件缺一不可。
+
+2. 概念自问：Microdata 与 JSON-LD 的本质差别？为什么新项目首选 JSON-LD？结构化数据与页面可见内容不一致会怎样？
+
+参考答案（先自己答，再对照）：Microdata 把属性写进 HTML 标签（itemscope/itemtype/itemprop），与内容耦合、改版要动结构；JSON-LD 是独立的一段 JSON，维护与复用都轻，也是 Google 推荐的格式；数据与可见内容不符属于结构化数据滥用（作弊方向），轻则数据被忽略，重则整站信任降级——只标记真实存在的评价与内容。
+
+3. 判断题：JSON-LD 语法错了浏览器会报错吗？上线前应该用什么工具验证？
+
+参考答案（先自己答，再对照）：`application/ld+json` 对浏览器只是未知类型脚本，静默不执行，语法错误不报错——所以上线前必须用 Google Rich Results Test 或 Schema Markup Validator 验证。
 
 ## 动手试试
 

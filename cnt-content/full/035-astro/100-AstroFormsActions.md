@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 接收用户输入：Astro 表单、API 路由与 Action 服务端校验。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'astro/030-PagesRouting'
   - 'astro/080-BuildDeploy'
@@ -277,3 +277,73 @@ Actions 还有两个值得用起来的进阶点。其一，`defineAction` 支持
 1. **购票页双形态**：把第 1 节的购票页改造成 Actions 版，验证禁用 JavaScript 后表单仍能提交并显示字段错误，再启用脚本对比无刷新体验。提示：错误渲染函数要在两种路径下复用同一套标记结构。
 2. **余量角标**：实现 `/api/tickets/check` 端点，并在歌姬主页的侧栏岛屿中轮询展示"剩余 N 张"。提示：接口要处理缺少参数的情况并返回 400。
 3. **投稿校验**：为 P主投稿定义 `submission.create` Action，规则包括"曲名 1-60 字、音频链接必须是 https"。提示：用 zod 的 `z.string().url().startsWith('https://')` 组合表达，然后故意提交非法值观察 `error.fields` 的结构。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写页面处理 POST 的最小闭环：购票页读取表单两个字段并校验非空，失败带错误重渲染，成功 302 到订单页。
+
+   参考答案（先自己写，再对照）：
+
+   ```astro
+   ---
+   let errors: Record<string, string> = {}
+   const values = { name: '' }
+
+   if (Astro.request.method === 'POST') {
+     const form = await Astro.request.formData()
+     values.name = String(form.get('name') ?? '').trim()
+     if (!values.name) errors.name = '请填写购票人姓名'
+     if (Object.keys(errors).length === 0) {
+       return Astro.redirect(`/orders/${Date.now()}`)
+     }
+   }
+   ---
+   <form method="POST">
+     <input name="name" value={values.name} />
+     {errors.name && <p class="error">{errors.name}</p>}
+     <button>提交订单</button>
+   </form>
+   ```
+
+   验收点：三个细节——form 不写 action（提交到当前 URL）；校验失败不重定向而是带值重渲染；成功必须 `Astro.redirect` 走 PRG 防刷新重复下单。
+
+2. API 路由端点的文件放在哪、怎么导出？GET 端点在纯静态模式下会发生什么？
+
+   参考答案（先自己写，再对照）：
+
+   放 `src/pages/api/` 下（如 `src/pages/api/tickets/check.ts`），按方法导出 `export const GET: APIRoute` / `POST` 等函数。纯静态模式下 GET 端点在构建期执行、生成静态文件（如 `.json`）；POST 等非 GET 方法必须按需渲染才有意义——静态站没有服务器接住它们。
+
+3. 默写一个最小 Action：票档预约，入参 contractId（字符串）与 count（1-4 整数），并写出客户端如何调用。
+
+   参考答案（先自己写，再对照）：
+
+   ```ts
+   // src/actions/index.ts
+   import { defineAction } from 'astro:actions'
+   import { z } from 'astro/zod'
+
+   export const server = {
+     ticket: {
+       reserve: defineAction({
+         input: z.object({
+           concertId: z.string(),
+           count: z.number().int().min(1).max(4),
+         }),
+         handler: async (input) => {
+           // 业务逻辑；返回值即客户端拿到结果
+           return { ok: true }
+         },
+       }),
+     },
+   }
+   ```
+
+   ```ts
+   // 客户端（岛屿内）
+   import { actions } from 'astro:actions'
+   const { data, error } = await actions.ticket.reserve({ concertId: 'mm2026', count: 2 })
+   ```
+
+   验收点：校验定义一次两端复用；不合法入参进不了 handler，错误信息在 `error` 里结构化返回。

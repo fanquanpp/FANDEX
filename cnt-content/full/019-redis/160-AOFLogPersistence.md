@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis AOF日志持久化：appendfsync策略、AOF重写机制、配置优化与恢复流程
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'redis/100-VectorSet'
   - 'redis/150-RDBSnapshotPersistence'
@@ -351,6 +351,31 @@ dir /var/lib/redis
 - `everysec` 策略下，fsync 由后台线程执行
 - 如果后台线程 fsync 耗时超过 1 秒，主线程会等待
 - 解决方案：使用更快的磁盘（SSD）或开启 `no-appendfsync-on-rewrite`
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：appendfsync 的三个值各把「最多丢多少数据」与「性能代价」定在哪一档？
+
+参考答案（先自己答，再对照）：always 每条命令 fsync，最多丢 1 条命令、性能最差（每秒数百到数千写）；everysec 每秒一次 fsync（默认），最多丢 1 秒数据、性能可接受，是绝大多数生产实例的选择；no 由操作系统决定刷盘时机，性能最好但崩溃可能丢最近数秒。三档是「数据安全换吞吐」的连续谱。
+
+2. 判断题：AOF 重写是把旧 AOF 文件读出来、去掉冗余命令再写回去。
+
+参考答案（先自己答，再对照）：错。重写**不读旧 AOF**，而是 fork 子进程直接按当前内存状态生成最小命令集（counter 被 INCR 四次后重写只剩最终一条 SET）。这也是它能立刻省掉历史垃圾的原因；旧文件在重写完成前照常追加，新 base + incr 由 manifest 原子登记（7.0+ multi-part AOF）。
+
+3. 动手自问：Redis 7 的 AOF 目录里 manifest、base、incr 三类文件各是什么？用 redis-check-aof 修复时要传哪个？
+
+参考答案（先自己答，再对照）：manifest 是清单文件，记录当前有效的 base 与 incr 文件及其顺序；base 是重写生成的全量数据（默认 RDB 格式，`aof-use-rdb-preamble yes`）；incr 是重写之后的增量写命令。修复以 manifest 为入口：`redis-check-aof --fix appendonlydir/appendonly.aof.manifest`，工具按清单校验 base+incr 全部文件——6.x 单文件时代才直接传 .aof 文件。
+
+4. 概念自问：`no-appendfsync-on-rewrite yes` 保住了什么、牺牲了什么？
+
+参考答案（先自己答，再对照）：重写期间子进程大量写盘会拖慢 fsync，主线程可能被 fsync 卡住——设 yes 后重写期间不再主动 fsync，主线程延迟保住了；牺牲的是这期间的持久性（磁盘故障时最多可能丢约 30 秒日志，官方注释原话）。磁盘 I/O 已成瓶颈时才考虑，默认 no。
+
+5. 动手自问：实例磁盘被 AOF 撑爆前，你有哪些指标与动作可用？
+
+参考答案（先自己答，再对照）：看 `INFO Persistence` 的 `aof_current_size`（是否逼近触发线）、`aof_rewrite_in_progress`（是否正在重写）、`aof_last_bgrewrite_status`；动作依次是：确认自动重写条件（`auto-aof-rewrite-percentage/min-size`）是否被「增长太慢」卡住、低峰手动 `BGREWRITEAOF`、调大 min-size 减少重写频率、排查是否有大量「写了又删」的键在制造命令垃圾。
+
 ## 工作流程
 
 **函数源码写法：命令追加到 AOF 缓冲区**

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 从一个别名报错出发，逐段验证 SELECT 的逻辑执行顺序 FROM 到 LIMIT，并解释它带来的别名作用域、HAVING 与 LEFT JOIN 三类经典坑。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/050-FilterCondition'
   - 'sql/060-AggregateFunction'
@@ -189,6 +189,38 @@ SELECT show_name, MAX(platform) AS any_platform, COUNT(*) FROM plays GROUP BY sh
 ```
 
 老版本 MySQL 默认容忍这种写法（取任意一行的值），5.7 起默认 `ONLY_FULL_GROUP_BY` 关掉了这个坑。见过"别的库能跑"的旧 SQL 报错时，先想到这里。
+
+## 遮码自检
+
+遮住答案先答；执行顺序题的判断标准是"能背出链条并推出每个别名的作用域"。
+
+**第 1 题：`WHERE cnt >= 2`（cnt 是 SELECT 里的聚合别名）为什么报错？ORDER BY 里却能用，差别在哪？**
+
+<details><summary>参考答案</summary>
+
+逻辑执行顺序是 FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT：
+WHERE 执行时 SELECT 还没发生，别名 cnt 不存在，报错；ORDER BY 在 SELECT 之后，
+别名已经可用。一句话：**别名活在 SELECT 之后的世界**，先于 SELECT 的子句都看不见它。
+</details>
+
+**第 2 题：想筛"收听次数不少于 2 的节目"，条件该写在哪？为什么 WHERE 加不上去？**
+
+<details><summary>参考答案</summary>
+
+写 HAVING：聚合发生在 GROUP BY 之后，WHERE 在分组前执行、那时 COUNT 还没算出来。
+`HAVING COUNT(*) >= 2` 才是对的执行时序；放进 WHERE 要么报错、要么数据库把聚合
+下推改语义（少数方言），不可移植。筛行用 WHERE，筛组用 HAVING。
+</details>
+
+**第 3 题：声明式语言"只说要什么"与执行顺序有什么关系？这条顺序是语法规定还是执行真实顺序？**
+
+<details><summary>参考答案</summary>
+
+SQL 描述的是结果的形状，数据库自己决定怎么做——执行顺序链是**逻辑执行顺序**
+（结果必须等价于此顺序算出），物理执行可以重排（谓词下推、索引先过滤）。但它
+决定了名字的可见性与求值时机，所以是写 SQL 时必须遵守的"合同"。数据库怎么真的
+执行，是执行计划篇的事。
+</details>
 
 ## 练习
 

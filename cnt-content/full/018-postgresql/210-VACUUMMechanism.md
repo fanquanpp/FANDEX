@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL VACUUM 机制篇：MVCC 死元组原理、元组可见性判断、标准 VACUUM 三步清理流程、可见性映射与空闲空间映射。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/212-VACUUMAutovacuum'
   - 'postgresql/214-VACUUMTuningAndTroubleshoot'
@@ -1154,3 +1154,40 @@ PostgreSQL 作为世界上最先进的开源关系型数据库，其 VACUUM 机�
 这些机制是理解另外两篇的前提：[Autovacuum 实战](/postgresql/212-VACUUMAutovacuum) 回答"如何让自动清理匹配你的写入模式"，[VACUUM 调优与排障](/postgresql/214-VACUUMTuningAndTroubleshoot) 回答"膨胀与回卷发生时怎么办"。建议按 机制 -> 自动化 -> 排障 的顺序完成整个系列的学习。
 
 ——全文完——
+
+## 教学自检
+
+遮住正文相关小节，先自己回答再对照参考答案。
+
+### 任务一：一条死元组的完整生命周期
+
+需求：UPDATE 一行后，旧版本要满足哪些条件才会被 VACUUM 真正回收？逐条列出，并说出卡在哪一环时 VACUUM VERBOSE 里会看到什么。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+条件链：(1) 删除事务（xmax 对应事务）已提交——未提交的旧行可能还要回滚复用；(2) 不被任何活跃事务的快照引用——OldestXmin 之后开始的快照都看不到这个旧版本；(3) 不被引用计数保护（复制槽、prepared 事务、悬空的 catalog 依赖）。卡在 (2) 时 `VACUUM VERBOSE` 输出 "N row versions cannot be removed yet"，这是排查膨胀的第一现场；卡在 (3) 通常是废弃复制槽（见 180 篇防回卷一节）。
+
+</details>
+
+### 任务二：可见性映射的两个标志位
+
+需求：说出 VM（visibility map）两个标志位的名字与作用，以及为什么"全是 all-visible 的表 VACUUM 秒完"。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+all-visible 位（页内所有元组对所有事务可见，VACUUM 可整页跳过冻结扫描之外的清理工作）与 all-frozen 位（页内全部已冻结，防回卷扫描直接跳过）。全 all-visible 时 VACUUM 只需扫 VM 文件不碰堆，几乎瞬间完成；同时 all-visible 页让 Index-Only Scan 免于回堆取行——VACUUM 维护 VM 的收益不止清理本身，还直接决定 IO 降级的查询能不能成立。
+
+</details>
+
+### 任务三：VACUUM 与 VACUUM FULL 的五维对比
+
+需求：不翻正文，从锁、空间回收时机、耗时、对业务影响、替代方案五个维度对比两者，并给出生产环境膨胀治理的首选路径。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+VACUUM：SHARE UPDATE EXCLUSIVE 锁（不挡读写）、空间还给 FSM 供复用（文件不缩小）、与业务并发、影响小；VACUUM FULL：ACCESS EXCLUSIVE（挡一切）、重写整表、文件立即缩小、耗时与表大小成正比、期间业务全停。生产首选路径：日常靠 autovacuum 控膨胀率；真要收缩用 pg_repack（在线、短暂锁）；VACUUM FULL 只留给可停机的维护窗口。
+
+</details>

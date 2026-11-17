@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 联合索引的完整推理：B+ 树多列排序结构、最左前缀匹配规则、范围列截断、ORDER BY 利用与索引列顺序设计法。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/220-ClusteredIndexSecondaryIndex'
   - 'mysql/240-PrefixIndex'
@@ -131,6 +131,26 @@ EXPLAIN SELECT * FROM combo_demo WHERE a = 1 AND b IN (1,2) AND c = 3;
 **"最左前缀是模糊匹配吗？LIKE 怎么算？"**——`LIKE 'abc%'` 等价于范围条件 `>= 'abc' AND < 'abd'`，可以命中索引（但会触发范围截断规则）；`LIKE '%abc'` 无左边界，无法定位。
 
 **"联合索引列数有上限吗？"**——技术上 16 列、总长度 3072 字节以内。实践上限由常识决定：每列都增大索引体积与写入成本，超过四五列通常说明设计有问题（回头检查是否该拆分查询场景）。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：联合索引 `(a, b, c)` 下，`WHERE a = 1 AND c = 3` 与 `WHERE a = 1 AND b > 2 AND c = 3` 各命中几列？截断/断层的列去哪了？
+
+参考答案（先自己答，再对照）：前者只命中 a（b 缺席，c 在树里对固定 a 无全局有序性）；后者命中 a、b（b 是范围列，其后 c 失去有序性被截断）。断层与截断的列并没有被丢弃——它们仍在 Server 层或 ICP 下推时逐行过滤，只是不能用自己的有序性参与"定位"。判断依据是 EXPLAIN 的 key_len 而不是 key 列是否存在。
+
+2. 概念自问：`WHERE user_id = ? AND status = ? ORDER BY created_at DESC` 的索引为什么设计成 `(user_id, status, created_at)` 而不是 `(user_id, created_at, status)`？
+
+参考答案（先自己答，再对照）：设计法则是"等值 → 范围 → 排序"。user_id 与 status 都是等值，钉死前缀之后 created_at 的有序性被完整释放，ORDER BY 免排序（Extra 出现 Backward index scan 而非 filesort）；若 created_at 插在 status 前面，status 是范围/过滤列会打断有序性，排序就得 filesort。等值列在前的另一个红利是可复用性（单独按 user_id 查也能用）。
+
+3. 判断题：`WHERE a = 1 AND b IN (2,3) AND c = 4` 走索引 `(a, b, c)` 时 c 会像范围列一样被截断。
+
+参考答案（先自己答，再对照）：不会。IN 是"多组等值"——优化器把它展开成 (a=1,b=2,c=4) 与 (a=1,b=3,c=4) 两组定位，每组内部 c 都是连续有序的，三列全部命中。范围列（>、<、BETWEEN、LIKE 前缀）才截断后续列，这是最左前缀规则里最容易被误记的一条。
+
+4. 概念自问：为什么"新索引能兼任旧索引时删旧索引"要先用不可见索引验证？
+
+参考答案（先自己答，再对照）：最左前缀的兼任关系 `(a)` ⊂ `(a, b)` 在规则层面成立，但真实负载里可能有计划外的查询形态（其他租户的 SQL、报表、隐式类型转换的查询）依赖旧索引的执行计划。把旧索引设为 INVISIBLE 观察一个完整业务周期，确认没有任何查询退化，再物理删除——删除是不可逆的 DDL，隐身是可逆的演习。
 
 ## 检验清单
 

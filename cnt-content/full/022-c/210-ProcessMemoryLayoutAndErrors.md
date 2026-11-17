@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 拆开 200 建立的黑盒：打印地址画出进程五段内存布局，逐行解读 use-after-free 与 double free 的 ASan 报告，讲透 realloc 的搬移语义与丢指针经典坑，柔性数组一句话。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'c/200-DynamicMemoryManagement'
   - 'c/250-FunctionCallStackFrame'
@@ -264,12 +264,24 @@ printf("%d\n", *p);
 - free 手册页（含未定义行为清单）：https://man7.org/linux/man-pages/man3/free.3.html
 - AddressSanitizer 官方 wiki（原理与更多用法）：https://github.com/google/sanitizers/wiki/AddressSanitizer
 
-## 10. 自我检查
+## 10. 遮码自检
 
-- 能默画五段布局并说出每段的管理者，能用 map.c 式的打印验证；
-- 拿到一份 heap-use-after-free 报告，能在三行内指出分配、释放、出错的位置；
-- 能向同事讲清 `p = realloc(p, ...)` 错在哪，以及为什么临时指针能救；
-- 能解释「未定义行为」为什么表现为偶现，ASan 为什么能把偶现变必现。
+遮住上文示例代码与下面的答案栏，先自己画、先自己答，再展开对照。
+
+1. 默画五段布局并说出每段的管理者；用 map.c 式的打印（各段地址）验证。
+2. 拿到一份 heap-use-after-free 报告，三行内指出分配、释放、出错的位置。
+3. `p = realloc(p, ...)` 错在哪？为什么临时指针能救？
+4. 「未定义行为」为什么表现为偶现？ASan 为什么能把偶现变必现？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 五段：text（代码，加载器铺，只读）、data（已初始化全局/静态，加载器）、bss（未初始化全局/静态，加载器清零）、stack（自动变量，运行时自动进出、向下生长）、heap（malloc 的地界，你管）。验证：打印 text 段函数地址、bss 段全局变量地址、栈局部变量地址与 malloc 返回地址，比较高低。
+2. 报告三段照读：READ/WRITE of size N（出错操作）；#0 帧的 `文件:行号` 是出错位置；「freed by thread」与「previously allocated by thread」两段各给释放与分配的行号。
+3. realloc 失败时返回 NULL 但原块还在——`p = realloc(p, ...)` 一旦失败，p 被 NULL 覆盖，原块地址永久丢失：既泄漏又再无机会释放。临时指针 `tmp = realloc(p, n); if (tmp) p = tmp;` 保住了原地址，失败可继续用旧块。
+4. UB 的现场是「作废内存恰好没人动」——复用时机不同结果就不同，所以偶现；ASan 在每次 free 时把那块内存隔离并灌毒（红区），任何再访问立即触发报告——时机从「碰巧」变成「必然」。
+
+</details>
 
 ## 本章总结
 

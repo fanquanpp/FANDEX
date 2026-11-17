@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: reflect包深度剖析：Type/Value/Kind 三大核心、动态调用、性能优化、反射元编程、生产级应用与陷阱
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/300-UnsafePointer'
   - 'go/270-MemoryAlignment'
@@ -2067,3 +2067,41 @@ t1 := reflect.TypeOf(int(0));
 t2 := reflect.TypeOf(int64(0));
 ok := t1.AssignableTo(t2);
 ```
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（Type/Value 的分工）**：`reflect.TypeOf(x)` 与 `reflect.ValueOf(x)` 各返回什么？传入 `nil` 会发生什么？传入接口呢（`TypeOf(any(nil))`）？
+
+参考答案：`TypeOf` 返回静态动态类型信息（`reflect.Type` 接口，实现是 *rtype），`ValueOf` 返回值与其类型（`reflect.Value`）。`TypeOf(nil)` 返回 nil（没有类型可报）。传接口时拿到的是**动态类型**——这正是反射"穿透接口"的能力，也是它必须有 `any` 参数的原因。要点：反射的两个入口都会做一次"接口拆包"，多一层间接就多一次分配，这是反射慢的结构性原因之一。
+
+**题 2（用反射给字段赋值）**：写 `SetField(obj any, field, val string) error`：反射找到导出字段并赋值。遮住后自己写，重点检查 CanSet 何时为 false。
+
+参考实现：
+
+```go
+func SetField(obj any, field, val string) error {
+    v := reflect.ValueOf(obj).Elem() // obj 必须是可寻址的指针
+    f := v.FieldByName(field)
+    if !f.IsValid() {
+        return fmt.Errorf("no field %s", field)
+    }
+    if !f.CanSet() {
+        return fmt.Errorf("field %s is unexported or not addressable", field)
+    }
+    if f.Kind() != reflect.String {
+        return fmt.Errorf("field %s is not string", field)
+    }
+    f.SetString(val)
+    return nil
+}
+```
+
+要点：`CanSet` 为 false 的三种情形——值来自拷贝（没传指针）、字段未导出（小写开头）、不可寻址。CanSet 是反射的安全阀：能被修改的值必须能定位到真实内存。
+
+**题 3（什么时候不用反射）**：序列化库早期用反射，为什么很多库后来转向代码生成（stringer、easyjson）与泛型？说出反射的三个结构性代价。
+
+参考答案：代价一：运行时类型检查替代编译期——错误推迟到运行时且报错难懂；代价二：逃逸与分配——`reflect.Value` 装箱、interface 装箱带来 GC 压力，基准通常慢一个数量级；代价三：工具链失明——静态分析、IDE 跳转、混淆工具都看不清反射字符串里写的类型与方法名。代码生成把反射搬到编译期，泛型把"类型参数化"纳入语言，两者都以失去一点灵活性为代价换回这三样。

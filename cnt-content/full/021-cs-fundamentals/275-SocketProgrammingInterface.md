@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: socket/bind/listen/accept 五步与 UDP 无连接对照：为什么服务端有两个 socket、网络字节序陷阱、手写 TCP 回显服务与局域网 UDP 广播发现协议，附粘包复现与练习
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -310,6 +310,15 @@ seek 端的内层 `while` 是 UDP 服务发现的典型「收集窗口」模式�
 **下一步**：三次握手与状态机见 300-TCPControl；粘包的完整解法（长度前缀、
 定长、分隔符、协议升级）见 310-TCPMessageFraming；命令行工具化验证见
 025-networking 的 260-NetcatNmap。
+
+## 自检
+
+- 遮住第 1 节的心智模型，先自己说出 socket 插在哪里（应用与内核协议栈之间）、socket 与 fd 是什么关系，再对照。
+- 遮住第 2 节的 TCP 服务端五步，先默写五步系统调用名（socket/bind/listen/accept/收发），再回答：为什么需要两个 socket——监听 socket 与连接 socket 各自管什么？
+- 遮住第 3 节的 UDP 对照面，先自己列出 UDP 编程接口与 TCP 的三点差异（无 listen/accept/connect、recvfrom 自带来源地址、每个包独立），再对照。
+- 遮住第 4 节，先自己回答：网络字节序是大端还是小端？`htons` 漏调用的现象是什么（端口数字对不上）？绑定端口用 `htons`、地址字段用 `htonl`——两者处理的数据宽度差在哪（16 位 vs 32 位）？
+- 遮住第 5 节的粘包复现代码，先预测「连发两条消息、一次 recv」能读到什么，再对照——复现粘包的发送端条件（小间隔多次 send）与接收端缓冲怎么选？
+- 遮住动手实践的 beacon 任务，先自己设计「广播发现 + 3 秒过期」的数据结构（字典存每来源最后收到时间、主循环清理超时项），再对照参考实现。
 
 ## 参考与致谢
 

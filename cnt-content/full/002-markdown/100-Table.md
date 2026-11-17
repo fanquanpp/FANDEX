@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GFM 表格语法：分隔行的设计原因、对齐约定与数字右对齐、单元格边界规则、表格与列表的选型决策、遮代码自检与 HTML 兜底。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'markdown/270-SpecDocumentWriting'
   - 'markdown/080-EscapeCharacter'
@@ -17,7 +17,7 @@ prerequisites:
 ---
 
 > **认知导入（Layer 1 进阶层）**
-> 前置知识：003 段落与换行（表格是"块级元素"，行结构依赖换行）。
+> 前置知识：030 段落与换行（表格是"块级元素"，行结构依赖换行）。
 > 边界说明：表格是 **GFM 扩展**而非 CommonMark 核心，纯 CommonMark 渲染器会把它当普通文本；单元格内只能放行内元素，放不了列表和代码块。
 > 强制练习：写一个三列表格，把分隔行少写一列，观察缺列的单元格如何被填空。
 

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin Flow与Channel及响应式流规范深度剖析
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'kotlin/210-DelegateProperty'
   - 'kotlin/230-CoroutineBasics'
@@ -24,11 +24,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「理论推导」的核心机制、典型用法与常见陷阱
-- 掌握「代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「对比分析」的核心机制、典型用法与常见陷阱
+- 能说出 Flow 解决的问题：单值 suspend 表达不了多值异步序列，Channel 又是热的多播
+- 能用「冷流」模型推导 Flow 行为：每次收集独立执行构建块、无订阅无副作用
+- 能解释背压在 Flow 里如何自然消解：收集者驱动的同步拉取
+- 能对比 Flow 与 RxJava/Reactor 的取消模型差异：结构化并发的取消 vs 外部 Disposable
 
 
 
@@ -1425,3 +1424,28 @@ fun <T> mergeWithPriority(
   - 对比学习 RxJava 与 Flow 的设计差异
 - **Project Reactor**：https://github.com/reactor/reactor-core
   - Spring 生态的响应式实现
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：冷流证据实验**。先预测输出次数，再对照：
+
+```kotlin
+val flow = flow {
+    println("emitting")
+    emit(1)
+}
+
+suspend fun main() = coroutineScope {
+    flow.collect { println("A got ${'$'}it") }
+    flow.collect { println("B got ${'$'}it") }
+}
+```
+
+参考答案：`emitting` 打印两次。Flow 是冷流：构建块在每次 `collect` 时重新执行，两个收集者拿到两份独立执行——「代码在收集者之间共享，执行不在」。要共享执行请看 [Flow 冷热与共享状态](/kotlin/300-FlowColdSharedState) 的 SharedFlow/StateFlow。
+
+**练习 2：背压推演**。生产端 `emit` 快于收集端处理时，普通 `flowOf(...).collect` 会发生什么？buffer/conflate 各改变了什么？
+
+参考答案：默认无缓冲时，`emit` 会挂起等待收集端处理完上一个值——生产被收集端拉住（背压自然消解）。`buffer(n)` 让生产端领先至多 n 个元素；`conflate` 只保留最新值、中间值丢弃（状态类场景常用）。三者都是收集端与生产端速率差的策略，不是异常处理。
+
+**练习 3：取消联动**。协程被取消时正在收的 Flow 会怎样？`catch` 里吞掉 `CancellationException` 会怎样？
+
+参考答案：收集端 `collect` 挂起点响应取消，Flow 立即停止并在 CancellationException 中退出，这是结构化并发的一部分；`catch { }` 若把 `CancellationException` 也捕获并吞掉，会破坏取消传播——正确写法是 `catch (e: CancellationException) { throw e }` 之后才写业务异常处理。

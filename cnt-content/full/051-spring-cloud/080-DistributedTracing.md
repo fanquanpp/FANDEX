@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/160-ActuatorObservability'
   - 'spring-cloud/060-ApiGateway'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'spring-boot/160-ActuatorObservability'
   - 'spring-cloud/090-DistributedTransactionSeata'
@@ -82,6 +82,8 @@ Boot 3 时代的分工分三层，思想与 160 篇的指标门面一脉相承�
 | 展示 | Zipkin（也可 Jaeger/Tempo） | 收集 span、画出调用树与瀑布图 |
 
 选 Brave 还是 OTel？团队走 Zipkin 生态用 bridge-brave（本篇主线）；要接入 OpenTelemetry 生态（Collector、各家 APM）用 bridge-otel，业务代码不变。展示端同理：本篇用最轻的 Zipkin；Jaeger/Tempo 是云原生常见组合；国内大厂常用 SkyWalking（字节码增强、服务拓扑图强）——工具不同，Trace/Span 模型完全一致，学会本篇去哪都不虚。
+
+升级瞭望一句：OpenTelemetry 官方已弃用其 Zipkin 导出支持，Spring Boot 4.2 起将移除对应的自动配置——走 Zipkin 就用 Brave 桥（本篇主线），或改用 OTLP 上报给支持它的后端（management.otlp.tracing.endpoint 配置）。
 
 ## 5. 落地全流程：三个依赖一行配置
 

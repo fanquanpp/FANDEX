@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL体系架构：进程模型、后台进程、共享内存、本地内存、查询处理流程与数据目录结构
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/472-HAFailoverPatroni'
   - 'postgresql/190-LockMechanism'
@@ -279,3 +279,40 @@ SELECT pg_relation_filenode('orders') AS filenode,
   增量备份；18 新增异步 I/O（io_method = worker/io_uring）。理解
   "进程模型 x 内存配额 x 后台进程分工"这三件事，是读懂 VACUUM、锁、
   并行查询与复制文档的前提。
+
+## 教学自检
+
+遮住上文图示与表格，先自己回答再对照参考答案。
+
+### 任务一：一条 UPDATE 从提交到落盘的顺序
+
+需求：按顺序说出一条 UPDATE 经过 WAL buffer、共享缓冲区、磁盘数据文件的路径，并解释为什么"先写 WAL、再改数据页"。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+顺序：改 shared_buffers 中的数据页之前先把变更记录写进 WAL buffer；COMMIT 时 WAL 刷盘（synchronous_commit=on），数据页由 checkpointer/bgwriter 异步写回磁盘。先写 WAL 的原因：WAL 是顺序追加的小记录，刷盘成本低，而数据页是随机写；只要 WAL 持久化，崩溃后就能重放恢复，数据页晚写、丢写都无所谓——这是"日志先行（Write-Ahead Logging）"的核心。反过来先写数据页，崩溃时页可能写了一半（torn page），没有 WAL 兜底就损坏数据。
+
+</details>
+
+### 任务二：为什么 kill 一个 backend 会拖垮整个实例
+
+需求：直接 `kill -9` 一个慢查询的 OS 进程，接下来会发生什么？正确操作是什么？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+postmaster 检测到子进程异常退出，无法判断共享内存状态是否残留脏数据，为保一致性重启整个实例（所有连接断开、恢复流程启动）。正确做法是 SQL 层面终止：`SELECT pg_terminate_backend(pid);`（或 `pg_cancel_backend` 只取消当前查询），让进程走正常退出路径释放锁与共享状态。
+
+</details>
+
+### 任务三：pg_stat_user_tables 的读数从"延迟"变"实时"是哪个版本的分水岭
+
+需求：说出统计信息存储方式的演进（14 及以前 / 15 起），以及这个演进对告警查询的影响。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+14 及以前：stats collector 进程周期性把统计写文件、其他进程读文件——有秒级延迟且可能丢失；15 起：统计直接存共享内存，读取即当前值，无 collector 文件中转。对运维的影响：基于 pg_stat_user_tables 的告警（死元组比例、n_live_tup）不再有"滞后一个采集周期"的偏差，阈值可以设得更紧；18 又把 I/O 统计细化（pg_stat_io 字段更全），观察读取路径用 io_method 相关视图。
+
+</details>

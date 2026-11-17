@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: value class 与内联优化的编译原理与工程实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'kotlin/480-KotlinSpring'
   - 'kotlin/440-KotlinAndroid'
@@ -25,11 +25,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「理论推导」的核心机制、典型用法与常见陷阱
-- 掌握「代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「对比分析」的核心机制、典型用法与常见陷阱
+- 能说出 value class 解决的成本问题：包装类型每个实例的对象头、引用间接与 GC 压力
+- 能解释编译器的双形态策略：多数路径拆箱为原始类型，需要身份（可空、泛型、接口引用）时才装箱
+- 能写出合法的 value class（唯一主构造属性），并识别三条硬限制（无多属性构造、可空参数装箱、老版本无 init 块）
+- 能预判 value class 在 equals/hashCode、泛型装箱、Java 互操作（@JvmExposeBoxed）上的行为差异
 
 
 ## 历史动机与背景
@@ -1616,3 +1615,16 @@ value class UserId(val value: Long) {
 // 内联类不能有可变 var 属性
 @JvmInline value class Score(val value: Int)
 ```
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：装箱触发点判别**。给出四行代码，先判断各自是否发生装箱：(a) `val w = Meters(3)` 赋给类型化变量；(b) `val m: Meters? = Meters(3)`；(c) `listOf(Meters(1), Meters(2))`；(d) `val x: Number = Meters(3)`（Meters 实现了 Number）。
+
+参考答案：(a) 不装箱——编译器全程持有原始 `Double`；(b) 装箱——可空引用需要能表示 null，只能用包装对象承载；(c) 装箱——泛型容器按擦除后的 Object 存放；(d) 装箱——赋给接口引用需要身份。规律：只要出现「可空、泛型、接口引用」三者之一，编译器退回装箱表示。
+
+**练习 2：equals 语义实验**。两个 `value class Price(val cents: Long)` 实例 `Price(100)` 与 `Price(100)`，`==` 结果？普通包装类 `class Price2(val cents: Long)` 呢？
+
+参考答案：value class 在拆箱形态下比较原始值，`==` 为 true，且与「装箱后的 equals（按 underlying 值生成）」一致；`Price2` 不重写 equals 时按引用比较为 false。value class 天然是值语义，这正是它适合建模「货币金额、坐标、ID」这类领域原语的原因。
+
+**练习 3：Java 互操作推演**。Java 代码调用 Kotlin 的 `value class Email(val value: String)` 时，方法签名里看到的是什么类型？想让 Java 侧用上「装箱但仍按值比较」的形态，2.2 起提供的注解是什么？
+
+参考答案：Java 侧签名是 `String`（mangled 方法 `getEmail-xyz0`），value class 对 Java 是透明的原始类型。要暴露装箱表示给 Java，用 Kotlin 2.2 的 `@JvmExposeBoxed`——它生成供 Java 调用的包装形态 API，代价是体积与一次包装分配。

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: Memory 引擎全景：纯内存存储与重启即失的交换律、哈希索引与 B+ 树的选择、表级锁的并发含义、以及 8.0 临时表改用 TempTable 后的真实定位。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/180-MyISAMStorageEngine'
   - 'mysql/220-ClusteredIndexSecondaryIndex'
@@ -24,7 +24,7 @@ prerequisites:
 
 某些数据天生就是临时的：登录会话映射、全国行政区划码表、爬虫的去重指纹集合。它们丢失无妨、重建廉价，却要求极低的访问延迟。**Memory 引擎**为这类数据而生：表结构与索引常驻内存，数据行也在内存——读写不碰磁盘，速度是所有引擎的天花板。
 
-交换条件写在它的灵魂条款里：**服务器重启，数据全部蒸发**（表定义还在 .frm 里，行数据没了）。所以 Memory 表的第一设计原则是：数据必须可由廉价来源重建（启动时从文件/别的表灌回来），或本来就是 disposable 的。
+交换条件写在它的灵魂条款里：**服务器重启，数据全部蒸发**（表定义存在数据字典里，行数据没了）。所以 Memory 表的第一设计原则是：数据必须可由廉价来源重建（启动时从文件/别的表灌回来），或本来就是 disposable 的。
 
 ## 核心特性表（与 InnoDB 对照着记）
 
@@ -103,6 +103,37 @@ FROM (WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM t WHERE n < 100
 **"有 Redis 了，Memory 表还有意义吗？"**——仍有生态位：同进程内零网络开销、可 JOIN、事务边界内一致（尽管无事务，单语句原子）。跨服务的共享缓存用 Redis；单库内部的小型查找表用 Memory 表更顺路。
 
 **"MEMORY 表会被主从复制吗？"**——复制的是 binlog 语句，从库的 Memory 表会执行同样的 INSERT，但**从库重启后同样清空**，且不会自动重灌——主从内存表内容从此分叉。规范：复制拓扑里避免用 Memory 表存状态性数据。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出建表语句：Memory 引擎的码表，列 `code` 上常有 `BETWEEN` 范围查询。主键与 code 索引各怎么建？为什么？
+
+参考答案（先自己写，再对照）：
+
+```sql
+CREATE TABLE lookup (
+  id INT PRIMARY KEY,
+  code VARCHAR(10),
+  name VARCHAR(100),
+  INDEX idx_code USING BTREE (code)
+) ENGINE = MEMORY;
+```
+
+Memory 引擎默认索引类型是哈希：等值匹配 O(1)，但哈希值无序，范围（BETWEEN）、排序（ORDER BY）、最左前缀全部只能全表扫。有范围需求的列必须显式 `USING BTREE` 换 B+ 树——"默认的不一定是合适的"。
+
+2. 概念自问：`ERROR 1114 The table 'xxx' is full` 在 Memory 表上第一反应查什么？
+
+参考答案（先自己答，再对照）：`max_heap_table_size`——它限制单张 Memory 表的容量，默认约 16MB，不是磁盘满了。调大该变量（全局）或建表时按需设置即可；但调大之前先算内存账，Memory 表占的是实例内存，失控会挤垮缓冲池。
+
+3. 判断题：8.0 之后，内部临时表还是 Memory 引擎，所以 Memory 引擎的坑会影响 GROUP BY 的排序性能。
+
+参考答案（先自己答，再对照）：过时的推理。8.0 起内部临时表（GROUP BY/DISTINCT/UNION 的中间结果）改用 TempTable 引擎（内存为主、可溢盘到 InnoDB），与用户级的 MEMORY 引擎是两套东西。Memory 引擎的表级锁、哈希索引、16MB 上限都不再影响内部临时表行为。
+
+4. 概念自问：主从复制拓扑里用 Memory 表存会话状态，会出什么问题？
+
+参考答案（先自己答，再对照）：主库写入通过 binlog 语句复制到从库，从库重启后 Memory 表被清空且不会自动重灌——主从内容从此分叉，读从库拿到的会话状态与主库不一致。规范是：复制拓扑里不用 Memory 表存状态性数据，状态缓存交给 Redis 这类外部存储。
 
 ## 检验清单
 

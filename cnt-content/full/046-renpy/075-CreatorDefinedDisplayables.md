@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 renpy.Displayable 子类与 render/event 交互周期绘制 screen 语言做不了的动态内容：打字速度小游戏、对话框粒子雨、点击收集小游戏，标注 Render 每帧新建与焦点处理易错点
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -42,8 +42,6 @@ CDD 的核心协议：引擎在需要显示时调用你的 render 方法，你�
 
 ```renpy
 init python:
-    import pygame_sdl2
-
     class RainDrop:
         def __init__(self, width, height):
             self.reset(width, height)
@@ -150,10 +148,12 @@ init python:
 
 ## event：收事件与三个约定
 
-event 方法在每次交互事件（鼠标移动、点击、按键）时被调用，参数 ev 是 pygame 事件对象，x/y 是**相对本显示件**的指针坐标，st 是 show 时钟：
+event 方法在每次交互事件（鼠标移动、点击、按键）时被调用，参数 ev 是 pygame 事件对象，x/y 是**相对本显示件**的指针坐标，st 是 show 时钟。需要按事件类型分流时，用 `import renpy.pygame as pygame` 引入事件常量后检查 `ev.type`；匹配按键语义优先用引擎提供的 `renpy.map_event(ev, keysym)`，它直接对照 keymap 配置判断，不用自己写常量比较。
 
 ```renpy
 init python:
+    import renpy.pygame as pygame   # 8.5.0 起 pygame_sdl2 并入引擎，现名 renpy.pygame
+
     class ClickGame(renpy.Displayable):
         def __init__(self, target_count=10, **kwargs):
             super(ClickGame, self).__init__(**kwargs)
@@ -177,9 +177,7 @@ init python:
             return render
 
         def event(self, ev, x, y, st):
-            import pygame_sdl2
-
-            if ev.type == pygame_sdl2.MOUSEBUTTONDOWN and ev.button == 1:
+            if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
                 for (tx, ty) in self.targets:
                     if abs(x - tx) < 40 and abs(y - ty) < 40:
                         self.hits += 1
@@ -201,7 +199,7 @@ init python:
 event 的三个约定：
 
 1. **坐标是显示件局部坐标**：x/y 已经过引擎换算（考虑了显示件的位置与缩放），直接与自己的绘制坐标比较即可，不要再去减全局偏移；
-2. **要不要消费事件**：返回 `renpy.IgnoreEvent()` 可以"吃掉"这个事件，阻止它传给更下层的显示件（比如防止玩家在游戏面板上点击时顺带推进了对话）。不返回任何值则事件继续向下传播——小游戏悬浮在对话之上时，要不要挡对话推进是一个真实的设计决策；
+2. **要不要消费事件**：`raise renpy.IgnoreEvent()` 可以"吃掉"这个事件，阻止它传给更下层的显示件（比如防止玩家在游戏面板上点击时顺带推进了对话）——注意 IgnoreEvent 是异常类，用 raise 抛出而不是 return 返回。不返回任何值也不抛异常则事件继续向下传播——小游戏悬浮在对话之上时，要不要挡对话推进是一个真实的设计决策；
 3. **改动状态后通知引擎**：改了自己持有的变量后，`renpy.restart_interaction()` 让依赖这些值的界面重新求值，`renpy.timeout(0)` 让引擎尽快结束当前交互（配合 `call screen` 可以把"小游戏通关"作为返回值带回脚本）。
 
 配套的收尾逻辑用 call screen 拿结果：
@@ -230,7 +228,7 @@ CDD 默认不可聚焦——键盘手柄无法把焦点交给它。需要键盘�
 
 ## 动手实践
 
-**任务一：打字速度小游戏。** 实现一个 CDD：显示一句固定文本，玩家敲键盘逐字符匹配，正确字符变绿、错误闪红，打完显示用时并 `renpy.timeout(0)` 结束交互。提示：在 event 里收 `pygame_sdl2.KEYDOWN`，`ev.unicode` 取字符与文本逐位比较；用时直接读 st。
+**任务一：打字速度小游戏。** 实现一个 CDD：显示一句固定文本，玩家敲键盘逐字符匹配，正确字符变绿、错误闪红，打完显示用时并 `renpy.timeout(0)` 结束交互。提示：在 event 里收 `pygame.KEYDOWN`，`ev.unicode` 取字符与文本逐位比较；用时直接读 st。
 
 **任务二：对话框粒子雨。** 参考本篇 RainDisplayable，让粒子从屏幕顶部飘落且**避开底部对话区**（高度的底部 25% 不生成落点），叠加在 say 界面之下、背景之上。提示：用 zorder 控制图层（见 [显示件与图层](/renpy/035-DisplayablesAndLayers)）；生成 y 起点 `-height` 到 `height * 0.7`。
 
@@ -243,6 +241,8 @@ CDD 默认不可聚焦——键盘手柄无法把焦点交给它。需要键盘�
 
 ```renpy
 init python:
+    import renpy.pygame as pygame
+
     class CollectGame(renpy.Displayable):
         def __init__(self, need=15, seconds=10, **kwargs):
             super(CollectGame, self).__init__(**kwargs)
@@ -281,9 +281,7 @@ init python:
                              renpy.random.randint(40, height - 40)) for _ in range(4)]
 
         def event(self, ev, x, y, st):
-            import pygame_sdl2
-
-            if ev.type == pygame_sdl2.MOUSEBUTTONDOWN and ev.button == 1 and self.done is None:
+            if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1 and self.done is None:
                 for (tx, ty) in self.targets:
                     if abs(x - tx) < 32 and abs(y - ty) < 32:
                         self.hits += 1
@@ -312,12 +310,47 @@ label collect:
 对照要点：计时基准 `start_st` 在第一帧 render 里落定——比在 `__init__` 里取时间可靠，因为 st 只在这里可信；倒计时条是 fill 矩形随 remain 收缩，是 CDD"用最朴素的绘制原语做 UI"的典型手法；胜负判定统一走 `renpy.timeout(0)` + `call screen` 的返回值通道，让游戏结果回到脚本语言层面继续叙事（persistent 奖励的写入见 [存档、读档与回滚](/renpy/100-SaveLoadAndRollback) 篇）。注意两个超时/达标判定都只触发一次（`self.done is None` 保护），否则 timeout 会在结束前一帧内重复请求。
 </details>
 
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案，再展开对照。
+
+1. render 方法的四个参数各是什么？返回值必须是哪种对象？为什么不能把上一帧的 Render 存起来复用？
+2. 一段粒子动画只动了第一帧就停住，最可能漏写了哪一行？写出来。
+3. event 的 x/y 与屏幕坐标是什么关系？想把点击"只留给自己、不再传给下层"，正确的写法是什么（注意 IgnoreEvent 的用法形式）？
+4. 在 `__init__` 里保存了子显示件的 CDD，还必须实现哪个方法、返回什么？漏掉会发生什么？
+5. 小游戏里改了 self.hits 之后，屏幕上的计分文本没刷新，需要调用哪两个 renpy 函数、各自起什么作用？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 参数是 width、height、st（show 时钟）、at（animation 时钟）；返回值必须是
+   renpy.Render(width, height)。引擎会缓存并逐层合成 Render，复用旧对象
+   会画面冻结甚至渲染崩溃——官方明确要求每次 render 都新建。
+
+2) renpy.redraw(self, 0)。render 只在引擎认为需要时被调用，写在 render 末尾
+   的 redraw(self, 0) 才能形成"每帧重画"的自驱动循环。
+
+3) x/y 已由引擎换算成相对本显示件的局部坐标（考虑位置与缩放），直接与自己
+   的绘制坐标比较即可。消费事件的正确写法是 raise renpy.IgnoreEvent()——
+   IgnoreEvent 是异常类，要用 raise 抛出；普通 return None 是继续传播。
+
+4) visit()，返回子显示件列表（如 [self.child]）。漏掉后子显示件不参与焦点
+   查找、不被 show/hide 正确清理，属于静默 bug。
+
+5) renpy.restart_interaction()：让依赖这些变量的界面重新求值刷新；
+   renpy.timeout(0)：请求尽快结束当前交互，配合 call screen 把结果带回脚本。
+```
+
+</details>
+
 ## 小结
 
 - CDD 继承 renpy.Displayable，render 返回当帧画布、event 收事件、visit 交出子显示件；
 - Render 每帧新建是硬规则；renpy.redraw(self, 0) 驱动动画循环；renpy.render 把任意显示件渲染后 blit 上画布；
 - st 与 at 是两个时钟，动画计时以 st 为准（首帧落定基准）；
-- 事件坐标是局部坐标；IgnoreEvent 消费事件、restart_interaction 刷新界面、timeout(0) 结束交互把控制权交回脚本；
+- 事件坐标是局部坐标；raise renpy.IgnoreEvent() 消费事件、restart_interaction 刷新界面、timeout(0) 结束交互把控制权交回脚本；按键匹配优先用 renpy.map_event；
+- 事件常量自 8.5.0 起从 renpy.pygame 引入（`import renpy.pygame as pygame`），旧名 pygame_sdl2 已并入引擎；
 - 选用判断：ATL 与 screen 做不了的动态内容才用 CDD。
 
 ## 参考与致谢

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 类型安全配置系统的形式语义、深度类型操作、运行时校验与生产级 ConfigManager 工程实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/620-TypeSafeRoute'
   - 'typescript/610-TypeSafeI18n'
@@ -2156,6 +2156,14 @@ describe('ConfigManager performance', () => {
 7. **陷阱预防**：路径拼写错误、中间节点 undefined、类型断言滥用、Schema 漂移、浅合并丢失字段、敏感信息日志泄漏、递归深度溢出是七大常见陷阱，均通过类型约束与运行时校验双重预防。
 
 通过本模块的学习，读者应能独立设计并实现一个生产级类型安全配置系统，覆盖路径访问、运行时校验、多环境合并、变更订阅、审计日志等完整功能，并能在 Zod、Effect Schema、t3-env 等方案中做出合理选型。
+
+## 自检
+
+- 配置系统的「三重防线」是哪三层（类型注解、Schema 校验、Fail-Fast 启动检查）？各挡住哪类事故？
+- 遮住第 4 节，自己写出「从 const 配置对象派生 Config 类型 + 路径安全的 get 函数」的最小实现。
+- 深合并丢字段、Schema 漂移各是什么？分别靠什么手段预防？
+- 环境变量（590 篇）与配置文件两条通道怎么分工？哪类值绝对不该进前端配置？
+- Zod、Effect Schema、t3-env 三者你按什么标准选？遮住第 8 节对比表说出至少两条。
 
 ---
 

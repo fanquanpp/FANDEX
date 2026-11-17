@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: HTML 三类列表（ul/ol/dl）的语义、属性、嵌套规则、无障碍要求与 CSS 样式化技巧。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/060-MetadataCharacterEncoding'
   - 'html5/110-TextSemantic'
@@ -735,6 +735,32 @@ ul.custom-mark li::before {
   <li><button onclick="exit()">退出</button></li>
 </menu>
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写一个「发布前检查清单」：要求编号倒序（从后往前勾），并且第一条强制为 10 号。
+
+参考答案（先自己写，再对照）：
+
+```html
+<ol reversed>
+  <li value="10">确认部署目标分支</li>
+  <li>跑通全部测试</li>
+  <li>更新变更日志</li>
+</ol>
+```
+
+`reversed` 让浏览器倒着编号；显式 `value="10"` 锚定起点，后续条目自动递减——编号交给浏览器，增删条目不会错。
+
+2. 概念自问：集合、序列、映射三种信息结构各对应哪个标签？嵌套列表的唯一铁律是什么？为什么不要手写编号数字？
+
+参考答案（先自己答，再对照）：集合用 `ul`、序列用 `ol`、映射（术语+描述）用 `dl`；子列表必须写在 `<li>` 内部（ul 的直接子级只允许 li）；手写数字在增删条目后会错乱且读屏语义丢失，浏览器自动编号配合 `start`/`value`/`reversed` 结构化干预。
+
+3. 判断题：步骤条用 `ol` 后为什么还要 CSS 隐藏默认编号、用 `<span>` 自绘圆点编号？
+
+参考答案（先自己答，再对照）：`ol` 保住「这是有序步骤」的语义（读屏报「共 4 步、当前第 2 步」），`list-style: none` 只是让视觉脱离默认数字，`<span>` 圆点与 `aria-current="step"` 补齐样式与状态——语义在结构、表现在样式，两层互不代替。
 
 ## 动手试试
 

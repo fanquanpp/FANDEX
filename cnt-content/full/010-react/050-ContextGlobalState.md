@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Context API、Provider 模式、useContext 优化与状态机；第三方状态管理库的横向对比与选型见状态管理方案对比篇。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/030-StateEvent'
   - 'react/040-HooksDeep'
@@ -316,6 +316,19 @@ function Toggle() {
   );
 }
 ```
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **预测题**：`<ThemeContext.Provider value={{ mode: 'dark' }}>` ——value 直接内联对象字面量，消费组件会怎样？
+   答案：每次 Provider 渲染 value 都是新引用，所有消费该 Context 的组件跟着重渲染，与子组件是否用到具体字段无关。解法是 useMemo 包 value 或把 value 提升出渲染体。
+2. **修 Bug 题**：组件里 `const theme = useContext(ThemeContext)` 永远拿到初始值 `'light'`，界面上层明明换了 Provider，为什么？
+   答案：useContext 认的是「组件树上离得最近的 Provider」——该组件渲染在 Provider 之外（或 Provider 与消费者之间隔了一个另建 Context 的文件/双包实例）。检查组件位置与 Context 对象是否同一来源。
+3. **辨析题**：Context 与 Zustand 这类外部 store，通知粒度的本质差别是什么？各适合什么频率的更新？
+   答案：Context 是依赖注入，value 一变全量通知所有消费者（拿什么字段都得重渲染）；store + `useSyncExternalStore` + selector 只通知「选中的切片变了」的组件。一年改几次的低频全局值（主题、语言、当前用户）用 Context，一秒改几次的高频状态用 store（详见 170 篇）。
+4. **预测题**：用两个布尔值 `isLoading`/`isError` 组合表达请求状态，为什么会出现渲染不出来的「无效状态」？换成 `'idle' | 'loading' | 'success' | 'error'` 单一状态后为什么不会？
+   答案：布尔组合的状态空间是 2 的 n 次方个，其中若干个组合（同时 loading 与 error）没有合法含义却可达；单一状态变量的取值空间里每个值都有意义，非法转移在类型与写法上直接不存在——这就是状态机思想的入口（XState 是它的工业形态）。
 
 ## 速查
 

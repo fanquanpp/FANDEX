@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 以审计日志与冗余字段同步两个场景讲触发器：BEFORE/AFTER 与行级/语句级、WHEN 条件、事件触发器
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/370-StoredProcedureAndFunction'
   - 'postgresql/520-AuditLog'
@@ -256,3 +256,40 @@ DROP TABLE some_test;            -- 成功
 
 - PostgreSQL 官方文档 Chapter 39 Triggers、Chapter 40 Event Triggers（PostgreSQL Licence）：<https://www.postgresql.org/docs/current/triggers.html>
 - 审计表 JSONB 形态为社区通行做法，本篇实现为原创改写。
+
+## 教学自检
+
+遮住示例代码，先自己写再对照参考答案。
+
+### 任务一：BEFORE 还是 AFTER
+
+需求：(a) 审计表要记录"谁在什么时候改了什么旧值"； (b) 订单表写入前要校验"金额不得为负，违者整条 INSERT 失败"。各选 BEFORE 还是 AFTER 行级触发器？说明取旧值的能力差异。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+(a) AFTER：行变更已发生，NEW 行值确定，触发器里可靠读取 OLD/NEW 双值写审计（AFTER 还能看到整批变更的最终状态）；(b) BEFORE：在行写入前拦截，`RETURN NULL` 直接取消本行 INSERT（BEFORE 的独门能力），或改写 NEW 完成兜底（如负数改 0 并告警）。AFTER 触发器无法取消"本行"写入（只能 RAISE EXCEPTION 回滚整个语句），BEFORE 无法保证"改一定生效"（后续触发器还能再改）。一句话：校验/改写在 BEFORE，记录/联动在 AFTER。
+
+</details>
+
+### 任务二：DDL 也可以有"触发器"
+
+需求：禁止生产库任何人 DROP TABLE（超级用户除外）。用事件触发器实现，并说明它与普通触发器的监听对象差异。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+CREATE OR REPLACE FUNCTION forbid_drop_table() RETURNS event_trigger AS $$
+BEGIN
+  IF tg_tag = 'DROP TABLE' THEN
+    RAISE EXCEPTION '禁止 DROP TABLE, 走变更流程';
+  END IF;
+END $$ LANGUAGE plpgsql;
+
+CREATE EVENT TRIGGER guard_ddl ON ddl_command_start
+  EXECUTE FUNCTION forbid_drop_table();
+```
+普通触发器监听"表上的行事件"（INSERT/UPDATE/DELETE），事件触发器监听"数据库级 DDL 事件"（ddl_command_start/end、sql_drop 等），函数返回 event_trigger 类型、没有 OLD/NEW 行。注意超级用户可绕过（事件触发器不拦超级用户），且误设事件触发器可能导致库无法 DDL——保留禁用路径（单用户模式或 pg_event_trigger 目录管理）。
+
+</details>

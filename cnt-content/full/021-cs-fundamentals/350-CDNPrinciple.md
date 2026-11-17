@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: CDN 内容分发网络：边缘节点、回源机制、缓存策略与调度算法。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/310-TCPMessageFraming'
   - 'cs-fundamentals/340-DNSFlow'
@@ -177,3 +177,11 @@ Via: cache12.l2.examplecdn.com cache8.cn.examplecdn.com
 - CDN 与源站之间的契约是标准 HTTP 缓存语义：源站的 ETag/Cache-Control 直接决定回源流量；动态内容必须显式声明不缓存。
 - 回源合并、分层缓存、参数规范化是把回源率压下来的三大杠杆；热点过期瞬间的击穿要靠合并回源与预热预防。
 - DNS 调度天然有解析器定位误差与缓存滞后，精准调度用 HTTPDNS 或 302 补位；排障时永远以"用户侧解析结果"为准。
+
+## 自检
+
+- 遮住第 1 节的动机，先自己回答：CDN 同时解决了哪两个问题（用户延迟与源站压力）？它的三级架构（边缘 → 中心 → 源站）各自承担什么？
+- 遮住 PULL/PUSH 小节，回答：PULL 的首次访问为什么慢？PUSH 预热抢的是哪一段时间？刷新接口解决的是哪类事故（源站改错后全网仍是旧内容）？
+- 遮住调度小节，先自己描述「CNAME 接入 + 按运营商/地域返回最近节点」的 DNS/GSLB 调度链路，再回答它的两个天然误差源（解析器定位、缓存滞后）。
+- 遮住命中判断小节，先默写 `X-Cache`、`Age`、`Via` 三个响应头各自透露的信息，再对照——`Age: 3599` 且 `max-age=3600` 意味着什么（马上要过期）？
+- 遮住回源合并小节，回答：为什么热点过期的瞬间可能打挂源站（缓存击穿）？合并回源与预热分别从哪个方向预防？

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 以「printf 类型不安全、想要一个能收任意个任意类型参数的日志函数」引入，讲透模板参数包与函数参数包的声明、递归展开加终止函数的两段式写法、sizeof... 的编译期计数，回收完美转发解释 emplace_back 为什么离不开参数包，附「缺终止函数」的真实编译报错调试实录。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/380-VariadicTemplateFoldExpression'
   - 'cpp/110-PerfectForwardingReferenceCollapse'
@@ -202,6 +202,61 @@ int main() { println("a", "b"); }
 - cppreference 参数包：https://en.cppreference.com/w/cpp/language/parameter_pack
 - cppreference sizeof...：https://en.cppreference.com/w/cpp/language/sizeof...
 - cppreference emplace_back：https://en.cppreference.com/w/cpp/container/vector/emplace_back
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：默写「打印任意个数任意类型参数」的变参模板函数——用 C++17 折叠表达式一行实现，再写出 C++11 的「递归 + 终止重载」两函数版；两版都要能编译运行，然后回答：`sizeof...(args)` 返回的是什么类型？
+
+**提示**：折叠版 `(std::cout << ... << args)` 一行；递归版要一个**终止函数**（零参 print）接住递归到底的那一层。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// C++17 折叠版
+template <typename... Args>
+void print(const Args&... args) {
+    (std::cout << ... << args) << '\n';
+}
+
+// C++11 递归版
+void print11() {}                                    // 终止：空包
+template <typename First, typename... Rest>
+void print11(const First& f, const Rest&... rest) {
+    std::cout << f;
+    print11(rest...);                                // 拆头 + 递归
+}
+// sizeof...(args) 是 std::size_t（编译期常量表达式）。
+```
+
+要点自查：递归版的实例化次数 = 参数个数 + 1（终止层也实例化）——这正是折叠表达式省编译时间的动机；参数包的「拆头尾」语法（`First, Rest...` 与 `rest...`）要能默写。
+
+**任务二**：判断下面的代码错在哪（两处：包用在错误的展开位置、模板参数包声明位置），并给出正确版：
+
+```cpp
+template <typename... Ts>
+void f() {
+    for (auto x : Ts) { ... }        // (1)
+}
+template <typename... Ts>            // (2) 想按「每参数一类型」生成 tuple<Ts...>
+using Tuple = std::tuple<Ts...>;
+```
+
+**提示**：(1) `Ts` 是类型集合不是变量，不能进运行期循环——要展开成 N 条语句（折叠/递归）；(2) 其实没错——验证你能确认「包只能出现在模板形参列表末尾」与 `tuple<Ts...>` 是合法展开。
+
+**参考实现**（先自己写完再看）：
+
+```text
+(1) 错：Ts 是编译期类型包，不能做运行期遍历对象。
+    正确思路：把「每个类型一个对象」先物化（std::tuple<Ts...> xs;），
+    再用 std::apply + 折叠遍历：
+    std::apply([](const auto&... xs){ ((std::cout << xs << ' '), ...); }, xs);
+(2) 合法：包声明在末尾、tuple<Ts...> 是合法的包展开；
+    验证：static_assert(std::is_same_v<Tuple<int, double>, std::tuple<int, double>>);
+```
+
+要点自查：「参数包只能在展开上下文里消费」是变参模板的第一约束——运行期循环消费不了类型包；能列出包的合法展开位置（模板实参、初始化列表、折叠、lambda 捕获包）才算过关。
 
 ## 12. 自我检查
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以「打开现代项目源码，满屏符号看不懂」为问题主线，一次收齐日常必用的现代语法：解构、展开与剩余、可选链、空值合并、逻辑赋值、类字段与私有字段，附解构默认值只认 undefined、?. 不能赋值等陷阱，并给出 2026 年各提案的真实落地状态。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'javascript/590-ES2023To2026NewFeatures'
   - 'javascript/600-NewFeatureAdoptionStrategy'
@@ -296,10 +296,10 @@ console.log(obj[_secret]);              // '内部数据'——拿着引用就�
 | 提案 | 状态 | 一句话 |
 | --- | --- | --- |
 | 管道运算符 `\|>` | Stage 2，多年悬而未决 | 社区仍用 `pipe` 函数（170 篇手写过） |
-| 装饰器 | Stage 3 | TypeScript 5+ 已支持标准版，NestJS/Angular 生态在用 |
+| 装饰器 | Stage 2.7（2026-05 从 Stage 3 回退重整） | TypeScript 5+ 与各框架生态用的是「标准语法先行」版本，写法不受影响，但要跟随后续调整 |
 | 模式匹配 `match` | Stage 1 | 继续观望 |
-| Records & Tuples | 已回退至早期阶段 | 不可变对象字面量，暂无落地时间表 |
-| Temporal（新一代日期时间 API） | Stage 3 | 各引擎实现中，落地前用 date-fns 等库过渡（专篇见 610） |
+| Records & Tuples | 已撤回（2025-04） | TC39 正式放弃，语言级深不可变值不会到来了（630 篇讲替代方案） |
+| Temporal（新一代日期时间 API） | Stage 4，已定稿（随 ES2027 出版） | Chrome 144+、Firefox 139+、Node 26 已默认可用；Safari 在铺开，生产按 610 篇做兼容确认 |
 
 判断标准很简单：Stage 3 且主流引擎或 TypeScript 已实现，可以小范围尝鲜；Stage 2 及以下，读个乐。
 
@@ -364,7 +364,7 @@ console.log(pick(doc, ['id', 'title', 'missing']));
 
 ## 本章总结
 
-解构是"照着形状取值"，默认值只认 undefined；展开合并记住"后者覆盖前者"，浅拷贝边界归 200 篇管。`?.` 防链条断裂但只能读，`??` 只认 null 与 undefined 两种缺失，0 和空串是合法值必须保住——三者合起来是现代 JS 的防崩套装。class 补齐了字段与 `#` 真私有，Symbol 管唯一键不管隐私。提案要按 Stage 掂量：管道未落地用 pipe 函数，装饰器 Stage 3 可配 TS 使用，Temporal 到来前继续用日期库。
+解构是"照着形状取值"，默认值只认 undefined；展开合并记住"后者覆盖前者"，浅拷贝边界归 200 篇管。`?.` 防链条断裂但只能读，`??` 只认 null 与 undefined 两种缺失，0 和空串是合法值必须保住——三者合起来是现代 JS 的防崩套装。class 补齐了字段与 `#` 真私有，Symbol 管唯一键不管隐私。提案要按 Stage 掂量：管道未落地用 pipe 函数，装饰器 2026-05 回退至 Stage 2.7 重整、TS 与框架的「标准语法先行」版本可继续用但需跟随后续调整，Temporal 已定稿（ES2027 出版）但引擎铺开有先后，用前按 610 篇做兼容确认。
 
 ## 下一步
 

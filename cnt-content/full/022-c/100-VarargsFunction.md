@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从「printf 为什么能吃任意个参数」出发，用 stdarg.h 四件套手写 sum_ints 与迷你 my_printf（支持 %d %c %s %f），讲透默认参数提升、va_copy、显式个数/格式串/哨兵三种传递约定，以及 v 前缀转发封装与参数不匹配的调试实录。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related:
   - 'c/170-FunctionPointerCallback'
   - 'c/430-StdioFileIO'
@@ -461,12 +461,24 @@ my_printf("%d %c\n", 'A', 65);
 - va_arg 的未定义行为条款：https://en.cppreference.com/w/c/variadic/va_arg
 - stdarg(3) 手册页：https://man7.org/linux/man-pages/man3/stdarg.3.html
 
-## 自我检查
+## 遮码自检
 
-- 能默写四件套的使用顺序，并解释 va_start 的第二个参数为什么是最后一个具名参数；
-- 能复述默认参数提升表，指出 `va_arg(ap, float)` 错在哪、正确写法是什么；
-- 能给显式个数、格式串、哨兵三种约定各举一个标准库实例与其经典事故；
-- 能用 v 前缀加 vsnprintf 写一个可转发的日志函数，并用 format 属性让它接受编译器检查。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 默写 va 四件套的使用顺序，并解释 va_start 的第二个参数为什么必须是最后一个具名参数。
+2. 复述默认参数提升表：`va_arg(ap, float)` 错在哪？正确写法是什么？
+3. 给显式个数、格式串、哨兵三种约定各举一个标准库实例与其经典事故。
+4. 用 v 前缀加 vsnprintf 写一个可转发的日志函数，并用 format 属性让它接受编译器检查。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `va_list ap; va_start(ap, last); ... va_arg(ap, type) ...; va_end(ap);`。va_start 要靠最后一个具名参数的地址定位可变参数区的起点，写错参数就没有起点。
+2. char/short 提升为 int，float 提升为 double——`va_arg(ap, float)` 读的尺寸与实际放进去的 double 不一致，是 UB；正确写法 `va_arg(ap, double)`。
+3. 显式个数如 `printf(n 个参数)` 自家统计、事故是 count 与实参对不上；格式串如 `printf("%d", x)`、事故是格式串与实参类型不匹配（`%s` 喂 int）或格式串来自外部输入；哨兵如 execl 的 `(char *)NULL`、事故是忘写哨兵导致越读。
+4. `void log_msg(const char *fmt, ...) __attribute__((format(printf, 1, 2)));`，实现里 `va_start(ap, fmt); vsnprintf(buf, sizeof buf, fmt, ap); va_end(ap);`——v 前缀族接收 va_list，format 属性把编译器的检查借回来。
+
+</details>
 
 ## 本章总结
 

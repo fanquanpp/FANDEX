@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Vue组件与Web Components互操作
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'vue3/070-LifecycleHook'
   - 'vue3/300-Vue3TestStrategy'
@@ -88,6 +88,12 @@ Vue 3.2+ 对 Web Components 支持进一步完善：
 - 支持 Shadow DOM 样式注入。
 - 支持 Custom Element 的属性（Property）与特性（Attribute）双向同步。
 - 支持 SSR 友好的 Custom Element。
+
+Vue 3.5（2024-09）补齐了生产集成的最后几块（来源：Vue 3.5 官方发布公告 blog.vuejs.org/posts/vue-3-5）：
+
+- **configureApp 选项**：在 custom element 挂载前配置 Vue 应用实例（安装插件、设置 errorHandler）——此前自定义元素内部无法使用 Vue 插件。
+- **useHost() / useShadowRoot() 组合式函数**（及选项式的 `this.$host`）：组件内部直接拿到宿主元素与 shadow root，不再需要自己传 ref；`shadowRoot: false` 时 useShadowRoot 返回 null。
+- **shadowRoot: false 与 nonce**：可关闭 shadow root 以兼容不支持 Shadow DOM 的宿主页面；CSP 场景可为注入的样式提供 nonce。
 
 ### 1.3 Evan You 的设计哲学
 
@@ -1579,7 +1585,17 @@ VueUse 部分工具可作为 Web Components 分发，提供跨框架的状态管
 
 **实践**：将 VueUse 的 `useMousePosition`、`useWindowSize` 等封装为 Web Components，在 React/Angular 中复用。
 
----
+## 自检
+
+回答不出的回对应小节；定义与使用题先遮住示例代码自己写，再对照。
+
+1. defineCustomElement 与普通 defineComponent 的差别在哪一步？返回的对象为什么能直接 document.define？
+2. Attribute 与 Property 各走什么通道？Boolean 与 Object/Array 类型的 attribute 为什么有特殊规则？
+3. 事件要穿透 Shadow Boundary 需要哪两个条件（composed: true + CustomEvent）？
+4. SFC 里给 Web Component 的样式为什么要用 shadowRoot 而不是 scoped？Vue 3.5 起有什么简化？
+5. 在 React 18+ 里用 Vue Web Component，props 传对象为什么推荐 property 通道？
+
+## 9. 习题与知识点讲解
 
 ### 填空题知识点讲解
 
@@ -1715,26 +1731,28 @@ function App() {
 }
 ```
 
-### 11.1 官方文档
+## 10. 学习资源
+
+### 10.1 官方文档
 
 - **Vue 3 Custom Elements**：https://vuejs.org/guide/extras/web-components.html
 - **MDN Web Components**：https://developer.mozilla.org/en-US/docs/Web/API/Web_components
 - **Google Web Components**：https://developers.google.com/web/fundamentals/web-components
 - **web.dev Web Components**：https://web.dev/web-components-io/
 
-### 11.2 进阶书籍
+### 10.2 进阶书籍
 
 - **《Web Components in Action》**：Ben Farrell 著，Manning Publications，2022。
 - **《Building Web Components with Lit》**：Andres Bukres 著，O'Reilly Media，2022。
 - **《Component-Based Software Engineering》**：George T. Heineman 著，Springer，2023。
 
-### 11.3 在线课程
+### 10.3 在线课程
 
 - **Frontend Masters: Web Components**：https://frontendmasters.com/courses/web-components/
 - **web.dev: Learn Web Components**：https://web.dev/learn-web-components/
 - **Pluralsight: Web Components Fundamentals**：https://www.pluralsight.com/courses/web-components-fundamentals
 
-### 11.4 工具与库
+### 10.4 工具与库
 
 - **Lit**：https://lit.dev/
 - **Stencil**：https://stenciljs.com/
@@ -1743,7 +1761,7 @@ function App() {
 - **Custom Elements Manifest Analyzer**：https://custom-elements-manifest.open-wc.org/
 - **Storybook for Web Components**：https://storybook.js.org/docs/web-components/get-started/introduction
 
-### 11.5 设计系统案例
+### 10.5 设计系统案例
 
 - **Ionic Framework**：https://ionicframework.com/
 - **SAP UI5 Web Components**：https://sap.github.io/ui5-webcomponents/
@@ -1751,14 +1769,14 @@ function App() {
 - **GitHub Primer**：https://primer.style/
 - **Microsoft Fluent UI**：https://www.npmjs.com/package/@fluentui/web-components
 
-### 11.6 社区与博客
+### 10.6 社区与博客
 
 - **Web Components Community**：https://webcomponents.community/
 - **Custom Elements Everywhere**：https://custom-elements-everywhere.com/
 - **Chrome Developers Blog**：https://developer.chrome.com/blog/
 - **web.dev blog**：https://web.dev/blog/
 
-### 11.7 相关规范
+### 10.7 相关规范
 
 - **Custom Elements**：https://html.spec.whatwg.org/multipage/custom-elements.html
 - **Shadow DOM**：https://dom.spec.whatwg.org/#shadow-trees
@@ -1766,7 +1784,7 @@ function App() {
 - **CSS Scoping**：https://drafts.csswg.org/css-scoping/
 - **CSS Shadow Parts**：https://drafts.csswg.org/css-shadow-parts/
 
-### 11.8 学习路径建议
+### 10.8 学习路径建议
 
 1. **入门阶段**：
    - 阅读 MDN Web Components 教程

@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/010-WhySpringBoot'
   - 'java/740-JavaBuildTool'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-11-17'
 related:
   - 'spring-boot/030-IoCDependencyInjection'
   - 'spring-boot/040-AutoConfigurationInternals'
@@ -41,14 +41,14 @@ related:
 
 ## 2. 准备现场：把项目跑起来
 
-先确认 JDK（Boot 3.5.x 基线是 Java 17+，本模块统一用 21）：
+先确认 JDK（Boot 3.5.x 与 4.x 的基线都是 Java 17+，官方推荐用最新 LTS；本模块统一用 21）：
 
 ```bash
 java -version
 # java version "21.0.x" 即可
 ```
 
-推荐路径：打开 https://start.spring.io ，选 Maven、Java 21、Spring Boot 3.5.x，依赖只勾 Spring Web，Generate 下载解压。想理解每一段的来历，也可以跳过向导，手写下面这个最小 pom：
+推荐路径：打开 https://start.spring.io ，选 Maven、Java 21，依赖只勾 Spring Web，Generate 下载解压。版本选单说一句实话：start.spring.io 当前默认生成 4.1.x，且选单里已不再提供 3.5.x——新项目直接用默认即可；本模块示例统一基于 3.5.x 编写，想在练习时与正文逐字对齐，就用向导生成 4.1.x 骨架，再手写 pom 时把 parent 版本改成 3.5.16（3.5.x 系列最后一个补丁；该线开源支持已于 2026 年 6 月底结束，仍有商业支持，示例可直接运行）。两代的差异主要是命名：4.0 起 spring-boot-starter-web 改名 spring-boot-starter-webmvc，其余见各篇末尾的升级瞭望。想理解每一段的来历，也可以跳过向导，手写下面这个最小 pom：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -61,7 +61,7 @@ java -version
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.0</version> <!-- 用 3.5.x 系列最新补丁，以 start.spring.io 生成结果为准 -->
+        <version>3.5.0</version> <!-- 本模块示例统一基于 3.5.x；start.spring.io 当前默认 4.1.x，4.0 起此 starter 改名 spring-boot-starter-webmvc（旧名保留但已弃用） -->
         <relativePath/>
     </parent>
 

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 库与表的 CREATE/ALTER/DROP 全套命令、六类索引的建法、七种约束落地；区分 DROP/TRUNCATE/DELETE，配动手建库建表练习。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/060-MySQLEnvSetup'
   - 'mysql/070-MySQLDataTypeConstraint'
@@ -789,6 +789,26 @@ DROP DATABASE shop_practice;
 自检标准：`SHOW CREATE TABLE emp_like` 里还能看到 `uk_emp_no`，看不到 `fk_emp_dept`；`emp_ctas` 里索引、外键、CHECK、表注释全部消失；RENAME 后原索引与数据原样跟随。
 
 </details>
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：`DROP TABLE`、`TRUNCATE TABLE`、`DELETE FROM table` 三者分别属于什么语言、能否回滚、对 AUTO_INCREMENT 与触发器的影响各是什么？
+
+参考答案（先自己答，再对照）：DROP 是 DDL，删表结构与数据，不可回滚；TRUNCATE 是 DDL（等价于 drop+create），秒级清空全表，不可回滚，AUTO_INCREMENT 复位，不逐行触发 DELETE 触发器；DELETE 是 DML，可带 WHERE 逐行删，事务内可回滚，AUTO_INCREMENT 不复位，逐行触发触发器。"清空一张测试表重灌数据"用 TRUNCATE，"按条件删一部分"用 DELETE，"表都不要了"用 DROP。
+
+2. 概念自问：`CREATE TABLE t2 LIKE t1` 与 `CREATE TABLE t2 AS SELECT * FROM t1`（CTAS）复制下来的表各有什么、各缺什么？
+
+参考答案（先自己答，再对照）：LIKE 复制完整结构（列、索引、主键），带外键与 CHECK 约束与表注释，但不带数据；CTAS 复制数据与基本列定义，但索引、主键、外键、CHECK、表注释全部消失。把"复制表结构"写成 CTAS 是高频事故来源——副本上没有任何约束兜底，脏数据悄悄入库。
+
+3. 概念自问：8.0 的原子 DDL 与在线 DDL 分别回答什么问题？两者是什么关系？
+
+参考答案（先自己答，再对照）：原子 DDL 回答"失败后现场干不干净"（事务维度：多步变更包成事务语义，失败整体回滚，不留半成品表文件）；在线 DDL 回答"执行期间锁不锁业务"（并发维度：ALGORITHM=INPLACE/INSTANT 等让业务少受阻塞）。两者正交——一次 ALTER 既要关心执行中是否阻塞读写，也要关心失败后是否留下残骸；8.0 之后 DDL 失败重跑是安全的。
+
+4. 判断题：`ALTER TABLE` 执行到一半连接断开，5.7 与 8.0 的现场各是什么样？
+
+参考答案（先自己答，再对照）：5.7 可能留下"数据字典里有、文件系统半删"的半成品状态，需要按救援手册查 information_schema 手工清理；8.0 靠 InnoDB 数据字典 + DDL 日志把 DDL 包成事务语义，中断的部分整体回滚，现场干净，直接重跑即可。
 
 ## 小结
 

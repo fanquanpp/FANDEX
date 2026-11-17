@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: java.util.Scanner 三步法与五种取值方式对照，重点剖析 next 与 nextLine 的换行符残留陷阱、InputMismatchException 类型不匹配异常，用超市优惠卡、登录重试、ATM 密码三个真实场景落地。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/090-ControlFlow'
   - 'java/050-DataTypeConversion'
@@ -321,3 +321,13 @@ public class TempRegister {
 - Oracle Java Tutorials, Essential Java Classes — Scanning（本文主题划分与「扫描器按类型解析」的心智模型参照其目录）：https://docs.oracle.com/javase/tutorial/essential/scanner/ （Oracle 官方教程，仅作目录对照与链接引用，未复制其正文）；
 - `java.util.Scanner` 官方 API 文档（方法行为、异常类型以此为准）：https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/util/Scanner.html ；
 - 仓库内学生笔记与课堂练习材料（场景题源：超市优惠卡、登录重试、ATM 录入；找错素材：笔记拼写错误）由本仓库扫描笔记提供，已按教学目的改写。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. `sc.nextInt()` 之后紧跟 `sc.nextLine()` 为什么会读到空串？怎么修？——nextInt 只消费数字，行尾换行符留在缓冲区，nextLine 读到"空行"；在 nextInt 后补一次 `sc.nextLine()` 吃掉残留换行。
+2. next() 与 nextLine() 的分词规则差异是什么？——next 以空白（空格/Tab/换行）分词，只取一个"词"；nextLine 以换行分词，取整行（含空格）。
+3. 用户输入非数字时 Scanner 抛什么异常？写出防御式读整数的骨架。——`InputMismatchException`；先 `sc.hasNextInt()` 判断，为 false 时 `sc.nextLine()` 清掉非法输入再重试提示。
+4. Scanner 应该在什么时候 close？System.in 上 close 有什么副作用？——用完即关（try-with-resources）；包装 System.in 的 Scanner close 会连带关闭标准输入流，后续再想读就没有了，单入口程序结尾关才安全。
+5. 读一批数字直到 EOF（Ctrl+D/Ctrl+Z），写出循环条件。——`while (sc.hasNextInt()) { int x = sc.nextInt(); ... }`，靠 hasNextInt 在流结束时返回 false 退出。

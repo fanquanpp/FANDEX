@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 服务端请求伪造攻击原理、利用场景与防御策略详解。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/550-SOC'
   - 'cybersecurity/570-MalwareAnalysis'
@@ -15,6 +15,9 @@ prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
 
+- **解决什么问题**：SSRF 的本体是「让服务器替攻击者跨过信任边界」——攻击者不再直接攻击目标，而是借服务器的网络位置（内网、云元数据）发起请求。OWASP 2025 版把它并入 A01，但作为手法它的危害在云时代只增不减。
+- **容易怎么错**：只校验「域名白名单」而让解析器自由重定向（重定向跳白名单）；用「字符串包含内网 IP 检查」挡 DNS 重绑定；忘了 `file://`、`gopher://`、`dict://` 这类协议也能打内网。
+- **学完能做什么**：复现「内网探测 → 云元数据窃取 → 协议利用」的完整链路（授权靶场），并能按 4 节的三层防御（应用/网络/平台）给自己的服务做一次 SSRF 自查。
 
 ## 1. SSRF 攻击原理
 
@@ -90,7 +93,8 @@ http://169.254.169.254/metadata/instance?api-version=2021-02-01
 ```
 
 AWS 对此的架构级对策是 **IMDSv2**：获取令牌必须先发 PUT 请求并携带自定义头，
-GET 型 SSRF 无法完成此交互。应在云主机上强制启用 IMDSv2 并禁用 IMDSv1
+GET 型 SSRF 无法完成此交互。AWS 对新发布的实例类型已默认启用 IMDSv2，但存量实例
+仍可能停留在 IMDSv1——应在云主机上显式强制启用 IMDSv2 并禁用 IMDSv1
 （详见 530-CloudSecurity 第 3 节）；实例角色权限同步最小化——
 SSRF 的最终危害等于「该实例角色能做什么」。
 
@@ -247,3 +251,11 @@ http://192.168.1.1:81  (关闭 → 超时)
 | SSRFmap    | 自动化 SSRF 利用        |
 | Gopherus   | 生成 Gopher Payload     |
 | Burp Suite | 手动测试与 Collaborator |
+
+## 自检
+
+- 遮住 1.3 的对比表，用「谁在发请求、打的是谁的信任」一句话区分 SSRF 与 CSRF（SSRF 借服务器的网络位置，CSRF 借用户的登录态）。
+- DNS 重绑定为什么能绕过「解析后校验 IP」？两阶段各骗过谁（第一次解析骗校验、第二次解析骗请求）。
+- 遮住 2.3 的元数据命令，写出「AWS 元数据 → IAM 临时凭证」的请求路径，并解释 IMDSv2 为什么能挡住 GET 型 SSRF（令牌需 PUT + 自定义头）。
+- 为什么「域名白名单 + 禁止重定向跟随」还不够？说出协议白名单（只留 http/https）解决的是什么。
+- 遮住第 4 节的防御分层，自己按「应用/网络/平台」三层各写一条控制措施再对照。

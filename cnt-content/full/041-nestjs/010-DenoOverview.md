@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 零基础第一课：理解 Deno 的安全模型与内置工具链，用两分钟运行第一个 TypeScript 脚本。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'nestjs/020-DenoQuickStart'
   - 'nestjs/030-DenoPermissionsSecurity'
@@ -57,11 +57,12 @@ Deno 是 Node.js 创始人 Ryan Dahl 于 2020 年发布 1.0 的 JavaScript/TypeS
 
 把运行时类比成"机场安检"更容易理解 Node 与 Deno 的差异：Node 是"乘客（代码）落地即放行，想去哪去哪"；Deno 是"默认全部拦下，你要去登机口、去免税店，必须逐项出示通行证（权限参数）"。安检多花几秒，换来的是劫机（恶意依赖）几乎无从下手。
 
-### 1.1 版本现状（2026-09）
+### 1.1 版本现状（2026-11）
 
 - Deno 2.9 为当前稳定版（2026-06-25 发布，引入 `deno desktop`、CSS 模块导入、快照测试与参数化测试、Node.js 26 兼容）。
+- 重大动向：2026-10-09 官方宣布 Deno 团队加入 Cloudflare。运行时进入约一年的维护期（按月发布修复与安全更新，之后结束官方开发，项目保持开源）；Deno Deploy 将在公告约六个月后（约 2027-04 前后）关停；JSR 继续运营（出处：deno.com/blog/cloudflare）。对学习者的含义：权限模型、工具链、npm 兼容这些语言能力仍是稳定资产，值得学；但「部署目标」不要押在 Deno Deploy 上，新项目走自托管路线（见[Web 开发与云端部署](/nestjs/070-DenoWebFrameworkDeploy)第 4 节）。
 - 2.x 关键节点：2.0（2024-10）开启 npm 与 `package.json` 兼容时代；2.4（2025-07）恢复 `deno bundle` 并稳定内置 OpenTelemetry；2.5（2025-09）支持在配置文件里管理权限集；2.6（2025-12）推出 `dx`（跑包二进制的新入口，口号"dx is the new npx"）与 `deno audit` 供应链审计；2.7（2026-02）稳定 Temporal 日期 API、支持 Windows ARM；2.8（2026-05）支持 `import defer` 并新增 `deno transpile`、`deno ci` 等子命令。
-- 配套平台：Deno Deploy 提供边缘部署、KV 存储与 Cron 定时任务（见[Web 开发与云端部署](/nestjs/070-DenoWebFrameworkDeploy)）。
+- 配套平台：Deno Deploy 曾提供边缘部署、KV 存储与 Cron 定时任务，随上述公告已宣布关停（约 2027-04 前），部署选型见[Web 开发与云端部署](/nestjs/070-DenoWebFrameworkDeploy)第 4 节。
 
 | 版本 | 发布 | 与初学者最相关的能力 |
 | --- | --- | --- |
@@ -107,7 +108,7 @@ deno info              # 查看依赖树与缓存位置
 
 1. 新写的脚本、CLI 工具、小型 API 服务——零配置与类型内置让起步成本接近零；
 2. 对供应链安全敏感的项目——权限模型 + 锁文件 + `deno audit` 的默认防线比 Node 的约定更硬；
-3. 边缘场景（Deno Deploy）——代码与云端 API 一致，部署就是一条命令。
+3. 边缘与无服务器场景——代码基于 Web 标准 API（Request/Response、KV、Cron），既可自托管也可上边缘平台；不过 Deno Deploy 已宣布关停（见 1.1），生产部署按[Web 开发与云端部署](/nestjs/070-DenoWebFrameworkDeploy)第 4 节走自托管路线。
 
 什么时候暂不选：团队重度依赖只支持 Node 的原生插件、或存量 Node 项目已稳定运行时，Deno 2 的兼容层虽好，也不必为迁移而迁移——先用 Deno 写新脚本是阻力最小的切入方式。
 
@@ -137,4 +138,4 @@ deno info              # 查看依赖树与缓存位置
 **进阶注意：**
 
 - Deno 2 已兼容 npm 与 Node 项目结构，但"零配置"与"权限最小化"仍是它区别于 Node 的核心价值，迁移时别把这两样也丢掉。
-- 2.x 迭代很快（约每季度一个 minor），生产项目用 `deno-version` 固定 CI 版本，关注 release notes 而不是盲目升级。
+- 2.x 此前约每季度一个 minor；2026-10 加入 Cloudflare 的公告后，运行时进入约一年维护期，改为按月发布修复与安全更新（见 1.1）。生产项目用 `deno-version` 固定 CI 版本，关注 release notes 而不是盲目升级。

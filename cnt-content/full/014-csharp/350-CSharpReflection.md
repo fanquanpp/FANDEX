@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 反射与表达式树
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/130-LINQDeferredImmediate'
   - 'csharp/100-AsyncAwaitStateMachine'
@@ -2452,4 +2452,45 @@ foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
     Console.WriteLine(asm.FullName);
 }
 ```
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码或口述，再对照。本篇自检核心是「反射三件套（读/调/建）」与「性能与 AOT 边界」。
+
+**题 1（读类型）**：给定接口 `IService`，写出"扫描当前程序集找出所有实现类并打印"的反射代码骨架，注意非抽象类过滤。
+
+参考答案：
+
+```csharp
+var impls = typeof(IService).Assembly.GetTypes()
+    .Where(t => t is { IsClass: true, IsAbstract: false }
+             && typeof(IService).IsAssignableFrom(t));
+foreach (var t in impls) Console.WriteLine(t.FullName);
+```
+
+要点：`IsAssignableFrom` 判断"可当 IService 用"，排除接口自身与抽象类；`GetTypes()` 可能抛 `ReflectionTypeLoadException`（依赖缺失），生产代码用 `t.IsSubclassOf`/`GetExportedTypes` 时都要考虑加载失败分支。
+
+**题 2（动态调用）**：`typeof(Order).GetMethod("ApplyDiscount")!.Invoke(obj, new object[] { 0.1m })` 与委托缓存版本差多少量级？写出缓存写法。
+
+参考答案：裸 `Invoke` 每次要做参数装箱、权限检查、按名字查找，比直接调用慢两个数量级（几十上百倍）；缓存成强类型委托后接近直接调用。缓存：
+
+```csharp
+var mi = typeof(Order).GetMethod("ApplyDiscount")!;
+var del = mi.CreateDelegate<Action<Order, decimal>>();
+del(order, 0.1m);   // 热路径重复调用只走 delegate
+```
+
+要点：把"反射的查找/绑定"成本付一次，把"调用"变成普通委托调用。
+
+**题 3（反射与泛型）**：`Activator.CreateInstance(typeof(List<>).MakeGenericType(elemType))` 这行在干什么？什么插件场景需要它？
+
+参考答案：`typeof(List<>)` 是开放式泛型类型的"定义"，必须 `MakeGenericType` 绑定具体类型参数才能实例化——这行按运行时才知道的元素类型造出 `List<该类型>`。典型场景：反序列化/ORM 按"字段类型元数据"构建集合容器、按配置的字符串类型名实例化插件（`Type.GetType("Ns.Plugin, PluginAssembly")` 后构造）。
+
+**题 4（AOT 边界）**：三个能力在 Native AOT 下分别怎样：`Assembly.LoadFile` 动态加载插件、按字符串 `Type.GetType("Ns.Plugin, PluginAssembly")`、源生成器注册的插件工厂？
+
+参考答案：动态加载程序集基本不可用（AOT 单文件、无 JIT，运行时无法载入并编译新 IL）；按字符串 `Type.GetType` 危险——裁剪器可能删掉了"没人引用"的类型，反射查找直接失败，需 `[DynamicallyAccessedMembers]` 标注保命；源生成器工厂完全可用——"插件清单"在编译期生成普通代码，AOT 友好。结论：插件化 + AOT 的现代答案是"编译期注册 + 显式引用"，运行时魔法只属于 JIT 环境。
+
+**题 5（表达式树编译）**：`Expression.Lambda<Func<Order, bool>>(body, p).Compile()` 之后调用与反射调用、直接调用的性能排位？为什么 EF Core 不用 Compile 而用表达式树本体？
+
+参考答案：性能排位：直接调用 ≈ Compile 后的委托 > 反射缓存委托 >> 裸反射 Invoke。Compile 生成真 IL，等价于手写代码。EF Core 不 Compile 是因为它不执行你的代码——它把表达式树翻译成 SQL；树是"可检查、可变换"的数据（Provider 遍历节点），编译成委托反而丢掉了翻译所需的全部结构信息。这也点出反射与表达式树的分工：前者"在运行时调用代码"，后者"把代码当数据交给另一个系统"。
 

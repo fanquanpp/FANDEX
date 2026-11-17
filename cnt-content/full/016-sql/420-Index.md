@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL索引体系：B+树索引、哈希索引、全文索引、空间索引的原理、结构与适用场景
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/430-ExecutionPlan'
   - 'sql/360-TransactionACIDProperty'
@@ -1931,9 +1931,9 @@ INSERT INTO users (email, name) VALUES ('alice@example.com', 'Alice')
 ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name;
 -- 若 email 冲突，则更新 name
 
--- MySQL UPSERT
-INSERT INTO users (email, name) VALUES ('alice@example.com', 'Alice')
-ON DUPLICATE KEY UPDATE name = VALUES(name);
+-- MySQL UPSERT（8.0.20+ 推荐行别名写法；旧写法 VALUES(col) 已废弃）
+INSERT INTO users (email, name) VALUES ('alice@example.com', 'Alice') AS new_row
+ON DUPLICATE KEY UPDATE name = new_row.name;
 ```
 
 ### 8.5 联合索引与最左前缀原则
@@ -3629,6 +3629,63 @@ CREATE INDEX idx_users_email_prefix_status ON users(left(email, 5), status)
 > 本文系统论述了 SQL 索引的底层原理、数据结构、查询优化、维护策略与工程实践。从 B+ 树的节点结构与算法细节，到哈希、全文、空间等专用索引；从执行计划分析与索引失效诊断，到跨数据库实现对比与故障排查实战，覆盖了索引领域的理论深度与工程广度。掌握索引技术，是数据库性能优化的核心能力，也是后端工程师与 DBA 的必备素养。
 >
 > 索引设计没有银弹，唯有深入理解数据结构原理、结合业务查询模式、辅以执行计划验证，方能在查询性能与写入开销之间找到最佳平衡点。愿本文能为读者在数据库性能优化之路上提供系统性的理论支撑与实践指引。
+
+## 遮码自检
+
+遮住答案先答；索引题的判断标准是"能从 B+ 树的形状推出结论"，而不是背口诀。
+
+**第 1 题：B+ 树"矮胖"是怎么来的？为什么这个形状恰好适合磁盘？范围查询又快在哪？**
+
+<details><summary>参考答案</summary>
+
+每个节点放上百个键（节点对齐页大小），树高 3-4 层就能索引千万行——查一行最多
+3-4 次页读，每次磁盘 IO 都花在刀刃上。叶子节点按键排序且用链表串起来，范围查询
+定位起点后顺序扫链表即可，无需回头遍历树。B+ 树的一切优点都从"高扇出 + 叶子有序
+成链"这两个结构事实推出。
+</details>
+
+**第 2 题：联合索引 `(a, b, c)`，`WHERE b = 5` 和 `WHERE a = 1 AND c = 5` 各能用上多少？为什么？**
+
+<details><summary>参考答案</summary>
+
+索引按 a、b、c 的字典序组织：跳过 a 直接查 b，等于在排序目录里不知道首字母翻
+字典——只能全扫（除非优化器跳扫）。`a = 1 AND c = 5` 能用上 a（定界），c 断档
+（中间缺 b）只能把 a 匹配到的行逐行过滤 c。这就是最左前缀原则的来历；现代实现里
+MySQL 8.0.13+ 与 PostgreSQL 18 都给 B-tree 补了 skip scan（枚举缺列的取值分段
+查找），条件是缺的列基数低。
+</details>
+
+**第 3 题：`WHERE UPPER(email) = 'A@B.COM'` 为什么走不了 email 的索引？两条出路分别是什么？**
+
+<details><summary>参考答案</summary>
+
+索引里存的是 email 原值，套了 UPPER 后每一行都要算函数，索引的有序性用不上——对
+**列**做计算的谓词都不走普通索引。出路一：函数索引/表达式索引
+（MySQL 8.0+、PostgreSQL 都支持 `CREATE INDEX ... ON t (UPPER(email))`，条件与
+索引同形）；出路二：改写查询避开列上的函数（把计算移到常量一侧）。
+</details>
+
+**第 4 题：InnoDB 里"回表"发生在什么时候？覆盖索引为什么快？什么信号说明该加覆盖索引？**
+
+<details><summary>参考答案</summary>
+
+二级索引的叶子存的是"索引列 + 主键"，查到后还要拿主键回聚簇索引取整行——这就是
+回表。覆盖索引指查询要的列全部在索引里（含主键），不回表，扫描量从"索引 + 整行"
+降到"只扫索引"。执行计划里出现大量回表（Extra 提示、随机读高）、而查询列固定且
+不多时，就是加覆盖索引（或把列 INCLUDE 进索引）的信号。代价是索引变宽、写放大，
+按查询收益权衡。
+</details>
+
+**第 5 题：索引不是免费的——写出它收"三笔账"的场景。**
+
+<details><summary>参考答案</summary>
+
+写放大：每个 INSERT/UPDATE/DELETE 都要同步维护所有相关索引，写路径变长；存储：
+每个索引是一棵独立的 B+ 树，占空间也占缓冲池；维护：统计信息漂移、页分裂、碎片
+需要重建/重组织。所以"给所有列都建索引"是反模式——索引集合是按"高频查询的 WHERE
+/JOIN/ORDER BY 列"精选出来的，宁可少了再补，不要无脑堆。
+</details>
+
 ## CREATE INDEX
 
 **单行写法：创建单列索引**

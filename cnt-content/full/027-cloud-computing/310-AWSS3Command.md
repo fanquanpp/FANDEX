@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'S3 桶与对象操作命令实战：cp/sync/rm 高层命令、s3api 精细控制、预签名 URL 与数据安全陷阱。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/300-AWSCliConfigure'
   - 'cloud-computing/210-CloudStorageService'
@@ -189,6 +189,33 @@ echo "部署完成"
 | sync 后控制台看不到新文件 | 看错了区域或前缀 | 列桶确认区域；S3 无目录，路径区分大小写 |
 | 误删对象 | 无版本控制 | 开版本控制；已误删找旧版本恢复 |
 | 大目录 sync 很慢 | 对象数量级大 | 调大 `--max-concurrent-requests`，或用 S3 清单 |
+
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. 默写三条命令：建桶、传整个目录、镜像同步（含删除目标端多余文件）。
+2. `--delete` 的危险语义是什么？发布脚本里两条纪律是什么？
+3. `sync` 判断「文件是否要传」的依据是什么？这会带来什么误重传问题，怎么解决？
+4. 归档类冷数据上传时加什么参数？桶默认对公开访问是什么姿态？
+5. `aws s3` 与 `aws s3api` 怎么分工？桶策略、生命周期配置、对象元数据分别用哪边？
+6. 开启版本控制后 `rm` 的行为变成什么？防误删与自动清理的「正规手段」是什么？
+7. 对外分享一个大文件给别人下载，正确做法是什么？
+8. 报 `IllegalLocationConstraintException` 说明什么？怎么修？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. `aws s3 mb s3://名字 --region 区域`；`aws s3 cp ./dist s3://桶/ --recursive`；`aws s3 sync ./dist s3://桶/ --delete`。
+2. `--delete` 会删掉目标端「源里没有」的文件（包括别人手工放上去的）。纪律：任何带 `--delete` 的 sync 先跑 `--dryrun` 预览；脚本用 `set -euo pipefail` 保证构建失败不会有半成品上桶。
+3. 大小与修改时间戳。内容相同但时间戳变了的文件也会重传；严格一致用 `--size-only` 或自行做校验和。
+4. `--storage-class DEEP_ARCHIVE`（或对应归档类）。桶默认阻止公开访问，公开读写要显式改两项配置。
+5. `s3` 是高层封装（自动分片/并发/对比），管传文件与同步目录；`s3api` 直接映射 REST API，管策略/签名/元数据。桶策略与生命周期用 s3api（如 `put-bucket-versioning`），对象元数据用 `head-object`。
+6. 删除只是打删除标记（可恢复）；`rb --force` 才真正逐个清理所有版本。正规手段：版本控制防误删 + 生命周期规则自动过期清理；`rm --recursive` 只做一次性运维。
+7. 预签名 URL：`aws s3 presign s3://桶/对象 --expires-in 3600`——对象保持私有，链接 1 小时有效，过期自动失效。
+8. 请求区域与桶所在区域不一致。加 `--region` 指定桶所在区域重试。
+
+</details>
 
 ## 小结
 

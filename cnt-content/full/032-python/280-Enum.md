@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: enum 模块全解：定义枚举、IntEnum/StrEnum/Flag、auto 赋值、别名规则与工程实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'python/480-OOPAdvanced'
 prerequisites:
@@ -283,3 +283,12 @@ class Level(enum.Enum):
 1. 把一个使用 `"pending"/"running"/"done"` 字符串状态的小脚本重构为 `StrEnum`，统计字符串拼写的拼写保护效果（故意写错一个，观察报错时机）。
 2. 用 `IntFlag` 实现文件权限模型，支持 `|` 授予、`&` 检查、`^` 反转三种操作，并打印每个状态的整数值。
 3. 定义一个携带折扣率的订单类型枚举（普通成员 + `discount` 方法），验证"枚举成员可以携带行为"。
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：定义一个三种订单状态、既比较相等又能当字符串打印的枚举。要点：`class OrderStatus(StrEnum)`（3.11+）成员 `PENDING = "pending"` 等；比较直接 `status == "pending"` 成立，`str(status)` 得到值。
+2. 预测题：两个成员写同一个值会发生什么？如何禁止？要点：后者成为前者的别名，不会报错；加 `@unique` 装饰器后重复值在定义时就抛 `ValueError`。
+3. 默写题：用 `auto()` 定义成员并解释它给的是什么。要点：`LOW = auto()` 自动分配整数（从 1 起）；IntEnum/IntFlag 场景下它就是数值来源。
+4. 操作题：把 `read = 4; write = 2; exec = 1` 的权限位改成 `IntFlag`，写出「授予读写」「检查是否有写权限」两行。要点：`PERM.R | PERM.W` 得到组合成员；`PERM.W in p` 或 `p & PERM.W` 判定包含关系。

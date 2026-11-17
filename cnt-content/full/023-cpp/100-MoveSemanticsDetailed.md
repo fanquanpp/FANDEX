@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 拆开 090 建立的黑盒：移动构造与移动赋值的完整实现规范、noexcept 如何决定 vector 扩容走移动还是拷贝、moved-from 状态的团队纪律与 std::exchange、STL 容器的移动行为与 SSO，附内存泄漏调试实录。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/090-RvalueReferenceMoveSemantics'
   - 'cpp/110-PerfectForwardingReferenceCollapse'
@@ -337,6 +337,62 @@ static_assert(std::is_nothrow_move_assignable_v<Grid>);
 - std::move（cppreference）：https://en.cppreference.com/w/cpp/utility/move
 - std::move_if_noexcept（扩容选择移动的条件）：https://en.cppreference.com/w/cpp/utility/move_if_noexcept
 - std::exchange：https://en.cppreference.com/w/cpp/utility/exchange
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：解释并修复——下面的类移动写对了但放进 `std::vector` 后扩容仍在「复印」，指出缺的那一个关键字并说出 vector 在什么条件下才敢用移动：
+
+```cpp
+class Widget {
+    std::string big_;
+public:
+    Widget(Widget&& other) : big_(std::move(other.big_)) {}
+    // ...其余成员略
+};
+```
+
+**提示**：vector 扩容把元素搬到新内存时，为了异常安全必须保证「搬运过程不抛」——它只敢对**声明了 noexcept 的移动构造**用移动，否则退回拷贝。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+Widget(Widget&& other) noexcept : big_(std::move(other.big_)) {}
+// 缺的是 noexcept。vector 的判据：is_nothrow_move_constructible_v<Widget>
+// 为 true 才走移动扩容；否则用拷贝（因为拷贝构造可能提供强异常保证）。
+```
+
+要点自查：`noexcept` 不是文档，是容器选择扩容策略的**编译期判据**——漏写它，移动语义在最关键的路径（扩容）上静默失效；这正是本篇第 3 节「性能开关」的含义。
+
+**任务二**：写出 moved-from 对象的合法与非法用法各两个（对照「有效但未指定」纪律），并修复这段「移动赋值漏释放」的内存泄漏：
+
+```cpp
+Buffer& operator=(Buffer&& o) {           // Buffer 含 int* data_
+    data_ = std::exchange(o.data_, nullptr);
+    size_ = std::exchange(o.size_, 0);
+    return *this;
+}
+```
+
+**提示**：合法用法是「析构 + 重新赋值」；非法是「假设它还有值」；泄漏在于赋值前没有 delete 掉自己原来的 data_。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+Buffer& operator=(Buffer&& o) noexcept {
+    if (this != &o) {
+        delete[] data_;                              // 先释放自己占的资源
+        data_ = std::exchange(o.data_, nullptr);
+        size_ = std::exchange(o.size_, 0);
+    }
+    return *this;
+}
+// moved-from 合法：b.~Buffer() 析构、b = Buffer(10) 重新赋值、sizeof(b) 读字节布局。
+// moved-from 非法：读 b 的元素值、假设 size_ 还是旧值——「有效但未指定」。
+```
+
+要点自查：移动赋值三步曲——防自赋值、释放自身旧资源、偷 + 置空；漏掉第二步的 bug 只在「目标对象本来持有资源」时出现，测试要专门覆盖这个场景。
 
 ## 12. 自我检查
 

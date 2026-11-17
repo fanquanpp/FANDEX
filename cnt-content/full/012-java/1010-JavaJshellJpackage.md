@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 用 jshell 即时验证语法与 API，用 jpackage 打出平台原生安装包。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/740-JavaBuildTool'
   - 'java/020-JavaOverviewDevEnv'
@@ -416,3 +416,13 @@ jpackage --name MyApp --input target --main-jar app.jar \
 - jlink + jpackage 组合能把交付体积压到几十 MB，模块清单用 `jdeps --print-module-deps` 从代码反推。
 - jshell 默认在每个语句间自动持久状态，教学演示建议 `/set feedback concise` 减少噪音。
 - JDK 25+ 的紧凑源文件与实例 main 让"单文件脚本"不用类包装即可运行（`java script.java`），轻量脚本可不再依赖 jshell。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. jshell 里声明 `int x = 1` 再 `x`，JShell 打印什么？它自动补全了什么？——打印 x ==> 1；自动为表达式包一层临时变量与 println 回显。
+2. /vars、/types、/exit 各干什么？——/vars 列出会话变量，/types 列出声明的类与接口，/exit 退出（可带求值表达式作为退出码）。
+3. jpackage 打一个带图标的 Windows 安装包的最小命令骨架？——`jpackage --name MyApp --input build/libs --main-jar app.jar --type msi --win-shortcut --win-menu --icon app.ico`。
+4. jpackage 的 --type 在三大平台各取什么值？——msi/exe（Windows）、dmg/pkg（macOS）、deb/rpm（Linux）。
+5. 判断：jshell 适合写正式项目代码。——不适合；它是 REPL 草稿纸（验证 API、试语法、教学演示），产物不进版本管理；正式代码仍用 IDE + 构建工具，JDK 25 起单文件脚本（JEP 512）承接轻量场景。

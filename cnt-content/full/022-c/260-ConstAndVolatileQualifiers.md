@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从舞台灯控固件出发掌握 const 与 volatile 的正交语义：const 的只读契约与真实优化边界（文件内可折叠、跨编译单元不行）、volatile 三经典场景（MMIO、信号标志、setjmp）、const volatile 组合，以及「不原子、不排序、不当锁」的能力边界。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'c/270-VolatileKeyword'
   - 'c/380-AtomicAndMemoryModel'
@@ -461,12 +461,24 @@ printf("%d\n", *view);
 - 字符串字面量（cppreference C，「改写字面量是未定义行为」原文）：https://en.cppreference.com/w/c/language/string_literal
 - GCC 文档 Volatiles（volatile 访问在序列点间的合并/重排自由度）：https://gcc.gnu.org/onlinedocs/gcc/Volatiles.html
 
-## 11. 自我检查
+## 11. 遮码自检
 
-- 能默画 2x2 正交表，并为四个象限各举一个真实对象；
-- 能向同事讲清 `const char *` 形参承诺了什么、没承诺什么，以及字符串字面量为什么不能写；
-- 能解释「本文件的 const int 可被折叠、extern const 不行」的原因，知道 C23 用什么补这个缺口；
-- 能写出 volatile sig_atomic_t 的信号标志程序，并说出 volatile 的三条边界各错在哪。
+遮住上文示例代码与下面的答案栏，先自己画、先自己写，再展开对照。
+
+1. 默画 const 与 volatile 的 2x2 正交表，四个象限各举一个真实对象。
+2. `const char *` 形参承诺了什么、没承诺什么？字符串字面量为什么不能写？
+3. 「本文件的 const int 可被折叠、extern const 不行」原因是什么？C23 用什么补这个缺口？
+4. 写出 volatile sig_atomic_t 的信号标志程序；volatile 的三条边界各错在哪？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. const 只读 + 非 volatile：字符串字面量指向的只读数据；const + volatile：内存映射的只读状态寄存器；非 const 非 volatile：普通局部变量；非 const + volatile：MMIO 寄存器、信号标志。const 管该不该写，volatile 管看得见吗，两者正交。
+2. 承诺：函数不通过这个指针改你传的对象；没承诺：对象真的是只读的（调用方可以传非 const 对象进来，函数内部转手给别的「没封死」的指针仍可能改）。字面量住只读段，写它是 UB。
+3. 本文件里初始化可见，编译器直接把 `const int N = 100;` 折叠成立即数；extern 的定义在别的编译单元，编译本文件时看不见初始化器，只能按变量对待（C 的 const 不是编译期常量）。C23 的 `constexpr` 补上这个缺口。
+4. `static volatile sig_atomic_t got = 0; void on_int(int sig) { got = 1; } int main(void) { signal(SIGINT, on_int); while (!got) { } ... }`。三条边界：以为它原子——读改写仍是多步，计数器要 _Atomic；以为它管顺序——内存序要 acquire/release 或锁；以为它是锁——两个 volatile 变量之间没有联合保证，并发正确性归锁。
+
+</details>
 
 ## 本章总结
 

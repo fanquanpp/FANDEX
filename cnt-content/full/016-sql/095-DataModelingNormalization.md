@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 从 ER 建模到关系模式：1NF/2NF/3NF/BCNF 的判定与分解，主外键与联合主键设计，反范式的取舍——用商品管理系统与学生成绩库两个真实项目讲
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -219,6 +219,47 @@ CREATE TABLE vsinger_company (
 ```
 
 判读要点：任务 1 的两个实验就是 2NF 违例的"更新异常 + 插入异常"现场演示；任务 4 的判断依据是"新需求是历史事实还是当前状态"——历史事实永远桥表（拉链表雏形）。
+</details>
+
+## 遮码自检
+
+遮住答案先答；范式题的关键是能指着具体的列说出"依赖关系"。
+
+**第 1 题：`bad_orders(order_id, items)` 里 items 存 `'华为P20x2, 小米6x1'` 违反了什么？说出两种"想统计卖了多少个华为"会遇到的具体麻烦。**
+
+<details><summary>参考答案</summary>
+
+违反 1NF（一格多值）。麻烦一：统计只能 `LIKE '%华为%'` 模糊扫，索引失效、还会误伤
+"华为耳机壳"；麻烦二：改数量要字符串替换，同款两件只能靠人眼数分号。拆法是多值关系
+落成桥表/子表，一格一值。
+</details>
+
+**第 2 题：`Mark(StudentNo, CourseNo, Score, Credit)` 以 (StudentNo, CourseNo) 为联合主键，Credit（学分）放这里违反几 NF？为什么？**
+
+<details><summary>参考答案</summary>
+
+违反 2NF。Credit 只依赖联合主键中的 CourseNo（学分是课程的属性，跟哪个学生无关）——
+"非主属性要依赖**整个**主键"被破坏。后果是同一门课的学分重复存 N 份，改一处漏一处。
+把 CourseNo、Credit 拆到 Course 表。这也是为什么说 2NF 只对联合主键有意义：单列主键
+不存在"部分依赖"。
+</details>
+
+**第 3 题：员工表里同时存 Post_id、Post_name、Department_name，违反什么范式？谁"推出"了谁？**
+
+<details><summary>参考答案</summary>
+
+违反 3NF（传递依赖）：Employees_id 决定 Post_id，Post_id 决定 Post_name 与
+Department_name——非主属性之间存在依赖链，部门名是由岗位"推出来"的。岗位改名时要改
+N 行员工记录，漏改即数据不一致。拆到岗位表、部门表，员工表只留外键。
+</details>
+
+**第 4 题：什么情况下会**故意**违反范式留冗余？举一个例子并说出代价。**
+
+<details><summary>参考答案</summary>
+
+读多写少、聚合代价高的场景：如订单表冗余"下单时的商品名/单价"（历史快照，事后商品改名
+也不影响旧订单）、报表表冗余统计列省去实时聚合。代价是把"一处事实"变成"多处存储"，
+写路径要维护同步（或接受滞后），评审时要能说出这列的刷新策略——说不出就不该冗余。
 </details>
 
 ## 检验清单

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 栈与堆、RAII、智能指针、内存池与自定义分配器。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/550-CppGameDev'
   - 'cpp/560-CppEmbedded'
@@ -1333,3 +1333,61 @@ static void operator delete(void* p) {
     std::free(p);
 }
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：找错并改正——下面每行注释处各有一个内存管理错误，全部找出来并给出修法：
+
+```cpp
+int* make() {
+    int arr[10];
+    return arr;              // (1) 返回栈内存
+}
+void f() {
+    int* p = new int[5];
+    delete p;                // (2) new[] 配 delete
+    int* q = new int(3);
+    delete q;
+    std::cout << *q;         // (3) 释放后使用
+    p = nullptr;
+    delete p;                // (4) 这一行真的错吗？
+}
+```
+
+**提示**：(2) 回想 new[] 在首部记录元素个数的实现，delete 只调一次析构且用 operator delete 而非 operator delete[]；(4) 对空指针 delete 是安全空操作——但要区分「错误已修复」与「错误未发生」。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+std::vector<int> make() { return std::vector<int>(10); }   // (1) 所有权随值返回
+void f() {
+    std::vector<int> a(5);     // (2)(3)(4) 一并消失：容器接管生命周期
+    std::unique_ptr<int> q = std::make_unique<int>(3);
+    std::cout << *q;
+}
+```
+
+要点自查：改写后整段代码没有 new/delete 出现——这是本篇「内存管理的最佳实践」的核心判据；手动 delete nullptr 合法但不代表原逻辑正确。
+
+**任务二**：写出下面 `struct S` 在主流 64 位平台上的 `sizeof`（含尾部填充），并说明每一步的填充原因；再把两个成员交换顺序，看 `sizeof` 变成多少。
+
+```cpp
+struct S {
+    char  a;
+    double b;
+    char  c;
+};
+```
+
+**提示**：对齐规则——每个成员放在「自身对齐值整数倍」的偏移上，整体大小是最大对齐值的整数倍。`double` 对齐 8，先数 a 占 1 字节后需要填 7 字节。
+
+**参考实现**（先自己写完再看）：
+
+```text
+原顺序：a(1) + pad(7) + b(8) + c(1) + pad(7) = 24 字节
+调序后（double b; char a; char c;）：b(8) + a(1) + c(1) + pad(6) = 16 字节
+```
+
+要点自查：同样三个成员，仅靠「大对齐在前」就省 8 字节——布局敏感的结构体（数组、热路径）值得手动排成员；验证手段是 `sizeof` 与 `offsetof`，不要背结论。

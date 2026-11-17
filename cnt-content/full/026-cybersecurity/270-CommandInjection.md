@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: '命令注入防御与检测：危险函数清单、参数数组执行替代、白名单输入校验、日志与 WAF 检测规则'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/280-WebSecurityDeep'
   - 'cybersecurity/170-InputValidation'
@@ -15,6 +15,10 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+- **解决什么问题**：命令注入的本体是「用户输入被拼进 shell 命令行后由解释器执行」——与 SQL 注入同源（换了解释器），但触发点在 OS 层，后果常是直接 RCE。本篇是检测与防御命令面：分隔符探测、编码绕过、以及「免 shell + 白名单 + 最小权限」的修复组合。
+- **容易怎么错**：以为过滤 `;` 就安全（`|`、反引号、`$()`、换行符都能分隔）；用「转义敏感字符」当修复（黑名单永远拼不全）；忽略语言级差异（PHP 的反引号运算符、Python 的 `shell=True`）。
+- **学完能做什么**：跑通「探测 → 验证校验有效性 → 代码扫描定位危险 API（shell=True/os.system/escapeshellcmd 误用） → 修复复测」闭环。
 
 ## 命令注入原理检测
 
@@ -365,3 +369,11 @@ grep -rn "shell=True" src/
 # 查看 PHP 禁用的危险函数
 php -r "echo ini_get('disable_functions');"
 ```
+
+## 自检
+
+- 遮住「原理检测」一节，写出四类命令分隔符（`;` `|` 反引号 `$()`）各一条探测 payload，并说明哪一类在响应里最易被忽略。
+- 为什么「转义敏感字符」不是可靠修复？说出两个绕过方向（编码变形、未覆盖的分隔符）。
+- 遮住「安全 API」一节，写出 Python「列表参数 + shell=False」与「拼接字符串 + shell=True」的对照写法，并解释后者为什么必须消灭。
+- PHP 的 `escapeshellarg` 与 `escapeshellcmd` 差别是什么？哪个在多参数拼接时仍会出问题？
+- 遮住本节末尾的自检脚本区，自己写出「grep 扫描代码里的危险命令执行点」的命令，并说出你会 grep 哪些模式（os.system、shell=True、exec、popen）。

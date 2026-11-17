@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL 视图的可写能力全景：自动可更新视图的条件清单、WITH CHECK OPTION 的防漏语义、INSTEAD OF 触发器接管复杂视图的写入。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/380-TriggerEventTrigger'
   - 'postgresql/500-RowLevelSecurity'
@@ -161,3 +161,34 @@ JOIN dept_demo d ON e.id = d.id;   -- 示意性 JOIN 键，实际按业务外键
 ## 下一步
 
 视图解决"数据的组织"，[生成列](/postgresql/150-GeneratedColumn) 解决"数据的派生"——两者常在同一张表的设计里配合出场。
+
+## 教学自检
+
+遮住上文示例代码，先自己写再对照参考答案。
+
+### 任务一：让运营"只能写在职员工"
+
+需求：视图 `v_active`（`WHERE status='active'`）已存在且自动可更新。要求运营通过视图无法插入或更新出 status 非 active 的行。写出 DDL，并说出不加固时会发生什么。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+CREATE OR REPLACE VIEW v_active AS
+SELECT id, name, status FROM employees WHERE status = 'active'
+WITH CHECK OPTION;
+```
+不加固时"漏网行"：`INSERT ... VALUES (..., 'inactive')` 会成功，行写进底表但从视图里永远看不见（幽灵数据）；UPDATE 把在职员工改成离职同理，更新完这一行就从视图消失。CHECK OPTION 的语义是"写入后的行必须仍满足视图条件"。
+
+</details>
+
+### 任务二：判断一个视图能不能写
+
+需求：不执行任何 INSERT，先预测下面哪些视图自动可更新：(a) `SELECT * FROM t WHERE x=1`；(b) `SELECT d, count(*) FROM t GROUP BY d`；(c) `SELECT id, upper(name) FROM t`；(d) `SELECT * FROM a JOIN b USING(id)`。如何一条查询验证自己的预测？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+(a) 可更新；(b) 不可（聚合/GROUP BY）；(c) 不可（列被函数包装，不再是列的直接引用）；(d) 不可（多表引用）。验证：`SELECT table_name, is_updatable FROM information_schema.views;`。三个条件记忆：单表、无聚合/窗口/DISTINCT/UNION、列直接引用。不可更新的视图不是死路——INSTEAD OF 触发器可以接管写入，但那是"你定义语义"而不是"引擎猜语义"。
+
+</details>

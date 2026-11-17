@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go 与 WebAssembly：Wasm 字节码、栈式虚拟机、syscall/js 桥接、WASI、TinyGo 与浏览器端企业级应用
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/620-GoCGO'
   - 'go/570-GoCodeGeneration'
@@ -34,7 +34,7 @@ prerequisites:
 - 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
 
 
-> 本文以 Go 1.22 为基准版本，覆盖 Go 1.11 至 Go 1.24 的 Wasm 演进，包括 wasm 字节码格式、栈式虚拟机执行语义、`syscall/js` 桥接机制、WASI 接口、TinyGo 替代编译器与典型企业级案例研究。适用于已掌握 Go 基础语法与 HTTP 服务开发、希望深入理解 WebAssembly 工程化落地的工程师。
+> 本文以 Go 1.22 为基准版本，覆盖 Go 1.11 至 Go 1.27 的 Wasm 演进，包括 wasm 字节码格式、栈式虚拟机执行语义、`syscall/js` 桥接机制、WASI 接口、TinyGo 替代编译器与典型企业级案例研究。适用于已掌握 Go 基础语法与 HTTP 服务开发、希望深入理解 WebAssembly 工程化落地的工程师。
 
 ---
 
@@ -87,7 +87,11 @@ Go 1.24 针对 wasm 目标做了若干优化：
 - **`go tool pprof` 支持**：wasm 模块可输出 CPU profile 与 heap profile，通过 `runtime/pprof` 与 `wasm_exec.js` 的 `profile` 选项配合使用。
 - **`-buildmode=pie`**：部分 wasm runtime（如 wasmtime）要求位置无关代码，Go 1.24 默认启用 PIE 编译。
 
-### 1.7 TinyGo 平行演进
+### 1.7 Go 1.27（2026-08）：实验性 SIMD
+
+Go 1.27 引入可移植 SIMD 包 `simd`（`GOEXPERIMENT=simd` 开启），其平台层 `simd/archsimd` 同步支持 arm64 Neon 与 wasm 128-bit 向量指令。这意味着计算密集型的 wasm 模块（图像处理、编解码、加密运算）未来可以不写一行 WAT/SIMD intrinsic 就吃到向量化收益。该特性仍处实验期，API 以 `GOEXPERIMENT` 门控，生产使用需锁定工具链版本并关注后续调整；它不影响已有 wasm 代码的构建与运行。
+
+### 1.8 TinyGo 平行演进
 
 TinyGo 是 Go 的子集编译器，由 Ayke van Laethem 主导，基于 LLVM 后端，目标之一是生成更小的 wasm 二进制：
 
@@ -102,7 +106,7 @@ TinyGo 是 Go 的子集编译器，由 Ayke van Laethem 主导，基于 LLVM 后
 
 TinyGo 适合资源受限场景（嵌入式、Edge Function），但对完整 Go 标准库的支持仍在演进中。
 
-### 1.8 演进时间轴
+### 1.9 演进时间轴
 
 ```mermaid
 timeline
@@ -115,6 +119,7 @@ timeline
     2023-08: Go 1.21 WASI Preview 1（wasip1）
     2024-02: Wasm GC proposal 落地（Rust/Java/Kotlin 跟进）
     2025-02: Go 1.24 wasm pprof，PIE 默认启用
+    2026-08: Go 1.27 实验性 simd 包支持 wasm 128-bit 向量
 ```
 
 ---
@@ -1485,3 +1490,21 @@ func process(data js.Value) {
 | Component Model | 组件模型 | wasm 的跨语言组件互操作规范 |
 | Trampoline | 跳板函数 | JS 调用 Go 回调时的中间函数 |
 | Opaque Type | 不透明类型 | 类型内部表示对调用方不可见 |
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（syscall/js 的桥接成本）**：Go wasm 调用一个 JS 函数与 Go 内部函数调用相比，中间经过什么？（从 trampoline 一词展开。）为什么高频率小调用要批量化？
+
+参考答案：Go 侧 `js.Value.Invoke` 进入 trampoline——把 Go 的调用约定（值栈）翻译成 wasm 的 import 调用，再落到 JS 引擎；返回值再反向翻译一次，且 js.Value 是运行时句柄（需要 Release 防泄漏）。每跨界一次都有翻译与调度成本，高频小调用（如逐像素读 DOM）会把时间全花在桥上。批量化策略：一次跨界传整块数据（js.ValueOf 传切片经 TypedArray 共享），在 JS 侧循环。
+
+**题 2（wasm_exec.js 的角色）**：`GOOS=js GOARCH=wasm` 产物必须在浏览器里配合 wasm_exec.js 运行——它实现了什么？（提示：syscall 层。）没有它 Go 程序能跑吗？
+
+参考答案：Go 的 runtime 依赖一组系统调用（写 stdout、时间、随机数、调度 yield），wasm 环境没有 OS——wasm_exec.js 在 JS 侧模拟这些 syscall（`fs.write`、`Date`、`crypto.getRandomValues`、`proc_exit` 等）。没有它 wasm 模块加载即失败（import 缺失）。要点：这层模拟是 js/wasm 目标体积偏大（MB 级）的原因之一——runtime 的 syscall 层全部打包进去；WASI 目标（GOOS=wasip1）走标准化的 wasi_snapshot_preview1，由宿主 runtime（wasmtime 等）提供同样的接口。
+
+**题 3（GC 与 wasm 的交互）**：Go 1.21 之前 wasm 目标的 GC 有什么局限？Wasm GC proposal 落地后（浏览器原生支持），Go 会怎么受益？
+
+参考答案：早期 Go wasm 用自己的保守 GC 扫线性内存，JS 对象（js.Value）不归它管，靠手动 Release——泄漏模式与 C 手工内存相同。Wasm GC proposal（1.21 起浏览器逐步支持）让 wasm 模块可以把对象暴露给宿主 GC 管理，未来 Go wasm 可与 JS 堆统一管理互操作对象，省掉句柄与手动释放。要点：现状下纪律是"js.Value 用完即 Release"（defer），把 JS 侧生命周期当成 C 指针级别的小心。

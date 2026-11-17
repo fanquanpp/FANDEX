@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以"用户注册接口要不要存明文密码"为主线学 crypto：bcrypt 密码存储、crypto/rand 与 rand.Text 令牌、AES-GCM 认证加密、HMAC 请求签名、PBKDF2/HKDF 密钥派生与算法选型口诀，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/390-GoConfigManagement'
   - 'go/460-GoHTTPClient'
@@ -203,6 +203,8 @@ func DeriveKey(password, salt string) ([]byte, error) {
     return pbkdf2.Key(sha256.New, password, salt, 600_000, 32)
 }
 ```
+
+**版本备注（2025-2026 的标准库加密演进）**：Go 1.24 新增 `crypto/mlkem`（FIPS 203，后量子密钥封装），且 TLS 1.3 默认启用 X25519MLKEM768 等后量子混合密钥交换；Go 1.26 新增 `crypto/hpke`（RFC 9180 混合公钥加密）；Go 1.27 新增 `crypto/mldsa`（FIPS 204，后量子签名，已接入 `crypto/x509` 与 TLS 1.3 的 MLDSA 签名方案）。业务代码通常不直接调用这些包，但对选型的意义在于：标准库传输层已默认具备抗量子能力，自建 TLS 定制时不必再手工优先配置 PQ 套件。
 
 再补最后一块拼图：对外部回调（支付通知、Webhook）验证请求确实来自对方，用 HMAC 签名。注意比较必须用 `hmac.Equal`——它是恒定时间比较，`==` 会在第一个不匹配字节处提前返回，给攻击者提供逐字节探测的时序侧信道：
 

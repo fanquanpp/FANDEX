@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: "以虚拟歌手音乐平台的评分与票务函数为例，亲手写出第一个 cargo test，掌握断言宏、should_panic、三类测试组织、clippy 质量检查与 dbg!/RUST_BACKTRACE 调试三板斧，附边界值漏测实录。"
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'rust/080-RustErrorHandling'
   - 'rust/140-RustEcosystemProject'
@@ -311,11 +311,34 @@ stack backtrace:
 
 ## 9. 自我检查
 
+遮码自检：先遮住答案栏，自己作答，再展开对照。
+
 1. `#[cfg(test)]` 与 `#[test]` 各自的作用是什么？没有前者会怎样？
 2. 三种测试组织方式（单元/集成/文档）分别放在哪、适合测什么？
 3. `assert_eq!(v.first(), Some(&1))` 里的 `&` 是为什么？
 4. 返回 `Result` 的测试和 `#[should_panic]` 为什么不能同时用？
 5. `dbg!` 比 `println!` 多输出什么？传变量时要注意什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1. #[test] 把函数标记为测试，cargo test 才会执行它；#[cfg(test)] 让测试
+   代码只在测试构建时编译、不进发布产物。没有前者，函数只是普通函数，不会
+   被当作测试运行。
+2. 单元测试：与被测代码同文件的 #[cfg(test)] mod tests，能测私有函数与
+   内部细节；集成测试：tests/ 目录下每个文件是一个独立 crate，只能测对外
+   公开的 API；文档测试：写在 /// 文档注释里，验证示例可编译可运行。
+3. v.first() 返回 Option<&i32>，元素本身是引用，所以比较对象必须写成
+   Some(&1)——两侧类型完全一致才编译通过。
+4. 两者的"失败信号"不同：返回 Result 的测试靠 Err 表达失败，
+   #[should_panic] 靠 panic 表达失败。同时使用会让"该失败的测试"
+   可能不 panic 也能通过，失败判定失去意义。
+5. dbg! 额外输出表达式的源码文本、文件名与行号，便于定位；它拿走参数的
+   所有权——非 Copy 类型被 dbg!(x) 之后不能再用（dbg!(&x) 借用即可）。
+```
+
+</details>
 
 ## 本章总结
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从"为什么需要它"到"安装到底装了什么"：Node.js 的心智模型、版本发布节奏、三大系统安装要点与验证背后的原理。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'javascript/530-NvmVersionManage'
   - 'javascript/540-NpmManager'
@@ -50,7 +50,7 @@ flowchart LR
 
 ## 版本怎么选：看懂发布节奏再记结论
 
-官网让你在 LTS 与 Current 之间选，死记"选 LTS"不如懂它的节奏。Node 每年 4 月发一个 Current 版（携最新特性），当年 10 月若它被标记为 LTS，则进入 30 个月只修不新增的维护期。版本号偶数（22、24）最终会成为 LTS，奇数（23、25）永远停留在 Current。
+官网让你在 LTS 与 Current 之间选，死记"选 LTS"不如懂它的节奏。Node 每年 4 月发一个 Current 版（携最新特性），当年 10 月若它被标记为 LTS，则进入 30 个月只修不新增的维护期。版本号偶数（22、24）最终会成为 LTS，奇数（23、25）永远停留在 Current——这条奇偶规则从 Node 27 起废止：官方已宣布改为每年 4 月一个大版本、全部进 LTS 的新节奏，Node 26（当前 Active LTS）是旧节奏的最后一代。阅读 2027 年之后的资料时注意规则切换。
 
 由此推出结论而不是背结论：**教程、框架、公司项目都以 LTS 为基准线**——你用 Current 遇到的坑，全网没人踩过，求助无门。新手与生产环境一律 LTS，没有第二种选择。
 
@@ -64,8 +64,10 @@ winget install OpenJS.NodeJS.LTS
 安装向导里唯一值得多看一眼的是"Add to PATH"勾选项（默认已勾，确认别取消）——漏了它就是"命令找不到"的标准剧本。
 
 ```bash
-# macOS：官网 .pkg，或 Homebrew（brew 装的是目录化的版本，便于日后 nvm 接管）
-brew install node@24
+# macOS：官网 .pkg，或 Homebrew（node 主 formula 跟随当前稳定版，装到的就是最新 LTS 主线）
+brew install node
+# 注意：homebrew-core 没有 node@26 这样的版本化 formula（历史版本线只有 node@20/22/24），
+# 需要精确锁定或多版本共存时，直接交给下一节的 nvm 接管更省心。
 ```
 
 ```bash

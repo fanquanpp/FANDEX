@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'SQS/SNS 学习笔记：用订单解耦场景走通队列收发、可见性超时、死信队列与 SNS 扇出过滤，末尾对照 Kinesis 与 EventBridge。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/260-ServerlessArchitecture'
   - 'cloud-computing/440-AWSCloudWatch'
@@ -311,11 +311,26 @@ aws events put-rule \
 | 没配积压告警 | 积压几天后消息过期被丢 | ApproximateNumberOfMessagesVisible 告警 |
 | SQS 订阅 SNS 后解析报错 | 拿 SNS 信封当业务 JSON | 解析 Body 里的 Message 字段 |
 
-## 自检
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
 
 1. 可见性超时设为 0 会发生什么？设成 24 小时又会怎样？
 2. 一条消息进了 DLQ，除了重放回主队列，还有哪种处理方式？
 3. 为什么"积分服务"和"物流服务"应该各自订阅，而不是共享一个队列？
+4. 默写：给队列配 DLQ（redrive 策略）的命令骨架。
+5. FIFO 的吞吐瓶颈由什么决定？标准队列为什么会重复投递？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 设为 0：消息一取走立即重新可见，其他消费者马上又能取到，失败的消息被疯狂重投；设 24 小时：首先会被 API 拒绝——可见性超时上限是 12 小时；即便设到上限，失败的消息也会长时间占住不重投。按「最长处理时间 + 余量」设置，长任务用 ChangeMessageVisibility 主动续期。
+2. 由专门的死信消费者读取并归档（落 S3/告警人工介入），排查修复后删除——不是所有死信都该原样重放，重放脏数据等于二次事故。
+3. 两类消息的消费速率、重试策略、失败影响完全不同：积分是异步旁路可以慢慢消费，物流延误直接伤用户体验。共享队列互相阻塞（慢消费者拖垮整体）、毒消息波及所有业务、无法独立扩缩与监控。
+4. 先建 DLQ，再给主队列配 `--attributes 'RedrivePolicy={"deadLetterTargetArn":"<DLQ ARN>","maxReceiveCount":5}'`。
+5. FIFO 按 MessageGroupId 串行：组内严格有序，组数才是并发度——全部消息塞一个 group id 就退化成单线程。标准队列是分布式多副本投递、至少一次语义，删除窗口期与并发读取都可能重复投递，消费端必须幂等。
+
+</details>
 
 ## 练习
 

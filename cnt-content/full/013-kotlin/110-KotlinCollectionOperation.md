@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 集合函数式操作
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'kotlin/340-KotlinSerialization'
   - 'kotlin/140-KotlinContractContracts'
@@ -22,12 +22,14 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「过滤操作」的核心机制、典型用法与常见陷阱
-- 掌握「映射操作」的核心机制、典型用法与常见陷阱
-- 掌握「查找操作」的核心机制、典型用法与常见陷阱
-- 掌握「排序操作」的核心机制、典型用法与常见陷阱
-- 掌握「概述」的核心机制、典型用法与常见陷阱
+- 能用 `filter`/`map`/`find`/`sortedBy` 四类操作覆盖日常集合处理需求，并说出每类返回什么（同类型集合、新集合、单个元素）
+- 能解释集合操作链的求值模型——每一步都生成新集合、前一步结果只被后一步使用
+- 能识别典型误用：链中混入副作用、对超大集合不做 `asSequence` 切换、`find` 与 `first` 的异常语义差异
+- 能按「不可变优先」原则选 `listOf`/`buildList`/`mutableListOf`，说清各自适用边界
 
+## 为什么值得单独一篇
+
+Java 8 之前，集合处理靠 for 循环 + 临时变量：意图（「找出成年的用户名」）淹没在过程代码里。Kotlin 把「数据怎么变换」写成一条声明式管线，每一步都是纯函数式的集合到集合（或集合到值）的转换。本篇的主线不是 API 清单，而是三个判断：什么时候这条链比循环更对，什么时候它的性能模型会反噬（110 篇后续 [Sequence 惰性求值](/kotlin/115-KotlinSequenceLazy) 专讲），以及操作函数返回的到底是集合还是值——混淆这个是新手 bug 的最大来源。
 
 ## 过滤操作
 
@@ -756,3 +758,41 @@ val first = numbers[0];
 // 通过键获取值
 val value = map["a"];
 ```
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：管线改写**。把下面的命令式循环改写成集合操作链，输出不变：
+
+```kotlin
+val adultNames = mutableListOf<String>()
+for (user in users) {
+    if (user.age >= 18) {
+        adultNames.add(user.name.uppercase())
+    }
+}
+```
+
+参考实现：
+
+```kotlin
+val adultNames = users
+    .filter { it.age >= 18 }
+    .map { it.name.uppercase() }
+```
+
+自检问题：两条链各自在内存里产生了几个中间集合？（答：filter 产生一个、map 产生一个，共两个中间 List；数据量小无所谓，千万级数据就该切 `asSequence`，这正是 [Sequence 惰性求值](/kotlin/115-KotlinSequenceLazy) 要解决的问题。）
+
+**练习 2：find 与 first 的语义**。`listOf(1, 2, 3).first { it > 5 }` 和 `listOf(1, 2, 3).find { it > 5 }` 各发生什么？
+
+参考答案：`first` 抛 `NoSuchElementException`；`find` 返回 `null`。选型口诀：「没有就是异常场景」用 first，「没有是正常分支」用 find——把异常当控制流会吞掉真正的 bug。
+
+**练习 3：返回值类型速判**。不运行代码，说出每行的类型：
+
+```kotlin
+val a = listOf(1, 2, 3).map { it * 2 }
+val b = listOf(1, 2, 3).filter { it > 1 }
+val c = listOf(1, 2, 3).count { it > 1 }
+val d = listOf(1, 2, 3).sortedByDescending { it }
+val e = listOf(1, 2, 3).groupBy { it % 2 }
+```
+
+参考答案：`a: List<Int>`、`b: List<Int>`、`c: Int`、`d: List<Int>`、`e: Map<Int, List<Int>>`。规律：操作要么「集合到集合」（返回新集合），要么「集合到值」（聚合），groupBy 是唯一返回 Map 的常客——写代码前先想清楚这一步要什么，链才不会断。

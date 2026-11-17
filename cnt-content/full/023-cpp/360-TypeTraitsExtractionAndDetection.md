@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: "承接 350 进入萃取工程：读 iterator_traits 与 allocator_traits、void_t 探测装配成 detect 框架、tag dispatch / SFINAE / if constexpr 三版并排、conjunction/disjunction 组合与短路实例化。"
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cpp/350-TypeTraitsSFINAE'
   - 'cpp/410-Cpp20Concept'
@@ -257,6 +257,52 @@ static_assert(!detect_v<int, has_empty_t>);
 - std::void_t：https://en.cppreference.com/w/cpp/types/void_t
 - std::conjunction/disjunction：https://en.cppreference.com/w/cpp/types/conjunction
 - if constexpr：https://en.cppreference.com/w/cpp/language/if
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：不查文档，写出下面每个 trait 的用途并配一行 `static_assert` 验证——`std::is_same_v`、`std::is_pointer_v`、`std::decay_t`、`std::conditional_t`；然后回答：`decay_t<int&>` 与 `decay_t<int[3]>` 各变成什么？
+
+**提示**：decay 模拟「按值传参时发生的转换」——引用剥掉、数组退化成指针、顶层 const 去掉。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+static_assert(std::is_same_v<int, std::decay_t<int&>>);
+static_assert(std::is_pointer_v<int*> && !std::is_pointer_v<int>);
+static_assert(std::is_same_v<int*, std::decay_t<int[3]>>);   // 数组退化
+static_assert(std::is_same_v<char, std::conditional_t<true, char, double>>);
+// decay_t<int&> = int（剥引用）；decay_t<int[3]> = int*（退化为指针）。
+```
+
+要点自查：decay 的「按值传参转换」直觉能解释大量 trait 行为（如 `decltype(x)` vs `decltype((x))`）；四个 trait 能各配一行断言，trait 表就算内化。
+
+**任务二**：写一个「检测成员类型是否存在」的探测 trait——探测 `T::value_type` 是否存在（detection idiom：`std::void_t` + 偏特化），并给出 C++20 `requires` 表达式的一行替代；对比两者的错误信息差异。
+
+**提示**：探测成员**类型**用 `typename T::value_type`（与探测成员函数表达式不同）；requires 版直接写 `requires { typename T::value_type; }`。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+template <typename T, typename = void>
+struct has_value_type : std::false_type {};
+
+template <typename T>
+struct has_value_type<T, std::void_t<typename T::value_type>>
+    : std::true_type {};
+
+template <typename T>
+concept HasValueType = requires { typename T::value_type; };
+
+static_assert(has_value_type<std::vector<int>>::value);
+static_assert(!has_value_type<int>::value);
+static_assert(HasValueType<std::vector<int>>);
+// 对比：void_t 版失败时报「no matching function / substitution failure」长串；
+// concept 版失败时直接列出未满足的 requires 条目——可读性是它的核心增量。
+```
+
+要点自查：探测成员类型（`typename T::value_type`）与探测成员函数（`decltype(...)`）是 detection idiom 的两个变体；「机关版 -> concept 版」的演进与 SFINAE 篇一脉相承。
 
 ## 12. 自我检查
 

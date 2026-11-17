@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git cherry-pick 详解：选择性移植提交、范围语法、冲突处理与幂等性陷阱。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'git/130-MergeConflictResolution'
   - 'git/270-GitRebase'
@@ -194,6 +194,36 @@ git push                          # 3) 推送 revert
 - **拣选后哈希与原提交不同**：这是设计而非事故；追溯来源靠 `-x` 留下的注释或 `git log --cherry-pick --left-right main...feature`。
 - **长期互相 cherry-pick 两条分支**：会造成补丁漂移，后续正式合并时冲突翻倍；它适合偶发移植，不适合当同步手段（那是 rebase / merge 的职责）。
 - **拣选产生空提交**：变更已存在时默认建议跳过；确需保留用 `--empty=keep`（旧版本为 `--keep-redundant-commits`）。
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. `git cherry-pick A..B` 与 `A^..B` 的差别是什么？分别包含 A 吗？
+2. 拣选合并提交为什么必须 `-m`？`-m 1` 的语义？`-x` 与作者字段有关系吗？
+3. 实操：在 main 修一个 Bug 并推送，然后用 `cherry-pick -x` 把它移植到 release 分支，验证提交消息里出现了来源哈希。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) A..B 左开右闭：不含 A、含 B；A^..B 从 A 的父提交开始：含 A 也含 B。
+   「想连 A 一起拣选却写了 A..B」是最高频丢提交事故。
+
+2) 合并提交有两个父提交，重放「相对谁」的变更存在二义，必须指定主线。
+   -m 1 = 相对第一父（合并时所在的分支，通常是 main）的变更重放出来。
+   无关。作者默认原样保留（author 字段复制，committer 变为你）；-x 只在消息末尾
+   追加 (cherry picked from commit <哈希>) 作审计线索。
+
+3)
+git switch main
+# 修 Bug → git commit -m "fix: guard null token"
+git switch release/2.1
+git cherry-pick -x <哈希>
+git log -1     # 消息末尾应有 (cherry picked from commit ...)；author 为原作者
+```
+
+</details>
 
 ## 小结
 

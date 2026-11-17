@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: mybatis-config.xml 关键配置、与 Spring Boot 配置的对应关系、SqlSessionFactory/SqlSession/Mapper 的生命周期与线程安全
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -139,7 +139,7 @@ Mapper 接口代理            请求级   从 SqlSession 取出，随 session �
 | 接口方法能找到 XML | mapper-locations / package 扫描 | Invalid bound statement |
 | SQL 结果映射到属性 | mapUnderscoreToCamelCase / resultMap | 属性全 null 或部分 null |
 | 看到执行的 SQL | log-impl（STDOUT/SlF4J） | 控制台无 SQL，排查全靠猜 |
-| 类型安全转换 | 内置 TypeHandler（见第 40 篇） | 枚举/时间字段转换异常 |
+| 类型安全转换 | 内置 TypeHandler（见 [TypeHandler 与类型转换](/mybatis/045-TypeHandlerAndTypeMapping)） | 枚举/时间字段转换异常 |
 | 连接的借还 | Spring 事务管理器 + 连接池 | 池耗尽 / 连接泄漏 |
 
 **讲解：** 这张表是排查路线图：症状定位到环，环再定位到配置项。比如"列表页字段全是 null"，第一反应不是查 SQL 写没写对，而是查驼峰开关——因为 SQL 在控制台里明明执行成功了。

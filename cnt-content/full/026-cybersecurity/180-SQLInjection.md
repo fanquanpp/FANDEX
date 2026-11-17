@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'SQL 注入检测与防御命令：注入类型与探测手法、sqlmap 自动化测试、参数化查询与数据库最小权限加固'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/280-WebSecurityDeep'
   - 'cybersecurity/190-XSSAttack'
@@ -16,29 +16,19 @@ prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
 
+- **解决什么问题**：SQL 注入是「数据被当成查询代码」的原型漏洞——理解它就理解了注入族的一半（XSS、命令注入都是同一思想换解释器）。本篇覆盖识别探测、sqlmap 自动化、以及从参数化查询到最小权限的防御闭环。
+- **容易怎么错**：以为「过滤单引号」就安全（编码绕过、数字型注入不需要引号）；把 WAF 当防御终点（见 160 篇的优先级排序：参数化 > 最小权限数据库账号 > 白名单校验 > WAF）；生产库直接跑 sqlmap 高风险选项（可能改数据，只在授权靶场用）。
+- **学完能做什么**：手工构造三类探测载荷（布尔、UNION、报错），跑通 sqlmap 从检测到数据提取的授权测试流程，并把参数化查询、最小权限、错误信息收敛落进自己的代码。
+
 ## SQL 注入识别
 
 **基本写法：经典注入测试载荷**
 ```sql
-`' OR '1'='1
-' OR '1'='1' --
-' OR '1'='1' /*
-admin' --
-admin'#
-' OR 1=1 --`
-```
-```sql
-# 经典 SQL 注入测试载荷
+# 经典 SQL 注入测试载荷（仅限授权靶场）
 ' OR '1'='1' --
 ```
 
 **基本写法：数字型注入测试**
-```sql
-`1 OR 1=1
-1; DROP TABLE users--
-1 UNION SELECT NULL--
-1 UNION SELECT username, password FROM users--`
-```
 ```sql
 # 数字型 SQL 注入测试
 1 OR 1=1
@@ -46,11 +36,6 @@ admin'#
 ```
 
 **基本写法：UNION 注入**
-```sql
-`' UNION SELECT NULL--
-' UNION SELECT username, password FROM users--
-' UNION SELECT table_name FROM information_schema.tables--`
-```
 ```sql
 # UNION 注入获取数据
 ' UNION SELECT username, password FROM users--
@@ -347,23 +332,12 @@ FLUSH PRIVILEGES;
 
 **基本写法：关闭数据库错误显示**
 ```php
-`error_reporting(0);
-ini_set('display_errors', 0);`
-```
-```php
 // PHP 关闭错误显示防止信息泄露
 error_reporting(0);
 ini_set('display_errors', 0);
 ```
 
 **基本写法：自定义错误页面**
-```python
-`try:
-    cursor.execute(sql)
-except Exception as e:
-    log_error(e)
-    return "服务器错误", 500`
-```
 ```python
 # Python 捕获异常返回通用错误
 try:
@@ -375,11 +349,16 @@ except Exception as e:
 
 **基本写法：Django 隐藏调试信息**
 ```python
-`DEBUG = False
-ALLOWED_HOSTS = ['example.com']`
-```
-```python
 # Django 生产环境配置
 DEBUG = False
 ALLOWED_HOSTS = ['example.com']
 ```
+
+## 自检
+
+- 遮住「SQL 注入识别」一节，自己写出三类探测载荷各一条（布尔、数字型、UNION），并说明每类从响应差异里读什么信号。
+- 为什么「过滤单引号」挡不住数字型注入？数字型注入入口长什么样（`WHERE id = $id` 无引号拼接）。
+- 遮住「参数化查询防御」一节，写出同一语句的拼接版与参数化版，并解释参数化为什么从根上免疫注入（语句结构与数据分开编译）。
+- ORM 是不是天然免疫 SQL 注入？举出一个仍会中招的写法（raw/f-string 片段拼接）。
+- 遮住「数据库最小权限」一节，说出应用账号应该被禁止的四类权限（DROP/ALTER、跨库、文件读写、超管角色）。
+- 遮住本节，写出「关错误回显 + 捕获异常返回通用页」两段配置，并说出它们各自挡住哪类泄露。

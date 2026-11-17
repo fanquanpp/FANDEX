@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: PostgreSQL 17/18 概述、安装与配置、pg_hba.conf认证、postgresql.conf核心参数、连接管理、角色与权限。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/170-TransactionConcurrencyControl'
   - 'postgresql/250-QueryOptimization'
@@ -16,18 +16,18 @@ prerequisites: []
 
 > 本节为增量补充，帮助你选择 PostgreSQL 版本。
 
-- PostgreSQL：18（2025-09 发布，当前最新小版本为 18.6，2026-08-13 发布）为主力稳定版；
-  19 处于 Beta 阶段，预计 2026 年内正式发布。每个大版本支持 5 年（14 已临近 EOL，
-  2026-11-12 结束支持），企业生产推荐 17 或 18。
+- PostgreSQL：18（2025-09 发布，当前最新小版本为 18.7，2026-11-12 发布）为主力稳定版；
+  19 已进入 RC 阶段（RC 2 于 2026-11-12 发布，GA 目标 2026-11-19，尚未正式发布）。每个大版本支持 5 年
+  （14 已于 2026-11-12 结束支持，14.25 为其最终版本），企业生产推荐 17 或 18。
 - 部署形态：Linux 包、Docker 镜像、云厂商托管（RDS/Aurora/Cloud SQL）均常见，学习阶段用 Docker 最快。
 - 扩展生态：PostGIS（地理）、pgvector（向量检索）、TimescaleDB（时序）是当前企业高频扩展。
 
 
-## 1. PostgreSQL 17 概述
+## 1. PostgreSQL 概述
 
 ### 1.1 PostgreSQL 简介
 
-PostgreSQL 是全球最先进的**开源对象-关系型数据库管理系统**，以可靠性、功能丰富和可扩展性著称。PostgreSQL 17 于 2024 年发布，带来多项重要改进。
+PostgreSQL 是全球最先进的**开源对象-关系型数据库管理系统**，以可靠性、功能丰富和可扩展性著称。当前主力稳定版本为 PostgreSQL 18（2025-09 发布），17 仍在支持期内。
 
 ### 1.2 核心特性
 
@@ -71,17 +71,17 @@ PostgreSQL 是全球最先进的**开源对象-关系型数据库管理系统**�
 
 ```bash
 # Ubuntu/Debian
-sudo apt install -y postgresql-17 postgresql-contrib-17
+sudo apt install -y postgresql-18 postgresql-contrib-18
 
 # CentOS/Rocky (使用 PGDG 仓库)
 sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-sudo dnf install -y postgresql17-server postgresql17-contrib
+sudo dnf install -y postgresql18-server postgresql18-contrib
 
 # 初始化数据目录
-sudo /usr/pgsql-17/bin/postgresql-17-setup initdb
+sudo /usr/pgsql-18/bin/postgresql-18-setup initdb
 
 # 启动服务
-sudo systemctl enable --now postgresql-17
+sudo systemctl enable --now postgresql-18
 ```
 
 ### 2.2 Docker 安装
@@ -89,16 +89,16 @@ sudo systemctl enable --now postgresql-17
 ```bash
 # 运行 PostgreSQL 容器
 docker run -d \
-  --name postgres17 \
+  --name postgres18 \
   -e POSTGRES_USER=admin \
   -e POSTGRES_PASSWORD=SecurePass123 \
   -e POSTGRES_DB=fandex \
   -p 5432:5432 \
   -v pgdata:/var/lib/postgresql/data \
-  postgres:17
+  postgres:18
 
 # 连接数据库
-docker exec -it postgres17 psql -U admin -d fandex
+docker exec -it postgres18 psql -U admin -d fandex
 ```
 
 ### 2.3 Windows 安装
@@ -108,10 +108,10 @@ docker exec -it postgres17 psql -U admin -d fandex
 # 下载: https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
 
 # 或使用 chocolatey
-choco install postgresql17
+choco install postgresql18
 
 # 配置环境变量
-$env:PATH += ";C:\Program Files\PostgreSQL\17\bin"
+$env:PATH += ";C:\Program Files\PostgreSQL\18\bin"
 ```
 
 ## 3. pg_hba.conf 认证配置
@@ -119,9 +119,9 @@ $env:PATH += ";C:\Program Files\PostgreSQL\17\bin"
 ### 3.1 配置文件位置
 
 ```
-Linux:  /etc/postgresql/17/main/pg_hba.conf
+Linux:  /etc/postgresql/18/main/pg_hba.conf
 Docker: /var/lib/postgresql/data/pg_hba.conf
-Windows: C:\Program Files\PostgreSQL\17\data\pg_hba.conf
+Windows: C:\Program Files\PostgreSQL\18\data\pg_hba.conf
 ```
 
 ### 3.2 认证规则格式
@@ -352,10 +352,13 @@ ORDER BY grantee, table_name;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 
 -- 创建策略：用户只能看到自己的订单
+-- PostgreSQL 没有 current_user_id() 这类内置函数：应用层的用户身份
+-- 需先写入会话变量（SET app.user_id = '42'），策略里用 current_setting 取回。
+-- 不传该变量时 current_setting 会报错，可用两参形式给默认值兜底。
 CREATE POLICY user_orders ON orders
   FOR ALL
   TO app_user
-  USING (user_id = current_user_id());
+  USING (user_id = current_setting('app.user_id', true)::int);
 
 -- 管理员可看所有
 CREATE POLICY admin_all ON orders
@@ -367,3 +370,63 @@ CREATE POLICY admin_all ON orders
 -- 查看策略
 SELECT * FROM pg_policies WHERE tablename = 'orders';
 ```
+
+## 7. 教学自检
+
+先遮住示例代码，在 PostgreSQL 18 开发库逐题自己写一遍，再对照参考答案。每题覆盖一个本篇核心概念：版本选择、认证方法、内存参数、RLS 身份来源。
+
+### 任务一：写一条生产级 pg_hba 规则
+
+需求：只允许网段 10.0.0.0/8 的 `app_user` 以 scram-sha-256 连接 `fandex` 库；其余同库连接全部拒绝。
+
+提示：注意规则行从上到下"先匹配先生效"；想想 reject 行放在哪里才能拦住漏网的。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```
+# TYPE  DATABASE  USER      ADDRESS        METHOD
+host    fandex    app_user  10.0.0.0/8     scram-sha-256
+host    fandex    all       0.0.0.0/0      reject
+```
+
+要点：pg_hba.conf 按文件顺序匹配，第一条命中的规则决定结果，后面的不再看。所以"放行"在前、"兜底拒绝"在后；把顺序写反，拒绝行先命中，放行规则就永远不生效。md5 已在 PG 18 中弃用，新规则一律写 scram-sha-256。
+
+</details>
+
+### 任务二：cert 认证行里为什么不能再写 scram-sha-256
+
+需求：解释下面这行里 method 处写 `cert` 而不是 `cert scram-sha-256`（后者会报错）的原因；客户端凭据是什么。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+cert 认证即"用客户端 TLS 证书完成身份验证"：TLS 握手阶段证书已证明客户端身份，认证在握手时已完成，method 处不再有第二段密码校验可叠加，所以写两个方法名会被 pg_hba 解析拒绝。前提是连接必须走 SSL（所以 TYPE 是 hostssl），且证书中的 CN 与数据库用户对应（方法处的映射选项是 `map=`，配合 pg_ident.conf 把证书 CN 映射到数据库用户）。这与 480 篇的 SSL 配置衔接。
+
+</details>
+
+### 任务三：三个内存参数各管什么
+
+需求：`shared_buffers`、`work_mem`、`maintenance_work_mem` 分别在什么环节被消耗？为什么 `work_mem = 64MB` 在 `max_connections = 200` 时可能远不止用 12.8GB？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+- shared_buffers：整库共享的页缓存，启动时一次性分配，所有连接共用。
+- work_mem：单个排序/哈希节点（sort、hash join、hash agg）的私有内存。一个查询可能有多个节点并行消耗，每个节点分配满额后才落盘，所以真实消耗是 节点数 × 并发数，不是连接数 × work_mem。
+- maintenance_work_mem：VACUUM、CREATE INDEX 等维护操作的内存，通常每实例只有少量此类操作并发。
+
+结论：work_mem 是"每节点"预算不是"每连接"预算，调大前先看 EXPLAIN 里的 sort/hash 节点数。
+
+</details>
+
+### 任务四：RLS 策略里的用户身份从哪来
+
+需求：实现"每个业务用户只能读自己的行"，但 PostgreSQL 没有 current_user_id() 函数——说明你打算把"当前业务用户 ID"放在哪里、策略里怎么取。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+业务身份不是数据库登录角色（一个 app_user 连接背后可能服务成千上万个终端用户），应放进会话级自定义参数：连接进来后 `SET app.user_id = '42'`（或按事务 `SET LOCAL`），策略里用 `current_setting('app.user_id', true)::int` 取回并比较。两参形式在变量未设置时返回 NULL 而不是报错，配合"默认拒绝"更安全。深度展开见 500 篇 RLS。
+
+</details>

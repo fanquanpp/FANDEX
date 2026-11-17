@@ -4,9 +4,9 @@ title: Java 文本块
 module: 'java'
 category: 后端技术
 difficulty: beginner
-description: 文本块与字符串模板
+description: 多行字符串的现行写法与缩进规则；顺带讲清字符串模板（JEP 430/459）为何在 JDK 23 前被撤回、今天用什么替代
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/980-JavaKubernetes'
   - 'java/450-JavaRecordClass'
@@ -44,7 +44,7 @@ prerequisites:
 
 文本块（Text Blocks）是 Java 15 正式引入的特性，它让你可以在代码中书写多行字符串，而不需要手动拼接或转义。在文本块出现之前，写一段 JSON、SQL 或 HTML 需要大量转义引号和换行符，代码既难读又容易出错。文本块用三个双引号包裹，内部可以直接换行，不需要转义。
 
-字符串模板（String Templates）是 Java 21 引入的预览特性，它提供了字符串插值能力，可以在字符串中嵌入表达式。虽然目前还是预览状态，但了解它的设计思路对理解 Java 字符串处理的发展方向很有帮助。
+字符串插值（在字符串里嵌入变量）是另一个长期需求：Java 官方曾在 JDK 21 以预览特性引入字符串模板（String Templates，JEP 430），JDK 22 二次预览（JEP 459），随后在 JDK 23 发布前**整体撤回**——OpenJDK 团队认为原设计在「默认安全」（如 SQL 注入风险）与编辑器友好性上没有达成自己的目标，决定推倒重做而不是小修小补（Brian Goetz 2024 年在 inside.java 的说明）。截至 JDK 26，字符串插值仍未回归语言。所以今天写插值，用的是 `String.format` / `formatted` / `MessageFormat` 这类库方案；本篇保留一段对已撤回语法的识别指南，方便你在老博客、老代码里认出 `STR."..."` 时不再误以为是现行特性。
 
 ## 基础概念
 
@@ -59,9 +59,11 @@ prerequisites:
 - 文本块会自动处理缩进，去掉公共前导空格
 - 文本块仍然是 String 类型，和普通字符串没有本质区别
 
-### 字符串模板是什么
+### 字符串插值是什么，模板处理器为什么被撤回
 
-字符串模板允许在字符串中用 \{expression} 嵌入变量或表达式，类似于其他语言中的字符串插值。它的语法是 STR."模板内容"，其中 STR 是一个模板处理器。
+字符串插值指在字符串中嵌入变量或表达式，例如其他语言的 `"Hello ${name}"`。Java 官方方案的语法是 模板处理器."模板内容"，如 `STR."姓名: \{name}"`，其中 `STR` 是一个模板处理器，负责把嵌入的表达式安全地转成文本。
+
+它的设计动机值得记住：插值的最大风险是不经检查的字符串拼接（SQL 注入、命令注入都源于此），所以 Java 的方案要求每个模板都经过一个**处理器**，处理器可以按用途做校验（比如 SQL 模板强制走 PreparedStatement）。但正式评审时，团队认为这套设计并未真正达成「默认安全」——不写专用处理器时依然可能不安全，且内嵌语法对编辑器的自动补全、语法高亮不友好——于是在 JDK 23 发布前撤回了整个特性（JEP 430/459 预览，JDK 26 仍未回归）。这个撤回本身就是重要教学素材：**预览特性不是承诺，`--enable-preview` 下的 API 随时可能消失**。
 
 ## 快速上手
 
@@ -90,21 +92,29 @@ System.out.println(json);
 // }
 ```
 
-### 字符串模板基本用法
+### 字符串插值的当前写法（以及已撤回语法的样子）
+
+截至 JDK 26，插值靠标准库完成，不需要任何开关：
 
 ```java
-// 需要启用预览特性：javac --enable-preview --release 21
 String name = "Alice";
 int age = 25;
 
-// 使用 STR 模板处理器
-String msg = STR."姓名: \{name}, 年龄: \{age}";
+// printf 风格：String.format / formatted（Java 15+ 的实例方法版）
+String msg = "姓名: %s, 年龄: %d".formatted(name, age);
 System.out.println(msg); // 输出: 姓名: Alice, 年龄: 25
 
-// 嵌入表达式
+// 嵌入表达式：先把表达式算出来再交给 formatted
 int a = 10, b = 20;
-String calc = STR."\{a} + \{b} = \{a + b}";
+String calc = "%d + %d = %d".formatted(a, b, a + b);
 System.out.println(calc); // 输出: 10 + 20 = 30
+```
+
+对照记忆已撤回的预览语法（只用于识别旧代码，JDK 23+ 编译不过）：
+
+```java
+// JDK 21/22 预览语法（已撤回，仅供识别老资料）
+String msg = STR."姓名: \{name}, 年龄: \{age}"; // STR."..." 是被撤回的模板处理器语法
 ```
 
 ## 详细用法
@@ -252,65 +262,52 @@ String regex = """
     """;
 ```
 
-### 6. 字符串模板详解
+### 6. 字符串插值的实战替代方案
 
-字符串模板的语法是 模板处理器."模板内容"：
+模板撤回后，多行场景把文本块与格式化方法组合使用，就是 JDK 26 的日常写法：
 
 ```java
-import java.lang.StringTemplate.STR;
-
-// 基本插值
+// 嵌入方法调用：先算值，再格式化
 String name = "Alice";
-String greeting = STR."你好, \{name}!";
+String greeting = "你好, %s!".formatted(name.toUpperCase());
 
-// 嵌入方法调用
-String upper = STR."大写: \{name.toUpperCase()}";
-
-// 嵌入复杂表达式
+// 嵌入复杂表达式：同理，把表达式收敛成变量或内联计算
 List<String> items = List.of("苹果", "香蕉", "橙子");
-String info = STR."共有 \{items.size()} 种水果: \{String.join(", ", items)}";
+String info = "共有 %d 种水果: %s"
+    .formatted(items.size(), String.join(", ", items));
 
-// 多行模板
-String message = STR."""
-    尊敬的 \{name}:
-    您的订单 \{orderId} 已发货。
-    预计到达时间: \{deliveryDate}
-    """;
+// 多行模板：文本块 + formatted 是标准组合
+String message = """
+    尊敬的 %s:
+    您的订单 %s 已发货。
+    预计到达时间: %s
+    """.formatted(name, orderId, deliveryDate);
 ```
 
-### 7. 自定义模板处理器
-
-字符串模板的强大之处在于可以自定义模板处理器，控制插值的行为：
+需要按键名插值（`${name}` 风格）时，用 `MessageFormat` 或 `java.text.MessageFormat` 占位符，这是 JDK 内置且长期支持的方案：
 
 ```java
-import java.lang.StringTemplate;
-import java.util.StringJoiner;
+import java.text.MessageFormat;
 
-// 自定义 JSON 模板处理器
-// 将变量自动用引号包裹
-var JSON = StringTemplate.Processor.of((StringTemplate st) -> {
-    StringJoiner joiner = new StringJoiner(", ", "{", "}");
-    // st.fragments() 是模板的固定部分
-    // st.values() 是嵌入的变量值
-    var fragments = st.fragments();
-    var values = st.values();
-    for (int i = 0; i < values.size(); i++) {
-        Object value = values.get(i);
-        // 字符串类型加引号，数字类型不加
-        if (value instanceof String) {
-            joiner.add("\"" + fragments.get(i).strip() + "\":\"" + value + "\"");
-        } else {
-            joiner.add("\"" + fragments.get(i).strip() + "\":" + value);
-        }
-    }
-    return joiner.toString();
-});
-
-String name = "Alice";
-int age = 25;
-String json = JSON."name: \{name}, age: \{age}";
-// 输出: {"name":"Alice","age":25}
+String text = MessageFormat.format("用户 {0} 下单 {1} 件", "Alice", 3);
+// 输出: 用户 Alice 下单 3 件
 ```
+
+### 7. 从自定义模板处理器到撤回：教训是什么
+
+被撤回的设计里最有想象力的一环是**自定义模板处理器**：你写的处理器拿到模板的固定片段（`fragments()`）与嵌入值（`values()`），可以做校验、转义或拼装。官方示例曾演示把变量自动引号化生成 JSON。它展示了「插值必须经过检查关卡」的正确方向，但评审结论是这个关卡没能做到默认安全——开发者仍可以随手用 STR 处理器拼出注入风险，安全责任落在使用者而非语法上。
+
+撤回后的替代思路：与其依赖语法级处理器，不如直接用强类型 API——SQL 用 PreparedStatement，JSON 用 Jackson 的 `ObjectNode`，日志用占位符参数。这些 API 在类型系统层面杜绝了拼接错误，比字符串级校验更可靠：
+
+```java
+// 用 ObjectNode 构建 JSON，替代字符串级插值
+ObjectNode node = JsonNodeFactory.instance.objectNode();
+node.put("name", "Alice");
+node.put("age", 25);
+String json = node.toString(); // {"name":"Alice","age":25}
+```
+
+这也解释了撤回的深层原因：字符串模板解决的是「写起来顺手」，而注入问题的根治靠「类型化 API 让错误写法编译不过」。后者优先级更高。
 
 ## 常见场景
 
@@ -318,33 +315,33 @@ String json = JSON."name: \{name}, age: \{age}";
 
 ```java
 public String buildQuery(String table, String condition, String orderBy) {
-    return STR."""
-        SELECT * FROM \{table}
-        WHERE \{condition}
-        ORDER BY \{orderBy}
-        """;
+    return """
+        SELECT * FROM %s
+        WHERE %s
+        ORDER BY %s
+        """.formatted(table, condition, orderBy);
 }
 
 // 调用
 String sql = buildQuery("users", "status = 'active'", "created_at DESC");
 ```
 
-注意：直接拼接 SQL 存在注入风险，生产环境应使用 PreparedStatement。
+注意：文本块（连同 formatted）只是让 SQL **写起来**整洁，注入风险一个没少——table、condition 仍来自调用方。生产环境应使用 PreparedStatement 占位符传参，文本块只适合拼接表名、排序字段这类无用户输入的片段。
 
 ### 场景二：生成邮件内容
 
 ```java
 public String generateEmail(String userName, String orderId, String amount) {
-    return STR."""
-        尊敬的 \{userName}:
+    return """
+        尊敬的 %s:
 
         感谢您的购买！您的订单详情如下：
 
-        订单编号: \{orderId}
-        订单金额: \{amount} 元
+        订单编号: %s
+        订单金额: %s 元
 
         如有任何问题，请联系客服。
-        """;
+        """.formatted(userName, orderId, amount);
 }
 ```
 
@@ -375,16 +372,16 @@ String text = """
 // 实际输出和代码中一模一样，因为最小缩进是 0
 ```
 
-### 字符串模板是预览特性
+### 字符串模板：从预览到撤回的完整时间线
 
-截至 Java 21，字符串模板仍是预览特性，需要在编译和运行时显式启用：
+JDK 21 预览（JEP 430）时需要显式启用：
 
 ```bash
 javac --enable-preview --release 21 Main.java
 java --enable-preview Main
 ```
 
-在生产代码中不建议使用预览特性，但可以提前了解和学习。
+JDK 22 二次预览（JEP 459），随后 JDK 23 发布前整体撤回。**今天的正确姿势**：不要在任何 JDK 版本上启用 `--enable-preview` 使用 `STR."..."`——JDK 23 起该 API 已不存在，未来回归时也会是重新设计的语法。遇到仍宣传字符串模板的教程或资料，先看发布日期。
 
 ### 文本块中的制表符
 
@@ -432,18 +429,17 @@ String datePattern = """
       .replaceAll("\\s+", "");         // 去掉空白
 ```
 
-### FMT 模板处理器
+### 文本块与 printf 风格格式化
 
-Java 21 还提供了 FMT 模板处理器，支持格式化说明符：
+FMT 模板处理器（支持格式化说明符）属于已撤回的预览 API。同样的需求用文本块加 `formatted` 就能完成：
 
 ```java
-import java.lang.StringTemplate.FMT;
-
 double price = 99.9;
 int quantity = 3;
 
-// 使用 FMT 处理器进行格式化
-String receipt = FMT."价格: %.2f\{price}, 数量: %d\{quantity}, 总计: %.2f\{price * quantity}";
+String receipt = """
+    价格: %.2f, 数量: %d, 总计: %.2f
+    """.formatted(price, quantity, price * quantity);
 // 输出: 价格: 99.90, 数量: 3, 总计: 299.70
 ```
 ## 文本块基础
@@ -484,25 +480,26 @@ String s = """
 
 ---
 
-## 字符串模板（Java 21 预览）
+## 字符串插值（现行方案）
 
-**基本写法：字符串模板表达式**
-`StringTemplate.STR."<文本>\{<表达式>}"`
+**基本写法：formatted 实例方法**
+`"<模板>".formatted(<参数>...)`
 ```java
-// Java 21 预览特性字符串模板
-String name = "Alice";
-String s = STR."Hello \{name}";
+// JDK 15+，printf 占位符风格
+String s = "Hello %s".formatted("Alice");
 ```
 
 ---
 
-**基本写法：多变量插值**
-`STR."<文本>\{<变量1>}\{<变量2>}"`
+**基本写法：String.format 静态方法**
+`String.format("<模板>", <参数>...)`
 ```java
-// 模板中嵌入多个表达式
+// 与 formatted 等价，兼容老代码习惯
 int x = 1, y = 2;
-String s = STR."\{x} + \{y} = \{x + y}";
+String s = String.format("%d + %d = %d", x, y, x + y);
 ```
+
+注意：`STR."..."` 与 `FMT."..."` 是 JDK 21/22 已撤回的预览语法（JEP 430/459），JDK 23 起编译报错，不要在新代码中使用。
 
 ---
 
@@ -714,3 +711,13 @@ boolean b = "   ".isBlank();
 // 判断长度是否为 0
 boolean b = "".isEmpty();
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 写一个文本块存 JSON，要求缩进去除后每行顶格开始。关键规则是什么？——结束定界符 `"""` 的缩进决定整体去除量，所有非空行的最小公共缩进被去掉。
+2. 想让文本块最后一行也换行，怎么写？想让它不换行呢？——结束 `"""` 换行书写则内容含末尾换行；`"""` 直接跟在内容后（或内容行尾写 `\`）则不带末尾换行。
+3. 用文本块 + `formatted` 生成 `Hi, Alice (age 25)`，占位符写什么？——`"Hi, %s (age %d)".formatted("Alice", 25)`，`%s` 字符串、`%d` 整数。
+4. 判断：`STR."Hello \{name}"` 在 JDK 25 上能否编译？——不能。字符串模板是 JEP 430/459 的预览特性，JDK 23 发布前已撤回，现行 JDK 无此语法。
+5. 文本块里的 `"` 需要转义吗？`\` 呢？——单个双引号不需要（避免成三个连排即可）；要表示一个字面反斜杠字符必须写成 `\\`（源码两个字符，写单个 `\` 是非法转义，编译错误）；唯一的例外是放在行尾——文本块中行尾的 `\` 是"不插入换行符"的合法转义（JEP 378），普通字符串没有这个转义。

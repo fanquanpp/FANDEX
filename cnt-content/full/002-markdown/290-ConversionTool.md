@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Markdown转换工具：Pandoc的安装、使用与高级转换技巧。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/280-EditorFeature'
   - 'markdown/050-LinkImage'
@@ -273,3 +273,28 @@ pandoc chapter1.md chapter2.md chapter3.md \
   --toc \
   -V toc-title="目录"
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，自己写完再对照参考实现。
+
+**任务**：把一篇含表格、删除线与任务列表的 `input.md` 一次性转成 HTML，要求——显式按 GFM 解析（否则任务列表这类扩展语法会漏出来）；输出为带完整骨架的独立网页；再用同一份源码转一次 Word。
+
+**提示**：输入格式用 `-f gfm`（GFM 扩展的默认启用差异见 `markdown/310-DocsSiteAndAutomation` 第 3.1 节）；"独立网页"需要哪个参数？
+
+<details>
+<summary>参考实现（先自己动手，再看这里）</summary>
+
+```bash
+printf '# 演示\n\n| 列 A | 列 B |\n| --- | --- |\n| ~~旧~~ | 新 |\n\n- [x] 表格转换\n- [ ] Word 转换\n' > input.md
+
+# GFM 解析 + 独立 HTML（--standalone 生成完整 <html> 骨架）
+pandoc input.md -f gfm -t html --standalone -o output.html
+
+# 同一份源码转 Word
+pandoc input.md -f gfm -o output.docx
+```
+
+</details>
+
+要点自查：不写 `-f gfm` 时 pandoc 按自己的默认方言解析，`- [x]` 任务列表不会被识别为复选框；`--standalone` 决定输出是完整网页还是只有 body 片段；转 Word 时删除线与表格会映射为 Word 的对应样式。

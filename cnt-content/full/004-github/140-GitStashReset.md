@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以寄存柜与时光机类比驱动讲解 git stash 暂存系列与 git reset/revert/restore/clean 回退系列命令，覆盖软/混合/硬回退三档选择与撤销安全原则，适合零基础学习者。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -246,6 +246,37 @@ git clean -i
 | clean 误删文件 | 文件被删且找不到 | 忘记先 `-n` 预览 | 养成先 `git clean -n` 预览再 `-f` 的习惯；无法恢复 |
 
 ---
+
+## 七、动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：你正在 feature 分支写一半，main 有紧急 Bug 要修。遮住参考实现，写出完整的「寄存 → 切分支修 Bug → 回来取包」命令链；要求新文件也一起寄存、取包后寄存记录消失。
+
+**任务二**：最近一次提交写错了想拆开重来——改动要保留在**工作区**（重新挑着 add）。写出 reset 命令，并说明三个档位各自把改动留在哪。
+
+**任务三**：这个错误提交**已经推送过**了，上面那条命令还能用吗？写出正确做法。
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 任务一
+git stash -u               # -u 连未跟踪的新文件一起寄存
+git switch main
+# ...修复 Bug 并提交...
+git switch feature/login
+git stash pop              # 取包并删除记录（apply 则保留记录）
+
+# 任务二
+git reset --mixed HEAD~1   # 默认档位：指针回退，改动留在工作区
+# --soft：改动留在暂存区（可直接重新 commit）
+# --hard：暂存区和工作区一起回退（改动丢弃，危险）
+
+# 任务三
+git revert HEAD            # 已推送的提交用反向提交抵消，不改写历史
+```
+
+要点自查：stash 默认不含未跟踪文件，`-u` 才带上；pop 是「取包 + 删记录」，apply 留记录；`reset --hard` 丢弃的改动只能靠 reflog 抢救；**reset 改写历史、revert 追加历史**——已推送的提交一律 revert，这是团队协作的保命规则。
 
 ## 八、一句话记忆
 

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 用一个真实的 51 行 PowerShell 还原工具讲工程化脚本范式（param、严格模式、台账驱动、三态日志），用 4 行批处理的真实笔误讲大小写陷阱，附与 bash 的方言差异表。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'shell/140-CrossPlatformCommandLine'
   - 'shell/150-ShellBasics'
@@ -201,10 +201,10 @@ exit /b 1
 
 | 维度 | bash | PowerShell | 批处理 |
 | :--- | :--- | :--- | :--- |
-| 变量赋值 | `NAME="value"`（等号两边无空格） | `$Name = "value"`（等号两边有空格） | `set NAME=value`（= 两边不能有空格） |
+| 变量赋值 | `NAME="value"`（等号两边不能有空格） | `$Name = "value"`（空格是社区约定，可省略） | `set NAME=value`（= 两边不能有空格） |
 | 变量引用 | `"$NAME"` | `"$Name"` 或 `"$($Obj.Prop)"` | `%NAME%` |
 | 管道传递 | 文本行 | **对象** | 文本（几乎不用管道） |
-| 比较运算 | `-eq`/`-lt`（`==` 只在 `[[ ]]`） | `-eq`/`-lt`（数字），`==` 是通配匹配 | `EQU`/`LSS`（`if %a%==1` 是字符串比较） |
+| 比较运算 | `-eq`/`-lt`（`==` 只在 `[[ ]]`） | `-eq`/`-lt`/`-like`（无 `==` 运算符，写了直接解析报错） | `EQU`/`LSS`（`if %a%==1` 是字符串比较） |
 | 错误处理 | `set -e`、`||`、trap | `try/catch` + `$ErrorActionPreference` | `errorlevel` + `\|\|` |
 | 函数 | `func() { ... }` | `function Func { param() }` | `:label` + `call :label`（goto 语义） |
 | 注释 | `#` | `#` | `::` 或 `REM` |
@@ -213,7 +213,7 @@ exit /b 1
 
 三条最容易踩的坑标注：
 
-1. **PowerShell 的等号空格**：`$Name="x"` 会报错（bash 习惯直接平移的第一次翻车），`if ($a==1)` 是通配匹配不是相等比较；
+1. **PowerShell 的比较运算**：PowerShell 没有 `==` 运算符——把 bash 的 `if ($a == 1)` 平移过去直接解析报错（实测报「无法将"="项识别为 cmdlet」），相等比较用 `-eq`，通配匹配用 `-like`。另一个隐蔽点：`-eq` 比较字符串时忽略大小写（`"hello" -eq "HELLO"` 为真），严格区分要用 `-ceq`。赋值等号两侧空格则相反，PowerShell 只是社区约定（`$Name="x"` 同样合法），而 bash 与 bat 的无空格是语法要求，三边来回切换时风格易混；
 2. **bat 的 `if %a%==1` 做字符串比较**：`if 5==05` 为假（字符串不相等），数值比较要用 `if %a% EQU 05`——数字被当字符串是 bat 逻辑 bug 的稳定来源；
 3. **路径里的空格**：三个方言都要求引号包裹，但 bat 的引号规则最脆弱（`"%userprofile%\my docs\file.txt"` 的引号边界要手工保证），PowerShell 的 `-LiteralPath` 参数（样本 2.3 节全程使用）专治「路径含特殊字符」。
 
@@ -266,7 +266,25 @@ echo %count% > count.txt
 两个经典错误：一是 `set count=%count%+1` 里的 `%count%` 在**解析时**就展开——for 循环整块被解析成一条命令时 `%count%` 永远是初始值 0，结果是 `0+1` 反复赋值，最终 count 是字符串 `0+1` 而不是数字。修复用延迟展开：脚本头加 `setlocal enabledelayedexpansion`，循环内写 `set /a count+=1`（`set /a` 做算术）并引用 `!count!`。二是 `echo %count% > count.txt` 的 `%count% ` 后多了一个空格，空格会被写进文件（「0+1 」）。这题的教训：bat 的变量展开时机（解析期 vs 执行期）是它最深的一个坑，遇到「循环内变量不更新」一律先查这个。
 </details>
 
-## 6. 下一步与延伸阅读
+## 6. 自检：遮住表格，说出方言差异
+
+先遮住第 4 节对照表与参考答案，按题干自己写出，再对照。
+
+1. 三个方言里「变量赋值等号两侧空格」的规则各是什么？bash 习惯平移到 PowerShell 第一次翻车会翻在哪？
+2. bat 的 `if 5==05` 结果是什么？数值比较的正确写法？
+3. PowerShell 的 `$ErrorActionPreference = 'Stop'` 管哪类错误、不管哪类？`throw` 属于哪类？
+4. 「绝不覆盖」在还原脚本里靠哪两行实现？为什么覆盖是脚本安全的头号底线？
+
+<details>
+<summary>参考答案</summary>
+
+1. bash `NAME="value"` 与 bat `set NAME=value` 的等号规则是语法要求（bash 等号两侧不能有空格、bat 的 set 不能有空格）；PowerShell 的 `$Name = "value"` 空格只是社区约定——`$Name="x"` 同样合法（本机实测赋值成立）。真正的平移陷阱在比较运算：PowerShell 没有 `==` 运算符，bash 式的 `if ($a == 1)` 直接解析报错，相等必须写 `-eq`（字符串比较时它还忽略大小写，严格用 `-ceq`），通配匹配用 `-like`（第 4 节对照表第一行与三条坑标注第 1 条）。
+2. 为假：`if` 不带运算符时做字符串比较，`5` 与 `05` 字符串不相等。数值比较用 `if 5 EQU 05`（或先 `set /a` 归一化）（第 4 节三条坑标注第 2 条）。
+3. `Stop` 只管 cmdlet 的非终止错误（默认 Continue 下红字继续跑的那类）；.NET 方法抛的终止错误与 `throw` 语句本身不受它影响——两种调用混用时 try/catch 才是完整防线（第 2.1 节易错点）。
+4. `Test-Path -LiteralPath $src` 为真即 throw 跳过（原位置已被占用绝不覆盖），加上移动后按台账字节数校验——覆盖是单向不可逆操作，脚本逻辑可以错，数据不能毁（第 2.3 节工程决策第 1 条）。
+</details>
+
+## 7. 下一步与延伸阅读
 
 - 《Shell 脚本编程基础》（shell/150-ShellBasics）：bash 方言的完整教学；
 - 《脚本调试与严格模式》（shell/190-ScriptDebugging）：`set -euo pipefail` 与本篇 `$ErrorActionPreference` 的同构思想；

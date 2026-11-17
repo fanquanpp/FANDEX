@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: objdump 反汇编自己的 add 函数起步：gcc -S 的 -O0/-O2 对照看寄存器分配，手写 .s 与 C 互相调用（System V x64 约定、名字修饰、栈对齐纪律），GCC 基本 asm 与扩展 asm 四段结构逐段讲透，volatile asm 与 "memory" clobber 防住哪类优化，什么时候值得写汇编与三类翻车现场。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/270-VolatileKeyword'
   - 'c/410-CrossPlatformProgramming'
@@ -468,12 +468,24 @@ bad_get:
 - x86-64 System V ABI（调用约定权威出处，现行版本由该仓库维护）：https://gitlab.com/x86-psABIs/x86-64ABI
 - Writing portable ARM64 assembly（Darwin 平台 C 符号加下划线前缀的实例讨论）：https://ariadne.space
 
-## 自我检查
+## 遮码自检
 
-- 能不看资料说出扩展 asm 四段各放什么，%0 与 %%eax 的区别；
-- 能解释 Linux、macOS、Windows 三处符号名的差异，以及为什么跨平台汇编离不开预处理宏；
-- 能预测「带输出但输出未用、无 volatile 的扩展 asm」在 -O2 下的命运，并说出 "memory" clobber 防住的是哪一层重排；
-- 能对着一份按 32 位约定写的汇编，指出它在 64 位下会怎么坏。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 扩展 asm 四段各放什么？%0 与 %%eax 的区别？
+2. Linux、macOS、Windows 三处的符号名差异？跨平台汇编为什么离不开预处理宏？
+3. 「带输出但输出未用、无 volatile」的扩展 asm 在 -O2 下的命运？"memory" clobber 防住哪一层重排？
+4. 对着一份按 32 位约定写的汇编，指出它在 64 位下会怎么坏。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `asm volatile ("..." : 输出 : 输入 : clobber)`——汇编模板、被写的操作数、被读的操作数、被破坏的资源清单。%0 是操作数占位符，编译器按约束把它分派到寄存器或内存；%%eax 硬编码具体寄存器（两个 % 是转义），编译器没法替它分配。
+2. Linux 无前缀（foo）；macOS 前缀下划线（_foo）；Windows 按约定也可能不同修饰。同一份 .s 三平台三个名字——用宏 `#ifdef __APPLE__ #define SYM(x) _##x #else #define SYM(x) x #endif` 在预处理期把名字折进去。
+3. -O2 会把它整个删掉：输出没人用，编译器认为这段代码没有可观察效果。volatile 防删除（保留执行）；"memory" 防的是编译器层的重排——告诉编译器内存被不知名地改写，它不敢把 asm 前后的内存访问跨越它重排（CPU 运行时重排是另一层，那是内存序的事）。
+4. 32 位栈帧布局 push ebp/mov ebp, esp 在 64 位是 push rbp；参数从栈上取（32 位 cdecl）在 64 位 System V 下应该从 rdi/rsi/rdx 取——取错地方读到垃圾；返回值塞 eax 只写低 32 位，rax 高位是垃圾。调用约定与寄存器宽度整套换血，必须按 64 位 ABI 重写。
+
+</details>
 
 ## 本章总结
 

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 认证（你是谁）与授权（你能干什么）的边界与各自攻击面：密码策略的演进逻辑、OAuth2 的委托授权本质、JWT 无状态与撤销的两难、RBAC/ABAC 选型与越权漏洞的共同根源，附动手练习与面试题思路。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/310-OAuth2OIDC'
   - 'cybersecurity/070-PasswordHash'
@@ -240,3 +240,11 @@ def require(perm: str):
   RBAC 是 ABAC 的特例，按决策因素是否依赖上下文来选；越权类漏洞的共同根源
   是「把认证当授权」，修复模式是把所有权判断收进数据访问层；协议细节见
   310-OAuth2OIDC，会话 Cookie 属性与失败安全见 330-SecureCodingPrinciples。
+
+## 自检
+
+- 用一句话向别人区分认证与授权，并说出「授权是每一次请求的事」对应哪类漏洞（越权——登录时查一遍，之后不再查）。
+- 遮住 2.1 的算力账，解释为什么 NIST SP 800-63B 方向从「复杂度正则」转向「长度 + 泄露库 + 限速」（用户对复杂度的反应是可预测模式，熵没有真正增加）。
+- MFA 为什么能挡住凭证填充？说出三种因素各自被单独攻破的方式。
+- 遮住第 3 节的模型表，写出 Session、Token、RBAC、ABAC 各自的适用场景与「决策是否依赖上下文」这条判断轴。
+- 一个接口同时做了「登录校验」和「从 URL 取 user_id 直接返回数据」——指出问题并写出修复模式（服务端从会话取身份 + 资源归属条件进数据访问层）。

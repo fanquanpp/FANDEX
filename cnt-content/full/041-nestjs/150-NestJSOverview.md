@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 零基础第一课：理解模块/控制器/服务三层结构与依赖注入，用 CLI 五分钟创建第一个 NestJS 应用。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'nestjs/160-ModuleControllerService'
   - 'nestjs/170-ValidationPipes'
@@ -57,9 +57,9 @@ NestJS 是一个用 TypeScript 编写的 Node.js 服务端框架，2017 年发�
 
 请求流向：**HTTP 请求 -> 控制器（校验参数）-> 服务（处理业务）-> 数据库 -> 响应**。这条线再往细里走还有守卫、管道、拦截器、异常过滤器（见[守卫与请求生命周期](/nestjs/200-GuardsAndLifecycle)），初学先记住主干。
 
-### 1.2 版本现状（2026-09）
+### 1.2 版本现状（2026-11）
 
-- NestJS 12 为当前稳定版（2026-08-28 发布）。要点：核心包 ESM-ready（存量 CJS 项目可继续运行、渐进迁移）；原生支持 Standard Schema 校验（zod、valibot、arktype 等统一接口）；CLI 现代化（Rspack 替代 webpack 构建选项、构建参数更丰富）；新增 `@nestjs/observe` 可观测 SDK；要求 Node.js 20.19+ 或 22.12+。
+- NestJS 12 为当前稳定版（2026-08-28 发布，最新为 12.5.x）。要点：核心包改为 ESM-only（存量 CJS 项目靠 Node.js 20.19+/22.12+ 的 `require(esm)` 继续运行，是否把自身代码切换成 ESM 由项目自主决定，不是升级 v12 的一部分）；原生支持 Standard Schema 校验（zod、valibot、arktype 等统一接口）；CLI 现代化（Rspack 替代 webpack 构建选项、构建参数更丰富）；新增 `@nestjs/observe` 可观测 SDK；要求 Node.js 20.19+ 或 22.12+。
 - NestJS 11（2025-01 发布）完成了 Express 5 与 Fastify 5 的默认升级，11.x 目前仍被广泛使用。
 - 新项目直接用 CLI 创建即可，CLI 会安装当前稳定版；升级存量项目按官方迁移指南（Migrations to v12）在 CI 先行验证。
 

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: NetDevOps 实践：配置即代码与 Git 工作流、变更流水线（干跑/Batfish 验证/灰度）、合规巡检与配置漂移治理。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/350-NetworkProgrammability'
   - 'networking/100-DNSDHCP'
@@ -179,6 +179,22 @@ Cisco 生态的团队；上面的 pytest 方案胜在零门槛、任何厂商可
    灰度设备不能省；
 6. **不要自动化无人理解的配置**：接手遗留网络时先补文档与基线巡检，再谈自动化——自动化复
    制的是你对现状的理解，理解错了就批量复制错误。
+
+## 教学自检
+
+按遮码自检法：遮住上文代码与表格，先自己推演，再对照。
+
+- 「配置即代码」的四个性质各对应软件工程的什么实践？为什么说「设备上的手工变更是漂移」？
+- 仓库里「意图（host_vars）」与「实现（模板/playbook）」分离的好处是什么？
+- 变更流水线六关各拦截什么问题？为什么全量下发排在灰度之后？
+- Batfish 验证的是配置的什么语义？它替代不了真机灰度的原因是什么？
+  （提示：不含硬件转发表溢出、QoS 队列等物理现实）
+- `filterLineReachability` 找死规则、`reachability` 断言可达性——两者分别对应变更评审的
+  哪类检查？
+- 巡检 pytest 脚本里 `assert "ntp server" in output` 表达了什么基线？用测试代码表达
+  「应该是什么样」比人工巡检好在哪？
+- 自动修复为什么必须分级推进？「错误的自动修复把局部故障放大成全局事故」举一例。
+- 核心设备下发为什么用 `serial: 1`？`max_fail_percentage` 防什么？
 
 ## 6. 小结
 

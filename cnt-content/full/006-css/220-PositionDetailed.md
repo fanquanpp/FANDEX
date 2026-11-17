@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: "从「头像右上角的红点角标」「滚到哪都吸住的表头」「贴着屏幕右下角的回到顶部按钮」三个真实需求出发，一次讲透 static/relative/absolute/fixed/sticky 五种参照系、inset 简写与居中套路，并给出 absolute 不听话、sticky 失效、fixed 被 transform 劫持这三类经典事故的排查路径。"
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/230-StackingContext'
   - 'css/240-CSS3FlexboxFlexLayout'
@@ -245,9 +245,64 @@ thead th {
 - 能复现并解释 transform 祖先劫持 fixed 的现象与修复；
 - 知道 z-index 只在同层叠上下文内比较，能列出至少四个会创建新上下文的属性。
 
+## 11. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2-3 节的示例代码自己写，再对照参考实现。
+
+**任务一**：不看正文实现三个组件——头像右上角未读角标（略出血 4px）、点击遮罩（铺满最近的卡片容器）、回到顶部按钮（滚多远都钉在视口右下 24px）。
+
+**任务二**：口算并修复——（a）sticky 表头不吸，代码里 `thead th { position: sticky; background: #fff; }` 外层包裹有 `overflow-x: auto`，问题在哪、补什么；（b）fixed 的客服按钮跟着页面滚动跑，祖先链上查什么属性。
+
+**提示**：任务一是「锚与钉」配对的两步动作：先给参照物 `relative`，再给钉子 `absolute`/`fixed` 写坐标（第 2、3.4 节）；任务二(a)的 sticky 缺的是阈值且滚动容器判定要看祖先 overflow（第 3.5 节），(b)是 transform 劫持（第 3.4 节）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.avatar {
+  position: relative; /* 参照物：当锚 */
+}
+
+.avatar .badge {
+  position: absolute; /* 钉：找最近的非 static 祖先 */
+  top: -4px;
+  right: -4px;
+}
+
+.card {
+  position: relative;
+}
+
+.card .overlay {
+  position: absolute;
+  inset: 0; /* 四边归零，拉伸铺满参照祖先 */
+  background: rgb(0 0 0 / 0.4);
+}
+
+.to-top {
+  position: fixed; /* 参照视口 */
+  right: 24px;
+  bottom: 24px;
+}
+
+/* 任务二 */
+/* (a) sticky 必须给阈值，否则等于没设；overflow-x: auto 的包裹就是它认定的
+       滚动容器，横向滚动容器同时接管了纵向判定——补 top 并确认滚动发生处 */
+thead th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+}
+
+/* (b) 逐层检查祖先的 transform / filter / will-change / backdrop-filter——
+       任何一个都会把 fixed 的包含块改成那个祖先；修复是把 fixed 元素挪出该祖先 */
+```
+
+验收点：任务一里删掉 `.avatar` 的 relative 后角标应飞到页面右上角——这是验证参照系的最快方法；任务二(a)补完 `top: 0` 后若仍不吸，下一步查包裹的 overflow 值，两个失效点要按顺序排查。
+
 ## 本章总结
 
-position 的五种值就是五张参照表：static 无参照，relative 认自己的原位（兼职当锚），absolute 找最近定位祖先（父元素记得 relative），fixed 认视口（被 transform/filter 祖先劫持是唯一大例外），sticky 认滚动容器且必须给阈值。坐标用 top/right/bottom/left 或 `inset` 简写；居中两法（50% 平移、inset 加 auto margin）；z-index 用变量分层、只在同一上下文内比大小。悬浮定位的下一代方案是 Anchor Positioning，先知道有它，手写坐标前想想能不能交给浏览器。
+position 的五种值就是五张参照表：static 无参照，relative 认自己的原位（兼职当锚），absolute 找最近定位祖先（父元素记得 relative），fixed 认视口（被 transform/filter/will-change 等祖先改写包含块是大例外），sticky 认滚动容器且必须给阈值。坐标用 top/right/bottom/left 或 `inset` 简写；居中两法（50% 平移、inset 加 auto margin）；z-index 用变量分层、只在同一上下文内比大小。悬浮定位的下一代方案是 Anchor Positioning，先知道有它，手写坐标前想想能不能交给浏览器。
 
 ## 下一步
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从「hover 时卡片轻轻抬起」出发，讲透 translate/scale/rotate/skew 一族函数与 transform-origin，用 perspective、preserve-3d、backface-visibility 搭出最小 3D 翻转卡，弄清 transform 只动合成层的性能真相，并学会配合 transition 做出丝滑过渡。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/330-CSSAnimationTransition'
   - 'css/220-PositionDetailed'
@@ -190,6 +190,47 @@ transform-origin 决定变换中心点，默认 `center`。同一句 `rotate(10d
 - 能预测 transform 链交换顺序后的落点差异，说清「先转后走」与「先走后转」；
 - 能解释 perspective 为什么挂在父容器、preserve-3d 缺了会怎样、backface-visibility 管什么；
 - 能复述三段流水线里 transform 跳过了哪两段与 fixed 失效副作用。
+
+## 13. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2-4 节的示例代码自己写，再对照参考实现。
+
+**任务一**：默写「hover 抬卡」完整版——上移 4px 加阴影加深，0.25s 过渡；并附 `prefers-reduced-motion` 降级（关闭位移、保留阴影反馈）；再回答为什么用 transform 而不是 margin-top 实现抬升。
+
+**任务二**：概念三连答——（a）perspective 写在父容器还是元素自身、写错位置会怎样；（b）preserve-3d 缺失时 3D 子元素会退化成什么；（c）为什么动 transform 不掉帧而动 margin 会卡。
+
+**提示**：任务一的「抬升」在第 2 节，降级块用第 330 篇的同款写法；margin-top 会触发重排并推挤兄弟元素，transform 只在合成层平移；任务二三问分别对应第 3-4 节的 3D 三件套与性能真相。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:hover { transform: none; } /* 关位移，阴影反馈保留 */
+}
+
+/* 为什么不用 margin-top：margin 改变布局几何，触发重排且推挤
+   兄弟元素；transform 不占布局空间、只在合成层移动 */
+
+/* 任务二 */
+/* (a) perspective 写在父容器：给整组子元素统一观察点；
+       写在翻转面自身时各面各有透视，翻转组会深浅不一、像被撕裂 */
+/* (b) 缺 preserve-3d：子元素的 3D 变换被压扁到各自平面，
+       翻转只剩 2D 缩放假象，立体感消失 */
+/* (c) transform 的变化走「合成」阶段：跳过布局与绘制两段，
+       主线程再忙也不掉帧；margin 每帧触发全文档几何重算 */
+```
+
+验收点：任务一里把 `transform: translateY(-4px)` 换成 `margin-top: -4px` 后，hover 一瞬间整列卡片会跳动——位移必须不参与布局；任务二(a)把 perspective 从父容器挪到 `.face` 上后可以亲手验证「两半各自透视」的撕裂感。
 
 ## 本章总结
 

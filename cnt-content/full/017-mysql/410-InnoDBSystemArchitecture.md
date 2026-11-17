@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: InnoDB存储引擎架构：聚簇索引、自适应哈希、变更缓冲、双写缓冲、事务日志、MVCC与Buffer Pool深度解析
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/710-SSLEncryption'
   - 'mysql/730-FirewallPlugin'
@@ -262,7 +262,7 @@ Redo Log 记录的是物理级别的页修改操作，用于崩溃恢复时重�
 SHOW VARIABLES LIKE 'innodb_log%';
 -- innodb_redo_log_capacity: redo 总容量（8.0.30+，在线可调；默认 100MB）
 -- innodb_log_buffer_size: 日志缓冲区大小
--- （innodb_log_file_size / innodb_log_files_in_group 已在 8.4 移除，勿再使用）
+-- （innodb_log_file_size / innodb_log_files_in_group 自 8.0.30 废弃、由 innodb_redo_log_capacity 取代，9.3.0 起移除）
 
 -- MySQL 8.0.30+ 动态调整 redo log 总容量
 SET GLOBAL innodb_redo_log_capacity = 4294967296;  -- 4GB
@@ -527,6 +527,26 @@ WHERE LOCK_MODE LIKE 'INTENTION%';
 | **S**  | 兼容 | 冲突 | 兼容 | 冲突 | 冲突       |
 | **X**  | 冲突 | 冲突 | 冲突 | 冲突 | 冲突       |
 | **AI** | 兼容 | 兼容 | 冲突 | 冲突 | 冲突       |
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：一次 `UPDATE` 从提交到落盘，经过哪些内存与磁盘结构？"随机写变顺序写"发生在哪一环？
+
+参考答案（先自己答，再对照）：修改先作用在 Buffer Pool 的数据页（脏页），同时写 redo log buffer；事务提交时 redo 顺序落盘（fsync redo log file），数据页由后台线程择机刷盘。脏页刷盘是随机 IO 且可能中断——双写缓冲先把脏页副本顺序写入共享表空间，崩溃时用它恢复半页，之后 redo 重放。顺序写 redo 是持久性保证（WAL），随机页的落盘被缓冲池延迟批量化。
+
+2. 概念自问：Change Buffer 解决什么问题？为什么对唯一索引无效？
+
+参考答案（先自己答，再对照）：二级索引页不在缓冲池时，把插入/更新对索引的变更先缓存在 Change Buffer，待该索引页被读入时再合并，把多次随机读合并成一次。唯一索引必须立即判断唯一性——判断就要把页读进来看现有值，"延迟合并"的前提（页不在内存）不成立，所以唯一索引与主键不走 Change Buffer。写多读少的二级索引收益最大。
+
+3. 判断题：自适应哈希索引（AHI）是 InnoDB 提供的普通索引类型，建表时要显式开启。
+
+参考答案（先自己答，再对照）：不对。AHI 是 Buffer Pool 之上的自动加速层：对热点页的等值查询模式自动在内存里建哈希映射，无需 DDL，由 `innodb_adaptive_hash_index` 控制（8.4 起默认已改为 OFF——高并发争用其分区锁反而拖累时，关掉更稳）。它不是索引类型，是查询路径的运行时优化，出问题也不会出现在 SHOW INDEX 里。
+
+4. 概念自问：Buffer Pool 的 LRU 为什么不用"纯 LRU"？全页扫（如报表查询）会带来什么风险？
+
+参考答案（先自己答，再对照）：纯 LRU 下一次全表扫描会把大量只读一次的页灌进链表头部，把真正热的数据页挤出去——缓冲池被"污染"，热数据命中率骤降。InnoDB 的改进：新页先放 young/old 分界的中点（5/8 与 3/8 处），在 old 区停留超过 innodb_old_blocks_time 且再次被访问才晋升 young 区——一次性扫描的数据留在 old 区自然淘汰。
 
 ## 11. 实战：InnoDB 架构参数调优
 

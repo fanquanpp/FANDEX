@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 以城市路牌为线索讲解 Astro 文件路由：静态路由、动态路由 [slug]、多级与 Rest 参数、嵌套路由、404、重定向与布局
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'astro/040-ComponentsProps'
   - 'astro/050-ContentCollections'
@@ -469,6 +469,48 @@ const { Content } = await render(doc)  // 把 Markdown 正文编译为组件
 | 404 页面不生效 | 访问不存在地址显示空白页 | 未创建 `src/pages/404.astro` | 创建 404.astro，配置好看的错误页 |
 | 旧链接失效 | 用户收藏的链接 404 | 改版后没有处理重定向 | 用 `astro.config.mjs` 的 `redirects` 配置 301 重定向 |
 | 子路径部署后样式丢失 | 图片、CSS 全部 404 | 部署在 `/repo/` 子路径但未配置 `base` | 在 `astro.config.mjs` 配置 `base: '/repo/'`，链接使用 `/repo/` 前缀 |
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写 `src/pages/blog/[slug].astro` 的最小骨架：静态模式下为三篇文章（hello、astro-guide、islands）各生成一个页面，页面里显示标题与路由参数。
+
+   参考答案（先自己写，再对照）：
+
+   ```astro
+   ---
+   export async function getStaticPaths() {
+     const posts = [
+       { slug: 'hello', title: '你好，世界' },
+       { slug: 'astro-guide', title: 'Astro 入门指南' },
+       { slug: 'islands', title: '岛屿架构详解' },
+     ]
+     return posts.map((post) => ({
+       params: { slug: post.slug },
+       props: { title: post.title },
+     }))
+   }
+   const { slug } = Astro.params
+   const { title } = Astro.props
+   ---
+   <h1>{title}</h1>
+   <p>/blog/{slug}</p>
+   ```
+
+   验收点：params 的键必须与 `[slug]` 的占位符同名；props 是构建期传给页面的任意数据，经 `Astro.props` 读取。
+
+2. `src/pages/docs/[...path].astro` 会匹配哪些 URL？写出三个例子及每个例子里 `Astro.params.path` 的值。
+
+   参考答案（先自己写，再对照）：
+
+   `/docs/getting-started` 对应 `path: 'getting-started'`；`/docs/guides/deploy` 对应 `path: 'guides/deploy'`；`/docs/guides/deploy/vercel` 对应 `path: 'guides/deploy/vercel'`。Rest 参数吞掉任意深度，值为不带开头斜杠的完整路径段。
+
+3. 自定义 404 页面的文件名是什么？为什么说"移动文件后旧地址失效"构建不报错？
+
+   参考答案（先自己写，再对照）：
+
+   文件名是 `src/pages/404.astro`，静态模式下构建为 `404.html`，由托管平台在未命中路由时返回。文件路由是"文件名即 URL"的映射：删除或移动文件只改变产物清单，没有任何代码引用检查，旧 `<a href>` 依然指向不存在的地址——运行时才表现为 404，所以改路由要同步排查站内链接。
 
 ## 10. 一句话记忆
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: "从「导航条 logo 在左、菜单在右、窗口一拉就散架」出发，用 display: flex 加 justify-content 三行代码排稳一行内容，吃透 flex: 1 背后的 grow/shrink/basis 三兄弟与空间分配算术，再收下居中、侧栏、吸底页脚、卡片墙四个高频模式与 min-width: auto 这个头号坑。"
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/250-CSS3GridGridLayout'
   - 'css/690-GridQuickStart'
@@ -235,6 +235,53 @@ img {
 - 给定容器宽度、gap 与各项目 grow/basis，能手算每个项目的最终宽度；
 - 「项目被内容撑爆」时第一反应是查 `min-width: auto`，「挤不下」第一反应是查 `flex-wrap`；
 - 拿到一个布局截图，能说出哪部分归 Flex、哪部分该交给 Grid。
+
+## 12. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2-4 节的示例代码自己写，再对照参考实现。
+
+**任务一**：不查资料实现两个模式——「吸底页脚」（内容不满一屏页脚也贴底，页面不许出现滚动条）与「固定 220px 侧栏 + 自适应正文」（正文里有超宽表格也不许把布局撑开）。
+
+**任务二**：手算并验证——容器 800px、`gap: 16px`，三个项目依次 `flex: 0 0 160px`、`flex: 1`、`flex: 2`。先写下三个项目的最终宽度，再写一句「为什么把中间改成 `flex: auto` 后结果不再可预测」。
+
+**提示**：任务一分别对应第 4 节模式表的第三、四行，注意「超宽表格」那条要配 `min-width: 0`（第 6 节错误一）；任务二先算可用空间（扣掉 gap），再按 grow 比例分配（第 3.2 节），`auto` 的本质是 basis 变成「内容宽度」。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一：吸底页脚 */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page .content {
+  flex: 1; /* 吃掉剩余高度，把页脚压到底部 */
+}
+
+/* 任务一：固定侧栏 + 自适应正文 */
+.layout {
+  display: flex;
+}
+
+.sidebar {
+  flex: 0 0 220px; /* 不放大不缩小，钉死 220px */
+}
+
+.main {
+  flex: 1;
+  min-width: 0; /* 允许被压缩：表格等固有宽内容不再撑爆布局 */
+}
+
+/* 任务二 */
+/* 可用空间 = 800 - 2 × 16 = 768px；固定项占 160px，剩 608px 按 1 : 2 分 */
+/* 三项依次：160px、约 202.7px、约 405.3px */
+/* 改 flex: auto 后 basis 变成「各自内容宽度」，内容一变分配就变——
+   宽度不再由样式单方面决定，所以不可预测；等宽场景必须用 flex: 1 */
+```
+
+验收点：任务一吸底页脚若写成 `height: 100vh` 而不是 `min-height`，内容超过一屏时页脚会被推到滚动区外；侧栏场景删掉 `min-width: 0` 后塞一张大表格立刻复现横向滚动条——这是 Flex 头号坑的复现脚本。
 
 ## 本章总结
 

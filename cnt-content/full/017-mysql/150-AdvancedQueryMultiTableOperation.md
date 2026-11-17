@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 在充电桩多表数据上完成进阶查询：分组聚合与 GROUP_CONCAT、子查询、CTE 与递归 CTE 主线，窗口函数仅留最小样板并桥接 152 方言专篇，全部基于 MySQL 8.4。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/140-MultiTableJoinDetailed'
   - 'mysql/380-GroupByOrderByOptimization'
@@ -239,6 +239,37 @@ WHERE ROW_NUMBER() OVER (ORDER BY revenue DESC) = 1;
 - NOT IN 的子查询列排除 NULL 了吗，还是直接用了 NOT EXISTS？
 - 用了 GROUP_CONCAT 的地方确认过长度上限吗？
 - 报表数字对不上时，检查过一对多 JOIN 的金额放大问题吗（COUNT(DISTINCT)/先聚合后 JOIN）？
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出查询：每根桩按日收入排名后，取每天的前 2 名。说清为什么要两层而不是把窗口函数直接写进 WHERE。
+
+参考答案（先自己写，再对照）：
+
+```sql
+SELECT * FROM (
+  SELECT charge_day, charger_id, revenue,
+         ROW_NUMBER() OVER (PARTITION BY charge_day ORDER BY revenue DESC) AS rn
+  FROM daily_revenue
+) t
+WHERE rn <= 2;
+```
+
+窗口函数在 SELECT 阶段求值，WHERE 在它之前执行——WHERE 里引用 rn 或写 ROW_NUMBER() 都是 `ERROR 3593`。规则：窗口函数的结果要过滤，必须先在派生表/CTE 里算好，外层再 WHERE。"内层开窗、外层过滤"是 TopN 类查询的固定骨架。
+
+2. 概念自问：GROUP_CONCAT 的结果"看起来被截断"时，第一反应查什么？为什么没有报错？
+
+参考答案（先自己答，再对照）：查 `@@group_concat_max_len`（默认 1024 字节）——超出部分**静默砍头**，没有警告，报表数字"看起来正常"其实是半截。防法：确认该值足够（SET SESSION 或全局调大）再用；或改用 JSON_ARRAYAGG（受 max_allowed_packet 约束、行为更明确）。凡是聚合出长文本的场景，先验证参数再信任输出。
+
+3. 判断题：`WITH ROLLUP` 加 `ORDER BY` 可以让汇总行排在最后。
+
+参考答案（先自己答，再对照）：不行，二者互斥（同用直接报错）。ROLLUP 的汇总行位置由实现固定、不可排序控制；MySQL 里要"小计紧跟分组"的版式只能程序侧拼装或拆两条查询。理解这一点能省掉大量"为什么排序不生效"的调试时间。
+
+4. 概念自问：写递归 CTE 前要确认的三件事是什么？漏了"终止条件"会发生什么？
+
+参考答案（先自己答，再对照）：锚点（从哪行开始）、递推（下一层怎么由上一层生成）、终止（WHERE 层数上限或自然枯竭）。漏终止条件时递归撞上 `cte_max_recursion_depth`（默认 1000）报 `ERROR 3636`——这是保护网不是设计意图；调大它要配正当理由（真有 1000+ 层的数据），否则它挡住的正是写错的递归。
 
 ## 练习
 

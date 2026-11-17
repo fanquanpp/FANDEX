@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: translate、rotate、scale、skew、matrix 与 transform-origin 变换组合。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'svg/030-SVGCoordinateSystemViewBox'
   - 'svg/080-SVGGradientPattern'
@@ -15,15 +15,7 @@ prerequisites:
   - 'svg/030-SVGCoordinateSystemViewBox'
 ---
 
----
-
-> 前置知识：用户坐标系与 viewBox（《SVG 坐标系统与 viewBox》，003-SVGCoordinateSystemViewBox）；本文的矩阵运算只需要高中水平的二元一次方程。
->
-> 学习目标：掌握五种变换函数的参数含义与坐标效果；理解"变换列表从右往左作用于坐标"这一核心规则；会用 rotate(angle cx cy) 与 transform-box/transform-origin 两种方式指定旋转中心；能识别绕原点旋转、描边被缩放两大经典陷阱。
-
----
-
-> 前置知识：用户坐标系与 viewBox（《SVG 坐标系统与 viewBox》，003-SVGCoordinateSystemViewBox）；本文的矩阵运算只需要高中水平的二元一次方程。
+> 前置知识：用户坐标系与 viewBox（《SVG 坐标系统与 viewBox》，030-SVGCoordinateSystemViewBox）；本文的矩阵运算只需要高中水平的二元一次方程。
 >
 > 学习目标：掌握五种变换函数的参数含义与坐标效果；理解"变换列表从右往左作用于坐标"这一核心规则；会用 rotate(angle cx cy) 与 transform-box/transform-origin 两种方式指定旋转中心；能识别绕原点旋转、描边被缩放两大经典陷阱。
 
@@ -251,7 +243,7 @@ CSS transform 也可作用于 SVG 元素，但需注意坐标系差异。
 
 ## 7. animateTransform 变换动画
 
-SMIL 提供 `<animateTransform>` 专门用于变换动画。它的定义如今在独立的 SVG Animations 规范中（SVG 2 本体不强制要求实现），社区方向是 CSS 动画与 Web Animations API；不过所有主流浏览器至今仍完整支持，独立 `.svg` 文件（无法挂外部 CSS 的场景）里它仍是零依赖动画的首选，详见《SVG 动画基础》（013-SVGAnimationBasics）。
+SMIL 提供 `<animateTransform>` 专门用于变换动画。它的定义如今在独立的 SVG Animations 规范中（SVG 2 本体不强制要求实现），社区方向是 CSS 动画与 Web Animations API；不过所有主流浏览器至今仍完整支持，独立 `.svg` 文件（无法挂外部 CSS 的场景）里它仍是零依赖动画的首选，详见《SVG 动画基础》（140-SVGAnimationBasics）。
 
 ```html
 <svg viewBox="0 0 200 200">
@@ -389,6 +381,31 @@ SMIL 提供 `<animateTransform>` 专门用于变换动画。它的定义如今�
   <!-- 实际显示 200×200 -->
 </svg>
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 预测题：`transform="translate(100,100) rotate(45)"` 与 `transform="rotate(45) translate(100,100)"` 画出的矩形一样吗？哪个函数先作用到元素自己的坐标？
+
+2. 手写题：让一个 100×100 的 rect 绕自身中心持续旋转（CSS 动画）。两句关键 CSS 是什么？少写哪一句会"转出画面"？
+
+3. 修 Bug 题：`<rect x="100" y="50" width="50" height="50" transform="scale(2)" />` 画完"跑到了 (200,100) 且描边变粗"——解释原因，并给出修正思路。
+
+4. 概念自问：指定旋转中心的两种写法分别是什么？各属于属性写法还是 CSS 写法？
+
+<details>
+<summary>参考答案（先自己写，再展开对照）</summary>
+
+1. 不一样。变换列表"从右往左"依次作用到坐标：前者先 rotate 再 translate（矩形被甩到别处旋转），后者先 translate 再 rotate（矩形在 (100,100) 处原地旋转）（正文第 4 节）。
+
+2. `transform-box: fill-box;` 与 `transform-origin: center;`。缺 fill-box 时参考框默认是整个 viewBox，origin:center 会算成 viewBox 中心，元素绕它转常常"转出画面"（正文 5.1 与 140 篇的坑）。
+
+3. scale 放大的是整个坐标系：元素自己的坐标 (100,50) 被乘 2 变成 (200,100)，描边宽度也跟着放大 2 倍。修正思路一：把元素画在原点附近、用 translate 负责定位（注意顺序）；思路二：描边不随缩放可给元素加 070 篇的 `vector-effect="non-scaling-stroke"`（正文 10.2）。
+
+4. 属性写法 `rotate(angle cx cy)`；CSS 写法 `transform-origin`（配合 transform-box 选参考框）。两者最终走同一条渲染管线（正文第 5、6 节）。
+
+</details>
 
 ## 小结
 

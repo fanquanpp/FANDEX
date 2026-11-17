@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 向量搜索与RAG
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'python/870-PythonOAuth2'
   - 'python/910-PythonWebSocket'
@@ -567,3 +567,12 @@ qa_chain = RetrievalQA.from_chain_type(
 result = qa_chain.invoke({"query": "Python 中如何扩展函数功能？"})
 print(result["result"])
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 口述题：向量数据库解决什么关系型数据库不解决的问题？要点：按「语义相似度」检索——存 embedding 向量，用近似最近邻（ANN）找「意思最近的 K 条」；SQL 的等值/范围条件表达不了「相似」。
+2. 默写题：把一批文本入库并按查询取 top-5，写出核心调用。要点：`collection.add(ids, embeddings, documents, metadatas)`；`collection.query(query_texts=[...], n_results=5)`——embedding 与查询必须用同一模型生成，否则空间不可比。
+3. 预测题：把 100 万条向量全量精确比对每秒只能查几百次，标准解法是什么？要点：ANN 索引（HNSW/IVF 等）用「可能漏一点召回率」换数量级的速度提升；参数是召回-速度的旋钮，按业务容忍度调。
+4. 纠错题：RAG 管道里检索回来的片段直接塞进 prompt 不带出处。错在哪？要点：答案无法溯源、幻觉无从校验；正确做法带 source document 与位置元数据，让「引用来源」成为回答的一部分。

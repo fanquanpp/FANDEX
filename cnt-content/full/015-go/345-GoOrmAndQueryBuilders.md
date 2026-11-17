@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: database/sql 之上的数据访问层三流派：GORM 链式 API、sqlc 先写 SQL 后生成类型安全代码、ent 图谱式建模——同一套账户与转账场景三种实现对比，附选型决策表与练习
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -396,3 +396,48 @@ func Transfer(ctx context.Context, sqlDB *sql.DB, q *db.Queries,
 - ent 官方文档（https://entgo.io/docs/ ，Apache-2.0 许可）
 - 场景素材：本仓库 340-GoDatabase 连接池与事务场景的续作，
   590-GoWebDevelopmentMicroservice 原 §6.2 GORM 速写的扩写
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（什么时候不需要 ORM）**：一个报表接口要跑一条 40 行的分析 SQL（多级 join + 窗口函数）。用 GORM 的 Query 写、squirrel 拼、还是直接 db.Query？给出选择与理由。
+
+参考答案：直接 `db.Query` + 原生 SQL。理由：分析型 SQL 的价值全在 SQL 本身（执行计划、索引提示、窗口函数语义），任何 ORM/构建器的抽象都会在某个子句处漏出去，最后变成"抽象里混着字符串"的四不像。ORM 的甜点区是 CRUD 与模型生命周期管理，不是分析查询；判断句是"SQL 长度超过 ORM 链式调用能自然表达的范围，就回归原生 SQL"。
+
+**题 2（N+1 的识别与修复）**：列表页查出 20 篇文章，每篇再单独查作者——写出这个反模式与 Preload（GORM 风格）修复版，并说出修复后的 SQL 条数。
+
+参考实现：
+
+```go
+// 反模式：1 + 20 条 SQL
+var posts []Post
+db.Find(&posts)
+for i := range posts {
+    db.First(&posts[i].Author, posts[i].AuthorID)
+}
+
+// 修复：2 条 SQL（列表 + IN 预加载）
+db.Preload("Author").Find(&posts)
+```
+
+要点：N+1 的识别信号是"循环里出现 db.First/db.Find"；IN 批量预加载把 N+1 压成 2。更激进的方案是 JOIN 一次取回（`Joins("Author")`），代价是列重复传输。监控侧看慢查询日志里同型 SQL 的执行次数突增，是 N+1 最早的信号。
+
+**题 3（构建器防注入）**：用 squirrel 写"按可选条件过滤"的查询（用户可能传 status、minPrice、maxPrice）。写出代码，并指出"字符串拼接 WHERE"的注入点在哪。
+
+参考实现：
+
+```go
+q := sq.Select("*").From("orders")
+if status != "" {
+    q = q.Where(sq.Eq{"status": status}) // 参数化：值走占位符
+}
+if minPrice > 0 {
+    q = q.Where(sq.GtOrEq{"price": minPrice})
+}
+rows, args, err := q.PlaceholderFormat(sq.Dollar).ToSql()
+```
+
+注入点：把用户输入直接 `fmt.Sprintf("WHERE status = '%s'", input)` 拼进 SQL——单引号闭合即可注入任意子句。构建器的价值就是强制"结构走字符串、数据走参数"的分离；列名这种"结构位"若也要用户可控，必须走白名单映射，不能直接拼。

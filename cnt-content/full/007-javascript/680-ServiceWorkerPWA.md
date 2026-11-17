@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 离线优先：Service Worker 生命周期、缓存策略与 PWA 安装体验。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'javascript/460-StorageForTheWeb'
   - 'javascript/440-FetchApiAndAbortController'
@@ -864,6 +864,26 @@ navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
 2. **运行时缓存清理器**：实现按"最大缓存条目数"的 LRU 清理逻辑，在 activate 与每次 cache.put 后触发。思路：Cache API 没有顺序保证，需要自己维护 key 的时间戳索引（可存于 IndexedDB），超出上限时从最旧开始删除。
 
 3. **安装转化埋点**：统计安装弹窗的曝光、接受与拒绝次数，并验证"收藏行为之后再弹窗"是否提升转化。思路：暂存 beforeinstallprompt，把 prompt() 的调用挂在收藏按钮的点击回调上，用 userChoice 结果作为埋点事件上报。
+
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 口述 Service Worker 的完整生命周期：从注册到接管页面要经过哪些事件，为什么第一版页面不受 SW 控制；
+2. 三种缓存策略（cache-first、network-first、stale-while-revalidate）各自适合什么资源？给「静态指纹资源 / 天气数据 / 一般页面」各配一个并说理由；
+3. 新版本 SW 上线后，老用户拿到新代码需要哪几步（install → skipWaiting/clients.claim → activate 删旧缓存）？写出 activate 里清理旧缓存的白名单写法；
+4. 手写「fetch 失败回退离线兜底页」的事件处理分支——哪些请求永远不该被 SW 缓存（至少两类）；
+5. 判断题：`Cache API` 里的缓存会自动过期——对吗？过期控制该由谁做。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：register → installing（install 事件：预缓存）→ installed → waiting → activating（activate 事件：清旧缓存）→ activated 接管 fetch；第一版页面注册时 SW 还没 activated，页面不在其控制范围，要第二次导航或 `clients.claim()` 才接管；
+- 第 2 问：cache-first 配静态指纹资源（文件名带 hash，命中即最优）；network-first 配天气数据（新鲜度优先、断网才回退缓存）；stale-while-revalidate 配一般页面（先用缓存保速度，后台异步更新下一次用）；
+- 第 3 问：新版 install 后调用 `self.skipWaiting()`，页面侧 `clients.claim()` 让新 SW 立即接管；activate 里 `caches.keys()` 过滤出不在白名单（当前版本前缀）的 key 逐个 `caches.delete()`——不清旧缓存会让存储无限增长；
+- 第 4 问：`fetch 事件`里 `event.request.mode === 'navigate'` 失败时 `caches.match('/offline.html')` 兜底；永远不缓存的有 POST 等非 GET 请求与用户私有 API 响应（含鉴权头的请求），缓存它们会泄漏隐私或破坏语义；
+- 第 5 问：不对——Cache API 没有任何过期语义，条目永久留存；过期控制由应用自己做（存时间戳、activate 清理、版本化缓存名、stale-while-revalidate 的后台刷新）。
+</details>
 
 ## 附录：Service Worker 事件生命周期
 

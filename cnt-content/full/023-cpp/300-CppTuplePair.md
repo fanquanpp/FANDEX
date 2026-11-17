@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++ tuple 与 pair 完整教学：构造与访问、字典序比较、tie/apply/tuple_cat、多返回值实践、C++23 tuple-like 增强。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/320-StructuredBinding'
   - 'cpp/310-CppVariantOptionalAny'
@@ -344,3 +344,59 @@ std::tuple<Ts...>&)`，把任意 tuple 的元素逐个打印；再给每个元�
 - C++23 的 tuple-like 协议统一了 pair/tuple/array 与新 ranges 视图的互操作；
 - 接口边界上的「位置语义」应让位于结构体成员名——tuple 的最佳活动范围是函数内部
   与泛型库内部。
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：同一份「从函数返回两个值」的需求写两版——`std::pair` 版与 `std::tuple` + 结构化绑定版，并用 `std::get`、`std::tuple_size` 各做一次访问；然后回答：为什么「三个以上返回值」时结构化绑定 + tuple 仍不如自定 struct？
+
+**提示**：`pair` 用 `.first/.second`，`tuple` 用 `std::get<I>`；结构化绑定 `auto [a, b] = ...` 两种都能接。三值以上时 `get<2>` 这种魔法数字在调用点完全不可读。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <tuple>
+#include <string>
+#include <print>
+
+std::pair<int, std::string> divMod(int a, int b) {
+    return {a / b, std::to_string(a % b)};   // 示意：商 + 余数说明
+}
+
+std::tuple<int, int, double> stats(const std::vector<int>& v) {
+    return {v.size(), *std::ranges::min(v), *std::ranges::max(v)};
+}
+
+int main() {
+    auto [q, rem] = divMod(17, 5);           // 结构化绑定接 pair
+    auto [n, lo, hi] = stats({3, 1, 4, 1, 5});
+    std::println("{} {} | {} {} {}", q, rem, n, lo, hi);
+    std::println("get<1> = {}", std::get<1>(stats({3, 1, 4, 1, 5})));
+    static_assert(std::tuple_size_v<std::tuple<int, int, double>> == 3);
+}
+```
+
+要点自查：结构化绑定让 tuple 的「位置语义」被名字暂时遮住，但**跨函数边界的位置语义仍然脆弱**——增删一个字段所有绑定点都要检查；公开 API 返回命名 struct，tuple 留给局部代码与泛型代码。
+
+**任务二**：解释下面代码为什么编译失败，并给出两个正确修法（`std::tie` 与 `std::make_tuple`）：
+
+```cpp
+std::tuple<int, std::string> t;
+t = {1, "hi"};            // 编译失败？
+```
+
+**提示**：`{1, "hi"}` 是花括号初始化列表，它没有确定类型，tuple 的赋值运算符不能匹配它——先物化成 tuple 再赋值。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// 修法一：make_tuple 物化
+t = std::make_tuple(1, std::string("hi"));   // 注意 make_tuple 会把 "hi" 推成 const char*
+// 修法二：tie 反向解开（把 tuple 拆到已有变量）
+int n; std::string s;
+std::tie(n, s) = std::make_tuple(1, std::string("hi"));
+// 最直接的修法其实是构造时初始化：std::tuple<int, std::string> t{1, "hi"};——花括号用于构造 OK
+```
+
+要点自查：花括号列表对「构造」友好、对「赋值」不行——tuple 赋值只接受 tuple 类型的右值；`std::tie` 的主场景是「拆包到既有变量」，不是构造。

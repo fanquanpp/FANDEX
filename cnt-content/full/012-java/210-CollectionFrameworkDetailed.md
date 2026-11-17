@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: List、Set、Map 体系及迭代器与比较器。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/110-ArrayDetailed'
   - 'java/620-JVMTuning'
@@ -1199,3 +1199,13 @@ List<String> result = list.stream().collect(Collectors.toList());
 // 统计流中元素个数
 long count = list.stream().count();
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. ArrayList 与 LinkedList 的随机访问、头插、中间插删的复杂度各是多少？——ArrayList：随机访问 O(1)，头插 O(n)，中间插删 O(n)（搬移）；LinkedList：随机访问 O(n)，头插/头删 O(1)，中间插删定位 O(n) 后改链 O(1)。
+2. HashSet 的底层是什么？TreeSet 的排序依据来自哪里？——HashSet 底层是 HashMap（元素当 key）；TreeSet 底层 TreeMap，按 Comparable 自然序或传入 Comparator 排序。
+3. HashMap 与 TreeMap 的 key 各有什么要求？——HashMap：key 的 equals/hashCode 一致且最好不可变；TreeMap：key 可比较（Comparable 或 Comparator），否则 ClassCastException。
+4. 遍历时删除元素的正确姿势是什么？直接 list.remove 会怎样？——用 Iterator.remove() 或 removeIf()；for-each 中直接 remove 触发 ConcurrentModificationException（fail-fast 检查 modCount）。
+5. 选型一句话：频繁随机读、频繁头尾增删、去重保序、有序去重分别选什么？——ArrayList、ArrayDeque/LinkedList、LinkedHashSet、TreeSet。

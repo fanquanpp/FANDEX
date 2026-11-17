@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 认识 Konado 的定位版本与三许可证模式，完成插件安装并按官方推荐配置好视觉小说项目
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related:
   - 'konado/020-KonadoArchitecture'
   - 'godot/160-KonadoVisualNovelFramework'
@@ -41,7 +41,7 @@ Konado 的成熟度有据可查：它已被收录进 Godot 官方维护的 aweso
 
 Konado 文档站提供两个版本入口：标签为"2.4 LTS"的长期支持版（LTS, Long Term Support）与 latest（最新线）。LTS 版本（2.4）提供 18 个月的维护支持，适合追求稳定、不想追新的项目；latest 则跟随最新特性演进。
 
-最新的正式发布是 v2.8.0，发布于 2026 年 9 月 7 日，2.8 系列使用代号 Nanguoli（南果梨）；上一个系列 2.7.x 的代号是 Wontons（馄饨）。仓库 main 分支的 plugin.cfg 已更新为 2.8.1，说明 2.8 系列仍在持续推进。
+最新的正式发布是 v2.8.1，发布于 2026 年 11 月 8 日，2.8 系列使用代号 Nanguoli（南果梨）；该系列的起点 v2.8.0 发布于 2026 年 9 月 7 日，上一个系列 2.7.x 的代号是 Wontons（馄饨）。2.8.1 是同代内的增量发布：默认模板新增 Backlog（对话历史）面板并支持点击历史条目回退（机制见 080 篇），引入稳定错误 ID 体系与统一的 KonadoResult 结果约定（错误码体系与 KonadoResult 见 100 篇，类型总览见 020 篇），并修复了 actor move 之后存档与回退恢复错位的问题。
 
 需要特别注意：2.4 到 2.8 是一次破坏性大版本升级，两代 API 不兼容。最直观的变化是节点与类的命名前缀：2.4 使用 KND_ 前缀，2.8 统一改为 Konado 前缀。如果你在网上搜到旧教程，代码里 KND_DialogueManager 之类的写法多半来自 2.4 时代。下面是关键改名对照的节选：
 

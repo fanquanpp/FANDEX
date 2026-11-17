@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: logging模块与日志配置
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'python/100-FunctionDetailed'
   - 'python/750-PythonTest'
@@ -578,3 +578,12 @@ except ZeroDivisionError:
 # 结构化日志
 logger.info("用户登录", user_id=123, ip="192.168.1.1")
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：标准库路线的最小骨架——模块级 logger、一条文件 handler、格式带时间与级别。要点：`logger = logging.getLogger(__name__)`；`handler = logging.FileHandler("app.log", encoding="utf-8")`；`handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"))`；`logger.addHandler(handler)`；级别用 `logger.setLevel(logging.INFO)`。
+2. 纠错题：`logging.info("程序启动")` 为什么在生产代码里是坏习惯？要点：走的是 root logger 且只输出未配置的 warning 级别；模块级日志一律 `getLogger(__name__)`，配置权交给应用入口。
+3. 默写题：在 except 块里把完整堆栈写进日志，写一行。要点：`logger.exception("计算出错")`——等价 `error(..., exc_info=True)`，只有 except 块里才有堆栈可挂。
+4. 对比题：stdlib 的 `extra={'user_id': 123}` 与 structlog 的 `user_id=123` 差在哪？要点：前者要自己在 formatter 里取 `record.user_id`，后者天然产出结构化 JSON 字段——生产选型看消费端是 grep 还是日志平台。

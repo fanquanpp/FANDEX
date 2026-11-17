@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: intermediate
 description: 把全模块串成一件作品：资源表与项目骨架、开场演出、选项分支与好感度、signal/waitsignal 剧本代码协作、成就收集、存档回退验收，以及向本地化与定制扩展的接口位。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'konado/070-KonadoDialogueManagerApi'
   - 'konado/090-KonadoSceneAssetsAndCustomization'
@@ -223,7 +223,7 @@ func _play_thunder(sfx_id: String) -> void:
 
 1. `custom_signal(content)` 传的是剧本原文，约定"动作名 + 空格 + 参数"的协议（060 篇官方示例同款模式），编剧就能在剧本里自由触发程序行为。
 2. `emit_wait_signal("thunder_done")` 的参数必须与 `waitsignal` 的名字完全一致，漏发一次剧本就永久卡住——联调时把"等待超时警告"当第一嫌疑。
-3. 回退跨越 signal 会重新发射：如果这个协协议里做了"真实付费、写成就库"之类不可重放的事，要按 080 篇练习二的模式做幂等（按指令 ID 去重）。
+3. 回退跨越 signal 会重新发射：如果这个协议里做了"真实付费、写成就库"之类不可重放的事，要按 080 篇练习二的模式做幂等（按指令 ID 去重）。
 
 ## 5. 验收清单：四项功能测试
 

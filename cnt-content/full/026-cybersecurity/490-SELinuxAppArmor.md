@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'SELinux 与 AppArmor： enforcing/permissive 模式管理、布尔值与策略查看、自定义规则与审计日志排查'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/520-SecurityBaseline'
   - 'cybersecurity/510-AuditdCommands'
@@ -15,6 +15,10 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+- **解决什么问题**：传统 DAC（自主访问控制）只回答「文件属主给没给权限」，给了 root 的进程照样横行——MAC（强制访问控制）在 DAC 之上再绑一道「进程只能做策略允许的事」。SELinux（RHEL 系，类型强制 TE）与 AppArmor（SUSE/Ubuntu 系，按程序配置）是两大实现，本篇是两者的命令面。
+- **容易怎么错**：出问题先 `setenforce 0` 再也不改回（等于拔掉整个机制，正确姿势是查 AVC 日志改策略或布尔值）；把 `/` 递归改上下文（速度慢且易误标）；AppArmor 语义下以为「文件 755」就是权限上限（MAC 另算）；调优只看服务报错不看审计日志。
+- **学完能做什么**：读懂 SELinux 的三种模式与上下文字段，用 `ausearch`/`audit2allow` 修复一条策略；为 AppArmor 写一条最小化 profile 并处理 complain/enforce 切换。
 
 ## SELinux 状态管理
 
@@ -429,3 +433,11 @@ docker run --security-opt label:type:svirt_apache_t nginx
 # 查看 HTTPD 相关布尔值
 getsebool -a | grep httpd
 ```
+
+## 自检
+
+- 用「DAC 之上再绑一道」一句话解释 MAC 解决什么问题，并举一个「root 也救不了」的 SELinux 拦截例子。
+- SELinux 三种模式（enforcing/permissive/disabled）各在什么阶段用？为什么「permissive 先观察再 enforce」是安全上线姿势而 `setenforce 0` 不是。
+- 遮住「日志分析」一节，写出「查最近一条 httpd 的 AVC 拒绝并用 audit2allow 生成策略」的命令序列。
+- SELinux 与 AppArmor 的模型差异是什么？（类型强制 TE 基于全系统类型标签 vs 按程序的 profile。）
+- 遮住「布尔值」一节，写出「放开 httpd 网络连接布尔值」的命令，并解释布尔值为什么比改策略模块安全。

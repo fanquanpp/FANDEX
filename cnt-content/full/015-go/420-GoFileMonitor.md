@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go 与文件监控：fsnotify、inotify/kqueue/ReadDirectoryChangesW 跨平台机制、事件去重、递归监听、热重载与生产级最佳实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/430-GoSignalHandling'
   - 'go/390-GoConfigManagement'
@@ -1948,3 +1948,60 @@ EOF
 ---
 
 > 本文档以 Go 1.22 与 fsnotify v1.7 为基准，系统阐述文件系统监控的跨平台机制、事件去重、递归监听、热重载、安全审计等工程实践。文中所有代码示例均经过简化但可直接用于生产环境。随着 Linux fanotify、macOS FSEvents 的演进，建议持续关注内核与社区工具的最新进展。
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（事件风暴的抑制）**：编辑器保存一个文件会触发 WRITE、CREATE、CHMOD、RENAME 多个事件。写出"去抖 + 合并"的处理骨架，并解释为什么 channel 缓冲比 time.Sleep 更合适。
+
+参考实现：
+
+```go
+const debounce = 200 * time.Millisecond
+
+func handleEvents(evts <-chan fsnotify.Event) {
+    timer := time.NewTimer(0)
+    if !timer.Stop() {
+        <-timer.C
+    }
+    for {
+        select {
+        case e, ok := <-evts:
+            if !ok {
+                return
+            }
+            pending[e.Name] = struct{}{} // 合并：同文件多事件只记一次
+            timer.Reset(debounce)        // 去抖：静默期后统一处理
+        case <-timer.C:
+            for name := range pending {
+                reload(name)
+            }
+            pending = map[string]struct{}{}
+        }
+    }
+}
+```
+
+要点：编辑器"先写临时文件再 rename"的多事件风暴靠时间窗合并；`timer.Reset` 模式注意先 Stop 排空旧值（1.27 起 Timer/Ticker channel 恒无缓冲，Reset 语义更干净）。用 sleep 串行等待会把事件循环卡死，channel+timer 保持循环响应性。
+
+**题 2（递归监听的补建）**：监控目录树期间，子目录被新建——如何保证新目录也被监听？写出骨架并说明丢失事件的窗口在哪。
+
+参考实现：
+
+```go
+// 收到 CREATE 且 IsDir 时立即 Add
+case e := <-watcher.Events:
+    if e.Has(fsnotify.Create) && isDir(e.Name) {
+        watcher.Add(e.Name)
+        scanExisting(e.Name) // 补扫目录里已有的文件
+    }
+```
+
+要点：窗口在"目录创建"与"watcher.Add"之间——期间写入的文件事件会丢，所以 Add 后要补扫一次目录内容。这是所有文件监控方案（fsnotify、fanotify、FSEvents）的共同限制，不存在零窗口的通用解。
+
+**题 3（inotify 限额排障）**：监听大量目录时报 `too many open files` 或事件静默丢失，检查哪个内核参数？临时与永久修复各是什么？
+
+参考答案：`fs.inotify.max_user_watches`（每用户可监视的 inode 数，桌面发行版默认 8192，一个大 node_modules 就能打满）。临时修复 `sysctl -w fs.inotify.max_user_watches=524288`；永久写进 `/etc/sysctl.d/`。容器场景还要确认宿主机内核参数（inotify 限额是按用户算的，容器共享宿主内核）。要点：静默丢事件比报错更危险，监控类服务的指标里应加"watcher 失败计数"。

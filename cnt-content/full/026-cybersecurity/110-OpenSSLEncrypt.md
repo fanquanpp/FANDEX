@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'OpenSSL 加解密命令：对称加解密（AES-GCM/CBC）、口令派生（PBKDF2/scrypt）、非对称加解密与数字信封'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/040-SymmetricEncryption'
   - 'cybersecurity/050-AsymmetricEncryption'
@@ -15,6 +15,10 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+- **解决什么问题**：OpenSSL 是命令行密码工具箱——临时加密一个文件、算一次哈希、签一次名、测一次 TLS 连接都靠它。难点不在背命令，而在选对「算法 + 模式」并分清工具边界：`enc` 管对称、`rsautl`/`pkeyutl` 管非对称、`dgst` 管哈希与签名、`kdf` 管口令派生。
+- **容易怎么错**：`enc` 传统模式（CBC/CTR）不带完整性校验，被篡改不会报错——当「防窃听」用没问题，当「防篡改」用是错的；把口令直接当密钥（必须过 KDF）；把 Base64 当加密（辨析见 030 篇）。
+- **学完能做什么**：用一条命令完成带口令派生的文件加解密；写出「混合加密」的两段式流程（RSA 护送 AES 密钥）；用 `s_client` 测一次加密通信。
 
 ## 对称加密
 
@@ -318,17 +322,7 @@ openssl s_client -cipher 'ECDHE-RSA-AES256-GCM-SHA384' -connect example.com:443
 
 **基本写法：加密大文件（混合加密）**
 ```bash
-`# 1. 生成随机密钥
-openssl rand -hex 32 > key.bin
-# 2. 用 AES 加密文件
-openssl enc -aes-256-cbc -salt -pbkdf2 -in largefile -out largefile.enc -pass file:./key.bin
-# 3. 用 RSA 公钥加密密钥
-openssl rsautl -encrypt -inkey public.key -pubin -in key.bin -out key.bin.enc
-# 4. 删除原始密钥
-rm key.bin`
-```
-```bash
-# 混合加密大文件
+# 混合加密大文件：随机 AES 密钥加密数据，RSA 公钥加密该密钥
 openssl rand -hex 32 > key.bin
 openssl enc -aes-256-cbc -salt -pbkdf2 -in largefile -out largefile.enc -pass file:./key.bin
 openssl rsautl -encrypt -inkey public.key -pubin -in key.bin -out key.bin.enc
@@ -337,13 +331,7 @@ rm key.bin
 
 **基本写法：解密大文件**
 ```bash
-`# 1. 用 RSA 私钥解密密钥
-openssl rsautl -decrypt -inkey private.key -in key.bin.enc -out key.bin
-# 2. 用 AES 解密文件
-openssl enc -d -aes-256-cbc -pbkdf2 -in largefile.enc -out largefile -pass file:./key.bin`
-```
-```bash
-# 解密混合加密的大文件
+# 解密混合加密的大文件：先解开 AES 密钥，再解密数据
 openssl rsautl -decrypt -inkey private.key -in key.bin.enc -out key.bin
 openssl enc -d -aes-256-cbc -pbkdf2 -in largefile.enc -out largefile -pass file:./key.bin
 ```
@@ -365,3 +353,11 @@ openssl kdf -keylen 32 -kdfopts pass:password:salt:salt123:iter:100000 PBKDF2
 # 使用 scrypt 派生密钥
 openssl kdf -keylen 32 -kdfopts pass:password scrypt
 ```
+
+## 自检
+
+- 遮住「对称加密」一节，写出加密与解密文件的一对命令，并说出 `-pbkdf2` 为什么不能省（口令必须经 KDF 派生为密钥，旧默认派生法已弃用）。
+- `enc -aes-256-cbc` 与认证加密差在哪？说清「防窃听」与「防篡改」在 `enc` 传统模式里分别靠什么（后者给不了，需 AEAD 或外层 HMAC）。
+- 遮住「实用加密组合」一节，自己写出混合加密的四个步骤与解密侧的两步——为什么 RSA 只用来护送那个 32 字节密钥（性能：RSA 慢且分组长度有限）。
+- 遮住「数字签名」一节，写出「摘要 → 签名 → 验签」命令链，并回答验签用哪把密钥（公钥）。
+- PBKDF2 与 scrypt 的核心差别是什么？（scrypt 在时间之外还消耗内存，更抗 GPU/ASIC 大规模并行。）

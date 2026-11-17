@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: '内嵌 HTML 的机制与边界：块级行内规则、GitHub 消毒白名单、details 折叠与实用标签，及安全注意事项。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/160-SubscriptSuperscript'
   - 'markdown/050-LinkImage'
@@ -17,7 +17,7 @@ prerequisites:
 ---
 
 > **认知导入（Layer 1 进阶层）**
-> 前置知识：004 行内格式（HTML 是它的"逃生舱"延伸）。
+> 前置知识：040 行内格式（HTML 是它的"逃生舱"延伸）。
 > 边界说明：Markdown 从设计之初就允许内嵌 HTML，但**每个平台都会对 HTML 做安全过滤**——标签白名单、属性剥离各不相同。本篇的核心是分清"Markdown 层写什么"与"平台层允许多少"，最大的坑是 GitHub 会剥离 `style` 属性，网上大量颜色/字号示例在 GitHub 上根本不生效。
 > 强制练习：在 GitHub 的 md 文件里写 `<span style="color:red">红</span>` 和 `<mark>高亮</mark>`，预览对比——前者原样剥掉属性、后者正常生效。
 

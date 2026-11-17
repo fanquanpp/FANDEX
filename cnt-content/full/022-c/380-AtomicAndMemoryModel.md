@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 从两个线程各加十万次、总和却对不上的丢失更新实验出发：_Atomic 类型与 stdatomic.h 操作族、五种 memory_order 的行为表与发布-订阅实验、compare_exchange_weak 的伪失败、原子与互斥锁的分工表，附 ATOMIC_VAR_INIT 弃用等版本口径与三起事故实录。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/370-POSIXThread'
   - 'c/260-ConstAndVolatileQualifiers'
@@ -431,12 +431,24 @@ void shared_release(SharedObject *obj) {
 - C 原子操作库总览（stdatomic.h 全家族）：https://en.cppreference.com/w/c/atomic
 - Modern C（Jens Gustedt，C23 版，线程与原子章节）：https://gustedt.gitlabpages.inria.fr/modern-c/
 
-## 11. 自我检查
+## 11. 遮码自检
 
-- 能向同事讲清 `counter++` 丢更新的三步交错，并分别用 `_Atomic` 与互斥锁修复；
-- 能默写发布-订阅模板：数据先写、release 置标志；acquire 读标志、再读数据；
-- 能说出 weak 与 strong CAS 的唯一差别，以及为什么循环里用 weak；
-- 拿到一个新需求，能按第 5 节分工表判断该用原子还是锁，并说出「两个原子变量之间没有联合保证」这句话的含义。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 讲清 `counter++` 丢更新的三步交错，并分别用 `_Atomic` 与互斥锁修复。
+2. 默写发布-订阅模板：数据先写、release 置标志；acquire 读标志、再读数据。
+3. weak 与 strong CAS 的唯一差别是什么？循环里为什么用 weak？
+4. 按第 5 节分工表判断一个新需求该用原子还是锁；「两个原子变量之间没有联合保证」是什么意思？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 交错三步：A 读 5、B 读 5、A 写 6、B 写 6——丢一次更新。修复：`_Atomic unsigned counter = 0;` 用 `atomic_fetch_add(&counter, 1)` 把读-加-写变成不可分割；或两线程都 `pthread_mutex_lock(&m); counter++; pthread_mutex_unlock(&m);`。单变量要原子，多步要锁。
+2. `atomic_store_explicit(&data, 42, memory_order_release); atomic_store(&flag, 1);` / `while (!atomic_load(&flag)) ; r = atomic_load(&data);`——订阅侧 acquire 读到标志后，发布侧在 release 之前的所有写都保证可见。
+3. weak 版允许伪失败（值相等也报失败），strong 不允许；伪失败无争用时也偶发。循环里伪失败只是多转一圈重试；strong 在 LL/SC 架构上反而要内层重试循环——所以循环用 weak。
+4. 判断：单变量的计数、标志、无锁结构 → 原子；多变量联合视图、检查-行动、复杂不变量 → 锁。「没有联合保证」：对 a、b 各自原子，也挡不住「读 a 与读 b 之间被别人改」——两变量的联合状态可能撕裂，联合保证必须加锁。
+
+</details>
 
 ## 本章总结
 

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go 与正则表达式：regexp 包、RE2 语法、Thompson NFA 构造、Pike VM 算法、线性时间复杂度证明、跨引擎对比、性能优化、Unicode 支持与生产级最佳实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/430-GoSignalHandling'
   - 'go/420-GoFileMonitor'
@@ -2409,3 +2409,43 @@ prefix, complete := re.LiteralPrefix()
 greedy := regexp.MustCompile(`a.*b`)    // 贪婪
 lazy := regexp.MustCompile(`a.*?b`)     // 懒惰
 ```
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（编译与复用的纪律）**：一个 HTTP handler 里每次请求都执行 `regexp.MustCompile(...)`。为什么这是生产事故级写法？写出正确结构。
+
+参考实现：
+
+```go
+var phoneRe = regexp.MustCompile(`^1[3-9]\d{9}$`) // 包级：编译一次
+
+func handler(w http.ResponseWriter, r *http.Request) {
+    if !phoneRe.MatchString(r.FormValue("phone")) {
+        http.Error(w, "bad phone", 400)
+        return
+    }
+}
+```
+
+要点：Compile 的成本是构建 NFA/Pike VM 状态机，MustCompile 在包级 init 期完成（失败直接 panic，错误提前暴露）；handler 内编译既慢又把正则语法错误藏到运行时。规则：正则表达式是常量，按常量对待。
+
+**题 2（贪婪与懒惰）**：对 `<div>hello</div><div>world</div>` 分别用 `<div>.*</div>` 与 `<div>.*?</div>` 匹配，各得到什么？写出用 `FindAllString` 验证的代码。
+
+参考实现：
+
+```go
+greedy := regexp.MustCompile(`<div>.*</div>`)
+lazy := regexp.MustCompile(`<div>.*?</div>`)
+fmt.Println(greedy.FindAllString(s, -1)) // ["<div>hello</div><div>world</div>"] 整段
+fmt.Println(lazy.FindAllString(s, -1))   // ["<div>hello</div>", "<div>world</div>"]
+```
+
+要点：贪婪量词回溯到最后一个可能结束的位置，懒惰在第一个满足处停。HTML 场景永远优先懒惰；但要记住 RE2 不支持回溯，这里的贪婪/懒惰语义是 Pike VM 模拟的，复杂嵌套匹配应交给 HTML 解析器而不是正则。
+
+**题 3（RE2 的能力边界）**：以下哪个在 Go regexp 里写不了？(a) 前瞻 `(?=...)` (b) 反向引用 `\1` (c) 命名捕获组 `(?P<n>...)` (d) 非贪婪。各自原因一句话。
+
+参考答案：(a) 写不了——RE2 砍掉环视，因为它破坏线性时间保证；(b) 写不了——反向引用需要回溯，RE2 同样砍掉；(c) 写得了——命名捕获组与线性时间不冲突；(d) 写得了——非贪婪由 Pike VM 的优先级模拟。要点：Go regexp 的设计哲学是"任何正则任何输入都 O(n*m)"，代价就是砍掉需要回溯的特性；需要环视/反向引用时要么换库（regexp2，带回溯有超时风险）要么改写成普通代码。

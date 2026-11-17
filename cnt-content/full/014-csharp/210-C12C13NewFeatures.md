@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 最新C#语言特性
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/130-LINQDeferredImmediate'
 prerequisites:
@@ -58,6 +58,9 @@ C# 12 随 .NET 8 发布，C# 13 随 .NET 9 发布。但 C# 与 .NET 的版本并
 | C# 12 | 2023.11 | .NET 8 | 主构造函数、集合表达式、内联数组 |
 | C# 13 | 2024.11 | .NET 9 | `params` 集合、`Lock` 类型、部分属性、扩展类型（预览） |
 | C# 14 | 2025.11 | .NET 10 | 扩展成员（正式）、`field` 关键字、null 条件赋值 |
+| C# 15 | 2026.11 | .NET 11 | union 类型、封闭层次结构、扩展索引器 |
+
+补充说明：C# 13 中的两个预览特性——`field` 关键字与扩展类型——已在 C# 14 正式定稿（分别演进为 `field` 关键字与扩展成员）；最新的 C# 15 已随 .NET 11（2026-11-10 发布，STS）正式推出，本篇的预览特性讨论仅作为特性演进史的参照。
 
 ### 1.3 学习路径
 
@@ -2553,3 +2556,47 @@ string escape = "\e";
 // 用于终端控制序列
 Console.WriteLine("\e[31m红色文本\e[0m");
 ```
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码，再对照。本篇自检核心是 C# 12/13 各挑两项主力特性的写出能力与边界认知。
+
+**题 1（主构造函数）**：把"构造函数注入两个依赖并赋给字段"的传统类改写成 C# 12 主构造函数版本，并说出主构造参数的作用域。
+
+参考答案：
+
+```csharp
+// 传统：声明字段 + 构造函数两段样板
+public class OrderService
+{
+    private readonly IOrderRepository _repo;
+    private readonly IClock _clock;
+    public OrderService(IOrderRepository repo, IClock clock)
+        => (_repo, _clock) = (repo, clock);
+}
+
+// C# 12：参数即构造期全局可用
+public class OrderService(IOrderRepository repo, IClock clock)
+{
+    public void Place(Order o) => _ = new Receipt(o, clock.Now); // 参数可直接用
+    private readonly IOrderRepository _repo = repo;              // 需要字段语义时再赋值
+}
+```
+
+主构造参数在整个类体内可见（像捕获进来的局部量），但"每次使用"与"存成字段"有分配与语义差别——被存进字段/被异步捕获时会提升为字段，纯方法内使用则只是构造期值。
+
+**题 2（集合表达式）**：把 `new int[] {1,2,3}`、`new List<string>()`、`ImmutableArray<int>.Empty` 三种初始化统一成集合表达式，并解释"目标类型"在其中的角色。
+
+参考答案：`int[] a = [1, 2, 3];`、`List<string> b = [];`、`ImmutableArray<int> c = [];`。集合表达式本身没有类型，编译器按赋值目标（或参数声明类型）决定构造什么——同一个 `[1,2,3]` 落在数组/List/Span 上分别生成数组、列表、栈内存。这消除了"换集合类型要改初始化写法"的摩擦。
+
+**题 3（params 集合）**：C# 13 的 `void Log(params ReadOnlySpan<string> tags)` 相比 C# 12 只能 `params string[]` 的差别在哪？调用侧各发生什么分配？
+
+参考答案：C# 12 版每次调用都分配一个数组（`new string[]{...}`）；C# 13 版允许参数类型是任何可由集合表达式构造的类型，选 `ReadOnlySpan<string>` 时编译器在栈上构造序列——调用侧零堆分配。约束：Span 参数版本不能用于虚方法/接口方法（栈约束），API 设计时按"热路径用 Span、公共接口用数组/ IEnumerable"取舍。
+
+**题 4（System.Threading.Lock）**：把 `private readonly object _sync = new(); lock (_sync) {...}` 迁到 .NET 9 的 `Lock`，说出两种写法的运行时差别与一个新警告场景。
+
+参考答案：`private readonly Lock _sync = new(); lock (_sync) {...}`——`lock` 对 `Lock` 类型走 `EnterScope()`（返回可释放的 scope），跳过 `Monitor` 的对象头同步块，更快且语义更清晰（专用锁对象不会被人拿去 `Monitor.Wait`/当引用比较）。新警告：编译器会对 `lock` 之外对 `Lock` 实例误用 `Monitor`/按引用比较给出提示——它存在的意义就是把"拿 object 当锁"的一堆隐式约定变成显式类型。
+
+**题 5（预览特性演进）**：C# 13 的 `field` 与扩展类型两个预览特性后来如何演进？这说明了什么采用策略？
+
+参考答案：`field` 在 C# 14 正式定稿，扩展类型演进为 C# 14 的扩展成员（extension 块，重构了语法但兑现了同一动机）。说明的采用策略：预览特性（`<LangVersion>preview` + `<Features>preview</Features>`）只适合试验与反馈，语法在定稿前可能变形；生产代码等待特性进入随 LTS/稳定版发布的正式语言版本，再按"消灭样板程度"排序采用。

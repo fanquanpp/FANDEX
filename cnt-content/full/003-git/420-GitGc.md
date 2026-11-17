@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git gc 垃圾回收详解：不可达对象、打包压缩、自动维护与 git maintenance 新机制。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'git/240-ObjectModel'
   - 'git/260-GitReflog'
@@ -90,7 +90,7 @@ git config --global gc.auto 0        # 关闭自动 gc（CI 大批量脚本场�
 
 ### 4.2 新一代：git maintenance（Git 2.36+）
 
-传统 gc 是「攒一票大的」，执行时有可感知的卡顿。新机制 `git maintenance` 把维护拆成增量小任务并放到后台按计划执行，大型仓库体验显著更平滑：
+传统 gc 是「攒一票大的」，执行时有可感知的卡顿。新机制 `git maintenance` 把维护拆成增量小任务并放到后台按计划执行，大型仓库体验显著更平滑（Git 2.54 起 `git maintenance` 默认改用 geometric 增量打包策略，不再整仓重建）：
 
 ```bash
 git maintenance start       # 注册后台维护（macOS launchd / Windows 计划任务 / systemd timer）
@@ -151,6 +151,35 @@ git gc --prune=now --aggressive
 | `maintenance.strategy`     | （未设）      | 设为 incremental 启用增量后台维护          |
 
 记忆主线：**两个阈值决定「何时自动跑」，两个时钟决定「敢不敢删」，一个开关决定「新式维护还是老式 gc」**。
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令或结论，再展开对照。
+
+1. 「何时自动跑 gc」由哪两个阈值决定？「敢不敢删」由哪两个时钟决定？分别是什么配置项？
+2. 为什么刚 `reset --hard` 之后立刻 `git gc --prune=now` 等于亲手烧掉后悔药？对象被物理删除需要同时满足哪两个条件？
+3. 实操：在测试仓库造 200 个松散对象（循环 `echo i >> f; git add f`），用 `git count-objects -v` 看前后差异，再 `git gc` 观察松散对象归零与 pack 文件生成。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 何时跑：gc.auto（松散对象数，默认约 6700）与 gc.autoPackLimit（pack 文件数，默认 50）；
+   敢不敢删：gc.reflogExpire（可达条目 90 天）与 gc.reflogExpireUnreachable（不可达条目 30 天），
+   不可达对象另有 gc.pruneExpire（默认 2 周）宽限期。
+
+2) gc 只删「不可达 + 已过期」的对象；刚 reset 丢的提交仍被 reflog 引用（30-90 天），
+   连 `--prune=now` 也删不掉它们。真正删掉要先 `git reflog expire --expire=now --all`
+   再 `gc --prune=now`。所以「烧掉后悔药」指的是这一整套组合拳——
+   刚 reset 完就照网上抄的清理命令全跑一遍，急救窗口就被亲手关闭了。
+
+3)
+git count-objects -v          # count: 200（松散对象数）
+git gc
+git count-objects -v          # count: 0；in-pack: 200+；.git/objects/pack/ 出现 pack 文件
+```
+
+</details>
 
 ## 小结
 

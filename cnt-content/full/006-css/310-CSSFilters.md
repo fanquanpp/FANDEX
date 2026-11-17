@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: filter 的 10 个滤镜函数：模糊、亮度、对比度、色相旋转等，实现图片与组件的视觉处理。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/270-Shadow'
   - 'css/290-BackgroundEnhancement'
@@ -85,7 +85,7 @@ img {
 }
 ```
 
-**讲解：** 滤镜支持 `transition` 动画（如模糊占位图加载完成后渐变为清晰）；组合顺序会影响结果，例如先 `grayscale` 再 `hue-rotate` 与反过来效果不同。
+**讲解：** 滤镜支持 `transition` 动画（如模糊占位图加载完成后渐变为清晰）；组合顺序会影响结果，例如先 `grayscale` 再 `sepia` 得到棕调、反过来先 `sepia` 再 `grayscale` 得到灰色——每一步的输入取决于上一步的输出。
 
 ## 2. 动手试试
 
@@ -121,3 +121,42 @@ img {
 - 背景混合：`css/290-BackgroundEnhancement`（background-blend-mode）；
 - 性能：`css/540-CSSPerformanceOptimizationDetailed`；
 - 动画：`css/330-CSSAnimationTransition` 中滤镜过渡。
+
+## 6. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1 节的示例代码自己写，再对照参考实现。
+
+**任务一**：实现「图片加载占位」——图片未加载时模糊 8px 且半灰度，hover 或加载完成后恢复清晰，全程平滑过渡；再给一个透明 PNG 图标加「贴形状」的投影。
+
+**任务二**：回答两问——（a）`filter: grayscale(1) sepia(1)` 与 `filter: sepia(1) grayscale(1)` 为什么一张棕一张灰；（b）为什么在带 `filter` 的父元素里写 `position: fixed` 的子元素会「不再贴视口」。
+
+**提示**：任务一用 `transition: filter` 与 `filter: none`（第 1.2 节），投影选 drop-shadow（第 1.1 节讲解）；任务二(a)考滤镜链的顺序语义（第 1.2 节组合应用）——sepia 会给任何输入染上棕调，grayscale 会把任何输入抹成灰，想清楚每一步的输入是什么；(b)对应核心知识点最后一条——filter 创建新包含块，与 transform 劫持 fixed 是同一原理（第 220 篇 3.4 节）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.photo {
+  filter: blur(8px) grayscale(60%);
+  transition: filter 0.4s ease;
+}
+
+.photo.loaded,
+.photo:hover {
+  filter: none; /* 全部滤镜复位，过渡到清晰 */
+}
+
+.icon {
+  filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.3)); /* 沿轮廓，不是盒子 */
+}
+
+/* 任务二 */
+/* (a) 滤镜按书写顺序逐个作用，每一步的输入是上一步的输出：
+       grayscale(1) sepia(1)：先抹成灰，sepia 再给灰图统一染上棕调 → 棕色；
+       sepia(1) grayscale(1)：先染成棕，最后的 grayscale 把颜色信息抹掉 → 灰色 */
+/* (b) filter 使元素创建新的包含块——fixed 子元素的「视口参照」
+       被改写成这个带滤镜的祖先，滚动时跟着祖先跑；
+       修复：把 fixed 元素挪出带 filter 的子树 */
+```
+
+验收点：任务一里若把过渡写在 `:hover { filter: none }` 而基态没有 `transition`，hover 变化会是瞬间跳变；任务二复现时给父元素临时加 `filter: blur(0)` 就能让 fixed 子元素脱离视口——这是调试层叠与定位事故的常用探针。

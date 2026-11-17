@@ -6,7 +6,7 @@ module: 'html5'
 category: 前端技术
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/170-SemanticTag'
   - 'html5/430-HTML5DialogPopoverGuide'
@@ -79,7 +79,7 @@ prerequisites:
 
 `<select>` 是最难定样的原生控件：`<option>` 里只能放纯文本，浏览器渲染的下拉面板几乎无法控制，于是大家用 `<div>` + 无障碍补丁手搓下拉菜单——代码量几百行还容易做出键盘不可用的残次品。
 
-Customizable Select（可定制 select）改变了这一点：通过 `appearance: base-select` 打开"基础外观"模式后，`<option>` 里可以内嵌图片、加粗文字等富内容，下拉面板可以用 `::picker(select)` 伪元素自由定制，而键盘导航、焦点管理、表单提交等原生行为**全部保留**。该特性于 2025 年进入 Baseline Newly Available：Chrome/Edge 135 起支持，Safari 18.4 起支持，Firefox 也在 2025 年内跟进（写作教学或生产使用前，建议再到 MDN/caniuse 复核最新支持面）。
+Customizable Select（可定制 select）改变了这一点：通过 `appearance: base-select` 打开"基础外观"模式后，`<option>` 里可以内嵌图片、加粗文字等富内容，下拉面板可以用 `::picker(select)` 伪元素自由定制，而键盘导航、焦点管理、表单提交等原生行为**全部保留**。支持面：Chrome/Edge 135（2025-04）与 Safari 27（2026-09）起支持，Firefox 尚未支持（新版本处于 flag 阶段），**该特性未进入 Baseline**（三引擎未齐，MDN 标记为 Limited availability）——生产使用前先查 MDN/caniuse 复核最新支持面。
 
 ### 第一步：打开 base-select 模式
 
@@ -195,7 +195,7 @@ select option:checked {
 
 ### 是什么
 
-Speculation Rules API 是一种声明式规则：写在 `<script type="speculationrules">` 里，告诉浏览器"哪些链接大概率会被点击，请提前预取（prefetch，只下载文档）或预渲染（prerender，连渲染都先做好）"。用户真点下去时，页面几乎瞬间出现——这是 Chromium 系浏览器提供的现行能力（同源场景），Firefox/Safari 目前不支持，但不支持者会把这段 script 当作未知类型直接忽略，零副作用。
+Speculation Rules API 是一种声明式规则：写在 `<script type="speculationrules">` 里，告诉浏览器"哪些链接大概率会被点击，请提前预取（prefetch，只下载文档）或预渲染（prerender，连渲染都先做好）"。用户真点下去时，页面几乎瞬间出现——这是现行能力但**尚未 Baseline**：Chromium 系完整支持（以同源场景为主），Safari 近期版本开始部分支持，Firefox 尚未正式支持；不支持者会把这段 script 当作未知类型直接忽略，零副作用。
 
 生活化类比：预取是"提前把菜买回家"，预渲染是"提前把菜做好摆上桌"——客人（用户点击）一到，立刻开饭。
 
@@ -261,11 +261,11 @@ Speculation Rules API 是一种声明式规则：写在 `<script type="speculati
 
 | 能力 | 状态定位 | 旧浏览器行为 |
 | --- | --- | --- |
-| `<search>` | Baseline 2023，可放心用 | 当作未知元素（类似 div），建议补 `role="search"` 于旧场景 |
-| popover / command、commandfor | popover 为 Baseline 2024；command/commandfor 自 Chrome/Edge 135 起支持 | 属性被忽略，按钮无动作，需 JS 兜底（详见 041 专项） |
-| Customizable Select | 2025 进入 Baseline Newly Available | 传统 select 外观，功能不受影响 |
+| `<search>` | 2023 年进入标准，现为 Baseline Widely available，可放心用 | 当作未知元素（类似 div），建议补 `role="search"` 于旧场景 |
+| popover / command、commandfor | popover 为 Baseline 2025（2025 年 1 月起 Newly available）；command/commandfor 亦达 Baseline 2025（2025 年 12 月起，Chrome/Edge 135 首发跟进） | 属性被忽略，按钮无动作，需 JS 兜底（详见 `html5/430-HTML5DialogPopoverGuide`） |
+| Customizable Select | 未 Baseline（MDN 标记 Limited availability），Chrome/Edge 135 与 Safari 27 支持、Firefox 未支持 | 传统 select 外观，功能不受影响 |
 | `hidden="until-found"` | 现行特性，各引擎落地进度不一 | 当作普通 hidden |
-| Speculation Rules | Chromium 侧现行能力（同源为主） | script 被忽略，零影响 |
+| Speculation Rules | 非 Baseline：Chromium 完整支持（同源为主），Safari 部分支持，Firefox 未支持 | script 被忽略，零影响 |
 
 面对任何新特性，建议固定走这三步：
 
@@ -298,6 +298,45 @@ Speculation Rules API 是一种声明式规则：写在 `<script type="speculati
 2. 用 `where` 的 `not` 组合排除"退出登录"等敏感链接；
 3. 写一个通用特性检测脚本：按本篇四个能力逐项输出支持与否，形成团队自己的"新特性雷达"。
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 用 `<search>` 改写一个搜索区，使其自带 `search` 地标语义，且不在结果列表上误用。
+
+参考答案（先自己写，再对照）：
+
+```html
+<search>
+  <form action="/search">
+    <label for="q">站内搜索</label>
+    <input type="search" id="q" name="q" placeholder="搜索文章">
+    <button type="submit">搜索</button>
+  </form>
+</search>
+<!-- 搜索结果列表放 <search> 外的 main/article 里 -->
+```
+
+2. 写出 `hidden="until-found"` + `beforematch` 的折叠区联动：内容被 Ctrl+F 命中时自动展开所在的 `<details>`。
+
+参考答案（先自己写，再对照）：
+
+```html
+<details>
+  <summary>归档条款全文</summary>
+  <div id="terms" hidden="until-found">……含关键词的长文本……</div>
+</details>
+<script>
+  document.getElementById('terms').addEventListener('beforematch', (e) => {
+    e.target.closest('details').open = true;
+  });
+</script>
+```
+
+3. 概念自问：可定制 select 为什么能放心当「渐进增强」用？它的 Baseline 状态现在是什么？Speculation Rules 在三大引擎的支持差异？
+
+参考答案（先自己答，再对照）：不支持 `appearance: base-select` 的浏览器忽略该值并退回传统 select，表单功能不受影响，所以功能不会坏；它尚未进入 Baseline（MDN 标记 Limited availability，Chrome/Edge 135 与 Safari 27 支持、Firefox 未支持），用前查 MDN/caniuse；Speculation Rules 是 Chromium 完整支持（同源为主）、Safari 部分支持、Firefox 未支持——不支持的浏览器把这段 script 当未知类型忽略，零副作用。
+
 ## 小结
 
 初学者记住这三点：
@@ -309,7 +348,7 @@ Speculation Rules API 是一种声明式规则：写在 `<script type="speculati
 进阶者还需注意：
 
 - 这组能力的共同范式是**渐进增强**：先确认"旧浏览器忽略后功能不坏"，再决定是否需要 JS 兜底；
-- `command`/`commandfor`、`popover="hint"` 等交互向新能力见 041 专项；本篇聚焦结构与性能向能力，两者合起来覆盖 2023-2025 的主要 HTML 新面；
+- `command`/`commandfor`、`popover="hint"` 等交互向新能力见 `html5/430-HTML5DialogPopoverGuide`；本篇聚焦结构与性能向能力，两者合起来覆盖 2023-2025 的主要 HTML 新面；
 - 版本支持面变化快，任何"某浏览器某版本起支持"的表述，写作与决策时都应回到 MDN/caniuse 复核，不要凭记忆断言。
 
 ## 下一步

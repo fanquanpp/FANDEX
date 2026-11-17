@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 从零设计一张充电桩表：每个字段为什么选这个类型、约束怎样在坏数据进门时就把它拦下，亲手触发 1048/1062/3819 真实报错，并带走金额用 DECIMAL、时间看 2038、外键要不要建这三条决策原则。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/050-MySQLOverviewDatabaseDesign'
   - 'mysql/090-SQLDataDefinitionAdvanced'
@@ -112,6 +112,34 @@ ALTER TABLE charging_piles
 4. **主键有业务含义吗？** 会变的字段不能当主键。
 5. **状态列只有应用层在管取值？** 加 CHECK（8.0.16+ 真生效）。
 6. **还在用三字节 utf8？** 换 utf8mb4，一次到位。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出建表语句：给充电桩表加一列"电价浮动上限"（元/度，最多 9.99，参与计费）。字段类型怎么选？为什么不用 FLOAT？
+
+参考答案（先自己写，再对照）：
+
+```sql
+ALTER TABLE charging_piles
+  ADD COLUMN price_cap DECIMAL(3,2) NOT NULL DEFAULT 1.50
+  COMMENT '电价浮动上限，元/度';
+```
+
+DECIMAL(3,2) 表示总共 3 位、其中 2 位小数（最大 9.99）。FLOAT/DOUBLE 是二进制浮点近似存储，0.1 这类十进制小数无法精确表示，参与计费累加必然出对账误差——**DECIMAL 是钱的唯一正确类型**。
+
+2. 概念自问：`pile_no CHAR(12)` 与 `name VARCHAR(50)` 的分工依据是什么？VARCHAR 的 n 数的是什么单位？
+
+参考答案（先自己答，再对照）：值恒定长度用 CHAR（定长存储、无长度字节），长度波动用 VARCHAR。VARCHAR 的 n 是**字符数不是字节数**（utf8mb4 下一个汉字最多 4 字节），上限定成业务真实需要的值即可——过长会影响索引长度与内存占用。
+
+3. 概念自问：`last_heartbeat DATETIME NULL` 为什么刻意允许 NULL？"默认 '1970-01-01'" 和 NULL 两种设计各表达什么？
+
+参考答案（先自己答，再对照）：NULL 表达"未知/从未上线"，默认值表达"已知的具体时间"。用 1970-01-01 冒充"从未上线"会把未知伪装成已知，查询"从未上线的桩"得靠魔法值判断，魔法值一旦混入正常数据范围（真的 1970 年数据）语义就崩了；NULL 语义由三值逻辑支撑，`IS NULL` 判断永远无歧义。
+
+4. 判断题：`power_kw DECIMAL(5,1) UNSIGNED` 加不加 UNSIGNED 有影响吗？
+
+参考答案（先自己答，再对照）：8.0.17 起 DECIMAL/FLOAT/DOUBLE 的 UNSIGNED 属性已废弃（未来版本会移除），"非负"不再靠类型表达，正确写法是 `CHECK (power_kw > 0)` 这类约束。写法演进本身是类型知识的一部分——老脚本里的 DECIMAL UNSIGNED 语法在新版本里是技术债。
 
 ## 6. 练习
 

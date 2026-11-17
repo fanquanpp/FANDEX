@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 使用槽位存档 API 保存恢复完整运行状态，理解上一句回滚的事务机制与 Backlog 点击回退
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related:
   - 'konado/060-KonadoAdvancedInstructions'
   - 'konado/070-KonadoDialogueManagerApi'
@@ -140,7 +140,7 @@ Backlog（对话历史，默认面板实例位于 res://addons/konado/templates/
 程序侧的对话历史 API：
 
 ```gdscript
-dialogue_manager.dialogue_history.entries(offset, include_pending)  # 读取条目
+dialogue_manager.dialogue_history.entries(limit := 0, include_pending := false)  # 读取条目，limit 为 0 时取全部
 dialogue_manager.dialogue_history.size()    # 当前条目数
 dialogue_manager.dialogue_history.clear()   # 清空历史
 dialogue_manager.entry_committed            # 新条目提交时发射的信号

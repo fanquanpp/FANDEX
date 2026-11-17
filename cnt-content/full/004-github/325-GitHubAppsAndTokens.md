@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: classic PAT 与 fine-grained PAT 的差异与迁移、Actions 的 GITHUB_TOKEN、GitHub App 与 OAuth App 的选型边界，配「CI 用哪种令牌」与「第三方 App 该批多少权限」两个决策场景。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -31,8 +31,8 @@ prerequisites: []
 
 | 凭证/应用 | 归属 | 生命周期 | 权限粒度 | 典型用途 |
 | :--- | :--- | :--- | :--- | :--- |
-| Classic PAT | 个人账户 | 手工设置，可永不过期 | 按 scope（`repo`、`workflow` 等），作用于该用户全部仓库 | 临时脚本、旧工具兼容 |
-| Fine-grained PAT | 个人账户 | 必须设过期时间（最长一年，可更短） | 按选定仓库 + 按操作类（Contents/Issues/... 各自读写） | 个人自动化、替代 classic 的新选择 |
+| Classic PAT | 个人账户 | 无强制过期：创建时可选 No expiration（UI 默认 30 天，官方强烈建议设置；官方文档明确 classic 不设过期要求）；一年未使用会被平台自动移除 | 按 scope（`repo`、`workflow` 等），作用于该用户全部仓库 | 临时脚本、旧工具兼容 |
+| Fine-grained PAT | 个人账户 | 默认 30 天；可选 7/30/60/90 天、自定义或永不过期（组织可设最长生命周期策略，默认 366 天） | 按选定仓库 + 按操作类（Contents/Issues/... 各自读写） | 个人自动化、替代 classic 的新选择 |
 | GITHUB_TOKEN | 平台代发 | 单次 workflow 运行内有效 | 由 workflow `permissions:` 块声明，默认逐步收紧 | CI 内对本仓库的操作 |
 | GitHub App 安装令牌 | 安装了该 App 的组织/仓库 | 短期（默认 1 小时） | 按 App 声明的权限，细到仓库 | 生产级机器人、企业自动化 |
 | OAuth App 令牌 | 授权它的用户 | 长期有效直到用户撤销 | 按 App 申请的 scope，作用于用户账户 | 用户授权类工具（如第三方客户端） |
@@ -65,7 +65,7 @@ gh api -i user | grep -i x-oauth-scopes
 1. `gh auth status` 看本机登录用的是哪种令牌；
 2. 网页 `Settings -> Developer settings` 里列出所有 PAT，每枚问一句「它在替谁干活」；
 3. 在用的逐枚迁移：fine-grained 版只勾目标仓库与最小操作，旧 classic 立即 revoke；
-4. 无主人认领的直接 revoke——令牌不会自己过期是 classic 最大的风险面（现在创建 classic PAT 也被强烈建议设置过期时间）。
+4. 无主人认领的直接 revoke——classic 最大的风险面正是**它可以永不过期**：classic 没有强制过期要求（UI 默认 30 天但可选 No expiration），无主令牌不会自己消失，靠盘点逐枚清掉。
 
 「最少 3 个场景」体会选型：
 
@@ -89,7 +89,7 @@ jobs:
       issues: write         # 本 job 要操作 Issue，才多给这一条
       pull-requests: write  # 要给 PR 打标签、写评论
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: gh pr edit "$NUMBER" --add-label released
         env:
           GH_TOKEN: ${{ github.token }}   # 平台生成的 GITHUB_TOKEN

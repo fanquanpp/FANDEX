@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: ELK Stack 日志分析：Elasticsearch 索引、Logstash 管道、Kibana 可视化。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'devops/250-Prometheus'
   - 'devops/260-GrafanaDashboards'
@@ -169,6 +169,18 @@ Logstash/Ingest Pipeline 里用 grok 解析非结构化文本（脆弱且费 CPU
 2. 日志量上规模后对比 Loki（索引标签而非全文，成本低一个量级）或 ELK 上云托管，
    架构选型跟着数据量与查询模式走。
 3. trace_id 进日志是打通"指标-链路-日志"的关键字段，采集时保留勿丢弃。
+
+## 自检
+
+- 四层分工默写：Beats 采集、Logstash 加工、ES 存储检索、Kibana 展示——量小能否砍掉 Logstash？答案落在"加工复杂度"上。
+- keyword 与 text 的区别是本篇第一考点：聚合、精确过滤、全文搜索各该用哪个？`logs.level` 与 `logs.level.keyword` 的写法差异源自什么？
+- ILM 三阶段默写（hot/warm/delete 或 hot/delete），"建集群第一天就装上刹车"防什么事故？分片大小与滚动条件该怎么定？
+- 分片规划口算：单分片 20-40GB 的经验值下，一天 500GB 日志按天切索引要几个分片？过小的分片有什么代价？
+- 为什么说"结构化 JSON 日志把解析成本挪回生成端"？应用侧一行 logfmt/JSON 改动省掉采集端哪一类配置？
+
+## 附录：ES/Logstash/Kibana/Filebeat 命令与配置速查
+
+以下按组件组织参考：ES 基础操作与查询、索引模板、Logstash 管道配置、Kibana 操作、Filebeat 采集、集群管理、安全认证、排查监控。教学主线在上面八节；这里收 API 与配置细节，用时查。
 
 ## Elasticsearch 基础操作
 
@@ -520,7 +532,7 @@ bin/kibana --config /etc/kibana/kibana.yml
 # Docker 启动
 docker run -d --name kibana -p 5601:5601 \
   -e ELASTICSEARCH_HOSTS=http://elasticsearch:9200 \
-  kibana:8.11.0
+  kibana:9.5.0
 
 # 查看日志
 journalctl -u kibana -f

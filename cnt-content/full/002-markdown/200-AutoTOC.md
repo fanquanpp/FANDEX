@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 自动目录（TOC）的实现方式：各平台占位符语法、GitHub 手动锚点目录、生成工具与维护建议。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/020-HeadingSyntax'
   - 'markdown/190-AnchorLinks'
@@ -16,7 +16,7 @@ prerequisites:
 ---
 
 > **认知导入（Layer 1 进阶层）**
-> 前置知识：002 标题语法（目录就是标题的链接列表）。
+> 前置知识：020 标题语法（目录就是标题的链接列表）。
 > 边界说明：`[TOC]` 这类目录占位符**不是 CommonMark/GFM 语法**，各平台各有一套；GitHub 完全不支持占位符，需要手动链接或工具生成。
 > 强制练习：在 README 里为三个二级标题手写一个目录，并逐个点击验证锚点跳转。
 
@@ -183,4 +183,4 @@ Obsidian 没有目录占位符，替代方案是内置的"大纲"面板（实时
 ## 小结
 
 - 初学者要点：目录 = 标题链接列表；Typora/GitLab 用 `[TOC]`，GitHub 用手动锚点链接或内置大纲面板；长文档才有必要配目录。
-- 进阶注意：占位符语法全部是平台扩展（`[TOC]`、`[[toc]]`、`{:toc}`、`[[_TOC_]]` 互不兼容，后两者分别是 VuePress 与 Azure DevOps 的方言）；Pandoc/Hugo 在构建层生成目录并用参数控制深度；GitHub 手写目录的锚点遵循固定 slug 规则，工具生成可避免拼错（规则细节见 `markdown/190-AnchorLinks`）。
+- 进阶注意：占位符语法全部是平台扩展（`[TOC]`、`[[toc]]`、`{:toc}`、`[[_TOC_]]` 互不兼容，四者分别属于 Typora/GitLab、VuePress 系、kramdown（Jekyll）与 Azure DevOps 的方言）；Pandoc/Hugo 在构建层生成目录并用参数控制深度；GitHub 手写目录的锚点遵循固定 slug 规则，工具生成可避免拼错（规则细节见 `markdown/190-AnchorLinks`）。

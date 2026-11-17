@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 多路复用：default 分支、超时控制与退出广播。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/150-ChannelPrinciple'
   - 'go/140-ContextDetailed'
@@ -266,3 +266,71 @@ go tool pprof -http=:8080 http://localhost:6060/debug/pprof/goroutine
 1. 实现一个三路归并器 `Merge(ctx, chans ...<-chan string) <-chan string`：用 nil channel 技巧摘除已关闭的源，ctx 取消或全部关闭后退出，并用 `go test -race` 验证无泄漏（配合 `goleak` 或手动协程计数）。
 2. 写一个"黄牛探测器"：用带 default 的非阻塞接收扫描高频订单通道，default 计数超过阈值时输出告警；再对比加 `time.Sleep` 前后的 CPU 占用。
 3. 给第三节的价格轮询器做实验：分别用 `time.After` 与 `time.NewTicker` 实现循环，在 Go 1.22 与 1.24 两个工具链下各跑十分钟，用 `runtime.NumGoroutine` 与内存曲线对比差异，把结论写进笔记。
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（default 的非阻塞语义）**：写一个"尝试取任务，取不到立刻去干别的"的 worker 循环。遮住后自己写，重点检查 default 分支是否会造成忙等，如何避免。
+
+参考实现：
+
+```go
+for {
+    select {
+    case task := <-tasks:
+        process(task)
+    default:
+        doOtherWork() // 没任务时干别的
+        time.Sleep(10 * time.Millisecond) // 避免 default 与 case 之间的忙等空转
+    }
+}
+```
+
+要点：`select` 带 `default` 就是非阻塞——所有 case 都不就绪时立刻走 default。若 default 与 case 都在高速循环里，会退化成 100% CPU 的忙等，需要显式让步（sleep、Gosched 或干脆改用阻塞 select）。
+
+**题 2（超时模式）**：写 `waitWithTimeout(ch <-chan int, d time.Duration) (int, bool)`：在 d 内等到值返回 (v, true)，超时返回 (0, false)。用 `time.NewTimer` 而不是 `time.After`，并说明为什么。
+
+参考实现：
+
+```go
+func waitWithTimeout(ch <-chan int, d time.Duration) (int, bool) {
+    timer := time.NewTimer(d)
+    defer timer.Stop() // 关键：循环场景下不复用 After 会积累定时器
+    select {
+    case v := <-ch:
+        return v, true
+    case <-timer.C:
+        return 0, false
+    }
+}
+```
+
+要点：`time.After` 的 timer 在触发前无法 Stop，放在循环里会等到期才被 GC（1.23 前是确定泄漏，之后可回收但仍是浪费）；复用型场景用 `NewTimer` + `defer Stop`。
+
+**题 3（nil channel 技巧）**：两个源 channel，任一关闭后要停止从它接收（注意：从已关闭 channel 接收永远立即返回零值）。用 nil channel 改写循环，避免空转。
+
+参考实现：
+
+```go
+for a != nil || b != nil {
+    select {
+    case v, ok := <-a:
+        if !ok {
+            a = nil // 置 nil：该 case 永久阻塞，等于从 select 中摘除
+            continue
+        }
+        handleA(v)
+    case v, ok := <-b:
+        if !ok {
+            b = nil
+            continue
+        }
+        handleB(v)
+    }
+}
+```
+
+要点：对 nil channel 的收发永远阻塞，select 自动跳过该 case——这是"动态禁用分支"的标准手法。直接对已关闭 channel 接收会瞬间拿到零值并打满 CPU。

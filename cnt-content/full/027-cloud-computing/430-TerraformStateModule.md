@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Terraform 状态管理：state 命令、导入、工作空间、远程后端与锁，以及模块引用。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/410-IaC'
   - 'cloud-computing/420-TerraformBasic'
@@ -298,6 +298,33 @@ module "vpc" {
   cidr   = "10.0.0.0/16"
 }
 ```
+
+## 教学自检
+
+遮住上面的命令与 HCL 示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. state 文件里记的是什么？「Terraform 失忆」会造成什么后果？
+2. 哪些 state 命令随便跑，哪些属于高危？默写三个查看类命令。
+3. 团队协作时 state 存储的三个要求是什么？Terraform 1.10+ 用什么替代 DynamoDB 锁表？
+4. `terraform import` 与 1.5+ 的 `import` 块差异是什么？`-generate-config-out` 省掉什么工作？
+5. 工作空间适合什么场景，不适合什么场景？环境差异大时的标准做法是什么？
+6. 改资源地址（改名/搬进模块）的正确姿势是什么？为什么不能删了重建？
+7. `-refresh-only` 与默认 plan 的差异是什么？
+8. 模块输出的引用语法是什么？Git 模块怎么锁版本？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 「我管理了哪些真实资源、属性是什么」的映射表。失忆后 plan 会误判资源为「不存在」，可能重复创建或对既有资源做出破坏性变更。
+2. `state list`/`state show`/`show`/`output` 是查看类，随便跑；`state rm`、`state push`、`workspace delete` 高危（直接影响账本）。
+3. 远端存储（多人同一真相）、锁（防并发写坏）、加密（state 里有敏感属性）。1.10+ 用 S3 后端原生锁文件（`use_lockfile = true`），DynamoDB 锁表方式已弃用。
+4. 命令式 import 只把资源记入 state，配置还得手写；import 块是声明式的（进配置、进版本控制），配合 `-generate-config-out` 自动生成资源配置代码——省掉「照着资源手写 HCL」的工作。
+5. 同一配置的小变体（dev/stage 快速多环境）适合工作空间；环境差异大、需要隔离权限或 state 的场景不适合——用「每环境独立目录 + 独立远端后端」。
+6. `terraform state mv` 移动账本条目，资源不动。删了重建会触发真实资源的销毁与重建（停机）。
+7. 默认 plan 会提议「把现实改回配置」；`-refresh-only` 只用真实状态刷新账本、不提议任何变更——是漂移检测的正道。
+8. `module.<名>.<输出名>`；Git 模块在 URL 上加 `?ref=v1.2.0` 锁 tag。
+
+</details>
 
 ## 小结
 

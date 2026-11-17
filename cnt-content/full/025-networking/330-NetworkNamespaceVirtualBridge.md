@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Linux 网络命名空间（netns）与虚拟网桥（bridge）：容器网络基础。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/250-KeepalivedDualHotStandby'
@@ -186,6 +186,10 @@ sudo ip netns exec pod0 ping -c 2 223.5.5.5
 - **二层 Overlay**：在宿主间建 VXLAN 隧道把两个 br0 织成一个大二层，容器 IP 可跨主机连续编
   址——Flannel VXLAN 模式与 Open vSwitch 的思路。VXLAN 的封装细节与配置见
   [隧道技术](networking/310-Tunneling)。
+
+以下进入命令速查区：第一部分是 netns 操作（基础/接口/路由/排查），第二部分是 bridge 操作
+（brctl 对照、fdb、VLAN 过滤、持久化）。速查条目均为「基本写法 + 可执行示例」体例，遇到
+具体命令问题按节检索；brctl 属 legacy 工具，新环境一律优先 iproute2 写法。
 
 ## 命名空间基础操作
 
@@ -999,3 +1003,20 @@ netplan apply
 # 重启网络服务
 systemctl restart network
 ```
+
+## 教学自检
+
+按遮码自检法：遮住上文命令与图示，先自己推演，再对照。前七题考正文第 1-4 节，最后两题
+考本篇命令速查区。
+
+- 新建的 netns 里有什么、缺什么？为什么第一件事是 `link set lo up`？
+- veth pair 的传输语义是什么？「有 IP 但不通」的经典原因之一为什么是无对端的 veth？
+- 网桥是几层设备？物理网卡挂桥后 IP 为什么要迁到 br0？不迁会怎样？
+- 手工搭容器网络的五步顺序是什么？哪一步漏掉会出现「容器 ping 得通网关、ping 不通外网」？
+- Docker 默认网络里 iptables MASQUERADE 扮演什么角色？没有它容器行为如何？
+- 跨主机通信的三层方案与二层 Overlay 各自的编址特点是什么？对应哪两个 CNI 的思路？
+- `ip netns exec` 与 Kubernetes 排障里的 `nsenter` 是什么关系？
+- 速查区命令题：`brctl showmacs br0` 的 iproute2 等价写法是什么？查网桥 FDB 表用哪条
+  `bridge` 子命令？
+- 速查区命令题：给网桥开启 STP 的 iproute2 写法是什么？`bridge vlan` 管理的是网桥的
+  什么能力？网桥配置如何持久化？

@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/090-SpringDataJpa'
   - 'spring-boot/110-AspectOrientedProgramming'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'redis/120-CachePenetrationBreakdownAvalanche'
 ---
@@ -84,7 +84,7 @@ public class CacheConfig {
         RedisCacheConfiguration defaults = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(30))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new GenericJackson2JsonRedisSerializer()));
+                        .fromSerializer(new GenericJackson2JsonRedisSerializer()));  // Boot 4.x 起对应类是 GenericJackson3JsonRedisSerializer（Jackson 3）
 
         Map<String, RedisCacheConfiguration> perCache = Map.of(
                 "bookDetail", defaults.entryTtl(Duration.ofHours(2)),
@@ -231,6 +231,10 @@ public Optional<Book> findNullable(Long id) {          // 与 getBook 的差别�
 ```
 
 最后验证失效：调 bookService.delete(b.getId()) 后第三次 getBook(b.getId())——用 try-catch 包住（记录已删会抛查无此书），观察点是 **SQL 重新出现**：bookDetail 与 hotList 两区已被清空，回源重建。
+
+## 升级瞭望（Spring Boot 4.0）
+
+Boot 4.x 配套的 Spring Data Redis 4.x 把 Jackson 系序列化器换到 Jackson 3：GenericJackson2JsonRedisSerializer 的对应新类是 GenericJackson3JsonRedisSerializer（tools.jackson 包），职责不变——往 JSON 里写类型元数据、取回时还原具体类。本篇的自定义 CacheManager 迁移时同步替换类名即可；依赖坐标与自动配置的细节以官方迁移指南为准。
 
 ## 8. 官方参考
 

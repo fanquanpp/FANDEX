@@ -1,19 +1,19 @@
 ---
 order: 640
-title: 版本新特性时间线：3.12 到 3.14
+title: 版本新特性时间线：3.12 到 3.15
 module: 'python'
 category: 后端技术
 difficulty: beginner
-description: 把 2022 到 2025 三年版本演进按「3.12 语法表达力、3.13 性能与自由线程实验、3.14 自由线程转正与延迟注解」串成时间线，逐特性配前后对照代码并标注版本下限（PEP 695/701/649/750/779/734），练习含 TypeVar 改写与 t-string 转义器。
+description: 把 2022 到 2026 四年版本演进按「3.12 语法表达力、3.13 性能与自由线程实验、3.14 自由线程转正与延迟注解、3.15 懒导入与不可变字典」串成时间线，逐特性配前后对照代码并标注版本下限（PEP 695/701/649/750/779/734/810/814），练习含 TypeVar 改写与 t-string 转义器。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
 
 ## 知识点地图
 
-- **知识类别**：Python 语言与解释器的版本演进——3.12（2023）、3.13（2024）、3.14（2025）三个版本的关键特性，是「语法篇与性能篇」的横向时间轴。
+- **知识类别**：Python 语言与解释器的版本演进——3.12（2023）、3.13（2024）、3.14（2025）、3.15（2026）四个版本的关键特性，是「语法篇与性能篇」的横向时间轴。
 - **解决什么问题**：网上教程与代码片段混杂着新旧写法：有的用 `TypeVar` 三行声明泛型，有的直接 `class Stack[T]`；有的 f-string 不能嵌套同类引号，有的可以。不知道版本下限，读到新语法不知道是「新特性」还是「写错了」，自己写的代码也不知道能依赖哪些能力。
 - **什么时候用到**：升级解释器前评估收益、读开源代码认出新语法、在 CI 里锁最低支持版本（`requires-python`）时对照。泛型语法的类型系统含义见 [类型注解与 mypy](/python/530-TypeAnnotationMypy)，自由线程的并发原理见 [GIL 与自由线程](/python/650-GILAndFreeThreading)，解释器与版本管理工具见 [pyenv 与 uv](/python/030-PyenvUvManage)。
 
@@ -215,14 +215,65 @@ print(interp.globals["result"])
 - **PEP 768**：外部调试器接口——调试器可以在运行中的解释器上安全注入断点，配合 [调试篇](/python/695-PythonDebuggingPdb) 的工具生态；
 - **REPL 改进**继续；JIT 仍默认关闭。
 
+## 3.15（2026）：懒导入与不可变字典
+
+Python 3.15（2026 年 10 月 9 日发布）的关键词是「启动更快、字典更稳」。
+
+### PEP 810：显式懒导入
+
+`lazy import` 让模块推迟到**第一次真正使用**时才加载——启动时间的经典治理手段第一次有了语言级语法：
+
+```python
+# Python 3.15
+lazy import json                       # 声明时不加载
+
+def load_config(path: str):
+    return json.load(open(path))       # 第一次用到 json 才真正 import
+```
+
+三条边界值得记住：`lazy` 是软关键字（只有跟在 import 前才有特殊含义，叫 `lazy` 的变量不冲突）；懒导入只允许写在模块顶层，函数或类体内直接 `SyntaxError`；import 报错从「导入时」挪到「首次使用时」，排错时要看第一次用到的位置而不是文件头部。已有代码不想逐行改，可用 `-X lazy_imports=all` 或环境变量 `PYTHON_LAZY_IMPORTS` 全局开启。
+
+### PEP 814：内置 frozendict
+
+不可变且（内容可哈希时）可哈希的字典进入内置类型。它**不是 dict 的子类**（直接继承 object），`isinstance(x, dict)` 判不到它——判断「是不是字典」请用 `collections.abc.Mapping`：
+
+```python
+# Python 3.15
+WEEK = frozendict(mon=1, tue=2)
+# WEEK["wed"] = 3                       # TypeError：不可变
+# {WEEK: "config"}                      # 可哈希，能当 dict 的键
+```
+
+定位：配置常量、缓存键、跨线程共享的只读表。过去只能靠「约定不修改普通 dict」，现在类型系统本身兜底。
+
+### PEP 798：推导式里的解包
+
+推导式支持 `*`/`**` 解包，`itertools.chain` 的最常见用途有了直写形式：
+
+```python
+# Python 3.15
+lists = [[1, 2], [3, 4], [5]]
+[*x for x in lists]                    # [1, 2, 3, 4, 5]
+{**d for d in dicts}                   # 合并一组字典
+```
+
+### 其他 3.15 变化
+
+- **PEP 686 落地**：`open()` 不带 `encoding` 时默认 UTF-8（不再随 Windows/locale 变化），跨平台编码差异的根源被消除——但显式声明仍是纪律（要兼容旧解释器或特殊场景可用 `encoding="locale"`），见 [文件 IO](/python/300-FileIOContextManager)；
+- **PEP 661**：内置 `sentinel` 类型，「独一份的默认值」有了标准做法；
+- **PEP 799**：新 `profiling` 标准库包（含采样式剖析器），旧 `profile` 模块被废弃（计划 3.17 移除，`cProfile` 不受影响）；
+- **re 模块**：新增 `re.prefixmatch()`，与 `re.match()` 语义完全相同，只是名字如实反映「只锚定开头」；`re.match()` 被软废弃（不报警告、不会移除），新代码推荐 `prefixmatch` 或 `fullmatch`，见 [正则表达式](/python/210-Regex)。
+
 ## 版本选型与迁移清单
 
-| 版本 | 状态（2026） | 升级动机 |
+| 版本 | 状态（2026-11） | 升级动机 |
 | --- | --- | --- |
-| 3.10/3.11 | 维护收尾期 | 已有生态兼容基础 |
+| 3.10 | 已停止维护（2026-10 到期） | 必须迁移 |
+| 3.11 | 安全维护期 | 生态兼容基础 |
 | 3.12 | 主力版本 | PEP 695 泛型语法、f-string 解禁 |
-| 3.13 | 主力版本 | REPL、错误消息、准备自由线程 |
-| 3.14 | 新主力 | 自由线程转正、延迟注解、t-string |
+| 3.13 | 主力版本 | REPL、错误消息、自由线程实验 |
+| 3.14 | 主力版本 | 自由线程转正、延迟注解、t-string |
+| 3.15 | 最新稳定版 | 懒导入、frozendict、UTF-8 默认编码 |
 
 `requires-python` 的写法见 [pyenv 与 uv](/python/030-PyenvUvManage) 的项目管理节；升级检查清单：先在 CI 矩阵加新版本跑全量测试，重点盯 PEP 594 移除模块的 import、注解相关库（Pydantic v2 新版已适配 3.14）与 C 扩展的 ABI 兼容（[C 扩展](/python/700-CExtensionsAndFfi)）。
 
@@ -378,12 +429,13 @@ def parse(data: Json) -> str:
 
 ## 官方文档
 
-- Python 3.12/3.13/3.14 What's New：https://docs.python.org/zh-cn/3/whatsnew/3.14.html（各版本同目录）
-- PEP 695（类型参数）、PEP 701（f-string）、PEP 750（t-string）、PEP 779（自由线程支持阶段）：https://peps.python.org/
+- Python 3.12/3.13/3.14/3.15 What's New：https://docs.python.org/zh-cn/3/whatsnew/3.15.html（各版本同目录）
+- PEP 695（类型参数）、PEP 701（f-string）、PEP 750（t-string）、PEP 779（自由线程支持阶段）、PEP 810（懒导入）、PEP 814（frozendict）：https://peps.python.org/
 
 ## 自我检查
 
-- 能说出 3.12/3.13/3.14 各自最重要的一个特性并写出前后对照代码；
+- 能说出 3.12/3.13/3.14/3.15 各自最重要的一个特性并写出前后对照代码（3.15 如懒导入 `lazy import`、内置 `frozendict`）；
+- 能写出 `lazy import` 的三条边界（软关键字、仅模块顶层、报错挪到首次使用）；
 - 能解释 `type` 语句别名与普通赋值别名的差别（惰性、支持递归）；
 - 能用 `sys._is_gil_enabled()` 判断当前构建，并说出自由线程改变的只是性能模型不是语义；
 - 能解释 t-string 与 f-string 的产物差异，以及为什么「转义要在渲染时做」需要 Template 对象；

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'CloudFormation：模板结构、栈生命周期、变更集安全发布、Drift 检测与排错。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/410-IaC'
   - 'cloud-computing/420-TerraformBasic'
@@ -44,7 +44,7 @@ Parameters:
   InstanceType:
     Type: String
     Default: t3.micro
-    AllowedValues: [t3.micro, t2.small, t3.micro]
+    AllowedValues: [t3.micro, t2.small, t3.small]
 ```
 
 ---
@@ -221,6 +221,31 @@ aws cloudformation describe-stack-drift-detection-status --stack-drift-detection
 ```
 
 ---
+
+## 教学自检
+
+遮住上面的 YAML 与命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. 模板五段式是哪五段？栈与模板的关系类比什么？
+2. 「栈是原子性的」体现在什么行为上？这相对手工点控制台的核心价值是什么？
+3. 变更集（change set）三步流程是什么？为什么比直接 `update-stack` 稳？
+4. 变更集里 Action 标注 Modify 与 Replace 的区别是什么？Replace 意味着什么后果？
+5. 删除栈会发生什么？保护重要资源（数据库/桶）的属性是什么？
+6. Drift 检测解决什么问题？什么操作会制造 Drift？
+7. 模板提交前的两条「保险」命令是什么？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. AWSTemplateFormatVersion、Description、Parameters、Resources、Outputs。模板是蓝图，栈是一次部署实例（同构关系类似 Chart 与 Release）。
+2. 创建或更新失败时自动回滚已建/已改资源，不留半成品。手工点控制台没有这种「要么全成、要么退回」的保证。
+3. `create-change-set` 生成变更预览 → `describe-change-set` 审查每个资源的动作 → `execute-change-set` 确认执行。稳在「先看清单再动手」：能提前发现 Replace 类高危变更。
+4. Modify 是原位修改（不重启/不重建）；Replace 触发资源替换（新资源替换旧资源，通常停机，IP/ID 变化）。Replace 意味着业务中断与下游引用失效，必须安排变更窗口。
+5. 删除栈即删除栈内所有资源。给重要资源声明 `DeletionPolicy: Retain`，栈删除时保留该资源。
+6. 发现「有人绕过 CloudFormation 直接在控制台改了资源」造成的配置漂移。手工改控制台、脚本直接调 API 都会制造 Drift。
+7. `validate-template`（语法校验）与 `create-change-set`（变更预览）；上线前还可 `estimate-template-cost` 估费用。
+
+</details>
 
 ## 小结
 

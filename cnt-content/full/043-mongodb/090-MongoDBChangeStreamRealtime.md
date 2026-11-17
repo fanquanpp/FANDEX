@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 监听数据变化的每一跳：Change Streams、resume token 与实时架构。
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'mongodb/020-MongoDBCRUDOperations'
 prerequisites:
@@ -272,7 +272,7 @@ if (evt.operationType === "update" || evt.operationType === "delete") {
 
 **任务一：三种粒度与事件结构观察。** 订阅一个集合的 watch，从另一个连接执行 insert/update/delete 各一次，把每个事件的 operationType、documentKey、updateDescription 完整打印出来对比。提示：update 事件的重点在 updateDescription.updatedFields 与 removedFields——"改了什么"比"文档全量"省流量，只在必要时才用 fullDocument: "updateLookup"。
 
-**任务二：管道过滤 + 投影。** 给 watch 加聚合管道：只推 orderStatus 字段发生变化、且新值为 "shipped" 的事件，投影只保留 documentKey 与新状态。验证插入、无关字段更新、目标状态更新三种操作，前两种应静默。提示：管道写在 watch 的第一个参数里；$match 阶段对 update 事件过滤的是 updateDescription.fullDocument——带 fullDocument: "updateLookup" 才能在管道里读到完整文档字段。
+**任务二：管道过滤 + 投影。** 给 watch 加聚合管道：只推 orderStatus 字段发生变化、且新值为 "shipped" 的事件，投影只保留 documentKey 与新状态。验证插入、无关字段更新、目标状态更新三种操作，前两种应静默。提示：管道写在 watch 的第一个参数里；对 update 事件，`$match` 直接可用的字段是 `updateDescription.updatedFields` 这类增量描述——想按"完整文档里的字段"过滤（如 `fullDocument.orderStatus`），需给 watch 带 `fullDocument: "updateLookup"`，让事件携带完整文档后管道才读得到。
 
 **任务三：断点续听实战。** 写监听循环把每个事件的处理进度（resume token）存进一个 checkpoint 集合；处理到第 5 个事件时 kill 监听进程，再插入 3 条新数据后重启监听，验证它从断点接着消费而不是从头或漏掉。提示：重启后 watch 的参数是 resumeAfter: <存下的 token>；token 过期（oplog 滚掉）会报 ChangeStreamHistoryLost——这正是第 5 节"token 保存周期要短于 oplog 窗口"的实证。
 

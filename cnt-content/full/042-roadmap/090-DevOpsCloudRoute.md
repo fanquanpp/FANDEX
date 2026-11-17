@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'devops/010-OverviewLinuxBasics'
   - 'shell/010-DevEnvSetup'
@@ -106,6 +106,28 @@ flowchart TD
 3. **K8s 直接上托管**：没自建过集群就直接用云托管，排障时对 kubelet/etcd 一无所知。先自建再托管；
 4. **安全意识缺位**：开放全部端口、密码登录、明文密钥进 git——运维事故的头号来源。项目一的安全基线是底线；
 5. **忽视开发能力**：2026 年运维岗的面试已明显 Go/Python 化。没有一门系统语言，天花板立刻触顶。
+
+## 教学自检
+
+遮住对应小节先自己作答，再展开对照；答不出的小节回到原文重读：
+
+**自检一：主线与运维的本体。** 不看「技能树」，默写必学主线七段；再不看「常见弯路」第 1 条，用一句话说出运维工作的核心。
+
+<details>
+<summary>参考答案（先写完再展开）</summary>
+
+主线：Linux → Shell → Docker → CI/CD → K8s → IaC → 可观测性。核心是「把重复的事自动化」：每个手工操作重复第二次就该脚本化，背 500 条命令不等于会运维。
+
+</details>
+
+**自检二：先自建后托管的理由。** 不看「常见弯路」第 3 条，解释为什么 K8s 要先用 kubeadm/k3s 自建再用云托管。
+
+<details>
+<summary>参考答案（先写完再展开）</summary>
+
+没自建过集群就直接用托管，排障时对 kubelet/etcd 一无所知，只能提工单等平台响应；自建一遍是给排查能力打地基，托管是规模化之后的第二步。
+
+</details>
 
 ## 求职准备清单
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 免 JavaScript 弹窗双雄：dialog 的 showModal/returnValue/::backdrop、popover 的触发与分层机制，含 Invoker Commands（command/commandfor）声明式控制、popover="hint" 与 interest invokers 前瞻，附选型对比与可访问性要点。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/150-HTML5TableAndStructuredContent'
   - 'html5/190-HTML5FormValidation'
@@ -236,7 +236,7 @@ popover 打开/关闭会触发 `beforetoggle`（可阻止）与 `toggle` 事件�
 
 ### 4.5 兼容性与降级
 
-- `command`/`commandfor`：Chrome/Edge 135 起可用；Firefox/Safari 的支持情况以 MDN/caniuse 为准。特性检测用 `'command' in HTMLButtonElement.prototype`；
+- `command`/`commandfor`：Chrome/Edge 135（2025 年 4 月）首发，Firefox 与 Safari 于 2025 年内跟进，MDN 已将该 API 标记为 Baseline 2025 Newly available（2025 年 12 月起全主流浏览器可用；旧设备与旧浏览器仍可能不支持）。特性检测用 `'command' in HTMLButtonElement.prototype`；
 - 不支持的浏览器中，这两个属性会被忽略、按钮点击无动作——生产环境务必补一段 `addEventListener('click', ...)` 兜底（检测到支持时不挂即可），或暂时沿用 popovertarget/JS 方案。
 
 ## 5. 前瞻：popover="hint" 与 interest invokers（新兴，谨慎使用）
@@ -316,6 +316,46 @@ popover 打开/关闭会触发 `beforetoggle`（可阻止）与 `toggle` 事件�
 - `cancel`（可阻止）与 `close`（不可阻止）的分工是做"未保存拦截"的基础；`request-close` 是对应的声明式命令；
 - `popover` 有 `auto`/`manual`/`hint` 三种状态，轻关闭行为各不相同；`interestfor` 悬停触发属新兴能力，必须特性检测并保守降级；
 - 无障碍上默认焦点策略可用，但 popover 不管理焦点，含交互组件时换 dialog。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写出实现，再展开参考答案对照。
+
+1. 全声明式做一个「删除确认」对话框：按钮 `commandfor`+`show-modal` 打开，内部「取消」走 `request-close`（可被 cancel 事件拦截），「确定」关闭并把 `returnValue` 置为 `delete`，JS 只负责读取结果。
+
+参考答案（先自己写，再对照）：
+
+```html
+<button type="button" commandfor="confirm" command="show-modal">删除文章</button>
+
+<dialog id="confirm">
+  <p>删除后不可恢复，确定吗？</p>
+  <button commandfor="confirm" command="request-close">再想想</button>
+  <button commandfor="confirm" command="close" value="delete">确认删除</button>
+</dialog>
+
+<script>
+  document.getElementById('confirm').addEventListener('close', (e) => {
+    if (e.target.returnValue === 'delete') console.log('执行删除');
+  });
+</script>
+```
+
+2. 写一个「筛选面板」popover：`auto` 状态（点外部自动关）、声明式开关、内部自带一个声明式关闭按钮。
+
+参考答案（先自己写，再对照）：
+
+```html
+<button popovertarget="filters">筛选</button>
+<div id="filters" popover>
+  <label><input type="checkbox"> 只看未读</label>
+  <button popovertarget="filters" popovertargetaction="hide">关闭</button>
+</div>
+```
+
+3. 概念自问：`cancel` 与 `close` 事件各在什么时机触发、谁能被 `preventDefault()`？需求是「点别处就消失的小气泡」和「必须回答才能继续的确认框」，各选哪个组件？
+
+参考答案（先自己答，再对照）：Esc（或 `request-close`）请求关闭时先触发 `cancel`，可 `preventDefault()` 阻止；真正关闭后才触发 `close`，不可阻止，适合读 `returnValue` 与清理状态。小气泡用 `popover`（auto 轻关闭），确认框用 `dialog.showModal()`（模态阻断 + 焦点管理完整）。
 
 ## 11. 下一步
 

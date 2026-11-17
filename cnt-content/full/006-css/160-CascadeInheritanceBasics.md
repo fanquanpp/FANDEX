@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 哪些属性会继承、inherit/initial/unset/revert 的差别，以及层叠决策的入门模型。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/170-PriorityCalculation'
   - 'css/180-CSSPriorityQuickStart'
@@ -110,7 +110,7 @@ p {
 - `inherit` 强制继承、`initial` 回初始值、`unset` 按属性类型二选一、`revert` 回浏览器默认；
 - 层叠三级：来源与重要性 → 权重 → 顺序；
 - 继承的优先级低于任何作者规则；
-- 深入算法见 009，本课负责日常直觉。
+- 深入算法见 [优先级计算](/css/170-PriorityCalculation)，本课负责日常直觉。
 
 ## 8. 注意事项与改进建议
 
@@ -127,3 +127,35 @@ p {
 - 优先级速查：`css/180-CSSPriorityQuickStart`；
 - 重置方案：`css/150-CSSResetAndNormalize`；
 - 选择器系统：`css/130-CSS3SelectorSystem`。
+
+## 10. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1-4 节的示例代码自己写，再对照参考实现。
+
+**任务一**：判断继承——只给 `body` 写四条声明（`color`、`font-family`、`margin`、`border`），不查资料预测每个属性会传导到页面上哪个层级，再写一句「为什么 border 几乎永远不会想继承」。
+
+**任务二**：四个关键字各写一行实战——按钮里的图标文字要跟按钮文字同色（强制继承）；某个被全局主题污染的链接要「当没设置过」；一段文字要退回浏览器默认的链接蓝；一个错误使用 `initial` 的场景修正成正确关键字。
+
+**提示**：任务一用「文字传、盒子不传」这条规律口算（第 1 节）；任务二四个需求依次是 `inherit`、`unset`（可继承属性 unset 等于 inherit）、`revert`、以及 `initial` 的误用点——对可继承属性 `initial` 会清成初始值而不是恢复继承（第 3 节讲解）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+body {
+  color: #333;          /* 继承：所有后代的默认文字色 */
+  font-family: sans-serif; /* 继承：全页字体 */
+  margin: 0;            /* 不继承：只有 body 自己有 */
+  border: 1px solid red; /* 不继承：只有 body 自己有边框 */
+}
+/* border 继承会让「每个盒子都长出一条边」，视觉失控——
+   所以盒模型属性设计为不继承，继承只传「文字外观」 */
+
+/* 任务二 */
+.btn .icon { color: inherit; }        /* 图标跟按钮文字同色 */
+.link-reset { color: unset; }          /* 可继承属性：unset = 恢复继承链上的值 */
+.link-default { all: unset; color: revert; } /* 退回浏览器默认链接样式 */
+.banner { color: unset; }              /* 修正：原误写 initial 会变成初始值黑色 */
+```
+
+验收点：任务二里把 `.link-reset` 的 `unset` 换成 `initial` 后，链接会变成初始值而不是父级颜色——这正是两个关键字最常被混淆的地方；`revert` 只回退作者样式，浏览器默认样式表仍然生效。

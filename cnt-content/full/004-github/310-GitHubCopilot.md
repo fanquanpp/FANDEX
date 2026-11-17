@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 'GitHub Copilot 深度解析：补全/Chat/agent mode/coding agent 四种工作形态、订阅计划、提示词工程、copilot-instructions、代码审查衔接与组织策略。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'github/210-IssuesTemplateTagMilestone'
   - 'github/180-PullRequestCompleteCollaborationFlow'
@@ -94,6 +94,8 @@ def validate_email(email):
 | **Copilot Pro+** | 39 美元/月 | 更多 AI 额度、高级模型优先 | AI 重度用户 |
 
 官方说明：通过 GitHub Education 认证的**学生与教师可免费使用 Copilot Pro**；**活跃的开源项目维护者**也可免费获得 Pro。也就是说没有名为"Student"的独立计划——认证走 GitHub Education，权益挂在 Pro 上。
+
+计费方式要知道的一件事：2026-04-27 官方公告、2026-06-01 起生效——Copilot 转向「基础套餐 + 用量计费」：premium requests（高级请求）单位被 **AI Credits** 取代，1 credit = 0.01 美元；基础月费不变（Pro 为 10 美元/月，每月含 15 美元额度的 credits），各档套餐均附赠相应 credits，超出部分按积分另行结算。选用高级模型或重度使用 agent 功能前，先看自己套餐的额度口径。
 
 ### 3.2 团队/企业计划
 
@@ -276,7 +278,44 @@ Copilot 可以作为 PR 的另一位审查者（手动请求或规则自动触�
 | 组织席位限制 | 无法修改计划 | 由组织统一分配 | 联系组织管理员，个人不能改 |
 | 代码无法运行 | 采纳后编译报错 | 建议只是"最可能的后续"，不保证正确 | 运行测试验证；不信任 AI 写的边界逻辑 |
 
-## 9. 一句话记忆
+## 9. 动手实践：遮代码自检
+
+先只读问题与提示，遮住参考答案自己写，写完再对照。
+
+**任务一**：Copilot 三种工作形态各用一句话说清「你在做什么」，并给出 2026 年平台层的统管概念叫什么。
+
+**任务二**：把 Issue 派给 Copilot 后，写出它从开工到合并的五步工作流，并指出其中哪一步是「安全阀」、为什么。
+
+**任务三**：判断——（a）agent mode 与 Chat 的能力分界是什么？（b）Copilot review 能在 PR 上点 Approve 吗？（c）想让它遵守团队的测试规范，写什么文件？它对 coding agent 也生效吗？（d）Pro 套餐月费多少？2026 年计费方式发生了什么变化？
+
+**参考答案**（先自己写完再看）：
+
+```text
+任务一：补全——你写它接（灰字 Tab 采纳）；agent mode——你说它
+改（IDE 内多文件多步）；coding agent——你说它做完（云端自主
+开发到 PR）。平台层统管：Agent HQ（2025 Universe 起，统一调度
+Copilot 与第三方编码智能体）。
+
+任务二：派活（assignee 选 Copilot）-> Actions 沙箱里自主开发 ->
+开 Draft PR（描述记录决策）-> PR 里 @copilot 迭代 -> 人类
+review/CI/合并。安全阀是 Draft PR：不触发完整 CI 门禁、不允许
+直接合并，必须有人看过才能转 Ready——「自治开发、人类合并」。
+
+任务三：
+(a) Chat 只答不改；agent mode 被授权多步操作（改多文件、跑
+    命令、按报错自我修正）；
+(b) 不能——它的意见与人类审查同权展示，但批准权保留给人；
+(c) .github/copilot-instructions.md；生效——对 coding agent
+    同样有效，写得越清它的 PR 越可审；
+(d) 10 美元/月；2026-04 起转「基础套餐 + 用量计费」：基础
+    月费不变（Pro 为 10 美元/月，每月含 15 美元额度的 credits）；
+    2026-06-01 起生效：premium requests 被 AI Credits 取代，
+    1 credit = 0.01 美元，超出按积分另算。
+```
+
+要点自查：三种形态是「自主度」的递进，安全边界同步内移——补全由你落键负责、agent mode 你审 diff、coding agent 你审 PR；所有形态共同的铁律是「建议要审查、正确性由人负责」；给 agent 立规矩（copilot-instructions）与给它最小权限（secrets 不可见）是治理的两条腿。
+
+## 10. 一句话记忆
 
 **Copilot 是坐在你身边的 AI 结对编程助手：注释写清楚它就能接代码，选中代码就能问它；订阅先免费后按需升级，用 copilot-instructions.md 给它立规矩——但永远记住：AI 的建议要审查，正确性最终由你负责。**
 

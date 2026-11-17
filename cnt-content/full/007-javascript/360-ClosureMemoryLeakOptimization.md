@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript 闭包导致的内存泄露原理、形式化建模、检测方法与工程级优化策略，对标 V8 引擎实现与现代前端框架实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'javascript/380-JavaScriptModular'
   - 'javascript/250-AsyncProgramming'
@@ -1559,6 +1559,26 @@ function lazyWeak(factory) {
 4. **类型系统方向**：研究 Rust 借用检查器与 Linear Type 系统在 JS 中的应用可能，如 TypeScript 5.4+ 的 `const` 类型参数等。
 
 ---
+
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 闭包为什么会「拖住」一个大对象不放手？用可达性一句话说清，并写出最小泄漏示例（一个闭包长期持有 1MB 字符串）；
+2. 三大高频泄漏现场（定时器、事件监听器、全局缓存）各给一个修复方案；监听器修复说出 `AbortController` 版本写法；
+3. `WeakMap` 与 `Map` 在「给 DOM 节点挂元数据」场景的行为差异：节点从文档移除后分别发生什么；
+4. `WeakRef` 与 `FinalizationRegistry` 为什么只能当优化手段、不能当正确性保证？说出两条语义限制；
+5. 口述「堆快照三连拍」排查法的完整流程：三个快照分别在什么时机拍、对比看什么字段。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：闭包捕获的是外层变量绑定（词法环境），只要闭包可达，它捕获的变量就可达、GC 就不能回收；`function leak() { const big = 'x'.repeat(1e6); return () => big; }` 并把返回值存进全局数组；
+- 第 2 问：定时器——`clearInterval` 挂到组件卸载/页面隐藏；监听器——`removeEventListener` 或 `signal` 一次清理 `new AbortController()` 的 `abort()`；缓存——给 Map 换 WeakMap 或加 LRU/TTL 上限；
+- 第 3 问：Map 强引用键，节点移除后元数据与节点都不可回收（泄漏）；WeakMap 弱引用键，节点移除后条目随 GC 消失，且 WeakMap 不可遍历、键必须对象——语义就是「随主对象生死」；
+- 第 4 问：回调触发时机不确定（可能不触发、可能延迟、可能并发）；清理函数里不能复活对象——所以它们适合日志、统计、兜底释放，资源正确性仍要靠显式 dispose；
+- 第 5 问：操作前拍基线、执行一次可疑操作后拍第二张、强制 GC 后拍第三张；对比器里按「Snapshot 2 - Snapshot 1」排序看新增对象（constructor 过滤），第三张仍在增长的才是真泄漏。
+</details>
 
 ## 附录 A：术语表
 

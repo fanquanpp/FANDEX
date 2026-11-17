@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 用 astro:assets 打通本地图与远程海报的全局优化管线，配置远程域名白名单与响应式图。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/130-AstroMiddleware'
 prerequisites: []
@@ -71,8 +71,9 @@ export default defineConfig({
     domains: ['cdn.vocalive.example'],
     // 更细粒度的授权：协议 + 主机名 + 路径模式
     remotePatterns: [{ protocol: 'https', hostname: 'img.crypton.example', pathname: '/posters/**' }],
-    // 响应式样式开关：Astro 5.10 需要 true 显式开启；
-    // Astro 6/7 样式随响应式图片自动附带（哈希 class + data-astro-fit 等属性）
+    // 是否附带响应式图片所需的全局样式（默认 false，需显式开启）；
+    // Astro 6 起这些样式以哈希 class 与 data-astro-image（值如 constrained/full-width）
+    // 等 data-* 属性输出（CSP 兼容），不再用内联 --fit/--pos 样式
     responsiveStyles: true,
   },
 })
@@ -264,6 +265,44 @@ const wallpapers = [
 1. **接入真实图床**：注册一个支持 S3 的对象存储，把演唱会海报上传后在 `remotePatterns` 中授权其域名，用 `Picture` 组件对比 AVIF 与 JPEG 的体积差异。提示：注意构建期报错信息会指出未授权的域名。
 2. **盘点项目的两路图片**：检查你手头项目的 public/ 与 src/ 各放了哪些图，给"应该被优化却躺在 public/ 的内容图"搬家改造，验证改后 HTML 里的 `<img>` 换成了带 srcset 的管线产物。提示：判断标准是"这张图是否需要按设备变尺寸"——需要就搬进 src/。
 3. **会员分级出图**：给第 5 节的壁纸库加等级判断：普通成员只出 480 宽变体、会员出全尺寸。提示：等级已在守卫换取时放进 `locals`，页面里切换 `widths` 即可，不要在图片组件里写鉴权。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写一张首屏海报的响应式 `Image`：随容器伸缩但不超过原始宽度、按 cover 裁切、AVIF 格式并回退 WebP、给高优先级加载提示。
+
+   参考答案（先自己写，再对照）：
+
+   ```astro
+   ---
+   import { Image } from 'astro:assets'
+   import poster from '../../assets/posters/magical-mirai-2026.jpg'
+   ---
+   <Image
+     src={poster}
+     alt="魔法未来 2026 主视觉海报"
+     layout="constrained"
+     fit="cover"
+     format="avif"
+     fallbackFormat="webp"
+     priority
+   />
+   ```
+
+   验收点：layout 取值 constrained/full-width/fixed（内容图用 constrained）；`format` + `fallbackFormat` 让支持 AVIF 的浏览器拿最小体积；`priority` 只给首屏图。
+
+2. 说出本地图与 public 图的分工判据，以及远程图进管线的前提条件。
+
+   参考答案（先自己写，再对照）：
+
+   本地图（import 进来的 src 资源）进优化管线，自带宽高类型与指纹处理；public 里的文件原样拷贝按原路径引用，适合 favicon、robots.txt、需固定 URL 的下载文件。远程图必须先在 `image.domains`（整域放行）或 `image.remotePatterns`（协议 + 主机名 + 路径模式，粒度更细）里授权，否则构建报错——防止站点沦为任意图片转换代理。
+
+3. 说出 `<Image />` 构建期管线做的那五件事，并解释为什么"给不存在的路径传图"会在编译期报错。
+
+   参考答案（先自己写，再对照）：
+
+   读原图 -> 转 WebP/AVIF 目标格式 -> 生成多尺寸变体 -> 写入 `/_astro/` 带指纹产物 -> 输出 `srcset`/`sizes`/宽高与加载提示。import 进来的图片是 `ImageMetadata` 类型（自带原始宽高），路径不存在时 TypeScript 在编译期报错，而不是浏览器里出裂图。
 
 ## 参考与致谢
 

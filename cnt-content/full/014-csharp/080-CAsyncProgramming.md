@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: APM/EAP/TAP 演化、async/await 状态机、Task/ValueTask、SynchronizationContext、ConfigureAwait、并行编程(TPL)、Channel、IAsyncEnumerable、异步流、常见陷阱与最佳实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/020-CSharpOverviewEnvSetup'
   - 'csharp/030-CSharpBasicSyntax'
@@ -2042,3 +2042,44 @@ await Task.WhenAll(consumers);
 ---
 
 > **结语**：C# 的 `async/await` 是过去十年最重要的语言特性之一，它让异步编程变得直观而高效。掌握状态机转换、同步上下文、`ValueTask` 优化、`Channel`、`IAsyncEnumerable` 等，将帮助你构建高吞吐、低延迟、易维护的现代 .NET 应用。下一篇我们将讲解 .NET 平台与生态：Runtime、BCL、NuGet、DI、配置、日志、ASP.NET Core、EF Core、MAUI 等。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码或口述结论，再对照。本篇的核心是「为什么异步」与「异步的三种组织方式」。
+
+**题 1（异步的本质）**：`await someTask;` 执行时当前线程在做什么？`async` 方法会因此新开线程吗？一句话说出异步与并发的区别。
+
+参考答案：`await` 时当前线程立即返回（方法在此让出， continuation 被注册到 Task 上），有结果后由某个线程接着执行后续部分——无 SynchronizationContext 时是线程池线程，捕获了 UI 等上下文则回到原上下文（详见 [async/await 状态机](/csharp/100-AsyncAwaitStateMachine)）；`async` 本身不创建线程，它只改写方法的结构，真正干活的是已注册的 I/O 完成端口或线程池。区别一句话：并发是"多件事同时推进"，异步是"等待时不占线程"——异步是高效实现并发的手段之一。
+
+**题 2（三种饭）**：串行 `await A(); await B();`、并行 `await Task.WhenAll(A(), B());`、以及 `var a = A(); await a; var b = B();`——三者各自的耗时模型？第三种是什么味道的写法？
+
+参考答案：串行是 A+B；`WhenAll` 是 max(A,B)；第三种是 A 与 B 已并行启动但只等了 A 就开始 B（B 与 A 后半段重叠），总耗时介于两者之间，属于"无心插柳的并发"——能跑但意图不明，需要并发就该明确写 `WhenAll`。
+
+**题 3（一去不回的异常）**：`async void Send()` 里抛出的异常，调用 `Send();` 的代码能 try/catch 住吗？事件处理器之外为什么禁用 `async void`？
+
+参考答案：不能。`async void` 的异常会在完成时直接抛到同步上下文/线程池，绕过调用方的 catch，未处理时通常进程崩溃。事件处理器例外是因为事件签名（`void Handler(object?, EventArgs)`）不允许返回 Task，此时方法体内必须整体 try/catch。其余场景一律 `async Task`，让调用方能够等待与捕获。
+
+**题 4（ValueTask 的边界）**：什么场景 `ValueTask<T>` 优于 `Task<T>`？写出一条必须遵守的使用纪律。
+
+参考答案：高频路径上"多数情况同步完成（如缓存命中）"时，`ValueTask<T>` 用 struct 承载结果/Task，避免每次分配 Task 对象。纪律：`ValueTask` 只能被 await 一次；不能在 await 之前并发调用两次、不能存起来稍后再 await——需要多次消费先 `.AsTask()` 转正。
+
+**题 5（IAsyncEnumerable）**：把"每秒从传感器读一条、共读 N 条、边读边处理"写成签名与消费端代码骨架。
+
+参考答案：
+
+```csharp
+async IAsyncEnumerable<int> ReadSensorAsync(
+    int count, [EnumeratorCancellation] CancellationToken ct = default)
+{
+    for (int i = 0; i < count; i++)
+    {
+        await Task.Delay(1000, ct);
+        yield return ReadOnce();
+    }
+}
+
+await foreach (var reading in ReadSensorAsync(10).WithCancellation(ct))
+    Process(reading);
+```
+
+要点：生产端 `yield return` 逐条产出，消费端 `await foreach` 逐条到达即可处理，不必攒齐整个集合；取消令牌用 `[EnumeratorCancellation]` 声明、`WithCancellation` 传入。

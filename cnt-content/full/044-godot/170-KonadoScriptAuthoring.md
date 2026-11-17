@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 系统学习 KonadoScript 指令，从对话立绘背景运镜到选项分支变量与自定义信号写出完整剧情
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related: []
 prerequisites:
   - 'godot/160-KonadoVisualNovelFramework'
@@ -292,6 +292,14 @@ branch after_branch
 - 交互靠 choice 加 branch（不可嵌套、相邻 choice 成组）与 if/else/endif（六运算符、不支持嵌套、未初始化视为不成立）实现；
 - signal/waitsignal 打通剧本与 GDScript，achievement 联动成就，end 终止剧本并构成回退边界；
 - 发布前可配置 Konado -> Script Encryption Key 加密剧情；双击 .ks 即可在 Godot 内置编辑器中获得高亮、补全与断点调试。
+
+## 自检
+
+- 遮住"普通对话行"一节的语法骨架，自己写出"无名旁白、署名对话、带配音与打字速度参数"三种形态的对话行各一行，再对照——重点核对 speed 与 interval 是 2.8 新增的命名参数写法。
+- 口头区分：持久变量与临时变量的前缀分别是什么？set/add/sub/mul/div 操作哪一个？变量在文本里如何插值？
+- 不翻正文回答：choice 与 branch 为什么不可嵌套？相邻两个 choice 会发生什么？if 的六个比较运算符是哪些，未初始化变量参与条件时按什么处理？（答案：自动成组为一组选项；未初始化视为条件不成立。）
+- 推演：剧本想在新角色登场时通知 GDScript 播一段音效，用哪两个指令配合？（提示：signal 发出、代码侧连 custom_signal 信号接收。）
+- 发布保护两问：Script Encryption Key 留空会发生什么？补丁热更时为什么必须复用同一导出预设与密钥？
 
 ## 参考链接
 

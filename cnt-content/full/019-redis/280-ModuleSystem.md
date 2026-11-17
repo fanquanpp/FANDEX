@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis模块系统：RedisJSON、RedisTimeSeries、RediSearch、RedisBloom等模块原理与使用
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'redis/310-RedisNewFeatures8'
   - 'redis/100-VectorSet'
@@ -197,18 +197,26 @@ FT.AGGREGATE idx:products "@category:{electronics}"
 
 ### 3.4 中文搜索
 
+中文没有空格分词，RediSearch 默认按空格/标点切 token 会把整句当成一个词。正确做法不是给字段加 `PHONETIC`（该选项只支持 `dm:en`、`dm:fr` 等西方语音匹配器，中文字段上声明会直接报错），而是在索引与查询时声明 `LANGUAGE chinese`，走内置的中文分词器（Friso）：
+
 ```redis
-# 创建支持中文的索引
+# 创建索引：字段定义与英文无异，PHONETIC 在这里不可用
 FT.CREATE idx:articles
   ON HASH
   PREFIX 1 article:
   SCHEMA
-    title TEXT PHONETIC zh
-    content TEXT PHONETIC zh
+    title TEXT
+    content TEXT
 
-# 中文搜索
-FT.SEARCH idx:articles "分布式系统"
+# 写入文档：文档属性带 language 字段（默认语言字段名即 language），
+# 索引阶段按它选择中文分词器
+HSET article:1 title "Redis 入门" content "分布式系统的缓存实践" language "chinese"
+
+# 查询时同样带上 LANGUAGE chinese，两侧声明一致才能命中
+FT.SEARCH idx:articles "分布式系统" LANGUAGE chinese
 ```
+
+要点：分词在**索引与查询两侧**都要用 `LANGUAGE chinese`，只改一侧会出现「明明写入了却搜不到」；若文档以 Hash 直接写入而未声明语言，索引阶段就按默认语言切错了词，需要重建索引重灌。
 
 ## 4. RedisTimeSeries
 
@@ -471,3 +479,27 @@ RedisModuleType *MyType = RedisModule_CreateDataType(
 （RedisJSON、RediSearch、RedisTimeSeries、RedisBloom），开箱即用；8.0 起这些
 能力全部并入 Redis Open Source 内核，Redis Stack 独立发行版停止更新，新部署
 直接使用 Redis 8+，模块机制留给第三方扩展。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：模块系统给 Redis 补了哪几类「内核没有的原生能力」？Redis 8 用户的模块视角要怎么摆？
+
+参考答案（先自己答，再对照）：四类：新数据类型（JSON/时序/概率结构的注册与编码）、新命令（挂到命令表）、事件钩子（拦截过期/命令执行）、后台线程（耗时操作不占主线程）。8.0 起官方五类模块（JSON/TS/概率/搜索/T-Digest）已内建内核，模块视角应转向第三方与自研扩展——判断一个命令属于内核还是模块，看它是否需要 loadmodule/MODULE LOAD 先加载。
+
+2. 动手自问：写一个布隆过滤器的防穿透用法，说明 BF.ADD/BF.EXISTS 的回答为什么只有两种，以及为什么不能当存储。
+
+参考答案（先自己答，再对照）：`BF.RESERVE items:bf 0.001 10000000` 预设误判率与容量，`BF.ADD` 入元素、`BF.EXISTS` 判断。回答只有「一定不存在（返回 0）」与「可能存在（返回 1，含误判）」两种——位数组只置 1 不存值，多个哈希位全 1 只说明「路径上被填过」。所以它只能**拦请求**（EXISTS=0 直接拒绝回源），不能存数据、也不支持删除单个元素（删除场景换布谷鸟过滤器 CF.DEL）。
+
+3. 判断题：给中文字段建索引时，应该在 SCHEMA 里给 TEXT 字段加 `PHONETIC zh`。
+
+参考答案（先自己答，再对照）：错。PHONETIC 只支持 dm:en 等西方语音匹配器，中文字段上声明会报错；中文分词走 `LANGUAGE chinese`（Friso 分词器），要索引与查询两侧一致声明（文档属性带 language 字段 + FT.SEARCH 带 LANGUAGE chinese），只改一侧会出现「写入了却搜不到」。
+
+4. 概念自问：T-Digest 与固定桶直方图（如 Prometheus 的 bucket）在 P99 统计上的差别是什么？「最近 1 小时 P99」怎么用 T-Digest 实现？
+
+参考答案（先自己答，再对照）：固定桶的边界预先定死，P99 只能在桶间插值，长尾分辨率差；T-Digest 自适应桶宽（质心集中在分布两端），P99/P999 这类极端分位数精度高。滑动窗口用「时间片草图」：按分钟建 `latency:api:202610061432` 这类键分别 ADD，查询时 TDIGEST.MERGE 合并最近 60 个时间片，配 TTL 自动清理——草图只加不改，合并（mergeable）是它做分布式统计的基石。
+
+5. 动手自问：写一个最简模块的加载验证流程（C 代码骨架不必完整，说清「编译-加载-验证-卸载」四步与各自的坑）。
+
+参考答案（先自己答，再对照）：编译 `gcc -shared -fPIC -o mymodule.so mymodule.c -I<redis>/src`（头文件对齐内核版本）；加载 `MODULE LOAD ./mymodule.so`（生产更常用 redis.conf 的 loadmodule 持久加载；运行时加载受 enable-module-command 保护，默认拒绝）；验证 `MODULE LIST` 看注册名与版本、直接跑注册的命令；卸载 `MODULE UNLOAD mymodule`（模块必须声明可卸载，且未注册数据类型或清理干净才能卸载）。最大的坑是 so 与服务端版本不匹配——模块 API 有版本门槛。

@@ -6,7 +6,7 @@ module: 'redis'
 category: 数据库
 difficulty: advanced
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'redis/240-LuaScriptAtomicExecution'
   - 'redis/200-ReplicationBuffer'
@@ -215,3 +215,27 @@ Redis 作者 Salvatore Sanfilippo 逐条反驳：
 - 下一步：《Lua 脚本原子执行》（redis/240-LuaScriptAtomicExecution）把
   释放/续期脚本写扎实；《哨兵选举》（redis/210-SentinelElection）理解
   丢锁场景中的故障转移细节。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 动手自问：写出单实例加锁与安全释放的完整命令（含为什么值必须唯一、为什么释放必须 Lua）。
+
+参考答案（先自己答，再对照）：加锁 `SET lock:order:1001 <唯一随机串> NX PX 10000`——NX 保证互斥、PX 防持有方崩溃死锁、唯一值用于释放时校验身份。释放走 Lua：`if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('DEL', KEYS[1]) else return 0 end`——GET 后再 DEL 是两条命令，之间锁恰好过期并被第三方抢到就会误删别人的锁；Lua 把「校验 + 删除」压进单线程内的原子一步。
+
+2. 概念自问：主从切换为什么能造成「两个客户端同时持锁」？这是 bug 还是设计使然？
+
+参考答案（先自己答，再对照）：复制是异步的——客户端 A 加锁成功后，这条写命令还没同步到从库时主库宕机，从库升主后锁数据不存在，B 再加锁照样成功。设计使然：异步复制换性能的固有代价，任何「单主 + 异步从」架构都有这个窗口，不是实现 bug。所以正确性要求高的锁不能只靠 Redis 单实例。
+
+3. 判断题：Redlock 用主从架构的 5 个节点（每个带从库）部署就是安全的。
+
+参考答案（先自己答，再对照）：错。Redlock 要求 N 个**互相独立**的主节点——彼此无复制关系，各持一份独立锁状态；拿主从架构的节点跑 Redlock，任何一个主库故障转移到从库都会丢掉它那份锁状态，多数派前提被破坏，算法失效。
+
+4. 概念自问：Kleppmann 与 antirez 之争里，双方**都同意**的结论是什么？对选型的指导是什么？
+
+参考答案（先自己答，再对照）：都同意「基于超时的锁 + 不做写侧校验，无法对抗进程暂停（GC 停顿、VM 休眠）」——要正确性必须有 fencing token（存储侧拒绝旧令牌的写入）或业务幂等校验，这与用不用 Redlock 无关。选型指导：锁只是效率优化（防重复计算、防缓存击穿）用单实例 Redis 锁；锁是正确性要求（资金、库存）用共识存储（etcd/ZooKeeper）+ fencing token，或干脆下沉为数据库唯一约束/乐观锁。
+
+5. 动手自问：看门狗续期的 Lua 逻辑怎么写？TTL 该按什么定？
+
+参考答案（先自己答，再对照）：与释放同构——`if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('PEXPIRE', KEYS[1], ARGV[2]) else return 0 end`，后台线程每隔 TTL/3 校验仍持有就续期，任务结束停止续期并释放。TTL 下限 = 任务 P99 耗时的 3~5 倍，或必须接看门狗；拍脑袋设小，任务未完锁先过期，两个客户端同时进临界区——这是锁失效最常见的形态。

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 从「pnpm install 装进来上千个包，出事算谁的」这个真实问题切入，动手给仓库装好依赖安全基线：提交锁定文件、启用依赖图谱与 Dependabot 告警、加一个 Dependency Review 工作流，再讲清供应链攻击的三条路径与四道防线如何配合。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'github/280-Dependabot'
   - 'github/290-SecretScanning'
@@ -91,8 +91,8 @@ jobs:
   dependency-review:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/dependency-review-action@v4
+      - uses: actions/checkout@v7
+      - uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: moderate
           deny-licenses: GPL-3.0, AGPL-3.0

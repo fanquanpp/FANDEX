@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 网关按 header/权重分流到灰度实例、Nacos 元数据打标、LoadBalancer 过滤策略与染色头透传
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -64,16 +64,7 @@ java -jar order-service.jar \
 
 ## 3. 网关层：按 header 与权重分流
 
-```java
-@Configuration
-public class GrayRouteConfig {
-
-    @Bean
-    public RouteLocator grayRoutes(RouteDefinitionLocator ignored) {
-        return null; // 见下方 yml：配置式路由更贴近生产维护方式
-    }
-}
-```
+路由写法选型一句话：生产更常用配置式路由（下方 yml），规则本身需要程序计算时才用 RouteLocator Bean 写 Java DSL。
 
 ```yaml
 # 网关 application.yml：同一服务的两条路由，灰度路由优先
@@ -85,9 +76,7 @@ spring:
           uri: lb://order-service
           predicates:
             - Path=/api/order/**
-            - Header=X-Gray, true
-          filters:
-            - SetLoadBalancerHeader=env,gray   # 交给负载均衡层按标签挑实例（见第 4 节）
+            - Header=X-Gray, true      # 请求已自带颜色，网关原样透传给下游
 
         - id: order-gray-weight        # 规则二：按权重放 5% 流量
           uri: lb://order-service
@@ -95,7 +84,7 @@ spring:
             - Path=/api/order/**
             - Weight=order-gray-group, 5
           filters:
-            - SetLoadBalancerHeader=env,gray
+            - AddRequestHeader=X-Gray, true   # 网关替请求"染色"，下游才能读到颜色
 
         - id: order-stable             # 规则三：兜底走稳定
           uri: lb://order-service
@@ -105,8 +94,8 @@ spring:
 
 **讲解：**
 
-1. 三条路由按声明顺序求值：带 `X-Gray: true` 的先进灰度（确定性规则优先），其次 5% 权重放量，其余走稳定。`Weight` 谓词的 group 参数把多条权重路由编成一组，同一组内按比例分配且同一用户（按请求特征哈希）结果稳定——反复刷新不会被随机到不同版本。
-2. 染色头 `X-Gray` 在网关侧产生后要传给下游服务，服务间调用（Feign）还要继续透传——这靠统一的 Feign 拦截器（第 4 节），网关只负责"染色源头"。
+1. 三条路由按声明顺序求值：带 `X-Gray: true` 的先进灰度（确定性规则优先），其次 5% 权重放量，其余走稳定。`Weight` 谓词的 group 参数把多条权重路由编成一组，同一组内按权重**随机**分配——注意它是每次请求独立随机（实现里用的是 ThreadLocalRandom），**不按用户粘住**：同一个用户反复刷新可能命中不同版本。要"同一用户稳定走灰度"的效果，靠规则一那类确定性规则（白名单 header/账号）或自定义一致性哈希谓词实现，内置 Weight 不提供这个性质。
+2. 染色头 `X-Gray` 有两个读者：网关内的负载均衡层与下游服务。Spring Cloud Gateway **没有**内置 SetLoadBalancerHeader 这类过滤器——网关把请求头原样交给 LoadBalancer 的 RequestDataContext，自定义 ServiceInstanceListSupplier（第 4 节）从那里读到颜色；服务间调用（Feign）则继续靠统一拦截器透传（第 4 节），网关只负责"染色源头"。
 3. 易错点：灰度路由的 `uri` 仍是 `lb://order-service`——**灰度不是另一个服务名**，是同一服务的不同标签实例。如果起了 order-service-gray 这样的新服务名，注册中心里就是两个孤立服务，回切、监控、告警全部割裂。
 
 ## 4. 负载均衡层：按标签过滤实例
@@ -137,7 +126,7 @@ public class GrayFilteredSupplier extends DelegatingServiceInstanceListSupplier 
 
 1. 装饰器模式：`delegate.get()` 先拿到完整实例列表（来自 Nacos，含 metadata），`map` 里做"按颜色筛"——不改服务发现，只改这一次挑选。
 2. **回退是安全网也是陷阱**：灰度实例全挂时流量落回稳定版是期望行为；但如果灰度实例"忘部署了"（列表里从来就没有 env=gray），灰度流量会**静默**全部落稳定版——你以为在灰度，实际 0% 覆盖。所以灰度期必须有一眼可见的"灰度实例数 >= 1"监控（第 6 节）。
-3. 透传链：网关产生 `X-Gray` -> Feign 拦截器把它复制到下游请求头 -> 下游服务的 Filter 把它放进 ThreadLocal（GrayContext）供负载均衡器读。这段代码全公司写一次，做成公共 starter。
+3. 透传链：网关产生 `X-Gray` -> Feign 拦截器把它复制到下游请求头 -> 下游服务的 Filter 把它放进 ThreadLocal（GrayContext）供负载均衡器读。这段代码全公司写一次，做成公共 starter。网关自己那次转发（网关 -> order-service）的实例挑选，则由网关侧的 Supplier 从 RequestDataContext 读请求头实现——同一个过滤逻辑，两个读取入口。
 4. 与 traceId 的关系：染色头决定"请求去哪"，traceId 记录"请求去过哪"。两者都透传但互不替代——排查灰度问题时，在链路系统里按 `X-Gray=true` 的 span 标签过滤，灰度请求的整条瀑布一目了然（《分布式链路追踪》第 7 节的日志关联同样适用：给 MDC 加一个 gray 字段）。
 
 ## 5. 真实场景三则
@@ -177,8 +166,8 @@ java -jar order-service.jar --server.port=9002 \
   --spring.cloud.nacos.discovery.metadata.env=gray
 
 # 2. 网关路由（application.yml 摘要）
-# - Path=/api/order/** + Header=X-Gray,true -> SetLoadBalancerHeader=env,gray
-# - Path=/api/order/** + Weight=gray-group,50 -> 同上
+# - Path=/api/order/** + Header=X-Gray,true -> 原样透传（请求已带颜色）
+# - Path=/api/order/** + Weight=gray-group,50 -> AddRequestHeader=X-Gray,true
 
 # 3a. 确定性验证：连续 10 次带头请求，应全部命中 9002
 for i in $(seq 1 10); do
@@ -208,3 +197,4 @@ done
 2. 灰度实例全挂时的回退规则是什么？这条规则的静默失效场景怎么防？
 3. 染色头与 traceId 都要透传，两者的职责差别是什么？
 4. 回切为什么说"是路由变更不是部署变更"？这个优势依赖哪条配置？
+5. 内置 Weight 谓词为什么给不了"同一用户稳定走灰度"？这个效果靠什么实现？

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: AOP 的形式化模型、JDK 动态代理与 CGLIB 的原理与选择、织入时机与通知执行时序、execution 切点表达式、自调用失效的代理根源；用接口日志埋点、方法耗时监控、权限校验三个切面实战，附 Spring AOP 与 AspectJ 的选型对比与代理类型转换案例。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/820-SpringIoCContainerBeansAndDI'
   - 'java/827-SpringDeclarativeTransactions'
@@ -719,3 +719,13 @@ public Object around(ProceedingJoinPoint pjp) throws Throwable {
 - Spring Framework 官方文档：*AOP* 一章（https://docs.spring.io/spring-framework/reference/core/aop.html ），代理策略（JDK/CGLIB）、通知类型与 AspectJ 支持的官方语义以此为准（Apache 2.0 许可项目文档，本文仅参照其概念表述，代码为原创示例）；
 - 原模块 Spring 基础篇拆分：本文承接其 AOP 全部主题内容（形式化定义、代理原理、切面实战、对比分析、反模式与案例、相关习题与速查）；
 - [反射与动态代理](/java/430-ReflectionDynamicProxy)：JDK Proxy 与 CGLIB 的底层语法。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 切点表达式 `execution(* com.x.service..*.*(..))` 逐段读出含义。——任意返回值，com.x.service 及其子包所有类的所有方法，任意参数。
+2. Spring AOP 的代理时机与"自调用失效"的原因是什么？怎么绕开？——容器启动时生成代理，外部调用走代理；this.method() 是对象内部调用不经过代理，切面失效；绕开用 AopContext.currentProxy()、注入自身代理或拆类。
+3. @Before、@AfterReturning、@AfterThrowing、@Around 的执行顺序是什么？——@Around 前段 -> @Before -> 目标方法 -> @AfterReturning/@AfterThrowing -> @After -> @Around 后段。
+4. 为什么说 CGLIB 代理不了 final 方法？——CGLib 靠生成子类覆写实现织入，final 方法不可覆写，只能直调原方法，切面不生效。
+5. 写一个"记录方法耗时"的 @Around 骨架。——`@Around("execution(* com.x..*.query*(..))") Object t(ProceedingJoinPoint pjp) throws Throwable { long s = System.nanoTime(); try { return pjp.proceed(); } finally { log.info("{} took {}us", pjp.getSignature(), (System.nanoTime()-s)/1000); } }`。

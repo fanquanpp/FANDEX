@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 自定义指令高级用法
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'vue3/050-ReactiveSystem'
   - 'vue3/170-ProvideInject'
@@ -16,6 +16,8 @@ prerequisites: []
 ---
 
 ## 1. 指令钩子
+
+先想清楚什么时候需要指令钩子。组件的生命周期钩子管理的是「组件」，指令钩子管理的是「被指令绑定的那个 DOM 元素」——当一段 DOM 操作逻辑要跨组件复用（自动聚焦、拖拽、曝光埋点、点击外部关闭），写进组件就要在每个组件里复制一遍，写成指令就是一次定义、处处 `v-xxx`。钩子的意义在于把「绑定时刻」与「解绑时刻」配对：mounted 里加的监听，unmounted 里必须摘掉，否则指令用一次泄漏一次。
 
 ```javascript
 const myDirective = {
@@ -112,7 +114,20 @@ const vColor = (el, binding) => {
   el.style.color = binding.value;
 };
 ```
-## 指令对象定义
+
+## 自检
+
+回答不出的回对应小节；指令题先遮住示例代码自己写，再对照。
+
+1. created 与 mounted 的区别是什么？要在「元素插页面前」改样式该用哪个？
+2. binding 上有哪五个常用字段？v-permission.admin 的 admin 出现在哪个字段？
+3. 简写形式 `(el, binding) => {...}` 等价于哪两个钩子？为什么绑定值更新时它也能触发？
+4. click-outside 指令为什么要把处理器挂在 el 上？unmounted 里不摘监听会怎样？
+5. TS 下用 `Directive<HTMLElement, T>` 标注指令解决什么问题？binding.value 的类型从哪来？
+
+## 附录：自定义指令速查
+
+### 指令对象定义
 
 **完整钩子对象**
 ```typescript
@@ -154,7 +169,7 @@ const vFocus: Directive = (el, binding) => {
 
 ---
 
-## 指令钩子参数
+### 指令钩子参数
 
 **binding 对象**
 ```typescript
@@ -187,7 +202,7 @@ function mounted(el, binding, vnode: VNode, prevVnode: VNode | null) {
 
 ---
 
-## 注册指令
+### 注册指令
 
 **局部注册**
 ```vue
@@ -239,7 +254,7 @@ defineOptions({
 
 ---
 
-## 指令参数与修饰符
+### 指令参数与修饰符
 
 **指令参数 arg**
 ```vue
@@ -292,7 +307,7 @@ const direction = ref('color');
 
 ---
 
-## 实用指令示例
+### 实用指令示例
 
 **v-focus 自动聚焦**
 ```typescript
@@ -409,7 +424,7 @@ const vLongpress: Directive<HTMLElement, () => void> = {
 
 ---
 
-## 在 TS 中扩展
+### 在 TS 中扩展
 
 **自定义指令类型扩展**
 ```typescript
@@ -423,7 +438,7 @@ declare module 'vue' {
 
 ---
 
-## TypeScript 完整示例
+### TypeScript 完整示例
 
 ```typescript
 import { createApp, type Directive, type DirectiveBinding } from 'vue';

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 按主题串联 Java 模块全部文档，回顾语法、面向对象、集合泛型、函数式、并发、JVM 与框架生态的核心概念、易混淆点与高频陷阱。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/010-WhatIsJava'
   - 'java/150-OOP'
@@ -457,3 +457,14 @@ safeVotes.merge("千本樱", 1, Integer::sum);
 4. **补齐数据与中间件**：[Java 与 Redis](/java/910-JavaRedis) 与 [Java 与消息队列](/java/920-JavaMessageQueue)，掌握分布式系统的常用组件。
 5. **提升工程能力**：[Java 单元测试](/java/890-JavaUnitTest) 与 [Java 性能调优](/java/960-JavaPerformanceTuning)，把"能跑"升级为"可靠、可维护、高性能"。
 6. **走向云原生**：[Java 与 Docker](/java/970-JavaDocker) 与 [Java 与 Kubernetes](/java/980-JavaKubernetes)，完成从语言到交付闭环的最后一公里。
+
+---
+
+## 教学自检（遮码自检：盖住答案自测，低于 4/6 建议回对应篇目）
+
+1. JVM 内存区域中线程私有的两个区是什么？各自存什么？——虚拟机栈（栈帧：局部变量、操作数栈）与程序计数器（当前指令位置）。
+2. equals 相等时 hashCode 必须相等的原因一句话。——哈希集合先按桶（hashCode）定位再桶内 equals 判等，不一致则去重与查找失效。
+3. Stream 管道"惰性求值"的触发条件是什么？——存在终端操作；只有中间操作的流不执行任何计算。
+4. 虚拟线程解决的核心矛盾是什么？——高并发 IO 等待与 OS 线程稀缺的矛盾：阻塞时卸载载体线程，同步风格扛高并发。
+5. HashMap 在 JDK 8 的树化双条件是什么？——桶内节点数 >= 8 且表容量 >= 64，否则优先扩容。
+6. 异常处理的三条工程铁律？——不吞异常（catch 空/只打 message）、finally 不 return、资源用 try-with-resources。

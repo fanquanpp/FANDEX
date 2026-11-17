@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 网络与安全进阶：零信任网络、服务网格安全、证书管理与安全自动化
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'devops/240-MonitorAndObservability'
   - 'devops/410-DatabaseOps'
@@ -76,8 +76,8 @@ curl http://internal-service:8080
 Kubernetes 证书管理工具：
 
 ```yaml
-# 安装
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.0/cert-manager.yaml
+# 安装（最新支持分支 v1.21，示例用 v1.21.3；升级前看官方 1.20->1.21 升级说明）
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.21.3/cert-manager.yaml
 
 # ClusterIssuer（Let's Encrypt）
 apiVersion: cert-manager.io/v1
@@ -316,3 +316,11 @@ journalctl -u docker --since "1 hour ago"
 # 网络取证
 tcpdump -i any -w capture.pcap host <suspicious-ip>
 ```
+
+## 自检
+
+- 零信任与边界模型的差别一句话：为什么"内网即可信"在云原生时代失效？mTLS 在零信任里承担哪条原则（服务身份而非网络位置）？
+- cert-manager 链路默写：ClusterIssuer 定什么、Certificate 定什么、Secret 从哪来？ACME HTTP-01 与 DNS-01 的适用差异（内网服务为什么必须 DNS-01）？
+- 镜像供应链三闸（签名 cosign/准入校验/漏洞门禁 trivy）各拦哪类攻击？只做扫描不做签名漏掉什么？
+- Cilium/Calico 的网络策略与原生 NetworkPolicy 的增强点各举一个（FQDN 过滤、L7 规则）；"apply 成功但不生效"先查什么？
+- 事件响应五步（发现/遏制/根除/恢复/复盘）默写，并回答：取证为什么必须在"根除"之前，pthread/tcpdump 各留什么证据？

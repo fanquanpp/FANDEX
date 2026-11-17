@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 为什么重写 equals 必须重写 hashCode，以及 Objects.hash 极简写法。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/210-CollectionFrameworkDetailed'
   - 'java/450-JavaRecordClass'
@@ -250,3 +250,13 @@ public class Money {
 - `equals` 必须满足自反、对称、传递、一致四条性质，`instanceof` 写法在继承层次下要小心对称性破坏。
 - 哈希质量影响性能：字段很多时可按"区分度高的字段优先"参与计算；`Objects.hash` 稳妥但不是最优。
 - 浮点字段用 `Float.compare`/`Double.compare` 参与比较，避免 `-0.0`、`NaN` 语义坑。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. equals 相等但 hashCode 不相等时，HashSet 会发生什么？——两个"相等"对象落进不同哈希桶，去重失效、集合里出现逻辑上重复的元素，contains 也找不到。
+2. 写出等价契约的五条核心性质。——自反性、对称性、传递性、一致性（多次调用结果稳定）、对 null 返回 false（非空性）。
+3. 重写 equals 时为什么必须同时重写 hashCode？一句话契约是什么？——因为哈希集合先按桶（hashCode）定位再在桶内用 equals 判等；契约：equals 相等的对象必须有相等的 hashCode。
+4. record 为什么天生免写这两个方法？——编译器生成基于全组件的 equals/hashCode/toString，且 final 字段保证一致性。
+5. 可变对象做 HashMap key 的风险是什么？工程上怎么办？——put 后修改参与哈希的字段，对象"住在错的桶里"，get 不回、remove 不掉；用不可变对象做 key（String、record、Integer），必须可变时改完前别碰 Map。

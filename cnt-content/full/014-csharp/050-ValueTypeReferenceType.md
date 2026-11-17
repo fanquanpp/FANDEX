@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C#值类型与引用类型详解：struct vs class。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/270-DILifecycle'
   - 'csharp/390-GCGeneration'
@@ -1739,3 +1739,27 @@ var header = new NativeHeader { Magic = 0x4D42, Version = 1 };
 ReadOnlySpan<byte> headerBytes = MemoryMarshal.AsBytes(
     MemoryMarshal.CreateReadOnlySpan(ref header, 1));
 ```
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己画图/写代码/口述结论，再对照。本篇的核心是内存模型，示意图尤其值得自己先画一遍。
+
+**题 1（赋值语义）**：`Point` 是 struct，`Customer` 是 class。分别执行 `var b = a;` 后修改 `b.X`（或 `b.Name`），`a` 会变吗？一句话说清两种赋值各自复制了什么。
+
+参考答案：`Point` 是值类型，赋值复制整个值，`a.X` 不变；`Customer` 是引用类型，赋值复制引用，`a` 与 `b` 指向同一个堆对象，改 `b.Name` 等于改 `a.Name`。一句话：值类型复制"值本身"，引用类型复制"地址"。
+
+**题 2（装箱拆箱）**：`object o = 42; int n = (int)o;` 各发生了什么？堆上多出了什么？再写一段会静默装箱的代码。
+
+参考答案：第一句把栈上的 `int` 42 拷进堆上的框箱对象（对象头 + 方法表指针 + 值），`o` 持有该引用，即装箱；第二句从框箱把值拷回栈，即拆箱，且拆箱目标类型必须与装箱类型精确匹配。静默装箱示例：`IComparable c = 42;`（struct 转接口），或 `ArrayList list = new(); list.Add(42);`（非泛型容器的 `object` 参数）。
+
+**题 3（struct 还是 class）**：为"经纬度坐标点（两个 double）"与"银行账户（余额可变）"分别选 struct 还是 class，各给两条判断依据。
+
+参考答案：坐标点选 `readonly struct`——体量小（16 字节）、逻辑不可变、按值比较符合直觉；银行账户选 `class`——它是有标识的可变实体，两个引用应指向同一余额，复制语义会造成余额分叉；且账户常需继承/接口多态。判断依据：大小与复制成本、是否需要可变共享状态、是否需要继承多态。
+
+**题 4（ref struct 栈约束）**：`Span<T>` 为什么不能作为异步方法的字段、不能跨 `await` 保留？编译器靠什么拦住它？
+
+参考答案：`Span<T>` 是 `ref struct`，可能指向栈内存（`stackalloc`）或被池化对象，生命周期被限定在当前栈帧；异步方法的状态机会把局部状态提升到堆上的状态机对象，跨 `await` 存活的字段意味着栈内存逃逸出栈帧，恢复执行时那块栈早已失效。编译器通过 `ref struct` 使用规则（不能装箱、不能作为异步/迭代器方法的局部变量或字段）在编译期直接报错拦截。
+
+**题 5（参数传递修饰符）**：`void Fix(in BigStruct s)`、`void Fill(ref BigStruct s)`、`void Split(BigStruct s, out BigStruct a)` 三者对调用方的约束与性能含义分别是什么？
+
+参考答案：`in`：按只读引用传入，避免大 struct 复制，方法内不可写实参（编译器可能为防御性拷贝生成副本，方法内频繁调用非 readonly 成员时收益归零）；`ref`：按可写引用传入，方法内修改直接反映到调用方变量，实参必须已初始化；`out`：方法负责赋值，实参可未初始化，用于多返回值。性能含义：三者都传地址、避免复制；区别在可写性与初始化契约，`in` 的收益只在大 struct 上明显，小 struct 按值传更简单且常常更快。

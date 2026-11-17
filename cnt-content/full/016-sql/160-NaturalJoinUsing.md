@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: NATURAL JOIN 与 USING 子句：同名列等值连接的简写语法、与 ON 的语义差异、方言支持与三大陷阱。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/150-JoinQuery'
   - 'sql/070-GROUPBYGroupingSet'
@@ -254,6 +254,47 @@ JOIN order_items oi ON o.order_id = oi.order_id;
 思考题（5 分钟）：「既然 NATURAL JOIN 有加列陷阱，为什么标准还要保留它？」提示从两个
 角度想：临时探索性查询的便利，以及「设计良好的同名外键约定」下它的表达力。对照第 7
 节（实践建议）检查你的答案是否覆盖了「生产代码避免、探索场景可用」的边界。
+
+## 7.5 遮码自检
+
+遮住答案先答；这组题围绕"隐式契约"这个词展开。
+
+**第 1 题：`employees NATURAL JOIN departments` 稳定运行半年后，有人在两表都加了审计列 `created_at`，查询会发生什么？这说明 NATURAL JOIN 的什么性质？**
+
+<details><summary>参考答案</summary>
+
+连接条件悄悄从 `dept_id` 变成 `dept_id AND created_at`（自动用**所有**同名列）——
+两个 created_at 几乎不可能相等，查询突然返回空或漏行，且没有任何报错。这是 NATURAL
+JOIN 的隐式契约：表结构一变，连接语义跟着变。生产代码因此优先显式 `JOIN ... ON`。
+</details>
+
+**第 2 题：`USING (dept_id)` 与 `ON e.dept_id = d.dept_id` 在 `SELECT *` 的输出上有什么差别？USING 之后还能写 `d.dept_id` 吗？**
+
+<details><summary>参考答案</summary>
+
+USING 把连接列合并为一份，`SELECT *` 不会出现两列 dept_id；ON 写法则左表右表各出一份
+同名列。USING 列在多数实现里不能再用表前缀限定（`d.dept_id` 报错），只能写裸列名
+dept_id——这也是它"简写换约束"的一部分。
+</details>
+
+**第 3 题：王五的 dept_id 是 NULL，任何一种等值连接（NATURAL/USING/ON 等值）都会把他查出来吗？为什么？**
+
+<details><summary>参考答案</summary>
+
+都不会。等值连接比较 `dept_id = dept_id`，NULL 与任何值（包括另一个 NULL）比较都是
+UNKNOWN，三值逻辑下被过滤。想保留"没有部门"的员工要 LEFT JOIN（员工表放左侧）。
+NULL 不参与等值匹配，是连接行为与直觉差异最大的地方之一。
+</details>
+
+**第 4 题：FULL JOIN 在 MySQL 里不存在，"LEFT JOIN + UNION + RIGHT JOIN（排除重复）"为什么要排除重复？**
+
+<details><summary>参考答案</summary>
+
+直接 UNION 两个方向的外连接，"两表都匹配"的行会出现两次（LEFT 命中一次、RIGHT 又命中
+一次）。所以右侧补行那半要用 WHERE 左表键 IS NULL 只取"LEFT 没覆盖到的行"，再 UNION
+（去重版或 ALL + 排除条件）。SQLite 3.39.0 起、PostgreSQL 一直原生支持 FULL OUTER
+JOIN，无需模拟。
+</details>
 
 ## 8. 实践建议与小结
 

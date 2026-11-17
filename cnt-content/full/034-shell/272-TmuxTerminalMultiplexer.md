@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: tmux 的会话/窗口/面板三层模型、attach/detach 断线续连、复制模式滚回缓冲、最小 .tmux.conf，以及与 nohup/setsid/systemd 的分工边界。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'shell/220-ProcessJobControl'
   - 'shell/230-ProcessManage'
@@ -199,7 +199,7 @@ tmux 版：ls 里 test 会话还在，attach 后 top 画面原样。nohup 版：
 send-keys 的 `C-m` 漏写是脚本最常见的失败原因（命令输入了但没回车）；split-window 不带 `-t` 时从当前面板切分，脚本里始终显式指定目标更稳。`Prefix {`/`}` 的价值在调试布局时不用拆了重来。自查：你的脚本里 attach 前有没有先 `tmux has-session -t xxx 2>/dev/null ||` 判重？重复运行脚本不该报错。
 </details>
 
-**任务三：复制模式考古。** 在会话里连续跑一串输出（`for i in (1..5000) echo`或 `seq 1 10000`），把 `history-limit` 分别设为默认 2000 与 50000 各试一次：进复制模式翻到最早能看到的行，验证缓冲大小对「翻历史」的实际影响。
+**任务三：复制模式考古。** 在会话里连续跑一串输出（`seq 1 10000`，或 fish 里 `for i in (seq 1 5000); echo $i; end`），把 `history-limit` 分别设为默认 2000 与 50000 各试一次：进复制模式翻到最早能看到的行，验证缓冲大小对「翻历史」的实际影响。
 
 <details>
 <summary>任务三参考观察</summary>

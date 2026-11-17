@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: SSH 与 HTTPS 远程配置对比、公钥配置、HTTPS+PAT 配置指南与故障排查。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-16'
 related:
   - 'github/020-AccountRegister2FA'
   - 'github/030-RepositoryCreateCloneArchiveDelete'
@@ -249,6 +249,34 @@ git remote -v
 | PAT 过期 | 推送突然失败（401/403） | Classic token 设置了有效期 | 到期前生成新 PAT，用 `git credential-manager` 更新缓存 |
 | 多账户串号 | 提交身份混乱 | 多个密钥/PAT 管理混乱 | 用 SSH config 的 Host 别名区分；为不同账户设置不同 `user.email` |
 | 端口 22 被拦截 | `Connection timed out`（企业网络） | 防火墙阻止 SSH 22 端口 | 改用 HTTPS，或配置 SSH over HTTPS 端口 443（`~/.ssh/config` 中设置 `HostName ssh.github.com` + `Port 443`） |
+
+## 7. 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：遮住参考实现，默写「新机器配 SSH 并验证成功」的 4 步命令（生成密钥 → 加载到 agent → 查看公钥 → 测试连接），并写出现在有公司账户要并存的思路。
+
+**任务二**：把一个已有仓库的 remote 从 HTTPS 切到 SSH，写出命令。
+
+**提示**：生成用 Ed25519 算法；测试连接的命令带 `-T`；多账户靠 `~/.ssh/config` 的 Host 别名区分，克隆地址里的主机名要换成别名。
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 任务一：4 步配 SSH
+ssh-keygen -t ed25519 -C "you@example.com" -f ~/.ssh/id_ed25519_github
+eval "$(ssh-agent -s)" && ssh-add ~/.ssh/id_ed25519_github
+cat ~/.ssh/id_ed25519_github.pub        # 复制到 GitHub Settings -> SSH and GPG keys
+ssh -T git@github.com                   # 输出含用户名即成功
+
+# 多账户：在 ~/.ssh/config 里加 Host github.com-work 别名指向公司密钥，
+# 克隆地址相应写成 git@github.com-work:company/repo.git
+
+# 任务二：切换协议
+git remote set-url origin git@github.com:username/repository.git
+```
+
+要点自查：上传到 GitHub 的是 **公钥**（`.pub` 文件），私钥永远不出本机；`ssh -T` 成功的标志是输出里有你的用户名，GitHub 不提供 shell；多账户串号的根因是 SSH 按主机名匹配密钥，Host 别名就是给同一台主机开多个"门牌"。
 
 ## 8. 一句话记忆
 

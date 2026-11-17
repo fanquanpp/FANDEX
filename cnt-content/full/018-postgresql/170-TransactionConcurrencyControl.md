@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MVCC多版本并发控制、快照隔离、事务隔离级别、锁机制、死锁检测、VACUUM机制与冻结。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/010-OverviewInstallConfig'
   - 'postgresql/250-QueryOptimization'
@@ -18,7 +18,7 @@ prerequisites: []
 
 ## 本文是什么、怎么读
 
-本文覆盖 PostgreSQL 事务与并发控制的完整链路：事务理论（ACID 与并发异常）、MVCC 存储内核、隔离级别语义、锁子系统、可序列化快照隔离（SSI）、WAL 与检查点、参数调优、故障排查，以及与 MySQL InnoDB、Oracle 的横向对比。每个核心概念配可执行 SQL 示例与图示，SQL 默认在 PostgreSQL 16 及以上验证。
+本文覆盖 PostgreSQL 事务与并发控制的完整链路：事务理论（ACID 与并发异常）、MVCC 存储内核、隔离级别语义、锁子系统、可序列化快照隔离（SSI）、WAL 与检查点、参数调优、故障排查，以及与 MySQL InnoDB、Oracle 的横向对比。每个核心概念配可执行 SQL 示例与图示，SQL 默认在 PostgreSQL 16 及以上验证（截至 2026-11 当前稳定版为 18；并发语义在 16/17/18 间无破坏性变化，版本差异正文中已标注）。
 
 章节地图：
 
@@ -3377,6 +3377,7 @@ Oracle SERIALIZABLE:
 | 15 | 2022 | 逻辑复制支持 row filters 与 column lists、WAL 归档改进 |
 | 16 | 2023 | recovery_prefetch 预取、双向逻辑复制、改进 autovacuum 调度 |
 | 17 | 2024 | 改进逻辑复制故障切换、VACUUM 内存优化、WAL 改进 |
+| 18 | 2025 | 异步 I/O 子系统（加速顺序扫描/位图扫描/VACUUM）、虚拟生成列、RETURNING 支持 OLD/NEW、idle_replication_slot_timeout 自动失效闲置复制槽 |
 
 ### 15.6 致谢
 
@@ -3460,3 +3461,57 @@ DELETE FROM logs WHERE id IN (
     SELECT id FROM logs WHERE created_at < '2026-01-01' LIMIT 1000
 );
 ```
+
+## 教学自检
+
+遮住相关示例与表格，先自己写再对照参考答案。逐题覆盖 MVCC 可见性、隔离级别异常、SSI、锁与死锁四个核心概念。
+
+### 任务一：MVCC 可见性三步判断
+
+需求：READ COMMITTED 下，行版本 X（xmin=100, xmax=200），当前事务 id=300。xmin=100 已提交、xmax=200 未提交。这行对当前事务可见吗？xmax=200 提交后又如何？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+可见性判断两段：插入事务对当前快照是否可见（xmin=100 已提交且不在快照之外，可见），删除事务是否可见（xmax=200 未提交，当前事务看不到这次删除）→ 行可见。xmax=200 提交后，删除对当前事务可见 → 行不可见（该版本作废）。推论：READ COMMITTED 每条语句取新快照，所以"别人已提交的删除"在下一条语句里立刻生效；REPEATABLE READ 沿用事务首个快照，删除对它始终不可见。
+
+</details>
+
+### 任务二：哪种隔离级别防住哪种异常
+
+需求：列一个 4x3 矩阵：四个隔离级别对脏读/不可重复读/幻读的防护。再回答：PG 的 REPEATABLE READ 防幻读靠什么机制（MySQL InnoDB 又靠什么）？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+标准矩阵：READ UNCOMMITTED 全不防；READ COMMITTED 只防脏读；REPEATABLE READ 防脏读与不可重复读（标准 SQL 允许幻读）；SERIALIZABLE 全防。PG 特殊点：READ UNCOMMITTED 实际等同 READ COMMITTED（MVCC 下脏读不存在）；REPEATABLE READ 用 MVCC 快照把幻读也挡住（超出标准要求）。MySQL InnoDB 的 REPEATABLE READ 靠间隙锁（next-key locking）在写入路径防幻读，PG 靠快照语义在读取路径防——代价是 PG 在 REPEATABLE READ 下遇到写冲突会报 serialization failure，应用必须重试。
+
+</details>
+
+### 任务三：写偏斜怎么复现、SSI 怎么抓住它
+
+需求：两个事务并发："白班医生查询当前在岗医生数 >= 1 则请假"。写出触发写偏斜的语句序，说明为什么 REPEATABLE READ 放行了它而 SERIALIZABLE 没有。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```
+T1: SELECT count(*) FROM oncall WHERE on_duty;  -- 1 人, 判定可以请假
+T2: SELECT count(*) FROM oncall WHERE on_duty;  -- 1 人, 判定可以请假
+T1: UPDATE oncall SET on_duty=false WHERE id=1; COMMIT;
+T2: UPDATE oncall SET on_duty=false WHERE id=2; COMMIT;  -- 两人都请了, 全员脱岗
+```
+两个事务读同一批数据（SIREAD 谓词锁），又各自写了与之并发相关的行——形成 rw 依赖环。REPEATABLE READ 的快照让两方都看不到对方提交，无法发现矛盾；SSI 在提交时检测到危险结构（rw-反依赖成环）中止其中一个（serialization failure, SQLSTATE 40001），应用重试后第二个事务会看到 0 在岗从而拒绝请假。
+
+</details>
+
+### 任务四：一条 ALTER 为什么能卡全站
+
+需求：长查询跑在 orders 表上，随后一条 ALTER TABLE ADD COLUMN 到达。描述锁队列发生什么、给两条防御参数写法。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+ALTER 请求 ACCESS EXCLUSIVE，与 ACCESS SHARE 冲突必须等待长查询；而锁队列"不让"规则使后续一切新查询（哪怕只是 SELECT）都排在 ALTER 之后——全站查询挂起。防御：DDL 会话先 `SET lock_timeout = '3s'` 快速失败；再配合 `SET idle_in_transaction_session_timeout = '10min'` 收割遗忘的长事务。与 190 篇锁排队一节互为镜像。
+
+</details>

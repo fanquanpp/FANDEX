@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: OPTIMIZER_TRACE 的诊断方法：开启与读取、追踪输出的三大阶段、代价估算逐项分析、"为什么不用这个索引"的终极答案。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/320-EXPLAINDetailed'
   - 'mysql/340-SlowQueryLog'
@@ -141,6 +141,35 @@ SET optimizer_trace = 'enabled=off';
 **"JSON 太长看不完怎么办？"**——三个技巧：只搜三个关键词（`chosen`、`cause`、`cost`）就能抓住决策主干；`optimizer_trace_max_mem_size` 调大避免截断失真；对比实验时把两个 JSON 存下来用文本 diff，差异处就是问题的答案。
 
 **"追踪本身有开销吗？"**——只在会话开启时记录，单条查询的诊断开销可忽略；但不要在压力高峰对批量负载开追踪（毕竟要序列化每一步决策）。用完即关。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出流程：追踪一条查询的优化决策，从开启到读取再到关闭。为什么追踪只在会话级开、用完立刻关？
+
+参考答案（先自己写，再对照）：
+
+```sql
+SET optimizer_trace = 'enabled=on';
+SELECT * FROM trace_demo WHERE status = 0;
+SELECT TRACE FROM information_schema.OPTIMIZER_TRACE\G
+SET optimizer_trace = 'enabled=off';
+```
+
+trace 会完整记录优化器的枚举与决策过程，输出大、开销明显；它只对开启后的**下一条**可追踪语句生效，全局开启会拖垮整个实例。会话级开关 + 用完即关，是它的安全使用姿势。
+
+2. 概念自问：optimizer trace 回答的是 EXPLAIN 与 EXPLAIN ANALYZE 都回答不了的问题——是什么问题？
+
+参考答案（先自己答，再对照）："优化器为什么这么选"。EXPLAIN 只给结论（用了哪个索引），EXPLAIN ANALYZE 给实测（这个计划跑得多快），trace 给过程——每个候选访问路径的估算行数与成本、被淘汰的理由、JOIN 顺序怎么定的。"为什么不用索引"这类悬案，只有 trace 能给出裁决书。
+
+3. 判断题：trace 里看到候选路径 `idx_status` 的 cost 比全表扫描略高 0.1，说明统计不准，必须人工干预。
+
+参考答案（先自己答，再对照）：不必。0.1 的成本差距在估算误差范围内，两个方案都是"合理选择"，差异来自采样估算的天然噪声。trace 的价值是**理解**决策逻辑，不是把成本数字当成精确值去抠；只有当成本模型与现实的偏差是系统性的（统计严重过时、成本参数失真）时才需要干预——刷新统计、校正参数，而不是每条 SQL 加 hint。
+
+4. 概念自问：trace 输出是 JSON，日常排查时重点看哪三类字段？
+
+参考答案（先自己答，再对照）：一看 considered_access_paths（各候选索引与全表扫描的估算 rows/cost，chosen=true 的就是最终方案）；二看 rows_estimation 阶段（统计信息怎么变成估算值的——采样了哪些索引、区分度多少）；三看各 join 顺序候选的成本对比。三类分别回答"选了什么""为什么这么估""为什么这个顺序"。
 
 ## 检验清单
 

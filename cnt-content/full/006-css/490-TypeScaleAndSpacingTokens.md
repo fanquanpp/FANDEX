@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: '用字号阶梯、行高、8pt 间距与 CSS 变量搭一套可复用的排版网格，让页面看起来专业而不是"随手排的"。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'css/410-CSSVariableCustomAttribute'
   - 'css/370-ResponsiveDesign'
@@ -83,7 +83,7 @@ prerequisites:
 
 .card {
   padding: var(--space-4);
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 ```
 
@@ -112,7 +112,7 @@ prerequisites:
 
 **中文排版补充：**
 
-- 中文正文推荐 `text-align: justify` 两端对齐，并配合 `text-justify: inter-ideograph` 处理标点；
+- 中文正文推荐 `text-align: justify` 两端对齐；需要精细控制断词策略时用 `text-justify`（标准值为 `auto`/`inter-word`/`inter-character`，`inter-ideograph` 是 IE 时代旧值，不要再用）；
 - 中文标点（逗号、句号）不应出现在行首，浏览器自动处理；需要更精细控制时设置 `hanging-punctuation`（支持有限）；
 - 中文正文字号建议 ≥ 16px，行高 1.6-1.8，比英文略宽；
 - 全角与半角：中文内容用全角标点，代码与英文单词保持半角。
@@ -125,7 +125,7 @@ prerequisites:
 | 行高越宽松越好 | 正文 1.5-1.7 合适，标题用紧凑行高，避免留白失衡 |
 | 间距随手填 | 间距来自同一数值体系，视觉才统一 |
 | 只用 px 固定字号 | 用 rem 基准 + clamp() 兼顾可访问性与响应式 |
-| 文本装饰乱用 | 下划线只用于链接，正文装饰用 color/weight 表达 | 用语义类与设计令牌统一 |
+| 文本装饰乱用 | 下划线只用于链接 | 正文装饰用 color/weight 表达，统一进令牌 |
 
 ## 小结
 
@@ -163,5 +163,55 @@ prerequisites:
 ## 扩展学习
 
 - 字体加载：`css/510-CSSFontLoading`；
-- 文本装饰：`css/490-TypeScaleAndSpacingTokens` 的文本章节；
+- 文本与字体基础：`css/070-TextAndFontsBasics`；
 - 设计令牌：`css/410-CSSVariableCustomAttribute`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住「核心概念」「落地示例」两节的示例代码自己写，再对照参考实现。
+
+**任务一**：从零搭一套排版令牌——字号阶梯六级（xs 到 2xl，基准 1rem 按比例放大）、三个行高档、8pt 间距体系五档；再写一个「大标题」规则：clamp 流式字号 + 紧凑行高 + 间距令牌。
+
+**任务二**：判断并修复——页面里出现了 `margin: 13px`、`padding: 22px`、`font-size: 17px` 三个「随手值」，按 8pt 体系给出各自的归档值，并说明归档为什么比「精确还原设计稿」更值得。
+
+**提示**：任务一的阶梯比例常用 1.2 到 1.333（ minor third 到 perfect fourth），间距只取 4/8 的倍数（核心概念第 3 点）；任务二对照「常见误区」表的「间距随手填」一行——就近归档到体系内的值，误差让位于一致性。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+:root {
+  --text-xs: 0.75rem;   /* 12px */
+  --text-sm: 0.875rem;  /* 14px */
+  --text-base: 1rem;    /* 16px */
+  --text-lg: 1.25rem;   /* 20px */
+  --text-xl: 1.5rem;    /* 24px */
+  --text-2xl: 2rem;     /* 32px */
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.6;
+  --leading-loose: 1.8;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+}
+
+.page-title {
+  font-size: clamp(1.5rem, 1.2rem + 1.6vw, 2.5rem); /* 流式但不越阶 */
+  line-height: var(--leading-tight);
+  margin-block-end: var(--space-6);
+}
+
+/* 任务二 */
+/* margin: 13px → var(--space-3)（12px，4 的三倍）或 --space-2（8px），就近归档 */
+/* padding: 22px → var(--space-6)（24px，8 的三倍） */
+/* font-size: 17px → var(--text-base)（16px），阶梯外不放值 */
+/* 归档的理由：17px 与 16px 视觉无差，但「体系外」的值会繁殖——
+   下一个人看到 17px 就敢写 18px，阶梯约束因此瓦解 */
+```
+
+验收点：任务一里把 clamp 的中间项斜率写成 0 会让标题在所有视口下固定为最大值——首选值必须随 vw 变化；任务二里给 17px 单独加一个 `--text-md: 1.0625rem` 是「用令牌的形式破坏令牌」，正确的动作是归档到最近的阶梯值。

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 编译器中间代码：三地址码、静态单赋值（SSA）与中间表示。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/440-GrammarAnalysis'
   - 'cs-fundamentals/450-SemanticAnalysis'
@@ -212,3 +212,11 @@ B3:  出口                return s2
 - CFG 与支配树是 SSA 构造的前提；支配边界精确定位 phi 的插入点，Cytron 算法三步（支配树 -> DF -> 插入与重命名）是标准流程。
 - LLVM IR/字节码/WASM 表明"IR"谱系横跨编译器中间层到发布格式，设计权衡（栈式 vs 寄存器式、文本 vs 二进制）服务于不同目标。
 - 手工把小段代码翻译成 TAC/SSA 是最有效的练习：while 循环 + 数组 + if 分支足以覆盖全部核心概念。
+
+## 自检
+
+- 遮住「m + n」的小节开头，先自己推导出 IR 适配器的数量公式（m 种语言 × n 种机器），再回答：没有 IR 时编译器要写多少个前端-后端组合？
+- 遮住三地址码小节，先自己把 `a[i] = b * 2 + c` 翻译成 TAC（含数组地址计算），再对照——每条指令为什么至多三个地址？
+- 遮住 SSA 小节，先自己回答「每个变量只赋值一次」怎么处理 if-else 汇合（phi 函数），再对照 phi 在支配边界插入的规则。
+- 遮住 Cytron 算法三步，默写「支配树 → 支配边界 → 插入与重命名」的顺序，并回答：支配边界为什么不等于直接前驱集合？
+- 遮住 LLVM IR/WASM 对比小节，回答：栈式与寄存器式 IR 各自的优势场景（发布格式 vs 优化友好）？

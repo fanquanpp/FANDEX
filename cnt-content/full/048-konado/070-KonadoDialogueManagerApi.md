@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 系统梳理 KonadoDialogueManager 的导出属性信号与生命周期方法，打通剧本与游戏逻辑
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'konado/020-KonadoArchitecture'
   - 'konado/050-KonadoVariablesAndBranching'
@@ -47,7 +47,7 @@ func _ready() -> void:
 
 ## 导出属性分组详解
 
-KonadoDialogueManager 的导出属性在源码里按功能分成五组，下面是完整摘录，随后逐组解释：
+KonadoDialogueManager 的导出属性在源码里按 @export_category 分成八个分组。与游戏逻辑直接相关的是前五组，下面是完整摘录，随后逐组解释；其余三组是模板内部接线，见本节末尾：
 
 ```gdscript
 # Playback Settings
@@ -68,6 +68,19 @@ KonadoDialogueManager 的导出属性在源码里按功能分成五组，下面�
 @export var screen_text: KonadoScreenText
 @export var stage_controller: KonadoStageController
 @export var audio_controller: KonadoAudioController
+# UI Settings（续）：默认模板的功能栏按钮与面板接线，自定义模板时才需要动
+@export var choice_controller: CHOICE_CONTROLLER_SCRIPT
+@export var quick_save_button: Button
+@export var quick_load_button: Button
+@export var save_panel_button: Button
+@export var auto_play_button: Button
+@export var achievement_button: Button
+@export var settings_button: Button
+@export var backlog_button: Button
+@export var back_button: Button
+@export var save_panel: SAVE_PANEL_SCRIPT
+@export var backlog_panel: BACKLOG_PANEL_SCRIPT
+@export var save_feedback_label: Label
 # Dialogue Resources
 @export var start_dialogue_shot: KonadoShot
 @export var character_list: KonadoCharacterList
@@ -78,6 +91,16 @@ KonadoDialogueManager 的导出属性在源码里按功能分成五组，下面�
 # Log Tool
 @export var enable_overlay_log := true
 @export var report_runtime_failures_to_console := true
+@export var error_tooltip_panel: ColorRect
+@export var error_tooltip_label: Label
+@export var error_action_container: Container
+# System
+@export var save_system: SAVE_SYSTEM_SCRIPT
+@export var settings_adapter: SETTINGS_ADAPTER_SCRIPT
+# Dialogue History
+@export var max_dialogue_history_entries := 256
+# Camera
+@export var camera_controller: CAMERA_CONTROLLER_SCRIPT
 ```
 
 **Playback Settings（播放设置）**控制"怎么播、何时播"：
@@ -100,7 +123,9 @@ KonadoDialogueManager 的导出属性在源码里按功能分成五组，下面�
 
 **Dialogue Resources（对话资源）**是 start_dialogue_shot 与五张资源表，后文单独展开。
 
-**Log Tool（日志工具）**包含 enable_overlay_log（运行出错时是否弹出覆盖层日志窗口，默认 true）与 report_runtime_failures_to_console（是否把运行时故障报告到控制台，默认 true）。调试期建议全开，正式发布可按需关闭覆盖层。
+**Log Tool（日志工具）**包含 enable_overlay_log（运行出错时是否弹出覆盖层日志窗口，默认 true）与 report_runtime_failures_to_console（是否把运行时故障报告到控制台，默认 true），以及错误提示浮层的三个节点位（error_tooltip_panel/error_tooltip_label/error_action_container，默认模板已接好）。调试期建议全开，正式发布可按需关闭覆盖层。
+
+其余三组是模板接线属性，日常游戏逻辑不碰它们，自定义模板场景时才会用到。源码里这几个属性的类型写成 CHOICE_CONTROLLER_SCRIPT 这类全大写名字——它们不是类名，而是源码顶部 preload 的脚本常量，指向对应的控制器与面板脚本，读源码时别误以为是拼错了。**UI Settings 续段**的八个 Button 与 save_panel/backlog_panel/save_feedback_label 是默认模板功能栏的按钮与面板接线（快速存档、快速读取、存档面板、自动播放、成就、设置、历史、回退）；**System** 组的 save_system 与 settings_adapter 分别指向存档系统与设置适配器，是 080 篇存档链路与 100 篇设置系统的落点；**Dialogue History** 组的 max_dialogue_history_entries 控制对话历史上限（默认 256 条，机制见 080 篇）；**Camera** 组的 camera_controller 指向相机控制器，040 篇的 cam/asyncam 指令最终由它执行。
 
 ## 信号全表
 

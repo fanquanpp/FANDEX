@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C#反射与特性（Attribute）应用详解：从ECMA-335元数据到Source Generator的完整指南。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/100-AsyncAwaitStateMachine'
   - 'csharp/200-DelegateEventUnderlying'
@@ -2260,3 +2260,38 @@ public class UserService { }
 ```
 
 ---
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码或口述，再对照。本篇自检核心是「特性驱动的插件式架构」——特性是数据，反射是引擎。
+
+**题 1（特性的本质）**：`[Route("api/orders")]` 编译后变成了什么？运行时谁去读它？为什么说特性"本身不做任何事"？
+
+参考答案：特性被编译进程序集元数据（`CustomAttribute` 表），实例只在被查询时才构造。运行时由消费者（ASP.NET Core 的路由系统、序列化器、或你自己的扫描代码）用 `GetCustomAttributes`/`GetCustomAttribute` 读取并解释。特性只是"贴在成员上的声明性数据"，没有任何执行语义——不写读取它的代码，它就是死数据。
+
+**题 2（扫描与注册）**：写出"扫描程序集中所有标了 `[AutoRegister]` 的非抽象类，注册进 `IServiceCollection`"的骨架代码，并说出这段代码应该只跑一次的位置。
+
+参考答案：
+
+```csharp
+var impls = typeof(Program).Assembly.GetTypes()
+    .Where(t => t is { IsClass: true, IsAbstract: false }
+             && t.GetCustomAttribute<AutoRegister>() is not null);
+
+foreach (var t in impls)
+    services.AddScoped(t);
+```
+
+位置：组合根（`Program.cs` 的容器配置段），启动时执行一次；把扫描放进业务请求路径等于每次请求都遍历全程序集，纯浪费。更工程化的做法是把扫描结果缓存进 `static readonly`，或改用源生成器在编译期生成清单。
+
+**题 3（特性 + 模式匹配的分工）**：一个导出器系统：`[Exporter("csv")] CsvExporter`、`[Exporter("pdf")] PdfExporter`。"特性 + 工厂字典"与"switch 模式匹配"两个方案各适合什么时机？
+
+参考答案：特性方案适合"实现类会增减"的开放集——新导出器加个特性即插入系统，无需改任何分发代码（框架级插件扩展都长这样）；switch/模式匹配适合"类型集合封闭"的场景——编译器保证穷尽性检查，新增类型时编译器逼你补分支（领域内部的状态机/结果类型）。判断标准：新增实现要不要"不动存量代码"，要就特性/注册表，不要就封闭模式匹配。
+
+**题 4（反射的应用清单）**：说出三个你天天在用、底层靠"特性 + 反射"的框架机制，并指出各自的消费者。
+
+参考答案：ASP.NET Core 模型绑定与验证——框架读取 `[FromBody]`/`[Required]` 等特性构造绑定与校验管道；EF Core 映射——`[Table]`/`[Column]`/`[Key]` 被模型构建器读取生成数据库映射；测试平台——`[Fact]`/`[Test]`/`[Theory]` 被扫描成可执行测试列表；序列化的 `[JsonPropertyName]`、DI 的 `[FromServices]` 同理。共同结构：声明性标注 + 框架启动期扫描 + 结果缓存。
+
+**题 5（AOT 时代的取舍）**：把题 2 的启动扫描迁到 Native AOT 环境，两条路各是什么？各自代价？
+
+参考答案：路一：保留反射，给相关类型加 `[DynamicallyAccessedMembers]` 标注并确保实现类被静态引用（防裁剪器删除），代价是标注繁琐、容易漏、启动仍要扫描；路二：改源生成器——编译期扫描 `[AutoRegister]` 生成 `services.AddScoped<CsvExporter>()` 这样的普通注册代码，AOT 友好且零启动扫描，代价是要维护生成器工程。生态的现实走向正是一路到二路（System.Text.Json 与 DI 扩展都内建了源生成器）。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Socket与HTTP客户端
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/770-JavaDesignPattern'
   - 'java/330-JavaFunctionalProgramming'
@@ -1752,13 +1752,23 @@ public class SimplePool<T> {
 
 ### 11.5 进阶主题
 
-- **JEP 428 结构化并发**：简化并发错误处理与取消传播。
-- **JEP 453 作用域值（Scoped Values）**：替代 ThreadLocal 的不可变共享机制。
+- **结构化并发**：简化并发错误处理与取消传播（JEP 453 起步，历经 505 重设计，截至 JDK 26 仍为 JEP 525 第六次预览）。
+- **JEP 506 作用域值（Scoped Values）**：替代 ThreadLocal 的不可变共享机制，已随 JDK 25 正式。
 - **Netty 5 演进**：API 简化与虚拟线程深度集成。
-- **QUIC / HTTP/3**：基于 UDP 的下一代传输协议，Java 生态已有 quiche4j 等绑定。
+- **QUIC / HTTP/3**：JDK 26 已内置支持（JEP 517，`java.net.http.HttpClient` 增加 HTTP/3 版本与 QUIC 传输配置）；第三方 quiche4j 等绑定退居补充角色。
 - **零拷贝深入**：`sendfile`、`splice`、`mmap` 在 JVM 中的可用性。
 - **eBPF 与网络可观测性**：Cilium、Pixie 等基于 eBPF 的网络监控方案。
 
 ---
 
 **总结**：Java 网络编程经历了从 BIO 到 NIO、Netty Reactor、再到虚拟线程的演进。每种模型都有其适用场景，理解其背后的 IO 模型、协议语义、内核机制是选择合适方案的前提。在 JDK 21 之后，虚拟线程为高并发网络编程带来了范式转变，但 Netty 等成熟框架在精细控制、协议设计、生态兼容方面仍不可替代。开发者应根据场景、团队能力、生态依赖综合选型，避免陷入"唯技术先进论"的陷阱。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. BIO 模型下 1000 个并发连接需要多少线程？NIO 需要多少？——BIO 一连接一线程，约 1000 个（线程栈内存随连接数线性增长）；NIO 一个 Selector 线程可管理数千连接，事件就绪才处理。
+2. 说出 NIO 三大角色与一次完整读事件的流程。——Selector、Channel、Buffer；流程：channel 注册到 selector 并声明 OP_READ -> selector.select() 返回就绪键 -> 取 SelectionKey 判断就绪类型 -> channel.read(buffer) 读入 -> 业务处理 -> flip/rewind 管理 buffer 位置。
+3. 为什么"epoll 惊群"在多 selector 线程下要小心？Java 侧怎么规避？——多个线程等待同一 fd 就绪时只有一人 accept 但都被唤醒，空转浪费；Java 侧常见做法是单 Acceptor 线程分派，或多 reactor 用 SO_REUSEPORT 前提下的独立监听。
+4. 虚拟线程网络编程的关键收益是什么？什么场景下仍选 Netty？——阻塞式同步代码在高并发连接下不再耗尽平台线程（阻塞时自动卸载载体线程）；需要自定义协议、零拷贝精细控制或超低 GC 压力的场景仍选 Netty。
+5. 判断：JDK 26 起标准 HttpClient 原生支持 HTTP/3。——对（JEP 517），客户端 API 增加 HTTP/3 版本与 QUIC 配置；此前需要 quiche4j 等第三方绑定。

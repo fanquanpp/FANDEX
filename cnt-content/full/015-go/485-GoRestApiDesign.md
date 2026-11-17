@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 资源建模、统一响应与业务错误码、请求验证、版本化与幂等键：把「能跑的接口」升级为「好用的 API 契约」的设计篇，附完整订单 API 推演与练习
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -418,3 +418,41 @@ check-then-act，对照 190-RaceDetectionAtomic 的竞态分类；生产实现
 - OpenAPI Specification 3.1（https://spec.openapis.org/oas/v3.1.0 ，Apache-2.0）
 - Microsoft REST API Guidelines（https://github.com/microsoft/api-guidelines ，CC-BY 4.0 / MIT 双许可）
 - 原始素材：本仓库 590-GoWebDevelopmentMicroservice §4 全量搬移扩写
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（状态码的语义纪律）**：以下四种失败分别返回什么状态码？请求体 JSON 解析失败；未登录（无 token）；已登录但无权限；服务端依赖超时。
+
+参考答案：400（客户端请求语法错，可附错误详情）；401（身份未认证，附 WWW-Authenticate 头）；403（身份已认证但拒绝授权，正文不解释原因细节防探测）；503 或 504（上游依赖超时，属于服务端可重试错误，503 + Retry-After）。要点：401/403 的区分是安全语义（"你是谁没说清" vs "我知道你是谁但你不能进"），混用会让客户端的重试与提示逻辑全部失灵。
+
+**题 2（幂等性设计）**：客户端超时重试 POST 下单，怎么防止重复订单？写出幂等键的实现骨架。
+
+参考实现：
+
+```go
+func CreateOrder(w http.ResponseWriter, r *http.Request) {
+    idemKey := r.Header.Get("Idempotency-Key")
+    if idemKey == "" {
+        http.Error(w, "missing Idempotency-Key", 400)
+        return
+    }
+    // 键 -> 处理结果缓存：第一次执行后记录，重试直接返回原结果
+    if resp, ok := idemStore.Get(idemKey); ok {
+        writeJSON(w, resp.status, resp.body)
+        return
+    }
+    resp := doCreateOrder(r)
+    idemStore.Put(idemKey, resp) // 与业务写入同事务更佳
+    writeJSON(w, resp.status, resp.body)
+}
+```
+
+要点：幂等键把"不可幂等的 POST"变成"可重试的语义"——存储侧要么用"键唯一约束"让第二次插入失败，要么缓存首次结果。键的有效期与作用域（用户维度）要定义，否则变成全局去重。
+
+**题 3（版本化的取舍）**：API 从 v1 升 v2，破坏性变更有两个：字段改名、删除 deprecated 端点。写出版本共存期的路由与兼容策略。
+
+参考答案：URL 路径版本（`/v1/orders`、`/v2/orders`）共存，路由层分别挂各自 handler；兼容策略——(1) 字段改名在 v1 内先走"新增字段 + 旧字段保留"（响应同时给 `userName` 与 `name`，标记旧字段 deprecated），(2) 删除端点先返回 410 Gone（带替代端点说明）观察流量归零再物理删除，(3) 客户端用 `Deprecation`/`Sunset` 响应头获得迁移窗口。要点：版本是"逃生舱"不是"常态"——每多一个版本线，安全补丁与测试矩阵翻倍，目标是让 v1 尽快自然消亡。

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 高频自定义 Hook 实现与设计准则：useFetch、useDebounce、useLocalStorage、useEventListener 的可运行实现与常见陷阱。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/160-CustomHooksDesignPattern'
   - 'react/430-InterruptibleRendering'
@@ -228,3 +228,16 @@ function formatUser(user) {
 - 数据获取 Hook 必须回答竞态、中断、错误三道题；生产项目优先 TanStack Query / RSC
 - ref 隔离回调 + 函数式更新 + 对称清理，是稳定自定义 Hook 的三板斧
 - 命名、依赖、清理都有对应的工具护栏（eslint-plugin-react-hooks、StrictMode 双跑）——把它们开成 error 而不是靠自觉
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：自定义 Hook 与普通函数的分界线是什么？`useXxx` 前缀除了命名约定还换来什么？
+   答案：分界线是「是否调用了 Hook」——调用了 useState/useEffect 等的就是自定义 Hook，天然继承 Hooks 的调用规则与链表位置；前缀让 ESLint（rules-of-hooks、exhaustive-deps）把它当 Hook 检查，也在代码评审里声明「这里面有响应式状态」。
+2. **预测题**：`useFetch` 里 `useEffect(() => { let ignore = false; ... }, [url])`——ignore 标志防的是什么？为什么清理函数里置 true 而不是用 isMounted ref？
+   答案：防竞态——url 快速变化时，慢的旧请求晚返回会覆盖新数据；清理函数先收旧再开新，被清理的那次请求把 ignore 置 true，响应回来直接丢弃。isMounted 是组件级粒度，区分不了「同一组件内先后两次请求」的胜负。
+3. **修 Bug 题**：`useCountDown` 里 `setCount(count - 1)` 放在 setInterval 回调里，倒计时到 2 就永远停在 2，为什么？
+   答案：interval 回调捕获的是创建那一刻的 count（stale closure），每次都减同一个旧值。修法是函数式更新 `setCount((c) => c - 1)`——action 基于最新状态计算；或依赖里带上 count 让定时器重建（不推荐，重建有跳秒）。
+4. **规则题**：为什么「在普通函数里调用 Hook」直接报错？
+   答案：Hook 必须挂在组件（或另一个 Hook）的 Fiber 上下文里按顺序登记；普通函数没有 Fiber 上下文，链表无处安放。报错恰是护栏在起作用——把逻辑封装成 Hook（前缀 + 内部调用 Hook）而不是夹在工具函数里偷用。

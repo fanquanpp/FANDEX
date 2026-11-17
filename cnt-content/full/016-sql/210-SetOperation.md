@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL集合操作：UNION、INTERSECT、EXCEPT的语法、去重规则、排序限制与性能优化
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/240-RecursiveCTE'
   - 'sql/280-PivotUnpivot'
@@ -268,6 +268,47 @@ UNION ALL
 SELECT * FROM orders
 WHERE order_date >= '2026-02-01' AND order_date < '2026-03-01';
 ```
+
+## 遮码自检
+
+遮住答案先答；集合操作题的判断标准是"能说出 DISTINCT 在哪一步、什么代价"。
+
+**第 1 题：UNION 和 UNION ALL 结果上差在哪？为什么"确定不会重复时也该写 ALL"？**
+
+<details><summary>参考答案</summary>
+
+UNION 去重（等价 UNION DISTINCT），实现上要排序或哈希整份合并结果，数据量大时代价
+显著；UNION ALL 直接拼接、保留重复行。业务语义上"两侧本就不可能重复"（如按月分表、
+按类型分块）时写 ALL，既更快也更诚实。上面 7.3 的分区裁剪例子两侧按月切分天然无重复，
+就该写 ALL。
+</details>
+
+**第 2 题：集合操作对两侧查询有哪三条硬规则？结果集的列名由谁决定？**
+
+<details><summary>参考答案</summary>
+
+列数必须相同；对应列类型必须兼容（能隐式对齐）；结果列名取**第一个**查询的列名。
+所以习惯是"第一个 SELECT 写全别名，后面 SELECT 的列名无所谓"。
+</details>
+
+**第 3 题：`SELECT ... UNION SELECT ... ORDER BY ...` 里 ORDER BY 属于哪个查询？想"两半各自有序"怎么办？**
+
+<details><summary>参考答案</summary>
+
+只属于**整个集合语句**：排序发生在合并之后，作用于最终结果集。想每半各自有序，
+要么两侧各自包成带 ORDER BY 的子查询（多数方言要求配 LIMIT 才保证顺序），要么在
+最终结果加排序列（如 `1 AS part`）统一排。"合并后整体排序"才是集合操作的语义。
+</details>
+
+**第 4 题：UNION 去重时两个 NULL 算重复吗？这与 WHERE 里 `NULL = NULL` 一致吗？**
+
+<details><summary>参考答案</summary>
+
+算重复——集合操作的 DISTINCT 遵循"NULL 彼此相等"的去重语义；这与比较谓词里
+`NULL = NULL` 判 UNKNOWN 完全不同。分界口诀：**去重语境 NULL 相等，比较语境 NULL
+不参与相等判断**——这也是 EXCEPT 能安全替代部分 NOT IN 场景的原因。
+</details>
+
 ## UNION
 
 **换行写法：UNION 合并去重**

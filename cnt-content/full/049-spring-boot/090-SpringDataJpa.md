@@ -10,7 +10,7 @@ prerequisites:
   - 'mysql/110-SQLDataOperationQuery'
   - 'spring-boot/030-IoCDependencyInjection'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'spring-boot/100-TransactionManagement'
   - 'spring-boot/040-AutoConfigurationInternals'
@@ -46,7 +46,7 @@ JDBC 时代每个查询都是四段式体力活：拿连接、拼 SQL、遍历 R
             ↑ 建立在其上
 第二层  JPA（规范）        jakarta.persistence 包的注解与接口标准，只定契约
             ↑ 由谁实现
-第一层  Hibernate          真正把实体操作翻译成 SQL 的引擎（Boot 3.5.x 搭 Hibernate 6.x）
+第一层  Hibernate          真正把实体操作翻译成 SQL 的引擎（Boot 3.5.x 搭 Hibernate 6.x；Boot 4.x 起搭 Hibernate 7.x 与 Jakarta Persistence 3.2）
 ```
 
 - JPA 是规范：@Entity、@Id 这些注解和 EntityManager 这套接口属于它，是 Jakarta EE 的一部分。它不生成一行 SQL；

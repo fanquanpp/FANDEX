@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-cloud/090-DistributedTransactionSeata'
   - 'spring-boot/110-AspectOrientedProgramming'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'redis/250-RedlockDistributedLock'
   - 'spring-cloud/100-EventDrivenMessaging'
@@ -61,7 +61,7 @@ docker run -d --name redis -p 6379:6379 redis:7
 </dependency>
 <dependency>
     <groupId>org.redisson</groupId>
-    <artifactId>redisson-spring-boot-starter</artifactId>  <!-- 3.x，版本以官方仓库为准 -->
+    <artifactId>redisson-spring-boot-starter</artifactId>  <!-- Boot 3.x 主线用 3.x；Boot 4 起对应 4.x，版本以官方仓库为准 -->
 </dependency>
 ```
 
@@ -327,7 +327,7 @@ curl -s -X POST localhost:8081/pay -H "Content-Type: application/json" \
 - Redisson 官方 Wiki（锁、看门狗与配置）：https://github.com/redisson/redisson/wiki
 - Redis SET 命令（NX EX 选项）与 Lua 脚本：https://redis.io/docs/latest/commands/set/
 - Apache Curator 分布式锁：https://curator.apache.org/
-- Redisson 各小版本的默认超时与续期参数有微调，以所用 3.x 版本文档为准。
+- Redisson 各小版本的默认超时与续期参数有微调，以所用版本文档为准（Boot 3.x 主线对应 3.x，Boot 4 起对应 4.x）。
 
 ## 自检
 

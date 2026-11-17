@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin内联类inline class避免装箱开销。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'kotlin/330-ChannelBroadcastChannel'
   - 'kotlin/160-SealedClassSealedInterface'
@@ -25,11 +25,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+- 能从字节码视角解释 value class 的表示：mangled 方法名（getMeters-xyz0）背后是「防止与持有原始类型语义的方法冲突」
+- 能推导「什么时候会发生装箱」：可空引用、泛型容器、接口引用、`this` 逃逸四大触发点
+- 能对比 value class 与 data class（身份 vs 值）、与 Java Valhalla value class（预告式互操作）的边界
+- 能在工程中用 value class 重建领域原语类型（UserId/Email/Money），并规避序列化与 Java 互操作的坑
 
 
 > 本文档对标 MIT 6.005、Stanford CS193P、CMU 15-410 教学水准，系统讲解 Kotlin 内联类（`@JvmInline value class`）从设计哲学到 JVM 字节码实现的完整链路。内容覆盖 Kotlin 1.3 inline class 实验性、1.5 value class 稳定化，以及与 C# struct、Scala AnyVal、Rust struct 的跨语言对比。
@@ -819,28 +818,28 @@ fun main() {
 ```kotlin
 // build.gradle.kts
 plugins {
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.4.21"
     `maven-publish`
-    kotlin("plugin.serialization") version "2.0.0"
+    kotlin("plugin.serialization") version "2.4.21"
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.12.0")
     testImplementation(kotlin("test"))
 }
 
 kotlin {
     jvmToolchain(17)
     compilerOptions {
+        // 注：value class 自 1.5 起稳定，-Xinline-classes 已是历史产物，无需再开
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
-        freeCompilerArgs.add("-Xinline-classes")
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "17"
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 ```
@@ -1461,15 +1460,14 @@ value class Recursive(val inner: Recursive)  // 编译错误
 ```kotlin
 // build.gradle.kts
 plugins {
-    kotlin("jvm") version "2.0.0"
-    kotlin("plugin.serialization") version "2.0.0"
+    kotlin("jvm") version "2.4.21"
+    kotlin("plugin.serialization") version "2.4.21"
 }
 
 kotlin {
     jvmToolchain(17)
     compilerOptions {
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
-        freeCompilerArgs.add("-Xinline-classes")
     }
 }
 ```
@@ -2221,6 +2219,8 @@ value class Serializable(val value: Type)
 | 1.7 | K2 预览，IR 优化 | Alpha |
 | 1.9 | K2 Beta | Beta |
 | 2.0 | K2 GA，性能优化 | GA |
+| 2.2 | `@JvmExposeBoxed` 提供 Java 侧装箱互操作 | GA |
+| 2.4 | K1 移除，value class 行为以 K2 为准 | GA |
 
 ---
 
@@ -2283,3 +2283,16 @@ value class Serializable(val value: Type)
 6. **工程实践**：注意装箱场景、二进制兼容性、序列化、Java 互操作。
 
 希望本文档能帮助学习者深入理解 Kotlin value class 的本质，并在生产实践中正确应用。
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：mangled 名称还原**。`value class Meters(val value: Double)` 的 `getMeters` 在字节码里叫什么？Java 代码直接调用会怎样？
+
+参考答案：编译成 `getMeters-abc123` 这样的带 hash 后缀名称（后缀由声明位置派生）。Java 直接调用会失败，因为 Java 写不出带连字符的标识符——这是故意设计：防止「编译期按原始 Double 优化、运行时却有人改写 underlying 值语义」的冲突。需要暴露给 Java 时用 `@JvmName` 显式改名，或 2.2+ 的 `@JvmExposeBoxed`。
+
+**练习 2：限制反推原因**。`value class Pair2(val a: String, val b: String)` 编译不过。为什么 value class 只能有一个属性？这个限制换来了什么？
+
+参考答案：value class 的运行时形态就是「underlying 类型本身」（这里是一个 String），两个属性无法坍缩进一个底层值——除非引入组合对象，而那等于回到普通类，零开销承诺破产。单属性换来的是表示的确定性：装箱形态唯一、拆箱形态就是 underlying 值。
+
+**练习 3：选型对错**。以下哪些适合 value class：(a) 温度读数 `Temperature(val celsius: Double)`；(b) 含 20 个字段的订单 `Order`；(c) 身份令牌 `Token(val raw: String)` 且可能为 null。
+
+参考答案：(a) 适合——单字段、高频创建、值语义；(b) 不适合——value class 只能单属性，订单需要 data class；(c) 适合但要注意——可空引用会装箱，若空值高频出现，省下的分配有限；建议配合非空约定或让 null 在容器层处理。

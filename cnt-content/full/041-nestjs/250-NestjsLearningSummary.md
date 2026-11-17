@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 串联 NestJS 线十七篇文档：从三层结构与依赖注入到守卫、中间件、认证、文档、缓存队列、微服务、健康检查与网关的完整知识体系回顾。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'nestjs/160-ModuleControllerService'
   - 'nestjs/200-GuardsAndLifecycle'
@@ -254,7 +254,7 @@ handleConcertFinished(payload: { concertId: number }) {
 
 ### 版本坐标（NestJS 12）
 
-2026 年的版本事实：NestJS 12 已发布（ESM-ready、原生支持 Standard Schema），11 仍被广泛使用；推荐 Node.js 24 LTS（22 已进入 Maintenance）；核心编程模型（装饰器、三层结构、DI、管线）在 11 与 12 上完全一致，差异集中在模块格式（CJS/ESM）、测试运行器与校验库生态。Standard Schema 的完整讲解见[管道校验与异常处理](/nestjs/170-ValidationPipes)第 6 节；升级策略（CI 先行验证、外围包版本配套、ESM 单独排期）见[微服务与消息模式](/nestjs/240-MicroservicesAndHealth)小结的版本段。
+2026 年的版本事实：NestJS 12 已发布（核心包 ESM-only、原生支持 Standard Schema），11 仍被广泛使用；运行时推荐 Node.js 26 LTS（Lithium，2026-10 进入 LTS），24 已转入 Maintenance；核心编程模型（装饰器、三层结构、DI、管线）在 11 与 12 上完全一致，差异集中在模块格式（CJS/ESM）、测试运行器与校验库生态。Standard Schema 的完整讲解见[管道校验与异常处理](/nestjs/170-ValidationPipes)第 6 节；升级策略（CI 先行验证、外围包版本配套、ESM 单独排期）见[微服务与消息模式](/nestjs/240-MicroservicesAndHealth)小结的版本段。
 
 ## 易混淆概念对比
 

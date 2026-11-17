@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB Redo Log、Undo Log 与 Binlog 的写入时机、写入顺序与崩溃恢复机制。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/400-IndexPrinciplePerformanceOptimization'
   - 'mysql/780-TriggerEvent'
@@ -190,6 +190,26 @@ flowchart TD
   - prepare + Binlog 不完整 → 回滚事务
   → 保证主从数据一致！
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：一条 UPDATE 提交时，redo、undo、binlog 三者各在什么时机落盘？顺序为什么不可乱？
+
+参考答案（先自己答，再对照）：undo 的写入伴随数据页修改产生（受 redo 保护）；事务提交时先写 redo（prepare 状态，按 innodb_flush_log_at_trx_commit 落盘）→ 再写 binlog → 最后 redo 置为 committed。顺序保证两阶段提交的裁决点：崩溃恢复时"redo prepare + binlog 完整 → 提交，redo prepare + binlog 不完整 → 回滚"——binlog 若写在 redo 之前，主库没提交从库却先收到，主从必然不一致。
+
+2. 概念自问：redo 是物理日志、binlog 是逻辑日志——"物理/逻辑"的差别在实际排查中怎么用？
+
+参考答案（先自己答，再对照）：redo 记录"哪个页哪个字节改成什么"，只能被 InnoDB 自己重放，与崩溃恢复绑定；binlog 记录语句/行变更，人能读懂（mysqlbinlog 解码）、能跨库重放，与复制和 PITR 绑定。排查时问"这次变更在哪个日志里查"：查"刚才那次提交有没有落盘"看 redo 的 LSN；查"谁在什么时候改了这行数据"用 binlog。
+
+3. 判断题：双一配置（sync_binlog=1 + innodb_flush_log_at_trx_commit=1）下，事务提交一定不丢数据。
+
+参考答案（先自己答，再对照）：对"MySQL 所在主机"成立——redo 与 binlog 都已 fsync 到磁盘，主机崩溃不丢已提交事务。但若讨论"不丢"到什么程度：异步复制下主机磁盘损毁时从库可能还没有收到 binlog，数据照样丢——双一保证的是本机持久性，复制拓扑的持久性要靠半同步或组复制补齐。别把双一当高可用方案。
+
+4. 概念自问：为什么 undo 的写入也需要 redo 保护？这体现了什么恢复协议思想？
+
+参考答案（先自己答，再对照）：崩溃恢复要靠 undo 回滚未提交事务——如果 undo 本身没有落盘保障，恢复程序面对 prepare 状态的 redo 既无法可靠判断事务状态、也无法执行回滚。任何参与恢复协议的结构都必须先于它的使用场景持久化。这是 WAL 思想的一般化：日志要保护的数据，包括日志本身赖以工作的机制。
 
 ## 延伸阅读
 - 索引与执行计划，见本模块 EXPLAIN 与索引失效两篇。

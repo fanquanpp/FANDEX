@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Layout 里的 title/description/canonical 与 Open Graph、@astrojs/sitemap 与 site 配置、@astrojs/rss 生成订阅源的完整实战
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/030-PagesRouting'
   - 'astro/050-ContentCollections'
@@ -202,6 +202,63 @@ items: modules.map((m) => ({
 | RSS 构建报 site undefined | 端点未用 `context.site` | `GET(context)` 里取注入的 `context.site` |
 | RSS 日期解析失败 | frontmatter 日期是字符串 | schema 用 `z.coerce.date()` 收敛类型 |
 | 全站页面都被收录（含不想公开的） | sitemap 默认全收 | 集成 `filter` 或对 SSR 页自动排除 |
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写 Layout 里的元数据骨架：标题、描述、规范链接与 Open Graph 三件（og:title、og:description、og:image）。
+
+   参考答案（先自己写，再对照）：
+
+   ```astro
+   ---
+   const { title, description, image } = Astro.props
+   const canonicalURL = new URL(Astro.url.pathname, Astro.site)
+   ---
+   <title>{title}</title>
+   <meta name="description" content={description} />
+   <link rel="canonical" href={canonicalURL} />
+   <meta property="og:title" content={title} />
+   <meta property="og:description" content={description} />
+   <meta property="og:image" content={new URL(image, Astro.site)} />
+   ```
+
+   验收点：canonical 与 OG 都要绝对地址，靠 `site` 配置拼接——这是 site 字段反复出现的原因。
+
+2. sitemap 集成的两个前提是什么？产物路径与验收动作分别是什么？
+
+   参考答案（先自己写，再对照）：
+
+   前提一：配置了 `site`（sitemap 条目是 `<loc>` 绝对 URL，缺 site 构建直接跳过或警告）；前提二：`npx astro add sitemap` 后集成写入配置。产物在 `dist/sitemap-index.xml`（索引 + 分片）；验收是构建后 `curl https://你的站点/sitemap-index.xml` 确认返回 XML 且条目数与页面数一致。不想被收录的页面用 `prerender = false` 或集成的 `filter` 排除。
+
+3. 默写 RSS 端点骨架：从 modules 集合取条目生成订阅源，字段映射 title/description/link/pubDate。
+
+   参考答案（先自己写，再对照）：
+
+   ```ts
+   // src/pages/rss.xml.js
+   import rss from '@astrojs/rss'
+   import { getCollection } from 'astro:content'
+
+   export async function GET(context) {
+     const modules = await getCollection('modules')
+     return rss({
+       title: 'FANDEX 学习笔记',
+       description: '前端与游戏开发的学习内容更新',
+       site: context.site,
+       items: modules.map((m) => ({
+         title: m.data.title,
+         description: m.data.description,
+         link: `/modules/${m.id}/`,
+         pubDate: m.data.updated,
+       })),
+       customData: '<language>zh-cn</language>',
+     })
+   }
+   ```
+
+   验收点：RSS 是端点文件（放 pages 下即成路由）；全文输出把 HTML 塞进 `content` 字段（Markdown 集合的 `rendered?.html` 可直接用）；pubDate 用"最后更新"更符合订阅语义。
 
 ## 参考与致谢
 

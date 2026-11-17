@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: HTTP 缓存策略：强缓存（Cache-Control、Expires）、协商缓存（ETag、Last-Modified）与缓存流程。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/250-ZeroCopy'
   - 'cs-fundamentals/260-IPC'
@@ -200,3 +200,11 @@ curl -si http://localhost:3000/ | head -1   # 输出 HTTP/1.1 304 Not Modified
 - 缓存以 URL 为键，"更新"问题的正解是把内容变化转成 URL 变化（内容哈希文件名），而不是压缩缓存时长。
 - ETag 在多机部署下需要统一生成规则，否则协商验证退化；`Vary` 头直接决定共享缓存的条目切分方式，谨慎扩大。
 - 中间层（代理、CDN、企业网关）与浏览器共享同一套头语义但行为可能附加启发式规则，涉用户隐私的响应必须显式 `private` 或 `no-store`，不给任何中间层猜测空间。
+
+## 自检
+
+- 遮住强缓存与协商缓存的对比小节，先自己画出「请求 → 强缓存未过期？→ 协商验证 → 200/304」的决策流程，再回答：强缓存省掉的是什么（请求本身）、协商缓存省掉的是什么（响应体传输）？
+- 遮住 `Cache-Control` 指令表，先默写 `max-age`、`no-cache`、`no-store`、`private` 四条指令的语义，再回答：为什么「禁缓存」必须用 `no-store` 而不是 `no-cache`？
+- 遮住 `Expires` 与 `max-age` 的对比，回答：绝对时间方案依赖客户端时钟的毛病在什么场景会暴露？
+- 遮住 ETag 生成与协商的代码，先自己写出「If-None-Match 匹配则回 304」的服务端逻辑，再对照——多机部署下 ETag 要注意什么（统一生成规则）？
+- 遮住「内容哈希文件名」小节，回答：为什么把内容变化转成 URL 变化是「更新」问题的正解？HTML 本身为什么只能短缓存或不缓存？

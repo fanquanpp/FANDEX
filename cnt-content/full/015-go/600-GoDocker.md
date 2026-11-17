@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go 与 Docker 容器化：镜像分层、多阶段构建、scratch/distroless 镜像、CGO 静态编译、BuildKit、镜像安全与生产级最佳实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/610-GoKubernetes'
   - 'go/390-GoConfigManagement'
@@ -1809,3 +1809,39 @@ docker exec -it myapp sh
 ---
 
 > 本文档以 Go 1.22 与 Docker 25.x 为基准，结合 OCI Image Spec v1.1、BuildKit、distroless、Trivy 等生态工具，系统阐述 Go 程序容器化的工程实践。文中所有 Dockerfile 与命令均经过实际验证，可直接用于生产环境。随着 OCI 生态的演进，建议持续关注 BuildKit、cosign、Wolfi 等项目的最新进展。
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考 Dockerfile，按题目自己写一遍，再对照。
+
+**题 1（多阶段构建的最小镜像）**：为一个 Go 服务写 Dockerfile，要求最终镜像只含二进制与非 root 用户运行。写出多阶段骨架并说出每层的目的。
+
+参考实现：
+
+```dockerfile
+# 构建层：完整工具链
+FROM golang:1.27 AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /app ./cmd/server
+
+# 运行层：只有产物
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=build /app /app
+USER nonroot:nonroot
+ENTRYPOINT ["/app"]
+```
+
+要点：层的目的——构建层要缓存友好（go.mod 先 COPY，依赖层不因源码变动失效）；distroless 运行层没有 shell 与包管理器，攻击面与体积同时最小化；`CGO_ENABLED=0` 保证纯静态可与 scratch/distroless/static 搭配。
+
+**题 2（层缓存的失效链）**：`COPY . .` 放在 `COPY go.mod` 之前，每次改一行代码会发生什么？写出正确的指令顺序并解释缓存键。
+
+参考答案：每次源码变动都使 `COPY . .` 层失效，若它在前，`go mod download` 也跟着重跑（几分钟的依赖下载），构建时间从秒级回到分钟级。正确顺序是"变化频率递增"：go.mod/go.sum（改动最少）-> 依赖下载 -> 源码 -> 构建。要点：Docker 缓存键是"指令文本 + 上下文内容的哈希"，指令顺序就是缓存命中率的设计图。
+
+**题 3（GOMEMLIMIT 与容器限额）**：容器 memory limit 设 512Mi，Go 服务应该怎么配 GOMEMLIMIT？不配的话在什么条件下被 OOMKill？
+
+参考答案：配 `GOMEMLIMIT=448MiB`（限额的 85-90%，留出非堆开销：栈、元数据、页缓存余量）。不配的后果：GC 只按 GOGC 目标增长堆，容器内存逼近 limit 时内核 OOM killer 直接杀进程——GC 来不及反应（Go 运行时看不到 cgroup limit，1.25 起感知的是 CPU 配额而非内存）。要点：GOMEMLIMIT 是软上限（尽量不超，极端可超），cgroup 是硬上限（超了就杀），两者必须留缓冲区配合使用。

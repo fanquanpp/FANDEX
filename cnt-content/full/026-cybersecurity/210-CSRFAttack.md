@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: CSRF 的本体是「浏览器自动附带 Cookie」这个隐式凭证机制：从原理推出攻击形态与五类防御的成立条件，SameSite 三档语义、Token 绑定会话的原因、防御选型决策树，附动手练习与面试题思路。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/220-CSRFDefense'
   - 'cybersecurity/190-XSSAttack'
@@ -15,6 +15,10 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+- **解决什么问题**：CSRF 的本体是「浏览器自动附带 Cookie」这个隐式凭证机制——攻击者不偷 Cookie，只是借用浏览器「每次请求都带」的习惯。抓住这一点，五类防御（SameSite/Token/Origin 校验/双提交/二次确认）的成立条件都能推导出来。
+- **容易怎么错**：把 CSRF 当「偷 Cookie 的攻击」（它从不读响应，只借用发送）；以为 SameSite=Lax 一劳永逸（挡不住顶级 GET 导航与未声明 SameSite 的旧 Cookie）；写操作走 GET（链接预取即中招）。
+- **学完能做什么**：为应用画出「攻击面 → 防御选型」的决策树，落地「SameSite 基线 + 同步 Token 主防御 + Origin 校验兜底」的三层组合（配置面在 220-CSRFDefense）。
 
 ## 1. 心智模型：攻击的本体是「隐式凭证」
 
@@ -258,3 +262,12 @@ DevTools → Application → Cookies：
   要防子域写根域 Cookie，Origin 校验要失败安全且逐段比对；JSON API 靠严格
   Content-Type 与自定义头；高敏感操作叠加二次确认。防线的前提是先修 XSS，
   完整登录态攻防见 290-AuthenticationAuthorization，落地配置在 220-CSRFDefense。
+
+## 自检
+
+- 用「隐式凭证」一句话向别人解释 CSRF：攻击成立的两个必要条件是什么？（浏览器自动附带目标域 Cookie + 攻击者能预测并构造出请求。）
+- 遮住 SameSite 一节，说出 Strict/Lax/None 三档的携带差异，并解释为什么「新站默认 Lax」仍留风险（未声明 SameSite 的旧 Cookie 裸奔、顶级 GET 导航仍携带）。
+- 同步 Token 为什么必须绑定会话、为什么不能放 URL？（前者防跨会话重放，后者会被 Referer 头泄露。）
+- 双提交模式防住什么、被什么破坏？（不需要服务端存储，但任何能写根域 Cookie 的子域 XSS 都能伪造配对。）
+- 遮住第 3.5 节的决策树，按「纯 JSON API / 服务端渲染表单 / 高敏感操作」三类场景各写出推荐防御组合。
+- 「JSON API 天然免疫 CSRF」的完整前提是什么？（严格校验 Content-Type + 自定义头 + CORS——缺一条就可能被 HTML 表单的简单请求绕过。）

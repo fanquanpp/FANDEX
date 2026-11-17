@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: Socket编程与网络协议
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/540-CppGraphicsProgramming'
   - 'cpp/520-CppSerialization'
@@ -785,3 +785,49 @@ struct Socket {
     Socket(Socket&& o) noexcept : fd(o.fd) { o.fd = -1; }
 };
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：用 POSIX socket API（Linux 侧）写一个 TCP echo 服务的最小骨架——`socket`/`bind`/`listen`/`accept` 四步，收到什么回什么；为每一行标注「哪一步阻塞、阻塞条件是什么」，并说明为什么生产代码必须处理 `EINTR`。
+
+**提示**：`accept`、`read` 都是阻塞点；信号中断系统调用时它们返回 -1 且 errno==EINTR，循环里必须重试（`SA_RESTART` 能免一部分，但不能全依赖）。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// Linux TCP echo（伪码骨架，错误处理省略，注明阻塞点）
+int fd = socket(AF_INET, SOCK_STREAM, 0);                  // 无阻塞点
+bind(fd, ...); listen(fd, 16);                             // 无阻塞点
+int cfd = accept(fd, nullptr, nullptr);                    // 阻塞：无新连接时挂起
+char buf[1024];
+ssize_t n = read(cfd, buf, sizeof buf);                    // 阻塞：对端未发数据且未关闭
+if (n == -1 && errno == EINTR) { /* 信号中断：重试 read */ }
+write(cfd, buf, n);
+close(cfd); close(fd);
+// EINTR 语义：阻塞中的系统调用被信号打断，返回错误而非自动重试；
+// 忽略它 = 信号一来服务就丢一次请求。
+```
+
+要点自查：四个阻塞点（accept/read/write/connect）各自的条件要能独立说出；「返回值 -1 且 errno 决定语义」是 socket API 的统一错误模型；平台差异（Windows 的 WinSock、closesocket）是本篇 3 节跨平台封装的动机。
+
+**任务二**：把任务一改成非阻塞 + `poll` 事件驱动：设置 `O_NONBLOCK`，用 `poll` 等待「可读」事件后 `read`；回答：非阻塞模式下 `read` 返回 0、-1（EAGAIN）、-1（ECONNRESET）分别代表什么？
+
+**提示**：`EAGAIN/EWOULDBLOCK` 不是错误而是「现在没数据，先去忙别的」；返回 0 是对端优雅关闭（EOF）；事件驱动把「线程等数据」换成「数据来了通知你」。
+
+**参考实现**（先自己写完再看）：
+
+```text
+- read 返回 0：对端调用了 close/shutdown(WR) —— 正常关闭，清理连接状态。
+- read 返回 -1 且 errno==EAGAIN：内核接收缓冲暂空 —— 非阻塞的「暂时没数据」，
+  不是错误，继续 poll 等下一次可读。
+- read 返回 -1 且 errno==ECONNRESET：对端异常断开（RST）—— 释放连接资源。
+非阻塞改造要点：
+  fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
+  struct pollfd p{fd, POLLIN, 0};
+  int nready = poll(&p, 1, timeout_ms);   // 就绪数；0=超时；-1=EINTR 需重试
+  if (p.revents & POLLIN) read(fd, ...);  // 就绪后再读，read 不会长期阻塞
+```
+
+要点自查：poll/epoll 的分工——poll 是可移植的事件多路复用，epoll 是 Linux 大规模连接的优化版；「就绪事件到达后读写必须一次完成或接受 EAGAIN」是非阻塞 IO 的纪律。

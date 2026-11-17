@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Pulumi 学习笔记：用熟悉的编程语言写基础设施——项目与栈、预览部署、密钥、导入存量资源与 CI 集成的完整路径。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/420-TerraformBasic'
   - 'cloud-computing/430-TerraformStateModule'
@@ -337,11 +337,26 @@ CI 侧的命令行注意点：`pulumi login --token pul-xxx` 非交互登录；�
 | CI 里忘加 `--yes` | 流水线卡在确认提示 | `up --yes --non-interactive` |
 | provider 配置散落各处 | 区域不一致创建出跨区资源 | 区域等全局配置进 `pulumi config` |
 
-## 自检
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
 
 1. `pulumi preview` 显示某数据库将 `+-`（替换），你的处理流程是什么？
 2. dev 和 production 栈的代码是同一份吗？差异存在哪里？
 3. 团队有人绕过 Pulumi 手工改了安全组，下次 `pulumi up` 会发生什么？
+4. 默写：创建栈、设配置、预览、应用的四条基本命令。
+5. `pulumi import` 之后 preview 仍显示差异，说明什么？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 先 `pulumi preview --diff` 查触发替换的属性（通常是上游不可原位更新的字段），确认该资源能否承受重建（有状态资源通常不能）；评估停机窗口、确认状态备份可用，再继续；有级联依赖时先看 preview 里被连带替换的资源清单。
+2. 同一份代码。环境差异全部存在栈配置里：每个栈一个 `Pulumi.<stack>.yaml`（config 值），代码单一信源，配置区分环境——这正是栈与代码分离的意义。
+3. `pulumi up` 会把安全组改回代码声明的状态——手工改动被视为漂移、直接被覆盖（真实变更丢失）。正确做法：先 `pulumi refresh` 把真实状态同步进状态文件并 diff，把合理的手工变更落成代码，再 up。
+4. `pulumi stack init dev`；`pulumi config set key value`；`pulumi preview`；`pulumi up`（CI 里加 `--yes --non-interactive`）。
+5. 导入只把资源的真实状态记入状态文件，还没有任何代码声明它——必须把 `pulumi import --out` 生成的代码纳入项目，调整到 preview 显示「无变更」才算接管完成。
+
+</details>
 
 ## 练习
 

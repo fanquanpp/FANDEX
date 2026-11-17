@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 综合运用面向对象、集合框架与文件 I/O 的图书管理系统。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/880-SpringCloudMicroserviceDevelopment'
   - 'java/1030-JavaSwingGUI'
@@ -924,3 +924,13 @@ LocalDate.now();
 LocalDate.now().plusDays(30);
 ChronoUnit.DAYS.between(startDate, endDate);
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 图书借阅的领域规则应该落在哪一层？举两条必须守护的不变式。——服务（业务）层；借出时库存 > 0 且同一本书未还不可再借；还书时借阅记录必须存在且状态为"借出"。
+2. Book 的状态建模选 int 常量还是 enum？理由一句话。——enum；类型安全 + 可挂行为 + switch 穷举检查。
+3. "查找未归还图书"的集合操作怎么写最简？——`books.stream().filter(b -> b.getStatus() == BookStatus.BORROWED).toList()`。
+4. 用户输入驱动的控制台循环，退出与异常兜底怎么安排？——while(true) + switch 路由命令；整个循环体 try-catch 兜底打印提示并继续（不因一次错误输入崩溃）。
+5. 把 List<Book> 按书名排序的两种写法？——实现 Comparable<Book>（自然序书名）或传入 `Comparator.comparing(Book::title)`。

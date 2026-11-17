@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 表格语义结构、合并单元格、表格使用原则与全局属性大表、details/dialog/popover 速览。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/090-HTML5CoreGlobalAttributes'
   - 'html5/100-HTML5BasicContentTags'
@@ -200,7 +200,8 @@ prerequisites:
 | `dir`       | 指定文本方向                 | `dir="ltr"` (从左到右) 或 `dir="rtl"` (从右到左) |
 | `translate` | 指定是否翻译元素内容         | `translate="no"`                                 |
 | `draggable` | 指定元素是否可拖动           | `draggable=""`                                   |
-| `dropzone`  | 指定元素作为放置目标时的行为 | `dropzone="copy"`                                |
+
+> 曾经实验性的 `dropzone` 属性已从标准移除，各浏览器也未普及；「接受拖放」的行为用 Drag API 的 `dragover`/`drop` 事件实现（见 `html5/250-DragAPI`）。
 
 **示例**：
 
@@ -239,7 +240,7 @@ HTML5 引入了一系列语义化标签，用于更清晰地描述网页结构�
 | `<figure>` | 图表、图像等 |
 | `<figcaption>` | 图表的标题 |
 
-注意：`<div>` 是"无语义容器"，仅用于样式分组或脚本挂载；能用上面任一语义标签表达时，就不要用 `div`（具体取舍见 003）。
+注意：`<div>` 是"无语义容器"，仅用于样式分组或脚本挂载；能用上面任一语义标签表达时，就不要用 `div`（具体取舍见 `html5/080-HTML5DivSpanContainers`）。
 
 **示例**：
 
@@ -432,6 +433,34 @@ HTML5 引入了一系列语义化标签，用于更清晰地描述网页结构�
 - `popovertarget` 声明触发按钮，`popovertargetaction` 可选 `toggle`/`show`/`hide`；
 - 弹出层自动置于顶层（top layer），无需手动管理 `z-index`。
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写一张语义完整的销量表：标题「2026 年一季度销量」、两列表头（产品/一月）、两行数据、一个合计行；表头单元格都要让读屏软件说出「这一列/行是什么」。
+
+参考答案（先自己写，再对照）：
+
+```html
+<table>
+  <caption>2026 年一季度销量</caption>
+  <thead>
+    <tr><th scope="col">产品</th><th scope="col">一月</th></tr>
+  </thead>
+  <tbody>
+    <tr><th scope="row">键盘</th><td>120</td></tr>
+    <tr><th scope="row">鼠标</th><td>80</td></tr>
+  </tbody>
+  <tfoot>
+    <tr><td>合计</td><td>200</td></tr>
+  </tfoot>
+</table>
+```
+
+2. 概念自问：为什么数据表用 `table` 而页面布局不用？`scope` 属性解决什么问题？键值对数据（术语表/规格）该用表格还是列表？
+
+参考答案（先自己答，再对照）：布局归 CSS Flex/Grid，`table` 的语义是「多行多列的二维数据」，用错了读屏用户会听到一大堆行列信息而无所适从；`scope` 让读屏软件把表头与数据单元格关联起来，报出「一月 键盘 120」这样的完整信息；键值对（术语+描述、属性名+值）是映射结构，用 `dl`/`dt`/`dd` 更贴切，表格留给真正的二维数据。
+
 ## 8. 动手试试
 
 ### 入门版
@@ -453,7 +482,7 @@ HTML5 引入了一系列语义化标签，用于更清晰地描述网页结构�
 - 键值对数据（术语、规格）用 `dl`/`dt`/`dd`，完整列表全景见 [120-List](/html5/120-List)；
 - 全局属性：`id` 唯一、`class` 复用、`style` 仅临时、`data-*` 存数据；
 - `details`/`dialog`/`popover` 是三个免 JavaScript 的交互组件；
-- 语义化标签（`header`/`nav`/`main`/`article`/`section`/`aside`/`footer`）浅读，完整版在 008。
+- 语义化标签（`header`/`nav`/`main`/`article`/`section`/`aside`/`footer`）浅读，完整版见 `html5/170-SemanticTag`。
 
 > 一句话记住这节课：表格装数据不装布局；`th` 加 `scope`，合并记 `colspan`/`rowspan`；`id` 要唯一，`class` 可复用，`data-*` 存数据。
 

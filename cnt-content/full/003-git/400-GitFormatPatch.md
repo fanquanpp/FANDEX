@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git format-patch 详解：邮件补丁格式、am 应用工作流、版本迭代与离线协作。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'git/290-GitCherryPick'
   - 'git/170-DistributedVCSPrinciple'
@@ -165,6 +165,34 @@ git am --3way /usb/*.patch
 | 快速把一个提交搬到另一分支（同仓库内）     | cherry-pick   |
 
 同一仓库内 cherry-pick 更顺手（直接引用提交）；一旦离开共享网络的语境（隔离网、邮件列表、跨组织交付），format-patch 是唯一保真通道。
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. `format-patch + am` 与 `diff + apply` 两条管线的本质差异？「补丁信封」里有哪些字段是 diff 版本没有的？
+2. `git am` 应用失败后的处理循环？`--3way` 为什么能救上下文对不上的补丁？
+3. 实操：在测试仓库生成最近 3 个提交的补丁目录，删掉这些提交（reset），再用 `git am` 完整还原，验证 author 与消息原样保留。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) diff 只搬「改动内容」，am 搬「整个提交」：作者、日期、提交说明、（可选）哈希引用
+   全在 mbox 信封里，am 后得到 author 为原作者、committer 为应用者的新提交。
+
+2) 与 rebase 同构：改文件 → git add → git am --continue；跳过当前补丁 --skip；整体放弃 --abort。
+   --3way 利用补丁里记录的 blob 哈希到对象库找原始内容做三方合并，
+   所以要求本地有相关历史对象（fetch 过上游即可）。
+
+3)
+git format-patch -3 -o /tmp/patches/
+git reset --hard HEAD~3
+git am /tmp/patches/*.patch
+git log --format='%h %an %s' -3    # 作者与标题与 reset 前一致
+```
+
+</details>
 
 ## 小结
 

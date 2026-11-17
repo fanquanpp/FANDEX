@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 网络协议深度剖析：TCP拥塞控制机制、QUIC协议设计、HTTP演进、TLS 1.3握手、DNS解析、CDN原理、WebSocket与网络编程模型。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/630-HCI'
   - 'cs-fundamentals/510-ProgrammingLanguageTheory'
@@ -1005,3 +1005,13 @@ flowchart TD
 | NS    | DNS服务器  | example.com -> ns1.example.com       |
 | TXT   | 文本记录   | "v=spf1 include:..."                 |
 | SRV   | 服务定位   | \_sip.\_tcp -> 10 60 5060 sip.server |
+
+## 自检
+
+本文是深水区合集，自检方式是「遮住速查表与 ASCII 图默写」——默写不出回到对应章节重推：
+
+- 遮住 9.1 拥塞控制速查，默写五个阶段的触发条件与 cwnd 变化（慢启动、拥塞避免、快速重传、快速恢复、超时），并说出 Tahoe 与 Reno 在丢包响应上的分界。
+- 遮住 9.2 HTTP 版本速查，默写三版本的传输层、头部压缩方式与队头阻塞位置；再回答：HTTP/3 为什么强制加密（QUIC 集成 TLS 1.3）？
+- 遮住 9.3 I/O 模型速查，默写六种模型各自的系统调用与平台限制；再回答 epoll 的 ET 与 LT 在「事件通知次数」上的差别。
+- 遮住 TLS 1.3 握手的 ASCII 图（4.1 节），先自己写出 1-RTT 的消息序列与 0-RTT 的恢复路径，再对照。
+- 遮住 2.3 的 QUIC vs TCP 对比表，默写六行特性差异，并说出「连接迁移」在 TCP 上为什么做不到（四元组标识）。

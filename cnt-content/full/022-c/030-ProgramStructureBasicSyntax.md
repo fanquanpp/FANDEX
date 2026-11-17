@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: "把 hello.c 的骨架摊开：main 的完整结构、printf 格式化占位符逐个实测、变量与类型初见、三类编译错误原文定位，附修改实验与四型练习。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-17'
 related:
   - 'c/020-CLanguageOverview'
   - 'c/040-DataTypeDetailed'
@@ -166,12 +166,32 @@ int main(void) {
 - printf 家族权威页（cppreference）：https://en.cppreference.com/w/c/io/printf
 - C 关键字总表：https://en.cppreference.com/w/c/keyword
 
-## 11. 自我检查
+## 11. 遮码自检
 
-- 能默写最小程序并通过编译；
-- 能用 %d/%s/%f/%c/%.2f 完成一份对齐的成绩单输出；
-- 三类编译报错各自知道第一步看哪里；
-- 已完成三个修改实验并保留代码在 c-lab 目录。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 默写能通过编译的最小程序（`-Wall -Wextra` 下零警告）。
+2. 用 %d/%s/%f/%c/%.2f 写一份对齐的成绩单输出——先遮住上文的 printf 示例。
+3. 三类编译报错（语法错、声明缺失、链接错）各自第一步看哪里？
+4. 三个修改实验完成了吗？代码是否保留在 c-lab 目录？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    printf("Hello, C!\n");
+    return 0;
+}
+```
+
+2. 关键是占位符与实参数量、类型双对齐：`printf("%-10s%5.1f\n", "Alice", 92.5);`，`%.2f` 控制小数位、负号控制左对齐。
+3. 语法错看报错的 `文件:行:列`；声明缺失（隐式声明警告）看 `main` 之前是否漏了函数声明或头文件；链接错（undefined reference）说明只声明了没定义，检查 .c 是否一起编译。
+4. 修改实验是语法课的必要环节，代码留档才能对照后续篇目复用。
+
+</details>
 
 ## 本章总结
 

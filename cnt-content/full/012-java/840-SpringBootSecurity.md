@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Spring Security与认证授权
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/830-SpringBootAdvanced'
   - 'java/850-SpringBootDataAccess'
@@ -561,3 +561,13 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     }
 }
 ```
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. Spring Security 6/7 的 FilterChain 位置在哪一层？与 MVC 拦截器的先后关系？——Servlet Filter 层（在 DispatcherServlet 之前）；请求先过安全过滤链再到拦截器，未认证请求根本到不了 Controller。
+2. SecurityFilterChain 声明式配置里 authorizeHttpRequests 的三个典型规则怎么写？——`http.authorizeHttpRequests(a -> a.requestMatchers("/public/**").permitAll().requestMatchers("/admin/**").hasRole("ADMIN").anyRequest().authenticated())`。
+3. JWT 无状态认证的三步流程是什么？csrf 对它还需要吗？——登录颁发签名 token -> 客户端每次带 Authorization 头 -> 过滤器验签解析身份；纯 token API 不依赖 cookie 会话，可关闭 csrf。
+4. 密码存储为什么必须用 BCrypt/Argon2？Security 里对应哪个 Encoder？——慢哈希加盐抵抗暴力破解与彩虹表；BCryptPasswordEncoder / Argon2PasswordEncoder。
+5. 判断：接口 401 与 403 的语义可以混用。——不能；401 未认证（不知道你是谁，引导登录），403 已认证但无权限；排查问题第一步就是区分这两种响应。

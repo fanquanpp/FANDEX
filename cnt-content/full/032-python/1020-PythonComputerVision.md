@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: OpenCV与图像处理
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'python/1000-PythonDeepLearning'
   - 'python/1010-PythonAndNLP'
@@ -604,3 +604,12 @@ for i in range(256):
 
 cv2.imwrite('gradient.jpg', gradient)
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：用 NumPy 造一张 256x256 的渐变图并保存。要点：`np.zeros((256, 256), dtype=np.uint8)`（默认 float64，uint8 才是图像内存布局）；行切片赋值 0-255；`cv2.imwrite` 接受 BGR 布局的 ndarray。
+2. 预测题：OpenCV 读出的图像是 RGB 还是 BGR？与 matplotlib 混用会怎样？要点：OpenCV 用 BGR；直接 imshow 给 matplotlib 会红蓝互换——转 `cv2.cvtColor(img, cv2.COLOR_BGR2RGB)`。
+3. 排错题：`img[100:200, 50:150]` 取出的区域和预期「上下颠倒」了。原因？要点：ndarray 前两维是 (行=高, 列=宽)，原点在左上角；把坐标当 (x, y) 习惯写反了是 CV 新手第一错。
+4. 口述题：图像在内存里到底是什么？要点：H x W x C 的 uint8 数组（0-255），灰度图少一维；所有「图像处理」本质上是对这个数组做切片与数值运算——这一层想通了，滤镜、裁剪、缩放都是 NumPy 操作。

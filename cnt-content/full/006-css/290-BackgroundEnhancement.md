@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 深入解析 CSS Backgrounds Module Level 3/4 多背景、background-size、background-clip、background-origin、background-attachment 的规范、绘制算法与工程实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/260-Gradient'
   - 'css/270-Shadow'
@@ -3528,3 +3528,43 @@ $$
   animation-range: entry 0% cover 30%;
 }
 ```
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住「多重背景」「background 简写」两节的示例代码自己写，再对照参考实现。
+
+**任务一**：用多重背景实现「深色压暗层叠在头图上」的 hero 区——上层 40% 黑渐变、下层 cover 图片，图片水平居中裁剪。
+
+**任务二**：修复一条「背景全丢」的样式——原来 `background: #fff url("logo.png") no-repeat right center;`，同事为改位置写成了 `background-position: right center;` 之外又重新赋了一次 `background: url("logo.png") no-repeat right center;`，白底消失了。写出根因与正确改法；再回答 `background` 简写里 `background-size` 必须怎么写才生效。
+
+**提示**：任务一考「先写的层在上面」（多重背景一节）；任务二的根因是简写重置未写子属性——白底被第二次赋值清掉（第 100 篇第 6 节同源问题），修法是拆成子属性；size 在简写里要用 `/` 跟在 position 之后。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.hero {
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.4), rgb(0 0 0 / 0.4)), /* 上层：压暗 */
+    url("hero.jpg");                                     /* 下层：照片 */
+  background-size: cover;
+  background-position: center;
+}
+
+/* 任务二 */
+/* 根因：background 简写会按新值整体重建，未写的颜色被重置为透明。
+   只改一项就写子属性，互相不牵连 */
+.banner {
+  background-color: #fff;
+  background-image: url("logo.png");
+  background-repeat: no-repeat;
+  background-position: right center;
+}
+
+/* size 在简写中必须挂在 position 后面用 / 分隔，否则整条声明非法 */
+.badge {
+  background: #fff url("logo.png") no-repeat right center / 24px 24px;
+}
+```
+
+验收点：任务二里 `/ 24px` 漏写时整条 `background` 无效（简写里 size 不能单独出现），DevTools 会把它整行划掉；任务一调换两层顺序后照片会盖住压暗层——多重背景的层序与视觉层级直接对应。

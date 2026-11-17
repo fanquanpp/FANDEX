@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 astro:env schema 声明环境变量：类型校验、secret/public 分离，与 PUBLIC_ 旧法的对照迁移。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/080-BuildDeploy'
   - 'astro/131-AstroSessionsApi'
@@ -174,6 +174,44 @@ env: {
 ## 本篇小结
 
 astro:env 把环境变量从"命名约定"升级为"登记造册"：schema 里每个变量声明 context（给谁用）与 access（怎么进代码），启动期完成类型与必填校验。public 内联随构建固化，secret 运行时经适配器读取且永不进产物——密钥的唯一正确组合是 server + secret。dev/prod 切换、CI 注入、平台配置各归其位：构建需要的配 CI，运行需要的配平台。`PUBLIC_` 旧法仍然可用，但密钥一旦出现，schema 的类型约束比任何纪律都可靠。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写两条 schema：公开的 API 地址（客户端也能用、有默认值）与服务端专属的 API key（运行时读取）。
+
+   参考答案（先自己写，再对照）：
+
+   ```js
+   env: {
+     schema: {
+       FANCLUB_API_URL: envField.string({
+         context: 'client',
+         access: 'public',
+         default: 'https://api.fanclub.example',
+       }),
+       FANCLUB_API_KEY: envField.string({
+         context: 'server',
+         access: 'secret',
+       }),
+     },
+   }
+   ```
+
+   验收点：四个维度是 context（client/server）、access（public/secret）、type（string/number/boolean/enum）、default/optional。
+
+2. `access: 'public'` 与 `access: 'secret'` 的机制差异是什么？由此推出哪两条硬规则？
+
+   参考答案（先自己写，再对照）：
+
+   public 是构建期内联（值被当常量替换进产物，改平台变量必须重新构建）；secret 是运行时读取（产物里只有取值调用，适配器每次请求从运行环境读，改了重启即生效、产物泄露也拿不到值）。硬规则一：`server + secret` 是密钥的唯一正确组合，`client + secret` 不合法会被 Astro 直接拒绝；硬规则二：`client + public` 的变量等于公开，只能放 API 地址、公开开关。
+
+3. 用旧法 `import.meta.env.FANCLUB_API_KEY` 读服务端密钥，比 astro:env 差在哪三点？
+
+   参考答案（先自己写，再对照）：
+
+   一没有启动期校验：忘配不报错，值是 undefined，错误延迟到调用第三方失败才炸；二没有类型；三没人拦得住有人把它改成 `PUBLIC_` 前缀搬进客户端。astro:env 把"密钥只能走服务端"从纪律变成类型系统约束。
 
 ## 参考与致谢
 

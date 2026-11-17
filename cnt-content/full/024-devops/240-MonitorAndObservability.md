@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 从一次"用户先发现故障"的事故出发，本地搭起 Prometheus 与 Grafana 亲手看指标曲线，理解指标、日志、链路三支柱与 SLO 错误预算。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'devops/250-Prometheus'
   - 'devops/260-GrafanaDashboards'
@@ -329,6 +329,14 @@ slos:
    验证它触发，再体会 `for` 字段加与不加的区别。
 4. 给你的服务算一笔账：若 SLO 定为 99.9%，一个月的错误预算是几分钟？
    过去一个月实际烧掉多少（有没有数据能算？没有的话，这本身就是结论）。
+
+## 自检
+
+- 遮住三支柱图，说出指标/日志/链路各自的"回答什么问题"：多少、为什么、路径长什么样——一次"接口变慢"的排障里三者出场的顺序？
+- USE 与 RED 各问什么？为什么说"资源问 USE、服务问 RED"——把 CPU 使用率、下单错误率、队列积压三个指标归类。
+- Counter 与 Gauge 的区别一句话；为什么 Counter 必须 rate 后才能比大小？
+- 高基数标签为什么是第一事故源：`user_id` 进标签 vs 进日志，后果差在哪？
+- SLO 定为 99.9%，一个月（30 天）错误预算是多少分钟？预算烧完该冻结变更还是该加监控？
 
 ## 9. 下一步
 

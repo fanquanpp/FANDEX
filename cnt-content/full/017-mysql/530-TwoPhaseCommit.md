@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB 两阶段提交（2PC）机制详解：保证 Redo Log 与 Binlog 一致性、崩溃恢复流程与XA事务。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/780-TriggerEvent'
   - 'mysql/520-RedoUndoBinlogWriteTiming'
@@ -190,7 +190,7 @@ Prepare → Binlog → 等待从库ACK → Commit
 | After Commit | Commit 后                | 主库崩溃可能丢数据、可现"幻影读" | 相近 |
 
 ```sql
--- 5.7+ 默认 After Sync（变量自 8.0.26 更名，旧名 rpl_semi_sync_master_wait_point 已随 8.4 移除）
+-- 5.7+ 默认 After Sync（变量自 8.0.26 更名；旧名 rpl_semi_sync_master_* 与旧插件名 9.5.0 起移除，8.4 中新旧并存）
 SET GLOBAL rpl_semi_sync_source_wait_point = AFTER_SYNC;
 ```
 
@@ -208,3 +208,25 @@ After Sync 流程:
 - 主库未 Commit → 恢复时检查 Binlog 完整 → 提交
 - 数据一致！
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：没有两阶段提交时，"redo 先提交、binlog 后写"与"binlog 先写、redo 后提交"各出什么主从不一致？
+
+参考答案（先自己答，再对照）：前者——redo 提交后主机崩溃，主库有这笔数据、binlog 没来得及写，从库收不到，主库多；后者——binlog 写完但 redo 未提交就崩溃，从库已收到日志会提交这笔数据，主库回滚后没有，从库多。两阶段提交把写 binlog 卡在 redo prepare 与 commit 之间，让 binlog 的完整性成为崩溃恢复的裁决依据，两个日志永远同进退。
+
+2. 概念自问：崩溃恢复面对"redo 处于 prepare"的事务，裁决规则是什么？为什么规则只有两条？
+
+参考答案（先自己答，再对照）：binlog 完整（该事务的 binlog 事件齐全）→ 提交；binlog 不完整/没有 → 回滚。只有两条是因为判定标准只有一件事：这笔事务有没有可能已被复制到从库——有则必须让主库也提交（保持一致），没有则安全回滚。binlog 是这个"是否已外传"的唯一权威记录，这就是它必须写在提交裁决点上的原因。
+
+3. 判断题：XA 事务（跨库两阶段提交）与 MySQL 内部两阶段提交（redo/binlog）是一回事。
+
+参考答案（先自己答，再对照）：不是，只是共享"两阶段"这个名字。内部两阶段提交协调的是单机上的两个日志（redo 与 binlog），目的是崩溃恢复时主从一致；XA 协调的是多个独立数据库实例（事务管理器 + 资源管理器，prepare/commit 跨网络），目的是跨库原子性。前者由 MySQL 自动完成、用户无感；后者是应用层显式协议，有悬挂事务等独立故障模式。
+
+4. 概念自问：After Sync 与 After Commit 的差异本质是什么？"无损半同步"指哪种？
+
+参考答案（先自己答，再对照）：差异在等待从库 ACK 的时机——Sync 在 binlog 写完后、内部 commit 前等待，Commit 在 commit 之后等待。After Commit 崩溃时：主库已提交但 ACK 未及返回，从库可能没收到该事务——主库恢复后这笔数据还在但从库没有，还可能出现"主库读了、从库没有"的幻影读；After Sync 把提交卡在 ACK 之后，只要没提交，从库必已收到——主库崩溃也不丢已提交数据，即"无损半同步"（rpl_semi_sync_source_wait_point=AFTER_SYNC）。
+
+跨库 XA 的完整机制与务实替代（本地消息表、Saga、TCC）见[分布式事务](/mysql/540-DistributedTransaction)；组复制在提交阶段的多数派仲裁是另一种"提交前先获得外部确认"，见[组复制](/mysql/620-GroupReplication)。

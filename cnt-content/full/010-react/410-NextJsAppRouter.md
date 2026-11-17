@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Next.js App Router 详解：文件约定、布局与模板、并行/拦截路由、加载态、错误态与路由级数据获取。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'react/390-ReactCompilerAutoMemoization'
   - 'react/400-ServerClientComponents'
@@ -300,13 +300,13 @@ export async function POST(request: Request) {
 }
 ```
 
-**middleware.ts 中间件**
-`middleware.ts`
+**proxy.ts 中间件（Next.js 16 改名，旧名 middleware.ts 已弃用）**
+`proxy.ts`（Next.js 15 及以前为 `middleware.ts`，16 起弃用旧名仍可运行，官方提供 `npx @next/codemod middleware-to-proxy` 迁移）
 ```tsx
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
@@ -586,3 +586,16 @@ export default function Loading() {
   return <div>加载中...</div>;
 }
 ```
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：`layout.tsx` 与 `page.tsx` 的职责与渲染时机差在哪？为什么切换 page 不重挂 layout？
+   答案：layout 包裹子路由段、跨导航保留（只渲染一次，导航时只重渲染其 children 槽位）；page 是路由段的入口内容、随路由切换重渲染。layout 的「不重挂」是共享 UI（侧边栏、导航）不丢状态的原因。
+2. **预测题**：`app/blog/[slug]/page.tsx` 与 `app/blog/[...slug]/page.tsx` 各匹配什么 URL？
+   答案：前者匹配单段动态路径 `/blog/hello`（params.slug = 'hello'）；后者是 catch-all，匹配多段 `/blog/a/b/c`（params.slug = ['a', 'b', 'c']），可选 catch-all `[[...slug]]` 连 `/blog` 本身也匹配。
+3. **修 Bug 题**：访问 `/dashboard` 时 loading.tsx 永远不出现，页面直接卡白屏，最可能的原因是什么？
+   答案：page 没有 Suspense 可挂——loading.tsx 本质是「路由段外层自动包的 Suspense 边界」，如果慢操作在 page 顶层同步 await 且没有流式占位（或被 `dynamic = 'force-static'` 等配置吞掉），loading 就无从触发；把慢数据放组件级 Suspense 或确认流式渲染开启。
+4. **规则题**：`template.tsx` 与 `layout.tsx` 一字之差，行为差什么？
+   答案：template 在每次导航时都重新挂载（新的实例、Effect 重跑、状态重置），layout 跨导航保留。需要「每页重置的进入动画/埋点」用 template，需要「共享持久 UI」用 layout。

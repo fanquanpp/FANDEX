@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Fn/FnMut/FnOnce、捕获方式与 move：闭包的类型系统真相。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'rust/100-RustGenericTrait'
   - 'rust/090-RustCollections'
@@ -83,10 +83,13 @@ fn main() {
     sell();
     println!("已售票 {sold} 张"); // 2
 
-    // FnOnce：把捕获的 String move 出去，闭包被消耗
+    // FnOnce：闭包体把捕获的 String 按值移出，调用即消耗闭包
     let gift = String::from("签名海报");
-    let handout = move || println!("赠出：{gift}（{} 字节）", gift.len());
-    handout(); // gift 的所有权在此离开闭包
+    let handout = move || {
+        let prize = gift; // 按值取出：gift 的所有权离开闭包体
+        println!("赠出：{prize}（{} 字节）", prize.len());
+    };
+    handout(); // 此调用消耗闭包
     // handout(); // 错误[E0382]：闭包已被消耗（FnOnce）
 }
 ```

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: Redis 8 全景：AGPLv3 三许可、内置 JSON/时间序列/概率结构与查询引擎、Vector Set、I/O 线程重写与复制优化、HGETDEL 等新命令、升级注意事项。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'redis/100-VectorSet'
   - 'redis/010-OverviewCoreDataStructure'
@@ -23,8 +23,10 @@ prerequisites: []
   3. HGETDEL/HGETEX/HSETEX、Vector Set、查询引擎怎么用；
   4. 从 7.x 或 Redis Stack 升级到 8 要注意什么。
 
-> 版本说明（信息截至 2026-09）：Redis 8.0 于 2025-05 GA，8.x 系列快速迭代
-> （8.2、8.4 等已发布，写作时最新稳定版为 8.8，以 redis.io/downloads 为准）。
+> 版本说明（信息截至 2026-11）：Redis 8.0 于 2025-05 GA，8.x 系列快速迭代
+> ——8.4（2025-11）、8.6（2026-02）、8.8（2026-05）、8.10（2026-07）均已发布，
+> 写作时最新稳定版为 8.10，8.2 是长期支持版（官方支持到 2030 年），
+> 以 redis.io/downloads 为准。
 > 本文以 8.0 的核心变化为主线，8.x 后续版本的新命令会标注引入版本。
 
 ## 2. 定位：为什么要关注 Redis 8
@@ -53,6 +55,20 @@ flowchart LR
 一句话：**8.0 起不再有「装不装 Stack」的选择题，开源内核自带全部能力**，
 Redis Stack 独立发行版停止更新（官方对 6.2/7.2/7.4 的补丁支持止于
 2025-09-15），新项目直接用 Redis 8+。
+
+8.x 后续 minor 版本速览（本文后续章节遇到这些命令时会标注引入版本）：
+
+| 版本 | 代表性变化 |
+| :--- | :--- |
+| 8.2 | LTS 长期支持版；`XDELEX`/`XACKDEL`（Stream 删除与确认合一）、`BITOP` 新运算符（DIFF/DIFF1/ANDOR/ONE）、`CLUSTER SLOT-STATS`；VSIM 过滤表达式新增 `IN` 操作符与 `SHARD_K_RATIO` 参数 |
+| 8.4 | `XREADGROUP` 新增 CLAIM 选项（空闲消息认领并入读取）；`DELEX`/`DIGEST` 原子删值并校验；`CLUSTER MIGRATION` 原子槽迁移；Vector Set 补充 VRANGE |
+| 8.6 | Stream 幂等写入（`XADD IDMP/IDMPAUTO`）；LRM（最久未修改）逐出策略；热 key 检测；TLS 证书认证；XREADGROUP CLAIM 进一步优化 |
+| 8.8 | 新增 Array 数据结构；`INCREX` 限速写入；HGETALL/MGET/MSET 性能优化；HyperLogLog 改进 |
+| 8.10 | `LMOVEM`/`BLMOVEM`（List 多键原子搬移）、`SUNIONCARD`/`SDIFFCARD`（不物化的并/差基数）；FT.AGGREGATE 与 JSONPath 扩展；Compact Hashes（哈希模板式紧凑编码） |
+
+> 归属提醒（2026-11 核实）：网传「SEXPIRE/STTL 给 Set 成员设过期」**不属于 8.4**——截至本文核实，官方最新命令页没有该家族（redis.io/docs/latest/commands/sexpire 返回 404），仅在尚未 GA 的开发线里出现，生产代码不要按任何 GA 版本归属使用它。
+
+选版口径：追新特性选最新稳定版（8.10），要长周期确定性选 8.2 LTS——两条线都在官方支持期内。
 
 ## 3. 许可与发行版变化
 
@@ -178,8 +194,8 @@ VSIM points VALUES 8 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 COUNT 3 WITHSCORES
 # 返回: 1) "pt:A"  2) "1"  3) ... （按相似度降序）
 ```
 
-- 8.0 以 beta 引入，官方明确「API 未来可能变化」；8.2 补充 VISMEMBER、
-  8.4 补充 VRANGE 等命令，仍在快速演进。
+- 8.0 以 beta 引入，官方明确「API 未来可能变化」；VSIM 的 `IN` 过滤与
+  `SHARD_K_RATIO` 参数为 8.2 增强，VRANGE 为 8.4 补充，仍在快速演进。
 - 完整命令、量化选项（Q8/BIN/NOQUANT）、FILTER 过滤与调参见
   《向量集》一篇（redis/100-VectorSet）。
 - 与查询引擎向量检索的分工：Vector Set 轻量、开箱即用、语义近似 ZSet；
@@ -266,8 +282,32 @@ ACL SETUSER analyst on >pwd ~* +@read +@bloom +@t-digest
   时，删到最后一个字段键仍在。用 `TTL` 与 `HTTL` 分别确认两层过期。
 - **查询引擎语义变化**：`FT.SEARCH` 的 DIALECT 版本影响查询语义，
   升级后显式声明 `DIALECT 2`，避免依赖旧方言。
-- **误把 8.x 全部新特性当 8.0**：VISMEMBER（8.2）、VRANGE（8.4）等
+- **误把 8.x 全部新特性当 8.0**：`XDELEX`/`XACKDEL`（8.2）、VRANGE（8.4）等
   是后续 minor 版本加入，写兼容层时按实际运行版本判断。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：Redis 8 的「三许可证」分别是什么？AGPLv3 与另外两个的本质区别在哪？
+
+参考答案（先自己答，再对照）：RSALv2、SSPLv1、AGPLv3 三选一。前两个是「源可用」许可（不是 OSI 认证开源，限制托管转售）；AGPLv3 是 OSI 认可的开源协议，网络服务场景下使用或修改它也要开源你的修改版（SaaS 传染性）。8.0 起新增 AGPLv3 选项是官方对社区开源诉求的回应；自用/内部部署三者皆可选。
+
+2. 判断题：装了 Redis 8 就自动有了 Redis for AI 与 Redis Flex。
+
+参考答案（先自己答，再对照）：错。二者是商业产品线（Redis Cloud / Redis Enterprise）的能力，开源内核没有对应配置项；开源版拿到的是内置 JSON/时间序列/概率结构/查询引擎与 Vector Set。判断某能力在不在开源版，先看 redis.conf 有没有对应指令、命令能不能直接跑。
+
+3. 动手自问：不用查文档，写出「给 Hash 字段 token 设置 1 小时过期，并在写入时原子完成」的命令；再写出「读取字段并删除它」的命令。这两个命令是哪个版本引入的？
+
+参考答案（先自己答，再对照）：`HSETEX session:u1 EX 3600 FIELDS 1 token "abc"`（写值并设字段过期）与 `HGETDEL session:u1 FIELDS 1 token`（读值即删）。两者都是 8.0 新增，地基是 7.4 的字段级过期（HEXPIRE/HTTL）。易错点：字段过期不等于键过期，键本身 TTL 仍要用 `TTL` 看。
+
+4. 概念自问：io-threads 调大一定更快吗？判断依据是什么？
+
+参考答案（先自己答，再对照）：不一定。默认 1（关闭）；多线程只作用于网络 I/O 的读写与解析，命令执行仍是单线程——核少、流量小时线程切换反而变慢。判断依据：出现网络 I/O 瓶颈（单核 CPU 打满且 ops 高）再开启并压测，多核大流量机器通常 2~8；纯内存计算型负载调它没用。
+
+5. 动手自问：从 Redis 7.x + Redis Stack 迁到 8，迁移清单里至少要写哪五条？
+
+参考答案（先自己答，再对照）：预发跑回归（重点盯已废弃命令与模块私有 API）；去掉模块加载配置（JSON.*/TS.*/BF.*/FT.* 命令内核直接可用）；升级后重测 `INFO memory` 与 maxmemory 阈值（新结构与双流复制改变内存画像）；Vector Set 锁版本（beta，API 可能变）；许可审计（AGPLv3 对 SaaS 场景有传染性，不想受限选 RSALv2/SSPLv1 即可）。
 
 ## 10. 小结
 
@@ -276,5 +316,6 @@ ACL SETUSER analyst on >pwd ~* +@read +@bloom +@t-digest
 - 进阶注意：许可三选一的合规含义；multi-part AOF、HFE 等 7.x 能力是
   8 的地基；io-threads 与双流复制改变性能画像，升级需重做容量规划。
 - 下一步：《向量集》（redis/100-VectorSet）深入 Vector Set 命令与调参；
-  《Redis 7 新特性》（redis/300-NewFeatures7）补齐 Function 与
-  multi-part AOF 底层细节。
+  7.x 基石能力（Function 与 multi-part AOF）的底层细节见本篇第 6 节的
+  Hash 命令与第 8 节升级注意事项，以及《Redis Functions》（redis/245-RedisFunctions）
+  与《混合持久化》（redis/170-MixedPersistence）两篇。

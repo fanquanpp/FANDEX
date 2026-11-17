@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: pg_stat_statements 深用、pg_stat_activity 会话诊断、死元组观察、日志分析与 pgBadger，附可复制的日常巡检清单
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -248,3 +248,42 @@ SELECT n_live_tup, n_dead_tup FROM pg_stat_user_tables WHERE relname='mon_demo';
 - PostgreSQL 官方文档 Chapter 28 Monitoring Database Activity、pg_stat_statements 扩展文档（PostgreSQL Licence）：<https://www.postgresql.org/docs/current/>
 - pgBadger 官方文档（PostgreSQL Licence）：<https://pgbadger.darold.net/>
 - 巡检清单为原创整理，指标语义已对照官方文档核校。
+
+## 教学自检
+
+遮住巡检 SQL 清单，先自己写再对照参考答案。
+
+### 任务一：找出本周最耗时的三类查询
+
+需求：只允许用 pg_stat_statements，写出"按总耗时排序的前 5 条查询"与"按平均耗时排序的前 5 条"，说明两个口径分别抓什么问题。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+SELECT query, calls, mean_exec_time, total_exec_time
+FROM pg_stat_statements ORDER BY total_exec_time DESC LIMIT 5;      -- 总口径
+SELECT query, calls, mean_exec_time
+FROM pg_stat_statements
+WHERE calls > 100 ORDER BY mean_exec_time DESC LIMIT 5;             -- 均值口径
+```
+总口径抓"次数 x 单次"的大户（高频慢查询累计拖垮 CPU）；均值口径抓"单次就疼"的异常（报表跑飞、锁等待）。注意 calls 极小的均值冠军可能是冷门慢查询，排除噪声要加 calls 下限。
+
+</details>
+
+### 任务二：抓出 idle in transaction 并说清为什么危险
+
+需求：写出找出"空转事务超过 10 分钟"的会话的 SQL；说明这种会话对 VACUUM、锁、复制槽三条线的连锁影响，以及兜底参数。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+SELECT pid, usename, xact_start, state, query
+FROM pg_stat_activity
+WHERE state = 'idle in transaction'
+  AND xact_start < now() - interval '10 minutes';
+```
+连锁影响：它持有的快照把 OldestXmin 钉住 → VACUUM 不能回收死元组与冻结推进（180 篇防回卷）→ 膨胀与回卷风险；它持有的锁阻塞其他事务；逻辑复制场景还拖住 WAL 清理。兜底参数 `idle_in_transaction_session_timeout`（如 10min）让数据库自动收割。
+
+</details>

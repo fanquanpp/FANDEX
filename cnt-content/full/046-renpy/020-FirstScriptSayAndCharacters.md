@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 label 与 say 语句写出第一段对话，定义带颜色的角色对象并理解缩进与转义规则
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-11-17'
 related: ['renpy/010-RenPyOverviewAndSetup', 'renpy/030-ImagesSceneShowAndTransitions', 'renpy/040-LabelsControlFlowAndMenus']
 prerequisites: ['renpy/010-RenPyOverviewAndSetup']
 ---
@@ -159,6 +159,38 @@ return
 1. 把示例中 Sylvie 与 Me 的台词全部换成中文，运行确认显示正常；记得台词里的中文引号可以直接写，英文双引号才需要转义。
 2. 新增第三个角色：仿照 s 与 m 的写法，用 define 定义一个新 Character，起名字、选一个自己的十六进制颜色，再让它说两句话。
 3. 在 return 之前再插入一句旁白和一行 `.:. True Ending.`，运行确认它们会在游戏结束前出现——体会"先显示结局文字再 return"的节奏。
+
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案或写出代码，再展开对照。
+
+1. `label start:` 里的 start 特殊在哪？label 下面第一句台词缩进了 4 个空格——缩进在这里是排版偏好还是语法？混入 Tab 会怎样？
+2. `"Sylvie" "你好！"` 与 `"你好！"` 两条语句的显示差别是什么？
+3. define 创建 Character 时，为什么说"定义角色一律用 define"而不手写 init python 赋值？define 的变量参与存档吗？
+4. 台词里要原样显示一个 `[` 和一个 `%`，各怎么写？字符串内部出现双引号怎么处理？
+5. 剧本结尾 `return` 的行为是什么？官方建议在它之前做什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) start 是引擎约定的入口标签，玩家点 Start Game 后从这里执行。缩进是语法
+   本身：它划定 label/menu/if 的块边界；Tab 与空格混用会报缩进或
+   expected statement 类解析错误。
+
+2) 双字符串形式显示为"角色名 Sylvie 说：你好！"；单字符串是无角色名的旁白。
+
+3) define 在 init 阶段求值、把变量当常量、不参与存档，还会记录赋值的
+   文件与行号，Lint 能据此检查 define 变量的使用；手写 init python 赋值
+   没有这些信息。define 变量不进存档。
+
+4) [[ 显示 [；%% 显示 %；内部双引号用 \" 转义（或换单引号包字符串）。
+
+5) 执行没有 call 配对的 return，游戏结束回到主菜单。官方建议先显示
+   ".:. Good Ending." 之类的结局文字再 return，让收尾有仪式感。
+```
+
+</details>
 
 ## 小结
 

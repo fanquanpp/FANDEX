@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Kafka与RabbitMQ集成
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/090-ControlFlow'
   - 'java/870-JavaMicroservice'
@@ -1146,3 +1146,13 @@ offsets.forEach((tp, offset) -> consumer.seek(tp, offset));
 ---
 
 **总结**：消息队列是分布式系统的核心中间件，从最早的解耦工具演化为事件流平台、状态转移日志、Event Sourcing 基础设施。理解 MQ 的本质——"持久化的、有序的、可重放的、可扩展的消息流"——是正确选型与设计的前提。生产环境需重点关注可靠性（acks、ISR、min.insync.replicas）、顺序性（分区设计、业务键路由）、可观测性（Lag、延迟、死信）三大维度。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 消息队列解决的三个解耦性问题是什么？——削峰（流量洪峰缓冲）、异步（非核心链路不等）、解耦（生产者不认识消费者）。
+2. at-least-once 与 at-most-once 的取舍是什么？幂等消费怎么实现？——前者可能重复（先落库后 ack），后者可能丢（先 ack 后处理）；幂等靠唯一业务键去重表或 Redis setnx + TTL。
+3. RocketMQ 与 Kafka 的核心场景差异一句话。——Kafka 面向高吞吐日志流与流处理（分区顺序、消费组）；RocketMQ 面向业务消息（事务消息、定时/延迟消息、顺序消息按队列）。
+4. 消息积压的排查路径是什么？——看 lag 趋势定位 topic/队列 -> 判断生产速率 vs 消费速率 -> 扩消费者（受分区数限制）或批量消费/降级旁路 -> 必要时新分区扩容迁移。
+5. 死信队列的触发条件与人工兜底流程？——重试 N 次仍失败进 DLQ；人工或后台任务检查 DLQ，修复数据后重放（注意幂等）。

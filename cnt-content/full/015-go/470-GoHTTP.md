@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: net/http与路由
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/330-GoJSON'
   - 'go/460-GoHTTPClient'
@@ -2021,3 +2021,50 @@ defer cancel()
 req, _ := http.NewRequestWithContext(ctx, "GET", "https://example.com", nil)
 resp, _ := http.DefaultClient.Do(req)
 ```
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（Handler 的三种写法）**：同一个"返回当前时间"的端点，分别用 HandlerFunc 字面量、自定义类型实现 ServeHTTP、http.HandlerFunc 包装闭包三种方式写出注册代码，并说出各自适合的场景。
+
+参考实现：
+
+```go
+// 1. 字面量：一两行的简单端点
+mux.HandleFunc("GET /time", func(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprint(w, time.Now().Format(time.RFC3339))
+})
+
+// 2. 自定义类型：有依赖（如 logger、db）需要构造注入
+type TimeHandler struct{ loc *time.Location }
+
+func (h TimeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprint(w, time.Now().In(h.loc).Format(time.RFC3339))
+}
+mux.Handle("GET /time2", TimeHandler{loc: time.UTC})
+```
+
+要点：1.22+ 的 `"GET /time"` 方法路由把 method 分派从中间件挪进 ServeMux；有依赖状态的端点用结构体 handler（构造函数注入），无状态的用字面量。两种都是 `http.Handler` 接口，机制相同。
+
+**题 2（超时矩阵）**：一个生产 HTTP 服务器需要配哪几个超时？分别防什么攻击/事故？写出 Server 的完整超时配置。
+
+参考实现：
+
+```go
+srv := &http.Server{
+    Addr:              ":8080",
+    ReadHeaderTimeout: 5 * time.Second,  // 防 slowloris：只读 header，最长等待
+    ReadTimeout:       10 * time.Second, // 整个请求体读取
+    WriteTimeout:      30 * time.Second, // 响应写回（含 handler 执行）
+    IdleTimeout:       120 * time.Second,// keep-alive 空闲连接
+}
+```
+
+要点：四件套各管一段——漏 ReadHeaderTimeout 是 slowloris 慢连接攻击的入口；漏 WriteTimeout 时卡住的 handler 会永久占用连接；漏 IdleTimeout 让空闲连接吃满 fd。Go 1.27 还新增 `Server.MaxHeaderValueCount` 限制请求头数量，属于同一族的资源护栏。
+
+**题 3（文件服务的安全线）**：`http.FileServer(http.Dir("./static"))` 的路径穿越保护在哪一层？如果要把 `/files/` 映射到任意目录，还应该自己补什么校验？
+
+参考答案：`http.Dir.Open` 内部做了 `filepath.Clean` + 前缀校验，`..` 序列与绝对路径会被拒绝——这是标准库自带的穿越防线。自己要补的：(1) `http.MaxBytesReader` 限制上传体积；(2) 目录列举是否开放（`http.Dir` 默认会列目录，敏感内容要自定义 handler 关闭）；(3) MIME 与缓存头的显式控制（嵌入式资源用 `http.FS` + embed 避免目录依赖）。要点：标准库给了"不穿越"的下界，"是否该暴露"的判断永远在业务侧。

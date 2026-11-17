@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 20 行学会打印当前时间、解析字符串、格式化输出，告别老 Date API。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/180-ExceptionHandlingMechanism'
 prerequisites:
@@ -214,3 +214,13 @@ public class DateDrill {
 - "几年几个月"用 `Period`，"总时长"用 `Duration`/`ChronoUnit`，两者混用会算错。
 - `LocalDateTime` 不含时区语义，跨时区存档用 `Instant`（UTC 时刻）+ 目标时区展示。
 - 日期运算跨月/闰年由 API 兜底（如 1 月 31 日 `plusMonths(1)` 得 2 月 28 日），手写日历数学才是坑源。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. LocalDate、LocalTime、LocalDateTime 各管什么？LocalDateTime 不含什么信息？——分别管日期、时刻、日期+时刻；都不含时区/时区偏移信息，跨时区场景要用 ZonedDateTime。
+2. `LocalDate.of(2026, 11, 12).plusDays(20).getDayOfWeek()` 返回什么类型？说明这套 API 的什么特征？——DayOfWeek 枚举；每次 plus 生成新对象（不可变），线程安全且链式可读。
+3. 为什么 getYear()/getMonthValue() 之外还要有 getMonth()？——返回 Month 枚举（类型安全、可再查询天数），int 版是给老代码/格式化用的数字视图。
+4. 计算"下个月同一天"在 1 月 31 日会发生什么？这套 API 的处理哲学是什么？——得到 2 月 28 日（或闰年 29 日），自动钳制到合法日期；API 以"语义正确优先于机械加法"为原则。
+5. 用 Period 与 Duration 各算什么？写出生成"两年三个月"的 Period。——Period 算日期差（年月日），Duration 算时间差（秒/纳秒）；`Period.of(2, 3, 0)`。

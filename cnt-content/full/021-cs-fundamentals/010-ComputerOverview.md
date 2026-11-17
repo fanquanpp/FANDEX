@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: "以「代码如何点亮屏幕上的一颗像素」为主线，用一条完整旅程串起 CPU、内存、存储与操作系统，并给出本模块从组成原理到网络的递进地图。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/020-ProgrammingBasics'
   - 'cs-fundamentals/080-ComputerArchitectureBasics'
@@ -110,11 +110,13 @@ flowchart LR
 - 《深入理解计算机系统》（CSAPP）第 1 章——本文旅程的学术版（进阶再读）；
 - How does a computer work（CrashCourse Computer Science 视频，可视化补足）：https://www.youtube.com/playlist?list=PL8dPuuaLjXtNlUrpyHNeVQhsFiMkisaVw
 
-## 10. 自我检查
+## 自检
 
-- 能不看资料复述五幕剧并标注每幕的部件；
-- 能用任务管理器把「卡」归因到 CPU / 内存 / 磁盘三类之一；
-- 能说出分层思想与本模块四条主线的对应。
+- 遮住第 2 节的五幕流程图，先自己写出五幕的顺序与每幕的主角部件（终端 → 操作系统 → CPU/内存 → 输出），再对照——`print` 是在哪一幕变成「系统调用」的？
+- 遮住第 3 节的三层表，先默写硬件层、操作系统层、软件层各自回答的问题，再回答：贯穿三层的分界线是什么（指令集），编译器、操作系统、性能归因分别怎么用到它？
+- 遮住第 4 节的实验步骤，先预测「开一个新浏览器标签页」时任务管理器里哪两个数字会动、量级多大，再动手验证自己的预测。
+- 遮住第 5 节的三个困惑，先自己回答「内存 16G 够吗」的判断框架（先看住客、再看负载）与「CPU 100% 是否异常」的归因方法，再对照。
+- 能用任务管理器把一次真实的「卡」归因到 CPU / 内存 / 磁盘三类之一，并说出证据是哪个数字。
 
 ## 本章总结
 

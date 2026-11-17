@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-cloud/020-ServiceRegistrationDiscovery'
   - 'spring-boot/060-SpringMvcRestApi'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'spring-cloud/050-LoadBalancingRetry'
   - 'spring-cloud/060-ApiGateway'
@@ -271,6 +271,8 @@ logging:
 第三步其实埋了个问题：库存有 3 个实例，只有一台慢，调用方该怎么办？每次都等超时再换一台吗？这就是 050 篇负载均衡与重试的开场问题。
 
 旧路标一句话：Netflix Feign 与 OpenFeign 是同一个库前后两任维护者，依赖坐标从 spring-cloud-starter-feign 换成了 spring-cloud-starter-openfeign；老教程里 Feign 内建 Hystrix fallback 的写法已随 Hystrix 退役，如今 fallback 走断路器抽象，Sentinel 与 Resilience4j 都是它的实现。
+
+再补一个选型时要知情的现状：OpenFeign 本体自 Spring Cloud 2023.0.1 起进入**维护模式**——只修缺陷与安全补丁，不再加新特性（官方在 issue 跟踪里确认过这一立场）。它仍在随 Spring Cloud 版本 train 发布、仍被官方支持，存量代码不必迁移；但新项目做声明式调用选型时，要知道 Spring 内置的替代路：声明式 HTTP Interface（@HttpExchange 接口）与 RestClient——无第三方依赖、与 Spring MVC 注解同形，服务名寻址也有官方集成：RestClient 自 Spring Cloud 2023.0 起可用负载均衡，HTTP Interface 自 5.0.0 起通过 @ImportHttpServices 声明客户端组并配 lb:// 即走 LoadBalancer。本篇主线仍教 OpenFeign：它至今是国内微服务的现实主力，且动态代理这套心智模型对两条路通用——学懂本篇，换到 HTTP Interface 只是换一套注解。
 
 ## 自检
 

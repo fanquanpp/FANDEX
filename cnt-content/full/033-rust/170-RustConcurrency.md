@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 线程、通道与 Send/Sync：无数据竞争的并发模型。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'rust/150-RustSmartPointers'
   - 'rust/130-RustAsyncTokio'
@@ -151,7 +151,7 @@ fn main() {
 两个标记 trait 是 Rust 并发安全的基石：
 
 - **`Send`**：类型的所有权可以安全地**转移**到另一个线程。几乎所有类型都自动实现；反例是 `Rc`（非原子计数）与裸指针。
-- **`Sync`**：类型的共享引用 `&T` 可以安全地**跨线程共享**。精确定义是 `T: Sync` 当且仅当 `&T: Send`——注意它**不要求** `T` 本身是 `Send`，二者是独立的能力：`MutexGuard`（锁守卫）是 `Send` 但不是 `Sync`（守卫可以移动到别的线程用，但绝不能两个线程各持一份）；反过来说 `RefCell` 两者皆非（运行期借用检查不是线程安全的）。
+- **`Sync`**：类型的共享引用 `&T` 可以安全地**跨线程共享**。精确定义是 `T: Sync` 当且仅当 `&T: Send`——注意它**不要求** `T` 本身是 `Send`，二者是独立的能力：`RefCell<T>` 是「可 `Send`、不可 `Sync`」的典型——`T: Send` 时整个 `RefCell` 可以移动到另一个线程使用，但 `&RefCell<T>` 绝不能跨线程共享（运行期借用检查不是线程安全的）；而标准库的 `MutexGuard`（锁守卫）恰好相反地两侧不对称——`!Send` 无条件成立（POSIX 线程要求加锁与解锁在同一线程，守卫不能被丢到别的线程去释放），`Sync` 仅当 `T: Sync` 时才成立（经 `Deref` 能从 `&MutexGuard<T>` 拿到 `&T`，共享守卫的安全性跟随 `T`）。
 
 它们是自动派生的：结构体的字段全 `Send` 则整体 `Send`。编译器用它们检查每一个 `thread::spawn` 的闭包——闭包捕获的数据必须 `Send`。这就是 `Rc` 传进线程直接报错的原因：
 

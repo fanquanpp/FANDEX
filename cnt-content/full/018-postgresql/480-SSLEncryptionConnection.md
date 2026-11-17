@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL 传输加密完整落地：自签证书生成、服务端与客户端配置、pg_hba 强制策略、sslmode 六档语义与 cert 双向认证，含常见连接报错排查。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/490-RoleBasedPermissionManagement'
   - 'postgresql/510-DataEncryptionStorage'
@@ -168,3 +168,32 @@ psql "host=127.0.0.1 sslmode=verify-full sslrootcert=root.crt" -U postgres
 ## 下一步
 
 传输加密之后是静态数据：进入[数据加密存储](/postgresql/510-DataEncryptionStorage)，覆盖磁盘级、字段级两层方案。
+
+## 教学自检
+
+遮住示例与表格，先自己回答再对照参考答案。
+
+### 任务一：六档 sslmode 的边界
+
+需求：`sslmode=require` 的客户端连到"证书过期"的服务器，能连上吗？`verify-ca` 与 `verify-full` 的差别是什么？为什么生产推荐 verify-full？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+能连上——require 只加密，不验证证书真伪（自签、过期、被冒充都放行），防窃听不防中间人。verify-ca 验证证书链可信（CA 签发、未过期），但不核对你连的"是不是你以为的那台主机"；verify-full 在此之上校验主机名（CN/SAN 与连接串 host 一致），中间人即使持另一张合法证书也会被拒。生产标准姿势：服务端 pg_hba 只放 hostssl + 客户端 verify-full + 受信任 CA 签发证书。
+
+</details>
+
+### 任务二：mTLS 的两侧配置
+
+需求：要求客户端出示证书（双向认证）。写出服务端 pg_hba 行、服务器参数，并说出 PG 18 在 TLS 参数上的两个新能力。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```
+hostssl  all  all  0.0.0.0/0  cert clientcert=verify-full
+```
+服务端参数：ssl = on、ssl_cert_file/ssl_key_file、ssl_ca_file 指向签发客户端证书的 CA。PG 18 新能力：`ssl_tls13_ciphers` 可指定 TLS 1.3 套件列表；`ssl_ecdh_curve` 更名并扩展为 `ssl_groups`（可配多组椭圆曲线，X25519 进默认值）。cert 方法下认证在 TLS 握手完成，method 处不能再叠加密码认证（见 010 篇自检）。
+
+</details>

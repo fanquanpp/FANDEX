@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: ASP.NET Core中间件管道详解：从IApplicationBuilder到HttpContext的完整指南，涵盖管道构建、依赖注入、性能优化与生产级实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/360-ReflectionAndFeatureApplication'
   - 'csharp/290-EFCoreMigrationOptimization'
@@ -3477,3 +3477,39 @@ validator.Validate(app);  // 若顺序错误，抛异常
 - **RFC 7231 - HTTP/1.1 Semantics**：https://www.rfc-editor.org/rfc/rfc7231 - HTTP 状态码与语义。
 - **W3C Trace Context**：https://www.w3.org/TR/trace-context/ - 分布式追踪标准。
 - **OpenAPI Specification**：https://spec.openapis.org/oas/v3.1.0 - API 文档规范。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己画管道图或写代码，再对照。本篇自检核心是"管道是一条委托链"这一句话的所有推论。
+
+**题 1（管道本质）**：用一句话说出中间件的本质，并写出 `Use`/`Run`/`Map` 三种注册各自的行为差异。
+
+参考答案：中间件本质是 `Func<RequestDelegate, RequestDelegate>`——接收"下一个中间件"返回一个新的请求处理委托，整条管道就是层层包裹出的一个调用链。`Use` 注册"可继续传递"的中间件（拿到 `next`，可前后夹逻辑）；`Run` 注册终端中间件（不接 `next`，短路收尾）；`Map` 按路径分支出子管道（分支内自成一条链）。
+
+**题 2（顺序题）**：`UseExceptionHandler`、`UseStaticFiles`、`UseAuthentication`、`UseRouting`、`UseAuthorization`、`MapControllers` 的正确顺序是什么？把授权放在异常处理之前会发生什么？
+
+参考答案：`UseExceptionHandler` → `UseHttpsRedirection` → `UseStaticFiles` → `UseRouting` → `UseAuthentication` → `UseAuthorization` → 端点映射（`MapControllers`/`MapRazorPages`）。原则：异常处理最外层（能兜住后面所有环节的异常）、静态文件早短路（免得静态请求跑完整管道）、先认证后授权、路由在认证前（端点信息供授权用）。授权在异常处理之前的话：授权阶段抛出的异常（如 500 级错误）不会被异常中间件捕获，直接以裸错误页/无一致错误格式返回。
+
+**题 3（短路）**：写一个自定义中间件：给所有响应加 `X-Request-Cost` 头（毫秒计时），并说明为什么要"前半段计时、后半段写头"。
+
+参考答案：
+
+```csharp
+app.Use(async (context, next) =>
+{
+    var sw = Stopwatch.StartNew();
+    await next(context);              // 先放行，等下游写完响应
+    sw.Stop();
+    context.Response.Headers["X-Request-Cost"] = sw.ElapsedMilliseconds.ToString();
+});
+```
+
+计时起点在调用 `next` 之前（覆盖下游全部耗时），写头必须在 `next` 返回之后——写早了响应还没开始、头还没建立；写晚了响应已发出则改不了。这也是理解"管道前半段/后半段"的最好练习。
+
+**题 4（分支与短路代价）**：`app.Map("/admin", branch => ...)` 分支内的中间件数量对 `/api` 请求有影响吗？`UseWhen` 与 `Map` 的差别？
+
+参考答案：没有影响——`Map` 只在路径匹配时把请求导进分支管道，`/api` 请求根本不进入 `/admin` 分支，分支内再多重也不增加 `/api` 的耗时。`Map` 是"整条子管道"（此后 `next` 指向分支内）；`UseWhen` 是"条件成立时插入一段中间件，跑完后仍回主管道继续"。
+
+**题 5（诊断顺序 bug）**：现象：所有 500 错误都返回 HTML 错误页而非统一 JSON。按本篇知识给出排查顺序。
+
+参考答案：第一步看 `UseExceptionHandler`/`UseStatusCodePages` 的位置——必须注册在最外层且配置了 JSON/ProblemDetails 分支；第二步看异常处理中间件后面是否还有会抛异常的中间件没被覆盖（比如它被注册在 `UseRouting` 之后）；第三步看 `Development` 环境分支（`app.UseDeveloperExceptionPage`）是否在生产也生效；第四步确认自定义中间件是否吞了异常（try/catch 后不重抛也不写响应）。核心口诀：管道是顺序敏感的委托链，几乎每个"为什么我的中间件没生效"都是注册顺序问题。

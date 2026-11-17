@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: pgvector 从零到生产：向量与嵌入的心智模型、三种距离算子、IVFFlat 与 HNSW 索引的取舍、召回率调参与"精确但全表扫"的兜底策略。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/220-IndexType'
   - 'postgresql/250-QueryOptimization'
@@ -156,3 +156,29 @@ SELECT txt FROM mini_docs ORDER BY vec <=> '[0.88, 0.85, 0.1, 0.15]' LIMIT 2;
 ## 下一步
 
 向量扩展是 PostgreSQL"什么数据都能存"的一角，另一角是"什么数据源都能连"：进入 [FDW 外部数据包装器](/postgresql/350-FDWForeignDataWrapper)，在 SQL 里直接查远程库与 CSV 文件。
+
+## 教学自检
+
+遮住示例代码，先自己写再对照参考答案。
+
+### 任务一：三种距离算子对号入座
+
+需求：`<->`、`<#>`、`<=>` 各是什么距离、分别适合什么模型（如 OpenAI embedding）？错误选用会得到什么后果？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+`<->` 欧氏距离（L2）；`<#>` 负内积（排序用，值越小越相似）；`<=>` 余弦距离。选型跟着 embedding 模型的训练目标走：模型按余弦归一化训练就用 `<=>`，按 L2 训练用 `<->`，点积模型用 `<#>`。用错距离，排序整体"相似度口径"与模型语义不一致——不是报错，而是召回质量悄悄劣化，这也是"检索效果变差先查距离算子"的原因。归一化向量下 L2 与余弦单调等价，可互换。
+
+</details>
+
+### 任务二：IVFFlat 的 lists 与 probes 怎么调
+
+需求：IVFFlat 建索引 `WITH (lists = 100)`，查询要加什么才不退化为低召回？它与 HNSW 的建索引前提差异是什么？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+查询用 `SET ivfflat.probes = 10;`（经验值 lists 的 1%-10%）——probes=1 只查最近的一个聚类桶，召回率大跌。IVFFlat 建索引要求表里已有数据（聚类需要样本），空表建了也聚不出簇；HNSW 无此要求、可空表建。取舍：IVFFlat 构建快、内存小但召回依赖 probes 与数据分布；HNSW 召回高、查询稳定，代价是构建慢与内存大——生产默认 HNSW，数据量巨大且更新频繁时再评估 IVFFlat。
+
+</details>

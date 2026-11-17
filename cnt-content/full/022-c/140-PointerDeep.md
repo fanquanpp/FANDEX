@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从「swap 为什么救不回来」入门指针：房间号心智模型、& 与 * 互逆、NULL 判空、const 三组合读法口诀、按元素跨步的指针算术、void* 的能与不能，附 SEGV 调试实录与 minmax 双输出小项目。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/150-PointerArrayDifference'
   - 'c/160-DoublePointerPointerArray'
@@ -543,12 +543,24 @@ printf("%p %p %p\n", (void *)(pi + 1), (void *)(pd + 1), (void *)(pc + 1));
 - NULL 宏的定义与可选实现（cppreference C）：https://en.cppreference.com/w/c/types/NULL
 - printf 转换说明（%p 的参数类型约定）（cppreference C）：https://en.cppreference.com/w/c/io/printf
 
-## 15. 自我检查
+## 15. 遮码自检
 
-- 能向同事讲清 swap_bad 与 swap 的差别，并顺手画出 `p`、`*p`、`&a` 三者的关系；
-- 看到 `const int *const p` 能不假思索说出「内容和指向都锁死」，并写出一行会触发编译错误的使用；
-- 能说出 `p + 1` 在 `int *` 与 `double *` 上各跨多少字节，`p2 - p1` 的结果类型与打印格式；
-- 能解释为什么 `%p` 要写 `(void *)`、为什么 `void *` 不能解引用、为什么 free 后要置 NULL。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 讲清 swap_bad 与 swap 的差别，画出 `p`、`*p`、`&a` 三者的关系。
+2. `const int *const p` 读出什么含义？写一行会触发编译错误的使用。
+3. `p + 1` 在 `int *` 与 `double *` 上各跨多少字节？`p2 - p1` 的结果类型与打印格式是什么？
+4. 为什么 `%p` 要写 `(void *)`？为什么 `void *` 不能解引用？为什么 free 后要置 NULL？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. swap_bad 传的是值的复印件，换复印件动不了原件；swap 传地址，函数里 `*pa`、`*pb` 直达原件。关系图：`p` 是装地址的变量，`*p` 是那个地址指向的对象，`&a` 是取 a 的地址——`&` 与 `*` 一进一出互逆。
+2. 星号左 const 保护内容，星号右 const 锁死指针——两者都有就是内容和指向全锁。`*p = 1;`（改内容）与 `p = q;`（改指向）都会编译报错。
+3. 指针算术按元素大小跨步：`int *` 跨 4 字节，`double *` 跨 8 字节；`p2 - p1` 结果类型是 `ptrdiff_t`，打印用 `%td`，值是元素个数不是字节数。
+4. `%p` 的参数约定是 `void *`，其余指针类型严格说类型不匹配（某些平台会出问题）；`void *` 只知道「这里有个地址」，不知道类型与宽度，解引用无从解释字节；free 后置 NULL 让后续误用 `*p` 当场崩在空指针——错误立刻暴露，而不是悄悄踩作废内存。
+
+</details>
 
 ## 本章总结
 

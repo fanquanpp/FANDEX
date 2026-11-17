@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL 流复制从原理到生产：WAL 传递机制、同步与异步模式、pg_basebackup 搭建主从、复制状态监控与常见延迟问题定位。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/400-PhysicalReplicationSlot'
   - 'postgresql/410-CascadingReplication'
@@ -138,3 +138,40 @@ FROM pg_stat_wal_receiver;
 ## 下一步
 
 流复制是"整机镜像"，逻辑复制是"数据订阅"：先看[物理复制槽](/postgresql/400-PhysicalReplicationSlot)补全槽机制，再进入[逻辑解码与输出插件](/postgresql/420-LogicalDecodingOutputPlugin) 理解逻辑复制的地基。
+
+## 教学自检
+
+遮住动手步骤与参数表，先自己写再对照参考答案。
+
+### 任务一：主从两台机器的搭建清单
+
+需求：10.0.0.1 为主、10.0.0.2 为备。按顺序写出：主库建复制角色的 SQL、pg_hba 放行、备份命令、备库恢复动作与关键配置文件项。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```sql
+CREATE ROLE repl WITH REPLICATION LOGIN PASSWORD '...';
+```
+```
+# pg_hba.conf (主)
+host replication repl 10.0.0.2/32 scram-sha-256
+```
+```bash
+pg_basebackup -h 10.0.0.1 -U repl -D /var/lib/postgresql/18/main \
+  -Fp -Xs -P -R        # -R 自动写 standby.signal 与 primary_conninfo
+```
+备库配置 wal_level/热备默认即可，`standby.signal` 文件存在即进入备库模式。验证：主库 `SELECT * FROM pg_stat_replication;` 出现 walsender 行，备库 `pg_is_in_recovery()` 为 t。常见坑：主备 PG 大版本与编译参数需一致；防火墙 5432；复制角色不能做超级用户（安全面）。
+
+</details>
+
+### 任务二：同步复制把业务卡死了怎么办
+
+需求：`synchronous_commit = remote_apply` 后写入延迟飙升。说出三种"降级"手段与各自的丢失窗口，以及为什么不建议直接关掉同步复制。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+降级梯度：改 `synchronous_commit = remote_flush`（主库等备库刷 WAL 即返回，读备库可能略旧——几乎不丢）；改 `on`（只等本地刷盘，备库落后但有异步复制兜底——主库磁盘损坏丢最近事务）；会话级 `SET synchronous_commit = off` 仅对低价值写入放行（丢失窗口=wal_writer_delay）。不建议关掉全部持久化（off 且 fsync=off）：崩溃直接丢数据。旋钮的本质是"每笔写入要等哪一层持久化确认"，按业务分级而非全局一刀切。
+
+</details>

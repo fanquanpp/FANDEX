@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第一套标签：标题、段落、强调、换行、列表（ul/ol）、链接与图片，目标是写出带图文和列表的简单页面。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/090-HTML5CoreGlobalAttributes'
   - 'html5/020-HTML5OverviewCoreFeature'
@@ -439,7 +439,7 @@ prerequisites:
 - **缩进**：使用一致的缩进（通常是 2 或 4 个空格）来提高代码的可读性；
 - **大小写**：HTML 标签和属性通常使用小写；
 - **引号**：属性值应该使用双引号包围；
-- **注释**：为复杂的代码添加注释，提高代码的可维护性。注释的完整写法（`<!-- ... -->`）、用途与注意事项见 050-HTML5CommentsAndEntities。
+- **注释**：为复杂的代码添加注释，提高代码的可维护性。注释的完整写法（`<!-- ... -->`）、用途与注意事项见 `html5/050-HTML5CommentsAndEntities`。
 
 ## 6. 动手试试：写一个"我的个人简介"页面
 
@@ -457,16 +457,49 @@ prerequisites:
 挑战（可选）：
 
 - 用 `<figure>` + `<figcaption>` 放一张图片；
-- 用 `<dl>` 列出 3 个你学会的 HTML 标签及其含义（语法在 007）；
-- 用 `<details>` + `<summary>` 做一个"展开看更多"区域（在 007 的进阶知识点里）。
+- 用 `<dl>` 列出 3 个你学会的 HTML 标签及其含义（语法见 `html5/120-List`）；
+- 用 `<details>` + `<summary>` 做一个"展开看更多"区域（见 `html5/435-DetailsAndInteractiveElements`）。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写出实现，再展开参考答案对照。
+
+1. 写一个「个人简介」最小骨架：页面标题「关于我」、一级标题你的名字、一段自我介绍、无序列表列三个爱好、一个在新标签页打开的外部链接（安全写法）、一张必带替代文本的图片。
+
+参考答案（先自己写，再对照）：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>关于我</title>
+</head>
+<body>
+  <h1>你的名字</h1>
+  <p>一段自我介绍……</p>
+  <ul>
+    <li>羽毛球</li>
+    <li>摄影</li>
+    <li>做饭</li>
+  </ul>
+  <a href="https://developer.mozilla.org/" target="_blank" rel="noopener noreferrer">常去的 MDN</a>
+  <img src="avatar.jpg" alt="我的头像" width="120" height="120">
+</body>
+</html>
+```
+
+2. 概念自问：`target="_blank"` 为什么必须配 `rel="noopener noreferrer"`？内容图与装饰图的 `alt` 各该怎么写？什么时候用 `<ol>` 什么时候用 `<ul>`？
+
+参考答案（先自己答，再对照）：新窗口可通过 `window.opener` 操作原页面（反向 tabnabbing），`noopener` 切断引用、`noreferrer` 连 Referer 都不发；内容图写具体描述，装饰图写空 `alt=""`（读屏直接跳过）；信息有顺序/步骤/排名用 `ol`，仅是集合用 `ul`。
 
 ## 7. 核心知识点
 
 - 标题（`h1`-`h6`）、段落（`p`）、强调（`strong`/`em`）等文本标签构成内容语义；
-- 无序列表 `ul`、有序列表 `ol` 各有适用场景，嵌套可表达层级；定义列表 `dl` 在 007；
+- 无序列表 `ul`、有序列表 `ol` 各有适用场景，嵌套可表达层级；定义列表 `dl` 见 `html5/120-List`；
 - 链接 `a` 支持网页、锚点、`mailto`、`tel` 四种目标；图片必须提供 `alt`；
 - `br`/`hr`/`img` 是空元素，没有闭合标签；
-- 先保证结构正确：语义容器（`header`/`main`/`footer`）细节见 008，表格与全局属性见 007。
+- 先保证结构正确：语义容器（`header`/`main`/`footer`）细节见 `html5/170-SemanticTag`，表格与全局属性见 `html5/150-HTML5TableAndStructuredContent`。
 
 > 一句话记住这节课：标题别跳级，段落用 `p`；列表看顺序（`ul`/`ol`）；链接有 `href`，图片写 `alt`。
 

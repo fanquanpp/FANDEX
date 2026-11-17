@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: Shift+D 菜单、Shift+O 控制台、lint 静态检查、Shift+R 热重载与 Skip 跳过的工程化用法
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -14,8 +14,8 @@ prerequisites: []
 ## 知识点地图
 
 - **知识类别**：开发者工具与调试——Ren'Py 自带的开发期工具链（与玩家可见的功能无关，发布前会被关掉）。
-- **解决什么问题**：变量值对不对、哪句台词漏了配音、有没有写死的死循环——这些靠"玩一遍"效率太低。官方工具链提供静态检查（lint）、现场检查（控制台与监视器）、快速迭代（热重载）与快速跳过（Skip）四类手段。
-- **什么时候用到**：写剧本的全程（热重载迭代）、发版前（lint 报告清零）、排查"变量为什么是这个值"（控制台）。
+- **解决什么问题**：变量值对不对、哪句台词漏了配音、有没有写死的死循环——这些靠"玩一遍"效率太低。官方工具链提供静态检查（lint）、现场检查（控制台与监视器）、快速迭代（热重载）、快速跳过（Skip）与自动化回归测试（testcase，8.5 引入）五类手段。
+- **什么时候用到**：写剧本的全程（热重载迭代）、发版前（lint 报告清零、测试套件通过）、排查"变量为什么是这个值"（控制台）。
 - **关联**：样式不生效用 Shift+I 检查器，见 [样式系统与样式属性](/renpy/115-StyleSystemAndStyleProperties)；打包发布前 developer 模式的最终确认见 [打包发布与全平台分发](/renpy/130-BuildingDistributions)。
 
 ## 学习目标
@@ -24,7 +24,8 @@ prerequisites: []
 - 会用 Shift+O 控制台查变量、跳 label、watch 表达式；
 - 会跑 lint 并读懂报告类别，把"发版前 lint 清零"固化为流程；
 - 会用 Shift+R 热重载与 autoreload 迭代样式与界面；
-- 理解 Skip 跳过与 fast skipping 的机制，测试自己的游戏节奏。
+- 理解 Skip 跳过与 fast skipping 的机制，测试自己的游戏节奏；
+- 知道 8.5 引入的 testcase 自动化测试能覆盖什么，会在 launcher 或命令行跑一套测试。
 
 ## config.developer：总开关
 
@@ -34,7 +35,7 @@ prerequisites: []
 
 ## Shift+D 开发者菜单
 
-游戏中按 Shift+D 打开开发者屏幕，汇总入口：控制台（Shift+O）、变量查看器（Variable Viewer）、样式检查（Shift+I）、重载游戏（Shift+R）、编辑当前语句（Shift+E）、转场画廊与各类预览。日常最高频的是前四项；Shift+E 从"玩到哪改到哪"直达对应脚本行，是写长剧本时的省时键。
+游戏中按 Shift+D 打开开发者屏幕，汇总入口：控制台（Shift+O）、变量查看器（Variable Viewer）、样式检查（Shift+I）、重载游戏（Shift+R）、编辑当前语句（Shift+E）、转场画廊与各类预览。日常最高频的是前四项；Shift+E 从"玩到哪改到哪"直达对应脚本行，是写长剧本时的省时键。同一族按键里还有 Shift+A 无障碍菜单——8.6 新增的屏幕阅读器模式（Shift+V 切换，检测到 NVDA、VoiceOver 等读屏软件时自动启用）让文本经由读屏与盲文设备呈现，无障碍自测从此成为发版前检查清单上的一行。
 
 ## Shift+O 控制台
 
@@ -95,7 +96,31 @@ Skip 模式（默认按住 Ctrl 激活，ToggleSkip 可做成开关按钮）快�
 
 ## warp：命令行直达
 
-启动参数 --warp script.rpy:458 让游戏启动后直接跳到指定文件行号。warp 只分析单一路径、不执行目标语句之前的 Python——变量未初始化，所以 warp 后常出现 undefined 名字，官方提供 after_warp label 作为补救点（在它里面补齐必要状态）。API 侧对应 renpy.warp_to_line()。适用场景：剧本写到第 3000 行，每天打开项目直奔工作点，不必从 start 点三十次。
+启动参数 --warp script.rpy:458 让游戏启动后直接跳到指定文件行号。warp 只分析单一路径、不执行目标语句之前的 Python——变量未初始化，所以 warp 后常出现 undefined 名字，官方提供 after_warp label 作为补救点（在它里面补齐必要状态）。API 侧对应 renpy.warp_to_line()。8.6 起 warp 会沿路重放对话，history、NVL 文本与语音气泡都会被重建，跳转后回看上文不再空白。适用场景：剧本写到第 3000 行，每天打开项目直奔工作点，不必从 start 点三十次。
+
+## 自动化测试：testcase 与 testsuite
+
+lint 管"引用是否正确"，控制台管"此刻状态对不对"，但"玩家从头通关一遍、菜单点得开、存档读得回"这类端到端回归，靠真人每次发版点一遍既慢又漏——这正是 8.5 引入的自动化测试框架的领地。你用 test 语句把"怎么点"写成脚本，引擎模拟真实的 GUI 输入（需要可用的窗口与 OpenGL），像玩家一样操作游戏并断言结果：
+
+```renpy
+testsuite smoke:
+
+    testcase open_menu:
+        pause 0.5
+        advance until screen "game_menu"
+        click "Save"
+        advance until screen "save"
+```
+
+用 launcher 的 "Run Testcases" 按钮（存在 testcase 时才会出现），或从 SDK 目录用命令行跑：
+
+```text
+./renpy.sh <项目目录> test smoke
+```
+
+常用 test 语句：advance 推进一句对话、click/ type/ keysym/ drag 模拟输入、run Jump("label") 执行动作、`until` 系列把动作挂到条件上（如 `advance until screen "choice"`）、assert 断言、screenshot 截图留证；testsuite 支持 before/after 钩子。8.6 起测试可以用通配符批量选择，并用 parameter 属性参数化（一次定义、多组数据各跑一遍）。
+
+心智模型：它测的是"功能闭环"——游戏能否按预期走完、界面能否交互，而不是像素级视觉对比；样式细节仍归 Shift+I，数值逻辑仍归控制台与单元式的 eval 断言。发版前让 smoke 套件先跑通，再上真人测试。
 
 ## 动手实践
 
@@ -135,13 +160,56 @@ style hot_button:
 
 预期收获：体会"保存即所见"的迭代节奏，以及热重载保留变量状态这一特性对界面调试的价值。
 
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案或写出命令，再展开对照。
+
+1. config.developer 与 config.console 的控制范围各是什么？为什么发布版里不能留 developer True？
+2. 控制台的"三板斧"是哪三条命令？watch 与它们组合解决什么问题？
+3. lint 能查出什么、查不出什么？它与 testcase 自动化测试的分工是什么？
+4. Shift+R 热重载保留什么、不保留什么？为什么改"已执行过的语句"看不到效果？
+5. warp 到目标行后变量为什么常是未定义的？官方给的补救点叫什么？
+6. 写一条 testcase：等 0.5 秒、推进到出现 choice 屏、点击第一个选项。用到哪些 test 语句？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) config.developer 是多数工具的总开关（Shift+D/O/R/I、fast skipping、warp），
+   打包时默认关闭；config.console 单独控制控制台。若脚本里手动 define
+   config.developer = True 且无条件保护，玩家就能开控制台改变量、跳剧情。
+
+2) 查值（直接输入表达式）、改值（赋值语句）、跳转（jump label）；
+   watch 表达式把变化实时显示在屏幕右上角，免去到处插 print。
+
+3) lint 静态查：不可达 label、菜单死循环、不存在的图像与 label 引用等，
+   并给出字数/点击数统计；查不出"演出很怪"这类主观问题，也覆盖不到
+   运行期交互闭环。testcase 用模拟输入跑端到端回归（通关、菜单、存读档），
+   两者互补：lint 管静态引用，testcase 管动态闭环。
+
+4) 保留变量值与 scene 列表，进入 autoreload 后每次保存自动重载；但它
+   不会重放已执行的语句，所以改已执行过的台词需回滚或重跳才能看到。
+
+5) warp 只找单一路径、不执行目标语句之前的 Python，变量自然未初始化；
+   补救点是定义 after_warp label——它在 warp 之后、目标语句执行前被调用。
+
+6) testcase 骨架（放在 testsuite 里）：
+   pause 0.5
+   advance until screen "choice"
+   click "选项文本"
+   （click 也可用 id/expression 选择器定位按钮）
+```
+
+</details>
+
 ## 小结
 
 - config.developer 是多数开发工具的总开关（Shift+D/O/R/I、fast skipping、warp），控制台另由 config.console 控制；发布版必须确认关闭。
 - Shift+D 开发者菜单汇总入口；Shift+O 控制台四件事：求值表达式、跑脚本语句、jump label、watch 监视（clear/help/load/save/stack 是常用命令）。
 - lint 静态体检：错误、低效、跨平台问题与统计信息四类输出；"发版前 lint 清零"应固化为流程，但它不替代测试。
 - Shift+R 热重载保留变量与 scene 状态，首次后进入 autoreload；改样式改 screen 最见效，改已执行语句需回滚。
-- Skip 跳过服务玩家二周目与作者自测，fast skipping 的 > 键直达下一个重要交互；--warp 命令行直达行号，但目标行前的 Python 不会执行，用 after_warp 补状态。
+- Skip 跳过服务玩家二周目与作者自测，fast skipping 的 > 键直达下一个重要交互；--warp 命令行直达行号，但目标行前的 Python 不会执行，用 after_warp 补状态（8.6 起 warp 沿路重放对话、重建 history）。
+- 8.5 引入 testcase/testsuite 自动化测试（advance/click/type/run/until/assert 等语句，launcher 或命令行运行），8.6 支持通配符与 parameter 参数化；Shift+A/Shift+V 提供无障碍菜单与屏幕阅读器模式。
 
 ## 参考与致谢
 

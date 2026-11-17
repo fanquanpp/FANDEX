@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用 gcc -E 把 main.c 的预处理产物摊开，一图看穿「宏只是文本替换」：编译四阶段心智模型、#include 搜索路径 gcc -v 实验、头文件守卫三写法；函数式宏的 SQUARE(i++) 事故实录与括号纪律、# 与 ## 两级宏与能跑的 X-Macro 全貌、__VA_ARGS__ 与 C23 __VA_OPT__；条件编译三大用途与 #error/#warning、C23 __has_include；do { } while(0) 惯用法与五条宏军规。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/300-InlineFunctionMacro'
   - 'c/310-MultiFileCompilation'
@@ -783,12 +783,24 @@ int x = B;      /* x 是几？ */
 - Linux 内核编码风格第 12 章（do-while(0) 与宏命名）：https://www.kernel.org/doc/html/latest/process/coding-style.html
 - Modern C（Jens Gustedt，C23 版免费在线）：https://gustedt.gitlabpages.inria.fr/modern-c/
 
-## 自我检查
+## 遮码自检
 
-- 能用 `gcc -E` 取出任意一段代码的预处理产物，并指着展开结果解释每个宏变成了什么；
-- 能不看资料说出 `#include` 两种写法的搜索路径顺序、头文件守卫三写法及各自的可移植性代价；
-- 拿到 `HALF(2 + 2) == 3` 式的静默算错，能在两分钟内用 `-E` 定位到缺括号的宏；
-- 能向同事讲清 do { } while (0) 解决什么问题、`__VA_OPT__` 与 `##__VA_ARGS__` 各自的来历。
+遮住上文示例代码与下面的答案栏，先自己跑、先自己答，再展开对照。
+
+1. 用 `gcc -E` 取出一段含宏的代码，指着展开结果解释每个宏变成了什么。
+2. `#include` 两种写法的搜索路径顺序是什么？头文件守卫三写法及各自的可移植性代价？
+3. `HALF(2 + 2) == 3` 式的静默算错，两分钟内用 `-E` 定位到缺括号的宏——写出定位过程。
+4. do { } while (0) 解决什么问题？`__VA_OPT__` 与 `##__VA_ARGS__` 各自的来历？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `gcc -E demo.c`（可加 `-o demo.i`）：宏在产物里已替换成原文文本、#include 处是头文件全文、注释消失——逐处对照源码讲「文本替换」四个字。
+2. `#include "x.h"` 先查当前文件目录再查系统路径；`#include <x.h>` 只查系统路径。守卫三写法：传统 `#ifndef/#define/#endif`（全平台通吃）、`#pragma once`（GCC/Clang/MSVC 都认但非标准）、二者并用（守卫保正确，once 省编译器重复读文件）。
+3. `gcc -E demo.c | grep -n "2 + 2"`——展开产物里看到 `2 + 2 / 2 == 3`，一眼定位 HALF 宏体缺括号；修法 `#define HALF(x) ((x) / 2)`，每处参数与整体都加括号。
+4. do-while(0) 让多语句宏在无大括号的 if/else 里保持单一语句（吞掉分号歧义）；`##__VA_ARGS__` 是 GNU 扩展（也进了部分实现），用来吃掉零参数时的尾逗号，移植性差；C23 的 `__VA_OPT__(,)` 是标准答案——有变参才展开逗号。
+
+</details>
 
 ## 本章总结
 

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 资源获取即初始化模式
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/660-Cpp20Module'
   - 'cpp/730-Cpp23NewFeatures'
@@ -293,7 +293,7 @@ RAII 的核心由三条规则构成，缺一不可：
 - **不变式 I3**：析构函数对"空状态"也是安全的（如 `nullptr` 的 `unique_ptr`）。
 - **不变式 I4**：复制构造（若存在）后，原对象与副本各自独立持有资源，互不影响。
 
-违反任一不变式都会导致 RAII 失效。例如：复制 `std::auto_ptr` 会转移所有权却伪装成复制——这违反了 I4，最终导致 `auto_ptr` 在 C++17 被弃用、C++26 中删除。
+违反任一不变式都会导致 RAII 失效。例如：复制 `std::auto_ptr` 会转移所有权却伪装成复制——这违反了 I4，最终导致 `auto_ptr` 在 C++11 被弃用、C++17 中删除。
 
 ### 析构函数的隐式 `noexcept`
 
@@ -690,7 +690,7 @@ std::auto_ptr<int> p2 = p1;  // 看似复制，实则 p1 被置空！
 std::cout << *p1;           // UB：解引用空指针
 ```
 
-`auto_ptr` 的复制构造执行移动语义却伪装成复制，违反了复制语义的可预期性。C++17 弃用，C++26 移除。**永远使用 `unique_ptr`。**
+`auto_ptr` 的复制构造执行移动语义却伪装成复制，违反了复制语义的可预期性。C++11 弃用，C++17 移除。**永远使用 `unique_ptr`。**
 
 ### 陷阱 4：`shared_ptr` 循环引用
 
@@ -1636,3 +1636,70 @@ std::string s = "hello";
 // 文件流析构自动关闭
 std::ifstream in("data.txt");
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：不借助智能指针，手写一个管理 `FILE*` 的 RAII 类 `FileGuard`：构造函数用 `"rb"` 语义打开传入的文件名（打开失败输出错误并保持空状态），析构函数负责关闭；禁止拷贝、允许移动（移动后源对象可安全析构）；另提供 `get()` 返回裸指针、`is_open()` 判断状态。写一个 `main` 在栈上创建两个实例验证析构次序（后构造的先析构）。
+
+**提示**：两件事最容易漏——移动构造要把源对象的指针置空（否则双重 close），以及用 `= delete` 删除拷贝构造与拷贝赋值（回看「不变式 I4」：复制必须各自独立持有资源，FILE* 做不到就用删除堵死）。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <cstdio>
+#include <utility>
+
+class FileGuard {
+    std::FILE* f_ = nullptr;
+public:
+    explicit FileGuard(const char* path) : f_(std::fopen(path, "rb")) {
+        if (!f_) std::fprintf(stderr, "open failed: %s\n", path);
+    }
+    ~FileGuard() { if (f_) std::fclose(f_); }
+
+    FileGuard(const FileGuard&) = delete;             // 伪装复制 = 转移所有权的 auto_ptr 教训
+    FileGuard& operator=(const FileGuard&) = delete;
+
+    FileGuard(FileGuard&& other) noexcept : f_(std::exchange(other.f_, nullptr)) {}
+    FileGuard& operator=(FileGuard&& other) noexcept {
+        if (this != &other) { if (f_) std::fclose(f_); f_ = std::exchange(other.f_, nullptr); }
+        return *this;
+    }
+
+    std::FILE* get() const { return f_; }
+    bool is_open() const { return f_ != nullptr; }
+};
+```
+
+要点自查：析构函数隐式 `noexcept`（本篇正文），所以 close 失败不能靠抛异常补救，只能记日志；`std::exchange` 一行完成「拿走 + 置空」，是移动操作的惯用件。
+
+**任务二**：下面这段函数在 `parse()` 抛异常时会泄漏哪两种资源？用 RAII 改写，要求任何一环抛异常都已获取的资源都被释放。
+
+```cpp
+void process(const char* path, LogFile& log) {
+    FILE* f = std::fopen(path, "rb");       // 资源一
+    auto* buf = static_cast<char*>(std::malloc(4096));  // 资源二
+    log.lock();                             // 资源三：锁
+    parse(f, buf);                          // 任一环节可能抛异常
+    log.unlock();
+    std::free(buf);
+    std::fclose(f);
+}
+```
+
+**提示**：栈展开只析构**已构造完成的对象**，裸指针、裸 `malloc`、手动 `lock/unlock` 都不是对象，栈展开不会替你释放。逐个换成 `FileGuard`、`std::unique_ptr<char[], Deleter>` 或 `std::vector<char>`、`std::lock_guard`。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+void process(const char* path, LogFile& log) {
+    FileGuard f{path};                                  // 析构时 fclose
+    std::vector<char> buf(4096);                        // 析构时释放内存
+    std::lock_guard<std::mutex> lk(log.mutex_for_demo());// 构造即加锁，析构即解锁
+    parse(f.get(), buf.data());                         // 此处抛异常：三个析构按构造逆序自动执行
+}
+```
+
+要点自查：改写后函数体里**没有任何一处手动释放**，这正是 RAII 的判据；三个资源的释放次序与构造次序严格相反，与手写版完全一致。

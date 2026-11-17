@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 认识 Ren'Py 视觉小说引擎的定位版本与许可证，完成安装并创建第一个可运行的项目
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related: ['renpy/020-FirstScriptSayAndCharacters', 'renpy/130-BuildingDistributions']
 prerequisites: []
 ---
@@ -16,7 +16,7 @@ prerequisites: []
 ## 学习目标
 
 - 说清 Ren'Py 的定位：视觉小说引擎（visual novel engine），以及它除了视觉小说还能做什么；
-- 了解最新发行版 8.5.3，以及 8.4 与 8.5 两个版本线的主要新特性；
+- 了解最新发行版 8.6.0，以及 8.4、8.5 与 8.6 三条版本线的主要新特性；
 - 准确理解 Ren'Py 的许可证构成，知道分发游戏时需要满足 LGPL 要求；
 - 在 Windows、macOS 或 Linux 上完成安装并启动 Launcher；
 - 试玩两个官方示例项目 The Question 与 Tutorial；
@@ -44,9 +44,9 @@ Ren'Py 是开源软件（open source software），免费用于商业用途—�
 
 此外，Ren'Py 的二进制包还捆绑了若干第三方组件（如 ANGLE、FFmpeg、Freetype 等），它们各有各的许可证。日常使用无需操心，但如果你在做合规审查，可以逐项核对。
 
-## 版本：8.4 与 8.5 带来了什么
+## 版本：8.4、8.5 与 8.6 带来了什么
 
-截至本文写作时，最新的官方发行版是 8.5.3（2026 年 5 月发布）。从 8.4.0（2025 年 7 月发布）起，Ren'Py 不再维护与 8.x 配对的旧 7.x 版本线，新项目直接从 8.x 开始即可。
+截至本文写作时，最新的官方发行版是 8.6.0（2026 年 11 月发布）。从 8.4.0（2025 年 7 月发布）起，Ren'Py 不再维护与 8.x 配对的旧 7.x 版本线（7.8.7 是 7 系最后一个版本），新项目直接从 8.x 开始即可。
 
 8.4 版本的主要新特性包括：
 
@@ -54,14 +54,27 @@ Ren'Py 是开源软件（open source software），免费用于商业用途—�
 - 大型项目的脚本加载时间减少约一半，游戏体量越大越能感受到差别；
 - 新增 GLTF 模型加载（GLTFModel displayable）；
 - 新增 Traceback Saves：脚本抛出异常时自动保存一个 _tracesave 存档槽，方便开发期回溯现场；
-- 新增 libs 与 mods 目录约定（即 game/libs 与 game/mods）。
+- 新增 libs 与 mods 目录约定（即 game/libs 与 game/mods）；
+- 系统要求上调：Windows 需要 Windows 10 及以上，Linux 以 Ubuntu 20.04 为基准。
 
 8.5 版本的主要新特性包括：
 
 - Web 平台支持 Live2D；
 - 引入自动化测试框架，可以为游戏编写测试；
 - 支持 WOFF2 字体格式；
-- 局部标签（local label）的声明规则放宽。
+- 局部标签（local label）的声明规则放宽；
+- 引擎内嵌的 pygame_sdl2 库并入引擎自身（现名 renpy.pygame），外部依赖减少。
+
+8.6 版本的主要新特性包括：
+
+- 底层图形库迁移到 SDL3：带来 Windows 高 DPI 支持与新式手柄兼容，也是未来新平台支持的基础；
+- 预测系统用 Python 协程重写：图片解码、纹理上传与着色器预编译更聪明地利用每一帧，做动画时不再需要刻意留"停顿给引擎预热"；
+- 无障碍能力大幅增强：新增屏幕阅读器模式（Shift+V 切换，检测到读屏软件时自动启用）；
+- 新项目的着色器默认使用 GLSL ES 3.00 编写，旧着色器自动兼容；
+- Live2D 支持升级到 Cubism 5.3：混合模式、物理与 pose 文件均可使用；
+- 音乐可以在播放中定位（seek），视频可以循环播放；
+- 图片、音频与字体各自支持配置多个搜索目录；
+- 系统要求再次上调：iOS 需要 15 及以上（此前为 13），macOS 需要 10.13 及以上（此前为 10.10），移动端与 Web 需要 GPU 支持 OpenGL ES 3.0。
 
 初学者不必逐条研究这些特性，先记住一个原则：直接使用最新版。等具体功能用到时，再回头查官方文档即可。
 
@@ -71,12 +84,14 @@ Ren'Py 制作的作品可以发布到相当广的平台：
 
 ```text
 Windows 10+
-Mac OS X 10.10+
-Linux（x86_64 与 ARM）
+macOS 10.13+
+Linux（x86_64，以 Ubuntu 20.04 为基准）
 Android 5.0+
-iOS 11+
+iOS 15+
 HTML5/WebAssembly（Web 版，目前为 Beta）
 ```
+
+桌面端的显卡要求是 OpenGL 3.3（可用时可自动启用），移动端与 Web 端则要求 GPU 支持 OpenGL ES 3.0——2013 年以后的设备基本都满足。平台与版本的对应关系会随发行版演进，发版前以官方发布说明为准（见打包发布篇）。
 
 同一份剧本，稍加配置就能同时面向桌面、手机与浏览器玩家发布，这是 Ren'Py 相对许多同类工具的一大优势。
 
@@ -173,12 +188,43 @@ game/
 
 参考检查点：能复述报错信息里指出的行号与问题类型；能说出「报错行号 + 上下缩进」是解析类报错的第一排查位。故意制造一次错误再修复，是记忆最深的排错教学——比一次都不出错强得多。
 
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案或写出步骤，再展开对照。
+
+1. Ren'Py 的许可证构成是什么？为什么"免费商用"不等于"分发游戏没有任何义务"？
+2. 当前最新的官方发行版是哪个？从哪个版本起引擎全平台内嵌 Python 3.12？pygame_sdl2 在哪个版本里被并入引擎？
+3. Windows、macOS 与 iOS 各自的最低系统要求是什么？为什么发布前要重新核对一遍官方数据？
+4. .rpyc 文件能不能手动删除？.rpy 文件命名有哪两条禁区？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 大部分代码是 MIT 许可证，另一部分源自 GNU LGPL。免费商用指不用付授权费
+   或分成，但分发游戏时必须满足 LGPL 的要求；捆绑的第三方组件（ANGLE、
+   FFmpeg、Freetype 等）还各有自己的许可证，合规审查要逐项核对。
+
+2) 8.6.0（2026 年 11 月发布）。Python 3.12 自 8.4.0 起全平台使用；
+   pygame_sdl2 自 8.5.0 起并入引擎，改名为 renpy.pygame。
+
+3) Windows 10+，macOS 10.13+，iOS 15+；移动端与 Web 还要求 GPU 支持
+   OpenGL ES 3.0。8.4 与 8.6 都上调过系统要求，玩家设备的门槛随版本
+   水涨船高，发版前必须以官方发布说明为准，而不是背旧数字。
+
+4) 不能。.rpyc 是引擎从 .rpy 编译出的产物，里面存着标签与语句的位置信息，
+   已发布版本的存档兼容依赖它。两条命名禁区：文件名不能以 00 开头
+   （该前缀保留给引擎自带文件）；8.5.0 起以点开头的 .rpy 文件不再加载。
+```
+
+</details>
+
 ## 小结
 
 - Ren'Py 是开源免费、可商用的视觉小说引擎，也能胜任人生模拟类游戏；脚本语言易学，自 8.4 起全平台内嵌 Python 3.12。
 - 许可证以 MIT 为主，但包含源自 LGPL 的代码，分发游戏时须满足 LGPL 要求；捆绑的第三方组件另有各自的许可证。
-- 最新发行版为 8.5.3（2026 年 5 月）；8.4 带来 Python 3.12、脚本加载提速约一半、GLTF、Traceback Saves 与 libs/mods 目录，8.5 带来 Web 端 Live2D、自动化测试框架与 WOFF2 字体。
-- 作品可发布到 Windows 10+、macOS 10.10+、Linux、Android 5.0+、iOS 11+ 与 Web（Beta）。
+- 最新发行版为 8.6.0（2026 年 11 月）；8.4 带来 Python 3.12、脚本加载提速约一半、GLTF、Traceback Saves 与 libs/mods 目录，8.5 带来 Web 端 Live2D、自动化测试框架与 WOFF2 字体并把 pygame_sdl2 并入为 renpy.pygame，8.6 带来 SDL3、协程版预测系统、屏幕阅读器模式、GLSL ES 3.00 着色器与 Cubism 5.3 级 Live2D 支持。
+- 作品可发布到 Windows 10+、macOS 10.13+、Linux、Android 5.0+、iOS 15+ 与 Web（Beta）；移动端与 Web 要求 OpenGL ES 3.0。
 - 安装后一切操作围绕 Launcher 展开；先玩 The Question 与 Tutorial，再以 1280x720 分辨率创建新项目。
 - 项目由 audio/、gui/、images/、tl/ 等目录与 options.rpy、gui.rpy、screens.rpy、script.rpy 等文件组成；.rpyc 是编译产物勿手改，.rpy 文件名不能以 00 开头。
 

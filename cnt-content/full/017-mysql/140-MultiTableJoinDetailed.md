@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 用充电桩运营数据掌握 MySQL 多表联查：内连接、外连接与 LEFT JOIN 找孤儿行、同城配对的自连接、三表联查与行数膨胀的根源。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/150-AdvancedQueryMultiTableOperation'
   - 'mysql/390-JOINAlgorithm'
@@ -250,6 +250,36 @@ EXPLAIN SELECT ... ;   -- 见 mysql/320-EXPLAINDetailed
 ```
 
 嵌套循环、哈希连接这些算法层面的展开见 [JOIN 算法](/mysql/390-JOINAlgorithm)。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 写出查询：每个站点的订单数，0 单的站也要出现且显示 0。
+
+参考答案（先自己写，再对照）：
+
+```sql
+SELECT s.name, COUNT(cs.session_id) AS cnt
+FROM stations s
+LEFT JOIN chargers c ON c.station_id = s.station_id
+LEFT JOIN charge_sessions cs ON cs.charger_id = c.charger_id
+GROUP BY s.station_id, s.name;
+```
+
+要点在 COUNT 的实参：`COUNT(*)` 会数到 LEFT JOIN 为 0 单站补出的那行"全 NULL 行"，0 单变成 1；`COUNT(cs.session_id)` 数的是非 NULL 的明细列，NULL 不计数，0 单正确显示 0。
+
+2. 概念自问：把右表过滤条件写在 `ON` 和写在 `WHERE`，LEFT JOIN 的结果有什么区别？
+
+参考答案（先自己答，再对照）：写在 ON 里，条件只决定"哪些右表行能匹配上"，匹配不上的左表行照样保留并补 NULL；写在 WHERE 里，外连接补出的 NULL 行不满足条件（NULL 比较结果为 NULL），整行被过滤掉，LEFT JOIN 静默退化成 INNER JOIN。`ON` 管"怎么连"，`WHERE` 管"连完之后留谁"。
+
+3. 判断题：`FULL OUTER JOIN` 在 MySQL 里直接可用吗？不能的话怎么模拟？
+
+参考答案（先自己答，再对照）：不可用，MySQL 至今不支持 FULL OUTER JOIN。模拟写法是 LEFT JOIN 结果与 RIGHT JOIN 结果 `UNION` 合并（去重恰好抵消两段都出现的互相匹配行）；`UNION ALL` 会把两边都匹配的行重复一遍，不能用。
+
+4. 概念自问：一对多联查后直接 `SUM(右表金额)` 为什么危险？
+
+参考答案（先自己答，再对照）："一"侧的每一行会随"多"侧的匹配行数复制多份，把右侧金额列直接求和就把同一笔"一"侧数据按订单数放大了。出路有两条：聚合前先用 `COUNT(DISTINCT 主表.主键)` 去重计数、金额类改成"先在子表 GROUP BY 聚合，再把聚合结果 JOIN 回主表"——先聚合后连接，行数在聚合时就已经压平。
 
 ## 练习
 

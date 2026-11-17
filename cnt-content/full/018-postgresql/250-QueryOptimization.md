@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL 查询优化方法论：ANALYZE 与统计信息、代价参数如何左右计划、EXPLAIN ANALYZE BUFFERS 精读、work_mem 与 CTE 物化、pg_hint_plan 干预手段。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/255-MonitoringStatisticsViews'
   - 'postgresql/260-ParallelQuery'
@@ -279,3 +279,29 @@ RESET enable_seqscan;
 ## 下一步
 
 单机优化之上是并行加速：进入[并行查询](/postgresql/260-ParallelQuery)，看 PostgreSQL 如何把一张大表的扫描拆给多个 worker。
+
+## 教学自检
+
+遮住示例与参数表，先自己写再对照参考答案。
+
+### 任务一：从 EXPLAIN (ANALYZE, BUFFERS) 读出"缺索引"
+
+需求：计划显示 `Seq Scan ... rows=2000000 loops=1` 且 `Buffers: shared read=250000`。这说明什么？下一步验证动作是什么？shared hit 与 shared read 的比例又说明什么？
+
+<details>
+<summary>参考实现与讲解</summary>
+
+shared read=250000 页意味着数据基本不在缓存、整表顺序读——配合大 rows 估算与过滤后行数极少，是"该建索引"的典型画像。验证：把 WHERE 条件列的估计行数与实际行数（actual rows）对比，确认过滤选择性高（如从 200 万过滤到 50 行）；选择性高的点查建 B-tree 后重跑 EXPLAIN，期望 Bitmap Index Scan/Index Scan 且 read 骤降。hit/read 比例说明缓存命中率——hit 占绝对多数而查询仍慢，问题多半不在缺索引而在估算错误或 JOIN 顺序。
+
+</details>
+
+### 任务二：统计信息过期是什么症状
+
+需求：一张每天批量导入几百万行的表，查询计划突然从 Index Scan 变 Seq Scan。说出排查链条与修复命令，以及为什么默认 autovacuum ANALYZE 可能没跟上。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+链条：看 EXPLAIN 里估算行数与 actual rows 差几个数量级 → 查 `pg_stat_user_tables.last_analyze` 是否陈旧 → 手动 `ANALYZE 表名;` 重跑对比。autovacuum 触发 ANALYZE 的阈值按比例计算（analyze_scale_factor 默认 0.1），大批量导入后死元组比例不高、analyze 阈值未到，统计就停在导入前——高频导入表应降低 analyze_scale_factor 或在导入事务后手动 ANALYZE。PG 18 起 pg_upgrade 保留统计信息，但"当天新数据"依然要靠 ANALYZE。
+
+</details>

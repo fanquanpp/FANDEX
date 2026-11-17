@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用集成扩展能力：MDX、站点地图与官方集成生态。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'astro/040-ComponentsProps'
   - 'astro/050-ContentCollections'
@@ -155,7 +155,7 @@ const { Content } = await render(entry)
 
 两条经验：一是**按需引入**，集成本身零成本，但每多一个集成就多一分配置面，用不到的能力不要预装；二是**官网集成列表是第一入口**，官方集成遵循统一约定（`astro add` 可装、配置可序列化），优先于社区方案。平台站的典型组合是 mdx + sitemap + 一个框架集成，再按需加 rss。
 
-引入与移除都要留痕。移除集成时 `npx astro remove sitemap`（或手动删包并从 integrations 数组移除），随后务必跑一次构建确认没有代码引用它的产物；反过来，升级集成大版本前先看变更日志里钩子签名的变化——集成运行在构建期，坏掉的钩子往往表现为构建报错而不是页面异常，报错栈里会直接给出集成名，定位成本很低。
+引入与移除都要留痕。移除集成没有一键命令（官方 CLI 只有 `astro add`，没有对应的 remove），需要手动做逆向两步：卸载包并从 `integrations` 数组删除对应项，随后务必跑一次构建确认没有代码引用它的产物；反过来，升级集成大版本前先看变更日志里钩子签名的变化——集成运行在构建期，坏掉的钩子往往表现为构建报错而不是页面异常，报错栈里会直接给出集成名，定位成本很低。
 
 集成还能组合出站点的"工程基建"：sitemap 负责搜索引擎入口，rss 负责订阅入口，两者都是构建期产物，部署成静态文件即可，不需要运行时参与。理解了这一点，就可以把"站点有哪些构建期产物"当成部署清单来核对：HTML 页面、`_astro` 资源目录、`sitemap-index.xml`、`rss.xml`——上线前逐项确认，少一个文件就是一次线上事故。
 
@@ -235,3 +235,36 @@ export default defineConfig({
 1. **接入 MDX 并混排**：把 005 篇的歌曲集合升级为 MDX，在一篇听歌笔记里嵌入 SongCard 组件，再故意在正文写一个未 import 的组件名，观察报错信息。提示：报错会指向 MDX 文件行号，养成先看构建日志的习惯。
 2. **全站引用块皮肤**：用 `components` 映射把所有 `blockquote` 渲染成带应援色竖条的"歌词摘录"卡片，验证对未自定义的 MDX 条目生效、对文件内显式 import 的 `.mdx` 不生效。提示：SongQuote 接收的 children 是渲染后的内容。
 3. **上线三件套**：为平台配置 mdx、sitemap、rss 三个集成，给 sitemap 加 filter 排除 `/admin/` 路径。提示：先补 `site` 字段，再构建检查 `dist` 下的产物文件名。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. `npx astro add mdx` 这一条命令背后等价于哪三件事？理解它对"手动移除一个集成"有什么用？
+
+   参考答案（先自己写，再对照）：
+
+   等价于：安装包（`@astrojs/mdx`）、把集成写入 `astro.config.mjs` 的 `integrations` 数组、生成必要的配套配置。理解三件事后，移除就是它的逆操作：官方 CLI 没有 remove 命令，需要手动卸包并从数组移除，然后跑一次构建确认没有代码引用它的产物。
+
+2. 默写"把集合条目里所有 blockquote 换成自定义卡片"的渲染代码：在详情页渲染入口传入组件映射。
+
+   参考答案（先自己写，再对照）：
+
+   ```astro
+   ---
+   import { render } from 'astro:content'
+   import SongQuote from '../../components/SongQuote.astro'
+   const { Content } = await render(entry)
+   ---
+   <Content components={{ blockquote: SongQuote }} />
+   ```
+
+   验收点：映射只能替换渲染出的标准 HTML 元素（h2、blockquote、a 等），不能拦截自定义组件；映射函数拿到的 `children` 是已渲染内容，包装组件只做"加壳"。
+
+3. Astro 7 起 Markdown/MDX 默认由 Sätteri 渲染，一个依赖 remark/rehype 插件的老项目有哪两条出路？
+
+   参考答案（先自己写，再对照）：
+
+   出路一：迁移到 Sätteri 原生能力（GFM、数学、指令等已内置，部分功能经 `features` 选项开启）或它的插件 API；出路二：保留 unified 生态——安装 `@astrojs/markdown-remark` 并配置 `markdown: { processor: unified() }`（官方标注的 legacy 路径），旧插件继续生效。MDX 默认继承全局 markdown 配置，`extendMarkdownConfig: false` 可完全另起一套。
+
+检查点：三题通过的标准是——能不查文档说出集成的"三件事"构成、映射的边界与 Sätteri 迁移的两条出路。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 虚拟线程的 JVM 层实现参考：ForkJoinPool 载体调度、Continuation 挂载/卸载、完整卸载触发点清单、内存与吞吐估算、结构化并发完成策略全表与 JEP 演进时间线。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/550-JavaVirtualThread'
   - 'java/530-ThreadLocalMemoryLeak'
@@ -117,12 +117,13 @@ cat dump.json | jq '.threadDump[] | select(.pinned == true)'
 | 需求 | JDK 25/26 写法 | JDK 21-24 旧写法 |
 | ---- | -------------- | ---------------- |
 | 全部成功，任一失败取消其余 | `StructuredTaskScope.open()` | `new StructuredTaskScope.ShutdownOnFailure()` + `throwIfFailed()` |
-| 竞速：任一成功取消其余，全败抛异常 | `open(Joiner.anySuccessfulOrThrow())` | `new StructuredTaskScope.ShutdownOnSuccess<T>()` + `result()` |
+| 竞速：任一成功取消其余，全败抛异常 | `open(Joiner.anySuccessfulOrThrow())`（JDK 25/JEP 505 中名为 `anySuccessfulResultOrThrow()`，JDK 26/JEP 525 更名） | `new StructuredTaskScope.ShutdownOnSuccess<T>()` + `result()` |
 | 全部成功并收集结果 | `open(Joiner.allSuccessfulOrThrow())`，`join()` 后流式读取 subtask | 手工收集 |
 | 只等全部结束，不关心成败 | `open(Joiner.awaitAll())` | `new StructuredTaskScope<Void>()` |
 
 ```java
-// JDK 25/26 预览 API（需 --enable-preview）
+// JDK 25/26 预览 API（需 --enable-preview）；Joiner 工厂名按 JDK 26（JEP 525）书写，
+// 在 JDK 25 --enable-preview 下编译请改用 anySuccessfulResultOrThrow()
 try (var scope = StructuredTaskScope.open(Joiner.<String>anySuccessfulOrThrow())) {
     scope.fork(() -> queryPrimary(key));
     scope.fork(() -> queryReplica(key));
@@ -203,3 +204,13 @@ ScopedValue.where(USER, "u-1001")
 - [Java 与虚拟线程](/java/550-JavaVirtualThread)：用法主线与 Spring Boot 集成；
 - [JVM 内存模型](/java/610-JVMRuntimeDataAreasAndObjectLayout)：理解 final 字段可见性与 Continuation 搬家的一致性保证；
 - [Java IO 与 NIO](/java/650-JavaIONIO)：阻塞/非阻塞 I/O 在虚拟线程时代的分工。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. M:N 调度里 M 与 N 各指什么？调度器默认线程数怎么定？——M 个虚拟线程映射到 N 个载体线程；ForkJoinPool，默认并行度 = CPU 核数，可用 jdk.virtualThreadScheduler.parallelism 调。
+2. Continuation 挂起/卸载的物理动作是什么？栈去哪了？——把虚拟线程的栈帧从载体线程复制到堆上对象，载体线程返回调度器；恢复时再挂回某条载体线程继续执行。
+3. 列出至少四个"完整卸载"触发点。——网络 IO 阻塞、Object.wait、Thread.sleep、ReentrantLock.lock、JDK 内部阻塞调用；反例：synchronized 内阻塞（JDK 21）、native 方法内、持有 class 初始化锁。
+4. JEP 505 重设计后完成策略的四种 open 写法分别对应什么需求？——open()：全部成功任一失败取消；open(Joiner.anySuccessfulOrThrow())：竞速（JDK 25/JEP 505 中名为 anySuccessfulResultOrThrow()，JDK 26/JEP 525 更名）；open(Joiner.allSuccessfulOrThrow())：收集全部；open(Joiner.awaitAll())：只等结束不关心成败。
+5. ScopedValue 为什么没有 ThreadLocal 的复制成本？——绑定共享同一不可变对象、按动态作用域压栈退栈，子任务继承引用而非逐线程复制。

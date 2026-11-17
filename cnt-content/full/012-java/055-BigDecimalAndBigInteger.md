@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: double 为什么算不了钱、BigDecimal 三种构造方式的陷阱、scale 与 RoundingMode、compareTo 与 equals 的差异、BigInteger 的适用边界；用书价表总价、电商订单金额与 DECIMAL 映射、复利计算三个场景落地。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/050-DataTypeConversion'
   - 'java/060-WrapperCacheTrap'
@@ -309,3 +309,13 @@ public class Settlement {
 - Oracle, *Java SE API Specification*：`java.math.BigDecimal`、`java.math.BigInteger`、`java.math.RoundingMode`、`java.math.MathContext` 类文档（https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/math/BigDecimal.html ），文中 API 语义（构造器契约、scale 定义、RoundingMode 各模式、divide 异常）以官方文档为准；
 - The Java Tutorials: Numbers and Strings 一节对浮点误差的官方表述；
 - 书价表题目与复利练习改编自仓库扫描素材（课堂练习题库，见 `.workflow-tmp/scan/e-core-java-mysql-web.md` 1.1 节），代码为本文自行编写。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 为什么金额计算不能直接用 double？写出正确的金额变量声明。——二进制浮点无法精确表示 0.1 这类十进制小数，累加误差不可接受；`BigDecimal price = new BigDecimal("19.99");`（字符串构造）。
+2. `new BigDecimal(0.1)` 与 `new BigDecimal("0.1")` 的区别是什么？——前者把 double 的二进制近似值原样搬进来（实际是 0.1000000000000000055511151231257827...），后者按字面十进制值构造；金额一律用字符串或 `BigDecimal.valueOf(double)`。
+3. 比较两个 BigDecimal 应该用 equals 还是 compareTo？为什么？——compareTo。equals 同时比较值与 scale，`2.0` 与 `2.00` equals 为 false 但 compareTo 为 0；业务上"值相等"用 compareTo。
+4. 让结果保留两位小数并四舍五入，写出除法的安全写法。——`a.divide(b, 2, RoundingMode.HALF_UP)`；不指定 scale 的 divide 在除不尽时直接抛 ArithmeticException。
+5. BigInteger 什么时候才需要？写出 2 的 100 次方。——超出 long（约 9.2e18）的整数运算，如密码学大数、阶乘、大幂；`BigInteger.valueOf(2).pow(100)`。

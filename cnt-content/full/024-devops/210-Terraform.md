@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Terraform 基础设施即代码：Provider、Resource、State、Module 与工作流。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'devops/200-IaC'
   - 'devops/090-KubernetesCoreDetailed'
@@ -248,3 +248,11 @@ jobs:
 2. 1.10+ 临时资源/可变写参数让密钥可以全程不落 state。
 3. 许可证为 BUSL：合规敏感场景可评估开源协议的 OpenTofu（示例语法基本通用）。
 4. 按域拆分根模块与 state，配 CI 策略检查，才能支撑多团队规模。
+
+## 自检
+
+- 遮住概念表，用"插件/账本/安全带"三句默写 Provider/State/Plan 的分工，并说出为什么 plan 是 CI 里的评审材料。
+- State 五问：它存什么、为什么不能进 Git、远程后端防什么、锁防什么、`.terraform.lock.hcl` 又锁什么？
+- workflow 四连默写 init/validate/plan/apply，并回答：改了一行资源后 plan 输出里 `-/+` 意味着什么、你该做什么？
+- Variable 与 Output 各面向谁？module 的价值用"接口与实现"说一遍——调用方必须知道实现细节吗？
+- 三个人同时 apply 同一个根模块会发生什么？写出防住它的两个机制（远程锁 + CI 串行）。

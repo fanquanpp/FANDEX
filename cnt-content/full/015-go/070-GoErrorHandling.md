@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: error 接口、errors.Is/As、自定义错误、panic/recover、错误包装、sentinel 错误与最佳实践。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'go/060-GoInterfaceComposition'
   - 'go/120-GoConcurrentProgramming'
@@ -700,3 +700,59 @@ if err != nil {
     return;
 }
 ```
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（错误包装与判定）**：写 `readConfig(path string) error`，读文件失败时用 `%w` 包装错误并附上下文；调用方需要区分"文件不存在"与其他错误——写出判定代码。
+
+参考实现：
+
+```go
+func readConfig(path string) ([]byte, error) {
+    data, err := os.ReadFile(path)
+    if err != nil {
+        return nil, fmt.Errorf("read config %s: %w", path, err)
+    }
+    return data, nil
+}
+
+// 调用方：errors.Is 沿包装链判定哨兵错误
+if _, err := readConfig("app.yaml"); err != nil {
+    if errors.Is(err, fs.ErrNotExist) {
+        // 首次启动：给默认配置
+    } else {
+        return err
+    }
+}
+```
+
+要点：`%w` 包装保留错误链，`errors.Is` 能穿透多层包装；比较用 `errors.Is` 而不是 `err ==`，因为包装后的错误不再是原哨兵。
+
+**题 2（自定义错误类型）**：定义一个携带字段与错误链的自定义错误 `ValidationError{Field, Msg string}`，实现 `Error()` 方法，并写出用 `errors.As` 取回它的调用代码。
+
+参考实现：
+
+```go
+type ValidationError struct {
+    Field, Msg string
+}
+
+func (e *ValidationError) Error() string {
+    return fmt.Sprintf("field %q: %s", e.Field, e.Msg)
+}
+
+var ve *ValidationError
+if errors.As(err, &ve) {
+    fmt.Println("invalid field:", ve.Field)
+}
+```
+
+要点：需要携带结构化数据时定义类型；需要"标记一类错误"时用哨兵。`errors.As` 用于取回类型，`errors.Is` 用于比对值。
+
+**题 3（panic 与 error 的边界）**：判断下列场景分别该用 error 还是 panic：用户上传的文件格式非法；配置文件 JSON 坏了；编译期就能确定的类型断言必然成功；HTTP handler 里的空指针。
+
+参考答案：文件格式非法用 error（可预期的用户输入问题）；配置坏了用 error 返回启动失败（可恢复，可给出友好提示）；必然成功的断言可用单值形式直接断言（panic 也合理，因为这是程序员 bug）；handler 空指针是程序员 bug，panic 交给 recover 中间件统一记录并返回 500。分界线：可预期的运行失败返回 error，不可恢复的程序缺陷才 panic。

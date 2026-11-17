@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'gcloud CLI 的安装初始化、账号与 ADC 认证、项目/区域默认值、多配置与组件管理。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/400-GCPComputeStorage'
   - 'cloud-computing/510-GCPGKECommands'
@@ -201,6 +201,29 @@ gcloud compute instances delete test-vm --quiet
 `gcloud services enable` 是新项目最常见的「卡点」：第一次调用任何服务的
 API 前必须启用对应 API，否则报
 `Access Not Configured. Compute Engine API has not been used...`。
+
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. gcloud init 一次完成哪三件事？三个最常用的默认值配置命令是什么？
+2. 「gcloud 认证」与「ADC」的差别是什么？跑 Terraform 该用哪条命令？
+3. apt 安装的 gcloud 用 `gcloud components update` 升级会怎样？正确做法是什么？
+4. 新项目第一次调 Compute API 报什么错？卡点命令是什么？
+5. 命名配置解决什么问题？它管不住哪个全局状态（提示：ADC）？
+6. 服务账号「附加」与「密钥文件」两种用法的差别是什么？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 登录账号、选默认项目、选默认区域。`gcloud config set project <项目>`、`gcloud config set compute/region <区域>`、`gcloud config set compute/zone <区>`。
+2. `gcloud auth login` 只影响 gcloud 自身（凭证缓存）；`gcloud auth application-default login` 写 ADC 文件，供你写的程序/SDK/Terraform 读取。跑 Terraform 用后者。
+3. 提示不可用甚至报错（apt 安装的由系统包管理器管理）。正确做法：`sudo apt update && sudo apt upgrade`——两种渠道不混用。
+4. `Access Not Configured. Compute Engine API has not been used...`。先 `gcloud services enable compute.googleapis.com`（对应服务 API）。
+5. 多项目/多身份的整套默认值切换（`gcloud config configurations ...`）。ADC 文件全局唯一、不随配置切换——切配置后跑代码用的还是同一个 ADC。
+6. 附加（VM/Cloud Run 挂服务账号）：实例自动获得临时凭证、自动轮换，无密钥可泄露；密钥文件（JSON + GOOGLE_APPLICATION_CREDENTIALS）落盘、要人管轮换——能用附加就别用密钥文件。
+
+</details>
 
 ## 小结
 

@@ -1,12 +1,12 @@
 ---
 order: 120
 title: MCP 协议：AI 应用的 USB-C
-description: '建立「MCP 把 N 乘 M 的集成地狱变成 N 加 M」的心智模型：理解 USB-C 类比的准确与局限，分清 Host、Client、Server 三角色与 tools、resources、prompts 三原语，为本地与远程场景选对 stdio 与 Streamable HTTP 两种传输，掌握 2026-07-28 规范的关键变化（传输无状态化、OAuth 2.1 授权、网关路由头、Tasks 等新能力），亲手写一个 20 行级 MCP server，并能判断工具该上 MCP 还是留在函数表。'
+description: '建立「MCP 把 N 乘 M 的集成地狱变成 N 加 M」的心智模型：理解 USB-C 类比的准确与局限，分清 Host、Client、Server 三角色与 tools、resources、prompts 三原语，为本地与远程场景选对 stdio 与 Streamable HTTP 两种传输，掌握 2026-07-28 规范的关键变化（传输无状态化、授权加固、网关路由头、Tasks 转正为扩展与 sampling 弃用），亲手写一个 20 行级 MCP server，并能判断工具该上 MCP 还是留在函数表。'
 module: 'ai-llm'
 category: 计算机科学
 difficulty: advanced
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'ai-llm/110-ToolCallingDesign'
   - 'ai-llm/140-MultiAgentSystems'
@@ -28,7 +28,7 @@ prerequisites:
 2. 说出 Host、Client、Server 三角色的分工与连接关系；
 3. 区分三原语 tools、resources、prompts 各自暴露什么、由谁控制；
 4. 为本地工具与远程服务选对传输：stdio 与 Streamable HTTP；
-5. 说出 2026-07-28 规范的关键变化：传输无状态化、OAuth 2.1 授权、网关路由头、Tasks 等新能力；
+5. 说出 2026-07-28 规范的关键变化：传输无状态化、授权加固（CIMD 取代 DCR）、网关路由头、Tasks 转正为扩展与 sampling 弃用；
 6. 判断一个工具该做成 MCP server 还是留在应用内的函数表。
 
 预计 30 到 45 分钟，含 1 个动手实验与 4 道练习。
@@ -156,12 +156,12 @@ client 与 server 之间说什么话、走什么通道，由传输层定义。�
 
 ## 6. 2026-07-28 规范：这次改了什么
 
-MCP 的协议规范按日期版本化，本文以 **2026-07-28 规范**为事实基线（写作时点 2026-10）。这一版相对早期草案的关键变化，按工程影响排序：
+MCP 的协议规范按日期版本化，本文以 **2026-07-28 规范**为事实基线（基线核实时点 2026-11）。这一版相对上一版的关键变化，按工程影响排序：
 
-1. **传输无状态化**：去掉了必须长期维持的连接流，server 可以像普通 HTTP 服务一样无状态部署、随时横向扩容；需要流式回传时仍可用流式响应，但不再依赖「一条一直挂着的通道」。早期方案里「server 要维护大量长连接」的运维负担由此解除；
-2. **授权统一到 OAuth 2.1**：远程 server 须发布 **RFC 9728** 定义的保护资源元数据（告诉 client「我是谁、该去哪里授权」）；client 申请 token 时须带 **RFC 8707** 的 resource 参数，把 token 绑定到目标 server——防止给 A 服务申请的 token 被转手投递给 B 服务（token 混淆攻击）；
+1. **传输无状态化**：去掉了 initialize 握手与 Mcp-Session-Id 会话头，每个请求自包含、不再依赖「一条一直挂着的会话通道」，server 可以像普通 HTTP 服务一样无状态部署、随时横向扩容；需要流式回传时仍可用流式响应；server 反向调用 host（如征询用户）改走**多轮往返请求**（MRTR）——一问一答地完成，而不是占着双向流等答复；
+2. **授权加固**：OAuth 2.1 的基本盘（远程 server 发布 **RFC 9728** 保护资源元数据、client 申请 token 时带 **RFC 8707** 的 resource 参数把 token 绑定到目标 server，防 token 混淆）在 2025-06-18 一版就已就位；这一版的新动作是再加固一层——**RFC 9207** 的 authorization server issuer 校验、client 凭据与 issuer 绑定，以及用 **Client ID Metadata Documents（CIMD）**取代动态客户端注册（DCR 转入弃用方向）；
 3. **请求须带 Mcp-Method 与 Mcp-Name 头**：网关、限流器、监控不用解析消息体，凭两个 HTTP 头就能路由、限流与统计——这是给「生产可运维」补的课，大团队部署 MCP 网关时尤其关键；
-4. **能力面扩展**：Tasks（长任务的异步跟踪——发起后轮询状态，不再霸占一次请求）、elicitation（server 在操作中向用户征询补充信息，经 host 转达）、sampling（server 反过来借用 host 的模型完成一次推理）等，server 从「被动应答」走向「主动协作」。
+4. **能力面重组**：Tasks（长任务的异步执行——发起后轮询状态，含中途补输入与持久句柄）转正为协议的**一等扩展**（`io.modelcontextprotocol/tasks`，按扩展协商启用）；elicitation（server 经 host 向用户征询补充信息）保留在核心并适配新的无状态模型；而 sampling（server 借用 host 的模型完成一次推理）连同 roots、logging 被**标记弃用**——仍可用，但官方给的是至少 12 个月的过渡期，新设计不要押注在它们上面。MCP Apps（对话内交互式 UI）等新能力同样以可选扩展进场。
 
 协议仍在快速演进，上述细节与新增能力以官方规范为准：https://modelcontextprotocol.io/specification/2026-07-28 。学习时抓不变的骨架（三角色、三原语、两传输），易变的细节现场查。
 
@@ -273,7 +273,7 @@ server 是发布单位，不是工具数量的上限——上一篇「工具太�
 
 ## 本章总结
 
-MCP 把 N 个应用乘 M 个能力的集成地狱塌缩成 N + M：应用实现一次 client，能力方实现一次 server，协议居中保证互通——USB-C 的实质是接口标准化、两头各自演进，但它不改变工具设计纪律，模型也不知道 MCP 存在。架构三角色：Host 是模型应用与安全守门人，Client 与 Server 一一对应，Server 永不直接对话模型。三原语按控制权区分：tools 归模型、resources 归应用、prompts 归用户。传输二选一：本机能力走 stdio 子进程，共享服务走 Streamable HTTP。2026-07-28 规范的四件事：传输无状态化让 server 可横向扩容，OAuth 2.1 加 RFC 9728 与 RFC 8707 绑死 token 去向，Mcp-Method 与 Mcp-Name 头让网关可路由限流，Tasks、elicitation、sampling 扩展了能力面。20 行可写一个 server；判据只有一条——工具要跨 host 复用才值得上 MCP。
+MCP 把 N 个应用乘 M 个能力的集成地狱塌缩成 N + M：应用实现一次 client，能力方实现一次 server，协议居中保证互通——USB-C 的实质是接口标准化、两头各自演进，但它不改变工具设计纪律，模型也不知道 MCP 存在。架构三角色：Host 是模型应用与安全守门人，Client 与 Server 一一对应，Server 永不直接对话模型。三原语按控制权区分：tools 归模型、resources 归应用、prompts 归用户。传输二选一：本机能力走 stdio 子进程，共享服务走 Streamable HTTP。2026-07-28 规范的四件事：传输无状态化（去握手与会话头、双向流改 MRTR）让 server 可横向扩容，授权加固（RFC 9207 与 CIMD 取代 DCR；RFC 9728 与 RFC 8707 的基本盘承自 2025-06-18），Mcp-Method 与 Mcp-Name 头让网关可路由限流，Tasks 转正为一等扩展而 sampling 弃用。20 行可写一个 server；判据只有一条——工具要跨 host 复用才值得上 MCP。
 
 ## 下一步
 

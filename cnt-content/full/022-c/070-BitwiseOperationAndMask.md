@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用「8 个开关塞进 1 个字节」掌握六个位运算符与掩码四件套：权限标志实战贯穿全文，-8 >> 1 的算术/逻辑右移实验、UBSan 当场抓越界移位、Brian Kernighan 置位计数、异或交换的同地址陷阱、大小端探针小实验，最后看 C23 的 0b 字面量、数字分隔符与 stdbit.h 函数族。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'c/240-BitField'
   - 'c/260-ConstAndVolatileQualifiers'
@@ -533,12 +533,30 @@ printf("0x%08X\n", x);
 - C23 `<stdbit.h>` 头文件总览（函数族与 `__STDC_VERSION_STDBIT_H__` 宏）：https://en.cppreference.com/w/c/header/stdbit
 - Beej's Guide to C Programming（位运算章节的入门讲法可对照）：https://beej.us/guide/bgc/
 
-## 13. 自我检查
+## 13. 遮码自检
 
-- 能把任意 unsigned 值在二进制与十六进制间换算，并默写 `print_bits` 的循环体；
-- 能徒手写出第 n 位置位、清零、翻转、检测四个公式，并说出各自用哪个运算符、为什么；
-- 能向同事讲清三件事：负数右移为什么不能赌、`1 << 31` 与 `1u << 31` 差在哪、UBSan 怎么抓越界移位；
-- 能实现 Kernighan 置位计数与 2 的幂判断，并说出异或交换在 `a == b` 时为什么自杀。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 把 0x5A 换算成二进制，再默写 `print_bits` 的循环体。
+2. 徒手写出第 n 位置位、清零、翻转、检测四个公式，并说出各自用哪个运算符。
+3. 负数右移为什么不能赌？`1 << 31` 与 `1u << 31` 差在哪？UBSan 怎么抓越界移位？
+4. 实现 Kernighan 置位计数与 2 的幂判断，并解释异或交换在 `a == b` 时为什么自杀。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 0x5A = 0101 1010。
+
+```c
+for (int i = 31; i >= 0; i--)
+    putchar((v >> i & 1) ? '1' : '0');
+```
+
+2. 置位 `x |= 1u << n`（| 合并）；清零 `x &= ~(1u << n)`（& 配反码抹掉）；翻转 `x ^= 1u << n`（^ 对 1 取反、对 0 保留）；检测 `if (x & (1u << n))`（& 提取那一位）。
+3. 负数右移是算术还是逻辑右移由实现定义，可移植代码先转无符号再移；`1 << 31` 对 int 左移进符号位是 UB，写 `1u << 31` 就是良定义的无符号移位；`gcc -fsanitize=undefined` 会对越界移位当场报「shift exponent is too large」。
+4. `while (n) { n &= n - 1; count++; }` 每次消掉最低位的 1；`n > 0 && (n & (n - 1)) == 0` 判 2 的幂。异或交换当 a、b 是同一变量（或同一数组元素）时，第一步 `a ^= a` 把它清成 0，值当场蒸发——先判地址不同才可用。
+
+</details>
 
 ## 本章总结
 

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 数据库系统原理：关系模型、关系代数、函数依赖、范式理论与查询优化；索引与事务机制的展开深读见 595
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/420-CompilePrinciple'
   - 'cs-fundamentals/560-SoftwareEngineering'
@@ -29,7 +29,7 @@ prerequisites:
 
 本文第 6-7 节的索引复杂度表与事务管理是**速查级**展开；
 两大机制的完整深读（B+ 树页 IO 推演、WAL 崩溃恢复）见
-[595-DatabaseIndexAndTransaction](/cnt-content/full/021-cs-fundamentals/595-DatabaseIndexAndTransaction)。
+[595-DatabaseIndexAndTransaction](/cs-fundamentals/595-DatabaseIndexAndTransaction)。
 
 ## 1. 数据库系统概述
 
@@ -369,3 +369,12 @@ print("3NF 改 1 行; 1NF 需改", len(rename_hits), "行")
 ——查询优化器要消掉的正是这部分代价。
 
 </details>
+
+## 自检
+
+- 遮住第 3 节的关系代数小节，先默写五个基本运算（选择 σ、投影 π、并、差、笛卡尔积）的功能，再用其中几个组合出「某个城市的客户名单」，再对照 3.3 的示例。
+- 遮住第 4 节的范式小节，先自己说出 1NF/2NF/3NF 各自消除的依赖类型（原子性/部分依赖/传递依赖），再用「订单-客户-城市」例子指出一个传递依赖，再对照。
+- 遮住第 6 节的查询优化小节，先回答：优化器消掉的是哪类代价（谓词下推先缩小中间结果），为什么「先选择后连接」能省 IO？
+- 遮住第 7 节的 ACID 表，先默写四个字母的中文含义与各自的实现依托（原子性-日志回滚、持久性-WAL、隔离性-锁/MVCC），再对照。
+- 遮住死锁处理小节，先默写三种死锁处理策略（超时检测、等待图检测、等待-死亡/伤害-等待预防）各自的开销取向，再对照。
+- 遮住动手实践的任务描述，先自己预测「1NF 大表 vs 3NF 四表」在「客户改名」与「某城市订单总额」两个操作上的代价分布（写优化 vs 读优化），再对照脚本输出。

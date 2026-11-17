@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go goroutine与channel通信原理详解。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/510-GoDistributedTracing'
   - 'go/500-GoRateLimiting'
@@ -2272,3 +2272,46 @@ default:
     fmt.Println("未超时")
 }
 ```
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（goroutine 的栈与成本）**：新建 goroutine 的初始栈多大？它和 OS 线程的栈有什么区别？为什么能轻松开十万个 goroutine？
+
+参考答案：初始栈 2KB（线程通常 1-8MB 预分配），且按需增长/收缩（连续栈技术，超过上限就复制到 2 倍大小的新栈）。goroutine 是用户态调度对象（G），切换不进内核、成本纳秒级；线程是内核对象（M），切换微秒级。栈小 + 切换轻 + 内存占用低（一个 G 结构几百字节），十万级并发才可行。
+
+**题 2（先做还是先收——经典的竞态窗口）**：启动一个 goroutine 计算 result 并发送到 channel，main 里先 `time.Sleep(1s)` 再收。这个 Sleep 换成了什么正确写法？Sleep 错在哪？
+
+参考实现：
+
+```go
+ch := make(chan int) // 无缓冲
+go func() { ch <- compute() }()
+// 错误：time.Sleep(1 * time.Second); v := <-ch
+// 正确：直接收——无缓冲 channel 的接收就是同步点
+v := <-ch
+```
+
+要点：Sleep 是用"猜时间"替代"等事件"——计算慢于 1s 拿到空值，快于 1s 白等。channel 接收本身就是"等它算完"的正确原语；需要等待 N 个完成用 WaitGroup。
+
+**题 3（Once 与懒加载）**：写一个线程安全的懒加载单例（不使用 sync.Once 和 mutex 之外的库），再用 sync.Once 重写，对比行数与出错面。
+
+参考实现：
+
+```go
+// sync.Once 版：唯一推荐
+var (
+    instance *Config
+    once     sync.Once
+)
+
+func GetConfig() *Config {
+    once.Do(func() { instance = loadConfig() })
+    return instance
+}
+```
+
+手写版需要 atomic 指针 + 双重检查 + 原子读写，任何一步写错就是数据竞争（`go test -race` 可复现）。要点：`Once.Do` 保证并发下恰好执行一次且其他 goroutine 等待完成；双重检查锁在 Go 里必须靠 atomic 才正确，直接手写几乎必错。

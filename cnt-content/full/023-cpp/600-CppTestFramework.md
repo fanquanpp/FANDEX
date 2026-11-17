@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: Google Test、Catch2、doctest 等主流 C++ 测试框架的工程实践与对比
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/450-CppMemoryModel'
   - 'cpp/640-CppToolchain'
@@ -88,7 +88,7 @@ C++20 的协程、模块、concepts 给测试框架带来新挑战:
 - **协程测试**:异步代码的测试需要新断言模式
 - **concepts 验证**:编译期测试的标准化 (static_assert 与 consteval)
 
-Google 在 2022 年开源 GoogleTest 的继承者 GoogleTest v2,引入模块支持与 C++17 最低要求。Catch2 v3 也重新设计为非单头文件,改进编译速度。
+GoogleTest 本体没有「v2」——它一直沿用 1.x 版本线（截至 2026 年最新发布为 1.18.0），gmock 已并入同一仓库；最低语言标准随版本演进：早期 1.x 只要求 C++11，1.13-1.15 线抬到 C++14，**1.18.x 起要求 C++17**（官方 Releases 页明示）。Catch2 v3 则确实重新设计为非单头文件,改进编译速度。
 
 ### 核心动因总结
 
@@ -1794,3 +1794,70 @@ ctest --test-dir build -j 8        # 并行
 ctest --test-dir build -V          # 详细输出
 ctest --test-dir build -R MathTest # 按名称过滤
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：用 GoogleTest 写一个参数化测试——对 `clamp(int v, int lo, int hi)`（自己实现）测 5 组输入输出；要求用 `TEST_P` + `INSTANTIATE_TEST_SUITE_P` 参数化而不是复制五个 `TEST`，并写出 `EXPECT_EQ` 与 `ASSERT_EQ` 的差异点（用在 `clamp` 返回值上时选哪个、为什么）。
+
+**提示**：参数化测试的骨架是「测试夹具继承 `::testing::TestWithParam<Case>` + `GetParam()`」；`ASSERT_*` 失败即终止本测试、`EXPECT_*` 失败继续——用错会导致空指针解引用式的二次崩溃。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <gtest/gtest.h>
+
+int clamp(int v, int lo, int hi) { return v < lo ? lo : (v > hi ? hi : v); }
+
+struct ClampCase { int v, lo, hi, want; };
+
+class ClampTest : public ::testing::TestWithParam<ClampCase> {};
+
+TEST_P(ClampTest, ClampsToRange) {
+    const auto& c = GetParam();
+    ASSERT_EQ(clamp(c.v, c.lo, c.hi), c.want);   // 纯值比较 EXPECT 也行；演示 ASSERT
+}
+
+INSTANTIATE_TEST_SUITE_P(Basic, ClampTest, ::testing::Values(
+    ClampCase{5, 0, 10, 5}, ClampCase{-1, 0, 10, 0},
+    ClampCase{11, 0, 10, 10}, ClampCase{0, 0, 0, 0}, ClampCase{7, 9, 3, 9}
+));
+```
+
+要点自查：新增用例 = 表里加一行，不用复制函数体——参数化的价值就在这里；`ASSERT` 在依赖后续计算的断言前使用（后续用不到返回值时 `EXPECT` 足够）。
+
+**任务二**：TDD 与 mock——写一个「订单折扣计算」依赖 `DiscountService`（被 mock），用 GoogleMock 的 `ON_CALL/EXPECT_CALL` 控制返回值；回答两问：为什么「先写失败的测试」能暴露接口设计问题？mock 过度（每个依赖都 mock）的症状是什么？
+
+**提示**：mock 的对象是「边界上的不稳定协作者」（网络、时间、随机数），不是所有协作类；每个依赖都 mock 的项目测试会跟实现耦合，重构一次全红。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+#include <gmock/gmock.h>
+
+struct DiscountService {
+    virtual ~DiscountService() = default;
+    virtual double rate(int userId) = 0;
+};
+
+struct MockDiscount : DiscountService {
+    MOCK_METHOD(double, rate, (int userId), (override));
+};
+
+double finalPrice(const DiscountService& svc, int userId, double base) {
+    return base * (1.0 - svc.rate(userId));
+}
+
+TEST(DiscountTest, VipGetsHalfOff) {
+    MockDiscount mock;
+    EXPECT_CALL(mock, rate(42)).WillOnce(::testing::Return(0.5));
+    EXPECT_DOUBLE_EQ(finalPrice(mock, 42, 100.0), 50.0);
+}
+// 两问答案：
+// 1. 先写失败测试 = 先站在调用者位置设计接口；失败信息暴露「签名难用/缺依赖注入点」。
+// 2. 过度 mock 症状：实现细节（调用次数、顺序）被断言锁死，重构即红；
+//    值对象/纯函数根本不该 mock——直接测。
+```
+
+要点自查：mock 只该出现在「无法在测试里真实存在的边界」（数据库、时钟、网络）；`EXPECT_CALL` 断言的是协作契约不是实现顺序——写之前先问「这个协作者为什么不能是真的」。

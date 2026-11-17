@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Keepalived 双机热备：VRRP 协议机制、主备配置与健康检查联动、脑裂成因与防护、与 LVS/Nginx 组合的高可用实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/200-LoadBalanceTech'
   - 'networking/240-HighAvailabilityLVS'
@@ -174,6 +174,20 @@ VIP 出现两个 MAC，流量被随机分发，写操作可能重复执行。
    「失败则扣分」，配置时别把语义写反；扣分后若仍高于对端，切换不会发生；
 6. **云环境限制**：公有云 VPC 普遍不支持协议 112 组播/免费 ARP 行为，VRRP 方案在云上通常要换
    成云厂商的浮动 IP/高可用组产品，不要硬搬。
+
+## 教学自检
+
+按遮码自检法：遮住上文命令与表格，先自己写配置或推演，再对照。
+
+- VRRP 用协议号还是端口通信？抓包命令怎么写才能看到通告（协议 112、组播 224.0.0.18）？
+- 虚拟 MAC `00:00:5E:00:01:{VRID}` 的最后一段是什么？防火墙拦掉 VRRP 的故障表现是什么？
+- Backup 判定 Master 死亡的公式是什么？优先级相同时靠什么打破平局？
+- Keepalived 的 checkers 与 vrrpd 各管什么？为什么说「IPVS 的健康检查短板是它补的」？
+- 抢占模式与非抢占（nopreempt）怎么选？`vrrp_script` 的 weight 正负语义分别是什么、
+  写反了为什么「看起来没配」？
+- 脑裂的两类成因与防护手段各举两个。「备机持有 VIP 但自称 BACKUP」怎么自动检测？
+- 云上为什么不建议硬搬 VRRP？等价物是什么？
+- 为什么服务要监听 0.0.0.0 或开 `ip_nonlocal_bind`？（VIP 尚未漂来时绑定失败）
 
 ## 6. 练习
 

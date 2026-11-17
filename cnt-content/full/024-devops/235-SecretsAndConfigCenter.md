@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 配置管理的原则与工具版图、集中式配置中心（Nacos/Spring Cloud Config）、多环境管理（Kustomize overlay）、密钥治理（Vault/K8s Secrets/ESO）
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -264,6 +264,14 @@ kubectl get secret myapp-secret -o jsonpath='{.data.db-password}' | base64 -d
 - 能用 Kustomize base/overlay 结构表达多环境差异；
 - 能说出 K8s Secrets 的安全边界（base64 非加密）与 etcd 静态加密的位置；
 - 能描述 Vault 动态凭证与 ESO 组合的架构及各自收益。
+
+## 自检
+
+- 配置优先级链默写：默认值 → 配置文件 → 环境变量 → 显式传参。为什么环境变量是容器时代的通用接口？
+- 三类工具边界口述：Ansible、Nacos/Apollo、Vault 各管哪一层？把"数据库地址"和"数据库密码"分别放进哪类，为什么？
+- 热更新三模式默写（重启生效/端点轮询/推送通知），"改了没生效"的两个排查点是什么？
+- 遮住 Kustomize overlay 示例，自己写 base + 两个环境的目录骨架；patches 的合并语义说一遍。
+- K8s Secret 的 base64 是编码不是加密——攻击者拿到 etcd 权限与拿到 Secret 资源权限，各能看到什么？etcd 静态加密与 Vault 分别把这条链补在哪一环？
 
 ## 下一步
 

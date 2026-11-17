@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: PostCSS 插件化处理管道：autoprefixer 与 browserslist、postcss-preset-env 未来语法、cssnano 压缩、自定义插件开发，以及与 Sass/Less 的协作顺序。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/570-Sass'
   - 'css/580-LessStylus'
@@ -270,7 +270,7 @@ export default {
 
 1. 在 Vite 项目接入 autoprefixer，收紧/放宽 browserslist 观察 `npx browserslist` 与产物变化；
 2. 启用 postcss-preset-env，用 `@custom-media` 写一次断点复用；
-3. 用 postcss-nesting 转译一段原生嵌套，对照展开结果与 `css/042` 的等价选择器；
+3. 用 postcss-nesting 转译一段原生嵌套，对照展开结果与 `css/480-CSSNativeNesting` 的等价选择器；
 4. 按第 6 节写一个 `font-size: md` 转具体值的自定义插件；
 5. 进阶挑战：把“Sass + preset-env + autoprefixer + cssnano”完整链路搭起来并验证执行顺序。
 
@@ -292,6 +292,52 @@ export default {
 | 多套浏览器清单并存 | 工具目标不一致 | 只在 package.json 声明一次 |
 | 生产开发同一套压缩 | 开发态不可读 | 按环境挂载 cssnano |
 | 插件堆积不清理 | 构建变慢、行为难追溯 | 定期审计插件必要性 |
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 5、6 节的示例代码自己写，再对照参考实现。
+
+**任务一**：写一段会被 autoprefixer 处理的样式——`.glass { backdrop-filter: blur(8px); display: flex; user-select: none; }`，并写出它在「目标含旧版 Safari」时大致的产物形态（哪些声明会多出前缀行）。
+
+**任务二**：写一个最小自定义插件的需求实现——把 `font-size: t-md` 这类「令牌值」替换成 `font-size: 1.25rem`；用一句话说明插件该订阅哪种节点（Declaration），以及它应该排在 cssnano 之前还是之后、为什么。
+
+**提示**：任务一对照第 3 节 autoprefixer 的机制——它按 browserslist 目标「缺什么补什么」，Safari 老版本对 `backdrop-filter`/`user-select` 需要前缀，`flex` 需要旧语法的场景已基本消失；任务二对照第 6 节插件骨架——值替换发生在 Declaration 访问器里，且必须排在压缩之前（压缩后再改写会破坏产物一致性）。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一：源码 */
+.glass {
+  backdrop-filter: blur(8px);
+  display: flex;
+  user-select: none;
+}
+
+/* 产物（目标含旧 Safari 时的典型形态） */
+.glass {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  display: flex;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* 任务二 */
+module.exports = () => ({
+  postcssPlugin: 'token-font-size', /* 插件名必填：PostCSS 8 注册校验 */
+  Declaration(node) {               /* 订阅声明节点 */
+    const tokens = { 't-md': '1.25rem' };
+    if (node.prop === 'font-size' && tokens[node.value]) {
+      node.value = tokens[node.value];
+    }
+  },
+});
+
+/* 排在 cssnano 之前：插件假设拿到的是「语义完整的源码」，
+   压缩后的产物已合并/缩写，再替换容易失配——约定是功能插件在前、压缩最后 */
+```
+
+验收点：任务一里把 browserslist 收紧到「最近两个版本」后，前缀行会明显减少——前缀是目标驱动的，不是永远全补；任务二若把插件挂在 cssnano 之后，`t-md` 可能已被压缩器改写或丢弃，替换静默失效。
 
 ## 扩展学习
 

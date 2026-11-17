@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL半连接与反半连接：EXISTS、NOT EXISTS、IN、NOT IN的语义、性能差异与优化策略
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/160-NaturalJoinUsing'
   - 'sql/170-SelfJoin'
@@ -254,6 +254,46 @@ WHERE NOT EXISTS (
     )
 );
 ```
+## 遮码自检
+
+遮住答案先答；半连接题的核心是"行数会不会被放大"与"NULL 会不会捣乱"两个判断点。
+
+**第 1 题："查有订单的客户"为什么通常不写 `customers JOIN orders` 而写 EXISTS？两种写法的行数与列有什么差别？**
+
+<details><summary>参考答案</summary>
+
+JOIN 会把一个客户的多张订单展开成多行（行数放大、需 DISTINCT 去重），还带出订单列；
+EXISTS（半连接）只判断"右表有没有匹配"，命中即停（短路），左表每客户恰好一行、
+右表列完全不出现。语义是"存在性"，不是"明细"。
+</details>
+
+**第 2 题：`WHERE id NOT IN (SELECT customer_id FROM orders)` 的子查询里只要有一行 NULL，结果会怎样？换成什么写法才安全？**
+
+<details><summary>参考答案</summary>
+
+整个 NOT IN 永远不返回真——`x NOT IN (1, 2, NULL)` 中 `x <> NULL` 是 UNKNOWN，三值
+逻辑下整体判不出 TRUE，结果为空集且不报错，是最隐蔽的坑。安全写法是 NOT EXISTS
+（NULL 行匹配不上相关条件，不影响其他行），或先保证子查询列 NOT NULL。
+自检习惯：写 NOT IN 的瞬间，先确认子查询那一列有没有 NULL 的可能。
+</details>
+
+**第 3 题：EXISTS 子查询里写 `SELECT 1` 还是 `SELECT *` 有性能差别吗？为什么惯例写 `SELECT 1`？**
+
+<details><summary>参考答案</summary>
+
+没有。EXISTS 只判断"子查询是否返回行"，SELECT 列表被优化器忽略。写 `SELECT 1` 是
+给读者的信号："这里取什么列不重要，重要的是存在性"——是可读性惯例，不是性能技巧。
+</details>
+
+**第 4 题：现代优化器常把 `IN (SELECT ...)` 自动改写成半连接。它改写不了、退回慢路径的典型情形是什么？**
+
+<details><summary>参考答案</summary>
+
+NOT IN 碰上可空列（必须逐行判三值逻辑，无法安全转成反半连接）；或子查询含 LIMIT、
+聚合、DISTINCT 等无法"扁平化"的成分。所以性能经验法则成立的前提是写法本身"可转"：
+子查询简单、相关条件干净，IN 与 EXISTS 才等价，交给优化器挑。
+</details>
+
 ## 半连接（Semi Join）
 
 **基本写法：IN 实现半连接**

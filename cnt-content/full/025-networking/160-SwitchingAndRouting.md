@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 交换与路由技术：VLAN、STP、链路聚合、静态路由、动态路由与策略路由
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'networking/030-NetworkWiringAndConstruction'
   - 'networking/020-OSITCPIPModel'
@@ -288,6 +288,22 @@ interface GigabitEthernet0/0
 - 特定流量走专线
 - 流量清洗引流
 
+
+## 教学自检
+
+按遮码自检法：遮住上文命令与表格，先自己写配置或推演，再对照。
+
+- 802.1Q 标签 4 字节的构成是什么？VID 12 位为什么可用 VLAN 编号是 1~4094（0 和 4095 去哪了）？
+- access 口与 trunk 口各自的打/剥标签行为是什么？「access/trunk 是端口角色不是链路属性」
+  怎么理解？
+- STP 选根桥的依据是什么？Blocking 到 Forwarding 要等多少秒、各阶段在做什么？RSTP 靠什么
+  把收敛压到秒级？
+- LACP 捆绑失败的两类高频原因是什么？（成员口速率双工不一致、两端模式不匹配）
+- 路由查表的三级优先顺序是什么？Cisco 与华为的 OSPF/静态优先级数值各是多少？
+  为什么同一路由来源不同厂商数值不同、排错时要看厂商文档？
+- OSPF 五类 LSA 各由谁产生、传多远？Area 0 为什么必须存在？
+- BGP 选路前三个比较的属性是什么？Weight 与 Local Preference 的作用域差别？
+- 策略路由与「查路由表」的先后关系是什么？什么场景必须用它而不是改路由表？
 
 ## 动手实践
 

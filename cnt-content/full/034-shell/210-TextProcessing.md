@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: cat/head/tail/grep/sed/awk/sort/uniq 等文本处理命令速查：用法、预期输出与方言陷阱
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'shell/200-TextProcessingTools'
   - 'shell/170-PipeRedirect'
@@ -230,3 +230,21 @@ awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -3
 - Linux 与 macOS 的 sed/grep/awk 行为存在方言差异，跨平台脚本优先选上表"可移植写法"
 - grep 的退出码、awk 的 END 块都是可以在脚本里直接利用的接口
 - 单条命令超过 20 行逻辑时应换 Python/Perl，文本三剑客贵在"短平快"
+
+## 9. 自检：速查前的三道关
+
+速查手册的价值建立在「你知道自己在找什么」。遮住本文回答，答不上时再回来翻对应节。
+
+1. 统计 access.log 中出现最多的前 10 个 IP——不看文档写出这条管道。
+2. macOS 同事发来 `sed -i 's/a/b/g' file` 报错，缺了什么参数？跨平台脚本最稳的写法是哪种？
+3. grep 无匹配时退出码是几？写出用退出码判断「服务就绪了吗」的一行命令。
+4. `wc -l` 统计的到底是什么？什么情况下会少 1？
+
+<details>
+<summary>参考答案</summary>
+
+1. `awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -10`（第 6 节；核心是 `sort | uniq -c | sort -rn` 分组计数三段式——uniq 只合并相邻重复，所以必须先 sort）。
+2. BSD sed 的 `-i` 必须带后缀参数：`sed -i '' 's/a/b/g' file`；跨平台统一用 `sed -i.bak`，还顺带留了备份（第 7 节陷阱表第一行）。
+3. 退出码 1（0 有匹配、2 出错，见第 2 节）。`grep -q "ready" status.log && echo 就绪 || echo 未就绪`——`-q` 静默，退出码就是判断接口。
+4. 统计换行符个数而非行数；文件最后一行没有换行符结尾时会少计 1。防御：生成文本保证末尾换行，或改用 `awk 'END{print NR}'`（第 7 节陷阱表）。
+</details>

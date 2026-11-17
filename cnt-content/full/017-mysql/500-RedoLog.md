@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB重做日志redo log：WAL机制、日志缓冲、LSN与Checkpoint、崩溃恢复与8.0.30后容量配置
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/540-DistributedTransaction'
   - 'mysql/490-Binlog'
@@ -50,9 +50,10 @@ SET GLOBAL innodb_redo_log_capacity = 2147483648;  -- 扩到 2GB，立即生效
 ```
 
 > 版本注意：`innodb_log_file_size` / `innodb_log_files_in_group` /
-> `innodb_log_group_home_dir` 在 8.0.30 已废弃，**8.4 起彻底移除**——
-> 升级 8.4 前必须从 my.cnf 删除这些行，改用 `innodb_redo_log_capacity`，
-> 否则服务器拒绝启动。老教程里的 `SET GLOBAL innodb_log_file_size=...` 写法已不可用。
+> `innodb_log_group_home_dir` 在 8.0.30 已废弃、由 `innodb_redo_log_capacity` 取代；
+> 8.4 中它们仍是废弃状态（写进 my.cnf 只有废弃告警，不会拒绝启动），
+> `innodb_log_file_size` / `innodb_log_files_in_group` 到 9.3.0 才正式移除。
+> 新配置一律用 `innodb_redo_log_capacity`，老教程里的 `SET GLOBAL innodb_log_file_size=...` 写法不要再学。
 
 ### 2.2 循环写与两个指针
 
@@ -179,12 +180,32 @@ SHOW ENGINE INNODB STATUS\G
 | `Innodb_log_waits` 持续增长            | 日志缓冲不够/磁盘慢 | 调大 buffer；检查磁盘吞吐         |
 | 崩溃恢复要几十分钟                     | 容量过大 + 崩溃频繁 | 容量与 RTO 权衡，不宜盲目求大     |
 
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：没有 redo log 时，"提交成功的数据不丢"要靠什么实现？代价是什么？WAL 怎么改变这笔账？
+
+参考答案（先自己答，再对照）：只能每次提交把脏页刷回磁盘——事务改动散在几万页里就是几万次随机 IO，提交延迟灾难级。WAL（Write-Ahead Logging）反过来：把"物理改动记录"先顺序写进 redo（一页纸的小成本）就允许提交，脏页则攒起来由后台慢慢刷。持久性由几 KB 的顺序写保证，随机写被延迟批量化——这是性能与持久性兼得的底层交易。
+
+2. 概念自问：`innodb_flush_log_at_trx_commit` 的 0/1/2 三档分别把数据暴露在什么故障下？生产为什么是 1？
+
+参考答案（先自己答，再对照）：0——每秒刷盘，崩溃丢最近 1 秒；1——每次提交 fsync 到磁盘，不丢已提交事务（双一之一）；2——每次提交写到 OS 页缓存、每秒 fsync，MySQL 崩溃不丢、OS 崩溃丢最近 1 秒。生产默认 1：数据库的价值就在"已提交即永久"，0/2 只该出现在可容忍丢秒级数据的场景（批量导入、缓存型库），且要与业务方明说。
+
+3. 判断题：redo log 容量（innodb_redo_log_capacity）越大越好，写高峰绝不卡顿。
+
+参考答案（先自己答，再对照）：代价被忽略了。容量越大，checkpoint 越不频繁，**崩溃恢复时要重放的 redo 越多**——重启时间拉长。容量设计是"写入抖动余量"与"恢复时长"的权衡：按实测每秒 redo 写入量的 1-2 小时折算（采样 Innodb_os_log_written），一般场景 1-2GB 足够，盲目上 64G 只会在故障重启时收利息。
+
+4. 概念自问：组提交（group commit）优化的是什么瓶颈？双一配置下它为什么重要？
+
+参考答案（先自己答，再对照）：fsync 的次数——高并发下每个事务各自 fsync 一次，磁盘吞吐被打爆。组提交让同一时间窗内的多个事务共享一次 fsync（一个 leader 带队刷盘， followers 等待即可），IO 次数从"N 个事务"降到"N 个批次"。双一配置下每次提交都要落盘，组提交是把持久性保住的同时救回吞吐的关键机制。
+
 ## 8. 小结
 
 - 初学者要点：redo log = InnoDB 的"物理流水账"，先写日志再写数据页，保证已提交
   事务不丢；`innodb_flush_log_at_trx_commit=1` 是生产默认。
 - 进阶注意：8.0.30 起容量统一由 `innodb_redo_log_capacity` 控制，旧三件套变量
-  在 8.4 已移除；容量大小是"写入抖动"与"崩溃恢复时长"之间的权衡；
+  同期废弃（8.4 中仍存在、9.3 起移除）；容量大小是"写入抖动"与"崩溃恢复时长"之间的权衡；
   redo（持久性）与 undo（回滚/MVCC）各司其职，崩溃恢复 = REDO 重放 + UNDO 回滚。
 
 ### 容量设计的采样法

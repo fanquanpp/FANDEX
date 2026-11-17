@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Vue 3.5 核心与周边生态的最新稳定版本、Node 要求与升级要点。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'vue3/010-OverviewEnv'
   - 'vue3/270-Vue3ViteBuildConfig'
@@ -17,7 +17,7 @@ prerequisites:
 
 ## 概述
 
-Vue 3 生态由核心（vue）、路由（vue-router）、状态管理（pinia）、构建（vite）、测试（vitest、@vue/test-utils）与工具链（create-vue、vue-tsc、Vue - Official）组成。它们各自独立发版，版本号并不对齐，因此在创建新项目或升级旧项目前，先核对一份"当前最新稳定版本"清单可以避免安装到过时主版本。本文以 2026-09 的 npm 稳定版为准，整理版本对照、Node 要求与升级顺序。
+Vue 3 生态由核心（vue）、路由（vue-router）、状态管理（pinia）、构建（vite）、测试（vitest、@vue/test-utils）与工具链（create-vue、vue-tsc、Vue - Official）组成。它们各自独立发版，版本号并不对齐，因此在创建新项目或升级旧项目前，先核对一份"当前最新稳定版本"清单可以避免安装到过时主版本。本文版本信息核实于 2026-11-16（vue 3.5.45、vue-router 5.5.1、pinia 4.1.0、vite 8.3.8、nuxt 4.6.4，经 npm registry `latest` 标签核实），整理版本对照、Node 要求与升级顺序。
 
 核心状态一句话：`vue` 稳定线是 3.5.x；3.6 处于 RC 阶段（核心变化是 Vapor 模式，已实现与虚拟 DOM 模式的功能对等），生产项目在稳定版发布前继续用 3.5.x。
 
@@ -31,8 +31,8 @@ Vue 3 生态由核心（vue）、路由（vue-router）、状态管理（pinia�
 | `pinia` | 4.x | 状态管理 | peer `vue ^3.5.11`、TypeScript `>=5.6` |
 | `vite` | 8.x | 构建工具 | Node `^20.19.0 || >=22.12.0` |
 | `@vitejs/plugin-vue` | 6.x | Vue 单文件组件编译 | peer `vite ^5 ~ ^8`、`vue ^3.2.25` |
-| `vitest` | 5.x | 单元测试 | Node `^20 || ^22 || >=24`，peer `vite ^6 ~ ^8` |
-| `@vue/test-utils` | 2.4.x | 组件测试工具 | peer `vue 3.x` |
+| `vitest` | 5.x | 单元测试 | Node `^22.12.0 || ^24.0.0 || >=26.0.0`，peer `vite ^6.4.0 || ^7.0.0 || ^8.0.0` |
+| `@vue/test-utils` | 2.6.x | 组件测试工具 | peer `vue 3.x` |
 | `vue-tsc` | 3.x | SFC 类型检查 | peer `typescript >=5.0`（兼容 7.x） |
 | `typescript` | 7.x | 类型系统与编译器 | Node `>=16.20` |
 
@@ -44,7 +44,7 @@ Vue 3 生态由核心（vue）、路由（vue-router）、状态管理（pinia�
 
 | 生态位 | 项目 | 现状要点 |
 | --- | --- | --- |
-| 全栈元框架 | Nuxt | 4.x 已稳定（2025-07 发布 4.0，当前 4.4.x 线），Nuxt 5 开发中；Nuxt 3 已停止新特性开发 |
+| 全栈元框架 | Nuxt | 4.x 为当前主线（2026-10 发布 4.6 引入 Nuxt CLI v4，当前 4.6.x 线）；Nuxt 3 已于 2026-07-31 EOL，仅安全维护 |
 | 组件库 | Element Plus / Naive UI / Vuetify / PrimeVue / shadcn-vue | 均以 Vue 3 + 组合式 API 为基线，升级 Vue 大版本前先确认组件库兼容声明 |
 | 请求/数据层 | TanStack Query (Vue) / Pinia Colada | 服务端状态管理成为新共识，取代手写"请求 + 缓存"组合函数 |
 | 状态持久化 | pinia-plugin-persistedstate | 与 Pinia 3/4 保持同步发版 |
@@ -66,9 +66,9 @@ Vue 3 生态由核心（vue）、路由（vue-router）、状态管理（pinia�
 
 - create-vue：`^22.18.0 || >=24.12.0`
 - Vite 8：`^20.19.0 || >=22.12.0`
-- Vitest 4：`^20.0.0 || ^22.0.0 || >=24.0.0`
+- Vitest 5：`^22.12.0 || ^24.0.0 || >=26.0.0`（注意：Vitest 4 才是 `^20 || ^22 || >=24`，主版本升级时 engines 会收紧）
 
-结论：统一使用 Node 22 LTS 或 24 LTS 即可同时满足全部要求；Node 18 已不在官方支持范围内。
+结论：统一使用 Node 22 LTS（需 22.12 及以上）或 24 LTS 即可同时满足全部要求；Node 20 及更早版本装不了 Vitest 5 与 create-vue，应先升 Node。
 
 ## 新建项目
 
@@ -146,6 +146,16 @@ npm outdated
 | 升级后构建产物行为不一致 | Vite/Rolldown 大版本带来的打包差异 | 先在 CI 里跑完整测试与 qa 检查，再本地合并 |
 
 排查的通用原则：保留可复现的最小仓库或分支，升级问题按"Node -> 构建 -> 核心 -> 路由状态 -> 类型 -> 测试"的顺序二分定位。
+
+## 自检
+
+回答不出的回对应小节。
+
+1. 为什么生态各包版本号不对齐？判断「能不能装在一起」真正该看的字段是什么（peerDependencies）？
+2. `npm view vue dist-tags` 输出里 latest / next / rc 各代表什么？生产项目该追哪个标签？
+3. 升级旧项目为什么按「构建 -> 核心 -> 路由状态 -> 类型 -> 测试」的顺序？打乱顺序会付出什么额外代价？
+4. Vue 3.6 RC 的观望策略是什么？哪类存量依赖的兼容风险最高？
+5. 本文版本号过时后，你用什么三步（npm view / peer 要求 / 迁移指南）自己核实？
 
 ## 小结
 

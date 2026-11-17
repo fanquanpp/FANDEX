@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: '以"从代码到正式发布"的完整旅程为主线，讲解 gh release 系列命令，包括创建、查看、上传下载、编辑与删除发布，配以原理讲解、错误对策。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -295,6 +295,40 @@ git fetch --tags origin
 | 误删发布 | 页面找不到该版本 | `delete` 默认只删发布不删 Tag | 保留 Tag 可随时用 `gh release create <tag>` 重建发布；如已 `--cleanup-tag`，需用 `git push origin --tags` 重新推送标签 |
 
 ---
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：发布 v2.0.0：自动生成更新日志、附带两个构建产物 `app-linux.tar.gz` 与 `app-win.zip`。写出一条命令。
+
+**任务二**：写出三条配套命令——（a）把 `CHANGELOG.md` 补传到已存在的 v2.0.0 且覆盖旧文件；（b）把 v2.1.0-rc.1 标成预发布；（c）本地下载 v2.0.0 的全部产物。
+
+**任务三**：判断——（a）`gh release create v1.2.3` 时标签不存在会怎样？（b）Release 与 Tag 的关系一句话是什么？
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 任务一
+gh release create v2.0.0 \
+  --generate-notes \
+  app-linux.tar.gz app-win.zip
+
+# 任务二
+gh release upload v2.0.0 ./CHANGELOG.md --clobber
+gh release edit v2.1.0-rc.1 --prerelease
+gh release download v2.0.0
+
+# 任务三
+# (a) 默认会在目标提交上自动创建该标签（这正是新手把
+#     「Release 发布到错误提交」的原因——tag 名敲错就建错位置；
+#     要防手误加 --verify-tag，标签必须已存在否则中止）；
+# (b) Tag 是 Git 里指向提交的静态书签，Release 是挂在 Tag 上的
+#     「发布会页面」（说明 + 二进制产物）；一个 Tag 可没有 Release，
+#     有 Release 的 Tag 通常一一对应。
+```
+
+要点自查：`--generate-notes` 依据「上次发布以来的提交与 PR」自动写更新日志；`--prerelease` 让测试版不占据 Latest；上传产物用 `--clobber` 覆盖、下载用 `download`；删除 Release 不删除 Tag，两者要分开管理。
 
 ## 一句话记忆
 

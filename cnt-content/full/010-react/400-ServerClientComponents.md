@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React Server Components与Client Components界限划分与最佳实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/380-ReactMonorepo'
   - 'react/390-ReactCompilerAutoMemoization'
@@ -919,31 +919,31 @@ export default function Loading() {
 
 ### 4.9 数据获取与缓存策略
 
+跨请求的函数级缓存，Next.js 16 起的现行写法是 `'use cache'` 指令（Cache Components 模型）；与 `cacheLife` 定时长、`cacheTag` 打失效标签搭配。老代码里的 `unstable_cache` 已被官方标记弃用，读得懂即可，新代码不要再写：
+
 ```tsx
 // app/products/page.tsx
-import { unstable_cache } from 'next/cache';
 import { db } from '@/lib/db';
 
 /**
  * 获取热门商品（带缓存的 Server Component）
- * 使用 unstable_cache 实现自定义缓存
+ * 'use cache' 声明：这段函数的返回值可跨请求缓存
  */
-const getPopularProducts = unstable_cache(
-  async () => {
-    return db.product.findMany({
-      where: { status: 'PUBLISHED' },
-      orderBy: { salesCount: 'desc' },
-      take: 10,
-      include: { images: { take: 1 } },
-    });
-  },
-  ['popular-products'],
-  {
-    revalidate: 60 * 5, // 5 分钟
-    tags: ['products'],
-  }
-);
+async function getPopularProducts() {
+  'use cache';
+  const result = await db.product.findMany({
+    where: { status: 'PUBLISHED' },
+    orderBy: { salesCount: 'desc' },
+    take: 10,
+    include: { images: { take: 1 } },
+  });
+  return result;
+}
+```
 
+若项目未启用 `cacheComponents` 旗标，`'use cache'` 不可用，此时用 `React.cache` 只做单请求内的去重，或沿用旧 API 等迁移——两条路的取舍由框架版本决定，不要在同一个项目里混写两套缓存心智。
+
+```tsx
 export default async function ProductsPage() {
   const products = await getPopularProducts();
 
@@ -1233,7 +1233,7 @@ export default function Page() {
 4. **数据获取在 Server**：避免客户端 fetch，使用 Server Component 直接 await。
 5. **Server Action 返回结构化结果**：不要直接抛异常，返回 `{ success, error }`。
 6. **流式渲染优先**：对慢数据使用 Suspense，提升首屏感知速度。
-7. **缓存策略分层**：利用 `fetch` 的 `cache` 选项与 `unstable_cache`。
+7. **缓存策略分层**：Next.js 16 起用 `'use cache'`（Cache Components）做跨请求缓存，`React.cache` 做单请求去重；旧 API `unstable_cache` 已弃用。
 8. **错误边界完整覆盖**：每个路由段都配置 `error.tsx`。
 
 ---
@@ -1999,7 +1999,7 @@ function RecommendationsSkeleton() {
 
 ### 11.5 进阶主题
 
-- **Partial Prerendering（PPR）**：Next.js 14+ 的静态与动态混合渲染
+- **Partial Prerendering（PPR）与 Cache Components**：Next.js 16 起并入 Cache Components（`cacheComponents` 旗标，前身是 dynamicIO/PPR 实验）——静态外壳预渲染 + 动态空洞请求时填充
 - **React Compiler 与 RSC 的协作**：编译期自动记忆化如何影响 Server/Client 边界
 - **Streaming SSR 与 RSC 的差异**：为什么 RSC 不是传统 SSR 的替代，而是补充
 - **Edge Runtime 与 RSC**：在 Cloudflare Workers、Vercel Edge 上运行 Server Components
@@ -2238,7 +2238,17 @@ function MyComponent() {
 
 ## 缓存 API
 
-**unstable_cache**
+**'use cache'（Next.js 16 现行，函数级）**
+```tsx
+async function getCachedUser(id: string) {
+  'use cache';
+  const user = await db.user.findUnique({ where: { id } });
+  return user;
+}
+const user = await getCachedUser('1'); // 跨请求缓存；cacheLife 定时长、cacheTag 打失效标签
+```
+
+**unstable_cache（Next.js 16 起弃用，读旧代码认得即可）**
 `unstable_cache<<T>>(<fn>, <keys>, <options>)`
 ```tsx
 import { unstable_cache } from 'next/cache';
@@ -2363,3 +2373,16 @@ function LikeButton({ likes }: { likes: number }) {
   );
 }
 ```
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：`'use client'` 标在文件顶部，实际含义是「这个文件只在客户端运行」吗？
+   答案：不是——它是「边界声明」：标记从树的这一点开始进入客户端模块图。文件代码仍会先在服务端执行一次（SSR 阶段渲染初始 HTML），其 JS 也会被打包发往浏览器；标 `'use server'` 的 Server Action 才是只在服务端执行的函数。
+2. **预测题**：Server Component 里 `<DatePicker onPick={setDate} />`，直接把事件处理器传下去会发生什么？两种正确传递方式是什么？
+   答案：函数不能跨越 RSC 边界序列化，构建/运行时报错。正确方式：把 DatePicker 拆成 'use client' 文件；或把 Server Action 作为 prop 传给 Client Component（Action 可序列化）。
+3. **修 Bug 题**：RSC 里 `const [open, setOpen] = useState(false)` 报错「useState only works in Client Components」，重构思路是什么？
+   答案：把有状态的交互部分抽成 Client Component（状态下沉），Server Component 保留静态结构与数据获取，通过 children/props 组合传入——「Client Component 下沉到叶子」是边界划分的第一原则。
+4. **规则题**：RSC Payload 与 HTML 流各承载什么？为什么说 RSC 不替代流式 SSR？
+   答案：HTML 流是首屏可见内容；RSC Payload 是组件树的序列化描述（哪些洞是 Client 组件、哪些 props 已就绪），客户端据此拼装可交互树。SSR 解决 HTML 何时生成，RSC 解决哪些 JS 不发——两个维度正交，Next.js App Router 默认同时开。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: error接口、errors.Is/As、%w包装、panic/recover、Go 1.13+错误语义、错误链与生产级实践
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'go/140-ContextDetailed'
   - 'go/210-InterfaceTypeAssertion'
@@ -152,7 +152,30 @@ Go 1.22 对 `errors.Is` 与 `errors.As` 进一步优化：
 - 减少逃逸到堆的对象数
 - `errors.Join` 的 nil 过滤优化
 
-### 1.7 演进时间轴
+### 1.7 Go 1.26（2026-02）：errors.AsType
+
+`errors.As` 的类型断言语义依赖 `target any` 反射改写目标指针，调用点散落着"先声明零值、传入指针、检查 bool"三步。Go 1.26 新增泛型版 `errors.AsType`，把三步并成一步，且去掉了反射路径：
+
+```go
+func AsType[E error](err error) (E, bool)
+```
+
+```go
+// 旧写法（Go 1.13+）：声明零值 + 指针 + bool
+var pathErr *fs.PathError
+if errors.As(err, &pathErr) {
+    fmt.Println(pathErr.Path)
+}
+
+// 新写法（Go 1.26+）：直接拿类型化错误
+if pe, ok := errors.AsType[*fs.PathError](err); ok {
+    fmt.Println(pe.Path)
+}
+```
+
+它遍历错误链的语义与 `errors.As` 一致（同样遵循 `Unwrap` 约定），新代码优先用 `AsType`；`As` 不会移除，存量代码无迁移压力。另一项相关检查出现在 Go 1.27（不是 1.26）：vet 的 printf 分析器开始对 `fmt.Errorf` 中 `%w` 操作数为 `*E`（E 自身实现 error）的调用报警——处理 `%w` 与自定义错误类型组合时留意这条新检查。
+
+### 1.8 演进时间轴
 
 ```mermaid
 timeline
@@ -164,6 +187,7 @@ timeline
     2023: Go 1.20 errors.Join / Unwrap() []error
     2023: Go 1.21 log/slog 集成
     2024: Go 1.22 进一步性能优化
+    2026: Go 1.26 errors.AsType 泛型断言
 ```
 
 ---
@@ -2365,3 +2389,62 @@ Go 的错误处理设计体现了"简单即美"的哲学：error 是值，让开
 5. **测试错误路径**：错误与正常路径同等重要
 
 > *"Errors are values. Don't panic."* — 改编自 Rob Pike
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（错误链的组合判定）**：一个请求同时校验出多个字段错误。写一个 `MultiError` 满足 `Unwrap() []error`，让 `errors.Is` 能穿透它找到内部任一哨兵错误；写出聚合两个错误并判定的调用代码。
+
+参考实现：
+
+```go
+type MultiError struct{ errs []error }
+
+func (m *MultiError) Error() string {
+    msgs := make([]string, len(m.errs))
+    for i, e := range m.errs {
+        msgs[i] = e.Error()
+    }
+    return strings.Join(msgs, "; ")
+}
+
+func (m *MultiError) Unwrap() []error { return m.errs } // Go 1.20 起支持多路展开
+
+var (
+    ErrBadEmail = errors.New("bad email")
+    ErrBadAge   = errors.New("bad age")
+)
+
+err := errors.Join(ErrBadEmail, ErrBadAge) // 标准库聚合，同样实现 Unwrap() []error
+if errors.Is(err, ErrBadAge) { // true：errors.Is 会遍历整棵错误树
+    fmt.Println("age invalid")
+}
+```
+
+要点：`Unwrap() []error` 让错误树分叉，`errors.Is`/`errors.As` 会深度优先遍历；日常聚合直接用 Go 1.20 的 `errors.Join`。
+
+**题 2（errors.AsType 与 errors.As 的迁移）**：把下面的老代码改写成 Go 1.26 的 `errors.AsType` 形式，并说明新写法消除了哪两步样板：
+
+```go
+var pathErr *fs.PathError
+if errors.As(err, &pathErr) {
+    fmt.Println(pathErr.Path)
+}
+```
+
+参考实现：
+
+```go
+if pe, ok := errors.AsType[*fs.PathError](err); ok {
+    fmt.Println(pe.Path)
+}
+```
+
+消除了两步：预先声明零值目标变量、传目标指针。签名 `AsType[E error](err error) (E, bool)` 直接返回类型化的错误值，且内部不走反射改写。
+
+**题 3（包装的位置与信息量）**：数据库超时错误要穿过"repository 层、service 层、handler 层"到达响应。每层都应该 `%w` 包装吗？每层包装应该写什么信息？
+
+参考答案：每层都可以包装，但只加**该层知道的上下文**，不重复、不丢失原因：repository 写 `query user %s: %w`（带 SQL 摘要或参数指纹），service 写 `checkout order %d: %w`（业务实体 ID），handler 不再包装，只做分类与日志。反面模式：每层都 `fmt.Errorf("failed: %w")`——链条三层全是 "failed"，调用方拿到的是噪音。

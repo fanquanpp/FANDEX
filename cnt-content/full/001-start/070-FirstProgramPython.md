@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/060-FirstProgramJavaScript'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'python/010-WhatIsPython'
   - 'start/080-LearningRouteOverview'
@@ -203,7 +203,7 @@ print(f"合计：{total} 元")
 
 **任务一：给记账程序加"删除最近一笔"。** 实战项目的记账程序只能追加，现在加一个功能：输入 `del` 时删除最近一笔并显示被删的内容。提示：列表的 `pop()` 正好"取出并删除最后一项"；删除后记得重新写文件，否则重启就"复活"了。
 
-**任务二：记账统计月度结余。** 在程序启动汇总处加一行：按收入与支出分别求和，显示"本月结余 = 收入 - 支出"。提示：账目记录建议改成字典列表（`{"type": "收", "amount": 100, "note": "..."}`），统计时按 type 分组求和——这是列表 + 字典两大容器的组合应用。
+**任务二：记账统计月度结余。** 在退出汇总处（输入 `q` 跳出主循环后、打印"本次共 N 笔"的那段代码）按收入与支出分别求和，显示"本月结余 = 收入 - 支出"。提示：账目记录建议改成字典列表（`{"type": "收", "amount": 100, "note": "..."}`），统计时按 type 分组求和——这是列表 + 字典两大容器的组合应用。
 
 **任务三：用 REPL 解三道小题。** 不写文件，直接在 REPL 里：a) `"ab" * 3` 是什么？b) `10 % 3` 与 `10 // 3` 各是什么？c) `["a","b","c"][1]` 是什么？先猜再验证。提示：三道题分别对应字符串乘法、整除与取余、列表下标从 0 开始——REPL 的价值就是"猜、跑、立刻知道"。
 
@@ -213,27 +213,81 @@ print(f"合计：{total} 元")
 <summary>任务一参考实现</summary>
 
 ```python
-# del 功能加在主循环的分支里（记账程序骨架内）
+# 第一步是道隐藏的重构题：实战项目把录入与存盘写死在主循环里，
+# 想让 del 分支复用它们，先各自封装成函数：
+
+def input_record():
+    purpose = input("用途：").strip()
+    try:
+        amount = float(input("金额：").strip())
+    except ValueError:
+        print("金额必须是数字，这条没记上")
+        return None
+    return {"purpose": purpose, "amount": amount}
+# （退出改由命令菜单负责，录入函数只管"问一次、验一次"）
+
+def save_records(records):
+    with open(FILE, "w", encoding="utf-8") as f:
+        json.dump(records, f, ensure_ascii=False, indent=2)
+
+# 第二步：主循环改成按命令调度，del 分支就在这里：
 while True:
     cmd = input("命令（1 记一笔 / del 删最近一笔 / q 退出）：").strip()
 
     if cmd == "1":
-        record = input_record()          # 实战项目里的录入函数
-        records.append(record)
-        save_records(records)            # 实战项目里的存盘函数
+        record = input_record()
+        if record:                       # 录入失败（返回 None）就不记账
+            records.append(record)
+            save_records(records)
     elif cmd == "del":
         if len(records) == 0:
             print("没有可删除的记录")
         else:
             removed = records.pop()      # 取出并删除最后一项
             save_records(records)        # 必须重新存盘！
-            print("已删除：", removed["type"], removed["amount"], removed["note"])
+            print("已删除：", removed["purpose"], removed["amount"])
     elif cmd == "q":
-        show_summary(records)
-        break
+        break                            # 跳出后走程序原有的汇总打印
 ```
 
-要点：a) `pop()` 一步完成"取出 + 删除"，返回值正好用来显示删了什么；b) 删除后必须重新 `save_records`——数据在内存里的变化不落盘，重启就回到旧状态，这是初学者最常见的"程序骗我"现场；c) 先判空再 pop，空列表 pop 会抛 IndexError。
+要点：a) 原实战项目的录入与存盘是内联代码，本题真正的第一刀是重构——把两段逻辑封装成函数才能被多个分支复用，"改需求前先让代码可复用"是比 `pop()` 更重要的隐藏一课；b) `pop()` 一步完成"取出 + 删除"，返回值正好用来显示删了什么；c) 删除后必须重新 `save_records`——数据在内存里的变化不落盘，重启就回到旧状态，这是初学者最常见的"程序骗我"现场；d) 先判空再 pop，空列表 pop 会抛 IndexError。
+</details>
+
+<details>
+<summary>任务二参考实现</summary>
+
+```python
+# 记录结构升级为 {"type": "收", "amount": 100, "note": "..."}，
+# 录入时多问一句"收入还是支出"并把答案写进 type 字段；
+# 替换退出汇总部分（输入 q 跳出主循环之后、打印"本次共 N 笔"的那段）：
+income = 0
+expense = 0
+for r in records:
+    if r["type"] == "收":
+        income = income + r["amount"]
+    else:
+        expense = expense + r["amount"]
+print(f"本月结余 = 收入 {income} - 支出 {expense} = {income - expense} 元")
+```
+
+要点：按 type 分组求和是"列表 + 字典"组合的经典用法——列表负责逐条遍历，字典负责按名取字段。先想清楚建模再动手：本参考用"正数金额 + 类型字段"，你也可以让支出直接存负数，那样求和一行就够——两种建模都成立，关键是全程序的口径一致。
+</details>
+
+<details>
+<summary>任务三参考答案</summary>
+
+```text
+>>> "ab" * 3
+'ababab'                # 字符串乘法 = 整串复制 3 遍
+>>> 10 % 3
+1                       # 取余：10 = 3 x 3 + 1
+>>> 10 // 3
+3                       # 整除：只保留商的整数部分
+>>> ["a", "b", "c"][1]
+'b'                     # 下标从 0 开始，[1] 是第二个元素
+```
+
+要点：REPL 的价值就是"猜、跑、立刻知道"。哪个答案和你猜的不一样，就把它记进"今日坑"——下次写代码时它会变成肌肉记忆。
 </details>
 
 ## 检验清单

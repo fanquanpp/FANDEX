@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: "以「只接受整型的 serialize 传 string 爆出上百行模板错误」引入，讲透 is_integral_v 与 enable_if 最小用法、SFINAE 一句话原则、void_t 探测惯用法，并用真实报错对照 static_assert 人话报错与 C++20 concepts。"
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/360-TypeTraitsExtractionAndDetection'
   - 'cpp/410-Cpp20Concept'
@@ -237,6 +237,58 @@ tag(3.14);       // 预测：？
 - SFINAE 规则：https://en.cppreference.com/w/cpp/language/sfinae
 - std::void_t：https://en.cppreference.com/w/cpp/types/void_t
 - std::is_integral：https://en.cppreference.com/w/cpp/types/is_integral
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：用 SFINAE 三步（主模板 -> 特化/偏特化 -> 替换失败被忽略）解释下面的代码为什么能「按类型选择重载」，并回答：如果 `T` 没有 `size()`，报错是编译失败还是静默走另一个重载？
+
+```cpp
+template <typename T>
+auto callSize(T& t, int) -> decltype(t.size(), void()) { t.size(); }
+
+template <typename T>
+void callSize(T&, long) { /* 回退版 */ }
+```
+
+**提示**：两个重载用 `int` 与 `long` 第二参数制造优先级差——`0` 精确匹配 int 优先；表达式 `decltype(t.size(), void())` 里 `t.size()` 不存在时，**替换失败**（不是错误），第一个重载被从重载决议里移除。
+
+**参考实现**（先自己写完再看）：
+
+```text
+机制：编译器对每个候选重载做模板实参替换；替换产生的非法表达式不报错，
+而是把该候选**移出重载决议**（Substitution Failure Is Not An Error）。
+T 无 size()：第一候选替换失败被忽略，静默选中 long 回退版——编译通过。
+T 有 size()：两候选都合法，第二参数 0 对 int 精确匹配胜出，调第一版。
+这就是「编译期按类型分派」的原始手段——没有运行时 if，没有开关宏。
+```
+
+要点自查：SFINAE 的关键词是「替换期失败被忽略」——失败发生在**替换阶段**而不是语义检查阶段，所以不是错误；`callSize(w, 0)` 的 `0` 是制造优先级的惯用配重。
+
+**任务二**：用 `std::void_t` 重写一个「探测类型是否有 `size()` 成员」的 trait（主模板 false、偏特化 true），并用 `static_assert` 验证 `std::vector<int>` 为 true、`int` 为 false；写出两版后回答：C++20 的什么设施让这套机关退役？
+
+**提示**：骨架是 `has_size<T, void_t<decltype(std::declval<T&>().size())>>`——表达式合法才匹配上偏特化。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+template <typename T, typename = void>
+struct has_size : std::false_type {};
+
+template <typename T>
+struct has_size<T, std::void_t<decltype(std::declval<T&>().size())>>
+    : std::true_type {};
+
+static_assert(has_size<std::vector<int>>::value);
+static_assert(!has_size<int>::value);
+
+// C++20 的 requires 表达式（concept）取代了这套机关：
+//   template <typename T> concept HasSize = requires(T& t) { t.size(); };
+// 同义、可读、报错可读——这是模板元编程从「机关」到「语言」的分界。
+```
+
+要点自查：void_t 版的核心技巧是「把『表达式是否合法』编码进偏特化的匹配条件」；能同时写出 SFINAE 版与 requires 版并说明演进动机，本篇与 [Type Traits 提取与检测](/cpp/360-TypeTraitsExtractionAndDetection) 的衔接就完整了。
 
 ## 12. 自我检查
 

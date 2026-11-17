@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: LINQ 常用算子、async/await、取消令牌与并发集合的速查手册，附可运行的完整示例与高频陷阱解析。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/110-CSharpLINQFunctionalProgramming'
   - 'csharp/080-CAsyncProgramming'
@@ -14,6 +14,16 @@ related:
 prerequisites:
   - 'csharp/070-CGenericCollection'
 ---
+
+## 为什么先讲三句话再查表
+
+本篇是速查手册：正文按「写法 + 一段可运行示例」组织，适合边写边查。查表之前先立三个心智锚点，避免"照抄能用但不知道为什么"：
+
+1. **LINQ 是延迟的流水线**：`Where/Select` 只搭管道，`ToList/First/Count` 才真正抽水——同一个查询枚举几次就执行几次，这是本篇一半陷阱的根源（详见 [LINQ 延迟与立即执行](/csharp/130-LINQDeferredImmediate)）；
+2. **异步解决的是"等待不占线程"**：`await` 时方法让出线程，I/O 完成后由线程池续接；并发的正确组织方式是 `Task.WhenAll` 而不是随手启动然后忘掉（详见 [C# 异步编程](/csharp/080-CAsyncProgramming)）；
+3. **取消是"合作式"的**：`CancellationToken` 必须一路传到真正做 I/O 的调用，令牌不传，取消就停在最外层的空等待。
+
+三句话立住之后，下文每张表都能对号入座。
 
 ## LINQ 查询
 
@@ -409,3 +419,64 @@ var cached = orders.Where(o => o.Paid).ToList();  // 只执行一次
 - **记住**：`Where/Select/OrderBy/GroupBy` 四个算子；`await` 一个 `Task`；用 `CancellationTokenSource` 触发取消。
 - **理解**：LINQ 延迟执行与 `ToList` 固化；`Task.WhenAll` 并发等待与异常聚合；`ValueTask` 只能消费一次。
 - **应用**：把"查询 + 聚合 + 排序"写成一条 LINQ 链；把"N 个独立 I/O 调用"改成 `WhenAll` 并发并全程携带取消令牌。深入原理见 [LINQ 延迟与立即执行](/csharp/130-LINQDeferredImmediate) 与 [async/await 状态机](/csharp/100-AsyncAwaitStateMachine)。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己写代码，再对照。本篇自检核心是"查完表后能不能脱表写出来"。
+
+**题 1（管道 + 物化）**：一行写出"订单金额大于 100 的前 10 条的客户名去重列表"，并标出哪一步才真正执行。
+
+参考答案：
+
+```csharp
+var names = orders.Where(o => o.Amount > 100m)   // 延迟：搭管道
+    .Take(10)                                    // 延迟：截断
+    .Select(o => o.CustomerName)                 // 延迟：投影
+    .Distinct()
+    .ToList();                                   // 立即：这里才枚举执行
+```
+
+前四步都是返回迭代器的延迟操作符，`ToList()` 触发整条管道一次性抽干。
+
+**题 2（并发改写）**：把 `foreach (var id in ids) { results.Add(await FetchAsync(id)); }` 改成并发版本（并发度受控），并说原版的问题。
+
+参考答案：
+
+```csharp
+var results = await Task.WhenAll(ids.Select(FetchAsync));   // 全并发
+// 或受控并发：Parallel.ForEachAsync
+await Parallel.ForEachAsync(ids,
+    new ParallelOptions { MaxDegreeOfParallelism = 8, CancellationToken = ct },
+    async (id, token) => await FetchAsync(id, token));
+```
+
+原版是"伪异步串行"——每个 await 都等上一个完成，总耗时仍是总和；`WhenAll` 是 max(单个)，受控并发在吞吐与下游压力之间取平衡。
+
+**题 3（取消令牌）**：`cts.CancelAfter(3000); await LongWorkAsync();` 超时后 LongWork 会停吗？正确写法补全它。
+
+参考答案：不会——令牌没传进去，取消信号停在 CTS 里。正确写法：`await LongWorkAsync(cts.Token);`，且方法内部每个异步调用（`Task.Delay(..., token)`、`http.GetAsync(url, token)`）都接收 token；仅当方法内部没有任何可取消点时才需要 `WaitAsync(TimeSpan, token)` 外部兜底。
+
+**题 4（并发容器）**：`List<T>` 在 `Parallel.ForEach` 里 `Add` 会有什么后果？`ConcurrentBag<T>` 与加锁 `List<T>` 怎么选？
+
+参考答案：`List.Add` 非线程安全，并发写会丢元素、内部数组越界甚至死循环。`ConcurrentBag` 适合"每线程各自生产、最后统一收割"（顺序无所谓）；需要顺序或去重语义时用 `lock` 包 `List` 或 `ConcurrentQueue/ConcurrentDictionary` 按语义选型——"并发集合"不是万能替身，先问需要的语义。
+
+**题 5（完整场景）**：合并两个能力：并行抓取 10 个 URL，每个 3 秒超时，收集"成功正文 + 失败原因"两类结果。写出核心代码。
+
+参考答案：
+
+```csharp
+var tasks = urls.Select(async url =>
+{
+    try
+    {
+        using var resp = await http.GetAsync(url, ct).WaitAsync(TimeSpan.FromSeconds(3), ct);
+        return (Ok: true, Body: await resp.Content.ReadAsStringAsync(ct), Error: (string?)null);
+    }
+    catch (Exception ex) { return (Ok: false, Body: null, Error: ex.Message); }
+});
+var results = await Task.WhenAll(tasks);
+var ok = results.Where(r => r.Ok).Select(r => r.Body!).ToList();
+var fail = results.Where(r => !r.Ok).Select(r => r.Error!).ToList();
+```
+
+要点：超时/失败就地转成结果值而不是抛出，让 `WhenAll` 的"一票否决聚合异常"语义不吞掉其他成功结果；`ct` 从源头传入实现真取消。

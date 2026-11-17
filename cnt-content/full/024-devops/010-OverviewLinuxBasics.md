@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: DevOps/SRE 理念、核心实践闭环与本模块学习地图——动手部分已拆分至 Linux 系统管理等专篇
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'devops/015-LinuxSystemManagement'
   - 'devops/310-OnCallPractice'
@@ -87,6 +87,12 @@ flowchart LR
 - 能说出 SRE 与 DevOps 的关系及 SLO/错误预算的博弈机制；
 - 能按本模块地图说出六层结构并规划自己的阅读顺序；
 - 知道理念篇到此为止，动手从 [Linux 系统管理](/devops/015-LinuxSystemManagement)开始。
+
+## 自检
+
+- 遮住上面的表格与闭环图，先自己画：DevOps 核心实践闭环从计划到监控共几步？反馈箭头为什么是灵魂——少了它，"发布后出事"与"发布前指标先说话"差在哪？
+- 用一句话分别说出 SLO、错误预算、变更冻结三者的关系：预算烧完之后发生什么，为什么这比"吵架"先进？
+- 不看地图，按依赖顺序背出本模块六层结构的第一层与第二层篇目；背不出就回到学习地图再读一遍——这是你接下来四周的行军路线。
 
 ## 下一步
 

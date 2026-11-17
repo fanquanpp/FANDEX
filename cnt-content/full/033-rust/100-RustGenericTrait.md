@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 泛型函数与结构体、Trait 定义实现、Trait 对象与生命周期标注
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'rust/090-RustCollections'
   - 'rust/095-RustIteratorsFunctional'
@@ -368,3 +368,54 @@ impl Fetcher for HttpFetcher {
 泛型解决"对多种类型写一份代码"，Trait 定义"行为的接口"，生命周期保证"引用不悬垂"。三者组合让 Rust 既能写出抽象代码，又保持零运行时开销与内存安全。下一步进入测试与调试，学会验证自己的代码。
 
 > **一句话记忆**：Rust 抽象三件套——"泛型（`<T>`）对多种类型写一份代码、Trait（`impl ... for`）定义行为接口、生命周期（`'a`）保证引用不悬垂"；需要多态时，编译期选泛型（静态分发）、运行期选 `Box<dyn Trait>`（动态分发）。
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出代码与结论，再展开对照。
+
+1. 写泛型函数 `count_gt(list: &[i32], threshold: i32) -> usize` 统计大于阈值的元素个数，再把签名泛型化为 `count_gt<T: PartialOrd>(list: &[T], threshold: &T) -> usize`——为什么 threshold 用 `&T` 而不是 `T`？
+2. 定义 trait `Playable`（`fn play(&self) -> String;`），为 `Song` 与 `Ad` 各写一个实现，用 `Vec<Box<dyn Playable>>` 把两者装进同一集合并遍历调用；再回答：如果 `play` 声明成 `async fn`，还能这样装进 `Box<dyn Playable>` 吗？
+3. 找茬：`fn make(flag: bool) -> impl Summary { if flag { Tweet { .. } } else { Article { .. } } }` 编译报什么错？两种修法分别是什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```rust
+// 任务一：泛型版
+fn count_gt<T: PartialOrd>(list: &[T], threshold: &T) -> usize {
+    list.iter().filter(|x| *x > threshold).count()
+}
+```
+
+要点：`threshold` 用 `&T` 是借用约定——比较只需要读，按值传 `T` 会把调用方的阈值移动走（非 `Copy` 类型调用后就没了），切片 `&[T]` 与引用 `&T` 一起让函数对所有类型零拷贝可用；`filter` 闭包里 `x` 是 `&&T`，`PartialOrd` 对引用也实现，`*x > threshold` 直接可比。
+
+```rust
+// 任务二
+trait Playable {
+    fn play(&self) -> String;
+}
+
+struct Song(String);
+struct Ad(String);
+
+impl Playable for Song {
+    fn play(&self) -> String { format!("播放歌曲《{}》", self.0) }
+}
+impl Playable for Ad {
+    fn play(&self) -> String { format!("插播广告：{}", self.0) }
+}
+
+fn main() {
+    let playlist: Vec<Box<dyn Playable>> =
+        vec![Box::new(Song("星屑".into())), Box::new(Ad("中场赞助".into()))];
+    for item in &playlist {
+        println!("{}", item.play());   // 虚表动态分发
+    }
+}
+```
+
+要点：`Song` 与 `Ad` 是不同类型，只有 `Box<dyn Playable>` 能把异构实现装进同一集合——每个元素多一次虚表跳转。若 `play` 声明成 `async fn`，该 trait 就不再是 dyn 兼容的：async 方法返回的 Future 类型由实现方决定，编译器无法为它生成统一的虚表条目（`Box<dyn Playable>` 编译不过），动态分发要退回 `async-trait` crate 或枚举分发（见第 6 节的限制说明）。
+
+任务三：编译报「`if` and `else` have incompatible types」——`impl Summary` 返回值必须是**单一具体类型**，两个分支返回了 `Tweet` 与 `Article` 两种类型。修法一：改成返回 `Box<dyn Summary>` 做动态分发；修法二：让两个分支真的返回同一类型（例如统一包装成同一个枚举或结构体），或者拆成两个函数。
+
+</details>

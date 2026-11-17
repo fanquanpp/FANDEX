@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 类型只存在于编译期：用 Schema 库补上运行时这一环。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/590-TypeSafeEnvVar'
   - 'typescript/600-TypeSafeFormValidation'
@@ -252,3 +252,11 @@ const data = z.array(ConcertSchema).parse(raw);
 2. **购票表单的完整链路**：用 PurchaseSchema 同时驱动前端表单校验与服务端请求体校验，观察两端报错信息是否一致。思路：前端用 flatten 结果渲染字段错误；服务端复用同一 schema（放共享包），对比"单源"与"两端各写一套"的维护成本。
 
 3. **环境变量启动自检**：为本项目设计 EnvSchema，包含必填、可选默认与格式约束三类字段，故意注入错误配置观察 fail fast 行为。思路：把 `env` 对象设为模块单例导出；思考为什么校验必须发生在任何业务代码执行之前。
+
+## 自检
+
+- 类型擦除之后 `User` 就没了——这句话解释了为什么「编译期类型再漂亮也拦不住运行时脏数据」。遮住第一节，用自己的话把因果链讲一遍。
+- `safeParse` 的返回值为什么是判别联合？成功分支拿到的数据与输入数据的类型差别在哪（unknown 收窄为 Zod 推导类型）？
+- 「schema 是唯一真相」怎么落地：`z.infer<typeof schema>` 派生类型后，手写 interface 还允许存在吗？两份真相漂移的后果是什么？
+- transform 与 refine 的职责边界是什么？校验后数据「可直接消费」靠的是哪一步？
+- 三类边界（响应、环境变量、用户输入）的失败策略为什么不同？遮住小结自己配对一遍。

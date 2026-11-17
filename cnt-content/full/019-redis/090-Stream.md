@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis Stream 消息日志模型：Entry ID 生成规则、Radix Tree 与 listpack 存储结构、XADD/XREAD/XRANGE 基础命令、写入端实践与消息队列选型对比。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'redis/092-StreamConsumerGroups'
   - 'redis/094-StreamOpsAndMonitoring'
@@ -1857,11 +1857,31 @@ XRANGE mystream 1718334600000-0 1718334700000-0
 
 ## 收尾
 
-本篇覆盖了 Stream 作为消息日志的数据模型与基础读写。自我检查三题：
+本篇覆盖了 Stream 作为消息日志的数据模型与基础读写。
 
-- 能不看资料说出 `1718334600000-3` 这个 ID 里两段的含义，以及时钟回拨时 Redis 怎么保证 ID 单调（第 2 章）；
-- 能解释为什么 XDEL 之后 XLEN 变小、内存却不一定立刻下降（墓碑标记，第 2.3 节）；
-- 能为一个"保留最近 1 小时日志"的需求写出带修剪的 XADD 命令（MINID 还是 MAXLEN，[运维监控篇](/redis/094-StreamOpsAndMonitoring)第 1 章给答案）。
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 动手自问：`1718334600000-3` 这个 ID 的两段各是什么？同一毫秒内写入多条消息时序号怎么变？时钟回拨时 Redis 怎么保证 ID 单调？
+
+参考答案（先自己答，再对照）：第一段是毫秒时间戳（服务端生成时间），第二段是该毫秒内的序号（从 0 起，同毫秒内递增）。时钟回拨时 Redis 不信任回拨后的墙钟：新时间戳若小于流内最后一条 ID 的时间戳，就沿用旧时间戳并递增序号，保证 ID 严格单调——这也是「消息 ID 天然有序，不要自己再排序」的依据。
+
+2. 概念自问：XDEL 之后 XLEN 变小了，为什么内存占用不一定立刻下降？
+
+参考答案（先自己答，再对照）：XDEL 不直接从底层节点挪走数据，而是把条目标记为墓碑（删除标记），待 XTRIM/MINID 类整理或节点打包时机才真正释放；Radix Tree 与 listpack 的节点粒度也决定了零散删除的内存不会即时归还。想真正回收用 XTRIM 按范围剪，或接受少量墓碑残留的正常现象。
+
+3. 动手自问：「保留最近 1 小时的日志」需求，XADD 该带 MINID 还是 MAXLEN？写出命令。
+
+参考答案（先自己答，再对照）：按时间语义用 MINID——先在应用侧算出一小时前的时间戳，然后 `XADD mystream MINID <一小时前的ms>-0 * field value`。MAXLEN 限的是条数，日志条数不均匀时「最近 1 万条」可能横跨任意时间跨度；MINID 直接表达「早于这个时间都不要」。两种都建议带近似修饰避免每次写入都精确整理。
+
+4. 概念自问：同一批消息，用 List 队列与用 Stream 读，「消息丢了怎么办」的答案差在哪？
+
+参考答案（先自己答，再对照）：List 取走即丢——RPOP 出来消费者崩溃，消息无迹可寻，只能自造「处理中列表 + 巡检」机制；Stream 条目按 ID 持久驻留（直到被 XTRIM/XDEL），配合消费者组的 PEL 可以确认、重投、回溯。可靠的投递语义是上 Stream 的决定性理由，List 只适合丢得起的通知。
+
+5. 动手自问：生产者批量写入 Stream 的两个固定套路是什么？各自防什么？
+
+参考答案（先自己答，再对照）：一是 `XADD ... MAXLEN ~ 1000000` 写入时顺手近似修剪，防流无界增长打爆内存（~ 成批修剪，精确修剪每写一条都逐条删除，慢一个量级）；二是 Pipeline 批量 XADD，防逐条写入的网络往返压垮吞吐。手动指定 ID 只用于幂等去重（业务事件重试不写成两条），且要自己保证 ID 单调。
 
 系列另两篇：[消费者组篇](/redis/092-StreamConsumerGroups)与[运维监控篇](/redis/094-StreamOpsAndMonitoring)。Stream 与整体持久化、集群机制的关系，分别见[持久化模块](/redis/150-RDBSnapshotPersistence)与[集群与高可用](/redis/220-RedisClusterHashSlot)。
 

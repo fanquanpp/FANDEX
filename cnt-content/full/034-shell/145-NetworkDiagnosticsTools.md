@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Shell 场景的网络诊断速查：ping/traceroute 连通性、dig/nslookup 的 DNS 排查、ss/lsof/netstat 三代端口占用、curl 排查姿态与 ufw 防火墙，附跨平台命令对照。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'shell/140-CrossPlatformCommandLine'
   - 'shell/120-TroubleshootingGuide'
@@ -53,7 +53,7 @@ dig google.com +short                     # 当前解析结果
 dig @8.8.8.8 google.com +short            # 指定 DNS 服务器对比（绕过本地缓存）
 ipconfig /displaydns                      # Windows：查看本机 DNS 缓存
 ipconfig /flushdns                        # Windows：清空 DNS 缓存
-sudo systemd-resolve --flush-caches       # Linux (systemd)：清空缓存
+sudo resolvectl flush-caches              # Linux (systemd)：清空缓存（新写法；systemd-resolve 命令已废弃）
 ```
 
 「改了 hosts 不生效」九成是缓存：浏览器自己的 DNS 缓存、系统缓存、nscd/systemd-resolved 三层都可能留旧值——按「浏览器重启 → 系统清缓存」顺序逐层排除，原理见 networking/110-DigNslookup。

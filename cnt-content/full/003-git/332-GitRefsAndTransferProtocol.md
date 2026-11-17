@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: refs 命名空间、refspec 语义与本地/smart HTTP/SSH 三种传输协议的协商过程
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -114,6 +114,8 @@ push 方向相反：客户端算出服务端缺什么，自己打 pack 上传，
 **浅克隆为什么快**：`clone --depth 1` 把协商改成「只要最新一棵快照，不要历史」，have/want 阶段直接截断，包体积从整个历史缩到一个提交。代价：没有历史可供 log/blame/bisect，后续 `fetch --unshallow` 补全。
 
 **为什么这样设计**：协商把传输量从「全量」压到「增量」，且打包在流上进行——客户端不需要等服务端算完整个包就能开始接收。这也是为什么 Git 大仓库的 fetch 远快于同样内容的 zip 下载。
+
+以上描述的是经典协议（v0）；自 Git 2.26 起，`protocol.version=2` 成为默认——引用通告改由独立的 `ls-refs` 调用按需只发客户端点名要的引用前缀，fetch 协商也支持按过滤器（partial clone 依赖它）与单分支限定，服务端不再一次性通告全部引用。对使用者可见的行为不变，大仓库的 ls-remote / fetch 明显更省。
 
 ## 5. 不同场景下的例子
 

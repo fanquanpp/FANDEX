@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 拆开 210 地图上 stack 那一段：无限递归数到几十万层才崩的现场实验，栈帧的建立与拆除、System V 与 Windows x64 传参差异、递归深度与尾调用优化、大局部数组与缓冲区溢出两类栈事故的逐行报告解读。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/200-DynamicMemoryManagement'
   - 'c/060-OperatorExpression'
@@ -516,12 +516,24 @@ frames.c:17:5:int main	16	48	static
 - pthread_create 手册页（线程默认栈大小与 RLIMIT_STACK 的关系）：https://man7.org/linux/man-pages/man3/pthread_create.3.html
 - AddressSanitizer 文档（检测范围与栈开销）：https://clang.llvm.org/docs/AddressSanitizer.html
 
-## 自我检查
+## 遮码自检
 
-- 能画出 main 到 f 再到 g 期间的帧图，说清 call、push rbp、ret 各把栈的哪一格动了；
-- 能用打印地址的实验量出相邻帧间距，并解释它为什么约等于帧大小；
-- 能不看资料说出两套 x86-64 调用约定各自的参数寄存器个数，以及 Windows 那 32 字节 shadow space 是谁留、归谁用；
-- 能把「递归崩在几十万层」「大数组一行就崩」「stack smashing detected」三个现象各自对应到栈的哪个机制，并各自给出修复手段。
+遮住上文示例代码与下面的答案栏，先自己画、先自己答，再展开对照。
+
+1. 画出 main 到 f 再到 g 期间的帧图，说清 call、push rbp、ret 各把栈的哪一格动了。
+2. 用打印地址的实验量出相邻帧间距，解释它为什么约等于帧大小。
+3. 两套 x86-64 调用约定各用几个寄存器传参？Windows 的 32 字节 shadow space 谁留、归谁用？
+4. 「递归崩在几十万层」「大数组一行就崩」「stack smashing detected」各自对应栈的哪个机制？修复手段？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. call 把返回地址压栈；序言 push rbp 把旧帧指针压栈并把 rsp 设为新帧底；局部变量在帧内更低地址；ret 弹回返回地址、整帧随 rsp 复位退场。帧从高地址（旧）向低地址（新）生长。
+2. 打印相邻两层递归里同一变量的地址，差值约等于一帧的大小——每层递归完整复制一份序言+局部变量。
+3. System V（Linux/macOS）：6 个整型寄存器（rdi/rsi/rdx/rcx/r8/r9）；Windows x64：4 个（rcx/rdx/r8/r9）外加调用方在栈上预留 32 字节 shadow space，供被调方把寄存器参数转存（也作对齐空间）。
+4. 递归几十万层崩：栈预算 = 每帧成本 × 深度，8 MB/1 MB 用尽——自限深度或改迭代；大数组一行就崩：单个局部变量超过剩余栈——改 malloc 上堆；stack smashing detected：越界写踩穿了 canary（守在返回地址前）——找到溢出的数组边界，修越界本身，canary 只是报警器。
+
+</details>
 
 ## 本章总结
 

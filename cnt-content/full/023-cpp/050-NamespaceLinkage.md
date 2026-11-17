@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 以「两个 .cpp 都定义了叫 helper 的函数，链接器炸了」引入，讲透命名空间隔离、using 的正确姿势与头文件里禁 using namespace 的原因、内部链接与外部链接（static 与匿名命名空间）、三文件工程 math_utils.h/.cpp/main.cpp 的完整分工与 g++ 编译命令，附 multiple definition 与 undefined reference 两类真实报错的调试实录，ODR 一句话收尾。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/060-LambdaExpression'
   - 'cpp/680-LinkSymbol'
@@ -373,6 +373,59 @@ collect2: error: ld returned 1 exit status
 - 命名空间：https://en.cppreference.com/w/cpp/language/namespace
 - 存储期与链接性：https://en.cppreference.com/w/cpp/language/storage_duration
 - 定义与 One Definition Rule：https://en.cppreference.com/w/cpp/language/definition
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：默写三文件工程——`math.h`（声明 `int add(int, int)`）、`math.cpp`（定义）、`main.cpp`（调用），写出把三个文件编译成一个可执行文件的 g++ 命令；然后回答：头文件里的声明与 .cpp 里的定义各给链接器什么？
+
+**提示**：声明给链接器一个「承诺」（未定义符号），定义兑现它；编译是逐文件的，链接才把承诺配对。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// math.h
+#pragma once
+int add(int a, int b);
+
+// math.cpp
+#include "math.h"
+int add(int a, int b) { return a + b; }
+
+// main.cpp
+#include "math.h"
+int main() { return add(1, 2); }
+```
+
+```bash
+g++ -std=c++23 main.cpp math.cpp -o app   # 或先 -c 编译两个 .o 再链接
+```
+
+要点自查：声明在头文件是「接口公告栏」，定义只能有一份（ODR）；漏掉 math.cpp 编译就得到 undefined reference——这正是本篇第 1 节的现场。
+
+**任务二**：两个 .cpp 各自写了一个 `static int helper()` 与一个全局函数 `void log()`（同签名），链接器对哪个翻脸、哪个不吭声？给出两种修法（命名空间隔离、内部链接）的代码，并说出「全局函数冲突」为什么比「helper 冲突」更吵。
+
+**提示**：内部链接（static/匿名命名空间）把名字限制在单个翻译单元；无修饰的全局函数是外部链接——同一符号在两个目标文件里各一份定义，链接器报 multiple definition。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// 修法一：各自放进自己的命名空间
+namespace net { void log(); }      // net/log.cpp
+namespace io  { void log(); }      // io/log.cpp
+
+// 修法二：只在本文件用，就藏起来
+namespace { void log(); }          // 匿名命名空间 = 内部链接（等效旧的 static）
+```
+
+```text
+helper 各自 static/匿名命名空间：不冲突（各自私有）；
+log() 无修饰：外部链接，两个定义 => 链接期 multiple definition 报错。
+判据：函数只给本文件用就收进匿名命名空间——「能藏尽藏」是最便宜的冲突预防。
+```
+
+要点自查：「链接器翻脸的顺序」——先 multiple definition（重定义），再 undefined reference（缺定义）；能按报错反推链接性设置，本篇就通了。
 
 ## 13. 自我检查
 

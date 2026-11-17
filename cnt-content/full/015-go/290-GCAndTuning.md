@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go垃圾回收与GC调优详解：并发标记清除。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/230-ReflectionGenericFunction'
   - 'go/280-MemoryEscapeAnalysis'
@@ -74,8 +74,12 @@ Go 语言的 GC 设计哲学可概括为:**低延迟优先,吞吐量次之**。�
 | Go 1.14 | 异步抢占 | 长时间循环不再阻塞 GC | < 0.5ms |
 | Go 1.19 | GOMEMLIMIT | 软内存上限 | 同上 |
 | Go 1.21+ | Pacer 改进、Arena 等 | 内存感知调度 | < 0.5ms |
+| Go 1.25 | Green Tea GC（实验） | GOEXPERIMENT=greenteagc 试点 | < 0.5ms |
+| Go 1.26 | Green Tea GC 默认启用 | 小对象标记局部性优化 | < 0.5ms |
 
 Go 1.5 是分水岭,从此 Go 的 GC 进入"亚毫秒级 STW"时代。Go 团队发布的《Getting to Go 1.5》系列博客记录了这一工程奇迹的实现路径。
+
+最近一次结构性变化是 **Green Tea GC**：1.25 以 `GOEXPERIMENT=greenteagc` 试点，1.26 起默认启用。它没有改变三色并发标记的整体框架，而是重写了小对象的标记扫描方式——按内存 span 分组、利用局部性批量扫描（在新 amd64 CPU 上还会用上向量指令），官方给出的收益是 GC 开销降低 10% 到 40%（GC 密集型程序受益最大）。对绝大多数服务这意味着"升级即调优"：不需要改任何代码，升级版本就白拿一段 GC 收益；但旧的调优经验（比如靠 `sync.Pool` 绕开小对象扫描成本）的性价比会相应下降，升级后应重新跑一次 GC 基线（见后文"实践 1"）再决定是否保留存量调优手段。
 
 ## 形式化定义
 
@@ -1767,7 +1771,7 @@ var equipmentMap = make(map[int64]*Equipment)
 - 若分配速率高,即使 HeapAlloc 未达 2GB,pacer 也可能频繁触发。
 - 检查 `go_memstats_next_gc_bytes` 与 `go_memstats_heap_alloc_bytes` 的差距。
 
-**题 2.5**:解释 Go 1.18 引入的"软内存上限"与"硬内存上限"的区别。
+**题 2.5**:解释 Go 1.19 引入的"软内存上限"与"硬内存上限"的区别。
 
 **参考答案要点**:
 - 软内存上限(GOMEMLIMIT):运行时尽量不超过,但允许在极端情况下短暂超出。

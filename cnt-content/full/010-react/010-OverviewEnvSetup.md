@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从「界面 = f(state)」这个函数式等式认识 React：组件是返回 JSX 的函数、用 Vite react 模板搭起项目、跑通并修改第一个组件；JSX 是 JS 扩展而非模板语言、与 Vue 模板的一句对照，附 default 导出缺失与 Objects are not valid as a React child 调试实录。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-16'
 related:
   - 'react/020-ComponentProps'
   - 'react/030-StateEvent'
@@ -129,7 +129,7 @@ export default App;
 
 ## 4. JSX 是什么：JS 扩展，不是模板语言
 
-初见 JSX 容易以为它是「写在 JS 里的 HTML 模板」，方向反了：JSX 本身就是 JavaScript 语法的一部分，由编译器（Vite 里的 esbuild）翻译成普通函数调用，浏览器执行的根本不是 JSX。和 Vue 对照一句就清楚：Vue 的 template 是独立的模板语言，v-if、v-for 是模板自己的指令；JSX 没有指令，花括号里直接写 JS 表达式：
+初见 JSX 容易以为它是「写在 JS 里的 HTML 模板」，方向反了：JSX 本身就是 JavaScript 语法的一部分，由编译器（Vite 里的 Oxc，Vite 7 及以前是 esbuild——2026 年 3 月的 Vite 8 换了引擎，机制不变）翻译成普通函数调用，浏览器执行的根本不是 JSX。和 Vue 对照一句就清楚：Vue 的 template 是独立的模板语言，v-if、v-for 是模板自己的指令；JSX 没有指令，花括号里直接写 JS 表达式：
 
 ```jsx
 const player = { name: '阿天', score: 980 };

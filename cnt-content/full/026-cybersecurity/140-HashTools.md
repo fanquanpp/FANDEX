@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: '哈希计算与校验命令：md5sum/sha256sum、openssl dgst 与 HMAC、大文件校验、企业级完整性校验实践'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/060-HashAlgorithm'
   - 'cybersecurity/460-Hashcat'
@@ -15,6 +15,10 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+- **解决什么问题**：哈希工具是「完整性」的日常抓手——下载校验、备份比对、固件指纹、取证都靠它们。关键认知是分清两类用途：**完整性校验**（防意外损坏，MD5 都能干；防恶意篡改必须用带密钥的 HMAC 或带签名的校验，见 060 篇）与**密码存储**（必须用 bcrypt/Argon2id 这类故意慢的哈希）。
+- **容易怎么错**：用 `md5sum` 校验下载文件就以为防住了篡改——无密钥哈希挡不住「文件与校验值一起被替换」；把 fast hash 用于密码存储；HMAC 的密钥用弱口令随手填。
+- **学完能做什么**：按场景选对工具（完整性/HMAC/密码哈希三条线），跑通「生成-记录-复核-告警」的完整性链路，并知道系统级的替代方案在 500-AIDEFileIntegrity。
 
 ## md5sum 哈希计算
 
@@ -329,3 +333,11 @@ sha256sum -c checksums.sha256 --quiet && echo "文件无变更" || echo "文件�
 # 只输出哈希值
 sha256sum document.pdf | cut -d' ' -f1
 ```
+
+## 自检
+
+- 遮住「文件完整性校验」一节，写出「生成校验清单 → 复核 → 只报告损坏文件」的命令链（`sha256sum 文件列表 > check.sha256` 与 `sha256sum -c check.sha256`）。
+- 为什么无密钥哈希挡不住「文件 + 校验值一起被替换」？防这种攻击的三个出路（HMAC 带密钥比对、GPG 签名、从独立可信渠道核对官方指纹）。
+- 遮住「HMAC 计算」一节，写出 HMAC-SHA256 的命令，并回答它与「自己把密钥拼在内容后求哈希」的区别（双杂凑结构，抗长度扩展攻击，见 060 篇）。
+- bcrypt 的 rounds 与 PBKDF2 的迭代次数各自控制什么？生产密码存储按 060 篇的口径首选什么算法（Argon2id）？
+- 大文件校验为什么要用流式/分块（`openssl dgst` 与 `sha256sum` 都是流式读取）？校验后文件又被改了第一行，哈希会怎样（雪崩效应——完全不同）。

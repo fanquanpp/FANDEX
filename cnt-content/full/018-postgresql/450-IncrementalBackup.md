@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL增量备份：PG17 pg_basebackup --incremental与pg_combinebackup、backup_manifest、WAL归档与PITR恢复
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'postgresql/400-PhysicalReplicationSlot'
   - 'postgresql/420-LogicalDecodingOutputPlugin'
@@ -206,3 +206,38 @@ FROM pg_stat_archiver;
 - 进阶注意：增量依赖 WAL summarizer 与块级摘要，适合大库降低备份窗口；
   归档命令必须幂等；备份策略四件套（全量节奏、增量链、WAL 连续性、
   定期恢复演练）缺一不可。
+
+## 教学自检
+
+遮住示例命令，先自己写再对照参考答案。
+
+### 任务一：增量备份与合并的最小闭环
+
+需求：周一做全量，周二到周四每天做增量。写出周一与后续各天的 pg_basebackup 命令、周四数据恢复时 pg_combinebackup 的合并顺序，并说出增量备份为什么必须先开 summarize_wal。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+```bash
+# 周一全量
+pg_basebackup -D /bkp/full_mon -Fp -Xn
+# 周二起, 每天以最近一份备份为基准做增量
+pg_basebackup -D /bkp/inc_tue --incremental=/bkp/full_mon -Fp -Xn
+pg_basebackup -D /bkp/inc_wed --incremental=/bkp/inc_tue -Fp -Xn
+# 恢复: 按时间顺序合并成一份完整备份
+pg_combinebackup /bkp/full_mon /bkp/inc_tue /bkp/inc_wed -o /bkp/restored
+```
+增量备份靠 WAL 块引用摘要（WAL summarizer 进程持续写 pg_wal/summaries）判断"哪些块被改过"，不开 summarize_wal 增量直接被拒。合并顺序必须与备份链一致（全量在前、增量按时间排列），混序会合并失败。
+
+</details>
+
+### 任务二：RPO 目标怎么反推备份策略
+
+需求：业务要求"最多丢 5 分钟数据"。仅靠每天全量增量够吗？写出满足 RPO=5min 的组合方案与恢复演练要点。
+
+<details>
+<summary>参考实现与讲解</summary>
+
+不够——备份线（全量+增量）恢复点最多到"最后一次备份"，丢一整天的差量。组合方案：备份线（防整库丢失）+ WAL 归档持续备份（archive_command 或 pgBackRest/wal-g），恢复时用最后一次备份重放 WAL 到故障前一刻（PITR，见 455 篇），RPO 收敛到归档延迟（秒~分钟）。演练要点：定期在独立目录验证 pg_combinebackup + recovery_target_time 恢复可用，备份"看起来在"和"能恢复"是两回事。
+
+</details>

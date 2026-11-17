@@ -6,7 +6,7 @@ module: 'java'
 category: 后端技术
 difficulty: advanced
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/300-StreamAPI'
   - 'java/320-StreamCollectorsGroupingBy'
@@ -487,3 +487,13 @@ Gatherer.ofSequential(
 - 积累器/收尾器的 `boolean` 返回与 `downstream.push` 的 `false` 是短路协议，配合 `limit` 能真正减少计算。
 - `mapConcurrent` 建立在虚拟线程之上，适合 I/O 密集映射；CPU 密集转换用它反而增加调度开销。
 - 版本红线：JDK 21 LTS 无此 API；22/23 需 `--enable-preview`；从 24（含 25 LTS）起才可放心在生产使用。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 写出"每 3 个元素一组"的 gather 一行调用。——`stream.gather(Gatherers.windowFixed(3))`。
+2. windowFixed 与 windowSliding 的输出差异是什么？输入 [1,2,3,4] 各产生什么？——windowFixed 不重叠分组 [[1,2,3],[4]]；windowSliding 滑窗 [[1,2,3],[2,3,4]]。
+3. 自定义 Gatherer 的四个生命周期函数各在什么时机调用？——integrator（每元素进）、combiner（并行合并）、finisher（流尾收尾）、以及 Gatherer.of 组装；核心是 integrator 返回 false 即终止流。
+4. mapConcurrent(n) 的并发语义与风险是什么？——最多 n 个任务并发执行（用虚拟线程），元素顺序保持；每个 lambda 里再嵌套 gather/阻塞 IO 要评估资源，异常会传播取消。
+5. Gatherer 与 Collector 的分工一句话。——Collector 服务终端操作（聚合为值，一次性），Gatherer 服务中间操作（可自定义逐元素/带状态变换，可插链中任意位置）。

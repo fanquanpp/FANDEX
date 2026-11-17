@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/030-IoCDependencyInjection'
   - 'spring-boot/060-SpringMvcRestApi'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'spring-boot/100-TransactionManagement'
   - 'spring-boot/130-SpringCacheRedis'
@@ -57,7 +57,7 @@ AOP 不修改你的源码。它在运行期把匹配的方法「包」起来，�
 ```xml
 <dependency>
     <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-aop</artifactId>
+    <artifactId>spring-boot-starter-aop</artifactId>  <!-- Boot 4.0 起改名 spring-boot-starter-aspectj -->
 </dependency>
 ```
 

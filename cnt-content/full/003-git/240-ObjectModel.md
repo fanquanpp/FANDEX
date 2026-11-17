@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: Git 对象模型详解：blob、tree、commit、tag 四种对象的结构、关系与手工构造实验。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'git/150-GitRemoteRepoOperation'
   - 'git/170-DistributedVCSPrinciple'
@@ -220,7 +220,7 @@ git count-objects -v
 
 ### 7.2 哈希算法的演进
 
-传统对象哈希为 SHA-1，并带 SHA-1 对抗碰撞加固。Git 2.29 起支持实验性的 SHA-256 对象格式（`git init --object-format=sha256`），但与主流托管平台的兼容仍在推进中，日常项目暂不建议切换；涉及签名校验的细节见 [签名提交与安全实践](git/350-SignedCommitsAndSecurityPractices)。
+传统对象哈希为 SHA-1，并带 SHA-1 对抗碰撞加固。Git 2.29 起支持 SHA-256 对象格式（`git init --object-format=sha256`），2.42 起官方视其为生产可用而不再是实验特性；但 GitHub 等主流托管平台尚未支持 SHA-256 仓库，日常项目暂不建议切换。官方 BreakingChanges 文档已宣布 Git 3.0 计划把新仓库的默认哈希从 SHA-1 切到 SHA-256（同时明确没有废弃 SHA-1 格式的计划）；涉及签名校验的细节见 [签名提交与安全实践](git/350-SignedCommitsAndSecurityPractices)。
 
 ## 8. 完整实验：手工构造一个提交
 
@@ -263,6 +263,34 @@ cat hello.txt
 - **`git cat-file -p` 传错类型**：传 tree 哈希得到的是条目清单而非文件内容；先用 `-t` 确认类型再 `-p`。
 - **以为 reset 删了对象**：reset 只是移动引用，对象仍在数据库中，直到 reflog 过期并被 gc 清理（见 [git-gc](git/420-GitGc)）。
 - **文档示例哈希对不上**：哈希由内容决定，头信息含字节数与文件名所在 tree 位置，任何环境差异都会导致哈希不同；验证时以自己命令的输出为准。
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. blob / tree / commit / tag 四种对象的原始内容各含什么？blob 为什么不存文件名？
+2. `git add` 与 `git commit` 在对象层各对应哪一步？写出用底层管道命令手工造一个提交的完整序列。
+3. 实操：对同一个文件改一个字节，用 `git hash-object` 重新算哈希，验证「一个字节改动 → 全新 blob」。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) blob = 「blob <字节数>\0 + 内容」，只有内容没有名字（文件名属于 tree 条目，
+   所以改名不新建 blob）；tree = 「条目列表」，每条为 mode + 类型 + 哈希 + 文件名；
+   commit = tree 哈希 + parent 哈希 + author/committer + 消息；
+   tag = 指向对象 + 类型 + 标签名 + tagger + 消息。
+
+2) add = 写 blob + 更新 index；commit = 把 index 写成 tree、再包一层 commit、分支指针前移。
+   手工等价序列（见第 8 节实验）：
+echo "hello" | git hash-object -w --stdin        # blob
+git update-index --add --cacheinfo 100644,<blob>,hello.txt
+git write-tree                                    # tree
+echo "msg" | git commit-tree <tree>               # commit
+git reset --hard <commit>
+```
+
+</details>
 
 ## 小结
 

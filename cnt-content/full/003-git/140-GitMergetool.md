@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: git mergetool 详解：三方合并视图、主流工具配置、VS Code 集成与冲突收尾。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'git/130-MergeConflictResolution'
   - 'git/270-GitRebase'
@@ -163,6 +163,39 @@ git difftool -d                          # 目录级双栏对比
 ```
 
 记忆法：merge 系配置服务冲突解决，diff 系配置服务日常比较；都配成同一工具最省心。
+
+## 练习与自检
+
+遮码自检：先遮住答案栏，自己写出命令与结论，再展开对照。
+
+1. LOCAL / BASE / REMOTE / MERGED 四个窗各对应什么？为什么说 BASE 是三方合并的灵魂？
+2. mergetool 保存正常退出后，Git 自动做了哪两件事？`*.orig` 备份文件的两个处置办法？
+3. 实操：两个分支改同一行制造冲突，配好 VS Code（或 vimdiff）解掉它并完成合并提交；然后改用「人肉三步法」再做一次，验证两者等价。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) LOCAL = 当前分支版本（<<<<<<< HEAD 段）；BASE = 双方共同祖先版本（||||||| 段，部分工具显示）；
+   REMOTE = 正在合入的版本（======= 之后）；MERGED = 你编辑并保存的结果。
+   有了 BASE 才能判断「两边各自改了什么」，否则只能在两个版本间盲目二选一。
+
+2) 自动 git add 该文件（标记为已解决）+ 清理临时文件；收尾由你执行 git commit 或
+   git rebase --continue。备份处置：git config --global mergetool.keepBackup false，
+   或保留默认并在 .gitignore 加 *.orig。
+
+3)
+git switch main
+echo base > f.txt && git add f.txt && git commit -m "base"   # 前提：f.txt 先被跟踪
+git switch -c conflict-lab && echo mine > f.txt && git commit -am "mine"
+git switch main && echo theirs > f.txt && git commit -am "theirs"
+git merge conflict-lab                # CONFLICT
+git mergetool                         # 三窗对照解决，保存退出
+git commit                            # 完成合并提交
+# 人肉三步法：git diff 看冲突 → vim 删标记留内容 → git add + commit，结果与上等价
+```
+
+</details>
 
 ## 小结
 

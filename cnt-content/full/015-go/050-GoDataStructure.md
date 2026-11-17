@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 数组、切片底层原理、map 底层实现、struct、嵌套与组合、标签与 JSON 序列化。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-16'
 related:
   - 'go/030-GoBasicSyntax'
   - 'go/040-GoFunctionMethod'
@@ -885,3 +885,48 @@ type Optimized struct {
 fmt.Println(unsafe.Sizeof(Bad{}));       // 24
 fmt.Println(unsafe.Sizeof(Optimized{})); // 16
 ```
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（map 的零值与初始化）**：声明一个 `map[string]int` 类型的变量但不初始化，向它写入一个键会发生什么？读一个不存在的键呢？写出两种正确的初始化方式。
+
+参考实现：
+
+```go
+var m map[string]int        // 零值 nil map
+_ = m["a"]                  // 读：安全，返回零值 0
+// m["a"] = 1               // 写：panic，assignment to entry in nil map
+
+m1 := map[string]int{"a": 1}      // 字面量初始化
+m2 := make(map[string]int, 8)     // make 预分配容量
+m2["a"] = 1
+```
+
+要点：nil map 可读不可写；初始化选 `make`（预期大容量）或字面量（已知内容）。
+
+**题 2（结构体字段对齐）**：`struct{ a bool; b int64; c bool }` 与 `struct{ a, c bool; b int64 }` 在 64 位平台上 `unsafe.Sizeof` 各是多少？为什么？
+
+参考实现：
+
+```go
+type Bad struct {
+    a bool
+    b int64
+    c bool
+} // 8 + 8 + 8 = 24 字节：bool 后填充 7 字节对齐 int64
+
+type Good struct {
+    a, c bool
+    b int64
+} // 2 + 6(填充) + 8 = 16 字节：两个 bool 共享一个对齐块
+```
+
+要点：字段按对齐系数放置，把小类型聚在一起能省内存；这解释了为什么结构体字段排序不是纯风格问题。
+
+**题 3（切片 vs 数组 vs map 的选择）**：要存"用户 ID 到昵称"的映射、"按顺序处理的消息队列"、"固定 3 个传感器的读数"，各选什么类型？一句话说理由。
+
+参考答案：映射用 `map[int]string`（键值查找）；顺序队列用 `[]Message` 切片（动态长度 + 顺序遍历）；固定读数用 `[3]float64` 数组（长度是类型的一部分，值语义可整体比较与拷贝）。选择依据：是否需要键查找、长度是否可变、是否需要值语义。

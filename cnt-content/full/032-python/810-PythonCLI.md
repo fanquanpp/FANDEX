@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 命令行工具开发
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'python/430-PythonLog'
   - 'python/750-PythonTest'
@@ -467,3 +467,12 @@ def config(config, api_key):
     save_config(config)
     click.echo("配置已保存")
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：用 click 写一个带 `--verbose` 开关与位置参数 FILE 的最小命令。要点：`@click.command()` + `@click.argument("file")` + `@click.option("--verbose", is_flag=True)`；入口 `cli()`；flag 开关与取值开关（`--count N`）的差别要能说清。
+2. 默写题：让 `--api-key` 不出现在进程列表与 shell 历史的三个要点。要点：`prompt=True, hide_input=True` 交互式获取；绝不接受命令行参数传密钥（`ps` 可见）；落盘配置文件权限收紧（0600）。
+3. 排错题：`argparse` 版迁移到 click 后子命令不执行，函数定义了但没有任何输出。最可能原因？要点：忘了组挂接——`@click.group()` 下的子命令要用 `@group.command()` 装饰且入口调 `group()` 而不是函数本身。
+4. 口述题：CLI 的退出码纪律是什么？要点：0 表示成功、非 0 表示失败（可区分错误类型）；`sys.exit(1)` 或 `raise SystemExit`——CI 与脚本靠退出码判定成败，永远不静默吞错后返回 0。

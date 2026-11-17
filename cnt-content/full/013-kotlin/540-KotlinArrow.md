@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 函数式编程库Arrow
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'kotlin/450-KotlinCompose'
   - 'kotlin/410-KotlinGradle'
@@ -22,11 +22,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「基础概念」的核心机制、典型用法与常见陷阱
-- 掌握「快速上手」的核心机制、典型用法与常见陷阱
-- 掌握「详细用法」的核心机制、典型用法与常见陷阱
-- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+- 能说出 Arrow 2 的定位变化：错误处理从 Validated/Option 转向 Either + Raise DSL
+- 能用 `Either` 与 `either { }` 表达「可能失败的业务操作」，并解释它与异常的取舍
+- 能用 `Raise<DomainError>` + 上下文参数写 typed errors，理解 raise 的短路语义
+- 能识别什么时候不需要 Arrow：Kotlin 空安全与 Result 已覆盖的简单场景
 
 
 
@@ -39,9 +38,9 @@ Arrow 的核心价值在于：用类型系统来表达可能失败的计算，�
 ## 基础概念
 
 - **Either**：表示两种可能的结果，Left 通常表示错误，Right 表示成功
-- **Option**：表示可能存在的值，类似 Kotlin 的可空类型但更安全
-- **Validated**：表示验证结果，可以累积多个错误
-- **Raise**：Arrow 的新式错误处理方式，用上下文接收者实现
+- **Option**：表示可能存在的值；Arrow 2 起已废弃，推荐直接用 Kotlin 可空类型表达
+- **Validated**：验证结果累积错误；Arrow 2 起已废弃，改用 Either + Raise 的 accumulate
+- **Raise**：Arrow 2 的推荐错误处理方式，基于 Kotlin 上下文参数实现 typed errors
 - **NonEmptyList**：至少包含一个元素的列表，保证非空
 
 ## 快速上手
@@ -51,8 +50,8 @@ Arrow 的核心价值在于：用类型系统来表达可能失败的计算，�
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.arrow-kt:arrow-core:1.2.4")
-    implementation("io.arrow-kt:arrow-fx-coroutines:1.2.4")
+    implementation("io.arrow-kt:arrow-core:2.3.0")
+    implementation("io.arrow-kt:arrow-fx-coroutines:2.3.0")
 }
 ```
 
@@ -216,7 +215,7 @@ fun main() {
 
 ### Raise 上下文式错误处理
 
-Arrow 2.0 引入了基于上下文的 Raise 机制，让错误处理更简洁（早期基于实验性的 context receivers 实现，随 Kotlin 2.2 的上下文参数（Context Parameters）演进）：
+Arrow 2 引入了基于上下文的 Raise 机制，让错误处理更简洁（早期基于实验性的 context receivers 实现，随 Kotlin 上下文参数演进——2.2 预览、2.4 转稳定，Arrow 2 起全面采用）：
 
 ```kotlin
 import arrow.core.raise.Raise
@@ -432,3 +431,34 @@ fun main() {
     println(updated.address.city)  // BEIJING
 }
 ```
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：Either 短路链**。三个可能失败的步骤（查用户、查订单、算运费），用 `either { }` 串起来，要求任何一步失败整个表达式返回 Left。
+
+参考实现：
+
+```kotlin
+import arrow.core.Either
+import arrow.core.raise.either
+
+sealed interface OrderError {
+    data class UserNotFound(val id: String) : OrderError
+    data class OrderInvalid(val id: String) : OrderError
+}
+
+fun shippingTotal(userId: String, orderId: String): Either<OrderError, Int> = either {
+    val user = findUser(userId).bind()        // Left 则整个 either 提前返回
+    val order = validateOrder(orderId).bind()
+    calculate(user, order)
+}
+```
+
+自检问题：`bind()` 替代了什么手写模式？（答：替代了 `fold`/`mapLeft` 层层嵌套的「右值提取 + 错误提前返回」样板——Raise 上下文里 raise 即 return，出错路径被类型收进 Left。）
+
+**练习 2：Raise 与异常的分界**。`Raise<DomainError>` 表达「业务上有意义的失败」，`NullPointerException` 这类异常不进 Raise。给出划分标准与理由。
+
+参考答案：划分标准是「调用方是否需要分支处理」：预期中的业务失败（用户不存在、库存不足）进 Raise，让签名携带错误类型、调用方用 when 分派；不变量破坏与 bug（空指针、越界）走异常——它们不该被调用方「处理」，记录并修复才是正道。全部塞进 Either 会把 bug 伪装成业务分支。
+
+**练习 3：什么时候不用 Arrow**。三个需求：可空值兜底、一次性命令行错误退出、多错误聚合的表单校验。哪些 Kotlin 原生机制就够，哪个真正受益于 Arrow？
+
+参考答案：可空值兜底——`?:` 与可空类型原生够用，套 Option 是负资产（Arrow 2 也已废弃 Option）；CLI 错误退出——`runCatching`/异常足够；多错误聚合表单校验——这才是 Arrow 的甜点：Raise 的 accumulate 把所有字段错误一次收齐，原生机制写起来啰嗦。结论：Arrow 的价值在「错误聚合与 typed error 传播」，简单场景优先语言原生。

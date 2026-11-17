@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: '隐写术工具命令：图片与音频隐写及提取（steghide/zsteg/binwalk）、隐写检测思路与 CTF 实战流程'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/590-ReverseEngineering'
   - 'cybersecurity/140-HashTools'
@@ -15,6 +15,10 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+- **解决什么问题**：隐写术把数据藏在「看起来无害」的载体里（图片、音频、文档），是 CTF 的经典题型、也是数据外传（DLP 视角）的真实通道。本篇是工具面：按「LSB/文件追加/元数据/调色板/音频」五类隐写方式对应五类检测工具，形成 CTF 实战流程。
+- **容易怎么错**：拿到图片只跑一种工具（LSB 没中就放弃——应按五类依次过）；忘了隐写常有口令（steghide/stegseek 需配字典）；把「文件追加」当图片损坏直接重压缩（会毁掉附加数据）。
+- **学完能做什么**：跑通「file/xxd → 元数据 → 逐类提取 → 口令爆破 → 字符串确认」的完整流程，并知道每一步对应的隐写原理。
 
 ## 隐写术分析
 
@@ -470,3 +474,11 @@ diff=sum(1 for p1,p2 in zip(img1.getdata(),img2.getdata()) if p1!=p2)
 print(f'差异像素数: {diff}')
 "
 ```
+
+## 自检
+
+- 遮住五类隐写方式的表，凭默写出每类的原理与检测工具，并用「改动视觉上最不显眼的地方」一句话概括 LSB 为什么难肉眼察觉。
+- CTF 拿到一张可疑 PNG，写出你的「五连检」命令序列（file/xxd → exiftool → binwalk -e → zsteg → strings）。
+- steghide 提取提示要口令时怎么办？写出 stegseek 配 rockyou 爆破口令的命令。
+- 为什么「重压缩图片」可能毁掉证据？（文件追加类隐写的数据在文件尾部，重编码会截断；LSB 数据在重编码中会被破坏。）
+- 防御视角：企业如何在 DLP 里防隐写外传？（对出网图片/文件做哈希与内容白名单、限制可携带文件的类型与大小、对异常编码图片告警。）

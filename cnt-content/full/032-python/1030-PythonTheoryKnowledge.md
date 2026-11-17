@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: GIL 机制、内存管理、字节码与运行时模型。
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'python/300-FileIOContextManager'
   - 'python/970-PythonProjectExampleWebCrawlerDataAnalysis'
@@ -468,3 +468,12 @@ class MyClass(metaclass=Meta):
 | 引用计数 | CPython 的主要 GC 机制                       | 循环引用由分代 GC 处理                |
 | 名称修饰 | `__attr` 变为 `_ClassName__attr`             | 仅双下划线前缀触发，防止子类覆盖      |
 | 协程     | async/await 基于生成器实现                   | 事件循环调度，非抢占式                |
+
+## 遮码自检
+
+遮住上表与正文，自己先复述，再对照：
+
+1. 默写题：八个核心机制各用一句话复述，再对着上表核对遗漏。要点：复述不出的项就是下一轮精读对象——这张表是全模块理论篇的考点索引。
+2. 预测题：`a.b = x` 赋值时，数据描述符、实例 `__dict__`、非数据描述符的查找优先级？要点：数据描述符 > 实例字典 > 类（非数据描述符/类属性）——property 能拦住赋值、函数不能，根源就在这里。
+3. 口述题：为什么「引用计数 + 分代 GC」两套机制缺一不可？要点：引用计数即时回收但处理不了循环引用；分代 GC 专治循环，代价是周期性暂停——两者互补是 CPython 内存模型的标准答案。
+4. 操作题：把一段含 async/await 的伪代码改写成等价生成器描述（不用真实现）。要点：能说出「await 让出控制权给事件循环、恢复点由循环调度」即达标——async 是生成器语义的语法糖化，理解这一点看协程源码不再发怵。

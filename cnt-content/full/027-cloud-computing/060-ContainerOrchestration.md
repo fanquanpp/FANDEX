@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 从手跑一个容器到让集群托管应用：用 Docker 与 kind 实操理解编排为什么存在，掌握 Deployment、Service、HPA 最小组合。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/070-DockerDeepAnalysis'
   - 'cloud-computing/110-KubernetesCore'
@@ -311,6 +311,27 @@ kubectl create secret docker-registry harbor-secret \
 - [ ] 生产的镜像标签不是 latest
 - [ ] Deployment 配置了 requests 与 limits
 - [ ] 有状态数据不在容器文件系统里
+
+## 教学自检
+
+遮住上面的 YAML 与命令示例，先口头回答，再展开对照。答不出的回到对应小节重读：
+
+1. 镜像与容器的区别是什么？Pod 与 Deployment 的区别是什么（谁是谁的「主人」）？
+2. 生产镜像为什么绝对不用 latest 标签？该用什么？
+3. Secret 为什么不是加密？真正的保护靠什么？
+4. 不设 requests 与 limits 各会发生什么？
+5. 手动杀掉 Deployment 管的一个 Pod，会发生什么？为什么？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 镜像是不可变的构建产物（模板），容器是镜像的运行实例。Pod 是最小调度单元，Deployment 是更高一层的「管家」——管副本数、滚动更新与回滚；改期望状态要改 Deployment 的 YAML，Pod 只是它维护的对象。
+2. latest 在拉取策略 IfNotPresent 下会长期复用旧镜像，两台节点可能跑不同版本、回滚失效且极难排查。生产用 Git SHA 或语义版本（sha-abc1234、v2.3.1），让线上镜像能精确对应到某次提交。
+3. base64 只是「不方便人眼读」，一秒解码。真保护靠 RBAC 收权 + 外部密钥管理（Vault、云 KMS）。
+4. 不设 requests：调度器盲排，节点过载；limits 太小：应用莫名 OOMKill（日志只有一行 Killed）；CPU limit 太小还有 Throttle 毛刺。
+5. ReplicaSet 检测到副本数少于期望，立即新建一个 Pod 补上——这就是「声明式 + 控制循环」的自动自愈，也是「直接改 Pod 没用」的原因。
+
+</details>
 
 ## 6. 练习
 

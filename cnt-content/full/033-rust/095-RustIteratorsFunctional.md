@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Iterator trait 与惰性求值、map/filter/zip/chain 适配器、collect/sum/fold 消费器、零成本抽象与闭包捕获
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'rust/090-RustCollections'
   - 'rust/110-RustClosuresFnTraits'
@@ -330,7 +330,7 @@ fn main() {
 
 **任务三：分页与去重（约 15 分钟）**
 
-给定一列带重复的访问记录（只含用户 id），写函数返回「第 2 页（每页 3 条）去重后的用户 id 列表」。只允许迭代器方法，不允许手写循环与中间去重 Set。
+给定一列带重复的访问记录（只含用户 id），写函数返回「全列表去重后的第 2 页（每页 3 条）用户 id 列表」。只允许迭代器方法，不允许手写循环；去重要在元素流过管道时完成，而不是先把整个列表收进 Set（参考实现里 `HashSet::insert` 的返回值会帮上忙）。
 
 参考实现（先自己写完再展开对照）：
 

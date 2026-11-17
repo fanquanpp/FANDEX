@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 $ 语句 python 块与 init python 在剧本中嵌写 Python，理解 store 命名空间与常量 store
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -116,7 +116,7 @@ init python in mystore:
 from store.named import variable
 ```
 
-注意：导入是重绑定（rebinding）而不是起别名——导入之后两边是各自独立的变量绑定，一边改动不会同步到另一边。这就是为什么"导入一次然后到处用"是坑：导入拿到的只是当时值的快照，命名 store 里后来的改动不会反映过来，反之亦然。
+注意：导入是重绑定（rebinding）而不是起别名——导入之后两边是各自独立的变量绑定，一边改动不会同步到另一边。这就是为什么"导入一次然后到处用"是坑：导入拿到的只是当时值的快照，命名 store 里后来的改动不会反映过来，反之亦然。8.5.3 起每个 store 都被当作真正的 Python 包处理，跨 store 导入（以及在 init python 等普通 Python 代码里 import store.名字）成为受支持的用法，但上面这条重绑定语义不变。
 
 ### 常量 store
 
@@ -206,6 +206,45 @@ label start:
 ```
 
 输出里 snapshot 是导入那一刻的 3，之后即使 mod_hud.hint_count 再变，hint_count 也停在旧值——这就是重绑定语义的实锤。
+
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案或写出代码，再展开对照。
+
+1. $ 语句与 python 块的分工是什么？python hide: 解决什么问题、代价是什么？
+2. init python 里的赋值为什么不保存？init 优先级的执行顺序规则是什么？创作者该用哪个范围？
+3. "设一个变量"该用 define 还是 init python？三个理由各是什么？
+4. init python 里能读到 default 变量吗？经验法则一句话是什么？
+5. 访问命名 store 的两种写法，哪种拿最新值、哪种拿快照？8.5.3 对 store 体系改了什么、什么没变？
+6. _constant = True 声明的 store 有什么特性？举两个内置常量 store 的名字。
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) $ 写单行、python 块写多行逻辑。hide 让块内变量进匿名作用域：不污染
+   store、不可保存，适合"只读全局、只产临时值"的结算类代码；代价是
+   块内赋值创建的是局部变量，改不了全局状态。
+
+2) init 阶段的产物不是"游戏开始后发生变化的变量"，不在存档范围。
+   优先级从低到高执行，同优先级按文件路径 Unicode 顺序；创作者控制在
+   -999 到 999，低于 0 留给库与主题。
+
+3) define。它记录赋值的文件与行号（launcher 可跳转）、可被 Lint 检查、
+   语义上一眼看出"这是常量声明"；init python 留给循环、条件、多语句。
+
+4) 不能（要么拿不到值要么异常）。init python 写"游戏的结构"，运行期
+   代码写"游戏的过程"。
+
+5) store.名字.变量 的模块路径永远拿最新值；from store.名字 import 变量
+   是重绑定快照。8.5.3 起各 store 被当作真正的 Python 包，跨 store 导入
+   受支持；重绑定语义不变。
+
+6) 整个 store 不参与保存，其可达对象也不参与回滚。内置常量 store：
+   audio（音频命名空间）、build（构建配置）、achievement、layeredimage。
+```
+
+</details>
 
 ## 小结
 

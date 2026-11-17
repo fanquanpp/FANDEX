@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'CloudWatch 命令实战：指标查询、日志组与 Logs Insights、告警、仪表盘与异常检测。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---
@@ -501,3 +501,28 @@ aws cloudwatch put-metric-data \
   --namespace MyApplication \
   --metric-data '[{"MetricName":"Latency","Timestamp":"2026-07-31T00:00:00Z","Value":250,"Unit":"Milliseconds"}]'
 ```
+
+---
+
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. CloudWatch 的「命名空间 + 指标 + 维度」三层模型是什么？EC2 的 CPU 指标在哪个命名空间、用什么维度定位到单机？
+2. 默写查询「过去 1 小时某实例平均 CPU（300 秒粒度）」的完整命令。
+3. `get-metric-statistics` 的 period 与统计方式怎么选？P99 延迟该用哪种统计？
+4. 发布自定义指标的最小参数集是什么？自定义命名空间的命名惯例是什么？
+5. 日志的三层结构（组/流/事件）是什么？Lambda 的日志组名长什么样？
+6. 告警的三要素是什么？`--evaluation-periods` 连续低于阈值才触发的意义是什么？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. 命名空间隔离指标域（AWS/EC2、AWS/RDS、自定义 MyApplication），指标是时间序列，维度是序列的标识组合。CPU 指标在 `AWS/EC2`，维度 `InstanceId`。
+2. `aws cloudwatch get-metric-statistics --namespace AWS/EC2 --metric-name CPUUtilization --dimensions Name=InstanceId,Value=i-xxx --start-time ... --end-time ... --period 300 --statistics Average`。
+3. period 是聚合窗口（最小 60s）；统计方式 Average/Maximum/Minimum/Sum/SampleCount。P99 要用 `--extended-statistics p99`（标准 statistics 里没有分位数）。
+4. `--namespace` + `--metric-data`（MetricName/Value/Unit，可选 Dimensions/Timestamp）。自定义命名空间不要用 `AWS/` 前缀（官方保留），用产品/服务名（如 MyApplication）。
+5. 日志组（Log Group，按应用/服务分）→ 日志流（Log Stream，按来源/时间分片，如实例 ID）→ 日志事件。Lambda 的组名是 `/aws/lambda/<函数名>`。
+6. 指标 + 阈值与比较方向（GreaterThanThreshold 等）+ 评估周期数。连续 N 个周期都越限才告警，是为了过滤瞬时毛刺——单点超阈值不拉响（对应可观测性篇的 `for:` 语义）。
+
+</details>

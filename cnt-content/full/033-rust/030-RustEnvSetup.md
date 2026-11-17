@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Rust 环境搭建：rustup 工具链管理、cargo、rust-analyzer 与第一个程序，附常见问题排查。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related:
   - 'rust/040-RustBasicSyntax'
   - 'rust/020-RustOverview'
@@ -65,12 +65,12 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 安装完成后需要把 `%USERPROFILE%\.cargo\bin` 加入 PATH（安装器通常自动配置），然后验证：
 
 ```bash
-rustc --version   # 例如 rustc 1.98.0
-cargo --version   # 例如 cargo 1.98.0
+rustc --version   # 例如 rustc 1.100.0
+cargo --version   # 例如 cargo 1.100.0
 rustup show       # 查看已安装的工具链与默认通道
 ```
 
-讲解：若提示"command not found"，说明 PATH 未生效，请重开终端或手动把 `~/.cargo/bin` 加入 PATH。Rust 每 6 周发布一个稳定版，之后随时用 `rustup update` 升级到最新（如 1.98.x → 1.99）。
+讲解：若提示"command not found"，说明 PATH 未生效，请重开终端或手动把 `~/.cargo/bin` 加入 PATH。Rust 每 6 周发布一个稳定版，之后随时用 `rustup update` 升级到最新（如 1.100.x → 1.101）。
 
 ## 3. 工具链通道：stable、beta 与 nightly
 

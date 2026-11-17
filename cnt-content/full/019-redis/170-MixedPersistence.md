@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis混合持久化：RDB+AOF组合方案、加载流程、配置与性能权衡
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'redis/150-RDBSnapshotPersistence'
   - 'redis/160-AOFLogPersistence'
@@ -261,3 +261,27 @@ INFO Persistence
 # aof_rewrite_in_progress: 是否正在重写
 # aof_last_bgrewrite_status: 上次重写状态
 ```
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：混合持久化把 RDB 与 AOF 各自的长处拼在哪里？短处呢？
+
+参考答案（先自己答，再对照）：长处拼接：恢复速度靠「前半段 RDB 二进制全量加载」（比纯 AOF 逐条重放快一个量级），数据安全靠「后半段 AOF 增量按 appendfsync 追加」（丢数据上限回到秒级）。短处是两者兼具——付 fork/COW 的快照成本，也付增量写盘的成本；且 base 是二进制不可读。
+
+2. 动手自问：7.0 的 multi-part AOF 目录里，混合思想落在哪两类文件上？与 4.x~6.x 的「单文件混合」差别是什么？
+
+参考答案（先自己答，再对照）：落在 `*.base.rdb`（RDB 全量）与 `*.incr.aof`（AOF 增量）上，由 manifest 清单串联，加载顺序仍是先 base 后 incr。差别：4.x~6.x 是真正的「一个文件里 RDB 头 + AOF 尾」；7.0 拆成多文件，重写只需生成新 base + 登记 manifest，不再有重写缓冲区双写。
+
+3. 判断题：`aof-use-rdb-preamble no` 可以让 AOF 更小。
+
+参考答案（先自己答，再对照）：错。设 no 只是让 base 文件也用 RESP 文本格式（纯 AOF），体积更大、加载更慢——它存在的意义只剩兼容老工具/老流程；官方配置注释明确说「禁用它仅为向后兼容」。想省体积应该保持 yes 并让重写正常触发。
+
+4. 概念自问：金融/支付类场景的持久化组合怎么选？纯缓存场景呢？
+
+参考答案（先自己答，再对照）：金融类用混合持久化 + `appendfsync always`：恢复快、丢失上限压到一条命令，代价是吞吐最低——够不够要用容量与延迟预算验证。纯缓存直接 `appendonly no` + `save ""`（或保留默认 RDB 做兜底），持久化越薄吞吐越高，缓存数据本来就允许丢。
+
+5. 动手自问：同是「最多丢 1 秒」承诺，混合 AOF（everysec）与纯 RDB 的差别在恢复速度上怎么体现？
+
+参考答案（先自己答，再对照）：两者丢失上限接近（everysec 的 1 秒 vs RDB 的快照间隔——后者实际更大），差别在恢复：千万键规模混合 AOF 约 15 秒（RDB 全量 + 少量增量重放），纯 AOF 要逐条重放约 2 分钟。选混合的理由通常是「既要秒级安全又要分钟内恢复」，两样都不要时纯 RDB 最省。

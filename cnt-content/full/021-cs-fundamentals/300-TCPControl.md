@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: TCP 拥塞控制全解：慢启动、拥塞避免、快速重传、快速恢复与 BBR 的设计思想。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/270-ComputerNetwork'
   - 'cs-fundamentals/290-NetworkProtocolDeep'
@@ -186,3 +186,12 @@ retrans:0/12 retrans_rate:0.001 ...
 - 慢启动决定了短连接与高 RTT 链路的性能天花板，CDN、连接复用、initcwnd 调优都由此展开。
 - bufferbloat 与长肥网络是理解"为什么 Reno 不够用"的两个关键现象。
 - Linux 下 `ss -i` + Wireshark 时序图是观测 cwnd 行为的标准工具组合；切换算法用 `tcp_congestion_control`，但共享链路公平性需谨慎评估。
+
+## 自检
+
+- 遮住第 2 节的滑窗公式，先自己写出「发送窗口 = min(rwnd, cwnd)」并解释两边的保护对象，再回答：为什么流量控制解决不了拥塞（rwnd 只盯着接收方）？
+- 遮住慢启动小节，先自己画出 cwnd 从 10 MSS 起「每 RTT 翻倍、到 ssthresh 转线性」的折线图，再对照——ssthresh 的初始值与每次超时后的更新规则是什么？
+- 遮住快速重传小节，回答：为什么是「3 个重复 ACK」而不是 1 个？它比超时重传省掉了什么（等 RTO 的整段时间）？
+- 遮住快速恢复小节，先自己写出「cwnd 减半、继续按拥塞避免线性增长」的动作序列，再对照为什么它不像超时那样打回 1。
+- 遮住 BBR 小节，回答：BBR 把「拥塞」的定义从丢包改成了什么？它持续估计的两个量（BDP）分别怎么测？
+- 遮住第 4 节末尾的查看与切换命令，自己写出「查看当前算法」与「临时切换为 bbr」的 sysctl 两条命令。

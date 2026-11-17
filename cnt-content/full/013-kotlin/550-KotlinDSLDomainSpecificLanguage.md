@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: DSL 设计模式、带接收者的 Lambda、类型安全构建器与实际项目 DSL 设计。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'kotlin/250-CoroutineDispatcherContext'
   - 'kotlin/460-KotlinMultiplatform'
@@ -21,11 +21,10 @@ prerequisites: []
 
 ## 学习目标
 
-- 掌握「1. DSL 概述」的核心机制、典型用法与常见陷阱
-- 掌握「2. 带接收者的 Lambda」的核心机制、典型用法与常见陷阱
-- 掌握「3. 类型安全构建器」的核心机制、典型用法与常见陷阱
-- 掌握「4. 中缀函数」的核心机制、典型用法与常见陷阱
-- 掌握「5. 运算符重载」的核心机制、典型用法与常见陷阱
+- 能解释 DSL 的语言基础三件套：带接收者的 lambda、`@DslMarker` 防止嵌套作用域串台、隐式接收者优先级
+- 能读懂 Gradle Kotlin DSL 与 Ktor 路由为什么「长得像配置」，说出它们背后都是类型安全构建器
+- 能设计一个自己的小型 DSL 并给出约束：作用域边界、非法组合在编译期报错
+- 能权衡 DSL 的成本：声明式可读性 vs 抽象泄漏与 IDE 跳转复杂度
 
 
 
@@ -304,7 +303,7 @@ Gradle Kotlin DSL 是 Kotlin DSL 最广泛的应用之一：
 ```kotlin
 // build.gradle.kts
 plugins {
-    kotlin("jvm") version "2.2.0"
+    kotlin("jvm") version "2.4.21"
     `java-library`
     `maven-publish`
 }
@@ -314,7 +313,7 @@ dependencies {
     implementation("io.ktor:ktor-client-core:3.0.0")
 
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.14.4")
 }
 
 tasks.test {
@@ -519,3 +518,42 @@ test {
 4. **保持不可变性**：构建器内部可变，构建结果不可变
 5. **命名清晰**：DSL 方法名应接近领域语言，避免技术术语
 6. **文档和示例**：DSL 的正确用法需要清晰的文档和示例
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：带接收者 lambda 还原**。`fun config(block: Config.() -> Unit)` 与普通 `fun config(block: (Config) -> Unit)` 调用处写法有何差异？写出两者调用代码。
+
+参考实现：
+
+```kotlin
+// 带接收者：块内直接调用 Config 的方法
+config { host = "db.local"; port = 5432 }
+
+// 普通 lambda：必须显式传参
+config { it.host = "db.local"; it.port = 5432 }
+```
+
+结论：接收者把块内 this 绑到目标类型上，成员免前缀——这是所有 Kotlin DSL「像配置文件」的语法地基。
+
+**练习 2：@DslMarker 的作用**。给两个嵌套构建器（Server、Route）标注 `@DslMarker` 前后，块内直接调外层方法会发生什么变化？
+
+参考答案：标注前，内层 Route 块里可以直接调用外层 Server 的隐式接收者成员（两个 this 都可见，嵌套深了分不清改的是谁）；标注 `@DslMarker` 后，内层块里访问外层隐式接收者成员直接编译报错——强制显式 `server { }` 标注目标。这就是 Gradle KTS 与 Ktor DSL 防止「标签串台」的机制。
+
+**练习 3：设计取舍**。为「邮件模板」设计 DSL：主题、收件人、正文分节。写出最小构建器，并指出一个故意用编译期约束拒绝的非法组合。
+
+参考实现：
+
+```kotlin
+@DslMarker annotation class MailDsl
+
+class MailBuilder {
+    var subject: String = ""
+    private val recipients = mutableListOf<String>()
+    fun to(addr: String) { recipients += addr }
+    fun build(): Mail = Mail(subject, recipients)
+}
+
+fun mail(block: MailBuilder.() -> Unit): Mail = MailBuilder().apply(block).build()
+```
+
+约束示例：`subject` 只在构建器里可赋值、`recipients` 私有——调用方无法绕过 DSL 直接改内部集合；要更强的约束（如正文必须至少一节）可让 `build()` 校验失败抛异常，或把状态建模进类型（无收件人则没有 build 方法）。

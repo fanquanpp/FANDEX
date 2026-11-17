@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 原始类型、联合类型、字面量类型与类型推断。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/020-HowToReadThisCourse'
   - 'typescript/030-TypeScriptOverviewEnvSetup'
@@ -1027,7 +1027,7 @@ function log(message: string) {
 
 ### 8.3 泛型类型推断
 
-> 进阶衔接：泛型（`<T>`）在这里只是"推断"的配角；它的完整体系——约束、默认值、泛型类、工具类型——在 `008-FunctionGeneric` 中系统讲解。第一遍读到本节知道"编译器会从实参推断 T"即可。
+> 进阶衔接：泛型（`<T>`）在这里只是"推断"的配角；它的完整体系——约束、默认值、泛型类、工具类型——在[泛型函数](/typescript/220-FunctionGeneric)中系统讲解。第一遍读到本节知道"编译器会从实参推断 T"即可。
 
 ```typescript
 function identity<T>(value: T): T {
@@ -2033,4 +2033,12 @@ let display_name: string = name ?? "Anonymous"
 
 **为什么正文不出现这类记号**：类型论记号精确但抽象，零基础读者不需要通过它理解 TypeScript。本模块的正文统一使用代码示例与白话解释；需要形式化表达时，一律放在文末的"进阶附录"中。
 
-相关深入内容见 `028-OnTheRoleOfSymbolicExecutionInTypeSystems`（符号执行与类型系统）、`061-ATheoryOfTypePolymorphismInProgramming`（类型论理论串讲）与 `026-CovarianceContravariance`（子类型关系的形式化）。
+相关深入内容见 [TypeScript 理论知识点](/typescript/710-TypeScriptTheory)（类型论基础与子类型关系的形式化串讲）与 [协变与逆变](/typescript/260-CovarianceContravariance)（子类型关系在函数参数位置上的细则）。
+
+## 自检
+
+- 遮住第 2 节表格，用自己的话说出 `any` 与 `unknown` 的核心区别，以及为什么「外来数据优先 `unknown`」。
+- `never` 在联合类型里遇到任何类型会发生什么？这背后的吸收规则是什么？
+- 遮住 5.1 节代码，自己写出「把 `'idle' | 'loading' | 'success'` 三个字符串变成类型」的写法，并解释字面量类型解决什么问题。
+- 类型断言 `as` 与类型守卫（`typeof`/`in`）的分工是什么？为什么说「能守卫就不断言」？
+- 遮住 6.2 节，写出 `as` 语法与尖括号语法的样子，并说明为什么推荐 `as`。

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'kubectl 学习笔记：入职第一天连上集群——看状态、部署应用、查日志排障、扩缩容与端口转发，最后是绝不能搞错的上下文管理。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'devops/090-KubernetesCoreDetailed'
   - 'devops/110-HelmChartApplicationPackage'
@@ -198,3 +198,11 @@ kubectl config set-context --current --namespace=dev   # 给当前上下文设�
 1. `get -o yaml` 是学习他人资源配置的最快途径；配合 `explain <资源>` 看字段文档。
 2. 批量操作永远先以同样条件 get 预览，再换成 delete 执行。
 3. 应用多了手写 YAML 不现实，包管理交给 Helm（见 [Helm Chart 应用打包](/devops/110-HelmChartApplicationPackage) 与 [Helm 常用命令](/devops/120-HelmCommands)）。
+
+## 自检
+
+- 遮住所有命令块，按工作流默写：看状态、查原因、读日志三条命令各是什么？`logs --previous` 什么场景必须用？
+- create 与 apply 的语义差一句话说清：哪个可以反复执行做增量更新、为什么 CI/GitOps 只建立在后者上？
+- 口答三道判断题：port-forward 能当生产入口吗？`--force --grace-period=0` 什么时候可以用？批量 delete 前必须先做什么？
+- 上下文三连默写：查当前集群、列出本机凭证、切换集群——并解释为什么"新终端先 current-context"要进肌肉记忆。
+- 动手实验遮住第 8 节再自己设计一个：怎么制造一个 ImagePullBackOff 并在 5 分钟内定位修复？

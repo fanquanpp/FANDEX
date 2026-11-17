@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Vue Router 导航守卫详解：全局守卫、路由独享守卫、组件内守卫、触发顺序与鉴权实践。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'vue3/150-AsyncComponentSuspense'
   - 'vue3/220-PiniaPersistencePlugin'
@@ -34,7 +34,7 @@ prerequisites: []
 
 Vue Router 从 0.x 时代起就提供导航守卫，用于在路由切换前执行校验。Vue Router 3（配合 Vue 2）使用 `next()` 回调风格：守卫函数接收 `(to, from, next)` 三个参数，必须调用 `next()` 放行，否则导航悬挂。这种风格的问题在于：忘记调用 `next()` 导致页面白屏；异步逻辑中重复调用 `next()` 导致不可预测行为；`next('error')` 等特殊用法晦涩。
 
-Vue Router 4（2021 年随 Vue 3 发布）改进了守卫协议：守卫函数返回一个值来描述导航结果，不再依赖回调。返回值协议如下：
+Vue Router 4（2020-12 发布）改进了守卫协议：守卫函数返回一个值来描述导航结果，不再依赖回调。返回值协议如下：
 
 当前稳定版为 Vue Router 5，返回值协议与 4.x 保持一致，本文示例在 5.x 下同样成立。
 
@@ -46,16 +46,15 @@ Vue Router 4（2021 年随 Vue 3 发布）改进了守卫协议：守卫函数�
 
 返回一个 `Error` 实例或 `{ error: Error }`：导航失败，错误由 `router.isReady` 或导航 promise 捕获。
 
-Vue Router 4.1 之后，`next` 回调风格被标记为遗留 API，官方文档明确推荐返回值风格。Vue Router 4.5 时代（2025 年后）进一步强化了 TypeScript 类型支持与 `RouteLocationRaw` 推导，守卫中的类型错误可以在编译期暴露。
+返回值风格自 Vue Router 4.0（2020-12）起就是官方推荐写法——发布公告原话「Say goodbye to `next`」，`next` 参数仅作迁移兼容保留。Vue Router 5.0.3（2026-02）起，开发环境调用 `next` 会打印弃用警告，并将在未来版本移除。Vue Router 4.5 时代（2025 年后）进一步强化了 TypeScript 类型支持与 `RouteLocationRaw` 推导，守卫中的类型错误可以在编译期暴露。
 
 ```mermaid
 timeline
     title Vue Router 守卫协议演进
     2016 : Vue Router 2 引入 next() 回调
-    2020 : Vue Router 4 引入返回值协议
-    2021 : Vue Router 4.0 正式随 Vue 3 发布
-    2022 : 4.1 标记 next() 为遗留 API
-    2025 : 守卫类型推导完善，推荐返回值风格
+    2020 : Router 4.0 发布，主打返回值风格（next 兼容保留）
+    2025 : 守卫类型推导完善，返回值风格成为事实标准
+    2026 : Router 5.0.3 对 next() 打弃用警告
 ```
 
 ## 2. 形式化定义
@@ -419,6 +418,18 @@ export const permissionGuard: NavigationGuard = async (to, from) => {
 
 为什么 `beforeEnter` 不重复触发：路由记录级守卫只在初始进入时执行，参数变化属于同一路由记录内的更新，应使用组件内守卫。这是面试与实战中的高频易错点。
 
+## 自检
+
+回答不出的回对应小节；守卫题先遮住示例代码自己写，再对照。
+
+1. 说出一次导航的完整守卫执行顺序，并指出「确认」与「全局后」的分界点。
+2. beforeEach 里返回 undefined 和返回 true 有区别吗？返回一个路由地址字符串会发生什么？
+3. 为什么「登录态检查」放 beforeEach、「页面标题」放 afterEach、「角色数据齐备」放 beforeResolve？三者换位会出什么问题？
+4. /user/1 跳 /user/2 时哪些守卫会触发、哪些不会？组件内的 onBeforeRouteUpdate 为什么比重新创建组件更合适？
+5. beforeEach 中调用 async 函数时，忘记 await 会发生什么？加载态应该在哪个守卫开、哪个关？
+
+## 附录：守卫 API 速查
+
 ### 1. 全局守卫
 
 #### 1.1 beforeEach
@@ -442,7 +453,7 @@ router.afterEach((to, from, failure) => {
 });
 ```
 
-### 1. 路由独享守卫
+### 2. 路由独享守卫
 
 ```javascript
 const routes = [
@@ -456,7 +467,7 @@ const routes = [
 ];
 ```
 
-### 2. 组件内守卫
+### 3. 组件内守卫
 
 ```javascript
 export default {
@@ -478,7 +489,7 @@ export default {
 };
 ```
 
-### 3. 守卫执行顺序
+### 4. 守卫执行顺序
 
 1. beforeRouteLeave（离开组件）
 2. beforeEach（全局）
@@ -487,7 +498,7 @@ export default {
 5. beforeRouteEnter（进入组件）
 6. afterEach（全局）
 
-### 4. 返回值
+### 5. 返回值
 
 | 返回值               | 效果     |
 | -------------------- | -------- |

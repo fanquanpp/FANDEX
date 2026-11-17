@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Markdown 转义机制：反斜杠的可转义字符集、行尾硬换行、HTML 实体与表格管道符等常见陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/040-BasicTextFormat'
   - 'markdown/120-Strikethrough'
@@ -17,7 +17,7 @@ prerequisites:
 ---
 
 > **认知导入（Layer 0 生存层）**
-> 前置知识：004 强调语法（转义最常与之纠缠）。
+> 前置知识：040 强调语法（转义最常与之纠缠）。
 > 边界说明：转义的本质是告诉解析器"这个字符是内容，不是格式标记"。本篇讲清两套转义体系——反斜杠（Markdown 层）与 HTML 实体（HTML 层）。
 > 强制练习：输入 `\*不是强调\*` 观察星号原样显示；删掉反斜杠再看星号如何变成强调。
 

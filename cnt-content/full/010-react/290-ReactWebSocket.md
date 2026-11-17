@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 接入 WebSocket 实战：Effect 生命周期与 StrictMode 双跑、自动重连与心跳、useSyncExternalStore 共享连接、消息状态化与常见陷阱（SSE 对比）。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'react/270-ReactDesignPattern'
   - 'react/280-ReactWebAssembly'
@@ -241,3 +241,16 @@ const es = new EventSource('/api/notifications'); // 自动重连
 es.onmessage = (e) => setNotices((n) => [...n, e.data]);
 return () => es.close();
 ```
+
+## 教学自检（遮住代码先作答）
+
+按遮码自检法：先遮住每题的代码与答案，自己写或说出结论，再对照。全对才算过本篇。
+
+1. **辨析题**：「谁拥有连接」为什么是 WebSocket 接入的第一命题？组件内 Effect 持有连接的寿命错配体现在哪？
+   答案：连接是长生命周期外部系统，组件是短生命周期临时消费者；组件卸载就关连接会让其他页面失去推送，不关就泄漏。多组件/多页面共享时把连接提为模块级 store，用 `useSyncExternalStore` 订阅——首订阅建连、末订阅断连。
+2. **预测题**：StrictMode 下 Effect 双跑，组件挂载后 WS 面板里出现两条连接，原因是什么？修在哪？
+   答案：开发模式「挂载 -> 清理 -> 再挂载」暴露清理缺失：清理函数没写（或只清了回调没 close）。修法是清理对称——返回 `() => ws.close()`；生产构建不双跑，但缺失的清理在生产同样泄漏。
+3. **修 Bug 题**：断网十秒重连后，界面上的价格停在旧值不动了，最可能的漏写点是什么？
+   答案：重连成功后没有把「连接可用」的状态与新数据重新写进 store（或 onmessage 只在初次挂载时注册）。自动重连必须配合：重连后重新注册 onmessage/恢复心跳、UI 层展示「已断线/重连中」让用户知道数据新鲜度。
+4. **规则题**：单向推送场景为什么常选 SSE 而不是 WebSocket？
+   答案：SSE 是纯 HTTP 上的服务端单向流，EventSource 自带自动重连与事件语义，代理/防火墙友好且无需协议升级；需要客户端也主动发消息（聊天、双向状态同步）才升级到 WebSocket。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Kotlin 扩展函数与扩展属性的原理、形式化语义、工程实践与陷阱分析
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'kotlin/070-KotlinScopeFunction'
   - 'kotlin/110-KotlinCollectionOperation'
@@ -23,11 +23,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「理论推导」的核心机制、典型用法与常见陷阱
-- 掌握「代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「对比分析」的核心机制、典型用法与常见陷阱
+- 能说出扩展函数与成员函数的三点本质区别（无状态、静态解析、不可重写），并解释它们互为因果
+- 能写出顶层扩展、扩展属性与可空接收者扩展，说清「为什么扩展函数访问不了私有成员」
+- 能推演继承层次下扩展函数的解析结果，避免「以为会多态」的经典误判
+- 能用中缀扩展与运算符扩展把调用写成语义化 DSL，并知道 `operator` 修饰的约束
 
 
 ## 历史动机与背景
@@ -1740,336 +1739,53 @@ val result = streamOf(1, 2, 3, 4)
 - Wu, Y. et al. 《Compiler-Aware Extension Function Optimization for JVM》，PLDI 2022；
 - Barlas, G. et al. 《Multi-platform Extension Function Semantics in Kotlin Multiplatform》，ECOOP 2023。
 
-## 扩展函数基础
+## 小练习（先自己做，再展开参考实现）
 
-**基本写法：为 String 添加扩展函数**
-`fun String.<name>(): <ReturnType>`
-```kotlin
-// 为 String 添加扩展函数
-fun String.addExclamation(): String = this + "!";
-```
+**练习 1：静态解析推演**。先遮住答案写下输出：
 
-**基本写法：为 Int 添加扩展函数**
-`fun Int.<name>(): <ReturnType>`
 ```kotlin
-// 为 Int 添加扩展函数
-fun Int.isEven(): Boolean = this % 2 == 0;
-```
+open class Animal
+class Dog : Animal()
 
-**换行写法：带逻辑的扩展函数**
-`fun <ReceiverType>.<name>(<params>): <ReturnType> { <body> }`
-```kotlin
-// 为 List 添加带逻辑的扩展函数
-fun <T> List<T>.second(): T {
-    if (this.size < 2) throw NoSuchElementException("列表没有第二个元素");
-    return this[1];
+fun Animal.feed() = "喂动物"
+fun Dog.feed() = "喂狗"
+
+fun pet(a: Animal) = a.feed()
+
+fun main() {
+    println(pet(Dog()))
+    println(Dog().feed())
 }
 ```
 
-**基本写法：为可空类型添加扩展函数**
-`fun <ReceiverType>?.<name>(<params>): <ReturnType>`
+参考答案：`喂动物`、`喂狗`。扩展函数按**声明类型**在编译期静态解析：`pet` 的参数声明为 `Animal`，即使运行时传入 `Dog`，`a.feed()` 也绑定 `Animal.feed()`。它不是虚方法，不能被子类重写——「多态」只属于成员函数。
+
+**练习 2：可空接收者扩展**。写一个 `String?.orDash(): String`：null 或空串返回 `"-"`，否则原样返回。要求调用处对非空值安全，不出现 `!!`。
+
+参考实现：
+
 ```kotlin
-// 为可空类型添加扩展函数
-fun String?.isNullOrBlank(): Boolean = this == null || this.isBlank();
-```
+fun String?.orDash(): String = this?.takeIf { it.isNotEmpty() } ?: "-"
 
----
-
-## 扩展属性
-
-**基本写法：只读扩展属性**
-`val <ReceiverType>.<name>: <Type> get() = <expr>`
-```kotlin
-// 为 String 添加只读扩展属性
-val String.firstChar: Char
-    get() = this.first();
-```
-
-**基本写法：Boolean 扩展属性**
-`val <ReceiverType>.<name>: Boolean get() = <expr>`
-```kotlin
-// 为 String 添加 Boolean 扩展属性
-val String.hasContent: Boolean
-    get() = this.isNotBlank();
-```
-
-**换行写法：可变扩展属性**
-`var <ReceiverType>.<name>: <Type> [get() = <expr>] [set(value) { <body> }]`
-```kotlin
-// 为 StringBuilder 添加可变扩展属性
-var StringBuilder.lastChar: Char
-    get() = this[this.length - 1]
-    set(value) { this.append(value); }
-```
-
----
-
-## 扩展函数与可空类型
-
-**基本写法：为非空类型添加扩展**
-`fun <ReceiverType>.<name>(<params>): <ReturnType>`
-```kotlin
-// 为非空 String 添加扩展
-fun String.trimToLength(maxLength: Int): String {
-    return if (this.length <= maxLength) this
-    else this.substring(0, maxLength) + "...";
+fun main() {
+    val s: String? = null
+    println(s.orDash())      // -
+    println("abc".orDash())  // abc
 }
 ```
 
-**基本写法：为可空类型添加扩展**
-`fun <ReceiverType>?.<name>(<params>): <ReturnType>`
+自检问题：`takeIf { it.isNotEmpty() }` 里的 `it` 为什么不需要判空？（答：`this?.` 保证只有非空接收者才进入调用，lambda 的 `it` 已被 smart cast 成非空 `String`。）
+
+**练习 3：泛型带约束的扩展**。给 `List<List<Int>>` 写一个 `flattenSum()`：展平并求和。要求不使用标准库 `flatten`，并用 `sumOf` 之外的方式实现累加。
+
+参考实现：
+
 ```kotlin
-// 为可空 String 添加扩展
-fun String?.safeLength(): Int = this?.length ?: 0;
-```
-
-**基本写法：可空类型提供默认值**
-`fun <ReceiverType>?.<name>(<default>): <ReturnType>`
-```kotlin
-// 可空类型提供默认值
-fun String?.orElse(default: String): String = this ?: default;
-```
-
----
-
-## 扩展函数中的 this
-
-**基本写法：this 引用接收者对象**
-`fun <ReceiverType>.<name>(): <ReturnType>`
-```kotlin
-// this 指向接收者对象
-fun String.describe(): String {
-    return "字符串 '$this' 的长度是 ${this.length}";
+fun List<List<Int>>.flattenSum(): Int {
+    var total = 0
+    for (row in this) for (v in row) total += v
+    return total
 }
 ```
 
-**基本写法：省略 this**
-`fun <ReceiverType>.<name>(): <ReturnType>`
-```kotlin
-// 省略 this 调用方法
-fun String.shout(): String = uppercase() + "!!!";
-```
-
----
-
-## 泛型扩展函数
-
-**基本写法：为任意类型添加扩展**
-`fun <T> T.<name>(): <ReturnType>`
-```kotlin
-// 为任意类型添加扩展
-fun <T> T.printSelf(): T {
-    println(this);
-    return this;
-}
-```
-
-**基本写法：带约束的泛型扩展**
-`fun <T : <Bound>> T.<name>(<params>): <ReturnType>`
-```kotlin
-// 带约束的泛型扩展
-fun <T : Comparable<T>> T.isBetween(min: T, max: T): Boolean {
-    return this >= min && this <= max;
-}
-```
-
-**换行写法：为集合添加泛型扩展**
-`fun <T> List<T>.<name>(<param>: List<T>): <ReturnType>`
-```kotlin
-// 为 List 添加泛型扩展
-fun <T> List<T>.interleave(other: List<T>): List<T> {
-    val result = mutableListOf<T>();
-    val maxSize = maxOf(this.size, other.size);
-    for (i in 0 until maxSize) {
-        if (i < this.size) result.add(this[i]);
-        if (i < other.size) result.add(other[i]);
-    }
-    return result;
-}
-```
-
----
-
-## 扩展函数的解析规则
-
-**基本写法：静态解析**
-`fun <BaseType>.<name>() = <expr>`
-```kotlin
-// 扩展函数静态解析，由声明类型决定
-open class Animal;
-class Dog : Animal();
-fun Animal.sound() = "动物叫声";
-fun Dog.sound() = "汪汪汪";
-val animal: Animal = Dog();
-animal.sound();  // 动物叫声（调用 Animal 的扩展）
-```
-
----
-
-## 扩展函数的作用域
-
-**基本写法：顶层扩展函数**
-`package <pkg>; fun <ReceiverType>.<name>(): <ReturnType>`
-```kotlin
-// 顶层扩展函数，使用时需要 import
-package com.example.utils;
-fun String.isEmail(): Boolean = this.contains("@") && this.contains(".");
-```
-
-**基本写法：成员扩展函数**
-`class <Name> { fun <ReceiverType>.<name>(): <ReturnType> }`
-```kotlin
-// 成员扩展函数，只在类内部可用
-class Parser {
-    private fun String.parseToInt(): Int? = this.toIntOrNull();
-    fun parse(input: String): Int? {
-        return input.parseToInt();
-    }
-}
-```
-
----
-
-## 工具函数扩展
-
-**基本写法：日期格式化扩展**
-`fun <Type>.<name>(): <ReturnType>`
-```kotlin
-// 为 LocalDateTime 添加格式化扩展
-fun java.time.LocalDateTime.formatChinese(): String {
-    return "${this.year}年${this.monthValue}月${this.dayOfMonth}日";
-}
-```
-
-**基本写法：集合随机元素扩展**
-`fun <T> List<T>.<name>(): <ReturnType>`
-```kotlin
-// 为 List 添加随机元素扩展
-fun <T> List<T>.randomItemOrNull(): T? = if (this.isEmpty()) null else this.random();
-```
-
-**基本写法：数值四舍五入扩展**
-`fun <Number>.<name>(<params>): <ReturnType>`
-```kotlin
-// 为 Double 添加四舍五入扩展
-fun Double.roundTo(decimals: Int): Double {
-    var multiplier = 1.0;
-    repeat(decimals) { multiplier *= 10 };
-    return kotlin.math.round(this * multiplier) / multiplier;
-}
-```
-
----
-
-## 防御性编程扩展
-
-**基本写法：安全的类型转换扩展**
-`inline fun <reified T> Any.safeCast(): T?`
-```kotlin
-// 安全的类型转换扩展
-inline fun <reified T> Any.safeCast(): T? = this as? T;
-```
-
-**基本写法：安全的列表访问扩展**
-`fun <T> List<T>.safeGet(<index>: Int): T?`
-```kotlin
-// 安全的列表访问扩展
-fun <T> List<T>.safeGet(index: Int): T? {
-    return if (index in indices) this[index] else null;
-}
-```
-
-**基本写法：非空检查扩展**
-`fun <T : Any> T?.requireNonNull(<lazyMessage>): T`
-```kotlin
-// 非空检查扩展
-fun <T : Any> T?.requireNonNull(lazyMessage: () -> String = { "值不能为空" }): T {
-    return this ?: throw IllegalArgumentException(lazyMessage());
-}
-```
-
----
-
-## 流式 API 扩展
-
-**基本写法：applyIf 条件执行扩展**
-`fun <T> T.<name>(<condition>, <block>): T`
-```kotlin
-// 条件执行扩展
-fun <T> T.applyIf(condition: Boolean, block: T.() -> Unit): T {
-    if (condition) block();
-    return this;
-}
-```
-
-**基本写法：alsoIf 条件执行扩展**
-`fun <T> T.<name>(<condition>, <block>): T`
-```kotlin
-// 条件执行扩展
-fun <T> T.alsoIf(condition: Boolean, block: (T) -> Unit): T {
-    if (condition) block(this);
-    return this;
-}
-```
-
----
-
-## 中缀扩展函数
-
-**基本写法：infix 扩展函数**
-`infix fun <ReceiverType>.<name>(<param>): <ReturnType>`
-```kotlin
-// 中缀扩展函数
-infix fun String.times(n: Int): String {
-    return this.repeat(n);
-}
-```
-
-**基本写法：infix 集合扩展函数**
-`infix fun <T> List<T>.<name>(<param>): <ReturnType>`
-```kotlin
-// 中缀集合扩展函数
-infix fun <T> List<T>.intersect(other: List<T>): List<T> {
-    return this.filter { it in other };
-}
-```
-
----
-
-## 扩展函数与运算符重载
-
-**基本写法：operator 扩展函数**
-`operator fun <ReceiverType>.<name>(<params>): <ReturnType>`
-```kotlin
-// operator 重载 step 运算符
-operator fun ClosedRange<Int>.step(step: Int): Iterable<Int> {
-    return object : Iterable<Int> {
-        override fun iterator(): Iterator<Int> {
-            var current = start;
-            return object : Iterator<Int> {
-                override fun hasNext() = current <= endInclusive;
-                override fun next(): Int {
-                    val result = current;
-                    current += step;
-                    return result;
-                }
-            };
-        }
-    };
-}
-```
-
----
-
-## 带接收者的函数类型
-
-**基本写法：带接收者的函数类型**
-`fun <name>(<param>: <ReceiverType>.() -> <ReturnType>): <ReturnType>`
-```kotlin
-// 带接收者的函数类型
-fun buildString(builderAction: StringBuilder.() -> Unit): String {
-    val builder = StringBuilder();
-    builder.builderAction();
-    return builder.toString();
-}
-```
+自检问题：这个函数应定义为扩展还是 `List` 的成员？（答：只能是扩展——`List` 是标准库类型，源码不可改；扩展函数正是「给不可修改的类型外挂行为」的机制，这也是它与成员函数最本质的区别：没有状态、不能重写、按声明类型静态解析。）

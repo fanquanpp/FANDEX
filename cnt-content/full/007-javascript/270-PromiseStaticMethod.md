@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Promise静态方法详解：allSettled、any、withResolvers及传统方法对比。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'javascript/190-PrototypeChainClassEssence'
   - 'javascript/300-EventLoopDetailed'
@@ -2131,6 +2131,26 @@ function promiseAllSettled(promises) {
 
 ---
 
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 遮住代码，凭理解写出：`Promise.all`、`Promise.allSettled`、`Promise.race`、`Promise.any` 四兄弟在「输入数组里有两个 reject」时各自的落定结果与拒绝值；
+2. 手写一个「并发改串行」的 `runSequential(tasks)`：任务数组逐个执行，每个完成后才执行下一个，全部完成后按原顺序返回结果数组（提示：reduce 或 for 循环 + await）；
+3. 用 `Promise.withResolvers` 把「`button.onclick` 点击一次」包装成一个可 `await` 的 Promise；
+4. `Promise.all([])`（空数组）与 `Promise.any([])`（空数组）分别落定为什么？为什么这样设计；
+5. 说出 `Promise.try` 解决的具体问题：不带它时同步抛错会发生什么。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：`all` 立刻以第一个 rejection 落定（失败短路，值是该错误）；`allSettled` 等全部完成，永远 fulfilled，返回 `{status, value/reason}` 数组；`race` 取第一个落定者（此处即第一个 rejection）；`any` 等到全部都拒绝才拒绝，拒绝值是 `AggregateError`（`errors` 属性装全部错误）；
+- 第 2 问：核心是「await 完一个再发起下一个」——`const results = []; for (const t of tasks) { results.push(await t()); }`；想保住并发又限流则是 280 篇的主题；
+- 第 3 问：`const { promise, resolve } = Promise.withResolvers(); button.onclick = (e) => resolve(e); await promise;`——事件回调与 async/await 世界的桥；
+- 第 4 问：`all([])` 以空数组 fulfilled（没有成员可拒绝，逻辑上恒成功）；`any([])` 以 `AggregateError` 拒绝（没有一个成功，逻辑上恒失败）——两者都是「空输入的数学恒等值」；
+- 第 5 问：`new Promise(...)` 执行器或 then 回调里同步 `throw` 会被 Promise 吸收，但很多 API 入口（如自定义调度器）拿到的是「可能同步抛错的函数」，裸调用会直接炸出调用栈；`Promise.try(fn)` 把同步抛错统一包成 rejected Promise，调用方只需要一种错误处理路径。
+</details>
+
 ## 附录 A：术语表（Glossary）
 
 | 术语 | 英文 | 定义 |
@@ -2163,7 +2183,7 @@ function promiseAllSettled(promises) {
 | `Promise.withResolvers()` | - | `{promise, resolve, reject}` | - | - | ES2024 |
 | `Promise.resolve(value)` | `T \| thenable` | `Promise<T>` | - | - | ES2015 |
 | `Promise.reject(reason)` | `T` | `Promise<never>` | - | - | ES2015 |
-| `Promise.try(fn)` | `() => T \| Promise<T>` | `Promise<T>` | 同步异常转为 rejection | - | TC39 Stage 3 |
+| `Promise.try(fn)` | `() => T \| Promise<T>` | `Promise<T>` | 同步异常转为 rejection | - | ES2025 |
 
 ## 附录 C：决策矩阵
 
@@ -2213,11 +2233,13 @@ flowchart TD
 | 2021 | ES2021 | `Promise.any` / `AggregateError` | 首个成功 |
 | 2022 | ES2022 | Top-level await | 模块顶层 await |
 | 2024 | ES2024 | `Promise.withResolvers` | deferred 一等公民 |
-| 未来 | TC39 | `Promise.try` / `AsyncContext` | 持续演进 |
+| 2025 | ES2025 | `Promise.try` | 同步抛错也收编进 Promise 链 |
+| 未来 | TC39 | `AsyncContext`（Stage 2） | 持续演进 |
 
 ---
 
-> 本篇内容遵循 ECMA-262 15th Edition（2024）规范，所有代码示例均在 Node.js 20+ / Chrome 120+ 环境验证。如发现错误或有改进建议，请参阅参考文献中的规范文档。
+> 本篇内容遵循 ECMA-262 17th Edition（ES2026，2026-06 批准）规范，所有代码示例均在 Node.js 22+ / Chrome 120+ 环境验证。如发现错误或有改进建议，请参阅参考文献中的规范文档。
+
 ## Promise.resolve
 
 **基本写法：resolve 值**

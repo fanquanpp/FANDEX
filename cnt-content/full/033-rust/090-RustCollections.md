@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Vec、HashMap、HashSet 的增删改查与集合运算、entry 模式、String 与 &str 的所有权分野
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'rust/050-RustOwnershipBorrowing'
   - 'rust/095-RustIteratorsFunctional'
@@ -249,7 +249,7 @@ fn main() {
 
 **任务三：中文长度陷阱（约 10 分钟）**
 
-写函数 `width_of(s: &str) -> usize` 返回「字符数」，用 `"rust语言"` 与 `"你好"` 验证它输出 6 与 2，并解释为什么 `len()` 对这两个值分别返回 8 与 6。
+写函数 `width_of(s: &str) -> usize` 返回「字符数」，用 `"rust语言"` 与 `"你好"` 验证它输出 6 与 2，并解释为什么 `len()` 对这两个值分别返回 10 与 6。
 
 提示：`chars().count()`；「语」等 CJK 字符在 UTF-8 里占 3 字节，`len()` 数的是字节。
 

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 多版本 Python 管理两件套：pyenv/pyenv-win 版本切换与 uv 一体化（解释器、依赖、工具、锁文件）。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-17'
 related:
   - 'python/040-PythonVirtualEnv'
   - 'python/045-PythonEnvToolsLandscape'
@@ -274,3 +274,12 @@ uv run --python 3.14t python -c "import sys; print(sys._is_gil_enabled())"  # Fa
 1. 用 uv 从零创建一个项目：固定 Python 3.13、添加 `requests` 与开发依赖 `pytest`，查看生成的 pyproject.toml 与 uv.lock 各自承载了什么。
 2. 安装 3.13 与 3.14t 两个构建，分别运行打印 `sys._is_gil_enabled()` 的脚本，记录输出差异。
 3. 把现有的 pip + requirements.txt 项目迁移到 uv：`uv init` 后用 `uv add -r requirements.txt` 导入，运行测试验证行为一致。
+
+## 遮码自检
+
+遮住本文命令块，凭理解写命令，再对照：
+
+1. pyenv 三级切换各写一条：全局、本项目、仅当前终端窗口。要点：`pyenv global 3.13.0`、`pyenv local 3.11.9`（生成 `.python-version`）、`pyenv shell 3.12.8`（只影响当前 shell）。
+2. uv 四件事各写一条：装解释器、建虚拟环境、加依赖并更新锁文件、临时运行一个命令行工具。要点：`uv python install 3.13`、`uv venv`、`uv add requests`（同步生成 `uv.lock`）、`uvx ruff check .`。
+3. 排错题：队友 clone 仓库后 `uv run` 报解释器版本不符。三个该检查的文件是什么？要点：`.python-version`（要求的解释器）、`pyproject.toml`（`requires-python` 与依赖）、`uv.lock`（锁定依赖图）；修复方式 `uv sync`。
+4. 操作题：装出自由线程构建并验证 GIL 确实可被禁用。要点：`uv python install 3.14t`，运行 `python -c "import sys; print(sys._is_gil_enabled())"` 应输出 `False`；普通构建同一命令输出 `True`。

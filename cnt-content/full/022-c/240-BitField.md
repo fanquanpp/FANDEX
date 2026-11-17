@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 从一个 32 位硬件寄存器出发学位域：语法与 :0 对齐、位序/跨存储单元/int 符号性三大实现定义，GCC 与 MSVC 同一结构体 sizeof 不同的实验，把位域写进文件后读回错位的踩坑现场，volatile 位域的 MMIO 争议，附位域与掩码的工程取舍表。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/220-MemoryAlignmentDeepDive'
   - 'c/230-AlignmentMemoryLayout'
@@ -556,12 +556,24 @@ printf("%d\n", s.flag);
 - Microsoft Learn: C Bit Fields（MSVC 的实现定义行为，含跨存储单元示例）：https://learn.microsoft.com/en-us/cpp/c-language/c-bit-fields
 - C23 公开草案 N3220（6.7.2.1 Structure and union specifications）：https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf
 
-## 12. 自我检查
+## 12. 遮码自检
 
-- 能默写位域声明，说出存储单元、无名位域与 `: 0` 的作用，并解释为什么 `&f.a` 编译不过；
-- 能列出实现定义三件事，并在自家编译器上各设计一个验证实验（打印原始字节、比较 sizeof、写符号性测试）；
-- 能向同事讲清「位域为什么不能直接 fwrite 进文件」，并写出等价的显式序列化；
-- 拿到寄存器映射需求，能按取舍表给出位域或掩码的选择与理由，并说出 volatile 位域的三个争议点。
+遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
+
+1. 默写位域声明；说出存储单元、无名位域与 `: 0` 的作用，并解释为什么 `&f.a` 编译不过。
+2. 列出实现定义三件事，并在自家编译器上各设计一个验证实验。
+3. 「位域为什么不能直接 fwrite 进文件」怎么讲？写出等价的显式序列化。
+4. 寄存器映射需求：位域还是掩码？volatile 位域有哪些争议点？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. `struct Flags { unsigned version : 3; unsigned : 2; unsigned type : 4; };`。位域以存储单元（如 unsigned 的 4 字节）为单位分配；无名位域是占位不取名；`: 0` 强制跳到下一个存储单元。`&f.a` 编译不过：位域不是从字节边界起步的完整对象，没有地址可取。
+2. 三件事：位序（先低位还是高位字节）、能否跨存储单元、int 位域的符号性。验证实验：把结构体 memset 后置值再打印原始字节（验位序与跨单元）、比较 sizeof（验单元划分）、对 `int a : 3` 赋 7 打印（验符号性，-1 还是 7）。
+3. 位域的比特排布是本机实现定义的——GCC 与 MSVC 对同一结构体 sizeof 可以是 8 与 12，写进文件读回来字段全部错位。显式序列化：`buf[0] = (version << 5) | type;` 之类移位掩码逐字段打包，接收端按位拆开。
+4. 本机内存里的结构、经 `_Static_assert(sizeof(struct X) == N)` 静态断言钉死的寄存器视图可用位域；跨机器数据用掩码。volatile 位域争议：写一个位域是读-改-写三步，volatile 只保证每步访存、不提供原子性，中断与多线程共享寄存器时可能丢更新——引擎厂商立场不同，稳妥做法是掩码 + 局部变量一次写回。
+
+</details>
 
 ## 本章总结
 

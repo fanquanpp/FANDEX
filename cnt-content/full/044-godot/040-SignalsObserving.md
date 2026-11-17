@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 Godot 信号的观察者模式解耦节点，掌握声明连接发射与编辑器连线两种方式
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-11-17'
 related:
   - 'godot/030-FirstScriptAndLifecycle'
   - 'gdscript/090-SignalsAwaitCoroutines'
@@ -161,6 +161,13 @@ func _on_health_changed(old_value, new_value, lifebar):
 ## 小结
 
 信号是 Godot 对观察者模式的实现：节点在事件发生时广播消息，监听者自行响应，发射者与接收者完全解耦。Godot 4 起信号是一等类型，可直接作为值传递。声明用 signal 关键字（参数名会显示在编辑器信号面板），发射用 emit()，命名建议过去时动词；连接既可以在编辑器中双击信号完成（简单模式自动生成回调、高级模式可连任意节点并附加参数），也可以在代码中用 signal.connect(callable)，回调按 `_on_节点名_信号名` 约定命名。Button.pressed、Timer.timeout、Area2D.body_entered 是最常见的三个内置信号，连接方式与自定义信号完全一致。Callable.bind() 能把额外参数附加到信号参数之后。避开三个坑：改名后同步路径、回调中删场景用 call_deferred 推迟、避免重复连接。至此，节点、场景、脚本、信号四件套已经凑齐，你已具备搭建一个完整小游戏交互的全部基础。想进一步深挖信号——自定义信号完整语法、连接标志、用 await 等待信号——请前往 gdscript 模块的 090 篇。
+
+## 自检
+
+- 遮住"声明与发射自定义信号"一节，自己写出"声明带旧值/新值两个参数的 blood_changed 信号并在掉血方法中发射"的完整代码，再对照——重点核对 emit() 的实参顺序与声明顺序是否一致。
+- 不翻正文回答：编辑器连线与代码 connect() 各适合什么场景？回调按什么约定命名？（答案：编辑器适合固定的场景内连接，代码适合运行时动态关系；`_on_节点名_信号名`。）
+- 口头推演：Callable.bind() 绑定的参数出现在回调签名的哪个位置？（提示：附加在信号自身参数之后。）
+- 三个易错点各说一句"不做会发生什么"：节点改名、回调里直接 free 当前场景、同一信号重复连接。
 
 ## 参考链接
 

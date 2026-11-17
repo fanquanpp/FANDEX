@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: console 全家族 API 速查：分级输出、格式化、表格、计时计数、断言与生产环境治理。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'javascript/500-DebugPerformanceOptimization'
   - 'javascript/480-ErrorBoundaryGlobalErrorCatch'
@@ -259,6 +259,26 @@ log('error', '始终可见');
 | console.log 调试对象 | 打印的是引用，展开时才求值 | 打印浅拷贝、序列化或用断点 |
 | 滥用 console | 代码噪音，掩盖真正有价值的日志 | 统一日志封装，按级别输出 |
 | 依赖 console 计时下性能结论 | 受 GC 与 JIT 干扰 | 用 performance API 多次采样 |
+
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 「console.log 打印的是引用」陷阱：写下三行代码复现它（打印数组、再 push、展开控制台），并说出生产排查时的正确姿势；
+2. `console.table(data, ['name', 'score'])` 的两个参数各管什么？写一个把 5 个对象按表展示、只看两列的调用；
+3. `console.time('x')` / `timeEnd('x')` 与 `performance.now()` 计时的差异是什么？各适合什么场合；
+4. `console.group` 与 `dir` 的典型用法各举一例；Node 里输出一个深层嵌套对象想完全展开，用什么；
+5. 生产环境的 console 治理策略是什么？说出构建期与运行期各一个手段，以及「全删」为什么可能过头。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：`const a = [1,2]; console.log(a); a.push(3);` 控制台展开看到的是**打印时刻的引用快照展开后的当前值**（Chrome 显示的是展开时的状态，不是打印时）；排查时打印 `JSON.parse(JSON.stringify(a))` 或 `structuredClone` 的副本，锁定时刻；
+- 第 2 问：第一参数是数组/对象数据源，第二参数是列名白名单；`console.table(users, ['name', 'score'])`——5 行 2 列，其余字段不显示；
+- 第 3 问：time/timeEnd 聚焦「开发期随手测一段代码」，带标签自动配对；performance.now() 是亚毫秒高精度时钟，适合基准测试与性能报告（console 计时受 GC 与 JIT 预热干扰，不能当性能结论）；
+- 第 4 问：group/groupEnd 折叠同类日志（如一次请求的全部 trace）；dir 以对象树形式展示 DOM/对象（区别于 log 对 DOM 的 HTML 渲染）；Node 里 `console.dir(obj, { depth: null, colors: true })` 完全展开；
+- 第 5 问：构建期用 esbuild/babel 插件剥除或降级 console 调用（drop: ['console']）；运行期用统一 logger 工厂按级别开关（debug 只在开发环境输出）；全删可能过头——错误路径的 console.error 是最后防线，应保留或统一改接上报。
+</details>
 
 ## 扩展学习
 

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Terraform 声明式 IaC 入门：HCL 语法、plan/apply 工作流、变量传递、模块复用与许可现状。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/410-IaC'
   - 'cloud-computing/430-TerraformStateModule'
@@ -60,8 +60,8 @@ resource "aws_instance" "example" {
   instance_type = var.instance_type         # 引用变量
 
   tags = {
-    Name        = "tf-example"
-    ManagedIron = "terraform"              # 标记资源归属，便于成本分摊
+    Name      = "tf-example"
+    ManagedBy = "terraform"                # 标记资源归属，便于成本分摊
   }
 }
 
@@ -194,10 +194,35 @@ terraform get -update
 | plan 里出现大量 `-/+` | 属性变更触发资源替换 | 检查 `prevent_destroy`/不可变字段，评估停机 |
 | `Value for undeclared variable` | tfvars 里有变量没声明 | 补 `variable` 块或删多余键 |
 | apply 卡在等待 | 资源依赖未就绪或网络不通 | 看超时提示；`terraform apply` 中断后先 `plan` 对账 |
-| 状态被误删 | `.terraform` 或 state 丢失 | 立即用远端后端与版本化备份恢复（见 043） |
+| 状态被误删 | `.terraform` 或 state 丢失 | 立即用远端后端与版本化备份恢复（见 `430-TerraformStateModule`） |
 
 调试辅助：`TF_LOG=DEBUG terraform plan` 输出详细日志；单属性差异用
 `terraform plan -target` 缩小范围排查。
+
+## 教学自检
+
+遮住上面的 HCL 与命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. 四类块的口诀是什么？`resource` 与 `data` 块的方向差别是什么？
+2. 三步工作流各自做什么？哪一步是「安全边界」，为什么？
+3. plan 输出的 `+`、`-`、`~`、`-/+` 各代表什么？哪一种意味着停机？
+4. 变量优先级从高到低怎么排？数据库密码应该走哪条路？
+5. 两段式 plan/apply（`plan -out` + `apply <文件>`）比直接 apply 好在哪？
+6. Registry 模块为什么必须锁 `version`？
+7. 2023 年许可证分叉是怎么回事？对写 HCL 有影响吗？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. terraform 管工具链约束、provider 管连哪个云、variable/output 管输入与出口、resource/data 管要什么与查什么。resource 是「创建我要的」，data 是「查询已存在的」（如最新 AMI）。
+2. init 下载 provider 与配置后端；plan 计算差异预览（不执行）；apply 真实执行。plan 是安全边界——所有意外（尤其 `-` 与 `-/+`）在这里拦截成本最低。
+3. `+` 创建、`-` 销毁、`~` 原地更新、`-/+` 先删后建（替换）。`-/+` 意味着停机重建，高危。
+4. `-var` > `*.auto.tfvars` 与 `-var-file` > `terraform.tfvars` > `TF_VAR_name` 环境变量 > 默认值。敏感值走 `TF_VAR_` 环境变量或密钥管理服务，不写进 tfvars 提交仓库。
+5. apply 应用的一定是刚审过的那份计划文件，期间基础设施再漂移也不会「审的和跑的不一样」；直接 apply 会重新计算计划。
+6. 不锁版本时，不同人/不同时间的 init 会拉到不同版本，plan 结果时好时坏、不可复现。
+7. Terraform 由 MPL 改为 BSL 许可，社区分叉出 MPL 的 OpenTofu（CLI 兼容）。语法层面两者高度一致，本文示例对两者均适用——选型知道分叉存在即可。
+
+</details>
 
 ## 小结
 

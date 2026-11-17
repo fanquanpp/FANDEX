@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Markdown编辑器核心功能：实时预览、快捷键操作与高效编辑技巧。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/210-LaTeXMathFormula'
   - 'markdown/220-Mermaid'
@@ -16,6 +16,8 @@ prerequisites:
   - 'markdown/010-SyntaxGuide'
 ---
 
+
+选编辑器不是选"最好的那个"，而是选"与你写作流程匹配的那个"：随手笔记看重即时渲染，工程文档看重插件、Git 与 lint 集成，服务器环境看重轻量。本篇先给一张选型地图，再讲预览、快捷键、片段与粘贴图片这些每天在用的效率功能，最后落到语法检查的配置——它们共同构成"写 Markdown 的手感"。
 
 ## 1. 编辑器类型
 
@@ -192,3 +194,28 @@ markdownlint 是 Markdown 代码质量工具，检查常见问题：
   "MD041": false
 }
 ```
+
+## 动手实践：遮代码自检
+
+**练习 1（快捷键默写）**：遮住第 3 节的三张表，只看功能列默写快捷键（预览、侧边预览、加粗、行内代码），写完再对照——记不住的说明还没形成肌肉记忆，回去练。
+
+**提示**：VS Code 的预览系是 `Ctrl+Shift+V` 与 `Ctrl+K V`（先按 `Ctrl+K` 松开再按 `V`，这是 chord 组合键，不是同时按）；Typora 的源码切换是 `Ctrl+/`。
+
+<details>
+<summary>参考答案（先默写再看）</summary>
+
+| 功能 | VS Code | Typora |
+| :--- | :--- | :--- |
+| 打开预览 | `Ctrl+Shift+V` | 所见即所得，无需切换 |
+| 侧边预览 | `Ctrl+K V` | — |
+| 源码模式 | — | `Ctrl+/` |
+| 加粗 | `Ctrl+B` | `Ctrl+B` |
+| 行内代码 | `` Ctrl+` `` | `` Ctrl+` `` |
+
+</details>
+
+要点自查：VS Code 是"编辑区 + 预览区"两区模型，Typora 是所见即所得单区模型——模型的差异决定了哪些快捷键存在。
+
+**练习 2（片段与 lint）**：在 VS Code 里按第 4.1 节的结构建一个自定义片段（prefix 自取，body 含一个代码围栏），用 `mdtable` 触发验证；再装 markdownlint 扩展，故意写一行 `#没有空格的标题` 与一行超长文本，观察实时划线提示并按 5.2 的配置关闭其中一条。
+
+**遮码自检（选型层）**：遮住第 1 节，口头回答——长文写作、技术文档、知识管理三类需求各推荐什么编辑器？理由各是什么？（答案：Typora 沉浸式所见即所得；VS Code 插件丰富且 Git 集成；Obsidian 双链与插件生态。）

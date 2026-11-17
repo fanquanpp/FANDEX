@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C# LINQ 延迟执行与立即执行深度解析：IEnumerable<T>、IQueryable<T>、表达式树、yield return、迭代器状态机、ToList/ToArray 强制求值的全链路原理。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/100-AsyncAwaitStateMachine'
   - 'csharp/200-DelegateEventUnderlying'
@@ -2458,3 +2458,27 @@ var shanghaiUsers = lookup["Shanghai"];
 ---
 
 > **本章小结**：LINQ 的延迟执行是函数式编程的"惰性求值"在 C# 中的实现。理解 `IEnumerable<T>` 的拉取模型、`yield return` 状态机、`IQueryable<T>` 的表达式树翻译，是从"会用 LINQ"到"精通 LINQ"的关键。在 .NET 9 时代，`Chunk`、`DistinctBy`、`Index` 等新操作符极大扩展了 LINQ 的能力。结合 EF Core、PLINQ、`IAsyncEnumerable<T>`，可以构建从内存到数据库、从单线程到并行、从同步到异步的统一查询体验。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己先预测输出/写代码，再对照。本篇自检核心是"一眼判断一个 LINQ 调用是延迟还是立即"。
+
+**题 1（立即还是延迟）**：`Where`、`Count()`、`ToArray()`、`GroupBy`、`First()`、`Max()`——各是延迟还是立即执行？分成两类，并说出每一类的共同点。
+
+参考答案：延迟：`Where`、`GroupBy`（返回 `IEnumerable<T>`/`IGrouping` 的流式操作符，只搭管道不跑数据）；立即：`Count()`、`ToArray()`、`First()`、`Max()`（返回标量或物化集合，必须枚举完源才能给出答案）。共同点：延迟操作符返回的还是查询（迭代器），立即操作符返回的是结果本身。
+
+**题 2（多次枚举）**：`var q = source.Where(x => x > 0); Console.WriteLine(q.Count()); Console.WriteLine(q.First());`——`source` 是远程接口封装的 `IEnumerable<T>`，这段代码发几次请求？两种修法？
+
+参考答案：两次（`Count()` 枚举一遍、`First()` 又枚举一遍），因为延迟查询每次枚举都从头拉源。修法：明确物化一次 `var list = source.Where(x => x > 0).ToList();` 再做 Count/First；或一次性算出所有需要的量（`foreach` 一遍同时算 max/count）。
+
+**题 3（闭包快照）**：`var filter = 5; var q = list.Where(x => x > filter); filter = 100; Console.WriteLine(q.Count());` 输出按 5 还是按 100 算？为什么？
+
+参考答案：按 100。`Where` 只是保存了 lambda（闭包），执行发生在 `Count()` 枚举那一刻，此时闭包读到的 `filter` 已是 100。延迟执行的"执行时机"由枚举决定，而变量捕获是按引用捕获槽位——两者叠加出了"查询永远用最新变量值"的行为。
+
+**题 4（IQueryable 与 IEnumerable）**：`db.Orders.Where(o => o.Amount > 100)` 与 `allOrders.AsEnumerable().Where(o => o.Amount > 100)`，一个翻译成 SQL、一个在内存过滤——语言层面是哪个类型差异决定的？
+
+参考答案：前者 `IQueryable<T>`：`Where` 扩展方法在表达式上工作，把 lambda 编译成表达式树，等待 Provider（如 EF Core）翻译成 SQL；后者 `AsEnumerable()` 把序列"降回" `IEnumerable<T>`，命中 `Enumerable.Where`，lambda 编译成 IL 直接在内存执行。`.AsEnumerable()` 正是把"后续管道搬到客户端"的显式开关。
+
+**题 5（副作用时机）**：把"记录每条被过滤掉的数据"写进 `Where` 的 lambda 里，什么情况下日志会一条不出现？
+
+参考答案：查询从未被枚举时（例如构造了查询却忘了立即执行操作符，或在提前 return 的分支里没走到枚举）。延迟执行让"定义查询"与"执行查询"分离，副作用只随枚举发生——要日志随定义出现，就把副作用写在管道外、物化点前后。

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 'Serverless：FaaS/BaaS、事件驱动、Lambda 冷启动优化、限制对策与 Serverless Framework 实操。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/020-IaaSPaaSSaaS'
   - 'cloud-computing/270-AWSCore'
@@ -313,6 +313,33 @@ plugins:
 版本控制与回滚：每次 deploy 生成函数版本，`serverless rollback
 --function myHandler --version 5` 可按版本回滚；正式环境建议配合
 别名（alias）与渐进式流量切换。
+
+## 教学自检
+
+遮住上面的 YAML/代码与表格，先口头回答或默写模板，再展开对照。答不出的回到对应小节重读：
+
+1. Serverless 的完整拼图是 FaaS + BaaS——只上 Lambda 还自管一台 MySQL，为什么说只走了一半？
+2. 冷启动发生在哪一段？四种缓解手段按性价比怎么排？
+3. Reserved 与 Provisioned 并发一字之差，分别解决什么？关键路径 API 与批处理函数各配哪个？
+4. Lambda 的三条硬限制是什么？长任务的三种绕行方案？
+5. 「至少一次投递」意味着函数必须怎样？默写幂等占位键模板的核心一行（DynamoDB 条件写入）。
+6. 占位成功后业务处理崩溃会发生什么？两种修复方案是什么？
+7. DLQ 的隔离-定位-修复-重放流程是什么？重放为什么要限速？消息默认保留多久？
+8. Step Functions 的 Retry 与 Catch 分层各处理什么错误？Charge 失败后 RestoreStock 是什么模式？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. Serverless = 计算免管（FaaS）+ 状态免管（BaaS：DynamoDB/Cognito/S3）。Lambda 免管了，但那台 MySQL 的备份、补丁、扩容仍是你管——运维负担没有消失，等于 Serverless 的收益减半。
+2. init 阶段：下载代码 → 启动运行时 → 执行全局初始化。缓解：选对运行时（解释型语言/JVM 用 SnapStart）> 减小包体与 Layers > 内存寻优（内存即 CPU，跑得快计费反而少）> 初始化移出 handler（SDK 客户端放全局段）。
+3. Reserved 是「限量」：从账户并发池划走一块，防止某函数吃光全账户并发；Provisioned 是「预热」：预先加热 N 个执行环境常驻，消灭冷启动。关键路径 API 用 Provisioned，批处理函数用 Reserved 做隔离。
+4. 单次执行 15 分钟上限、部署包体积上限（镜像/Layers 绕行）、无持久连接（WebSocket 托管到 API Gateway）。长任务绕行：分片、Step Functions 编排、改容器/EC2。
+5. 函数必须幂等——重试叠加并发，同一条消息必然可能被处理两次。核心一行：`put_item(Item={pk: "processed#<orderId>"}, ConditionExpression="attribute_not_exists(pk)")`，抢占失败即说明已处理过。
+6. 重试时占位已存在、条件写入失败，函数当成功返回——这条数据永远不被处理（假成功）。修复：占位与业务放同一事务（TransactWriteItems）；或占位失败时校验业务结果确已完成才放行，未完成则删占位允许重试。
+7. 隔离（DLQ + 深度告警）→ 定位（消息体 + trace id + messageId 日志还原现场）→ 修复（预发重放验证）→ 限速重放（小批量倒回主队列）。不限速会把刚修复的下游再打垮，等于二次事故。SQS DLQ 默认保留 14 天，超期静默删除——重要失败消息要归档 S3。
+8. Retry 处理瞬态错误（网络/限流，指数退避重试），Catch 处理终态失败（业务拒绝，走分支）。RestoreStock 是补偿事务（Saga 模式的托管版）——分布式事务没有回滚键，只有逆操作。
+
+</details>
 
 ## 小结
 

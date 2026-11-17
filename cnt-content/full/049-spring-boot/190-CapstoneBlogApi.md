@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/170-TestingStrategy'
   - 'spring-boot/180-PackagingDeployment'
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'spring-boot/070-UnifiedResponseExceptionHandling'
   - 'spring-boot/120-SpringSecurityJwt'
@@ -338,7 +338,7 @@ class PostFlowIntegrationTest {
 }
 ```
 
-两例按 170 篇的定价分工：切片抓「翻译对不对」，毫秒与秒级；集成抓「真库加真安全链路的契约」，十秒级、少而准。发文、列表、缓存的更多用例，按同一工序自行补全。
+两例按 170 篇的定价分工：切片抓「翻译对不对」，毫秒与秒级；集成抓「真库加真安全链路的契约」，十秒级、少而准。发文、列表、缓存的更多用例，按同一工序自行补全。示例里的 TestRestTemplate 是 3.5.x 基线写法；Boot 4.0 起它弃用、由 Framework 7 的 RestTestClient 接棒，且 @SpringBootTest 不再自动装配它（对照 170 篇升级瞭望）——RANDOM_PORT 加真服务器打真契约的模式本身不变。
 
 ## 6. 验收清单
 

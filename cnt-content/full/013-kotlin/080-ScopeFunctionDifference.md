@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin 作用域函数深度解析：let、run、with、apply、also 的设计哲学、形式化定义与工程实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'kotlin/040-KotlinFunctionAndLambda'
   - 'kotlin/050-KotlinClassObject'
@@ -29,11 +29,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+- 能仅凭「上下文对象叫 `this` 还是 `it`」与「返回值是 Lambda 结果还是接收者本身」两个维度，推导出五个作用域函数各自适合的场景
+- 能解释 `let` 与安全调用 `?.` 组合时 lambda 内非空保证的来源，并识别哪些场景用 `let` 反而更差
+- 能识别 `this` 遮蔽导致的静默 bug（内层接收者覆盖外层同名成员），并用 `this@label` 或改用 `also` 修复
+- 能说明 `inline` 让作用域函数零运行时开销的机制，以及内联 lambda 对非局部返回的影响
 
 
 > 本文档对标 MIT 6.005、Stanford CS193P、CMU 15-410 教学水准，系统讲解 Kotlin 标准库五大作用域函数（Scope Functions）的设计哲学、形式化定义、字节码实现与工程实践。作用域函数是 Kotlin 中最具特色的小工具集合，看似简单却蕴含深远的函数式编程思想与 API 设计智慧。本文档涵盖从零基础自学到资深架构师审查代码的全维度内容，包括跨语言对比（JavaScript、Ruby、Swift）、性能基准、案例研究与习题解析。
@@ -500,7 +499,7 @@ java -jar scope-functions.jar
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "2.4.21"
     application
 }
 
@@ -1931,3 +1930,44 @@ fun main() {
 - 避免常见反模式，编写清晰、地道的 Kotlin 代码。
 - 利用作用域函数设计 DSL 与流畅 API。
 - 理解 inline 机制，避免性能担忧。
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：二维矩阵反推选型**。给出四个场景，先遮住下面的答案，自己选函数并说理由：(a) 对新建的 `AlertDialog` 一口气设置标题、按钮、取消回调；(b) `user?.address?.city` 想改成链中间打印一下城市；(c) 读完一个值就完成整个表达式，块内自成一个作用域；(d) 链式调用末尾想追加一条验证断言但不改变链的值。
+
+参考答案：(a) `apply`——`this` 引用，返回接收者，纯配置；(b) `also`——`it` 引用，返回原对象，插入副作用不破坏链；(c) `run`——`this` 引用，返回 lambda 结果，等价于「作用域受限的计算」；(d) `also`——返回值不变，块内可自由断言。
+
+**练习 2：this 遮蔽排错**。先指出下面输出什么、为什么，再给两种修法：
+
+```kotlin
+class Game {
+    var score = 0
+    fun register(name: String) {
+        Player(name).apply {
+            score += 10
+        }
+    }
+}
+class Player(val name: String) { var score = 0 }
+```
+
+参考答案：`Game.score` 纹丝不动——`apply` 的隐式接收者是 `Player`，块内 `score` 解析到 `Player.score`（内层接收者优先）。修法一：块内写 `this@Game.score += 10`；修法二：把 `apply` 换成 `also`，块内 this 保持指向 `Game`，用 `this.score += 10` 与 `it.score = 10`（若本意是给 Player 加分则后者更对）。判断依据：块内是否还要访问外层接收者的成员——要，就优先 `it` 系（also/let）。
+
+**练习 3：let 嵌套的降级改写**。下面三层嵌套 `let` 能运行但难读，改写成更平的写法：
+
+```kotlin
+val result = config?.host?.let { host ->
+    config?.port?.let { port ->
+        "connect to $host:$port"
+    }
+}
+```
+
+参考实现：
+
+```kotlin
+val host = config?.host
+val port = config?.port
+val result = if (host != null && port != null) "connect to $host:$port" else null
+```
+
+自检问题：改写后为什么 `host`、`port` 不需要 `!!`？（答：局部 `val` 在判空后发生 smart cast，`if` 分支内自动升级为非空类型——`let` 链的可读性成本，往往一个临时变量加判空就能换掉。）

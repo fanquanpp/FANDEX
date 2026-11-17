@@ -9,7 +9,7 @@ prerequisites:
   - 'mybatis/010-FromJdbcToMybatis'
   - 'mybatis/020-QuickStartCrud'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mybatis/080-MybatisPlusAdvanced'
   - 'mysql/340-SlowQueryLog'
@@ -182,6 +182,8 @@ public MybatisPlusInterceptor mybatisPlusInterceptor() {
     return interceptor;
 }
 ```
+
+装插件前还有一项依赖要交代：分页改写 SQL 用的 JSqlParser 自 MP 3.5.9 起被拆成独立模块（starter 不再默认携带）——只装 starter 不加它，分页插件一启动就报类找不到。这是 3.5.9 升级清单里最容易漏的一项，坐标见 080 篇第 2 节。
 
 一次分页查询的完整旅程：
 

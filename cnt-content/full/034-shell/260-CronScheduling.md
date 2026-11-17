@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 定时任务与调度：crontab 五字段、环境陷阱与日志、at 一次性任务、systemd timer 与 flock 防重叠
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'shell/250-PracticalScripts'
   - 'shell/230-ProcessManage'
@@ -284,3 +284,21 @@ echo $?                             # B 的退出码为 1，说明被锁拒绝
 - systemd timer 的 `Persistent=true` 与 journal 日志在可靠性上全面优于 cron，新任务值得直接用 timer
 - 长任务套 `flock -n` 防重叠；备份、同步这类任务尤其要防"上一轮未结束又开一轮"
 - macOS 的等价物是 launchd（LaunchAgent/LaunchDaemon），cron 在 macOS 上仍可用但属非主流路径
+
+## 9. 动手自检：遮住命令，说出每一步
+
+先遮住参考答案，按题干自己写出，再对照。
+
+1. 写出「每天凌晨 2 点执行 /usr/local/bin/backup.sh，日志追加进 /var/log/backup_cron.log」的完整 crontab 行，并说出每个设计点对应第 3 节哪条铁律。
+2. 「每月 1 号且恰好是周一才执行」用一行 cron 能做到吗？做不到的替代写法是什么？
+3. `0 2 * * *` 的任务在 crontab -l 里能看到，第二天却没有运行痕迹，说出完整排查链。
+4. systemd timer 相比 cron 解决了哪三个可靠性问题？`Persistent=true` 对应哪个？
+
+<details>
+<summary>参考答案</summary>
+
+1. `0 2 * * * /usr/local/bin/backup.sh >> /var/log/backup_cron.log 2>&1`。绝对路径对应铁律一（cron 的 PATH 只有 /usr/bin:/bin，不读你的 .bashrc）；`>> 日志 2>&1` 对应铁律二（cron 默认把输出发邮件，没配邮件服务就无声消失）；这条命令没有 % 字符——若在命令里写 `$(date +%F)` 必须转义为 `\%`，对应铁律三。
+2. 做不到。日与星期同时受限时是「满足其一即执行」（OR 语义），会变成 1 号或每个周一都跑（第 3.3 节）。替代：cron 里只限日（`0 2 1 * *`），把星期判断写进脚本 `[ "$(date +\%u)" = "1" ] || exit 0`。
+3. 先看系统日志里有没有 CRON 拉起记录（Debian/Ubuntu 在 /var/log/syslog）：有记录但无结果，查任务自身日志；连记录都没有，查 cron 服务状态 `systemctl status cron`；中间态用 `env -i SHELL=/bin/sh PATH=/usr/bin:/bin HOME=... 命令` 在终端复现 cron 环境（第 3.1 节与第 4 节调试口诀）。
+4. 错过补跑（关机期间错过的任务开机后补执行，`Persistent=true`）、日志进 journal（`journalctl -u` 即查，不必自己拼重定向）、依赖与并发控制（单元天然串行，配 flock 的场景 timer 天然解决）（第 6.2 节对照表）。
+</details>

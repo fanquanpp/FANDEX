@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go 1.18+ 原生 Fuzzing 框架：覆盖率引导、变异引擎、语料库管理与生产级实战
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/620-GoCGO'
   - 'go/580-GoPerformanceAnalysis'
@@ -1688,3 +1688,49 @@ Go 原生 fuzzing 不集成符号执行，对此类"魔法值"分支效果较差
 > **文档版本**：v2.0 (2026-06-14)
 > **审阅状态**：金标准教学版
 > **适用 Go 版本**：1.18 - 1.24+
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（fuzz 目标的设计）**：为 `func ParseDuration(s string) (time.Duration, error)` 写一个 fuzz 目标。除了不 panic，还应该断言哪些"性质"（property）才能比单纯不崩溃更有价值？
+
+参考实现：
+
+```go
+func FuzzParseDuration(f *testing.F) {
+    f.Add("100ms")
+    f.Add("1h30m")
+    f.Add("-2s")
+    f.Add("abc")
+
+    f.Fuzz(func(t *testing.T, s string) {
+        d, err := ParseDuration(s)
+        if err != nil {
+            return // 非法输入允许失败
+        }
+        // 性质 1：合法输入的往返稳定（parse(format(d)) == d）
+        s2 := d.String()
+        d2, err2 := ParseDuration(s2)
+        if err2 != nil || d2 != d {
+            t.Fatalf("roundtrip failed: %v -> %s -> %v", d, s2, d2)
+        }
+        // 性质 2：结果有界（拒绝 NaN 级别的荒谬值）
+        if d < -24*time.Hour || d > 24*time.Hour {
+            t.Fatalf("out of range: %v", d)
+        }
+    })
+}
+```
+
+要点：模糊测试的断言层次——崩溃（不变量破坏）< 差分性质（parse/inverse 往返）< 语义性质（值域）。种子语料决定起点，性质决定发现能力。
+
+**题 2（语料与复现）**：fuzz 找到一个崩溃输入后，它存在哪里？如何把它变成永久的回归用例？`go test` 与 `go test -fuzz` 各跑语料里的什么？
+
+参考答案：崩溃输入写入 `testdata/fuzz/FuzzXxx/` 目录下的语料文件。提交进仓库后，普通 `go test` 每次都会回放这些语料（含种子与历史崩溃），无需 -fuzz 开关——这就是"发现即永久回归用例"的闭环。`go test -fuzz=FuzzXxx` 才做覆盖率引导的随机生成（默认只跑一个目标、并行 worker 报告崩溃即停）。要点：模糊测试的价值沉淀在 testdata 里，CI 跑普通 test 就能吃到全部历史成果。
+
+**题 3（fuzz 与单元测试的分工）**：解析器已有 30 个表驱动用例，还有必要上 fuzzing 吗？说出 fuzz 能发现而表驱动不能的三类问题。
+
+参考答案：有必要。三类问题——(1) 未想到的输入形态：表驱动只覆盖你想到的，fuzz 的覆盖率引导会钻进你没写的分支（如超长输入、UTF-8 尾部截断、控制字符）；(2) 状态类缺陷：解析器带内部缓存/位置状态时，单调用序列测不出跨调用污染，fuzz 序列能；(3) 边界复合：多个边界条件组合（大数+负号+溢出）人类用例很少同时覆盖。分工：表驱动管"已知语义的精确断言"，fuzz 管"未知形态的不变量守护"，不是替代关系。

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 异步编程模式、集群与 Worker、性能调优与安全实践（流处理已拆出为 575 专篇）。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'javascript/575-NodeStreamsAndBackpressure'
   - 'javascript/500-DebugPerformanceOptimization'
@@ -768,11 +768,12 @@ node \
   --optimize-for-size \            # 优化内存占用
   --gc-interval=100 \              # GC 触发间隔
   --unhandled-rejections=strict \  # 严格模式处理未捕获拒绝
-  --experimental-fetch \           # 启用原生 fetch（Node 18+）
   --enable-source-maps \           # 启用 source map 支持
   --trace-warnings \               # 警告输出堆栈
   app.js
 ```
+
+> 注：原生 `fetch` 自 Node 18 起默认内置，无需任何标志（旧资料里的 `--experimental-fetch` 已随版本演进移除，不要再加进启动参数）。
 
 ### 7.2 优雅关闭实现
 
@@ -1493,6 +1494,26 @@ class SimplePool {
 - **`node-report`**：诊断报告生成工具，理解 Node.js 故障排查体系。
 
 ---
+
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 口述「接口 P99 从 50ms 涨到 800ms」的第一轮排查顺序：先看什么指标、用什么命令/面板把「CPU 忙」与「在等外部」区分开；
+2. `--max-old-space-size=4096` 改的是什么？服务内存超限抛什么错误，为什么加内存条不一定能救；
+3. `worker_threads` 与 `cluster` 的分工：一个图片转码服务与一个 HTTP 扩容场景，各选哪个，为什么；
+4. 为什么「同步读 100MB 配置文件」在生产环境是事故？从事件循环的角度说出它的连锁反应；
+5. 手写一个简单的「每 10 秒输出堆水位」的健康检查片段（`process.memoryUsage()` 的三个字段各代表什么）。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：先看 CPU（`top`/`pidstat` 或 APM）——CPU 接近单核满载是主线程阻塞（同步调用、热循环、序列化大 JSON），CPU 空闲但耗时高是等外部（DB、下游 HTTP、磁盘 IO）——两者的修法完全不同，这一步决定后面所有方向；
+- 第 2 问：V8 老生代堆上限（MB）；超限抛 `FATAL ERROR: Reached heap limit - JavaScript heap out of memory`；救不了的原因：泄漏（闭包/缓存无界）时堆会再次涨满，真瓶颈可能是外部内存（Buffer 在堆外）而非老生代；
+- 第 3 问：CPU 密集的转码选 `worker_threads`（同进程共享内存、可 Transferable 零拷贝传大 Buffer）；HTTP 多核扩容选 `cluster`（多进程各自监听、隔离故障）——线程适合分活，进程适合扩容与隔离；
+- 第 4 问：同步 IO 把事件循环整根卡住——期间所有并发请求排队、定时器延迟、健康检查超时，负载均衡误判实例下线；连锁反应是「一个请求的读盘时间变成全服务的延迟下限」；
+- 第 5 问：`setInterval(() => { const m = process.memoryUsage(); console.log(m.rss, m.heapUsed, m.heapTotal); }, 10_000)`；rss 是进程总内存（含堆外），heapUsed 是 V8 实际在用堆，heapTotal 是 V8 已申请堆——heapUsed 持续上升不回落是泄漏信号。
+</details>
 
 ## 12. 附录 A：Node.js 22 关键 API 速查
 

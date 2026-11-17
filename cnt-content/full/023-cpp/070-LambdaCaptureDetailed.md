@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 承接 Lambda 入门的深水区：按值与按引用捕获的取值时机实验、悬垂引用的真实事故现场、C++14 初始化捕获与 move 捕获、mutable 与 const 传播、*this 捕获，附 use-after-capture 调试实录。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/060-LambdaExpression'
   - 'cpp/160-RAIIResourceManagement'
@@ -161,6 +161,53 @@ public:
 
 - cppreference Lambda 捕获：https://en.cppreference.com/w/cpp/language/lambda#Lambda_capture
 - 初始化捕获（C++14）：https://en.cppreference.com/w/cpp/language/lambda#Lambda_capture
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：只看代码先预测输出，再实测验证——这组对比考的是「按值捕获在 lambda **构造时**定格，按引用捕获在**调用时**取现值」：
+
+```cpp
+int x = 1;
+auto byVal  = [x]()  { return x; };
+auto byRef  = [&]() { return x; };
+x = 99;
+std::cout << byVal() << " " << byRef() << '\n';
+```
+
+**提示**：两条输出不同——byVal 拿到的是构造那一刻的快照，byRef 是调用时去原变量现取。
+
+**参考实现**（先自己写完再看）：
+
+```text
+输出：1 99
+- byVal 按值捕获：构造 byVal 时把 x=1 拷进闭包，之后 x 改成 99 与它无关。
+- byRef 按引用捕获：调用时才解引用读 x，自然是 99。
+心智模型：按值 = 拍照，按引用 = 直播。取值时机不同是这类 bug 的全部根源。
+```
+
+要点自查：能独立说出「构造时 vs 调用时」，才解释得清为什么循环里按引用捕获循环变量、lambda 在循环结束后才调用时全部拿到同一最终值。
+
+**任务二**：找错——下面的 lambda 被存起来延迟调用，写出它触发的事故与修法（两处：引用悬垂、捕获 move-only 对象不会写的问题）：
+
+```cpp
+std::string name = "alice";
+auto printLater = [&name]() { std::cout << name; };
+// printLater 被传递出去，在 name 析构之后才被调用
+```
+
+**提示**：按引用捕获 = 把「对局部变量的引用」装进闭包带走；局部变量析构后调用闭包就是悬垂引用——与返回局部变量引用同罪。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+auto printLater = [name]() { std::cout << name; };   // 按值拷贝进闭包，脱离作用域安全
+// 要 name 的「当时值」就按值；要移动大对象进闭包用初始化捕获：
+auto movedIn = [n = std::move(name)]() { std::cout << n; };
+```
+
+要点自查：本篇的判断口诀——「闭包比变量活得久就按值，只在作用域内同步用才按引用」；初始化捕获（C++14）还能把 move-only 对象（unique_ptr）装进闭包，这是 `[=]` 做不到的。
 
 ## 11. 自我检查
 

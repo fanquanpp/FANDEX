@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: "从「容器要限宽 1200px 还要减掉两侧内边距，媒体查询写了三遍」出发，用 min/max/clamp 三兄弟一行搞定响应式尺寸，吃透 calc 的空格语法与流体排版公式，再用 color-mix 从一个主色派生出整套交互色，让 CSS 自己会算术。"
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/410-CSSVariableCustomAttribute'
   - 'css/400-ModernColorSpace'
@@ -206,6 +206,49 @@ calc 等数学函数在「计算值」阶段求值，此时单位已统一，所
 - calc 的空格规则与类型匹配限制能各举一个反例；
 - 能用 color-mix 写出主色的 hover、禁用、边框三个派生色；
 - 拿到「限宽加留边」需求时第一反应是 min() 而不是媒体查询。
+
+## 11. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2、3 节的示例代码自己写，再对照参考实现。
+
+**任务一**：不查资料，写出三条规则——主区占满「容器减侧栏 260px」的剩余宽度（calc）；主区内边距至少 24px、最多 40px、随视口平滑变化（clamp）；栅格间隙 8px 基准、随视口每 100px 增 1px、封顶 24px。
+
+**任务二**：只给 `--brand: #7c3aed`，用 color-mix 派生三个成员——hover 深一档（掺 15% 黑）、浅底（掺 90% 白）、禁用（透明度 30%），并给禁用态补一句「为什么透明度派生要掺 transparent 而不是掺白」。
+
+**提示**：任务一先分清两件事——「剩余空间」是减法（calc），「呼吸感区间」是 clamp，两者可以互相嵌套；间隙的「每 100px 增 1px」就是 1vw 斜率，套第 3.2 节公式。任务二注意 color-mix 的语法：先 `in` 空间，比例只写一头（第 3.3 节）；掺白是「调淡颜色」，掺 transparent 是「降不透明度」，两者视觉不同。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.main {
+  width: calc(100% - 260px);              /* 混合单位减法：剩余空间 */
+  padding-inline: clamp(24px, 3vw, 40px); /* 最小 24、随视口缩放、最大 40 */
+}
+
+.gap {
+  gap: clamp(8px, 1rem + 1vw, 24px); /* 最小 8、斜率 1vw、最大 24 */
+}
+
+/* 任务二 */
+:root { --brand: #7c3aed; }
+
+.btn:hover {
+  background: color-mix(in srgb, var(--brand) 85%, black); /* 15% 黑压暗 */
+}
+
+.card-soft {
+  background: color-mix(in srgb, var(--brand) 10%, white); /* 90% 白做浅底 */
+}
+
+.btn:disabled {
+  background: color-mix(in srgb, var(--brand) 30%, transparent);
+}
+/* 掺 transparent 只把不透明度降到 30%、颜色本身不动（预乘透明度规则）；
+   掺白会得到「淡紫不透明色」，压在下面的内容上仍然挡住背景 */
+```
+
+验收点：任务一里把 `3vw` 换成 `100%` 这类「静止值」后内边距将不再随视口呼吸——clamp 的首选项要「像斜率一样动」，三个参数语义是最小/首选/最大；任务二把 `--brand` 换成绿色后三个成员应整体变绿，禁用按钮应能透出下面的内容。
 
 ## 本章总结
 

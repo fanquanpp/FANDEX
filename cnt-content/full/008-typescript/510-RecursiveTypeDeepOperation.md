@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 递归条件类型与深度类型操作的形式化定义、尾递归优化机制、DeepReadonly/DeepPartial/DeepRequired 实现原理、JSON 类型推导、循环引用处理与编译性能优化
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/430-ConditionalTypeDistribute'
   - 'typescript/450-TypeCompositionPractice'
@@ -2351,4 +2351,10 @@ type Join<S extends string[], D extends string> =
     ? `${H}${D}${Join<R, D>}` : never;
 ```
 
----
+## 自检
+
+- 递归类型的三要素模板（终止条件、真分支、缩小递归）遮住后自己默写，并用 `DeepReadonly` 走一遍：每段对应哪一要素？
+- 为什么 `DeepReadonly` 遇到函数属性要原样保留而不是继续递归？
+- TS 4.5 的尾递归优化对「递归调用在真分支独占尾部」的形态才生效——遮住第 6 节，说出两种会让优化失效的写法（包裹展开、多分支共享）。
+- `JSONValue` 为什么需要互相引用的两组类型？循环引用类型（树、链表）怎么终止？
+- 什么时候该停手不写 Deep 系列？遮住「对比分析」的表，说出至少两条边界。

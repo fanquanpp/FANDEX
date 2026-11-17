@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: '以"手机 App 应用商店"为线索讲解 gh extension 系列命令，涵盖搜索、安装、升级、移除、浏览与创建扩展，配以原理讲解、安全提示、错误对策。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -250,6 +250,39 @@ gh extension install .
 | 升级报错 | `failed to upgrade` | 网络或仓库已被删除/改名 | 检查仓库是否仍存在；必要时 `remove` 后重新 `install` |
 
 ---
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：写出扩展的两个硬性要求（仓库命名、可执行文件），以及安装后 `gh dash` 这条命令的执行过程发生了什么。
+
+**任务二**：写出四条管理命令——（a）按 `owner/repo` 安装 gh-dash；（b）列出已装扩展；（c）全部升级；（d）卸载 gh-dash。
+
+**任务三**：判断——（a）扩展会被 GitHub 官方审核签名吗？（b）脚本扩展与预编译扩展的差别是什么？（c）扩展能覆盖 gh 的内置命令吗？
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 任务二
+gh extension install dlvhdr/gh-dash
+gh extension list
+gh extension upgrade --all
+gh extension remove gh-dash
+
+# 任务一：仓库必须以 gh- 开头，且仓库内有一个与仓库同名的
+# 可执行文件；执行时 gh 找到 gh-dash 可执行文件，把你敲的
+# 后续参数原样转发给它。
+
+# 任务三
+# (a) 不会——安装即信任发布者，官方建议安装前先 browse 源码审查；
+# (b) 脚本扩展直接克隆仓库用脚本；预编译扩展优先下载 Release
+#     里的二进制（更快，适合 Go 等编译语言）；
+# (c) 不能——扩展不能覆盖内置命令，冲突时用
+#     gh extension exec <名字> 强制调用。
+```
+
+要点自查：扩展机制的巧妙之处是「仓库即应用」——不需要应用商店审核，命名约定 + 同名可执行文件就是全部接口；每 24 小时自动检查升级提示；安全模型是「信任作者」而非「平台背书」，装前看 star、看源码、看 Release 是基本操作。
 
 ## 一句话记忆
 

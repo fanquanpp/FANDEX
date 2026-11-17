@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 以三个真实运维脚本为主线讲 Bash：日志轮转清理、服务健康巡检、批量部署——set -euo pipefail 等防御性写法与引号/分词陷阱逐段讲透
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'devops/015-LinuxSystemManagement'
   - 'devops/200-IaC'
@@ -299,6 +299,13 @@ rm -rf $TARGET      # 分词成 rm -rf /tmp/safe dir1 dir2 —— 三条路径�
 - 能说明三个脚本对 `-e` 的不同取舍（清理要停、巡检要继续、部署要停）及理由；
 - 会用 flock 防并发部署，用 heredoc 带引号定界符写远端脚本；
 - 能给脚本设计退出码语义让 cron/CI 正确告警。
+
+## 自检
+
+- 遮住防御性写法四件套的代码块，先自己默写脚本开头：`set -euo pipefail` 三个开关各防什么事故？写出 IFS 设置与 trap 清理的骨架，再对照——`-u` 把哪类笔误从静默变显式？
+- 三个脚本对 `-e` 的取舍不同：清理脚本要停、巡检脚本要继续、部署脚本要停。遮住逐段讲解，说出巡检脚本为什么**故意不用** `-e`，以及它靠什么机制让 cron 正确告警。
+- 遮住 deploy.sh，自己写远端执行骨架：`ssh host bash -s <<'REMOTE'` 的定界符为什么不加引号就错？部署成功的判定标准是"命令没报错"还是什么？为什么？
+- 陷阱实验口算：`TARGET="/tmp/safe dir1"` 时，`rm -rf $TARGET` 会删几条路径？`"$TARGET"` 呢？想不清就回到引号与分词三陷阱。
 
 ## 下一步
 

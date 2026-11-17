@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用变换语言给图像定位缩放淡入淡出，掌握插值缓动并行随机与事件驱动的动画写法
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'renpy/030-ImagesSceneShowAndTransitions'
   - 'renpy/080-ScreensAndScreenLanguage'
@@ -300,6 +300,51 @@ transform breathing:
 提示：用 menu 让玩家选 warper，五个分支里各自 show 带不同 ATL 的同一个角色；对比要在同一场景里连续看才有分辨力。这道题没有标准答案，观感笔记本身就是产物——「给一段演出挑对缓动」正是视觉小说演出的日常判断，练的是审美与语言的对应关系。
 
 完成后回看三个任务的代码：你已经用上了三种承载方式、parallel、choice、block 加 repeat、内置位置与缓动家族——ATL 的主干语句全部过了一遍。
+
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己写出写法，再展开对照。
+
+1. ATL 的三种承载方式分别写在什么语句上？各适合什么场合？
+2. 写一段 ATL：立绘从 xalign 0.0 出发，2 秒匀速滑到 xalign 1.0，往返循环。用哪些语句？repeat 必须放哪里？
+3. ease、easein、easeout 的节奏曲线差别是什么？想加"弹跳落地"感选哪个家族？
+4. parallel 与 choice 各解决什么问题？parallel 块之间要注意什么？
+5. animation 语句解决什么违和感？它必须写在整个块的什么位置？
+6. show eileen happy 之后不写 at 子句再 show 一次，立绘位置会不会跳回默认？怎么彻底重置？
+7. 想让"所有立绘入场都从右侧滑入"，用 MoveTransition 的哪个参数、接什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) transform 语句：定义可复用变换（可带参数），show 时 at 它；image 语句
+   加 ATL 块：把帧动画固化成"图"；show/scene 后直接跟 ATL 块：一次性包裹。
+
+2) transform walk:
+       xalign 0.0
+       linear 2.0 xalign 1.0
+       linear 2.0 xalign 0.0
+       repeat
+   repeat 必须是所在块的最后一条语句。
+
+3) ease 慢-快-慢，easein 先快后慢，easeout 先慢后快；弹跳感选 Robert
+   Penner 家族的 easeout_bounce（回弹过冲用 easeout_back，橡皮筋用
+   easeout_elastic）。
+
+4) parallel 让多段动画同时进行、全部结束整条才算完；choice 按权重随机
+   选一个分支执行。parallel 各块应修改不同属性，否则互相覆盖。
+
+5) 换表情时循环动画不从头重放、沿 at 时钟继续，消除"跳回第一帧"；
+   animation 必须是 ATL 块的第一条语句。
+
+6) 不跳——show 不带 at 子句时沿用当前 transform（属性继承）。彻底重置
+   要么 hide 后再 show，要么显式 at reset。
+
+7) enter 参数：define enter_slide = MoveTransition(0.6, enter=slide_in)，
+   slide_in 是入场 transform。入场动效只留一处，别与 on show 块叠加。
+```
+
+</details>
 
 ## 小结
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用 prefetch 配置与 data-astro-prefetch 让下一页在用户点击前就开始加载，理解四种策略的取舍。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/030-PagesRouting'
   - 'astro/120-AstroViewTransitions'
@@ -136,6 +136,37 @@ prefetch: {
 ## 本篇小结
 
 预取把"点击后的等待"提前到"点击前的空闲"。`prefetch: true` 只开系统、`prefetchAll: true` 才默认全站；hover 是流量与收益的最佳默认值，viewport 留给高点击率的少量链接，tap 适配触屏，load 几乎不用。链接级用 `data-astro-prefetch` 覆盖或豁免。ClientRouter 自带 hover 预取，两者共享一套配置。决策公式：点击概率 x 预取收益 对 流量代价，外链与副作用链接永远在圈外。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 默写配置：全站站内链接都进预取系统，默认策略为鼠标悬停开始。
+
+   参考答案（先自己写，再对照）：
+
+   ```js
+   export default defineConfig({
+     prefetch: {
+       prefetchAll: true,
+       defaultStrategy: 'hover',
+     },
+   })
+   ```
+
+   验收点：`prefetchAll: true` 把"逐链接声明"翻转为"逐链接豁免"；个别链接用 `data-astro-prefetch="false"` 退出。
+
+2. 四种预取策略各自的触发时机与代价是什么？列表页"下一页"和文档站侧边栏分别怎么选？
+
+   参考答案（先自己写，再对照）：
+
+   hover（悬停/聚焦/触摸开始，代价极低）；tap（按下未松开，比 hover 更保守，适合触屏）；viewport（进入视口，代价高，适合点击率极高的链接如"下一页"）；load（页面加载完成，代价最高，仅限确定必去的链接）。判断标准是"预取流量与跳转收益的期望值"：侧边栏几十个链接全 viewport 等于把整站拉一遍，选 hover；"下一页"点击率极高，viewport 值得。
+
+3. 只写 `prefetch: true` 不加任何链接属性，会发生什么？
+
+   参考答案（先自己写，再对照）：
+
+   预取系统被启用，但没有任何链接被预取——"开了等于没开"。`prefetch: true` 的语义是"启用预取系统"，具体预取谁由链接上的 `data-astro-prefetch` 属性决定；要么逐链接声明，要么 `prefetchAll: true` 全量开启。
 
 ## 参考与致谢
 

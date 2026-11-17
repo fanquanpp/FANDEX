@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 一份开箱即用的 Node.js + TypeScript 工程骨架：目录结构、tsconfig 双配置、开发与构建脚本、常见坑位。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/350-TypeScriptEngineeringConfig'
   - 'typescript/360-TsconfigStrictMode'
@@ -177,8 +177,8 @@ createServer((req, res) => {
 
 这套骨架的核心是"开发快、构建干净、类型严格"：
 `tsx` 负责开发体验，`tsc` 负责产物质量，双 tsconfig 让两件事互不干扰。
-继续深化可看 tsconfig 严格模式 与
-编译与性能优化。
+继续深化可看 [tsconfig 严格模式](/typescript/360-TsconfigStrictMode) 与
+[编译与性能优化](/typescript/380-TypeScriptCompilePerformanceOptimization)。
 
 ## 动手练习（先遮住参考实现）
 

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 为什么容器会丢数据、PV/PVC/StorageClass 三层抽象、动态供应链路、StatefulSet 存储模板与快照恢复，附双副本 Deployment 挂同一盘的经典面试题。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'devops/090-KubernetesCoreDetailed'
   - 'devops/410-DatabaseOps'
@@ -280,3 +280,11 @@ kubectl exec web-0 -- cat /usr/share/nginx/html/i.html   # from-0：数据跟卷
 - StatefulSet 的身份模型与有序性设计见 [K8s 核心机制详解](/devops/090-KubernetesCoreDetailed)；
 - 数据库上容器的备份策略与一致性快照的运维视角见 [数据库运维](/devops/410-DatabaseOps)；
 - PVC 绑定异常是集群排障的高频入口，系统排查思路见 [故障排查方法论](/devops/330-Troubleshooting)。
+
+## 自检
+
+- 遮住两级抽象图，默写 PV/PVC/StorageClass 三者谁面向谁：开发写哪个对象、运维供货靠哪个对象、"商品目录"决定的是哪件事？
+- 口答四个访问模式：RWO 的语义单位是节点还是 Pod？哪类存储才能 RWX？把云盘声明成 RWX 会发生什么？
+- 动态供应链路默写：从 Pod 创建到 kubelet 挂载共几步？`WaitForFirstConsumer` 防的是链路里哪个环节出错？
+- 数据库 PVC 的清单检查题：reclaimPolicy 该配哪个值、为什么改它要趁 StorageClass 声明时？误删 PVC 后 Retain 的 PV 处于什么状态、怎样才可复用？
+- StatefulSet 三条存储行为规则（每副本独立 PVC、缩容留卷、有序回收）——遮住正文，从"模板 + 实例序号"各推一遍。

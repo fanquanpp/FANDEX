@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 自动链接：尖括号语法（CommonMark）与裸 URL 识别（GFM 扩展）的规则、边界与差异。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/050-LinkImage'
   - 'markdown/110-GitHubFlavoredMarkdown'
@@ -16,7 +16,7 @@ prerequisites:
 ---
 
 > **认知导入（Layer 1 进阶层）**
-> 前置知识：017 链接与图片（自动链接是链接语法的最简形态）。
+> 前置知识：050 链接与图片（自动链接是链接语法的最简形态）。
 > 边界说明：自动链接分两档——尖括号 `<URL>` 是 CommonMark 标准；裸 URL 直接被识别是 GFM 扩展。两者规则不同，边界行为（哪里算链接结束）也不同。
 > 强制练习：在 GitHub 上分别写 `https://github.com.` 和 `<https://github.com>.`，观察句号是否被算进链接。
 

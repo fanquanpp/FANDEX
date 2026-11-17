@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: '口令破解全景：在线服务爆破（Hydra）与离线哈希破解（hashcat/John the Ripper）的分工、哈希模式识别（-m）、字典/掩码/规则攻击、GPU 调优与授权边界'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/070-PasswordHash'
   - 'cybersecurity/140-HashTools'
@@ -488,3 +488,11 @@ john --wordlist=dict.txt --rules=Custom hash.txt
 ```
 
 hashcat 与 John 的规则语法互不相通（best64.rule 是 hashcat 语法，john.conf 是 John 语法），团队内先统一工具再共享规则库。两边共享的只有字典本身——rockyou 与自建的「业务定制字典」（公司名 + 年份 + 项目代号拼接）是弱口令验证效率最高的组合。
+
+## 自检
+
+- 用「敲门 vs 配钥匙」的类比向别人解释在线爆破与离线破解的分工，并说出两者各自的天花板约束（速率/锁定 vs 算力与慢哈希）。
+- 遮住 Hydra 一节，写出「对 SSH 做受控在线爆破」的命令，并解释 `-t 4 -W 3` 为什么是「刻意放慢」。
+- `hashcat -m 0`、`-m 1000`、`-m 3200` 分别对应什么哈希（MD5 / NTLM / bcrypt）？为什么 bcrypt 模式跑得极慢——这印证了防御设计的什么道理（慢哈希拖垮离线破解）？
+- 掩码攻击与字典攻击的取舍是什么？遮住示例，自己写出「8 位纯小写字母」的掩码命令，并估算搜索空间（26^8）。
+- 防御视角：你的系统应如何设计才能让本篇工具链「配不出钥匙」？（Argon2id 慢哈希 + 泄露库校验 + 登录限速 + MFA。）

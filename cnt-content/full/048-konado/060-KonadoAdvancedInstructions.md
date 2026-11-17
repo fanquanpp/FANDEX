@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 掌握 screentext 全屏叙事 signal waitsignal 与 Godot 侧联动以及成就指令与 end 的回退语义
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-11-17'
 related:
   - 'konado/050-KonadoVariablesAndBranching'
   - 'konado/080-KonadoSaveAndRollback'
@@ -83,7 +83,7 @@ signal 是一种"可重放"的一次性副作用（Side Effect）。具体规则
 signal 是"剧本通知程序"，waitsignal 则反过来，是"剧本等待程序"。它的语法是：
 
 ```konado
-waitsignal lightning_done
+waitsignal storm_done
 ```
 
 执行到这一行，对话流程暂停，直到外部代码调用 KonadoDialogueManager 的 emit_wait_signal 方法并传入同名信号名才继续：

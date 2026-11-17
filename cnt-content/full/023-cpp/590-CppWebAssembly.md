@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++编译为WebAssembly
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/710-CppRustComparison'
   - 'cpp/700-CppCodeStyle'
@@ -1689,3 +1689,62 @@ emcc main.cpp -o main.js -g -O0
 **Q14**：实现一个 Wasm 模块，要求使用 SIMD 与 threads 在浏览器中并行计算 Mandelbrot 集合，并实时显示在 Canvas 上。要求达到 60 FPS。
 
 **Q15**：分析浏览器 Streaming Compilation 与同步 Compilation 的性能差异，设计实验量化启动延迟。
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：用 Emscripten 把一个 C++ 函数暴露给 JavaScript——函数 `int addAll(int*, int)` 处理 JS 传入的数组；分别用「手写 `EMSCRIPTEN_KEEPALIVE` + Module.ccall/cwrap」与「`embind`（`emscripten::val` 或类型注册）」两种方式实现，并说明两者的适用边界（简单函数 vs 需要类型系统与对象传递）。
+
+**提示**：`EMSCRIPTEN_KEEPALIVE` 防 LTO/裁剪删掉入口；`cwrap` 传数组要自己分配堆内存（`Module._malloc`）；embind 让 C++ 类型直接映射 JS 对象，代价是胶水代码体积。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// 方式一：cwrap 手动桥
+#include <emscripten.h>
+extern "C" {
+EMSCRIPTEN_KEEPALIVE
+int addAll(int* data, int len) {
+    int sum = 0;
+    for (int i = 0; i < len; ++i) sum += data[i];
+    return sum;
+}
+}
+// JS 侧：
+// const ptr = Module._malloc(4 * n); Module.HEAP32.set(jsArray, ptr >> 2);
+// const sum = Module.ccall('addAll', 'number', ['number', 'number'], [ptr, n]);
+// Module._free(ptr);
+
+// 方式二：embind（编译加 --bind）
+#include <emscripten/bind.h>
+int addAllVec(const std::vector<int>& v) {
+    int s = 0; for (int x : v) s += x; return s;
+}
+EMSCRIPTEN_BINDINGS(module) {
+    emscripten::function("addAllVec", &addAllVec);
+}
+// JS 侧直接：Module.addAllVec([1, 2, 3])
+```
+
+要点自查：cwrap 路径的每一步（malloc/set/call/free）都自己管——适合少量入口点；embind 自动处理类型转换——适合接口多的库；两者的分水岭是「类型复杂度」不是性能。
+
+**任务二**：WASM 内存模型辨析——为什么 WASM 里 C++ 指针就是线性内存的 32 位偏移？`HEAP32` 与 C++ 侧指针如何对应（地址除 4 的原因）？wasm32 与 wasm64（memory64）的差异一句话说清；再回答：把 64 位 C++ 代码直接编 wasm32 会遇到哪类典型问题？
+
+**提示**：wasm32 的线性内存是一个连续的字节数组，指针 = 索引；JS 侧 TypedArray 视图按元素宽度索引，所以 `Int32Array` 的下标是字节地址右移 2 位。
+
+**参考实现**（先自己写完再看）：
+
+```text
+- 指针 = 线性内存偏移：WASM 没有进程地址空间，唯一的「内存」是一段字节序列，
+  C++ 的 ptr 就是这段序列里的 32 位无符号下标——不存在未映射页保护，
+  越界在 wasm 层由「内存边界检查」兜底（trap）。
+- HEAP32 对应：Module.HEAP32 是 Int32Array 视图，元素宽度 4 字节，
+  所以 JS 下标 = C++ 字节地址 / 4（>> 2）。
+- wasm32 vs wasm64（memory64）：线性内存上限从 4GB（当前 wasm32 实际 4GiB 上限）
+  升到 2^53 字节量级，指针变 64 位；工具链支持 wasm64 尚在推进，生产多用 wasm32。
+- 64 位代码移植典型问题：size_t 假设 8 字节（wasm32 下是 4）、
+  long 长度差异、以及 >2GB 数据集放不下线性内存——先审计 sizeof(size_t) 与总量。
+```
+
+要点自查：「指针就是下标、下标要除以元素宽度」这条对应关系是调试 WASM 内存桥接 bug 的第一直觉；wasm32 的 4GB 上限决定了「大数据集要分块或流式」的设计约束。

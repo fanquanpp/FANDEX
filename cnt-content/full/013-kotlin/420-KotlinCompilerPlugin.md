@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: kapt、KSP与编译器插件的原理、工程实践与性能优化
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'kotlin/390-KotlinTest'
   - 'kotlin/320-KotlinCoroutineChannel'
@@ -22,11 +22,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「理论推导」的核心机制、典型用法与常见陷阱
-- 掌握「代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「对比分析」的核心机制、典型用法与常见陷阱
+- 能说出编译器插件的三层形态：CLI 插件（-Xplugin）、Gradle 插件（SubpluginArtifact 接线）、编译期代码生成（KSP/kapt）
+- 能解释 Kotlin 默认 final 与 Spring/JPA 的冲突为什么必须由编译器插件（all-open）解决而非运行时反射
+- 能走完一个 KSP 处理器的最小闭环：Resolver 读符号、代码生成写出 .kt 文件、依赖接线 `ksp(...)`
+- 能按迁移路线淘汰 kapt：为什么 kapt 生成 Java stub 慢两倍、KSP 直接读 Kotlin 符号快在哪
 
 
 
@@ -426,11 +425,11 @@ public class FactoryProcessorProvider : SymbolProcessorProvider {
 // build.gradle.kts (processor 模块)
 plugins {
     kotlin("jvm")
-    id("com.google.devtools.ksp") version "1.9.22-1.0.17"
+    id("com.google.devtools.ksp") version "2.3.12"
 }
 
 dependencies {
-    implementation("com.google.devtools.ksp:symbol-processing-api:1.9.22-1.0.17")
+    implementation("com.google.devtools.ksp:symbol-processing-api:2.3.12")
     implementation("com.squareup:kotlinpoet:1.6.0")
     implementation("com.squareup:kotlinpoet-ksp:1.6.0")
 }
@@ -440,7 +439,7 @@ dependencies {
 // build.gradle.kts (consumer 模块)
 plugins {
     kotlin("jvm")
-    id("com.google.devtools.ksp") version "1.9.22-1.0.17"
+    id("com.google.devtools.ksp") version "2.3.12"
 }
 
 dependencies {
@@ -553,8 +552,11 @@ class AllOpenGradlePlugin : KotlinCompilerPluginPlugin<AllOpenExtension> {
         val project = kotlinCompilation.target.project
         val extension = project.extensions.getByType(AllOpenExtension::class.java)
 
-        kotlinCompilation.kotlinOptions.freeCompilerArgs += extension.annotations.get()
-            .flatMap { listOf("-P", "plugin:com.example.allopen:annotation=$it") }
+        // 2.x 写法：经 compilerOptions 传插件参数（kotlinOptions DSL 已在 2.2 退役）
+        kotlinCompilation.compilerOptions.freeCompilerArgs.addAll(
+            extension.annotations.get()
+                .flatMap { listOf("-P", "plugin:com.example.allopen:annotation=$it") }
+        )
 
         return project.provider {
             org.jetbrains.kotlin.gradle.plugin.SubpluginArtifact(
@@ -643,9 +645,9 @@ class CacheProcessor(
 ```kotlin
 // build.gradle.kts：kapt 与 KSP 共存配置
 plugins {
-    kotlin("jvm") version "1.9.22"
-    kotlin("kapt") version "1.9.22"  // 保留 kapt 处理尚未迁移的处理器
-    id("com.google.devtools.ksp") version "1.9.22-1.0.17"
+    kotlin("jvm") version "2.4.21"
+    kotlin("kapt") version "2.4.21"  // 保留 kapt 处理尚未迁移的处理器
+    id("com.google.devtools.ksp") version "2.3.12"   // KSP 自 2.3 起为独立版本线（2.3.12，2026-09 发布），与 Kotlin 版本号解耦
 }
 
 dependencies {
@@ -1638,3 +1640,36 @@ kotlinc -Xrender-internal-diagnostic-names Main.kt -d out
 # 启用类路径快照加速编译
 ./gradlew compileKotlin -Pkotlin.incremental.useClasspathSnapshot=true
 ```
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：为什么 all-open 必须在编译器层**。Spring 官方为 Kotlin 提供 `kotlin-spring` 插件把 `@Component` 等注解的类自动 open。解释：运行时反射、字节码增强（agent）与编译器插件三条路里，为什么框架最终选编译器插件？
+
+参考答案：运行时反射无法改变 final 方法的调用绑定（虚方法表在类加载时已定）；Java agent 字节码改写可行但复杂且与 Kotlin/Native、增量编译纠缠；编译器插件在源码进 IR 前就改写修饰符，与增量编译、K2 前端天然兼容——这是「语言级语义问题要在语言编译期解决」的范例。
+
+**练习 2：KSP 最小闭环**。写一个 KSP 处理器骨架：扫描标注了 `@Route(path)` 的类，生成 `RouteTable.kt`。回答：处理器的 `process()` 拿到什么对象、生成的代码写到哪、宿主怎么声明依赖。
+
+参考实现（骨架）：
+
+```kotlin
+class RouteProcessor(private val codeGen: CodeGenerator, private val logger: KSPLogger) : SymbolProcessor {
+    override fun process(resolver: Resolver): List<KSAnnotated> {
+        resolver.getSymbolsWithAnnotation("com.example.Route")
+            .filterIsInstance<KSClassDeclaration>()
+            .forEach { decl ->
+                val path = decl.annotations.first { it.shortName.asString() == "Route" }
+                    .arguments.first().value as String
+                codeGen.createNewFile(Dependencies.ALL_FILES, "com.example", "RouteTable")
+                    .bufferedWriter().use { w ->
+                        w.write("object RouteTable { val routes = listOf(\"$path\" -> \"${decl.qualifiedName?.asString()}\") }")
+                    }
+            }
+        return emptyList()
+    }
+}
+```
+
+宿主依赖：`ksp(project(":processor"))`（把处理器模块挂到 KSP configuration），生成的文件出现在 `build/generated/ksp/main/kotlin/`。自检问题：process 返回非空列表意味着什么？（答：这些符号无法本轮处理（如引用了未生成类型），KSP 会推迟到下一轮重试，多轮仍失败则报错。）
+
+**练习 3：kapt 与 KSP 的本质差异**。kapt 为什么比 KSP 慢？说出它的实现机制。
+
+参考答案：kapt 是「伪造 Java」——它先把 Kotlin 代码反向生成 Java stub，再让面向 Java 的注解处理器（APT）工作，最后把生成的代码编译回来；两遍编译 + stub 生成让它天然慢且丢 Kotlin 特有信息（如默认参数、suspend）。KSP 直接解析 Kotlin 符号表、按需计算，不经过 Java，速度数倍且能表达 Kotlin 语义。

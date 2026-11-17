@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'EC2 命令实战：实例生命周期、密钥与安全组、EBS 卷、弹性 IP 与常见陷阱。'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/270-AWSCore'
   - 'cloud-computing/250-LoadBalanceAutoScaling'
@@ -279,6 +279,33 @@ aws ec2 release-address --allocation-id eipalloc-12345
 ```
 
 ---
+
+## 教学自检
+
+遮住上面的命令示例，先自己默写，再展开对照。答不出的回到对应小节重读：
+
+1. `stop`、`terminate`、`reboot` 三个生命周期动词的差异是什么？stop 后哪个属性会变？
+2. 默写：列出所有 running 实例并只输出 ID/类型/公网 IP 的命令。
+3. 私钥什么时候下发？丢了怎么办？
+4. terminate 默认删什么、留什么？想保住根卷数据先做什么？
+5. 建一个安全组并只放行 22 端口来自某个安全组的流量，写命令骨架。
+6. 创建 EBS 卷时最容易翻车的参数是什么？挂载分哪两步？
+7. 弹性 IP 与公有 IP 的区别是什么？闲置 EIP 有什么后果？
+8. SSM Session Manager 相对「SSH + 密钥」的优势是什么？
+
+<details>
+<summary>参考答案（先答再看）</summary>
+
+1. stop 停机不收计算费（EBS 照收费）且公有 IP 会被回收重分配；terminate 销毁实例并默认删除根卷（额外挂的数据卷默认保留）；reboot 原地重启、属性不变。变的是公网 IP。
+2. `aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query 'Reservations[*].Instances[*].[InstanceId,InstanceType,PublicIpAddress]' --output table`。
+3. 只在 `create-key-pair` 创建时下发一次（AWS 不留存私钥）。丢失后无法从 AWS 找回——走「替换密钥对 + 手动改 authorized_keys」或用 SSM 进去补救。
+4. 默认删除根卷（DeleteOnTermination 默认 true），保留额外挂载的数据卷。要保根卷数据：先创建 AMI 或快照，或提前把 `deleteOnTermination` 设为 false。
+5. `aws ec2 create-security-group --group-name web-sg --description ...`；`aws ec2 authorize-security-group-ingress --group-id sg-xxx --protocol tcp --port 22 --source-group sg-堡垒机组ID`（用 source-group 引用组而非 IP 段）。
+6. 可用区（AvailabilityZone）——必须与目标实例同区，否则无法挂载。两步：`create-volume` 后 `attach-volume --device /dev/sdf`。
+7. 公有 IP 随 stop/重启变化；弹性 IP 是账号持有的固定公网地址、可绑定到实例。闲置（未绑定实例）的 EIP 按小时计费——清理实例时记得 release。
+8. 免密钥、走 IAM 鉴权、审计进 CloudTrail、无需 22 端口对公网开放（安全组可以完全不开放 SSH）。
+
+</details>
 
 ## 小结
 

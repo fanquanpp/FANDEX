@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: encoding/json详解
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/340-GoDatabase'
   - 'go/470-GoHTTP'
@@ -1331,20 +1331,80 @@ err := dec.Decode(&u)
 
 ---
 
-## Go 1.24+ JSON 增强
+## Go 1.25-1.27：encoding/json/v2 的落地
 
-**基本写法：jsontext 严格 JSON 处理**
-`import "encoding/json/v2"`
+为什么要有 v2？v1 `encoding/json` 的设计债积累多年：反射路径上的分配难以削减、`DisallowUnknownFields` 等选项在自定义 `UnmarshalJSON` 内会失效、字段名匹配不区分大小写（大小写不同的同名字段会静默命中同一个 Go 字段）、`omitempty` 基于 Go 零值语义产生反直觉行为。v2 不是在 v1 上打补丁，而是把"语法层"与"语义层"拆开重写。
+
+版本时间线：1.25 起 v2 以 `GOEXPERIMENT=jsonv2` 试点；**1.27（2026-08）转正**——`encoding/json/v2` 与 `encoding/json/jsontext` 成为正式包，同时 v1 `encoding/json` 的底层改由 v2 实现驱动、对外行为保持不变（极端情况可用 `GOEXPERIMENT=nojsonv2` 退回旧行为）。因此存量代码在 1.27 下不需要任何改动，但值得重跑一遍 JSON 相关测试：v1-on-v2 带来一些边界行为修复，Unmarshal 性能也显著变快。
+
+**基本写法：v2 的核心函数**
+`json.Marshal` / `json.Unmarshal`（均支持可变参数 Options）
 ```go
-// Go 1.24+ 实验性 JSON v2 API（需启用实验特性）
-// 提供更严格的类型系统和更高效的编解码
-var js jsonv2.Value
-js.Unmarshal(data)
+import (
+    "encoding/json/jsontext"
+    jsonv2 "encoding/json/v2"
+)
+
+type User struct {
+    Name  string `json:"name"`
+    Alias string `json:"alias,case:ignore"` // case 选项：匹配时忽略大小写（模拟 v1 行为）
+}
+
+// 签名：Marshal(in any, opts ...Options) ([]byte, error)
+data, err := jsonv2.Marshal(user)
+// 签名：Unmarshal(in []byte, out any, opts ...Options) error
+err = jsonv2.Unmarshal(data, &user,
+    jsonv2.RejectUnknownMembers(true)) // 取代 v1 的 DisallowUnknownFields
 ```
 
-**基本写法：json v2 序列化**
-`jsonv2.Marshal(<值>)`
+**v2 与 v1 的关键行为差异**（迁移前先对照）：
+
+- 选项成为一等公民：`Options` 作为可变参数直接传给每个编解码函数，并沿调用栈传给自定义 marshaler——v1 中选项在自定义类型内部失效的问题从根上修掉；
+- 字段名匹配改为大小写敏感；`omitempty` 重新定义为"编码结果为空 JSON 值（`null`、`""`、`[]`、`{}`）时省略"，不再看 Go 零值；
+- 默认更严格：拒绝非法 UTF-8 与重复对象键（v1 静默容忍，后者覆盖前者），`time.Duration` 不再有默认表示——必须显式决定按整数纳秒还是字符串编码；
+- `jsontext` 提供纯语法层：`jsontext.Encoder`/`Decoder` 真流式处理 token 与完整 `Value`，编码与语义解耦，v1 的 `RawMessage` 在其中即 `jsontext.Value` 的别名。
+
+**迁移建议**：存量模块留在 v1（v1-on-v2 已免费拿到性能与修复）；新模块或性能敏感路径直接用 v2，并按官方迁移指南逐条核对行为差异（`go.dev/doc/jsonv2-migration`）。
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考实现，按题目自己写一遍，再对照。
+
+**题 1（Tag 的完整语义）**：写出结构体字段满足以下四个要求的 tag：JSON 名为 `userName`、空字符串时省略、匹配时忽略大小写（兼容客户端传 `userName`/`username` 的历史行为）、永不受 omitempty 影响输出为 `uid`。
+
+参考实现：
+
 ```go
-// Go 1.24+ 实验性 v2 序列化
-// data, err := jsonv2.Marshal(user)
+type User struct {
+    Name string `json:"userName,omitempty,case:ignore"` // case 选项：匹配忽略大小写
+    UID  string `json:"uid"`                            // 无 omitempty，永远输出
+}
 ```
+
+要点：v2 的 tag 选项只有 `omitempty`/`omitzero`/`string`/`case`/`embed` 五个——"一个字段接受多个 JSON 名"在 v2 里同样没有单 tag 表达（只能自定义 Unmarshaler），别把它和大小写混淆：`case:ignore` 让匹配忽略大小写，但仍是单字段名。`omitempty` 在 v2 是"编码结果为空 JSON 值才省略"，与 v1 的 Go 零值语义不同——`time.Time{}` 在 v2 下不会被省略（编码为 null 也算"空值"）。逐字核对 tag 是 JSON 调试的第一步。
+
+**题 2（大 JSON 的流式处理）**：一个 2GB 的 NDJSON（每行一个对象），要统计每行 user 字段。写出不整读内存的实现，并说明 `jsontext.Decoder` 与 `bufio.Scanner` 的分工。
+
+参考实现：
+
+```go
+dec := jsontext.NewDecoder(f) // 语法层流式：逐值推进，不缓冲全量
+for {
+    var rec struct {
+        User string `json:"user"`
+    }
+    err := dec.Decode(&rec) // 每次取一个完整 JSON 值
+    if err == io.EOF {
+        break
+    }
+    count[rec.User]++
+}
+```
+
+要点：NDJSON 每行是一个完整 JSON 值，`jsontext.Decoder.Decode` 逐值消费，内存恒定；`bufio.Scanner` 按行切（文本层），jsontext 按 JSON 值切（语法层）——后者能处理跨行格式化的 JSON，前者更快但只适合 NDJSON。超长行、超大数组都不要 `io.ReadAll`。
+
+**题 3（数字精度）**：前端发来 `{"id": 9007199254740993}`，`struct{ ID int64 }` 能接住吗？换成 `float64` 呢？写出保证精度的两种做法。
+
+参考答案：int64 能精确接住（Go 直接按整型解析，没有 JS 的 double 路径）；float64 接不住——它只有 53 位尾数，9007199254740993 会静默变成 9007199254740992，且不报错。保证精度的做法一：字段用 int64/json.Number；做法二：`dec.UseNumber()` 让所有数字走 `json.Number`（字符串底座），需要的地方再精确转换。要点：JS Number 不安全整数是"接口联调"级问题，Go 侧选对类型就免疫，但要防"中途过一道 JS 网关"的场景。

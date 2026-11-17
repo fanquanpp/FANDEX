@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: HTML响应式图片详解：srcset、sizes、picture元素与艺术指导策略。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/540-CSSPerformanceOptimizationDetailed'
   - 'css/660-HTMLSemanticSEO'
@@ -307,3 +307,33 @@ export default defineConfig({
 - 完整教程：`html5/140-ImagesAndResponsiveImages`；
 - 对象适配：`css/320-CSSObjectFit`；
 - 性能：`javascript/510-CoreWebVitalsAndPerformanceMetrics`。
+
+## 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2-5 节的示例代码自己写，再对照参考实现。
+
+**任务一**：写一张「全站头图」——三档宽度候选（480/1024/1920）、显示宽度随布局变化（最大 1200px、小屏占满）、AVIF 优先 WebP 兜底、非首屏延迟加载、alt 必备。
+
+**任务二**：口答选型——（a）图标想按 DPR 给两倍图，srcset 用 `w` 还是 `x` 描述符；（b）窄屏要裁成竖构图、宽屏用横构图，srcset 做得到吗、该用什么；（c）`loading="lazy"` 用在首屏大图上会发生什么。
+
+**提示**：任务一是「srcset + sizes + picture + lazy」四件套的组合默写（第 2-5 节）；任务二的分界是「同一张图的缩放档位交给 srcset，构图不同的图交给 picture」（第 4 节），`x` 描述符按像素密度、`w` 描述符按宽度档位。
+
+**参考实现**（先自己写完再看）：
+
+```html
+<!-- 任务一 -->
+<picture>
+  <source type="image/avif" srcset="hero-480.avif 480w, hero-1024.avif 1024w, hero-1920.avif 1920w" sizes="(max-width: 600px) 100vw, 1200px" />
+  <source type="image/webp" srcset="hero-480.webp 480w, hero-1024.webp 1024w, hero-1920.webp 1920w" sizes="(max-width: 600px) 100vw, 1200px" />
+  <img src="hero-1024.jpg" alt="2026 秋季 CSS 体系课封面" loading="lazy" width="1024" height="576" />
+</picture>
+
+<!-- 任务二 -->
+<!-- (a) x 描述符：hero.jpg 1x, hero@2x.jpg 2x —— DPR 场景无需 sizes -->
+<!-- (b) 做不到：srcset 只换「同一张图的缩放档位」，构图变化是不同的图，
+        交给 <picture> 的 <source media> -->
+<!-- (c) 首屏图 lazy 会让浏览器延后加载 LCP 元素，最大内容绘制时间被拉长——
+        首屏图用 eager（默认）+ 必要时 fetchpriority="high" -->
+```
+
+验收点：任务一里漏掉 `sizes` 时浏览器按 `srcset` 默认（视口宽度）猜下载档位，桌面端常会过量下载 1920 档；`source` 的 `type` 换成浏览器不支持的格式时自动落到下一个 `source`——兜底链的终点是 `img` 的 `src`。

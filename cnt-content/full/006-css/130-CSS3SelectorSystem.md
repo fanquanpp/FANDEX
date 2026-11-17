@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: "从「第三方组件不许改 HTML，样式还得准」出发，掌握基础五件套与属性选择器、组合器四兄弟（空格、>、+、~）的命中规则，理解为什么类选择器是工程首选而 ID 是优先级炸弹，为伪类与伪元素进阶打好地基。"
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/140-PseudoClassPseudoElement'
   - 'css/170-PriorityCalculation'
@@ -194,6 +194,53 @@ h2 + p.tip {
 - 能默写属性选择器六种匹配符并各举一例；
 - 能说出「类优先于 ID」的两条工程理由；
 - 「样式没生效」的第一反应是打开 DevTools 搜选择器验证命中数，而不是改代码碰运气。
+
+## 11. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 2、3 节的示例代码自己写，再对照参考实现。
+
+**任务一**：只写选择器，不许改 HTML——对下面的结构实现：置顶评论金色边框；「官方」标记紧邻的下一个条目加粗；外站链接（`http` 开头）去掉下划线而内站 `/user/` 链接保留：
+
+```html
+<section class="comments">
+  <article class="comment" data-pinned="true">
+    <a class="author" href="https://blog.example.com">阿珍</a>
+    <span class="tag">置顶</span>
+  </article>
+  <article class="comment">
+    <a class="author" href="/user/2">阿强</a>
+    <span class="tag">官方</span>
+    <span class="tag">热评</span>
+  </article>
+</section>
+```
+
+**任务二**：口算命中数——对同一结构，这三条选择器各命中几个元素、为什么：`.comments .tag`、`.comment > .tag + .tag`、`a[href^="http"]`。
+
+**提示**：任务一的三个需求分别对应属性精确匹配（第 3.1/3.2 节）、相邻兄弟 `+`（「紧跟官方的那个」）、前缀匹配 `^=`；任务二按第 3.3 节四个记忆锚点逐条走「从哪开始找、隔几代、找几个」。
+
+**参考实现**（先自己写完再看）：
+
+```css
+/* 任务一 */
+.comment[data-pinned="true"] {
+  border: 2px solid #f59e0b; /* 属性精确匹配：data-pinned 值为 true */
+}
+
+/* 官方标记紧邻的下一个条目：+ 只认紧邻的兄弟，命中的是「热评」 */
+.tag + .tag {
+  font-weight: 700;
+}
+
+/* 外站链接去下划线；/user/ 开头的内站链接不以 http 开头，不受影响 */
+a[href^="http"] {
+  text-decoration: none;
+}
+```
+
+任务二的答案：`.comments .tag` 命中 3 个（后代组合器不管隔几代，两个 article 里的 span 都在 .comments 内）；`.comment > .tag + .tag` 命中 1 个（要求同时满足「是 .comment 的直接孩子」「前面紧邻一个 .tag」，只有热评满足）；`a[href^="http"]` 命中 1 个（阿珍的外站链接，`/user/2` 不匹配前缀）。
+
+验收点：任务一第二条是本篇最典型的「结构约定」写法——它命中「热评」靠的是位置关系而不是文字内容；CSS 选择器无法按文本匹配，`+` 与 `~` 的选择必须基于稳定的 DOM 结构，结构噪音一变就失效（第 5 节错误二的根源）。
 
 ## 本章总结
 

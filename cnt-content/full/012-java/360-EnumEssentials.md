@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 零基础 20 行学会 enum：有身份证的常量，别再用 public static final int。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/370-JavaAnnotationsTutorial'
   - 'java/090-ControlFlow'
@@ -288,3 +288,13 @@ if (ticketType == TicketType.VIP) { applyVipRule(); }
 1. **应援色枚举**：定义 `ThemeColor` 枚举，每个值携带色值（如 `#39C5BB`）与主唱歌姬名，写一个 `describe()` 方法输出"初音未来的应援色是青色（#39C5BB）"。思路：参照第 2 节的票档枚举，两个字段加一个普通方法。
 2. **状态机**：给 `ConcertStatus` 添加 `next()` 方法，返回流程中的下一个状态（`ENDED` 的下一个仍是自己），并用 switch 表达式实现。思路：枚举里定义方法完全合法，switch 的穷举检查会让你少写一个 default。
 3. **容错解析测试**：分别用 `" vip "`、`"VIP"`、`null`、`"VVIP"` 调用第 3 节的 `fromCode`，预测每个结果再运行验证。思路：重点观察 trim 与 `equalsIgnoreCase` 的作用顺序，以及 null 的短路分支。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 用 int 常量表达状态的三个坑是什么？枚举如何一一化解？——无命名空间（PENDING 谁的？）、无类型检查（能传任意 int）、无方法与字段；枚举自带命名空间、编译期类型约束、可挂字段与方法。
+2. 写出带 code 字段的订单状态枚举骨架。——`enum OrderStatus { PAID(1), SHIPPED(2); private final int code; OrderStatus(int code) { this.code = code; } public int code() { return code; } }`。
+3. valueOf 与 values 的作用与风险各是什么？——values 返回全部常量数组；valueOf 按名字反查，名字不存在抛 IllegalArgumentException，外部输入反查需 try-catch 或先比对。
+4. switch 穷举检查在什么写法下生效？为什么建议 switch 表达式而非语句？——switch 表达式（`return switch (s) { case ... }`）在枚举上要求穷举全部 case 且无 default 时新增枚举值会编译报错提醒；语句式没有这个编译期保障。
+5. 枚举能被继承或 new 出来吗？——都不能；构造器隐式 private，JVM 保证每个常量单例。

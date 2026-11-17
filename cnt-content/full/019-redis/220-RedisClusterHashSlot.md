@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis Cluster 哈希槽机制详解：CRC16 校验、16384 槽位分配、槽迁移、重定向与集群伸缩。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'redis/200-ReplicationBuffer'
   - 'redis/210-SentinelElection'
@@ -456,3 +456,27 @@ MSET {app}:a 1 {app}:b 2
 - 下一步：《哨兵选举》（redis/210-SentinelElection）对比主从架构与
   Cluster 架构的高可用差异；《管道与事务的原子性》
   （redis/230-PipeTransactionAtomic）了解同槽多键事务的用法。
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：键到槽、槽到节点各是怎么定的？写出 `user:1001` 落槽的算式与验证命令。
+
+参考答案（先自己答，再对照）：槽 = CRC16(键名) mod 16384；槽到节点的映射由集群自己维护（Gossip 传播，epoch 大者为准）。验证：`CLUSTER KEYSLOT user:1001` 直接返回槽号。注意键名含 `{}` 时只用花括号内的子串参与哈希——这是哈希标签，不是默认行为。
+
+2. 动手自问：把订单相关的一组键（`order:1` 与 `order:2`）放进同一个槽，怎么改键名？这样做的代价是什么？
+
+参考答案（先自己答，再对照）：改成 `order:{tag}:1` 与 `order:{tag}:2`（或直接 `{order}:1`）——花括号内子串相同即同槽。代价：这些键全部落在同一节点，失去分片意义，写热点会压到单节点；所以标签只给「确要多键事务/脚本」的键用，别全库套用。
+
+3. 判断题：ASK 重定向与 MOVED 一样，客户端收到后要更新本地槽映射。
+
+参考答案（先自己答，再对照）：错。MOVED 表示「槽已永久迁走」，更新映射后后续请求直达新节点；ASK 表示「槽正在迁移、这个键恰好已在新节点」，是临时重定向——客户端对目标节点先发 `ASKING`（打开一次性放行开关）再重发命令，不更新映射。两者混淆会导致迁移完成后客户端一直多跳一跳。
+
+4. 概念自问：手动迁移一个槽的四步分别是什么？哪一步最容易漏？
+
+参考答案（先自己答，再对照）：目标节点 `CLUSTER SETSLOT <slot> IMPORTING <源id>` → 源节点 `MIGRATING <目标id>` → 循环 `GETKEYSINSLOT` + 逐键 `MIGRATE` 直到空 → 源与目标都执行 `SETSLOT <slot> NODE <目标id>` 广播归属。最容易漏的是最后一步只对一侧执行——归属广播必须在源、目标两侧都做，否则 Gossip 传播的槽视图不一致，`--cluster check` 会持续报异常。
+
+5. 动手自问：`cluster_state:fail` 的最常见原因与第一排查命令是什么？
+
+参考答案（先自己答，再对照）：最常见原因是存在未分配/未覆盖的槽（新节点加入后没 reshard、迁移中断把槽悬在 MIGRATING/IMPORTING）。第一命令是 `redis-cli --cluster check <node>`——它逐槽体检并列出「slot X not covered」；修复用 `--cluster fix` 自动清理半开槽，修完 `CLUSTER INFO` 回到 `cluster_state:ok`。把 `cluster-require-full-coverage` 设 no 可以让部分槽无主时其余槽继续服务，但那是可用性换完整性，不是修复手段。

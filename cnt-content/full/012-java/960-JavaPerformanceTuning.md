@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java应用性能优化
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/970-JavaDocker'
   - 'java/930-JavaGraphQL'
@@ -422,3 +422,13 @@ java -XX:+UseContainerSupport \
 ```
 
 不要用 -Xmx 指定固定值，因为容器的内存限制可能变化。使用 -XX:MaxRAMPercentage 更灵活。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 性能调优的正确流程是什么？为什么"先猜后测"是错的？——建立基线 -> 定位瓶颈（profiling/GC 日志/APM）-> 假设并单变量改 -> 回归测量对比；系统瓶颈往往与直觉相反（IO > 分配 > GC > CPU），盲调参容易把问题藏深。
+2. 分配速率（allocation rate）过高时，先看什么代码特征？——临时对象风暴：循环内构造对象、日志拼串、JSON 序列化重复对象；先减对象，再谈调 GC。
+3. JMH 相比 System.currentTimeMillis 计时的两个方法学修正是什么？——JVM 预热（JIT 分层编译需要 warmup iterations）与死代码消除（Blackhole 消费结果防被优化掉）。
+4. 三色旗标定位"CPU 火焰图顶格但业务慢"的工具链？——async-profiler/arthas 火焰图看热点栈 -> 区分用户态自旋还是锁竞争 -> 结合 jstat/JFR 判断是计算还是等待。
+5. 判断：把 -Xmx 拉满就能解决 OOM。——不能；OOM 可能是元空间/直接内存/线程栈，且堆拉大只延后 Full GC，分配泄漏的根因不修迟早复发。

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: XSS 防御学习笔记：从本地复现一个存储型 XSS 出发，逐层加防御（输出编码、框架自动转义、DOMPurify、Cookie 加固、CSP），并用 FANDEX 网页端真实 CSP 做案例解读。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/190-XSSAttack'
   - 'cybersecurity/160-OWASPTop10Detailed'
@@ -15,6 +15,10 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+- **解决什么问题**：XSS 防御的核心不是「过滤输入」而是「出口编码」——让数据进入 HTML/JS/URL 各上下文时永远保持「数据」身份。本篇按上下文逐个给出编码方案，再把 CSP、HttpOnly 与框架自动转义收进纵深体系，与 190 篇的攻击视角一一对应。
+- **容易怎么错**：在入口做一次性转义（与出口上下文不匹配会漏编码或双重编码）；以为上了框架就免疫（`innerHTML`/`dangerouslySetInnerHTML` 逃生舱一破即穿）；CSP 里留 `unsafe-inline` 等于没写。
+- **学完能做什么**：为每种输出上下文选对编码函数；读懂并收紧一份 CSP（nonce 优于域名白名单）；审计自己项目里所有「逃生舱」调用点。
 
 ## 场景：一个评论框引发的会话失窃
 
@@ -310,3 +314,11 @@ DOMPurify/bleach？会话 Cookie 三件套齐了吗？CSP 是否至少做到了�
 - cybersecurity/190-XSSAttack：从攻击视角理解注入点分类，才能对症设防。
 - cybersecurity/350-WAFRule：CSP 之外的运行时防线。
 - cybersecurity/220-CSRFDefense：SameSite/Cookie 加固的另一半故事。
+
+## 自检
+
+- 遮住「上下文与编码」的对照，说出 HTML 正文、属性值、JS 字符串、URL 四个上下文各自该用什么编码，以及混用的后果。
+- 为什么「入口统一转义」不可行？（数据要进多种上下文，出口编码才与使用点匹配；入口转义还会在纯文本场景双重编码。）
+- 框架的自动转义防住了什么、防不住什么？举一个「逃生舱」调用（dangerouslySetInnerHTML / v-html）的安全替代（DOMPurify 白名单净化）。
+- 遮住 CSP 一节，写出「default-src 'self' + script-src nonce」的策略，并解释 nonce 为什么优于域名白名单（白名单域可被 JSONP/开放重定向绕过）。
+- HttpOnly、CSP、出口编码三层各挡哪类攻击？说出缺任何一层时残留的风险（Cookie 窃取 / 外部脚本注入 / DOM 注入）。

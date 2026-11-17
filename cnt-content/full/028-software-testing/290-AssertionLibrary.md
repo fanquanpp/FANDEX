@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 断言风格全景：Jest/Vitest 匹配器、Chai 三种风格、Python assert 与 Hamcrest/AssertJ，断言可读性与失败信息质量的写作要点。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'software-testing/240-JestBasics'
   - 'software-testing/100-Pytest'
@@ -208,6 +208,70 @@ assertThat(p.total()).isEqualByComparingTo("59.90");
   与 Chai `equal`（严格相等）对对象永远失败，要用 toEqual/deep.equal。
 - **吞异常断言**：`try { risky(); } catch (e) { }` 后断言正常执行，
   异常路径根本没被验证——用 throws/rejects/throwedBy 家族。
+
+## 教学自检
+
+以下题目按遮码自检法设计：先遮住参考答案自己写，再对照。
+
+### 题 1：匹配器选型（遮码题）
+
+任务：对同一个返回值 `price`（浮点金额）与 `user`（对象），分别写出
+Jest 与 pytest 的正确断言：比较浮点 0.3、比较对象深度相等。
+
+参考答案：
+
+```javascript
+expect(price).toBeCloseTo(0.3, 5);            // 浮点
+expect(user).toEqual({ id: 1, name: 'Alice' }); // 深度相等
+```
+
+```python
+assert math.isclose(price, 0.3)               # 浮点
+assert user == {"id": 1, "name": "Alice"}     # pytest 对 == 有失败展开
+```
+
+自检：两个语言里「浮点用严格相等」都必挂（0.1+0.2 !== 0.3）；「对象用
+toBe/===」比较的是引用。三个对应关系：原始值 toBe、对象 toEqual、浮点
+toBeCloseTo。
+
+### 题 2：弱断言改造（找错题）
+
+任务：把这条用例改造成有保护力的断言（业务：下单后订单生成、金额正确、
+库存扣减），指出原断言的问题。
+
+```javascript
+test('下单流程正常', async () => {
+  const res = await checkout(cart);
+  expect(res).toBeDefined();
+});
+```
+
+参考答案：`toBeDefined()` 只证明「没崩溃、返回了个东西」——任何对象都能
+通过，属于空断言。改造：`expect(res.order.id).toBeGreaterThan(0)`（订单
+真实生成）、`expect(res.order.total).toBe(19900)`（金额精确）、
+`expect(await stockOf('SKU-1')).toBe(4)`（副作用发生）。断言的质量决定
+测试的保护力，弱断言的三个来源是怕麻烦、怕脆、凑覆盖率。
+
+### 题 3：Python assert 的边界（判断题）
+
+任务：生产代码里写 `assert user.is_admin` 做权限校验，有问题吗？
+
+参考答案：有问题。`python -O`（优化模式）会整体剥离 assert 语句——权限
+校验在生产环境直接消失。测试代码用 assert 是安全的（pytest 靠重写让
+失败信息可读），但业务校验必须用显式 `if + raise`。一句话：assert 是
+「测试与调试期的人话断言」，不是运行时防线。
+
+### 题 4：失败信息质量（概念题）
+
+任务：两条失败的断言，哪条更好，为什么？
+(a) `AssertionError`（一行，无上下文）；
+(b) `assert 900 == 800 + where 900 = balance(1)`（pytest 重写展开）。
+
+参考答案：(b)。断言库一半的价值在失败报告——「期望什么、实际什么、
+中间值是什么」三要素齐全时，失败十秒内可定位，不需要开调试器。(a) 这类
+失败要么靠框架重写（pytest）、要么靠断言库（AssertJ 按预期/实际分块）、
+要么手工补消息（`assert cond, f"balance={balance(1)}"`）。判断标准：
+不看代码能不能懂这条失败。
 
 ## 小结
 

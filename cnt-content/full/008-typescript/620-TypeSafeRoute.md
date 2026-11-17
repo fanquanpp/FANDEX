@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 构建类型安全的前端路由系统
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/570-TypeSafeAPIClient'
   - 'typescript/610-TypeSafeI18n'
@@ -1920,3 +1920,11 @@ function routesToMermaid<R extends Record<string, any>>(routes: R): string {
 - 大型项目：TanStack Router + 完整 schema 单源。
 
 无论选择哪种方案，"路径模板即类型源"是类型安全路由的核心思想。掌握这一思想，即可在任何路由库上构建类型安全的路由层，将运行时错误前移到编译期，显著提升代码质量与开发效率。
+
+## 自检
+
+- 「路径模板即类型源」：`'/users/:id/posts/:postId'` 如何用模板字面量类型与 `infer` 自动推导出 `{ id: string; postId: string }`？遮住示例自己推一遍。
+- 路由参数、查询参数、路径参数三者的类型来源分别是什么？哪些必须经过运行时校验才能信任？
+- 为什么路由状态必须可序列化？不可序列化的字段放进 route state 会发生什么？
+- 三种方案（React Router 手动标注、Next.js 文件路由、TanStack Router schema 单源）各自的类型安全等级差在哪？你的项目该选哪档？
+- 导航调用 `navigate({ name: 'userDetail', params: {...} })` 时，漏传参数的报错发生在哪一层？这比字符串 URL 好在哪？

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从「程序退出后数据去哪了」出发建立流的心智模型：七种 fopen 模式与判 NULL、字符/行/格式化/块四大读写家族、feof 多读一次的调试实录、缓冲与 fclose 的落盘实验，以仿 wc 的统计器把全篇串成一条线。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'c/060-OperatorExpression'
   - 'c/400-FileSystemOperation'
@@ -484,12 +484,24 @@ bytes 1966
 - fread（返回项数语义与 feof/ferror 分工）：https://en.cppreference.com/w/c/io/fread.html
 - perror 与 strerror（错误信息打印）：https://en.cppreference.com/w/c/io/perror.html
 
-## 13. 自我检查
+## 13. 遮码自检
 
-- 能背出七种 fopen 模式中 r/w/a 的三条行为差异，说出 `a+` 的读与写各从哪里开始；
-- 能解释 `int ch = fgetc(fp)` 里的 int 为什么不能换成 char，并说出这与整型提升的关系；
-- 能复述 feof 误用多读一次的完整机理，默写两种正确读循环；
-- 能说出 abort 与正常退出对缓冲区的不同待遇，以及忘掉 fclose 的两个后果。
+遮住上文示例代码与下面的答案栏，先自己背、先自己写，再展开对照。
+
+1. 背出 r/w/a 三条行为差异；`a+` 的读与写各从哪里开始？
+2. `int ch = fgetc(fp)` 里的 int 为什么不能换成 char？与整型提升有什么关系？
+3. 复述 feof 误用多读一次的完整机理；默写两种正确读循环。
+4. abort 与正常退出对缓冲区的不同待遇？忘掉 fclose 的两个后果？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. r：必须存在，从头读；w：不存在则建、存在则清空、从头写；a：不存在则建、写总是追加到末尾。`a+`：读从文件头开始，写永远追加到末尾（写位置由实现决定，追加前 fseek 无用）。
+2. fgetc 失败返回 EOF 即 -1；char 若无符号，提升后永远是 0 到 255，-1 根本存不进来，EOF 判不出来；若有符号，合法字节 0xFF 会被误判成 EOF——所以必须 int，256 个字符值加 EOF 都装得下。
+3. 机理：最后一次合法读取已到尾部，while (feof(fp)) 还没为真于是再读一次——读到 EOF 才置位，这一次的缓冲内容还是上一次的旧数据，被当新数据处理。正确循环：`while ((ch = fgetc(fp)) != EOF)` 或 `while (fgets(line, sizeof line, fp) != NULL)`——用返回值判断，feof 只事后区分「正常到尾」还是出错。
+4. abort 不冲刷缓冲区（数据当场蒸发）；正常 return/exit 走 atexit 并冲刷。忘 fclose：缓冲区里的数据没落盘（内容丢失）；fd/FILE 对象泄漏（打开句柄用尽）。
+
+</details>
 
 ## 本章总结
 

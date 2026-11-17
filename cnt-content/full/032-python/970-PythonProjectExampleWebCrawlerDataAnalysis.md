@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 综合运用 requests、BeautifulSoup 与 pandas 的爬虫项目。
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'python/130-ExceptionHandling'
   - 'python/300-FileIOContextManager'
@@ -636,3 +636,12 @@ for attempt in range(1, max_retries + 1):
             raise
         time.sleep(delay * attempt)
 ```
+
+## 遮码自检
+
+遮住代码块自己先写，再对照答案：
+
+1. 默写题：带会话复用、超时与状态码校验的 GET 三行。要点：`session = requests.Session()`（复用连接池）；`session.get(url, timeout=10)`（永不裸发无超时请求）；`resp.raise_for_status()`（把 4xx/5xx 变成异常而不是静默继续解析）。
+2. 预测题：为什么重试之间要 `time.sleep(delay * attempt)` 而不是立刻重发？要点：立刻重发等于对已过载的服务继续加压；线性/指数退避给对方恢复窗口，配合抖动避免多客户端同步重试的「惊群」。
+3. 排错题：爬虫本地跑得通、放到 CI 全部 403。先查什么？要点：默认 User-Agent 被目标站拦（CI 流量特征明显）；合规做法是带联系方式的自定义 UA 并遵守 robots.txt——被拦是站点在表达拒绝，不该绕过。
+4. 口述题：爬取与解析解耦（先存原文再解析）的好处？要点：解析规则坏了不用重爬（重爬成本高且对站点不礼貌）、可离线迭代解析、可审计数据来源——一次抓取多次解析是工程化爬虫的基本功。

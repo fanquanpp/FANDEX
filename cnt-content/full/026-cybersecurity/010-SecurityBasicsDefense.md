@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 网络安全模块总览与学习路径：安全模型、攻击面地图、从密码学到渗透测试到合规运营的完整知识目录，附学习路线与模块导航。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/020-SecurityModelFramework'
   - 'cybersecurity/150-WebSecurityPenetrationTesting'
@@ -113,7 +113,7 @@ flowchart LR
 
 ## 参考与致谢
 
-- OWASP Top 10（2021）与 OWASP Cheat Sheet 系列：https://owasp.org/Top10/
+- OWASP Top 10:2025（当前正式版，2025-11 发布）与 OWASP Cheat Sheet 系列：https://owasp.org/Top10/ 与 https://top10.owasp.org/2025/
 - PTES 渗透测试执行标准：http://www.pentest-standard.org/
 - NIST Cybersecurity Framework：https://www.nist.gov/cyberframework
 - 本篇为总览重写：原第一章防火墙配置拆入 [防火墙配置](/cybersecurity/470-FirewallConfig)（含华为策略节）、原第二章 IDS/IPS 拆入 [IDS/IPS 命令](/cybersecurity/480-IDSIPSCommands)、原第三章系统加固拆入 [安全基线](/cybersecurity/520-SecurityBaseline)（含 Windows 加固节）、原第四至七章密码学与 TLS 分别由 [对称加密](/cybersecurity/040-SymmetricEncryption)、[非对称加密](/cybersecurity/050-AsymmetricEncryption)、[哈希算法](/cybersecurity/060-HashAlgorithm)、[密码哈希](/cybersecurity/070-PasswordHash)、[HTTPS 原理](/cybersecurity/090-HTTPSPrinciple) 覆盖、原 JWT 系列九节拆入 [JWT 安全实践](/cybersecurity/315-JWTSecurityPractice)。

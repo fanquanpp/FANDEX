@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 浏览器端事务型 NoSQL 数据库的形式语义、事务模型、索引机制与生产级工程实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'javascript/460-StorageForTheWeb'
   - 'javascript/310-IteratorHelper'
@@ -70,9 +70,10 @@ IndexedDB 的诞生是 Web 平台从「文档展示」迈向「应用平台」�
 | 2017 | IndexedDB 2.0 推荐，支持 binary keys、getKey() | W3C |
 | 2018 | navigator.storage.estimate() 提供配额查询 | W3C |
 | 2020 | IndexedDB 3.0 草案，引入 Promise API | W3C |
-| 2023 | Chrome 支持 IndexedDB 观察 API（observe()） | Google |
 | 2025 | Safari 17 全面支持 IndexedDB 3.0 草案 | Apple |
-| 2026 | IndexedDB 3.0 推荐标准，原生 Promise API 落地 | W3C |
+| 2026 | IndexedDB 3.0 仍为 W3C Working Draft，但 Promise API 已在主流引擎广泛实现 | W3C |
+
+> 补充一条「没进时间线的落选者」：Chrome 曾以实验性 flag 实现过 IndexedDB 观察者 API（`observe()`），该提案（WICG indexed-db-observers）最终未获标准化即被放弃，无一浏览器默认落地。想在数据变化时得到通知，现实方案是写入侧主动派发（BroadcastChannel/storage 事件）或用 Dexie 的 liveQuery 这类库内实现。
 
 ### 1.2 Web SQL Database 的失败教训
 
@@ -2323,6 +2324,26 @@ IndexedDB 是浏览器内置的强大事务型 NoSQL 数据库，为 Web 应用�
 **未来发展方向：**
 
 1. IndexedDB 3.0 原生 Promise API 简化开发
-2. Observer API 支持数据变化监听
+2. 数据变化监听需写入侧主动派发（原生 Observer 提案已放弃，见第 1 节说明）
 3. Web Locks API 改善跨标签页协调
 4. 与 File System Access API 深度集成
+
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. IndexedDB 的所有读写为什么必须包在事务里？说出事务的三种模式（readonly/readwrite/versionchange）各用在什么操作上；
+2. `onupgradeneeded` 什么时候触发？写出「建库 v1 建两个 store，升级 v2 给其中一个加索引」的迁移骨架，并解释为什么不能在旧版本上直接改 schema；
+3. 主键（keyPath）与索引（createIndex）的分工是什么？「按 email 精确查一条」与「按 age 范围查多条」分别用什么；
+4. 手写 Promise 封装的最小版：`function requestToPromise(request)`——说出为什么浏览器不直接给 Promise API、以及 `await` 事务后继续操作会报什么错；
+5. 判断题：游标遍历十万条数据时每条记录都会一次性载入内存——对吗？正确的分批方式是什么。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：事务保证原子性（要么全成要么全回滚）与并发一致性（多标签页同时写）；readonly 可并行且可优化、readwrite 独占、versionchange 只在升级回调里用；
+- 第 2 问：版本号变化（open 传入更高版本）时触发；骨架：`req.onupgradeneeded = (e) => { const db = e.target.result; if (e.oldVersion < 1) { db.createObjectStore('users', { keyPath: 'id' }); } if (e.oldVersion < 2) { db.transaction.objectStore('users').createIndex('byAge', 'age'); } }`；schema 是数据库级元数据，浏览器按版本号重放迁移，跳步改会结构损坏；
+- 第 3 问：keyPath 是行的身份（唯一、可整体 get），索引是二级查找结构；精确查 `store.get(email)`（若 email 是主键）或 `index.get`，范围查 `index.getAll(IDBKeyRange.bound(min, max))` 或游标；
+- 第 4 问：IDB 的 API 是事件式（`onsuccess`/`onerror` 回调 + 事务自动提交），Promise 包装要手工桥接；`await` 之后事务已提交，再用同一个 transaction/store 会抛 TransactionInactiveError——所有操作必须在同一个微任务批里发起（或每次操作开新事务）；
+- 第 5 问：不对——游标是流式的，逐条 yield、引擎按需读取，这正是它能遍历大数据的原因；需要分批时用 `cursor.advance(n)` 或每批 commit 后重开事务。
+</details>

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从「改个数据要手动找 DOM」的旧日常引出 Vue 的核心主张：用 create-vue 一行命令搭起项目、预览单文件组件的三段结构、跑通并亲手修改第一个组件；附 Node 版本与模板未闭合两类真实报错的调试实录。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-16'
 related:
   - 'vue3/020-Vue3QuickStartGuide'
   - 'vue3/030-Vue3TemplateSyntax'
@@ -56,7 +56,7 @@ Vue 的回答只有一句话：**数据变了，界面自己变。** 你只声�
 
 ### 2.1 版本现状
 
-先说清楚装什么。Vue 3.5.x 是当前稳定版，本模块全部示例适用；3.6 尚在 RC 阶段，核心变化是 Vapor 模式（无虚拟 DOM 的编译策略），是否可上生产以官方发布为准（以上版本信息验证于 2026-09）。新代码一律用组合式 API 加 `<script setup>`，本模块通篇如此；选项式写法主要用于 Vue 2 存量项目，本文不涉及。
+先说清楚装什么。Vue 3.5.x 是当前稳定版（当前 patch 为 3.5.45），本模块全部示例适用；3.6 尚在 RC 阶段，核心变化是 Vapor 模式（无虚拟 DOM 的编译策略），是否可上生产以官方发布为准（以上版本信息验证于 2026-11）。新代码一律用组合式 API 加 `<script setup>`，本模块通篇如此；选项式写法主要用于 Vue 2 存量项目，本文不涉及。
 
 工具链用官方脚手架 create-vue（基于 Vite 构建）。它对 Node.js 有版本要求（当前为 `^22.18.0 || >=24.12.0`，以官方 README 为准），Node 过旧是创建失败的头号原因。先验证：
 
@@ -242,7 +242,7 @@ const title = ref('星陨峡谷');
 
 ## 9. 与之前和之后的知识的关系
 
-- 往前：090 篇的数组高阶方法在模板里就是渲染列表的主力；410 篇手动操作 DOM 的每一份累，都是 Vue 要替你省的；
+- 往前：[数组高阶方法](/javascript/090-ArrayHigherOrderMethod)在模板里就是渲染列表的主力；[DOM 操作与事件](/javascript/410-DOMOperationEvent)里手动改页面的每一份累，都是 Vue 要替你省的；
 - 往后：本模块按 010 → 020 → 030 → 040 的顺序推进——[第一个组件](/vue3/020-Vue3QuickStartGuide) 从 createApp 走到页面渲染并做出计数器，[模板语法](/vue3/030-Vue3TemplateSyntax) 讲透「模板里能写什么」，[指令系统](/vue3/040-Vue3DirectiveSystem) 收编 v-if、v-for、v-model 的全部细节；ref 为什么能驱动界面，见[响应式系统](/vue3/050-ReactiveSystem)；工程配置见 [Vue 3 与 Vite](/vue3/270-Vue3ViteBuildConfig)。
 
 ## 10. 官方文档

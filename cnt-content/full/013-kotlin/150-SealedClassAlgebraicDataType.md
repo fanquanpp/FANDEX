@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 密封类、密封接口与代数数据类型（ADT）的原理、形式化与实践
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'kotlin/130-NullSafetyDetailed'
   - 'kotlin/090-ExtensionFunction'
@@ -22,11 +22,10 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「理论推导」的核心机制、典型用法与常见陷阱
-- 掌握「代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「对比分析」的核心机制、典型用法与常见陷阱
+- 能说出 ADT（代数数据类型）里「和类型」与「积类型」分别对应 Kotlin 的什么，以及密封类为什么是和类型
+- 能解释穷尽匹配为什么只在密封层次上成立：编译器静态枚举子类是前提
+- 能对比 Kotlin 密封类与 Java `sealed`/`permits`、Swift enum 的约束粒度，说清「同包同模块」设计的取舍
+- 能用密封层次 + `data class`/`object` 组合建模领域状态机，并识别「忘了加 else 也能编译」的安全边界
 
 
 
@@ -1362,3 +1361,27 @@ fun handle(result: Result): String = when (result) {
   - HTTP 状态、内容协商中的密封类应用。
 - **kotlinx.serialization**：https://github.com/Kotlin/kotlinx.serialization
   - 密封类与多态序列化的集成。
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：和类型建模**。一个文件下载器有四种状态：等待、进行中（携带已下载字节）、已完成（携带文件路径）、失败（携带原因与可重试标志）。用密封层次写出类型定义，要求每种状态只携带自己需要的数据。
+
+参考实现：
+
+```kotlin
+sealed interface DownloadState {
+    object Idle : DownloadState
+    data class Running(val bytes: Long) : DownloadState
+    data class Done(val path: String) : DownloadState
+    data class Failed(val reason: String, val retryable: Boolean) : DownloadState
+}
+```
+
+自检问题：为什么 `Idle` 用 `object` 而不是 `data class`？（答：它没有字段，单例即可；`data object`（1.9+ 起）还能生成含类名的 `toString`，普通 `object` 打印出来只是 `DownloadState$Idle@1b6d3586` 这类地址。）
+
+**练习 2：穷尽匹配反证**。给 `DownloadState` 的 `when` 少写 `Failed` 分支，编译报什么？给这个接口新增 `Paused` 子类后，原来编译通过的 `when` 会怎样？
+
+参考答案：报 `'when' expression must be exhaustive`；新增子类后所有既有 `when` 立即编译报错，把「漏处理新状态」从运行时缺陷变成编译期错误。这正是和类型相对普通继承的核心收益：新增变体的代价由编译器强制分摊到每一个消费点。
+
+**练习 3：跨语言粒度对比**。Java 的 `sealed` 要求子类在 `permits` 列表里显式列出，Kotlin 不需要。各自交换了什么？
+
+参考答案：Java 用显式许可换「子类可以分布在同一模块的不同包」的灵活性，列表即文档；Kotlin 用「同包同模块」的隐式规则换掉样板，代价是审阅者要靠 IDE 或编译错误才能确定子类全集。两者共同点是：继承闭包在编译期可枚举，穷尽匹配才可能成立。

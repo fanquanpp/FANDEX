@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: go 命令全家桶：go test/vet/fmt/doc、构建标签与文件名约定、交叉编译、go work 多模块、GOTOOLCHAIN 版本管理、cgo 与 go:generate——构建与工具链专篇
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -96,6 +96,13 @@ go vet ./...
  vet 与 golangci-lint 的分工：vet 是官方内置、只查「确定性错误」；
 golangci-lint 聚合了社区 linter（如 `errcheck` 查未处理的 error），
 规则可协商。新项目至少跑 vet，团队成熟后再上 lint 全家桶。
+
+与 vet 同源的还有 **go fix**：1.26 起它被重写为官方"现代化器"（modernizer）的家，
+内置几十个把旧写法改写为现代惯用法的修复器（如替换为 `min`/`max`/`slices` 系列），
+还支持库作者用 `//go:fix inline` 指令声明"这个函数应被内联替换"，让 API 迁移可以被
+工具批量执行。1.27 继续扩充了 `atomictypes`、`embedlit`、`slicesbackward`、`unsafefuncs`
+等 modernizer。它是升级 go 指令行后做代码现代化（见
+[Go 新特性演进](/go/320-GoLatestFeatures)）的主力工具。
 
 ## 3. go fmt 与 go doc
 
@@ -366,3 +373,45 @@ GOTOOLCHAIN=go1.24.0 go version   # 输出 go version go1.24.0 ...，证明已�
 - Go 官方博客 Go Workspaces 与 GOTOOLCHAIN 系列
   （https://go.dev/blog/toolchain ，BSD 三条款许可）
 - 原始素材：本仓库 110-GoStandardLibraryToolchain §6-10 全量搬移扩写
+
+---
+
+## 教学自检（遮码自检）
+
+先遮住参考命令，按题目自己写一遍，再对照。
+
+**题 1（构建标签的运用）**：项目里有一个 `storage.go`，要求：生产构建用 `redis.go` 里的实现，测试构建（`go test` 时）用 `memory.go` 里的实现。写出两个文件的构建标签与 `go build` 验证命令。
+
+参考实现：
+
+```go
+//go:build !test
+// redis.go：默认（无 test 标签）时参与编译
+```
+
+```go
+//go:build test
+// memory.go：仅 -tags test 时参与编译
+```
+
+```bash
+go build ./...            # 编进 redis 实现
+go test -tags test ./...  # 编进 memory 实现
+```
+
+要点：`//go:build` 与 `// +build` 是新旧两代语法，现代项目只写前者；标签求值是布尔表达式，`!`、空格表示 AND、逗号表示 OR。同名类型/函数在两个文件里互斥编译，这就是"一个符号两份实现"的机制。
+
+**题 2（GOTOOLCHAIN 的排障）**：同事报错 `go.mod requires go >= 1.24 (running go 1.21)`。给出两条修复路径，并说明各自的风险。
+
+参考答案：路径一，在 go.mod 写 `toolchain go1.24.x`（或直接 `go 1.24`），依赖 `GOTOOLCHAIN=auto`（默认）让命令自动下载对应工具链——风险是 CI 首次构建会多一次下载，需要缓存 `$GOMODCACHE`；路径二，本机与 CI 都升级安装 Go 1.24+——风险是要协调全员环境，但版本可见、不依赖自动下载。判据：临时兼容用 toolchain 指令，长期项目固定工具链版本更可控。
+
+**题 3（交叉编译）**：在 Mac 上为 Linux 服务器（amd64）与树莓派（arm64）各产出静态二进制，并关掉 cgo 以保证纯静态。写出命令。
+
+参考命令：
+
+```bash
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o app-linux ./cmd/app
+GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o app-arm64 ./cmd/app
+```
+
+要点：`GOOS`/`GOARCH` 决定目标平台，`CGO_ENABLED=0` 强制纯 Go 实现（net、os/user 走纯 Go 版），产物不依赖目标机 glibc——这正是"丢到服务器就能跑"的前提。

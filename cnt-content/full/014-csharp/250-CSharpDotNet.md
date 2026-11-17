@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: .NET 平台本位：Framework 到 .NET 10 的演化史、平台架构、AOT 编译限制、跨语言生态对比、项目结构分层与部署运维。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'csharp/010-WhatIsCSharp'
   - 'csharp/255-ConfigurationAndLogging'
@@ -87,8 +87,9 @@ Miguel de Icaza 创建 Mono 项目，将 .NET 移植到 Linux。后被 Xamarin �
 - **.NET 6.0**（2021）：LTS，C# 10.0，MAUI 预览、`Parallel.ForEachAsync`、`Date/TimeOnly`。
 - **.NET 7.0**（2022）：性能飞跃，C# 11.0，`RateLimiter`、Native AOT 改进。
 - **.NET 8.0**（2023）：LTS，C# 12.0，`PrimaryConstructor`、`CollectionExpression`、`KeyedServices`。
-- **.NET 9.0**（2024）：STS（标准期限支持，支持期 18 个月，已于 2026-05 到期），C# 13.0，`params` 集合、新 `System.Threading.Lock` 类型、AOT 增强。
+- **.NET 9.0**（2024）：STS（标准期限支持，2025-09 起支持期延长为 24 个月，已于 2026-11-10 到期），C# 13.0，`params` 集合、新 `System.Threading.Lock` 类型、AOT 增强。
 - **.NET 10.0**（2025）：LTS（支持至 2028-11），C# 14.0，扩展成员（extension members）、`field` 关键字、null 条件赋值；BCL 侧 LINQ 新增 `LeftJoin`/`RightJoin` 运算符。
+- **.NET 11.0**（2026）：STS（支持 24 个月，至 2028-11），C# 15.0，union 类型与封闭层次结构（closed hierarchies）；BCL 侧内置 Zstandard 压缩、`System.Text.Json` 支持 union 与 JSON Lines、LINQ 新增 `FullJoin`；MAUI 默认运行时切换为 CoreCLR。
 
 ### 1.5 关键技术演化
 
@@ -859,7 +860,7 @@ builder.Services.AddHostedService<BackgroundTaskWorker>();
 
 ---
 
-> **结语**：.NET 平台历经 20 余年演化，从闭源 Windows-only 的 .NET Framework 到开源跨平台的 .NET 10（当前 LTS），已成为企业级应用开发的主流平台之一。掌握 Runtime、BCL、DI、配置、日志、中间件、ASP.NET Core、EF Core、MAUI 等核心组件，将帮助你构建高性能、可维护、跨平台的现代应用。下一篇我们将讲解测试与工程化：单元测试、集成测试、CI/CD、代码质量工具等。
+> **结语**：.NET 平台历经 20 余年演化，从闭源 Windows-only 的 .NET Framework 到开源跨平台的 .NET 10（当前 LTS，最新 STS 为 2026-11 发布的 .NET 11），已成为企业级应用开发的主流平台之一。掌握 Runtime、BCL、DI、配置、日志、中间件、ASP.NET Core、EF Core、MAUI 等核心组件，将帮助你构建高性能、可维护、跨平台的现代应用。下一篇我们将讲解测试与工程化：单元测试、集成测试、CI/CD、代码质量工具等。
 
 ---
 
@@ -884,3 +885,27 @@ builder.Services.AddHostedService<BackgroundTaskWorker>();
 | 陷阱 §6.11 同步 IO / §6.12 未用 CancellationToken / 实践 §7.5 异步端到端 | 并入 [异步编程详解](/csharp/090-AsyncProgrammingDetailed) |
 
 **保留本篇的主题**：§1 演化史、§2.1 平台架构、§3.1 AOT 限制、§4.1 Runtime 架构、§5 平台生态对比、§7.1 项目结构分层、§7.2/7.3 部署与 CI/CD、§8 综合案例研究（跨主题收官案例，各专篇在相关节互链）、习题与参考。
+
+## 自我检查（遮码自检）
+
+遮码自检：先遮住每题的「参考答案」，自己口述结论，再对照。本篇自检核心是"平台分层"与"运行模型"两幅大图。
+
+**题 1（平台分层）**：从上到下说出 .NET 应用的层次：你的业务代码、NuGet 包、BCL、Runtime（CoreCLR）——谁是编译产物、谁负责最终执行 IL？JIT 与 Native AOT 在层次图的哪个环节分叉？
+
+参考答案：业务代码与 NuGet 包被 Roslyn 编译成 IL（存于 .dll 程序集），BCL（`System.*` 基础库）也是程序集，Runtime（CoreCLR：JIT、GC、线程池、互操作）负责加载与执行这些 IL。分叉点在"IL 何时变机器码"：JIT 在目标机器上运行时逐方法编译（.NET 默认，配合 R2R 可预先部分编译）；Native AOT 在发布时直接编译成原生可执行文件，不带 JIT，运行时能力受限（反射裁剪、不支持 `Reflection.Emit`）。
+
+**题 2（SDK 与 Runtime）**：只装 Runtime 的机器能 `dotnet build` 吗？`dotnet --list-sdks` 与 `--list-runtimes` 分别回答什么问题？
+
+参考答案：不能——`build` 需要 Roslyn 编译器与 MSBuild，它们只在 SDK 里；Runtime 只能运行已编译的程序集。`--list-sdks` 回答"这台机器能开发（编译）哪些版本的 .NET"，`--list-runtimes` 回答"能运行哪些版本的应用"——"能编译"不等于"能运行"，生产机器通常只装 Runtime。
+
+**题 3（版本决策）**：2026 年 12 月要启动一个新企业后端项目，在 .NET 10 与 .NET 11 之间怎么选？说出支持期的账。
+
+参考答案：默认选 .NET 10（LTS，支持到 2028-11），除非明确需要 .NET 11 的新能力。.NET 11 是 2026-11 刚发布的 STS，支持期 24 个月（到 2028-11）——与 .NET 10 LTS 的支持终点恰好同期，但 LTS 的三年承诺不随 STS 政策变化，且 .NET 10 已多出一个稳定迭代周期，企业默认仍选 LTS。反过来，STS 适合愿意快速跟进新特性的产品线。
+
+**题 4（部署三形态）**：框架依赖发布、自包含发布、Native AOT 各牺牲什么、换来什么？给"内网 k8s 集群"、"离线工控机"、"毫秒级启动的 CLI 工具"各配一种。
+
+参考答案：框架依赖：产物小、依赖宿主装好的运行时（宿主版本漂移是风险），适合内网 k8s（基础镜像统一管理运行时）；自包含：把运行时打进产物，几百 MB 换"目标机器零依赖"，适合离线工控机；Native AOT：AOT 编译换毫秒级启动与最小内存，代价是反射/动态加载受限，适合 CLI 工具。
+
+**题 5（AOT 边界）**：三个特性哪些在 Native AOT 下不可用或受限？`Reflection.Emit` 动态生成 IL、`System.Text.Json` 反射序列化、泛型接口的虚调用？
+
+参考答案：`Reflection.Emit` 在 Native AOT 下不可用（没有 JIT，无法在运行时生成代码）；反射序列化受限（类型元数据可能被裁剪，需改用源生成 `JsonSerializerContext`）；泛型接口虚调用 .NET 8 起 AOT 优化后基本可用（接口分派有专门改进），但复杂泛型递归仍可能触发编译失败或体积膨胀。判断口诀：一切"运行时生成代码/元数据"的机制都是 AOT 的天然对手。

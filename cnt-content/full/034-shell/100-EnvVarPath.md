@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 环境变量概念、PATH机制、跨平台配置与常见问题排查。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/030-FunctionModular'
   - 'shell/050-IDEEditorSelection'
@@ -154,6 +154,8 @@ source ~/.bashrc
 unset MY_VAR
 ```
 
+**前置还是尾追**：把新目录放在 `$PATH` **前面**（`export PATH="$HOME/bin:$PATH"`）时，新目录里的同名命令优先命中——想用自己装的版本覆盖系统默认时用前置；放在**后面**（`export PATH="$PATH:$HOME/bin"`）时系统自带命令优先，适合只做补充、不改变默认行为的目录。两者都必须包含原值 `$PATH`，否则就是覆盖式写法（见第 6 节警示）。
+
 ### 3.2 Windows
 
 **配置方式**：
@@ -261,220 +263,43 @@ command -v node    # 显示第一个匹配位置
 # 查看进程的环境变量
 cat /proc/$PID/environ | tr '\0' '\n'  # Linux
 ```
-## Windows 系统变量查看
 
-**基本写法：查看所有环境变量（CMD）**
-`set`
-```bash
-# 列出所有环境变量
-set
-```
+## 6. 跨平台操作速查表
 
----
+前文按概念讲机制；这一节按「要做什么」集中列出三平台的对应命令，供回头翻查。看懂原理的读者把它当索引，没看懂的先回到第 1、2、3 节。
 
-**基本写法：查看特定变量（CMD）**
-`echo %<变量名>%`
-```bash
-# 查看指定环境变量的值
-echo %PATH%
-```
+| 要做的事 | CMD | PowerShell | bash/zsh |
+| :--- | :--- | :--- | :--- |
+| 列出全部环境变量 | `set` | `Get-ChildItem Env:` | `env` 或 `printenv` |
+| 查看单个变量 | `echo %PATH%` | `$env:PATH` | `echo "$PATH"` |
+| 临时设置（仅当前会话） | `set MY_VAR=hello` | `$env:MY_VAR = "hello"` | `export MY_VAR=hello` |
+| 永久设置用户变量 | `setx JAVA_HOME "C:\Program Files\Java\jdk-21"` | `[Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Java\jdk-21", "User")` | `echo 'export JAVA_HOME=/usr/lib/jvm/java-21' >> ~/.bashrc` 后 `source` |
+| 永久设置系统变量（管理员） | `setx JAVA_HOME "..." /M` | 同上，第三个参数改 `"Machine"` | 写入 `/etc/environment` 或 `/etc/profile.d/*.sh` |
+| 追加 PATH（临时，尾部） | `set PATH=%PATH%;C:\my\tools` | `$env:PATH += ";C:\my\tools"` | `export PATH="$PATH:$HOME/bin"` |
+| 追加 PATH（永久，尾部） | 见下方警示 | `$old = [Environment]::GetEnvironmentVariable("PATH", "User"); [Environment]::SetEnvironmentVariable("PATH", "$old;C:\my\tools", "User")` | `echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc` 后 `source` |
+| 删除变量 | `reg delete "HKCU\Environment" /F /V MY_VAR`（写过的值） | `[Environment]::SetEnvironmentVariable("MY_VAR", $null, "User")` | `unset MY_VAR` |
+| 重载配置生效 | 关闭重开终端 | 关闭重开终端 | `source ~/.bashrc` / `source ~/.zshrc` |
 
----
+> [!warning] 两条高危操作
+> 1. **别用 `setx PATH "%PATH%;C:\new" /M` 追加 PATH**：`%PATH%` 是「用户 PATH 与系统 PATH 拼接后的完整值」，写回系统变量会把用户目录项混入系统 PATH；反复执行还可能撞上 setx 约 1024 字符的截断上限，PATH 直接损坏。永久改 PATH 用图形界面（内部有拼接保护）或上面 PowerShell 读取原始值再写回的写法。
+> 2. **覆盖式写 PATH（忘了拼旧值）**：`export PATH=/opt/bin` 或 `set PATH=C:\new` 会让系统连 `ls` 都找不到。任何平台追加 PATH 的写法都必须包含原值，覆盖式写法丢掉的不只是新目录，是整个命令查找链。
 
-**基本写法：查看所有变量（PowerShell）**
-`Get-ChildItem Env:`
-```bash
-# PowerShell 列出所有环境变量
-Get-ChildItem Env:
-```
+> 需要新目录优先级更高（覆盖同名命令）时，把新目录前置到 `$PATH` 前面，如 `export PATH="$HOME/bin:$PATH"`——前置与尾追的取舍见第 3 节要点。
 
----
+## 7. 动手自检：遮住命令，说出每一步
 
-**基本写法：查看特定变量（PowerShell）**
-`$env:<变量名>`
-```bash
-# PowerShell 查看指定变量
-$env:PATH
-```
+先遮住参考答案与速查表，按题干自己写出命令，再对照。
 
----
+1. 写出「在 bash 里查看 PATH、把 `~/.bin` 临时加到 PATH 最前面、再让它永久生效」的三条命令。
+2. Windows 永久设置用户变量 JAVA_HOME 的两条命令（CMD 与 PowerShell 各一），并说出 `setx` 与 `$env:` 的本质区别。
+3. 为什么临时变量能被子进程继承、却不能跨终端？「永久」到底改了哪里？
+4. 遮住第 6 节警示，复述 setx 改 PATH 的两个坑。
 
-## Windows 环境变量设置
+<details>
+<summary>参考答案</summary>
 
-**基本写法：临时设置变量（CMD）**
-`set <变量名>=<值>`
-```bash
-# 仅当前会话有效的变量
-set MY_VAR=hello
-```
-
----
-
-**基本写法：永久设置用户变量（CMD）**
-`setx <变量名> "<值>"`
-```bash
-# 永久写入用户环境变量
-setx JAVA_HOME "C:\Program Files\Java\jdk-21"
-```
-
----
-
-**基本写法：永久设置系统变量（CMD）**
-`setx <变量名> "<值>" /M`
-```bash
-# 写入系统级环境变量（需管理员权限）
-setx PATH "%PATH%;C:\new\path" /M
-```
-
----
-
-**基本写法：PowerShell 设置用户变量**
-`[Environment]::SetEnvironmentVariable("<变量名>", "<值>", "User")`
-```bash
-# PowerShell 永久设置用户变量
-[Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Java\jdk-21", "User")
-```
-
----
-
-**基本写法：PowerShell 设置系统变量**
-`[Environment]::SetEnvironmentVariable("<变量名>", "<值>", "Machine")`
-```bash
-# PowerShell 设置系统级变量（需管理员权限）
-[Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";C:\new", "Machine")
-```
-
----
-
-## Windows PATH 管理
-
-**基本写法：追加路径到 PATH**
-`setx PATH "%PATH%;<新路径>"`
-```bash
-# 将新路径追加到 PATH 环境变量
-setx PATH "%PATH%;C:\my\tools"
-```
-
----
-
-**基本写法：PowerShell 追加 PATH**
-`$env:PATH = $env:PATH + ";<新路径>"`
-```bash
-# 临时追加路径到当前会话 PATH
-$env:PATH = $env:PATH + ";C:\my\tools"
-```
-
----
-
-**基本写法：PowerShell 永久追加用户 PATH**
-`$old = [Environment]::GetEnvironmentVariable("PATH", "User"); [Environment]::SetEnvironmentVariable("PATH", $old + ";<新路径>", "User")`
-```bash
-# 永久追加路径到用户 PATH
-$old = [Environment]::GetEnvironmentVariable("PATH", "User")
-[Environment]::SetEnvironmentVariable("PATH", $old + ";C:\my\tools", "User")
-```
-
----
-
-## Linux/macOS 环境变量
-
-**基本写法：临时设置变量**
-`export <变量名>=<值>`
-```bash
-# 仅当前 shell 会话有效
-export MY_VAR=hello
-```
-
----
-
-**基本写法：写入 bash 配置文件**
-`echo 'export <变量名>=<值>' >> ~/.bashrc`
-```bash
-# 追加到 bashrc 实现永久生效
-echo 'export JAVA_HOME=/usr/lib/jvm/java-21' >> ~/.bashrc
-```
-
----
-
-**基本写法：写入 zsh 配置文件**
-`echo 'export <变量名>=<值>' >> ~/.zshrc`
-```bash
-# 追加到 zshrc（macOS 默认 shell）
-echo 'export JAVA_HOME=/usr/lib/jvm/java-21' >> ~/.zshrc
-```
-
----
-
-**基本写法：追加路径到 PATH**
-`export PATH=$PATH:<新路径>`
-```bash
-# 将新路径追加到 PATH 变量
-export PATH=$PATH:/usr/local/bin
-```
-
----
-
-**基本写法：前置路径到 PATH**
-`export PATH=<新路径>:$PATH`
-```bash
-# 将新路径前置到 PATH（优先级更高）
-export PATH=/usr/local/bin:$PATH
-```
-
----
-
-## 配置文件重新加载
-
-**基本写法：重新加载 bashrc**
-`source ~/.bashrc`
-```bash
-# 重新加载 bash 配置文件
-source ~/.bashrc
-```
-
----
-
-**基本写法：重新加载 zshrc**
-`source ~/.zshrc`
-```bash
-# 重新加载 zsh 配置文件
-source ~/.zshrc
-```
-
----
-
-**基本写法：重新加载 profile**
-`source ~/.profile`
-```bash
-# 重新加载 profile 文件
-source ~/.profile
-```
-
----
-
-## 变量删除
-
-**基本写法：删除用户变量（PowerShell）**
-`[Environment]::SetEnvironmentVariable("<变量名>", $null, "User")`
-```bash
-# 删除用户级环境变量
-[Environment]::SetEnvironmentVariable("MY_VAR", $null, "User")
-```
-
----
-
-**基本写法：删除 setx 设置的变量**
-`reg delete "HKCU\Environment" /F /V <变量名>`
-```bash
-# 通过注册表删除用户环境变量
-reg delete "HKCU\Environment" /F /V MY_VAR
-```
-
----
-
-**基本写法：删除 bash 中的变量**
-`unset <变量名>`
-```bash
-# 删除当前 shell 中的环境变量
-unset MY_VAR
-```
+1. `echo "$PATH"`；`export PATH="$HOME/bin:$PATH"`（前置优先级更高，见第 3.1 节）；`echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc`——引号包裹防止当前 shell 先展开 `$PATH`。
+2. CMD：`setx JAVA_HOME "C:\Program Files\Java\jdk-21"`；PowerShell：`[Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Java\jdk-21", "User")`。`$env:JAVA_HOME = "..."` 只改当前进程环境块（关终端即失效）；setx 写注册表中的用户环境，新开的终端才能读到。
+3. 临时变量在进程环境块里，fork 时整体复制给子进程（继承），但环境块属于进程、不属于用户——新终端是另一个进程树。所谓「永久」是把配置写进磁盘（注册表或 shell 配置文件），新进程启动时从磁盘重新加载（第 1.3 节生命周期图）。
+4. 坑一：`%PATH%` 是用户+系统拼接值，写回系统变量会污染，反复执行还会撞 setx 约 1024 字符截断上限，PATH 损坏；坑二：任何覆盖式写法忘了带旧值，系统连 ls 都找不到。防御：图形界面或 PowerShell 读原值再写回。
+</details>

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用浏览器开发者工具定位“样式没生效”的四大原因：匹配、优先级、继承与覆盖。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/130-CSS3SelectorSystem'
   - 'css/170-PriorityCalculation'
@@ -97,3 +97,34 @@ Elements 面板右上角有盒模型图：中间是 content，向外依次是 pa
 - 优先级深入：`css/170-PriorityCalculation`；
 - 选择器匹配：`css/130-CSS3SelectorSystem`；
 - 盒模型：`css/050-CSS3BoxModelDetailed`。
+
+## 10. 动手实践：遮码自检
+
+先只读任务与提示，遮住第 1-5 节的示例自己答，再对照参考实现。
+
+**任务一**：给下面三种现象各写出「第一排查动作」与「判定依据」，不许写「改代码试试」：
+（a）规则在 Styles 面板里完全没出现；（b）规则出现了但被划掉；（c）Computed 面板的 `font-size` 是 14px 而你写的是 16px。
+
+**任务二**：制造一场「继承污染」并修复——`body` 上设置了 `line-height: 1.2`，某个组件里的文字挤成一团，但组件自己的规则里没写 line-height。写出诊断路径（用哪个面板、看什么标记）与修复写法。
+
+**提示**：任务一的三个现象对应第 5 节排查清单的前三行——「没出现 = 没匹配（拼写/大小写/结构）」「划掉 = 被覆盖（权重/顺序）」「Computed 与源码不符 = 有别的规则赢或者简写/继承在起作用」；任务二的诊断关键词是 Styles 面板的 `Inherited from` 区块（第 1 节）。
+
+**参考实现**（先自己写完再看）：
+
+```text
+/* 任务一 */
+/* (a) 第一动作：Elements 里选中目标元素，Ctrl+F 搜选择器字符串，看命中数。
+       判定：命中 0 = 拼写/大小写/结构不匹配；命中 >0 但面板没显示 = 文件没加载（Network 查 404） */
+/* (b) 第一动作：读被划掉声明上方的「覆盖来源」标注。
+       判定：谁赢了、赢在哪一档（ID/类/行内），再决定升档还是换顺序 */
+/* (c) 第一动作：在 Computed 面板点开 font-size 展开竞争列表。
+       判定：大概率有一条更具体/更靠后的规则，或简写属性 font 顺带重置了字号 */
+
+/* 任务二 */
+.component p { line-height: 1.6; } /* 修复：组件规则里显式声明，
+                                      覆盖从 body 一路继承下来的 1.2 */
+/* 诊断路径：选中挤压文字的元素 → Styles 面板翻到 Inherited from body 区块
+   → 看到 line-height: 1.2 来自继承而不是组件自身 → 显式写一条本地值 */
+```
+
+验收点：任务二修复后若只调大组件容器的 padding，字号行距不变——继承问题必须「显式重声明」或改源头，调盒模型解决不了文字挤压；任务一(c)是「font 简写重置」的高发现场，可与 `css/100-ShorthandProperties` 第 6 节互证。

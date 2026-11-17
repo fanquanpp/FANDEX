@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 浏览器宿主环境与 Web API 的分层总览：ECMAScript 内核之外还有什么、宿主对象五元组模型、各能力族（网络、存储、观察器、线程、设备能力）的设计动机与演化时间线，以及通往各专篇的导读地图，附 Geolocation 与 Notification 两个设备能力示例。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'javascript/410-DOMOperationEvent'
   - 'javascript/420-BOMBrowserObjectModel'
@@ -256,6 +256,24 @@ self.addEventListener('notificationclick', (event) => {
 - 2026-06-13：扩展文件上传下载、IndexedDB Promise 封装、AbortController 取消机制。
 - 2026-07-21：金标准升级，新增形式化定义、理论推导、对比分析、陷阱反模式、案例研究、习题、ACM 参考文献、延伸阅读，覆盖 BroadcastChannel、ResizeObserver、Permissions API 等现代 API。
 - 2026-10-06：按单主题拆分重组——网络/存储/观察器/Worker 的实操与工程内容迁入各专篇（417/440/450/460/470/670），本篇聚焦宿主环境分层与能力族导读，改名「宿主环境与 Web API 总览」。
+
+## 教学自检
+
+> 用法：遮住正文里的示例代码，先自己写，再展开要点对照；写不出就回到对应小节重读。
+
+1. 把 `Promise`、`document`、`fetch`、`process`、`localStorage` 五个名字各归一层（语言内核 / DOM、BOM / 能力层），并说出判断依据；
+2. 用五元组（方法、事件、状态、生命周期、权限）拆一个你没见过的新 API：拿到一篇新 API 文档，你的阅读顺序是什么；
+3. 「宿主 API」与「语言 API」写错位置会发生什么？分别在浏览器与 Node 里跑 `alert('x')` 与 `localStorage.getItem('x')`，预测报错类型；
+4. 说出本篇能力族路由表里的三条「需求 → 篇目」对应（例如「发请求去哪篇」「离线存储去哪篇」「多线程去哪篇」）。
+
+<details>
+<summary>参考要点（先自己写再展开）</summary>
+
+- 第 1 问：Promise 是语言内核（ECMAScript 规范内）；document 属 DOM、window 侧能力属 BOM；fetch 与 localStorage 属能力层（独立规范，Node 收编了 fetch 与部分存储接口）；process 是 Node 宿主 API——判断依据是「它定义在哪份规范里、随哪个宿主分发」；
+- 第 2 问：先看它暴露的方法（能做什么），再看事件（何时通知我），再看状态对象（当前进度存哪），再看生命周期（何时创建销毁），最后看权限（要不要弹框/HTTPS/用户手势）——权限维度决定它能不能直接跑通；
+- 第 3 问：浏览器里 `process` 是 undefined（ReferenceError），Node 里 `localStorage`（截至 Node 22 实验引入前）与 `alert` 都是 undefined——宿主 API 换宿主必失效，这正是「纯逻辑不碰宿主 API」纪律的根源；
+- 第 4 问：发请求与取消 → 440/450；Web 存储与数据库 → 460/470；观察器与跨页通信 → 417；多线程 → 670；离线与 PWA → 680（以第 5 节路由表为准）。
+</details>
 
 ## 本章总结
 

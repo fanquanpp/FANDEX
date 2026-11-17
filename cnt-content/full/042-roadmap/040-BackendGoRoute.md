@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'go/010-WhatIsGo'
   - 'roadmap/090-DevOpsCloudRoute'
@@ -108,6 +108,28 @@ flowchart TD
 3. **跳过标准库直接框架**：net/http 没写过的人学 Gin 只会配路由，中间件与上下文机制全靠猜；
 4. **忽视云原生配套**：Go 的市场溢价一大半来自"会部署会运维"。Docker 与 K8s 不是加分项，是这个方向的基本功；
 5. **不写压测数据**：Go 面试官最爱问"多快、怎么证明"。benchmark 与压测报告从项目二开始积累。
+
+## 教学自检
+
+遮住对应小节先自己作答，再展开对照；答不出的小节回到原文重读：
+
+**自检一：并发检验点各防什么。** 不看「第 2 个月」，说出检验项目一（并发文件处理器）的三个要求——可控并发数、context 超时、`go run -race` 无数据竞争——分别防的是什么事故。
+
+<details>
+<summary>参考答案（先写完再展开）</summary>
+
+worker pool 控并发数防「goroutine 滥用」（开得越多不等于越快，要有背压）；context 超时防任务失控挂死与资源泄漏；`-race` 防共享内存数据竞争——race 检测全绿是发布底线，不是「写对了」的证明。
+
+</details>
+
+**自检二：标准库先于框架的理由。** 不看「常见弯路」，用自己的话解释为什么先手写 net/http 服务再学 Gin。
+
+<details>
+<summary>参考答案（先写完再展开）</summary>
+
+net/http 没写过的人学 Gin 只会配路由，Handler 与中间件的本质全靠猜；先手写路由与日志/恢复中间件，框架的每个抽象才有对照物——框架是加速器，不是理解替代品。
+
+</details>
 
 ## 求职准备清单
 

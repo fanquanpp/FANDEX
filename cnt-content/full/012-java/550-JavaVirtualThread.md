@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 从"线程池打满、QPS 上不去"的真实事故入手学会虚拟线程：三种创建方式、每任务一线程执行器、Pinning 与 ThreadLocal 两大坑、Spring Boot 一键启用，附与响应式编程的选型判断。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/570-JavaVirtualThreadInternals'
   - 'java/780-JavaNewFeatures'
@@ -254,7 +254,7 @@ public OrderDetail fetchOrderDetail(long orderId) throws InterruptedException {
 }
 ```
 
-它的价值不止"并发"：子任务生命周期被绑定在 try 块内，父任务取消（比如上游超时）会级联取消所有子任务，不会留下"孤儿任务"泄漏。竞速取最快（多副本读同一数据）用 `StructuredTaskScope.open(Joiner.anySuccessfulOrThrow())`。各完成策略的完整对照与旧 API 迁移表在 [虚拟线程内幕](/java/570-JavaVirtualThreadInternals)。
+它的价值不止"并发"：子任务生命周期被绑定在 try 块内，父任务取消（比如上游超时）会级联取消所有子任务，不会留下"孤儿任务"泄漏。竞速取最快（多副本读同一数据）用 `StructuredTaskScope.open(Joiner.anySuccessfulOrThrow())`（该工厂在 JDK 25 的 JEP 505 中名为 `anySuccessfulResultOrThrow()`，JDK 26 的 JEP 525 更名，本篇按 JDK 26 命名书写）。各完成策略的完整对照与旧 API 迁移表在 [虚拟线程内幕](/java/570-JavaVirtualThreadInternals)。
 
 生产采用建议：特性还在预览期，API 已重设计过一次（JDK 25），新项目可以小范围试用，核心链路等转正再上。
 
@@ -349,3 +349,13 @@ public class AggregateController {
 - [虚拟线程内幕](/java/570-JavaVirtualThreadInternals)：载体线程调度、Continuation 挂载/卸载机制、完整卸载点清单、结构化并发各完成策略与 JEP 演进时间线；
 - [ThreadLocal 内存泄漏](/java/530-ThreadLocalMemoryLeak)：ThreadLocal 弱引用设计与虚拟线程时代的完整防御方案；
 - [Java 响应式编程](/java/580-JavaReactiveProgramming)：如果团队仍有流式与背压需求，这里是 Reactor 的系统入口。
+
+---
+
+## 教学自检（先遮住示例代码自己写，再对照）
+
+1. 写出创建并启动一个虚拟线程的两种写法。——`Thread.ofVirtual().start(() -> task());` 或 `try (var ex = Executors.newVirtualThreadPerTaskExecutor()) { ex.submit(task); }`。
+2. 虚拟线程阻塞时载体线程在做什么？这是它扛百万连接的原理吗？——载体线程被释放去跑其他虚拟线程（栈帧挂起到堆）；是的，M:N 调度让阻塞操作不再占用 OS 线程。
+3. Pinning 的两个经典成因与 JDK 24 的变化是什么？——synchronized 块内阻塞（JDK 21 pinning）与 native 方法内阻塞；JDK 24（JEP 491）起 synchronized 不再 pinning，剩下 native 一类。
+4. 为什么说"给虚拟线程配线程池"是反模式？正确的资源保护手段是什么？——虚拟线程廉价到不该复用，池化反而限制并发并引入排队；用 Semaphore 限流保护下游（数据库连接数等真实资源）。
+5. 判断：虚拟线程让每个请求都该包 CompletableFuture。——不对；虚拟线程让同步阻塞风格重新可行，简单场景直接同步写法，组合编排复杂度高的场景才考虑异步工具。

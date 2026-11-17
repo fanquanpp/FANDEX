@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 跨领域 RAII 封装实战——文件句柄、内存、锁、网络套接字、数据库事务、OpenGL、CUDA 的守卫写法与自定义 RAII 类模板；机制与原则见 160 篇。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cpp/160-RAIIResourceManagement'
   - 'cpp/130-SmartPointerDeepDive'
@@ -2593,3 +2593,71 @@ delete p;
 // gsl::not_null 确保非空
 void f(gsl::not_null<Widget*> w);
 ```
+
+## 动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照答案。
+
+**任务一**：把这段 C 风格缓冲区代码改成零手动释放的版本——用 `std::unique_ptr` 加**自定义删除器**包装 `std::malloc` 的返回值，或直接换成等价的 `std::vector<char>`；两种写法都写出来，并说出各自的适用场景。
+
+```cpp
+void demo() {
+    char* buf = static_cast<char*>(std::malloc(1024));
+    if (!buf) throw std::bad_alloc();
+    fill(buf, 1024);      // 可能抛异常：此时 buf 泄漏
+    std::free(buf);
+}
+```
+
+**提示**：`unique_ptr` 的删除器是模板参数不是构造参数：`std::unique_ptr<char, decltype(&std::free)>` 需要在构造时传入 `&std::free`；追问自己——为什么这种写法多一次函数指针间接？`std::vector<char>` 省掉了什么？
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+// 写法 A：unique_ptr + 自定义删除器（保留 malloc 语义，如已与 C 库约定 arena 分配）
+void demoA() {
+    std::unique_ptr<char, decltype(&std::free)> buf{
+        static_cast<char*>(std::malloc(1024)), &std::free};
+    if (!buf) throw std::bad_alloc();
+    fill(buf.get(), 1024);   // 抛异常时 unique_ptr 析构自动 free
+}
+
+// 写法 B：vector（默认场景首选：连续内存 + 生命周期管理一体）
+void demoB() {
+    std::vector<char> buf(1024);
+    fill(buf.data(), 1024);
+}
+```
+
+要点自查：写法 A 适合「分配方式必须留给 C 接口」的场景；写法 B 是默认答案——本篇反复出现的结论：能用标准容器表达所有权就不要手写包装。
+
+**任务二**：构造函数里要取两样资源（先连接数据库、再上传列元数据），第二样可能抛异常。解释为什么下面的写法把两样资源放进成员裸指针是错的，并用「成员都是 RAII 类型」的写法修复：
+
+```cpp
+class Sync {
+    Connection* conn_ = nullptr;   // 裸指针成员
+    Metadata* meta_ = nullptr;
+public:
+    Sync() : conn_(new Connection("db")) {
+        meta_ = new Metadata(*conn_);   // 这里抛异常：conn_ 是谁释放？
+    }
+    ~Sync() { delete meta_; delete conn_; }
+};
+```
+
+**提示**：构造函数抛异常时，析构函数**不会被调用**——对象从未完成构造；但已构造完成的成员会按逆序析构。把每个资源交给一个「已构造完成即拥有它」的成员对象，问题就消失了。
+
+**参考实现**（先自己写完再看）：
+
+```cpp
+class Sync {
+    std::unique_ptr<Connection> conn_;   // 构造完成即拥有
+    std::unique_ptr<Metadata> meta_;
+public:
+    Sync()
+        : conn_(std::make_unique<Connection>("db"))
+        , meta_(std::make_unique<Metadata>(*conn_)) {}  // 抛异常时 conn_ 成员自动析构
+};
+```
+
+要点自查：修复版连析构函数都不用手写（编译器生成的即可），这就是「成员即 RAII」的标志性收益；构造函数里任何一步抛异常，已构造的成员逆序析构，资源一个不少地归还。

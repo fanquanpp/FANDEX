@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 深水区专题：优化器的成本两要素、索引失效六大现场的失效与修复 SQL 对照、force index 的使用边界、EXPLAIN ANALYZE 实测与树状执行计划。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/320-EXPLAINDetailed'
   - 'mysql/270-IndexHintForceIndex'
@@ -243,6 +243,26 @@ EXPLAIN SELECT COUNT(*) FROM match_records WHERE player_id = 42;
 - EXPLAIN 与 EXPLAIN ANALYZE：https://dev.mysql.com/doc/refman/8.4/en/explain.html
 - 输出格式（含 FORMAT=TREE 的算子树）：https://dev.mysql.com/doc/refman/8.4/en/explain-output.html
 - 索引提示（FORCE/IGNORE/USE INDEX）：https://dev.mysql.com/doc/refman/8.4/en/index-hints.html
+
+## 教学自检（先遮住代码自己写，再对照）
+
+遮码自检法：先只读题干，自己写/自己答，再展开参考答案对照。
+
+1. 概念自问：优化器的成本模型里，一次访问的成本由哪两个要素主导？据此解释"rows 估算失真为什么会选错计划"。
+
+参考答案（先自己答，再对照）：两个要素——扫多少行（IO 成本）与对这些行做什么（CPU/回表成本）。优化器拿统计信息估算每个候选方案的 rows，再乘单价比较。统计过时时估算失真：实际只命中 1% 的条件被估成 50%，优化器就会"合理地"选择全表扫描——所以计划异常先怀疑统计，ANALYZE TABLE 是第一手段。
+
+2. 概念自问：EXPLAIN ANALYZE 与 EXPLAIN 的本质区别是什么？使用前者要注意什么？
+
+参考答案（先自己答，再对照）：EXPLAIN 只推演计划不给执行；EXPLAIN ANALYZE（8.0.18+）**真的执行查询**，在计划树每个算子上标注实测行数与耗时（loops 展示重复执行次数）。注意：它是真实执行——UPDATE/DELETE 会真的改数据，危险 SQL 取证要用 `EXPLAIN ANALYZE SELECT ...` 包装或事务里回滚；它的价值是把"估算 vs 实测"的偏差量化出来。
+
+3. 判断题：FORCE INDEX 强制走某个索引后查询变快，说明原计划就是错的，事件到此结束。
+
+参考答案（先自己答，再对照）：没结束。FORCE INDEX 是止血不是诊断——它绕过了"优化器为什么弃用索引"的根因（统计失真？成本模型没算对？隐式转换？）。正确闭环：止血后用 optimizer trace 找出弃用原因，修掉根因（刷新统计、修写法），让计划在无 hint 的世界里也是对的，最后撤掉 hint——hint 留在生产代码里，等于把一个需要人工维护的假设埋进了 SQL。
+
+4. 概念自问：树状执行计划（FORMAT=TREE / EXPLAIN ANALYZE）里，缩进深度代表什么？
+
+参考答案（先自己答，再对照）：缩进越深越先执行，上层的算子消费下层算子的输出——读法是自底向上。这个语法树结构让 JOIN 顺序、物化/流水线执行方式一目了然，是 8.0 之后解读复杂查询的首选格式。
 
 ## 13. 自我检查
 

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 无序/有序/任务列表语法、嵌套缩进规则、起始序号控制与列表内嵌块级元素的细节。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'markdown/030-ParagraphLineBreak'
   - 'markdown/170-TaskList'
@@ -23,7 +23,7 @@ prerequisites:
 - **什么时候用到**：README 的安装步骤（有序）、特性清单（无序）、待办（任务）；文档里几乎每三段就有一个列表。
 
 > **认知导入（Layer 0 生存层）**
-> 前置知识：003 段落与换行。
+> 前置知识：030 段落与换行。
 > 边界说明：列表是"并列信息"的默认表达。本篇的核心难点只有一个——缩进决定层级；其余都是三种列表的排列组合。
 > 强制练习：分别用 `-` 和 `1.` 写三行列表；把第二行缩进两个空格，观察它如何变成子项。
 
@@ -238,7 +238,7 @@ CommonMark 规定：**列表可以打断段落**（无序列表、以及首项�
 <details>
 <summary>参考实现（先自己动手，再看这里）</summary>
 
-```markdown
+````markdown
 <!-- 练习 1 -->
 - 父项
  - 一空格：塌成同级
@@ -264,6 +264,6 @@ CommonMark 规定：**列表可以打断段落**（无序列表、以及首项�
 - 项目二
 
       console.log("indented")  // 缩进式：需 6 格
-```
+````
 
 </details>

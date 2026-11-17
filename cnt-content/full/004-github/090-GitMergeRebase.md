@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以对比驱动方式讲解 git merge 与 git rebase 两种分支整合路线的原理、适用场景与选择原则，覆盖快进合并、三方合并与交互式变基，适合零基础学习者。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---
@@ -270,6 +270,35 @@ git rebase --show-current-patch
 | 对已推送提交 amend/rebase | 队友拉取后历史混乱 | 改写公共历史 | 只重写未推送提交；已推送的用新提交修正（如 revert） |
 
 ---
+
+## 七、动手实践：遮代码自检
+
+先只读任务与提示，遮住参考实现自己写，写完再对照。
+
+**任务一**：你在个人分支 `feature/login` 上开发了 3 个提交，此时 main 前进了。写出「把 main 的最新进展同步进来，历史保持一条直线」的命令链；并在完成后推送。若推送被拒（历史已分叉），写出安全的强推命令。
+
+**任务二**：把最近 3 个提交压成 1 个，写出进入交互模式的命令，并写清待办列表里两条关键指令的用途（合并提交、删提交）。
+
+**任务三**：变基到一半发现方向错了，想完全回到变基前，一条命令怎么写？
+
+**参考实现**（先自己写完再看）：
+
+```bash
+# 任务一
+git switch feature/login
+git rebase main            # 把自己的提交重放到 main 最新点之后
+git push --force-with-lease
+
+# 任务二
+git rebase -i HEAD~3
+# 待办列表：squash/fixup 把提交合并到上一个（squash 留说明，fixup 丢弃说明）
+#           drop 删除该提交
+
+# 任务三
+git rebase --abort
+```
+
+要点自查：rebase 是「重放」——生成的是内容相同、hash 不同的新提交，所以已推送的提交被 rebase 后必须强推；`--force-with-lease` 比 `--force` 安全在于它会检查远程没有被别人更新过；**黄金原则：只对未推送到共享远程的提交做 rebase**；`--abort` 是变基进行中的后悔药，一旦变基完成就要用 `reflog` 才能找回。
 
 ## 八、一句话记忆
 

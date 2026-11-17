@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 装完所有工具后逐项验证：命令、版本、路径、网络与版本管理是否一切正常。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'shell/010-DevEnvSetup'
   - 'shell/100-EnvVarPath'
@@ -48,7 +48,7 @@ pwd
 code --version
 ```
 
-**预期**：输出类似 `1.9x.x` 的版本号。如果提示 `code 不是内部或外部命令`（Windows）或 `command not found`（macOS/Linux），说明安装时没有勾选“添加到 PATH”，或在 macOS 上未运行“Shell Command: Install 'code' command in PATH”。
+**预期**：输出类似 `1.14x.x` 的版本号。如果提示 `code 不是内部或外部命令`（Windows）或 `command not found`（macOS/Linux），说明安装时没有勾选“添加到 PATH”，或在 macOS 上未运行“Shell Command: Install 'code' command in PATH”。
 
 ## 3. Node.js 与 npm
 
@@ -57,7 +57,7 @@ node -v
 npm -v
 ```
 
-**预期**：`node -v` 输出当前 LTS 线版本（如 `v22` 或 `v24`）；`npm -v` 输出 `10+`。若提示找不到命令，检查是否安装了 Node.js，或 PATH 是否包含 Node 目录（`shell/100-EnvVarPath`）。
+**预期**：`node -v` 输出 LTS 线版本（如 `v24` 或 `v26`）；`npm -v` 输出 `10+`。若提示找不到命令，检查是否安装了 Node.js，或 PATH 是否包含 Node 目录（`shell/100-EnvVarPath`）。
 
 ## 4. Python 与 pip
 
@@ -193,3 +193,17 @@ FAIL  Git 身份已配置
 - 环境变量与 PATH：`shell/100-EnvVarPath`；
 - 卡住排查：`shell/120-TroubleshootingGuide`；
 - 平台配置：`shell/020-WindowsEnvConfigTutorial`、`shell/030-MacOSEnvConfigTutorial`、`shell/040-LinuxEnvConfigTutorial`。
+
+## 自检：遮住清单，说出判断依据
+
+1. `node -v` 输出 `v24.11.0`，如何读出「主版本号判断当前 LTS 线」？Node 22/24/26 三个版本哪条是当前 Active LTS？
+2. PATH 修改之后验证生效，为什么必须新开终端窗口？`which node`（或 Windows 的 `where.exe node`）输出了什么才叫「生效」？
+3. check-env.sh 里 `check()` 函数为什么把命令输出全部丢进 `/dev/null`？`exit "$fail"` 让谁受益？
+
+<details>
+<summary>参考答案</summary>
+
+1. 主版本号第一位就是大版本线（24 线）。Node 的偶数大版本每年 4 月发布、同年 10 月进入 LTS：当前 Active LTS 是最新转正的大版本（26 线），22 与 24 处于维护期——「新装环境选 Active LTS 线」是本清单第 3 项的判断依据。
+2. PATH 修改只写入磁盘（注册表或 shell 配置文件），已打开的终端不会重新读取；新窗口才是「从零加载 PATH」的验证环境。生效标准：输出 node 可执行文件的实际路径，且路径与你刚配置的目录一致（第 9 节）。
+3. check 只关心退出码，丢弃输出避免结果被命令输出污染；`exit "$fail"` 把失败数变成脚本退出码，让 CI、Makefile 或上层脚本能用「退出码」这个通用接口判断环境是否就绪——退出码是脚本间的状态通道。
+</details>

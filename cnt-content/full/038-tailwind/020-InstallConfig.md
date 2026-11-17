@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Tailwind CSS 安装与配置：Vite/React/Astro 项目接入教程、@import 与 @source 详解、Tailwind 3 与 4 配置差异对照，附 FANDEX 仓库的真实接线参考
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-11-17'
 related:
   - 'tailwind/030-UtilityCore'
   - 'tailwind/050-ThemeCustomization'
@@ -119,7 +119,7 @@ Vite 插件的额外红利：开发时类名变更会通过 HMR（热更新）�
 
 ## 3. 方式二：PostCSS 接入（Next.js / webpack 生态）
 
-如果你的项目使用 Next.js App Router、Nuxt 或自定义 webpack 构建链，推荐使用 PostCSS 方式。
+如果你的项目使用 Next.js App Router、Nuxt 或自定义 webpack 构建链，推荐使用 PostCSS 方式。webpack 用户自 v4.2 起另有官方 `@tailwindcss/webpack` 插件（加载器形态，官方基准称提速 2 倍以上）可选；本篇仍以 PostCSS 为主讲——它是所有 PostCSS 管线的通用底座，学会它，任何走这条链的框架都能接。
 
 ### 第 1 步：安装依赖
 
@@ -375,6 +375,16 @@ npx @tailwindcss/upgrade
 1. **三条路各走一遍**：分别用 Vite 插件、CLI 两条方式搭起最小项目（PostCSS 方式可与 Next.js 学习配合），各自完成"蓝色方块"验证。提示：对比三者的依赖数量——Vite 插件方案最少。
 2. **接入扩容**：在 Vite 项目里新建 `styles/typography.css`，写几条正文样式，在入口文件里让 Tailwind 导入位于它之前，然后验证"工具类仍能覆盖自定义样式"。提示：把导入顺序反过来再试一次，观察级联层的作用。
 3. **扫描边界实验**：在项目外建一个目录，往里写一个带 `bg-purple-500` 的 HTML 文件，分别用 `@source` 纳入与移出，观察产物 CSS 里该类是否出现。提示：构建后直接在产物里搜索 `purple`。
+
+**遮码自检：默写两种接入的最小骨架。** 遮住第 2、4 节，凭记忆写出"Vite 插件接入"与"CLI 接入"的最小完整步骤（装哪些包、动哪几个文件、验证方法），再展开对照：
+
+<details>
+<summary>自检参考要点</summary>
+
+Vite 插件路线四件套：`pnpm add tailwindcss @tailwindcss/vite`；`vite.config.ts` 里 `plugins: [tailwindcss()]`；入口 CSS 第一行 `@import "tailwindcss";`；入口 TS 里 import 这份 CSS，`npm run dev` 后用 `bg-blue-500 p-4` 蓝方块验证。最容易漏的两处：插件必须从 `@tailwindcss/vite` 包导入（不是 `tailwindcss` 包）；导入指令必须是入口 CSS 的**第一行**（级联层顺序的保证）。
+
+CLI 路线三件套：`npm install -D @tailwindcss/cli`；`src/input.css` 写同一行导入；`npx @tailwindcss/cli -i ./src/input.css -o ./dist/output.css --watch` 编译并在 HTML 里 link 产物。两条路线殊途同归的判断标准：都只写了**一行** `@import "tailwindcss";`——若你默写出了 `@tailwind base;` 三行指令或 `content` 数组，那是 v3 教程的记忆，回第 6、8 节对照修正。
+</details>
 
 ## 12. 一句话记忆
 
