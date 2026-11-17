@@ -56,13 +56,17 @@ SOLID 五原则各用一句话落到 GDScript 语境：
 
 ## 单例模式：static var 与 Autoload
 
-单例模式（Singleton）保证一个类在全项目只有一个实例。传统写法用静态变量保存唯一实例：
+单例模式（Singleton）保证一个类在全项目只有一个实例。传统写法用静态变量保存唯一实例，配合静态方法做懒初始化：
 
 ```gdscript
-class Singleton:
-    static var instance: Singleton:
-        get: return _instance
-    static var _instance: Singleton = new()
+class_name Settings
+
+static var _instance: Settings
+
+static func get_instance() -> Settings:
+    if _instance == null:
+        _instance = Settings.new()
+    return _instance
 ```
 
 static var 属于类而不属于实例，全项目访问到的都是同一份 _instance。
@@ -72,7 +76,7 @@ static var 属于类而不属于实例，全项目访问到的都是同一份 _i
 - static var 单例：纯代码层，不进场景树，适合与节点生命周期无关的全局数据与工具函数；
 - Autoload：是场景树里的真实节点，能收发信号、有完整的生命周期回调，适合游戏全局服务（存档、音频、任务系统）。
 
-选择标准很简单：需要进场景树、需要信号与生命周期，用 Autoload；只是共享数据与函数，static var 更轻。Autoload 的注册步骤与使用细节见 godot 模块 050 篇。
+选择标准很简单：需要进场景树、需要信号与生命周期，用 Autoload；只是共享数据与函数，static var 更轻。Autoload 的注册步骤与使用细节见 godot 模块 055 篇。
 
 **第三种形态：全静态工具类（既不是单例也不是 Autoload）。** 当类只需要"一组纯函数 + 可缓存的推导结果"时，连实例都可以省掉——class_name + 全静态函数，static var 只存值类型缓存。真实工程 speed-rouge 的 tile_atlas.gd 是标准形态：47 变体图集的"邻域掩码到代表瓦片"映射，首次调用推导、static var 缓存 `PackedInt32Array`（值类型，不持对象引用），之后幂等返回。这类类的纪律：**静态缓存存值不存对象**；若必须缓存 Node/Resource，用 weakref 防线（terrain_kit.gd 的弱引用列缓存是标准实现）——完整机制见第 75 篇第 4 节。工具类与单例的分工：单例承载"有状态的唯一实例"，工具类承载"无状态的函数集合"，两者混用（静态可变业务状态 + 实例方法并存）是腐化的开始。
 

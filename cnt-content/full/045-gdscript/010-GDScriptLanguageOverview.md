@@ -52,10 +52,9 @@ GDScript 在 Godot 4 系列中持续演进，以下时间点值得记住（引�
 
 | 版本 | 语言层要点 |
 |---|---|
-| 4.2 | for 循环变量可标注类型：`for name: String in names:` |
+| 4.2 | for 循环变量可标注类型：`for name: String in names:`；match 的 `when` 模式防护（pattern guards） |
 | 4.4 | 类型化字典 `Dictionary[K, V]` |
 | 4.5 | 可变参数 `...args: Array`；`@abstract` 抽象类与抽象方法 |
-| 4.6 | `is not`、`not in` 与 match 的 `when` 模式防护已在文档中存在（并非 4.7 新增） |
 | 4.7 | 语言层破坏性变更仅两条（见下） |
 
 Godot 4.7（2026 年中发布，主题 "Lights, Camera, Action!"）在 GDScript 层面的破坏性变更只有两条：
@@ -257,7 +256,7 @@ print(key, " / ", path) # 预测输出？
 
 - GDScript 是 Godot 内置的高级、面向对象、命令式、渐进类型语言；语法像 Python，但官方明确声明它并不基于 Python。
 - 静态类型的变量在编译期使用优化后的 opcode，执行更快；动态与静态风格可以混用。
-- 版本要点：4.2 循环变量类型标注；4.4 类型化字典；4.5 可变参数与 @abstract；is not、not in 与 when 在 4.6 已存在；4.7 只有两条破坏性变更（紧缩数组元素赋值不再触发 setter；重写带类型返回值的方法必须显式 return）。
+- 版本要点：4.2 循环变量类型标注与 match 的 when 模式防护；4.4 类型化字典；4.5 可变参数与 @abstract；is not 与 not in 则早在 4.0 已有；4.7 只有两条破坏性变更（紧缩数组元素赋值不再触发 setter；重写带类型返回值的方法必须显式 return）。
 - 第一个脚本：重写 `_ready()`，用 `print()` 输出，在输出面板查看。
 - 注释分三层：`#` 单行、`##` 文档注释（写在成员正上方）、`#region` 折叠区域；TODO/FIXME/WARNING 黄色，NOTE/INFO 绿色。
 - 缩进是语法：Tab 优先、不能与空格混用；一行一条语句；折行用括号。
