@@ -159,7 +159,9 @@ translate piglatin python:
 RENPY_LANGUAGE 环境变量 → config.language → 玩家历史选择 → autodetect（探测系统语言） → config.default_language → None
 ```
 
-所有环节都没有给出语言时，退回主语言 None。想让新玩家自动进入母语界面，靠的是 autodetect 与 config.default_language 这两级。
+所有环节都没有给出语言时，退回主语言 None。想让新玩家自动进入母语界面，靠的是 autodetect 与 config.default_language 这两级；8.5 起还可以用 config.locale_to_language_map 把探测到的系统 locale 精确映射到你的语言名（例如把 zh 变体的探测结果归到 simplified_chinese）。
+
+8.6 还松开了"文本语言 = 素材语言"的默认绑定：字符串与文件可以使用不同的语言设置——文字用一种语言、配音用另一种、图片再用第三种成为可能（见 8.6 官方发布说明，具体变量名以所用版本文档为准）。多语言配音与插画分步交付的项目会用到这条能力。
 
 ## 延迟加载翻译脚本
 
@@ -174,6 +176,51 @@ define config.defer_tl_scripts = True
 ## 顺带一提
 
 Ren'Py 的官方文档站本身也做了多语言，提供日语等版本（如 ja.renpy.org）——连文档都在实践翻译，这个生态对多语言的重视可见一斑。
+
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案或写出代码，再展开对照。
+
+1. 主语言在引擎内部叫什么？tl/None/common.rpym 什么时候有用？
+2. 修改了原句台词，为什么译文可能失联？怎么锁住翻译标识符？
+3. translate 块相比原句可以做哪些"结构改造"？删掉一条对白的占位写法是什么？
+4. "New" 一词在"游戏"与"聊天"语境下要译成不同词，怎么写？变量里的字符串怎么翻译？
+5. _() 与 __() 的差别是什么？各举一个适用场景。
+6. 图片翻译的回落规则是什么？样式翻译块的执行基础是什么规则？
+7. 启动时初始语言的判定顺序是什么？想精确控制系统 locale 到语言名的映射用什么配置？
+8. config.defer_tl_scripts 配套的纪律是什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) None。当 None 语言本身不是英语时，用它承载引擎内建界面字符串的翻译。
+
+2) 标识符默认从原句内容推导，改原句后重新生成翻译时标识符可能变化。
+   给 say 写显式 id 子句（e "Hello, world." id start_61b861a2）。
+
+3) 拆分、合并、重排顺序、整块省略；块内可运行 Python 与 if 条件；
+   省略用 pass 占位。
+
+4) 用 {#...} 语境标记：old "New{#game}" / old "New{#chat}" 分别出块；
+   变量字符串用 !t 旗标：[place!t]。
+
+5) _() 标记可翻译、显示时按当前语言翻；__() 立即翻译返回译文，用于
+   逻辑中需要拿到译文的地方（如拼接文件名、日志）。
+
+6) 语言激活时优先用 tl/<语言>/ 下的同名文件（含子目录），找不到回落
+   主语言文件。样式翻译的基础：语言激活时样式先重置到 Init 末状态，
+   再依次应用所有 translate 块。
+
+7) RENPY_LANGUAGE 环境变量 → config.language → 玩家历史选择 →
+   autodetect → config.default_language → None；
+   locale 映射用 config.locale_to_language_map（8.5 起）。
+
+8) 被延迟加载的 tl 文件只放 translate 块，不写普通剧本语句——否则那些
+   语句不会在开局时执行。
+```
+
+</details>
 
 ## 小结
 

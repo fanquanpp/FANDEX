@@ -43,7 +43,7 @@ sylvie green smile
 - 立绘建议使用 PNG/WEBP/AVIF 这类带透明通道的格式，背景还可以用 JPG/JPEG；
 - 支持超采样（supersampling）：文件名以 @数字 结尾（例如 eileen happy@2.png 表示 2 倍分辨率），供高分辨率屏幕显示更清晰的画面；当请求的倍率文件不存在时，Ren'Py 会自动查找更高倍率的文件来代替。
 
-也就是说，你只要把 sylvie_green_smile.png 改名整理成符合图像名的文件（如 sylvie green smile.png，或放进任意子目录），脚本里就能直接使用 sylvie green smile 这个名字。
+也就是说，你只要把 sylvie_green_smile.png 改名整理成符合图像名的文件（如 sylvie green smile.png，或放进任意子目录），脚本里就能直接使用 sylvie green smile 这个名字。默认只扫描 images/ 这一个目录；8.5 起新增的 config.image_directories（取代旧的 config.images_directory，8.6 起音频与字体也有对应的多目录配置）允许你指定更多搜索目录，素材量大、按章节分目录时用得上，初期一个 images/ 就够。
 
 ## 四条图像语句
 
@@ -205,6 +205,41 @@ camera 对整层应用 transform，是对旧式写法 `show layer master: blur 1
 ```
 
 背景淡入，立绘在右侧淡化登场，表情原地切换，全部只用了 scene、show 与 with 三样工具。
+
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案或写出代码，再展开对照。
+
+1. 图像名 `sylvie green smile` 中哪部分是标签？`show sylvie green smile` 之后紧接 `show sylvie green surprised`，屏幕上发生什么？为什么？
+2. 把文件放进 images/bg/meadow.jpg，脚本里用哪个图像名显示它？文件名大写会有什么后果？
+3. scene、show、hide 各自在什么场景下使用？为什么官方不建议 `hide sylvie` 后紧跟 `show sylvie ...`？
+4. `with None` 的作用是什么？它跟 dissolve 这类转场如何配合？
+5. `show mary night sad as mary2 at left` 里 as 子句的效果是什么？behind 与 zorder 分别控制什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) sylvie 是标签，green/smile 是属性。第二条 show 执行后旧立绘被替换成
+   surprised 表情——同 tag 同时只能显示一张，show 同 tag 新图自动替换旧图，
+   背景不受影响。
+
+2) 图像名是 bg meadow：文件名去扩展名、强制小写，子目录名被忽略。
+   大写文件名同样被转小写注册，但脚本里要按小写名引用。
+
+3) scene 清空图层再显示，用于换场景/换背景；show 显示或替换（不清空其他）；
+   hide 只在"角色离场但场景保持"时用。hide 后紧跟 show 同一 tag 是多余的
+   两次操作，直接一次 show 即可。
+
+4) with None 播放零动画，但产生一次交互并把当前画面记录为"上一屏"快照，
+   作为下一次转场的起点；用它可以把多层变化拆成多步转场，再配合
+   dissolve 分层淡入，控制每层何时变化。
+
+5) as mary2 给这次显示一个别名标签，使同一 mary 图像能同时显示两份。
+   behind 控制同层内与指定图像的遮挡次序；zorder 调整层内叠放序号。
+```
+
+</details>
 
 ## 小结
 

@@ -220,6 +220,38 @@ label chapter_tail(text):
     return
 ```
 
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己写出写法，再展开对照。
+
+1. 把一个 Character 切到 NVL 呈现、并让无名字旁白也进 NVL 页，各写一行 define。
+2. nvl clear、nvl show、nvl hide 三者的职责差异是什么？章节边界为什么常把 hide 与 clear 成对用？
+3. 只让某一个菜单出现在 NVL 页上，怎么写？全局启用 NVL 菜单又怎么写？
+4. NVL 模式下玩家连续回滚，画面行为是什么？读档后当前页状态如何恢复？
+5. Monologue 三引号块里想插一个翻页点，写什么？它与 nvl clear 什么关系？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) define s = Character('Sylvie', kind=nvl, ...)
+   define narrator = nvl_narrator
+
+2) nvl clear 结束当前页、下一行从新页开始（翻页不清窗口）；nvl show 显示
+   NVL 空窗口（可带转场）；nvl hide 让窗口整个消失。章节边界"页讲完了
+   还要把叙述容器收掉"，所以 hide 与 clear 成对出现。
+
+3) menu (nvl=True): 只对该菜单生效；全局生效写 define menu = nvl_menu。
+
+4) 每条 say 是一个回滚节点，连续回滚时文字一行行消失、翻过 nvl clear 时
+   整页一起退回；存档保存"当前页已显示的行"，读档后页面完整还原
+   （恢复的是插值后的最终文本）。
+
+5) 把 {clear} 标签单独写成一行，等价于 nvl clear。
+```
+
+</details>
+
 ## 小结
 
 - NVL 模式多行同屏、按"页"组织叙事；Character 加 kind=nvl 启用，页末 nvl clear 翻页，{clear} 标签单独一行等价于它。

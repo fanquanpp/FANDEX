@@ -135,7 +135,7 @@ This is the second line of narration.
 """
 ```
 
-等价于两条独立的旁白。拆分以空行为界；如果希望块与块之间不留空行也照样拆分，在文件顶部写 rpy monologue single；想完全禁用 Monologue，写 rpy monologue none。
+等价于两条独立的旁白。拆分边界由文件顶部的 `rpy monologue` 指令决定，默认（double）以空行为界；写 `rpy monologue single` 会把拆分边界从空行改为每一行——三引号内的每一行都成为一条独立的 say，连续无空行的行也会被拆开；而 `rpy monologue none` 则完全禁用拆分，三引号内的所有行显示为一条消息并保留换行。
 
 Monologue 与 NVL 模式完全兼容（长段独白 + 多行同屏正是绝配），NVL 的翻页、菜单与窗口管理见 [NVL 模式呈现](/renpy/065-NvlMode)。
 
@@ -192,12 +192,52 @@ window auto True
 
 window show / window hide 手动控制对白窗口；window auto True 开启自动模式：say 之前自动显示窗口，scene、call screen 与无 caption 的 menu 之前自动隐藏，绝大多数项目保持默认自动模式即可。
 
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己写出写法，再展开对照。
+
+1. 台词里要显示字面的 `[`、`{` 与 `%`，分别怎么写？
+2. 写一句插值：显示好感度除以满值 100 后保留两位有效数字的百分比；玩家自定义的角色名插值时要加哪个旗标、防的是什么？
+3. {w}、{w=1.0}、{p}、{nw} 四个标签的行为差异是什么？{fast} 与 {nw} 组合做出什么效果？
+4. 三引号字符串默认按什么规则拆成多条 say？`rpy monologue single` 如何改变拆分边界？`rpy monologue none` 又是什么行为？
+5. define e = Character("Eileen", image="eileen") 之后，`e happy "..."` 与 `e happy @ vhappy "..."` 的显示与遗留效果有何不同？
+6. extend 的作用是什么？dynamic=True 的 Character 解决什么问题？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) [[ 显示 [；{{ 显示 {；%% 或 \% 显示 %；双引号冲突用 \"。
+
+2) [100.0 * points / max_points:.2] percent!——冒号后 .2 是 PEP 3101
+   格式说明。玩家输入的字符串加 !q（如 [playername!q]），防止名字里藏
+   文本标签或插值记号破坏画面。
+
+3) {w} 等玩家点击才继续；{w=1.0} 等满 1 秒自动继续；{p} 结束当前段落并
+   等待点击；{nw} 行末让整行自动消失。{nw} + {fast} 做"打字机换词"：
+   第一行逐字打出、行末 {nw} 整行消失，下一行 {fast} 把新词瞬间摆上。
+
+4) 默认按空行拆分成块、每块一条 say。rpy monologue single 把拆分边界
+   改为每一行——三引号内每一行都成为独立 say，连续无空行的行也会被
+   拆开；rpy monologue none 完全禁用拆分，所有行显示为一条消息并
+   保留换行。
+
+5) e happy 自动 show 出 eileen 的 happy 表情（image 参数绑定 tag）；
+   @ 之后的 vhappy 是临时属性，台词结束即还原为 happy。
+
+6) extend 让上一个说话者继续说一行"上一句 + {fast} + 新内容"，画面像
+   同一句话被中途改写；dynamic=True 让角色名参数每行台词前重新求值，
+   玩家改名后对话框名字实时更新。
+```
+
+</details>
+
 ## 小结
 
 - 文本处理顺序：翻译、插值、样式与标签、排版、绘制；{ 与 [ 是被征用的字符，用 `{{` 与 `[[` 转义，引号用反斜杠，百分号写 `%%` 或 `\%`。
 - 插值 [表达式] 支持任意 Python 表达式与 PEP 3101 风格格式化；查找顺序为 screen 局部变量、interpolate 命名空间、全局命名空间；转换旗标 !s/!r/!q/!t/!i/!u/!l/!c 可组合（如 !cl）且顺序固定，玩家输入务必加 !q。
 - 文本标签有成对与自闭合两种；{b}{i}{u}{s}{color}{size}{font}{cps}{k}{alpha}{image}{a} 负责排版，{w}{p}{nw}{fast}{done} 负责节奏；每行都用的效果应改用样式表达。
-- Monologue 把三引号字符串按空行拆成多条 say，rpy monologue single 与 rpy monologue none 调整拆分策略；与 NVL 模式兼容。
+- Monologue 默认按空行把三引号字符串拆成多条 say；`rpy monologue single` 把拆分边界改为每一行（每行一条 say），`rpy monologue none` 禁用拆分（单条消息、保留换行）；与 NVL 模式兼容。
 - Character 进阶：image 参数配合 say 属性自动 show（-happy 移除、@ 临时），extend 续写上一句，dynamic=True 动态角色名，window auto 管理窗口显隐。
 
 ## 参考链接

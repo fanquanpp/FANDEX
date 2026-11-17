@@ -111,6 +111,8 @@ queue music "next.opus"
 
 queue 把文件排到当前曲目的后面，播完自动接续。语义上，每次交互开始后的第一条 queue 语句会先清空队列再入队，保证排队的意图以最新一次为准。
 
+8.6 起音乐还支持在播放中定位（seek），视频也支持循环播放（见 8.6 官方发布说明；对应的函数与参数名以所用版本文档为准，此处不给具体写法以免版本错位）。
+
 ### 为什么用语句而不是函数
 
 renpy.music 模块也提供了等价的 Python 函数，但官方建议用语句：写了 play 与 queue 语句，Lint 会检查引用的音频文件是否存在，素材缺失在发布前就能被发现。
@@ -179,6 +181,44 @@ screen main_menu:
 ```
 
 image 语句把 Movie 绑成名为 main_menu 的 displayable，同名屏幕里 add "main_menu" 把它铺作背景，按钮浮在视频之上。
+
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案或写出代码，再展开对照。
+
+1. music、sound 与 audio 三个通道的能力差异是什么？密集音效叠加该用哪个、代价是什么？
+2. game/audio 目录下的文件自动获得什么能力？需要满足什么命名条件？play 引用文件时的查找顺序是？
+3. play 的 if_changed 子句解决什么问题？queue 语句"每次交互后的第一条先清空队列"意味着什么？
+4. 为什么官方建议用 play/queue/stop 语句而不是 renpy.music 函数？存档恢复 BGM 靠什么？
+5. 透明背景的动态立绘为什么要用 side_mask？Movie displayable 的两个典型用途是什么？
+6. 商用游戏选视频编解码与容器的官方建议是什么？要避开的坑是什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) music/sound 一次只播一个文件，新顶旧；audio 通道可同时叠加多个文件，
+   但不支持 queue 与 stop 语句，每个文件播完即止。密集音效用 audio。
+
+2) 自动注册进 audio 命名空间：文件名去扩展名、强制小写、须是合法 Python
+   变量名，重名按路径字母序取第一。play/queue 先查 game/ 再查 game/audio/。
+
+3) if_changed 让"要播的曲子与当前相同就不重新开始"，循环 BGM 场景切换
+   反复 play 不被打断；queue 清空语义保证排队的意图以最新一次为准，
+   旧队列不会被误执行。
+
+4) 语句能让 Lint 检查音频文件是否存在，素材缺失发布前现形。引擎保存的
+   内部状态包含"正在播放的音乐"，读档后 BGM 自动恢复。
+
+5) 解码器不支持带 alpha 的视频，side_mask 用右半灰度掩码把左半画面抠出
+   透明。两个典型用途：动态立绘（image 绑定 Movie 后 show/hide）与
+   动态菜单背景（add 进 screen）。
+
+6) 编解码用 AV1/VP9/VP8/Theora 配 Opus/Vorbis，容器用 WebM/Matroska/Ogg；
+   MPEG 系列涉及专利授权，商用要留意。
+```
+
+</details>
 
 ## 小结
 

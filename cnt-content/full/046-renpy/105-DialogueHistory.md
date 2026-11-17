@@ -23,7 +23,7 @@ prerequisites: []
 - 知道 `_history_list` 里存的是什么：HistoryEntry 条目的 who/what/when 字段；
 - 会用 vpgrid 搭一个可滚动、带空历史占位、长文本正确换行的 history screen；
 - 会把历史入口挂进游戏菜单（ShowMenu），并理解它是特殊屏幕名；
-- 知道历史不入存档、有长度上限这两条机制边界，以及它们对玩法设计的含义。
+- 知道历史是随存档保存的有限窗口、menu 选择不入史这两条机制边界，以及它们对玩法设计的含义。
 
 ## _history_list：引擎替你记的账本
 
@@ -46,14 +46,14 @@ label inspect_history:
 
 两条机制边界必须先讲清：
 
-1. **历史不入存档**。`_history_list` 不在存档保护范围内——读档之后，历史列表从读档时刻重新积累，之前的对话不会"补录"。这是刻意的设计（存档体积与隐私），但对玩法有影响：依赖"回看全部历史"的解谜玩法，要自己把关键信息写进会保存的变量；
-2. **有长度上限**。`config.history_length` 控制保留条数（默认 250）。超出后最早的条目被丢弃，所以"开局第一章的对话"在游戏后期大概率已经不在列表里。上限调大会多吃内存，按项目篇幅给一个够用值即可。
+1. **历史随存档保存，但只是一个有限窗口**。`_history_list` 是引擎用 default 声明的 store 变量（引擎源码 00library.rpy 中 `default _history_list = [ ]`），读档时会恢复成存档时刻的历史——玩家读档后回看，能看到读档点之前的对话。但它的体量受 `config.history_length` 约束，超出窗口的旧条目已被丢弃且无法找回：依赖"回看全部历史"的解谜玩法，仍然要自己把关键信息写进专门的变量；
+2. **只有 say 入史，menu 不入**。`_history_list` 在每条 say 显示时追加条目，选项菜单、按钮点击都不记录（条目还有 rollback_identifier 字段供回滚定位）。想做"我当初选了哪条线"的回顾，要在选择发生时自己记账（见下文场景二）。
 
 ```renpy
 define config.history_length = 500
 ```
 
-config 类变量只能在 init 阶段设置（config 体系的完整纪律见 [config 配置变量与玩家偏好](/renpy/117-ConfigVariablesAndPreferences)）。
+引擎默认并没有启用历史——`config.history_length` 必须被设置历史系统才会工作，新项目模板的 gui.rpy 给的值是 250。把窗口调大能多留旧对话，但内存与滚动开销随之上升，按"最长章节对话数 x 2"估一个够用值即可。config 类变量只能在 init 阶段设置（config 体系的完整纪律见 [config 配置变量与玩家偏好](/renpy/117-ConfigVariablesAndPreferences)）。
 
 ## 自定义 history screen：滚动回看界面
 
@@ -158,7 +158,7 @@ screen branch_review():
                     text branch
 ```
 
-`chosen_log` 用 default 声明，进存档、可回滚——与不入档的历史列表形成互补：**日常对话交给引擎，关键选择自己存档**。这也是设计层面最常见的一个误判来源：把"回看"需求寄托在 `_history_list` 上，读档后才发现它是空的。
+`chosen_log` 用 default 声明，进存档、可回滚——与自动历史形成互补：**日常对话交给引擎（有限窗口、只记 say），关键选择自己记账（全量、可结构化）**。这也是设计层面最常见的一个误判来源：把"选项回顾"寄托在 `_history_list` 上，翻遍列表才发现菜单选择根本不在其中。
 
 ### 场景三：翻译项目的译文核对
 
@@ -185,7 +185,7 @@ screen history_qa():
 
 ## 易错点清单
 
-1. **以为历史随存档保存**：读档后历史从零积累。要跨存档保留的信息（关键选择、解锁记录）写进 default 变量；
+1. **把历史当成全量记录**：历史会随存档恢复，但它只是 config.history_length 条的滑动窗口，且只记 say——要"全部对话、含菜单选择"的完整账目（关键选择、解锁记录），写进自己的 default 变量；
 2. **界面不处理空历史**：新档点开历史是空白滚动框。`if not _history_list` 给占位文本；
 3. **长文本不换行**：`what` 不限 xsize，长句撑出横向滚动。限宽是历史屏排版第一课；
 4. **把 menu 选择当历史条目找**：历史只记 say。选择回顾自己用 default 列表记；
@@ -241,10 +241,48 @@ screen history_timed():
 对照要点：时间原点取 `_history_list[0].when` 而不是"游戏启动时刻"——历史是滑动窗口，最早的条目会滚出列表，用列表首条做原点能让显示始终自洽（虽然分钟数是"相对窗口"的）；`format_game_minute` 放 init python 里定义成函数，screen 里只调用——屏内塞大段 python 是 080 篇讲过的反模式；空历史分支照例保留，`base_when` 的取值也放在非空分支内，避免空列表取下标报错。
 </details>
 
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案，再展开对照。
+
+1. HistoryEntry 的 who 字段存的是变量名还是显示名？旁白条目的 who 是什么？
+2. 历史随存档走吗？读旧档后回看能看到什么？"开局第一章的对话"为什么可能找不回来？
+3. config.history_length 的引擎默认值是什么？新项目模板给多少？不设置会怎样？
+4. _history_list 记录哪些语句？想回顾"玩家当初选了哪条线"，正确的做法是什么？
+5. history screen 上线前必须处理的三件事是什么？
+6. 玩家手滑快进后想核对一句台词，游戏进行中有哪条"轻量通道"？它与 history 屏如何分工？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 显示名（如"绫音"），不是变量名；旁白条目的 who 是 None，判断要用
+   entry.who is not None。
+
+2) 随存档走：_history_list 是引擎 default 声明的 store 变量，读档恢复成
+   存档时刻的历史。但它只是 config.history_length 条的滑动窗口，超窗的
+   旧条目已被丢弃，第一章的对话找不回来。
+
+3) 引擎默认未启用——history_length 必须设置历史系统才工作；新项目模板
+   gui.rpy 给 250。不设置则完全没有历史可看。
+
+4) 只记 say。菜单选择不入史：选择发生时用 default 列表自己 append，
+   存稳定键名（如 ("星见祭", "绫音线")），用自定义屏幕展示。
+
+5) 空历史占位（if not _history_list）、长文本限宽（what 给 xsize）、
+   tag menu 与其他菜单屏互斥。
+
+6) 游戏进行中按 Ctrl 滚轮/翻页键快速回看最近几条（keysym 可配置）；
+   history 屏（ShowMenu("history")）看"窗口内全部"。翻页看刚刚那三句，
+   进屏看全部能看的。
+```
+
+</details>
+
 ## 小结
 
 - `_history_list` 自动记录 say 对话，条目字段 who（旁白为 None）/what/when；
-- 历史不入存档、受 `config.history_length` 限制——关键信息要自己 default 记；
+- 历史随存档保存与恢复，但只是 `config.history_length` 条的滑动窗口（引擎默认未启用，模板默认 250）——全量关键信息要自己 default 记；
 - history screen 要处理三件事：空历史占位、长文本限宽换行、`tag menu` 菜单互斥；
 - 入口用 `ShowMenu("history")` 挂进 navigation；进行中的快速回看走翻页键；
 - menu 选择不在历史里，选择回顾用 default 列表自己记。

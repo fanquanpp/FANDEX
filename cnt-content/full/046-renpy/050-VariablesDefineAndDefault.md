@@ -107,6 +107,40 @@ default schedule.day = 0
 
 提示：default 的补设时机发生在 after_load 语义上（存档里没有这个变量时设为默认值），所以读档后 new_flag 是 True。参考验证方式：读档后用 Shift+O 控制台输入 new_flag 查看（开发者工具的用法见开发者工具与调试一篇）。这个实验做完，"default 在两个时机设置"就不再是文档上的一句话，而是你亲手观察到的事实。
 
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案，再展开对照。
+
+1. define 与 default 的本质区别是什么？各自用什么时机设置变量？
+2. "读档之后变量应当是什么值"这个判断问题怎么用于选择声明路线？各举一例。
+3. define 相比等价的 init python 赋值有哪两个额外好处？它还支持哪些进阶写法？
+4. 为什么不能用 __slots__？真需要 slotted 类怎么办、代价是什么？
+5. define e = Character(...) 之后又在剧本里写 $ e = 0，会发生什么？正确做法是什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) define 在 init 阶段设为常量：不保存、不读取、之后不应更改；default 在
+   变量未定义时设默认值——游戏开始与读档后两个时机——且总是参与保存。
+
+2) 应当是"玩家离开时的值"→ default（如金钱、好感度、剧情标志）；应当是
+   "和刚启动时一模一样"→ define（如 Character 对象、转场、样式）。
+
+3) 记录赋值的文件与行号（launcher 可跳转）；Lint 能检查 define 变量。
+   进阶写法：命名 store（define character.e）、+= 与 |= 复合赋值、
+   define 与变量名之间写 init 优先级（define -1 value = ...）。
+
+4) 回滚需要对象支持引擎的快照机制，__slots__ 会破坏回滚。需要 slotted
+   类时显式继承 python_object，代价是该对象不参与回滚。
+
+5) define 变量是常量，被游戏过程赋值后存档行为不可预测——读档后 e 会
+   退回 init 时的值，产生"好感度清零"类 bug。会变的状态改用 default
+   声明（或另建一个新变量）。
+```
+
+</details>
+
 ## 小结
 
 - define 在 init 时把变量设为常量：不保存、不读取、设置后不应更改，适合角色、样式、转场；它比等价的 init python 多了文件行号记录与 Lint 检查，还支持命名 store、+=、|= 与 init 优先级。

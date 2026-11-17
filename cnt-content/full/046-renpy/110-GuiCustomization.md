@@ -102,6 +102,8 @@ define e = Character("Eileen", who_color="#104010")
 
 其余界面元素（滑条、滚动条、通知等）也都有各自的变量，命名规律一致，学会一组就能举一反三。
 
+一个值得知道的版本注记：gui.rpy 里的变量大多用 `default gui.xxx = ...` 声明。8.5 起，这批 gui 变量的行为与文档口径统一了——游戏开始与重启时设置、可在 python 块中修改、切换语言后保持你改过的值，并且像其他 default 变量一样参与存读档。运行期修改 gui 变量从此是受支持的做法（例如玩家自定义字号），但样式层不会瞬间感知：官方文档给出的配套动作是在 after_load label 里调用 gui.rebuild()，或者用 gui.preference 声明变量、再配 gui.SetPreference / gui.TogglePreference 动作修改（内置偏好界面的字号、字体项就是这么实现的）。
+
 ## 边框与九宫格拉伸
 
 界面里大量出现"带边框和圆角的面板"。这类图片用 Frame（九宫格）displayable 处理：把图片切成九块，四个角原样保留，四条边各沿一个方向拉伸，中间区域双向拉伸——面板因此可以任意放大而不变形：
@@ -144,6 +146,44 @@ screen panel_test():
         xysize (600, 300)
         text "面板内容"
 ```
+
+## 遮码自检
+
+遮码自检：先遮住答案栏，自己说出答案，再展开对照。
+
+1. GUI 定制有哪三条路径？成本与自由度如何排序？
+2. 为什么 Change/Update GUI 必须最先做？它覆盖什么？
+3. config.name 与 config.version 写在哪个文件？gui.about 字符串外面包 _() 是为了什么？
+4. 替换 textbox.png 时要保持什么比例？选项按钮的状态图叫什么名字、放在哪里？
+5. Borders(40, 40, 40, 40) 四个数字的顺序与含义？tile=True 与默认行为差在哪？
+6. 8.5 起 gui 变量（default gui.xxx）的行为发生了哪些对齐？对"运行期调字号"意味着什么？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+```text
+1) 替换 game/gui/ 图片（最快）、改 gui.rpy 变量（次之）、写样式（最灵活）；
+   层层深入，先易后难。
+
+2) 它整体改分辨率与配色，会覆盖 gui/ 目录大部分图片，也可能覆盖已改的
+   gui.rpy——后做等于把定制冲掉。
+
+3) options.rpy（config.name/config.version 等身份变量）；_() 包裹表示
+   字符串可被翻译，进翻译流程。
+
+4) 全宽图片、对白文本占中央约 60% 宽度，替换保持比例才不错位；
+   gui/button/choice_idle_background.png 与 choice_hover_background.png。
+
+5) 左、上、右、下的边框宽度，数值应匹配图片圆角半径；tile=True 用平铺
+   代替拉伸填充边缘与中部。
+
+6) 与文档口径统一：开始/重启时设置、python 块可改、切语言保持修改、
+   参与存读档。运行期动态改 gui 变量成为受支持做法，但需 gui.rebuild()
+   （after_load 里）或改用 gui.preference 配 gui.SetPreference 动作，
+   样式才会反映新值。
+```
+
+</details>
 
 ## 小结
 
