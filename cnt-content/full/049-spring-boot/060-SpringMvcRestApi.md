@@ -178,9 +178,9 @@ public Task create(@RequestBody Task req) { ... }        // 请求体
 
 ## 5. 返回值与序列化：对象怎么变成 JSON
 
-返回方向是同一条流水线倒着走：方法返回对象 → @ResponseBody 标记 → 转换器中能写 application/json 的 MappingJackson2HttpMessageConverter（Boot 3.5.x 默认 Jackson 2.x）→ Jackson 序列化 → 写回响应流。三个实操要点。
+返回方向是同一条流水线倒着走：方法返回对象 → @ResponseBody 标记 → 转换器中能写 application/json 的那个 Jackson 转换器认领 → Jackson 序列化 → 写回响应流。转换器的类名随版本变：Boot 3.5.x 默认 Jackson 2.x，叫 MappingJackson2HttpMessageConverter；Boot 4.0 起默认 Jackson 3，叫 JacksonJsonHttpMessageConverter——认领、转换、写回的机制没变，换的只是实现类与它背后的库。三个实操要点。
 
-日期格式。主流做法二选一：改全局配置，或者自己定制 ObjectMapper——两件都做时后者生效、前者全部失效，因为 Boot 见到你自己的 ObjectMapper Bean 就整个让位：
+日期格式。主流做法二选一：改全局配置，或者自己定制 ObjectMapper（Boot 4 的 Jackson 3 下对应 JsonMapper）——两件都做时后者生效、前者全部失效，因为 Boot 见到你自己的 ObjectMapper / JsonMapper Bean 就整个让位：
 
 ```yaml
 spring:
@@ -189,7 +189,7 @@ spring:
     time-zone: Asia/Shanghai
 ```
 
-注意范围：这套配置只管 java.util.Date。java.time 包的 LocalDate 与 LocalDateTime 走另一条路——Boot 默认关闭时间戳输出，它们序列化成 ISO-8601 字符串（2026-10-03、2026-10-03T14:30:00）。要给 LocalDateTime 统一成上面的形状，用 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") 逐字段指定，或注册 Jackson2ObjectMapperBuilderCustomizer 做全局定制。
+注意范围：这套配置只管 java.util.Date。java.time 包的 LocalDate 与 LocalDateTime 走另一条路——Boot 默认关闭时间戳输出，它们序列化成 ISO-8601 字符串（2026-10-03、2026-10-03T14:30:00）。要给 LocalDateTime 统一成上面的形状，用 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") 逐字段指定，或注册全局定制器（Boot 3.5.x 是 Jackson2ObjectMapperBuilderCustomizer，Boot 4 的 Jackson 3 下改叫 JsonMapperBuilderCustomizer）做全局定制。
 
 Long 精度坑。JS 的 Number 最大安全整数是 2 的 53 次方减 1（9007199254740991，16 位），而后端常见的雪花 ID 有 19 位——返回给前端后末几位直接变错数字。对策一句话：字段上加 @JsonSerialize(using = ToStringSerializer.class) 让 Long 以字符串出场，或注册一个 SimpleModule 把 Long 全局转成字符串。
 
@@ -323,9 +323,11 @@ curl -i -X POST http://localhost:8080/api/tasks -d '{"title": "写周报"}'
 
 对照第 3 节的流水线，说清 400 与 415 差在哪一站。另：此刻 404 的响应体还是 Boot 的默认格式，与业务报文完全两个形状——它将在下一篇被收编进统一响应。
 
-## 升级瞭望：Framework 7 的内置 API 版本化
+## 升级瞭望（Spring Boot 4.0）
 
 Spring Boot 4.0 / Spring Framework 7 起内置 API 版本化：@GetMapping(value = "/tasks", version = "1.1")，客户端在 Accept 头里声明 version 参数即可路由到对应版本的方法，URL 不再手工维护 /v1/ 前缀。存量项目的主流做法仍是 URL 前缀或请求头版本号，迁移细节以官方文档为准。
+
+JSON 这一侧的变化比接口更大：Boot 4.0 把默认 JSON 库从 Jackson 2 换到 Jackson 3，包名从 com.fasterxml.jackson 迁往 tools.jackson（仅 jackson-annotations 例外，仍是 com.fasterxml.jackson.annotation）。本篇受牵连的点集中在三处——转换器换成 JacksonJsonHttpMessageConverter；替换默认行为的 Bean 从 ObjectMapper 换成 JsonMapper/XmlMapper（Boot 4 自动配置的是格式专属 Mapper）；Java 端全局定制器从 Jackson2ObjectMapperBuilderCustomizer 改叫 JsonMapperBuilderCustomizer。另有两个行为差异值得记：@JsonComponent 改名 @JacksonComponent，spring.jackson.read.* 与 spring.jackson.write.* 配置前缀挪到 spring.jackson.json.read / spring.jackson.json.write 下；Boot 4 还会自动注册类路径上找到的全部 Jackson 模块（3.x 只注册知名模块），要回退旧行为可设 spring.jackson.find-and-add-modules=false。迁移细节以官方迁移指南为准。
 
 ## 自检
 

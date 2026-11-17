@@ -57,7 +57,7 @@ AOP 不修改你的源码。它在运行期把匹配的方法「包」起来，�
 ```xml
 <dependency>
     <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-aop</artifactId>
+    <artifactId>spring-boot-starter-aop</artifactId>  <!-- Boot 4.0 起改名 spring-boot-starter-aspectj -->
 </dependency>
 ```
 

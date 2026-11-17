@@ -52,7 +52,7 @@ pom 里与「跑起来」相关的只有两段（完整走读见 [第一个应�
 <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.0</version> <!-- 用 3.5.x 系列最新补丁，以 start.spring.io 生成结果为准 -->
+    <version>3.5.0</version> <!-- 本模块示例统一基于 3.5.x 编写；start.spring.io 当前默认生成 4.1.x 且选单已无 3.5.x，要对齐基线可手写 pom 用 3.5.16，两代差异见各篇末尾的升级瞭望 -->
     <relativePath/>
 </parent>
 
@@ -227,10 +227,11 @@ public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factor
 2014  Boot 1.0      starter 与自动配置登场，内嵌容器开始取代外置 war 包
 2017  Boot 2.0      基于 Spring 5，Java 8 基线，响应式 WebFlux 加入
 2022  Boot 3.0      基于 Spring 6 与 Jakarta EE，javax 全面迁移为 jakarta，Java 17 起步
-2025  Boot 3.5/4.0  3.5 是当前稳定主线；4.0 基于 Framework 7，开源支持至 2026 年底
+2025  Boot 3.5/4.0  3.5 是 3.x 收官线（末版 3.5.16，开源支持至 2026-06-30，商业支持到 2032）；4.0 基于 Framework 7，JSON 默认换 Jackson 3，starter 走模块化拆分
+2026  Boot 4.1      6 月 GA，是当前的开源稳定主线；4.2 也在发布窗口内
 ```
 
-对今天最有杀伤力的是 2022 年那次迁移：网上老教程里的 `javax.servlet.*`、`javax.validation.*` 在 Boot 3 起一律跑不通。再遇到报「类找不到」，先检查是不是该把 javax 换成 jakarta——本模块全部基于 jakarta 命名空间。
+对今天最有杀伤力的是 2022 年那次迁移：网上老教程里的 `javax.servlet.*`、`javax.validation.*` 在 Boot 3 起一律跑不通。再遇到报「类找不到」，先检查是不是该把 javax 换成 jakarta——本模块全部基于 jakarta 命名空间。其次是 2025 年的 4.0：starter-web 改名 starter-webmvc、JSON 库默认从 Jackson 2 换到 Jackson 3（包名从 com.fasterxml.jackson 迁往 tools.jackson），老文章里的对应写法要对照升级。本模块正文基于 3.5.x 编写、可直接运行，每篇末尾用「升级瞭望」交代与 4.x 的差异点。
 
 ## 8. 边界与诚实：什么时候不该用
 

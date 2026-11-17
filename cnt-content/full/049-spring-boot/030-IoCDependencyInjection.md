@@ -115,7 +115,7 @@ public class OrderService {
 第二条：**@Configuration 加 @Bean**，用在第三方类上。别人的类改不了源码、加不了注解，就在配置类里手写工厂方法：
 
 ```java
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;   // Jackson 2（Boot 3.5.x 默认；Boot 4 起默认 Jackson 3，对应类是 tools.jackson.databind.json.JsonMapper）
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

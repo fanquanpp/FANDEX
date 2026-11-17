@@ -138,7 +138,7 @@ management:
   endpoint:
     health:
       probes:
-        enabled: true     # 部署在 K8s 上时 Boot 通常自动开启；显式写便于本地演练
+        enabled: true     # 3.x：部署在 K8s 上时 Boot 通常自动开启；Boot 4.0 起默认启用（K8s 内外都开），显式写便于本地演练
 ```
 
 ```bash

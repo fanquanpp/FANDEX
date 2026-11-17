@@ -309,7 +309,7 @@ public GreetingService greetingService(GreetingProperties properties) {
 
 ## 7. 升级瞭望（Spring Boot 4.0）
 
-Boot 4.0（2025-11-20 GA，基于 Spring Framework 7）把自动配置的载体动了手术：原本的大杂烩 spring-boot-autoconfigure 拆成一组细粒度模块，Web、数据、安全各自成模块、自带各自的自动配置，引哪个 starter 就只进哪部分候选清单。机制方向没变——仍是 imports 注册加条件注解裁决，只是清单变短、边界变清，按需裁剪更容易。3.x 时代的自动配置迁移成本不大，具体迁移清单以官方迁移指南为准。
+Boot 4.0（2025-11-20 GA，基于 Spring Framework 7）把自动配置的载体动了手术：原本的大杂烩 spring-boot-autoconfigure 拆成一组细粒度模块，Web、数据、安全各自成模块、自带各自的自动配置，引哪个 starter 就只进哪部分候选清单。官方同时把命名收拢成惯例：模块一律叫 spring-boot-<technology>（根包 org.springframework.boot.<technology>），starter 一律叫 spring-boot-starter-<technology>，并配套 spring-boot-starter-<technology>-test 测试模块——第 6 节手写 starter 的命名思路与这条惯例完全同构。改名有两种处置，别混为一谈：starter-web 改叫 starter-webmvc，旧名在 4.x 保留为弃用别名（Maven 上仍在发布，引用能解析但该迁移）；starter-aop 改叫 starter-aspectj 则是彻底换名，旧名在 4.x 没有任何发布版本，引用 starter-aop 构建会直接解析失败，必须改用新名。机制方向没变——仍是 imports 注册加条件注解裁决，只是清单变短、边界变清，按需裁剪更容易。3.x 时代的自动配置迁移成本不大，具体迁移清单以官方迁移指南为准。
 
 ## 8. 官方参考
 

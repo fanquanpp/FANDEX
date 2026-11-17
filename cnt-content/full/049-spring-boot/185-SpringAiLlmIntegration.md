@@ -72,7 +72,7 @@ flowchart LR
 
 - **横切能力进拦截链**：检索增强、日志、安全检查这些通用逻辑做成 Advisor（第 6 节），与具体 provider 无关。
 
-版本事实：Spring AI 1.x 已于 2025 年 5 月正式 GA，API 已稳定，但各 starter 的 artifactId 与配置项在演进中细节有变，**一切以官方文档为准**。网上 2024 年的教程里 API 名称多有出入，看到对不上就以官方文档校准，不要硬背。
+版本事实：Spring AI 1.0 于 2025 年 5 月 GA，1.1 于 2025 年 11 月 GA，当前维护线是 1.1.x；面向 Spring Boot 4.x 的 Spring AI 2.0 已于 2026 年 6 月 12 日 GA（官方博客公告，配合 Jackson 3 与 MCP 2025-11-25 规范），配套要求 Boot 4.x——本模块 3.5.x 基线的代码跑不了 2.0，练习时用 1.1.x 即可。各 starter 的 artifactId 与配置项在演进中细节有变，**一切以官方文档为准**。网上 2024 年的教程里 API 名称多有出入，看到对不上就以官方文档校准，不要硬背。
 
 ## 3. ChatClient：call 与 stream
 

@@ -38,7 +38,7 @@ related:
 
 ## 2. RestClient：Boot 3.2+ 的同步客户端
 
-RestClient 是 Spring Framework 6.1 / Spring Boot 3.2 引入的同步 HTTP 客户端，定位是「RestTemplate 的现代替代」：链式 API、复用 [Spring MVC](/spring-boot/060-SpringMvcRestApi) 篇的消息转换器做 JSON 互转、错误处理可声明。老项目大量存在的 RestTemplate 处于维护模式（不再新增功能），新代码一律用 RestClient。
+RestClient 是 Spring Framework 6.1 / Spring Boot 3.2 引入的同步 HTTP 客户端，定位是「RestTemplate 的现代替代」：链式 API、复用 [Spring MVC](/spring-boot/060-SpringMvcRestApi) 篇的消息转换器做 JSON 互转、错误处理可声明。老项目大量存在的 RestTemplate 自 Spring Framework 5.0 起就被官方文档标注为维护模式（不再新增功能），到 Spring Framework 7（Boot 4.0 随之）更被正式标记弃用——官方参考文档直接给了 "Migrating to RestClient" 迁移指南，未来的大版本会把它移除。新代码一律用 RestClient，存量代码按第 5 节对照表迁移。
 
 ```java
 @Component
@@ -318,3 +318,14 @@ class PayClientTest {
 - 错误最终汇入的统一响应体系：[统一响应与异常处理](/spring-boot/070-UnifiedResponseExceptionHandling)
 - 切片测试在测试金字塔中的位置：[测试策略](/spring-boot/170-TestingStrategy)
 - 服务间调用的声明式与治理版（负载均衡、熔断、追踪）：[OpenFeign 声明式调用](/spring-cloud/040-OpenfeignDeclarativeCalls)与[熔断限流](/spring-cloud/070-ResilienceSentinel)
+
+## 自检
+
+不看上文，凭记忆回答。答不出的，回到对应小节重读。
+
+1. 注入 RestClient.Builder 后第一件事通常是配什么？retrieve().body() 一次调用完成了哪两件事？
+2. RestClient 的默认超时是多少？为什么说默认无超时是雪崩的第一环？connectTimeout 与 readTimeout 分别卡哪一段？
+3. onStatus 的两个参数各是什么？为什么推荐在响应处理器里抛异常而不是自己解析错误码返回？
+4. RestTemplate 的 getForObject 与 exchange 各对应 RestClient 的什么写法？迁移后异常类名兼容吗？
+5. @RestClientTest 切片替你装配了什么？MockRestServiceServer 的 expect 与 verify 各管请求的哪一头？
+6. 什么操作才敢配重试？下单为什么要先加幂等键再谈重试？超时与连接拒绝的重试语义差在哪？

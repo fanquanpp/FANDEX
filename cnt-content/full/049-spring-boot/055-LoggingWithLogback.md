@@ -147,6 +147,8 @@ logging:
 
 需要更细的控制（按级别分文件、异步写、自定义 Layout）时，把 Boot 的 yml 配置换成 classpath 下的 `logback-spring.xml`——Boot 的 yml 覆盖了 90% 场景，XML 是那 10% 的逃生门，两者不要混着配同一件事。
 
+字符集也值得点名：Boot 4.0 起文件日志的默认字符集统一为 UTF-8，控制台优先取 Console#charset()（取不到也是 UTF-8），与 Log4j2 的行为对齐。在默认编码非 UTF-8 的机器（如部分 Windows 环境）上排查「日志中文乱码」时，先确认所用 Boot 版本的默认字符集，再决定是否用 logging.charset.console / logging.charset.file 显式指定。
+
 ## 5. MDC：按 traceId 串起一次调用
 
 MDC（Mapped Diagnostic Context）是「日志的请求级上下文」：往 MDC 放一个键值对，**当前线程**后续打的每条日志都自动带上它。
@@ -311,3 +313,15 @@ java.lang.IllegalArgumentException: skuId required
 - 切面的切入点表达式与通知类型：[AOP 面向切面编程](/spring-boot/110-AspectOrientedProgramming)
 - 容器里日志文件的挂载与采集：[打包部署](/spring-boot/180-PackagingDeployment)
 - 分布式全链路追踪（traceId 的体系化方案）：[Spring Cloud 分布式追踪](/spring-cloud/080-DistributedTracing)
+
+## 自检
+
+不看上文，凭记忆回答。答不出的，回到对应小节重读。
+
+1. 代码里 import 的为什么是 SLF4J 的 Logger 而不是 Logback 的类？哪天换 Log4j2，业务代码要动几处？
+2. `log.info("订单 {}", id)` 与 `log.info("订单 " + id)` 的差别在什么条件下才体现？异常对象应以什么姿势传给 log.error，错在哪里会丢堆栈？
+3. root 设为 INFO 后，DEBUG 日志去哪了？为什么说「root 收紧、目标包放宽」优于全局 DEBUG？
+4. logger group 定义好之后，配合哪个端点、哪种 HTTP 方法实现在线调级？
+5. 滚动策略四参数各管什么？为什么只设 max-history 在日志暴涨时仍会撑爆磁盘，两道闸指什么？
+6. MDC 的 traceId 在本篇哪三处出现？finally 里漏掉 MDC.clear() 会造成什么「灵异现场」？
+7. 哪些内容永远不进日志？把「用户输错密码」打成 ERROR 的实际代价是什么？

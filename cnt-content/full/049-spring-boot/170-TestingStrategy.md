@@ -261,7 +261,13 @@ class RegisterServiceTest {
 
 ## 9. 升级瞭望（Boot 4.0）
 
-Boot 4.0（2025-11-20 GA，基于 Spring Framework 7）随主版本整体上移了测试基线：JUnit、Mockito 等依赖升到新的大版本，少量过时的测试工具被移除。本篇的分层定价与注解用法在 3.x 与 4.x 之间是连续的，迁移清单以官方迁移指南为准。
+Boot 4.0（2025-11-20 GA，基于 Spring Framework 7）随主版本整体上移了测试基线，本篇有三处用法直接被点名，迁移清单以官方迁移指南为准：
+
+- **@MockBean 与 @SpyBean 移除**（3.4 弃用，4.0 删除），替代是 @MockitoBean / @MockitoSpyBean——第 4.1 节的写法已经是新标准，直接可用；
+- **@SpringBootTest 不再自动装配 MockMvc**：想用 MockMvc 要在测试类上显式加 @AutoConfigureMockMvc；
+- **@SpringBootTest 不再自动装配 TestRestTemplate / WebClient Bean**：需要显式加 @AutoConfigureTestRestTemplate，且 TestRestTemplate 挪到了 org.springframework.boot.resttestclient 包、还要补 spring-boot-resttestclient 依赖。官方更推荐直接换 Framework 7 新增的 RestTestClient（@AutoConfigureRestTestClient 自动装配，API 与 WebTestClient 同风格）——TestRestTemplate 所依赖的 RestTemplate 在 Framework 7 已被弃用，这条迁移线是单向的。
+
+依赖侧还有一个大变化：测试基建随主框架模块化拆分，每个技术都有自己的 spring-boot-starter-<technology>-test（如 starter-webmvc-test、starter-data-jpa-test），它们都传递依赖 spring-boot-starter-test；存量项目过渡期可用 spring-boot-starter-test-classic 一键回到 3.x 的全量类路径。本篇的分层定价与切片注解用法在 3.x 与 4.x 之间是连续的。
 
 ## 自检
 
