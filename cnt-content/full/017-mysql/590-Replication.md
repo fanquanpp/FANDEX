@@ -79,12 +79,12 @@ SHOW REPLICA STATUS\G
 ## 3. 半同步复制
 
 半同步复制始终以**插件**形式提供：8.0.26 起插件更名为
-`rpl_semi_sync_source` / `rpl_semi_sync_replica`（对应变量与状态项同步改名），
-旧的 master/slave 拼写插件已在 8.4 中移除——从 8.0 升级到 8.4 前必须先
-UNINSTALL 旧插件，改装新插件。
+`rpl_semi_sync_source` / `rpl_semi_sync_replica`（对应变量与状态项同步改名）。
+旧的 master/slave 拼写插件自 8.0.26 起废弃、新旧名并存，到 9.5.0 才正式
+移除——新部署直接用新名，存量脚本在升 9.5 前完成迁移即可。
 
 ```sql
--- 两端先安装新插件（8.4 唯一可用的名字）
+-- 两端先安装新插件（新名；旧名 semisync_master/semisync_slave 已废弃）
 INSTALL PLUGIN rpl_semi_sync_source SONAME 'semisync_source.so';  -- 主库
 INSTALL PLUGIN rpl_semi_sync_replica SONAME 'semisync_replica.so'; -- 从库
 
@@ -135,7 +135,7 @@ pt-heartbeat -D test --monitor -h replica
 
 4. 概念自问：8.4 的术语迁移（SOURCE/REPLICA）对老脚本意味着什么？升级前要做什么？
 
-参考答案（先自己答，再对照）：CHANGE MASTER TO、START SLAVE、SHOW SLAVE STATUS、REPLICATION SLAVE 权限、master/slave 系列变量与半同步插件旧名在 8.4 已移除——写死旧拼写的脚本会直接报错。升级前清单：把部署/巡检脚本全部替换为 CHANGE REPLICATION SOURCE TO / START REPLICA / SHOW REPLICA STATUS / REPLICATION REPLICA；清理已移除的服务器选项；用 8.0.22+ 先把脚本改成新名验证一遍（8.0.22 起新旧拼写并存，是演练期）。
+参考答案（先自己答，再对照）：CHANGE MASTER TO、START SLAVE、SHOW SLAVE STATUS、REPLICATION SLAVE 权限与 master/slave 系列变量在 8.4 已移除——写死旧拼写的脚本会直接报错；半同步插件旧名（semisync_master/semisync_slave）则是 8.0.26 起废弃、9.5.0 起才移除，8.4 中新旧并存但新名是推荐项。升级前清单：把部署/巡检脚本全部替换为 CHANGE REPLICATION SOURCE TO / START REPLICA / SHOW REPLICA STATUS / REPLICATION REPLICA；清理已移除的服务器选项；用 8.0.22+ 先把脚本改成新名验证一遍（8.0.22 起新旧拼写并存，是演练期）。
 
 ## 复制术语（8.4 SOURCE/REPLICA）
 

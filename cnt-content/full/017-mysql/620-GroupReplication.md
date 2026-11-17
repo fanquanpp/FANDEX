@@ -79,7 +79,7 @@ group_replication_ip_allowlist = '192.168.1.0/24'        # 8.0.22+ 新名（旧�
 ```
 
 > 配置变更提示：老教程里的 `master-info-repository` /
-> `relay-log-info-repository`（曾要求设为 TABLE）在 8.0 已废弃并于 8.4 移除，
+> `relay-log-info-repository`（曾要求设为 TABLE）在 8.0 已废弃并于 8.3.0 移除，
 > 8.0+ 本来就默认 TABLE，新版本配置文件里直接删掉这两行。
 
 ## 4. 引导与加入

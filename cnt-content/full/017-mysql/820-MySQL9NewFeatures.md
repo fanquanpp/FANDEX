@@ -62,12 +62,12 @@ SHOW VARIABLES LIKE '%parallel%';
 | :--- | :--- | :--- |
 | 9.0（2024-07） | VECTOR 类型；**内联外键开始强制执行**（此前解析器接受但忽略，隐式引用父表主键也生效）；`EXPLAIN ANALYZE ... INTO @var` 与 `EXECUTE IMMEDIATE`；**移除 mysql_native_password 插件与 default_authentication_plugin** | 依赖"内联外键被忽略"旧行为的应用升级后可能撞约束；老驱动认证连接必须迁移 |
 | 9.1（2024-10） | 触发器两阶段加载（元数据与解析分离，`table_open_cache_triggers` 控缓存）、OpenTelemetry 遥测 | 触发器多的库打开表缓存行为变化 |
-| 9.2（2025-01） | JS 存储程序（企业版 MLE）增强：ENUM/SET、CREATE LIBRARY、事务 API；Version Token 插件标记废弃 | 依赖 Version Token 的脚本转为长期兼容风险项，留意后续版本动态 |
-| 9.3（2025-04） | `subquery_to_derived` 支持全部比较运算；GR Primary Election 组件；**创新版之间不再支持降级** | 升级决策要更谨慎：9.3 起回不去 |
+| 9.2（2025-01） | JS 存储程序（企业版 MLE）增强：ENUM/SET、CREATE LIBRARY、事务 API；Version Token 插件标记废弃（9.3 移除） | 依赖 Version Token 的脚本转为长期兼容风险项，9.3 前完成迁移 |
+| 9.3（2025-04） | `subquery_to_derived` 支持全部比较运算；GR Primary Election 组件；Version Token 插件移除（WL #16614）；`innodb_log_file_size`/`innodb_log_files_in_group` 移除（WL #16743）；**创新版之间不再支持降级** | 升级决策要更谨慎：9.3 起回不去；依赖 Version Token 与旧 redo 参数的配置必须先行迁移 |
 | 9.4（2025-07） | 插件 C API 标记废弃 | 自研插件的技术债要提上日程 |
-| 9.5（2025-10） | `binlog_transaction_dependency_history_size` 默认 25000 提到 1000000；semisync_master/semisync_slave 旧插件名移除 | 依赖旧插件名的部署脚本要改 semisync_source/semisync_replica |
+| 9.5（2025-10） | `binlog_transaction_dependency_history_size` 默认 25000 提到 1000000（WL #16439）；移除 `replica_parallel_type`（WL #13955）与 `group_replication_allow_local_lower_version_join`（WL #16019）；`innodb_log_writer_threads` 默认值改为随 log_bin 与 CPU 数决定（WL #16999）；semisync_master/semisync_slave 旧插件名移除 | 依赖旧插件名的部署脚本要改 semisync_source/semisync_replica；并行复制与组复制的两个旧变量配置必须清理 |
 | 9.6（2026-01） | 外键约束与级联从 InnoDB 移到 SQL 层（`innodb_native_foreign_keys` 可回退）；MD5()/SHA1() 移入 classic_hashing 组件；Audit Log 插件组件化 | 外键执行层变化与哈希函数可用性要过升级检查；合规场景关注哈希算法白名单 |
-| 9.7 LTS（2026-04） | `innodb_log_writer_threads` 默认值随 log_bin 与 CPU 数变化；移除 `replica_parallel_type`、`group_replication_allow_local_lower_version_join`；9.7.4 起四段版本号（`VERSION_WITH_UPDATE()`） | 并行复制的 `replica_parallel_type` 配置必须清理 |
+| 9.7 LTS（2026-04） | 9.x 特性收束（GA 2026-04）；动态数据脱敏 Dynamic Data Masking（企业版）；9.7.4 起四段版本号（`VERSION_WITH_UPDATE()`） | LTS 支持期到 2031/2034，生产可长期停留 |
 
 一句话主线：**9.x 是"收编与清理"的系列**——VECTOR 与内联外键是新增能力的大头，
 其余版本大部分篇幅在移除旧插件、旧变量与旧拼写，升级前跑一遍 `util.checkForServerUpgrade`

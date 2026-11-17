@@ -241,7 +241,7 @@ MySQL (InnoDB) 默认使用的索引结构是 B+ 树，它是一种平衡树结�
 
 - **调整缓冲池大小**：`innodb_buffer_pool_size`
 - **调整连接数**：`max_connections`（查询缓存在 8.0 已整体移除，无此参数）
-- **调整 redo 容量**：`innodb_redo_log_capacity`（8.0.30+；旧参数 `innodb_log_file_size` 已在 8.4 移除）
+- **调整 redo 容量**：`innodb_redo_log_capacity`（8.0.30+；旧参数 `innodb_log_file_size` 自 8.0.30 废弃、由它取代，9.3.0 起移除）
 - **调整排序缓冲区**：`sort_buffer_size`
 - **调整临时表大小**：`tmp_table_size`
 
@@ -423,7 +423,7 @@ MySQL (InnoDB) 默认使用的索引结构是 B+ 树，它是一种平衡树结�
 
 3. 判断题：`innodb_log_file_size` 与 `innodb_redo_log_capacity` 是同一参数的新旧名，混用没问题。
 
-参考答案（先自己答，再对照）：不是混用问题，是移除问题。redo 总容量自 8.0.30 起由动态变量 `innodb_redo_log_capacity` 管理，旧参数 `innodb_log_file_size` 已在 8.4 被移除——在 8.4+ 的配置文件里写旧名会导致启动失败或被忽略。参数升级要跟着版本变更日志走，这是配置迁移的基本功。
+参考答案（先自己答，再对照）：不是混用问题，是接管关系。redo 总容量自 8.0.30 起由动态变量 `innodb_redo_log_capacity` 管理，旧参数 `innodb_log_file_size` 同期标记废弃——8.4 中它仍是废弃状态（写进配置只有告警），9.3.0 起才正式移除。参数升级要跟着版本变更日志走，尤其要分清"废弃"与"移除"两个阶段，这是配置迁移的基本功。
 
 4. 概念自问：执行计划与监控工具构成了优化闭环，请按"发现问题 → 定位 → 取证 → 验证"排出工具链顺序。
 

@@ -190,7 +190,7 @@ Prepare → Binlog → 等待从库ACK → Commit
 | After Commit | Commit 后                | 主库崩溃可能丢数据、可现"幻影读" | 相近 |
 
 ```sql
--- 5.7+ 默认 After Sync（变量自 8.0.26 更名，旧名 rpl_semi_sync_master_wait_point 已随 8.4 移除）
+-- 5.7+ 默认 After Sync（变量自 8.0.26 更名；旧名 rpl_semi_sync_master_* 与旧插件名 9.5.0 起移除，8.4 中新旧并存）
 SET GLOBAL rpl_semi_sync_source_wait_point = AFTER_SYNC;
 ```
 

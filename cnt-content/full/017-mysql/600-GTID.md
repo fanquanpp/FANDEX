@@ -140,7 +140,7 @@ RESET BINARY LOGS AND GTIDS;
 
 ```sql
 -- 会话级：把 gtid_next 设为 'AUTOMATIC:标签'，本会话后续事务都带标签
--- （标签最长 8 字符；需要 TRANSACTION_GTID_TAG 权限）
+-- （标签最长 32 字符；需要 TRANSACTION_GTID_TAG 权限）
 SET @@SESSION.GTID_NEXT = 'AUTOMATIC:batch_import';
 INSERT INTO sales VALUES (...);
 COMMIT;
@@ -152,7 +152,7 @@ DELETE FROM logs WHERE created_at < NOW() - INTERVAL 30 DAY;
 SET @@SESSION.GTID_NEXT = 'AUTOMATIC';
 ```
 
-注意两点：标签长度上限是 8 个字符（不是 33）；`SET GTID_NEXT='AUTOMATIC:TAG'`
+注意两点：标签长度上限是 32 个字符（1-32，正则 `[a-zA-Z_][a-zA-Z0-9_]{0,31}`；官方 gtid_executed 表按 CHAR(32) 存标签）；`SET GTID_NEXT='AUTOMATIC:TAG'`
 与自定义 `UUID:TAG:NUMBER` 都要求 `TRANSACTION_GTID_TAG` 权限（按官方权限表，
 在主库上打标还须同时持有 `SYSTEM_VARIABLES_ADMIN`、`SESSION_VARIABLES_ADMIN`
 或 `REPLICATION_APPLIER` 之一）。备份与位点管理可按标签区分处理

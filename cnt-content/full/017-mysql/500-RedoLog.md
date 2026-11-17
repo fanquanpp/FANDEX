@@ -50,9 +50,10 @@ SET GLOBAL innodb_redo_log_capacity = 2147483648;  -- 扩到 2GB，立即生效
 ```
 
 > 版本注意：`innodb_log_file_size` / `innodb_log_files_in_group` /
-> `innodb_log_group_home_dir` 在 8.0.30 已废弃，**8.4 起彻底移除**——
-> 升级 8.4 前必须从 my.cnf 删除这些行，改用 `innodb_redo_log_capacity`，
-> 否则服务器拒绝启动。老教程里的 `SET GLOBAL innodb_log_file_size=...` 写法已不可用。
+> `innodb_log_group_home_dir` 在 8.0.30 已废弃、由 `innodb_redo_log_capacity` 取代；
+> 8.4 中它们仍是废弃状态（写进 my.cnf 只有废弃告警，不会拒绝启动），
+> `innodb_log_file_size` / `innodb_log_files_in_group` 到 9.3.0 才正式移除。
+> 新配置一律用 `innodb_redo_log_capacity`，老教程里的 `SET GLOBAL innodb_log_file_size=...` 写法不要再学。
 
 ### 2.2 循环写与两个指针
 
@@ -204,7 +205,7 @@ SHOW ENGINE INNODB STATUS\G
 - 初学者要点：redo log = InnoDB 的"物理流水账"，先写日志再写数据页，保证已提交
   事务不丢；`innodb_flush_log_at_trx_commit=1` 是生产默认。
 - 进阶注意：8.0.30 起容量统一由 `innodb_redo_log_capacity` 控制，旧三件套变量
-  在 8.4 已移除；容量大小是"写入抖动"与"崩溃恢复时长"之间的权衡；
+  同期废弃（8.4 中仍存在、9.3 起移除）；容量大小是"写入抖动"与"崩溃恢复时长"之间的权衡；
   redo（持久性）与 undo（回滚/MVCC）各司其职，崩溃恢复 = REDO 重放 + UNDO 回滚。
 
 ### 容量设计的采样法

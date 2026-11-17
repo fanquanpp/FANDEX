@@ -115,12 +115,12 @@ START REPLICA SQL_THREAD;
 
 | 方案（历史演进）     | 并行度来源     | 现状                              |
 | -------------------- | -------------- | --------------------------------- |
-| DATABASE（5.6 库级） | 不同数据库     | 已废弃并于 8.4 移除，单库无效     |
+| DATABASE（5.6 库级） | 不同数据库     | 单库无效；变量 9.5 起移除（8.4 中为废弃合法值） |
 | LOGICAL_CLOCK（5.7） | 主库组提交批次 | 仍是回放的兜底依赖判定            |
 | WRITESET（8.0+）     | 行级依赖关系   | 8.4 起自动启用，无需任何开关变量  |
 
-> 版本注意：`binlog_transaction_dependency_tracking` 与
-> `transaction_write_set_extraction` 两个老开关在 8.4 已被移除——
+> 版本注意：`binlog_transaction_dependency_tracking`（8.4 移除）与
+> `transaction_write_set_extraction`（8.3 起移除）两个老开关到 8.4 都已消失——
 > 8.4 中服务器总是收集写集，只要 Worker > 0 就按"写集优先、COMMIT_ORDER 兜底"
 > 并行回放，配置文件里不要再写这两行。
 

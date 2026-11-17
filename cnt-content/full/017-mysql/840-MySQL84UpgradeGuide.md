@@ -62,29 +62,32 @@ RESET SLAVE                   -- → RESET REPLICA
 ```
 
 系统变量同步改名：`slave_parallel_workers` → `replica_parallel_workers`、
-`slave_parallel_type` → `replica_parallel_type`（且该变量在 8.4 已随
-DATABASE 粒度一起移除）等，全部 slave_/master_ 前缀都要替换。
+`slave_parallel_type` → `replica_parallel_type` 等，全部 slave_/master_ 前缀都要替换。
+注意 `replica_parallel_type` 在 8.4 仍存在（默认 LOGICAL_CLOCK，DATABASE 降级为废弃
+合法值），整个变量到 9.5.0 才移除——升 8.4 写它只有废弃告警，升 9.5 前必须删掉。
 
 ### 3.2 复制相关变量与插件
 
 ```ini
 # 以下变量在 8.4 已移除，配置文件必须清理：
-# binlog_transaction_dependency_tracking = WRITESET   # 写集并行已是自动行为
-# transaction_write_set_extraction = XXHASH64         # XXHASH64 是唯一实现
+# binlog_transaction_dependency_tracking = WRITESET   # 8.4 移除；写集并行已是自动行为
+# transaction_write_set_extraction = XXHASH64         # 8.3 起移除，写集收集自动完成
 # master_info_repository / relay_log_info_repository  # 元数据恒为 TABLE
-# expire_logs_days                                    # 用 binlog_expire_logs_seconds
+# expire_logs_days                                    # 8.2 起移除，用 binlog_expire_logs_seconds
 ```
 
-半同步插件换名：`rpl_semi_sync_master/slave` 已移除，升级前先
-`UNINSTALL PLUGIN` 旧插件，升级后安装 `rpl_semi_sync_source/replica`
-（变量从 `rpl_semi_sync_master_*` 变为 `rpl_semi_sync_source_*`）。
+半同步插件换名：`rpl_semi_sync_master/slave` 自 8.0.26 起废弃、新旧名并存，
+到 9.5.0 才正式移除。新部署直接安装 `rpl_semi_sync_source/replica`（变量从
+`rpl_semi_sync_master_*` 变为 `rpl_semi_sync_source_*`）；存量脚本升 9.5 前
+完成旧名迁移即可。
 
 ### 3.3 InnoDB 配置
 
 ```ini
-# 以下变量在 8.4 已移除：
-# innodb_log_file_size / innodb_log_files_in_group / innodb_log_group_home_dir
-#   → 改用 innodb_redo_log_capacity（8.0.30+ 已支持，建议升级前先切换）
+# innodb_log_file_size / innodb_log_files_in_group / innodb_log_group_home_dir：
+#   8.0.30 起废弃、由 innodb_redo_log_capacity 取代（8.4 中仍存在，写它只有废弃告警）；
+#   innodb_log_file_size / innodb_log_files_in_group 到 9.3.0 才正式移除——
+#   建议升 8.4 前就切到 innodb_redo_log_capacity，一步到位
 ```
 
 行为变化：redo 文件从固定两个 `ib_logfileN` 变为 `#innodb_redo` 目录下
@@ -129,7 +132,7 @@ DATABASE 粒度一起移除）等，全部 slave_/master_ 前缀都要替换。
 | ---- | ------------------------------------------------------ |
 | 9.0  | VECTOR 向量类型；内联外键强制执行；EXPLAIN ... INTO @变量；移除 mysql_native_password |
 | 9.1-9.6 | 触发器缓存、JS 存储程序（企业版）、9.3 起创新版之间不可降级、9.5 移除旧半同步插件名 |
-| 9.7（LTS） | 9.x 特性收束；移除 `replica_parallel_type` 等；四段版本号 `VERSION_WITH_UPDATE()` |
+| 9.7（LTS） | 9.x 特性收束（GA 2026-04）；动态数据脱敏（企业版）；9.7.4 起四段版本号 `VERSION_WITH_UPDATE()` |
 | 26.7 / 26.10 | 日历版本号首航；Change Stream Applier；线程池进社区版；GR 默认通信栈改 MYSQL；社区版 REST Service 组件 |
 
 判断标准：需要 VECTOR 存储或跟随新特性 → 测试环境跟进创新版；
@@ -153,7 +156,7 @@ SELECT * FROM sys.innodb_lock_waits;               -- 无异常锁堆积
 
 1. 概念自问：为什么说"8.4 的主题是移除而不是新增"？三类必然报错的东西是什么？
 
-参考答案（先自己答，再对照）：8.4 作为 LTS 几乎不加新特性，核心工作是拆掉 8.0 里标记废弃的东西——这决定了升级工作量集中在"清理"而非"学习"。三类必然报错：旧复制语法与 slave_/master_ 变量（8.0.22 起新名并存、8.4 只认新名）；已移除的服务器变量（binlog_transaction_dependency_tracking、innodb_log_file_size、expire_logs_days 等，留在 my.cnf 直接启动失败）；移除的工具与选项（mysqlpump、--master-data、--compress）。
+参考答案（先自己答，再对照）：8.4 作为 LTS 几乎不加新特性，核心工作是拆掉 8.0 里标记废弃的东西——这决定了升级工作量集中在"清理"而非"学习"。三类必然报错：旧复制语法与 slave_/master_ 变量（8.0.22 起新名并存、8.4 只认新名）；已移除的服务器变量（binlog_transaction_dependency_tracking 在 8.4 移除、expire_logs_days 8.2 起移除——留在 my.cnf 直接启动失败；注意 innodb_log_file_size 在 8.4 只是废弃未删，写它有废弃告警但不报错，9.3.0 起才移除）；移除的工具与选项（mysqlpump、--master-data、--compress）。
 
 2. 写出流程：升级一台生产主从的最小安全步骤。
 

@@ -262,7 +262,7 @@ Redo Log 记录的是物理级别的页修改操作，用于崩溃恢复时重�
 SHOW VARIABLES LIKE 'innodb_log%';
 -- innodb_redo_log_capacity: redo 总容量（8.0.30+，在线可调；默认 100MB）
 -- innodb_log_buffer_size: 日志缓冲区大小
--- （innodb_log_file_size / innodb_log_files_in_group 已在 8.4 移除，勿再使用）
+-- （innodb_log_file_size / innodb_log_files_in_group 自 8.0.30 废弃、由 innodb_redo_log_capacity 取代，9.3.0 起移除）
 
 -- MySQL 8.0.30+ 动态调整 redo log 总容量
 SET GLOBAL innodb_redo_log_capacity = 4294967296;  -- 4GB

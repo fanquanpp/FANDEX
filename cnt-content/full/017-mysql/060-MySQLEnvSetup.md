@@ -336,7 +336,7 @@ volumes:
  collation-server=utf8mb4_unicode_ci
  # InnoDB 配置
  innodb_buffer_pool_size=1G # 建议为服务器内存的 70-80%
- innodb_redo_log_capacity=512M # redo 总容量（8.0.30+；innodb_log_file_size 已在 8.4 移除）
+ innodb_redo_log_capacity=512M # redo 总容量（8.0.30+，在线可调；innodb_log_file_size 自 8.0.30 废弃、由本变量取代，9.3.0 起才移除）
  innodb_flush_log_at_trx_commit=1
  # 连接配置
  max_connections=200
@@ -413,4 +413,4 @@ volumes:
 
 4. 概念自问：为什么配置示例写 `innodb_redo_log_capacity=512M` 而不是 `innodb_log_file_size`？
 
-参考答案（先自己答，再对照）：redo 容量从 8.0.30 起由动态变量 `innodb_redo_log_capacity` 管理，旧变量 `innodb_log_file_size` 在 8.4 已被移除——在新版本配置文件里写旧变量会导致启动告警或失败。这也是升级 MySQL 时"配置文件要跟着变更日志走"的一个缩影。
+参考答案（先自己答，再对照）：redo 容量从 8.0.30 起由动态变量 `innodb_redo_log_capacity` 管理，旧变量 `innodb_log_file_size` 同期标记废弃——8.4 中它仍是废弃状态（写进配置只有废弃告警，不会失败），9.3.0 起才正式移除。这也是升级 MySQL 时"配置文件要跟着变更日志走"的一个缩影——尤其要分清"废弃"（还能跑，尽快迁）与"移除"（必失败，一步到位）两个阶段。

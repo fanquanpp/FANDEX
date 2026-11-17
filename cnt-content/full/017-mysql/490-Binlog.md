@@ -61,7 +61,7 @@ ROW 赢在**确定性**：记录的是"这行数据从 A 变成 B"的事实，�
 log_bin = mysql-bin                  # 开启 binlog（只读变量，改配置重启生效）
 binlog_format = ROW
 sync_binlog = 1                      # 每次提交都 fsync binlog 到磁盘
-binlog_expire_logs_seconds = 604800  # 保留 7 天（expire_logs_days 已在 8.4 移除）
+binlog_expire_logs_seconds = 604800  # 保留 7 天（expire_logs_days 已废弃并被本变量取代，8.2.0 起移除）
 max_binlog_size = 1073741824         # 单文件上限 1GB，超过滚动新文件
 ```
 

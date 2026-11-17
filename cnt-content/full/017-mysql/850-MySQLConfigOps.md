@@ -297,7 +297,7 @@ prerequisites:
  [mysqld]
  # InnoDB 配置
  innodb_buffer_pool_size=4G # 建议为服务器内存的 70%
- innodb_redo_log_capacity=1G # redo 总容量（8.0.30+，在线可调；innodb_log_file_size 已在 8.4 移除）
+ innodb_redo_log_capacity=1G # redo 总容量（8.0.30+，在线可调；innodb_log_file_size 自 8.0.30 废弃、由本变量取代，9.3.0 起移除）
  innodb_log_buffer_size=64M
  innodb_flush_log_at_trx_commit=1 # 1-最安全，2-性能好，0-最快但可能丢数据
  innodb_flush_method=O_DIRECT # Linux 下推荐，减少系统缓存
