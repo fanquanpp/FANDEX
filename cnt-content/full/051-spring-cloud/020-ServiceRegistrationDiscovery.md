@@ -39,20 +39,20 @@ related:
 
 ## 2. 准备现场：本地起一个注册中心
 
-Docker 单机模式起步（镜像 tag 以官方仓库为准，Nacos 2.x/3.x 均可）：
+Docker 单机模式起步（镜像 tag 以官方镜像页为准；主线选 Nacos Server 3.x——本模块配套的 Spring Cloud Alibaba 2025.x 自带 nacos-client 3.x，对 2.x 服务端存在配置拉取不兼容的已知问题，别照抄老教程的 2.x 镜像）：
 
 ```bash
 docker run -d --name nacos-standalone \
   -e MODE=standalone \
-  -p 8848:8848 -p 9848:9848 \
-  nacos/nacos-server:v2.4.3
+  -p 8848:8848 -p 9848:9848 -p 8080:8080 \
+  nacos/nacos-server:v3.3.0
 ```
 
 三个要点：
 
-- 8848 是主端口：控制台与 HTTP API；
+- 8848 是主端口：HTTP API 与注册发现的数据面；
 - 9848 是 gRPC 端口（主端口加 1000）：2.x 起客户端走 gRPC 长连接，这个端口不通服务永远注册不上——防火墙漏放行 9848 是 Nacos 排错榜第一名；
-- 控制台地址 http://localhost:8848/nacos（3.x 起控制台默认改用独立端口，以官方文档为准；默认账号密码 nacos/nacos，以你部署版本的配置为准）。
+- 控制台地址 http://localhost:8080——3.x 起控制台从 8848 拆成独立端口 8080，只映射 8848/9848 时控制台会打不开（默认账号密码 nacos/nacos，以你部署版本的配置为准）。
 
 两个最小 Boot 服务，各自只要 web 与 discovery 两个依赖：
 

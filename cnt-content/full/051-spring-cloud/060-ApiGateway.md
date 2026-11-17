@@ -70,7 +70,7 @@ public class OrderController {
 </dependency>
 ```
 
-版本线索一句话：2025.0.x 起拆成 server-webflux 与 server-webmvc 两个 starter，本模块主线是前者（响应式）；旧的 spring-cloud-starter-gateway 名字保留兼容，旧教程见到不用慌。
+版本线索一句话：2025.0.x 起拆成 server-webflux 与 server-webmvc 两个 starter，本模块主线是前者（响应式）；旧的 spring-cloud-starter-gateway 名字在该代保留兼容。2025.1 起旧 starter 与旧配置命名空间已移除——旧教程见到旧名，一律先换算成新名再读。
 
 顺手做个反面实验：此刻往网关模块加一个 spring-boot-starter-web（习惯性手滑，几乎人人中过），启动直接失败——
 
@@ -131,7 +131,7 @@ spring:
                 - StripPrefix=1
 ```
 
-（旧命名空间 spring.cloud.gateway.routes 在 4.3.x 仍可用但已标记过时，以所用小版本官方文档为准。）
+（旧命名空间 spring.cloud.gateway.routes 在 2025.0.x（Gateway 4.3.x）保留兼容但已标记过时；2025.1 起不再绑定，配置必须写进 server.webflux 命名空间，以所用小版本官方文档为准。）
 
 三个概念各自的决策，钉死：
 
