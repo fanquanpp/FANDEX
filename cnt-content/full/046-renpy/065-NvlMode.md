@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 多行同屏的小说式呈现：nvl clear 翻页、NVL 菜单、nvl_narrator 与窗口管理
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

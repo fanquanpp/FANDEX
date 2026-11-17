@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin/JS、Kotlin/Native、Kotlin/Wasm 编译目标的编译器后端、内存管理与互操作细节。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'kotlin/080-ScopeFunctionDifference'
   - 'kotlin/260-CoroutineExceptionHandling'

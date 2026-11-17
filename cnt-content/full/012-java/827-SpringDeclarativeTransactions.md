@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: '@Transactional 的代理实现原理（TransactionInterceptor）、七种传播行为的语义与选型、隔离级别与数据库的关系、事务失效六场景（自调用、private、final、异常被吞、checked 不回滚、多线程）；用转账 REQUIRES_NEW 日志、下单多表一致性、并发转账死锁三个场景落地。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/820-SpringIoCContainerBeansAndDI'
   - 'java/825-SpringAOP'

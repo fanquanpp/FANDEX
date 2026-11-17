@@ -6,7 +6,7 @@ description: 'P2996 静态反射的语法级讲解：^^ 反射算子、[: :] 拼
 module: 'cpp'
 category: 计算机科学
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

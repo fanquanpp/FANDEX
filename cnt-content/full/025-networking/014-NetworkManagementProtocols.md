@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: ACL 访问控制、SNMP 网管协议与 Portal/802.1X/RADIUS 接入认证链
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

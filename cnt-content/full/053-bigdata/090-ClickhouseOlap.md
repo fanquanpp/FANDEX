@@ -6,7 +6,7 @@ module: 'bigdata'
 category: 后端技术
 difficulty: advanced
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'bigdata/080-HbaseWideTable'
   - 'bigdata/030-HiveWarehouseSql'

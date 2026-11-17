@@ -6,7 +6,7 @@ module: 'mongodb'
 category: 数据库
 difficulty: advanced
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'ai-llm/070-EmbeddingsAndVectorSearch'
   - 'ai-llm/080-RagFundamentals'

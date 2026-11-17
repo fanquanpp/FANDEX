@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: "Kotlin 密封类型深水参考：封闭继承的编译期约束、when 穷举检查与智能转换的编译器实现（K1/K2、@Metadata）、协变与 Nothing、密封接口多继承、多态序列化，附真实编译报错与调试实录。"
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'kotlin/150-SealedClassAlgebraicDataType'
   - 'kotlin/060-KotlinDataClassDeepDive'

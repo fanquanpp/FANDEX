@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Web 安全知识块导览：OWASP Top 10 攻防全景图、九大漏洞类别的入口索引、渗透测试与 Web 安全的学习路线。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/010-SecurityBasicsDefense'
   - 'cybersecurity/160-OWASPTop10Detailed'

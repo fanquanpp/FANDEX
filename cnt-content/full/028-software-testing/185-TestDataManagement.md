@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 测试数据构造模式（builder/工厂/Object Mother 演进）、脱敏与合成数据、数据库 seeding 与快照、并行执行的数据隔离。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 掌握 image scene show hide 四条图像语句，用 tag 与属性管理立绘并用 with 播放转场
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-11-17'
 related: ['renpy/020-FirstScriptSayAndCharacters', 'renpy/040-LabelsControlFlowAndMenus', 'renpy/070-ATLTransformsAndAnimation']
 prerequisites: ['renpy/020-FirstScriptSayAndCharacters']
 ---

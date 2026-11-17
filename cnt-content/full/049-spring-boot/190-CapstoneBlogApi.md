@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/170-TestingStrategy'
   - 'spring-boot/180-PackagingDeployment'
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'spring-boot/070-UnifiedResponseExceptionHandling'
   - 'spring-boot/120-SpringSecurityJwt'

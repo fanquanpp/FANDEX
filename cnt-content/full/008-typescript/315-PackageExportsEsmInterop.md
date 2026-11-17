@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: TypeScript 模块解析策略（bundler/node16/nodenext）、paths 路径映射、package.json exports 字段、ESM/CJS 互操作与 @types 生态的工程指南
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

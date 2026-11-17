@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Tailwind CSS 交互族全集：cursor/user-select/pointer-events/touch-action、scroll-snap 零 JS 轮播与 scroll-margin 锚点让位、accent-color 原生控件重绘、sr-only 与 forced-colors 可达性，附轮播、长按防误触、表单重绘三例
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

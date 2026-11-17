@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 内联、嵌入、外部、导入
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'css/140-PseudoClassPseudoElement'
   - 'css/170-PriorityCalculation'

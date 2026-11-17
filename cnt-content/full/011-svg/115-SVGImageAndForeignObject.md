@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用 image 在 SVG 里引入位图、用 foreignObject 嵌入 HTML 富文本，以及两者在导出与外链场景下的可用边界
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

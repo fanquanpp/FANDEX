@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: gRPC与Protocol Buffers
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'python/850-PythonMessageQueue'
   - 'python/910-PythonWebSocket'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: '@nestjs/terminus 健康检查端点、K8s liveness/readiness 探针对接、多实例部署的自检清单——上生产前的最后一道自检。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'nestjs/240-MicroservicesAndHealth'
   - 'nestjs/235-BullMQQueuesAndReliability'

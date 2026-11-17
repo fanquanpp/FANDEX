@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 理解 Godot 以节点为积木、场景为组合的核心模型，学会在编辑器与代码中实例化场景并正确释放节点
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-11-17'
 related:
   - 'godot/010-GodotOverviewAndSetup'
   - 'godot/030-FirstScriptAndLifecycle'

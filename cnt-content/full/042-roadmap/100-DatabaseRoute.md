@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related:
   - 'sql/010-WhatIsDatabase'
   - 'mysql/020-Roadmap'

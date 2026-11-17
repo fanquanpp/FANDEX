@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 label 与 say 语句写出第一段对话，定义带颜色的角色对象并理解缩进与转义规则
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-11-17'
 related: ['renpy/010-RenPyOverviewAndSetup', 'renpy/030-ImagesSceneShowAndTransitions', 'renpy/040-LabelsControlFlowAndMenus']
 prerequisites: ['renpy/010-RenPyOverviewAndSetup']
 ---

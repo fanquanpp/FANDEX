@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 远程跟踪分支详解：origin/main 的本质、上游配置、fetch/pull/push 同步模型与清理。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'git/150-GitRemoteRepoOperation'
   - 'git/110-HEADPointerBranchEssence'

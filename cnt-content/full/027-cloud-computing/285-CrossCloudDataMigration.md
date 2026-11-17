@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: rclone 跨云同步、数据校验与备份策略、Velero 跨云 K8s 迁移、镜像与数据库迁移、跨云 IaC 工具与监控告警的命令手册。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

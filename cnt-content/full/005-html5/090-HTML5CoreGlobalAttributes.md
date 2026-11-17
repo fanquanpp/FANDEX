@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 全局属性速通：id 是身份证号、class 是可复用标签、style 是紧急临时样式，附 title/hidden/contenteditable 等其余全局属性速查与终极对比表。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'html5/080-HTML5DivSpanContainers'
   - 'html5/020-HTML5OverviewCoreFeature'

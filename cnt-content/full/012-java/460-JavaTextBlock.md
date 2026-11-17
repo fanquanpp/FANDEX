@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 多行字符串的现行写法与缩进规则；顺带讲清字符串模板（JEP 430/459）为何在 JDK 23 前被撤回、今天用什么替代
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/980-JavaKubernetes'
   - 'java/450-JavaRecordClass'

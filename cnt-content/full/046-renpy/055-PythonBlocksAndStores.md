@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 $ 语句 python 块与 init python 在剧本中嵌写 Python，理解 store 命名空间与常量 store
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

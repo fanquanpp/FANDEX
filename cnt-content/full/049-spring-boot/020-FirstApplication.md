@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/010-WhySpringBoot'
   - 'java/740-JavaBuildTool'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-11-17'
 related:
   - 'spring-boot/030-IoCDependencyInjection'
   - 'spring-boot/040-AutoConfigurationInternals'

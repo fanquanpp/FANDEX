@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: AOP 的形式化模型、JDK 动态代理与 CGLIB 的原理与选择、织入时机与通知执行时序、execution 切点表达式、自调用失效的代理根源；用接口日志埋点、方法耗时监控、权限校验三个切面实战，附 Spring AOP 与 AspectJ 的选型对比与代理类型转换案例。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/820-SpringIoCContainerBeansAndDI'
   - 'java/827-SpringDeclarativeTransactions'

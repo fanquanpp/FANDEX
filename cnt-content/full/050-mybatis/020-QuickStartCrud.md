@@ -10,7 +10,7 @@ prerequisites:
   - 'java/720-JavaDatabaseConnection'
   - 'mysql/110-SQLDataOperationQuery'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related:
   - 'mybatis/030-DynamicSql'
   - 'mybatis/060-PluginInterceptor'

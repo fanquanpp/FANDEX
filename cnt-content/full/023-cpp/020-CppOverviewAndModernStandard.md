@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 以「同样自称 C++ 的两份代码隔着二十五年」引入，按每版三个用户可感知特性讲清三次大版本，覆盖编译器三件套与 -std=c++23 开关、包管理现实与本模块学习主线，附新旧写法对比实验与真实编译报错。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-11-17'
 related:
   - 'cpp/010-WhatIsCpp'
   - 'cpp/030-CppBasicSyntax'

@@ -6,7 +6,7 @@ module: 'ai-llm'
 category: 计算机科学
 difficulty: beginner
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'ai-llm/040-PromptEngineering'
   - 'ai-llm/060-StructuredOutput'

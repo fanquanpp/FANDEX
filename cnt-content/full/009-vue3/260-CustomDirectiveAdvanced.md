@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 自定义指令高级用法
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'vue3/050-ReactiveSystem'
   - 'vue3/170-ProvideInject'

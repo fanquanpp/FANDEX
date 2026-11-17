@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: '防火墙配置命令全景：ufw 与 firewalld 规则管理、iptables 高级语法、华为 USG 安全策略（区域与安全策略、NAT）、默认策略设计、日志审计与规则备份'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/010-SecurityBasicsDefense'
   - 'cybersecurity/390-NmapScan'

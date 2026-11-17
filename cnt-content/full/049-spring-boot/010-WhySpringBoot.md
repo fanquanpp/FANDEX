@@ -7,7 +7,7 @@ category: 后端技术
 difficulty: beginner
 prerequisites: []
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'spring-boot/020-FirstApplication'
   - 'spring-boot/030-IoCDependencyInjection'

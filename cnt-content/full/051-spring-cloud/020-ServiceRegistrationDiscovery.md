@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-cloud/010-FromMonolithToMicroservices'
   - 'spring-boot/060-SpringMvcRestApi'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-11-17'
 related:
   - 'spring-cloud/030-ConfigCenter'
   - 'spring-cloud/040-OpenfeignDeclarativeCalls'

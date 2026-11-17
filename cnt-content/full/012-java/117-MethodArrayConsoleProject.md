@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 用银行 ATM、超市管理、奶茶店结算、玩具店四个任务共用的一套方法签名框架做迁移训练：Login/Menu/AddGoods/FindMaxAndMin/Settle 的方法拆分、数组作参、while(true)+switch 菜单循环；对比「返回值回传余额」与「void 加全局变量」两种参数传递设计，并用一个真实的死循环 bug 练找错。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/100-MethodDetailed'
   - 'java/110-ArrayDetailed'

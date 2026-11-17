@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Markdown中LaTeX数学公式的完整语法：行内公式、块级公式与KaTeX兼容性。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/140-Emoji'
   - 'markdown/160-SubscriptSuperscript'

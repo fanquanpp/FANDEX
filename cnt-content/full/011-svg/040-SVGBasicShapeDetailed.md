@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: rect、circle、ellipse、line、polyline、polygon 六大基本图形属性与用法。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'svg/030-SVGCoordinateSystemViewBox'
   - 'svg/050-SVGPathDetailed'

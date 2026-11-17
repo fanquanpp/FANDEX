@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第一课：理解元框架、App Router、服务器组件与客户端组件，用 create-next-app 五分钟跑起第一个项目，并建立 Next.js 16 的版本认知。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related:
   - 'nextjs/020-AppRouterRouting'
   - 'nextjs/030-DataFetchingCaching'

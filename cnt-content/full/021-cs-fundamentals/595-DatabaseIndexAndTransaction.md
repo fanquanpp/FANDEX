@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: CS 课程视角拆解数据库两大机制：B+ 树为什么适配磁盘页（IO 代价推演联动存储层次与磁盘调度）、WAL 为什么是崩溃恢复的必要设计、隔离性异常的通用模型——具体实现交给 SQL/MySQL 专篇
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

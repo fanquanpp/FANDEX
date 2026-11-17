@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: std::string与字符串视图
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/200-CppOOPBasics'
   - 'cpp/270-CppSTLAlgorithms'

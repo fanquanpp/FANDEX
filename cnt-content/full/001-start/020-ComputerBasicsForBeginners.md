@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/010-ProgrammingStartGuide'
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'cs-fundamentals/010-ComputerOverview'
 ---

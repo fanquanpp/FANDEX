@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 环境变量概念、PATH机制、跨平台配置与常见问题排查。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/030-FunctionModular'
   - 'shell/050-IDEEditorSelection'

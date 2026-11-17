@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: refs 命名空间、refspec 语义与本地/smart HTTP/SSH 三种传输协议的协商过程
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

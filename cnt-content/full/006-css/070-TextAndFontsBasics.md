@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: font 家族属性、文本对齐与间距控制，是正文排版的第一块基石。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/490-TypeScaleAndSpacingTokens'
   - 'css/510-CSSFontLoading'

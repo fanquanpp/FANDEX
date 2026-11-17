@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go垃圾回收与GC调优详解：并发标记清除。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/230-ReflectionGenericFunction'
   - 'go/280-MemoryEscapeAnalysis'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: git rebase 详解：变基语义、冲突处理、交互式改写、黄金法则与 force-with-lease 安全推送。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'git/130-MergeConflictResolution'
   - 'git/280-InteractiveRebase'

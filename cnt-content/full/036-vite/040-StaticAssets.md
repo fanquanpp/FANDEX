@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 'Vite 静态资源：按"一个 Logo 从设计到上线"的场景，讲清 public 与 src/assets 的区别、import 资源、SVG、字体、favicon 与 base 路径'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'vite/030-ConfigFile'
   - 'vite/080-BuildSplit'

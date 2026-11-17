@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 接着「三台服务器裸奔上云」讲数据的归宿：块存储挂盘、对象存储放文件、文件存储做共享目录的三类选型，快照与生命周期策略，以及 CDN 的回源与缓存失效机制。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

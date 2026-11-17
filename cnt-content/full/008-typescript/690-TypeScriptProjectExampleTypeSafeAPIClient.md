@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 综合运用泛型、装饰器与类型体操的类型安全 API 客户端。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/360-TsconfigStrictMode'
   - 'typescript/280-DecoratorStandardImpl'

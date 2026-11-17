@@ -6,7 +6,7 @@ module: 'bigdata'
 category: 后端技术
 difficulty: beginner
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'bigdata/090-ClickhouseOlap'
   - 'vue3/010-OverviewEnv'

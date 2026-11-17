@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 可观测性第三支柱：Prometheus client_golang 的四种指标类型选型、/metrics 端点与中间件接入、Histogram 分桶看 P99、命名与标签基数陷阱——给限流服务与服务端 handler 挂上指标的全过程
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

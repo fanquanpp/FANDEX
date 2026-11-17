@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 流程驱动掌握 Astro 样式体系：全局风格与主题变量、组件 scoped 样式、is:global 逃逸与样式方案全家桶对比
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/020-QuickStartProject'
   - 'astro/072-AstroFontsApi'

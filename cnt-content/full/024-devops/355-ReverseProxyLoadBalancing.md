@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: nginx 核心配置逐段解释（upstream/proxy_pass/超时重试）、四层与七层负载均衡、健康检查、限流，以及作为金丝雀发布流量入口的角色
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

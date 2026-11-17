@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: double 为什么算不了钱、BigDecimal 三种构造方式的陷阱、scale 与 RoundingMode、compareTo 与 equals 的差异、BigInteger 的适用边界；用书价表总价、电商订单金额与 DECIMAL 映射、复利计算三个场景落地。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/050-DataTypeConversion'
   - 'java/060-WrapperCacheTrap'

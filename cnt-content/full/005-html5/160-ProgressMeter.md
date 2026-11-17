@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 两个原生数值显示元素：progress 表示任务进度（下载/上传），meter 表示数值状态（磁盘用量、评分、密码强度），含区间颜色规则、自定义样式与 JS 更新示例。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'html5/210-SVG'
   - 'html5/220-EmbeddedContent'

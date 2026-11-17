@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: mybatis-config.xml 关键配置、与 Spring Boot 配置的对应关系、SqlSessionFactory/SqlSession/Mapper 的生命周期与线程安全
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

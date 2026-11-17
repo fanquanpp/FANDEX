@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Layout 里的 title/description/canonical 与 Open Graph、@astrojs/sitemap 与 site 配置、@astrojs/rss 生成订阅源的完整实战
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/030-PagesRouting'
   - 'astro/050-ContentCollections'

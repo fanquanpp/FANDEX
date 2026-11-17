@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 以"逐帧追踪 factorial 栈展开"为主线学 C 递归：基准情况与递归步的完整推论、汉诺塔与猴子吃桃两道经典、间接递归与前置声明、栈深实测与尾递归的真实边界、分治三步与二分查找，附防 int 溢出的中点写法与四道遮码自检练习。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related:
   - 'c/090-FunctionDetailed'
   - 'c/250-FunctionCallStackFrame'

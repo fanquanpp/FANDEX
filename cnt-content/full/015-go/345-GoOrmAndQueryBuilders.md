@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: database/sql 之上的数据访问层三流派：GORM 链式 API、sqlc 先写 SQL 后生成类型安全代码、ent 图谱式建模——同一套账户与转账场景三种实现对比，附选型决策表与练习
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

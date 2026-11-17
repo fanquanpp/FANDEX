@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: SLOWLOG 慢查询日志逐字段解读、LATENCY 事件时间线、INFO 关键指标与 redis-cli --bigkeys/--hotkeys 巡检，附大促巡检、KEYS 事故复盘、热 key 兜底三个场景。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

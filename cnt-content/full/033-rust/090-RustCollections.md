@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Vec、HashMap、HashSet 的增删改查与集合运算、entry 模式、String 与 &str 的所有权分野
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'rust/050-RustOwnershipBorrowing'
   - 'rust/095-RustIteratorsFunctional'

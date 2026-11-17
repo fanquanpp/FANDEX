@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: GFM 任务列表语法：复选框的识别规则、GitHub 交互行为、嵌套与实战场景。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/060-ListSyntax'
   - 'markdown/120-Strikethrough'

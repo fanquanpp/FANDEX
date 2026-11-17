@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Markdown 脚注语法：标记与定义的配对模型、为什么需要脚注、定义位置无关渲染顺序、多平台兼容性与遮代码自检实践。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'markdown/080-EscapeCharacter'
   - 'markdown/050-LinkImage'

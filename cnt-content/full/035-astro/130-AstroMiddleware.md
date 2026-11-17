@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 用 astro:middleware 搭建全站请求闸口、粉丝团鉴权守卫与 locals 类型安全管道。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/030-PagesRouting'
   - 'astro/080-BuildDeploy'

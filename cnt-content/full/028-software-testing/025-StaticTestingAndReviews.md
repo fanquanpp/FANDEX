@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 不运行代码就能发现缺陷：评审类型分级（临时/走查/技术评审/审查）、静态分析工具与评审度量。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: viewport、移动优先设计
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/340-CustomDataAttribute'
   - 'html5/280-CrossDocumentCommunication'

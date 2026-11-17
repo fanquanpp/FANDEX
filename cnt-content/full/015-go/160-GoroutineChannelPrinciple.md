@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go goroutine与channel通信原理详解。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/510-GoDistributedTracing'
   - 'go/500-GoRateLimiting'

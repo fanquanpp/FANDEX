@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: '口令破解全景：在线服务爆破（Hydra）与离线哈希破解（hashcat/John the Ripper）的分工、哈希模式识别（-m）、字典/掩码/规则攻击、GPU 调优与授权边界'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/070-PasswordHash'
   - 'cybersecurity/140-HashTools'

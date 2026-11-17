@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 迭代协议的类型层：Iterable/Iterator/Generator/AsyncGenerator 的类型参数、for...of 与 for await...of 的类型推导，以及分页流、文件流、任务队列三类工程实例。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

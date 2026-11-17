@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C 程序动态调试实战：GDB 断点/观察点/多线程调试、core dump 分析、段错误与死锁的复现-定位-修复模式、远程调试与反向调试。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'c/485-StaticAnalysisAndSanitizers'
   - 'c/510-CValgrind'

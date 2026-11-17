@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL账户与权限管理：用户创建、权限授予、角色、密码策略与审计
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'mysql/660-PartitionedTable'
   - 'mysql/680-ShardingMiddleware'

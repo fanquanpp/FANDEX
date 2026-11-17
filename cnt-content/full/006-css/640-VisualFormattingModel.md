@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS 视觉格式化模型速查：渲染流水线、层叠上下文、包含块、BFC/IFC——渲染与布局规则的深读-速查双层中的速查层。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'css/630-CSSInJS'
   - 'css/560-CSSArchitectureMethodology'

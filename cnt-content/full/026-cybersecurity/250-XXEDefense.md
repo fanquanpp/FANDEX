@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'XXE 防御与检测：各语言解析器禁用 DTD 的配置、安全库选型（defusedxml）、盲注检测与日志排查'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/240-XXEAttack'
   - 'cybersecurity/230-SSRFAttack'

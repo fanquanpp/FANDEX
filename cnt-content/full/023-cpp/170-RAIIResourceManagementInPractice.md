@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 跨领域 RAII 封装实战——文件句柄、内存、锁、网络套接字、数据库事务、OpenGL、CUDA 的守卫写法与自定义 RAII 类模板；机制与原则见 160 篇。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cpp/160-RAIIResourceManagement'
   - 'cpp/130-SmartPointerDeepDive'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 把 Markdown 变成文档站点的完整工具链：静态站点生成器、构建管线、代码生成文档与质量门禁
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'markdown/300-LintFormatTooling'
   - 'markdown/290-ConversionTool'

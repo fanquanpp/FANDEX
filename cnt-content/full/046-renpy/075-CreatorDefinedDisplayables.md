@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 renpy.Displayable 子类与 render/event 交互周期绘制 screen 语言做不了的动态内容：打字速度小游戏、对话框粒子雨、点击收集小游戏，标注 Render 每帧新建与焦点处理易错点
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

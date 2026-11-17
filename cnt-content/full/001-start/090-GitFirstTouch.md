@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 001-start 的真正收官：为什么学习笔记与练习代码从第一天就该进版本控制，git init 到首次 commit 的六条命令全流程，.gitignore 第一次亮相，以及把仓库推上 GitHub 的路径预告。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'git/010-Git'
   - 'git/020-GitInstallConfig'

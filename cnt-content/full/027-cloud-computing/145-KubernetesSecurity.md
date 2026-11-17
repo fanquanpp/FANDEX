@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: RBAC 最小权限拆分、Pod 安全准入三级、Secret 加密与外部密钥管理、镜像供应链收口。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

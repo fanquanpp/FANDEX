@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 对照官方 Utility Types 参考页的全量内置工具类型目录：每类给签名、等效手写与真实场景例子，含编辑表单草稿、列表页白名单与事件表三条主线。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

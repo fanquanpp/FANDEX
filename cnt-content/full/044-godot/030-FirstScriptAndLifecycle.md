@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 写出第一个 GDScript 脚本，逐行理解官方示例，掌握 _init _ready _process _physics_process 的调用时机与 delta 的用法
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-11-17'
 related:
   - 'godot/020-NodesScenesAndInstancing'
   - 'godot/040-SignalsObserving'

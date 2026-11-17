@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 物联网与工控系统安全：IoT 攻击面与固件分析（binwalk）、工控协议风险（Modbus/S7comm/DNP3）与纵深防御、CTF 入门路线、网络安全法律法规与渗透测试合规要求。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/585-BinaryExploitationPwn'
   - 'cybersecurity/590-ReverseEngineering'

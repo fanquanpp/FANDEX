@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 手写 @font-face 的四个坑、fonts 配置与 fontProviders 全表、Font 组件与预加载、回退字体与 CLS，以及中文站点多字重子集策略
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

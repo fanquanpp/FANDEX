@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: '命令注入防御与检测：危险函数清单、参数数组执行替代、白名单输入校验、日志与 WAF 检测规则'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/280-WebSecurityDeep'
   - 'cybersecurity/170-InputValidation'

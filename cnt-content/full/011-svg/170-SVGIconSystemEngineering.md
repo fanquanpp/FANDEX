@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 图标设计原则（统一画布、currentColor、像素网格）、sprite 实现与尺寸颜色变体、命名规范与构建链路。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'svg/120-SVGSymbolReuse'
   - 'svg/130-SVGCSSStyling'

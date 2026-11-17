@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 系统信息与资源命令、文件系统与权限模型、用户与 sudo、systemd 服务单元编写与 journalctl 排障——一台 Linux 服务器的日常管理手册
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

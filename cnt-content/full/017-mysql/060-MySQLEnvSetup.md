@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: MySQL 安装、配置、启动与客户端工具使用。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'mysql/160-View'
   - 'mysql/050-MySQLOverviewDatabaseDesign'

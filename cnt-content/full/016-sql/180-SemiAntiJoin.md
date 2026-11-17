@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL半连接与反半连接：EXISTS、NOT EXISTS、IN、NOT IN的语义、性能差异与优化策略
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'sql/160-NaturalJoinUsing'
   - 'sql/170-SelfJoin'

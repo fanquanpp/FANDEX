@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: LIKE 前缀匹配的性能困境、倒排索引心智模型，MySQL FULLTEXT、PostgreSQL tsvector/tsquery、SQL Server CONTAINS 三方言对照与中文分词现状
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

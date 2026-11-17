@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 网关按 header/权重分流到灰度实例、Nacos 元数据打标、LoadBalancer 过滤策略与染色头透传
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

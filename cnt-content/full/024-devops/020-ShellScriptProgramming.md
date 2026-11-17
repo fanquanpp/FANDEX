@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 以三个真实运维脚本为主线讲 Bash：日志轮转清理、服务健康巡检、批量部署——set -euo pipefail 等防御性写法与引号/分词陷阱逐段讲透
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'devops/015-LinuxSystemManagement'
   - 'devops/200-IaC'

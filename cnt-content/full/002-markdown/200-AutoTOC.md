@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 自动目录（TOC）的实现方式：各平台占位符语法、GitHub 手动锚点目录、生成工具与维护建议。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/020-HeadingSyntax'
   - 'markdown/190-AnchorLinks'

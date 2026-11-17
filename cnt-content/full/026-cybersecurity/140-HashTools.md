@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: '哈希计算与校验命令：md5sum/sha256sum、openssl dgst 与 HMAC、大文件校验、企业级完整性校验实践'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/060-HashAlgorithm'
   - 'cybersecurity/460-Hashcat'

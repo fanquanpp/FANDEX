@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Markdown 中实现上下标的三种方式：HTML 标签、LaTeX 公式与平台扩展语法，及选型建议。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/210-LaTeXMathFormula'
   - 'markdown/040-BasicTextFormat'

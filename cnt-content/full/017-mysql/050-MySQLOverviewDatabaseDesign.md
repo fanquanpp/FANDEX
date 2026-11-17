@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: MySQL 发展历程、体系结构与数据库设计范式。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-11-17'
 related:
   - 'mysql/160-View'
   - 'mysql/060-MySQLEnvSetup'

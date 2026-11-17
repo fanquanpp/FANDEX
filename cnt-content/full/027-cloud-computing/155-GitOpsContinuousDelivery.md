@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: Git 单一事实源、拉模型与持续协调、ArgoCD/Flux 实配、漂移自愈与晋升回滚。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

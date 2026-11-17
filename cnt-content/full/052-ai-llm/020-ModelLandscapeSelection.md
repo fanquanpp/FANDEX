@@ -6,7 +6,7 @@ module: 'ai-llm'
 category: 计算机科学
 difficulty: beginner
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'ai-llm/010-WhatIsLLM'
   - 'ai-llm/170-LocalInferenceOllama'

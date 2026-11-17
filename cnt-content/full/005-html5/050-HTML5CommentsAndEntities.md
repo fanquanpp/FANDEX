@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第一道坎：HTML 注释怎么写、为什么连续空格会被压缩成一个、五个必须背的实体字符，以及 © 这类符号怎么打出来。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'html5/030-HTML5EnvSetupFirstPage'
   - 'html5/070-HTML5BlockVsInline'

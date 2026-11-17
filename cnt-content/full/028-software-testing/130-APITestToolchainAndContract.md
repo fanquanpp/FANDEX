@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 三大技术栈的 API 自动化实战：Postman/Newman 集合工程化、REST Assured Given-When-Then、Supertest 进程内测试，含 JSON Schema 校验与契约测试。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'software-testing/120-APIAutomationTest'
   - 'software-testing/135-InterfaceTestingMethod'

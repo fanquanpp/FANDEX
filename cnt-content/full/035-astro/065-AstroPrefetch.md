@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用 prefetch 配置与 data-astro-prefetch 让下一页在用户点击前就开始加载，理解四种策略的取舍。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/030-PagesRouting'
   - 'astro/120-AstroViewTransitions'

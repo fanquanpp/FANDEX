@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: Flux 组件架构与 GitRepository/Kustomization 实配、镜像自动化、多环境仓库布局与 Promotion 促销流程
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

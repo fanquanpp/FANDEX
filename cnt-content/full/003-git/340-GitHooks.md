@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 客户端与服务器端钩子自动化——pre-commit、commit-msg、pre-receive 与 husky 管理
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

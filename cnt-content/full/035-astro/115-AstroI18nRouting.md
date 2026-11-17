@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 Astro 的 i18n 路由配置多语言站点：语言前缀策略、缺页回退、浏览器语言重定向与构建产物形态。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/030-PagesRouting'
   - 'astro/050-ContentCollections'

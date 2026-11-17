@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 自动链接：尖括号语法（CommonMark）与裸 URL 识别（GFM 扩展）的规则、边界与差异。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/050-LinkImage'
   - 'markdown/110-GitHubFlavoredMarkdown'

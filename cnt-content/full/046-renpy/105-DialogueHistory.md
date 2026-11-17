@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 _history_list 构建对话回看：HistoryEntry 字段（who/what/when）、自定义 history screen 滚动界面、挂入游戏菜单，附回看漏读、分支回顾与译文核对三例
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

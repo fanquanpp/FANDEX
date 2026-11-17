@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Next.js 全栈拼图：Server Actions、proxy（原 middleware）、Route Handlers、数据库集成、认证与部署。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'react/080-PerformanceOptimization'
   - 'react/110-JSXDeepAnalysis'

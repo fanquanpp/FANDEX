@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 分区策略（范围/列表/哈希）、分区裁剪、分区维护与跨方言差异——日志表从 5000 万行瘦身到每查必中的完整过程
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

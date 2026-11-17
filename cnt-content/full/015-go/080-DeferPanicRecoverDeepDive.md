@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 延迟调用的执行时机、panic 传播与 recover 的正确姿势。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'go/070-GoErrorHandling'
   - 'go/030-GoBasicSyntax'

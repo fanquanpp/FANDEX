@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: Redis for AI 套件的三大能力：向量库（语义检索）、推理缓存（精确匹配）、语义缓存（相似匹配），以及向量相似度搜索的量化与 HNSW 优化。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'redis/100-VectorSet'
   - 'redis/186-RedisFlexTieredStorage'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 项目初始化流程、脚手架工具、模板选择与项目结构规范。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'shell/090-BuildTool'
   - 'cs-fundamentals/040-ProgrammingParadigmBasics'

@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/030-IoCDependencyInjection'
   - 'spring-boot/050-ConfigurationManagement'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'spring-boot/110-AspectOrientedProgramming'
   - 'spring-boot/160-ActuatorObservability'

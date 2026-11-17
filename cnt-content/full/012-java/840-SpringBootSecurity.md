@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Spring Security与认证授权
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'java/830-SpringBootAdvanced'
   - 'java/850-SpringBootDataAccess'

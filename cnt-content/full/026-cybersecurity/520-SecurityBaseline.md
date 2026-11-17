@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 安全基线：CIS Benchmark 结构与用法、等保 2.0 分级要求、Linux/Windows/数据库/中间件加固清单、Linux 与 Windows 一键加固脚本与自动化合规工具。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/320-ZeroTrustArchitecture'
   - 'cybersecurity/300-IdentityAccessManagement'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第二课：函数声明与箭头函数、参数与返回类型、可选/默认/剩余参数、this 陷阱入门，对齐官方 TypeScript Handbook。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'typescript/040-TSBasicsVariablesAndTypes'
   - 'typescript/060-TSBasicsClasses'

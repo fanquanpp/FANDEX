@@ -7,7 +7,7 @@ category: 工具链
 difficulty: beginner
 prerequisites: []
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'start/020-ComputerBasicsForBeginners'
   - 'start/030-DevEnvironmentSetup'

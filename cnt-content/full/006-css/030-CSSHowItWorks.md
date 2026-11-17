@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 浏览器如何加载与解析 CSS，DOM 与 CSSOM 如何合成渲染树并完成绘制。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'css/040-StyleSheetImportMethod'
   - 'css/550-CriticalRenderPathOptimization'

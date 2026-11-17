@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 依赖数组语义、清理函数时序、useEffectEvent，以及官方反模式判例：链式 state、派生数据进 Effect、事件逻辑误放 Effect。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'react/040-HooksDeep'
   - 'react/042-UseReducerAndStateLogic'

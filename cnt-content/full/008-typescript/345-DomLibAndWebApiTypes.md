@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: lib.dom.d.ts 从哪来、lib 与 target 怎么组装、DOM 泛型方法与 addEventListener 的事件映射，以及浏览器和 Node 环境下 lib 差异导致的常见报错。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

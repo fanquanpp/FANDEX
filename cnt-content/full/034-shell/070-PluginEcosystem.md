@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 编辑器与IDE插件体系、包管理机制、插件开发基础与生态维护。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'shell/100-EnvVarPath'
   - 'shell/050-IDEEditorSelection'

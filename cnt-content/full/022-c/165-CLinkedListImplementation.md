@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 用 struct Node 与 malloc 手写链表这一节点式数据结构：节点生命周期、头插尾插与按位删除、二级指针免特判改头、双指针反转、虚拟头节点取舍，附完整 slist 库、Linux 内核 list_head 与解释器符号表案例，通讯录、任务队列与 LRU 缓存三个实战场景。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'c/160-DoublePointerPointerArray'
   - 'c/200-DynamicMemoryManagement'

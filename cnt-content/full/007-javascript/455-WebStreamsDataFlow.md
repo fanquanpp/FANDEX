@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从 fetch 响应体到自定义管道：ReadableStream/WritableStream/TransformStream 三种流、背压与队列策略、管道链与 NDJSON/SSE 流式解析，附下载进度条与流类型关系图。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

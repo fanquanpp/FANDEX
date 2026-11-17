@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 主库挂了之后：Patroni 集群搭建、故障转移流程、PgBouncer 与 HAProxy 的配套分工，以及复制监控速查
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

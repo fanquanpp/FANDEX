@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 类定义、构造函数、继承、接口、数据类、密封类、枚举与伴生对象。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'kotlin/030-KotlinBasicSyntax'
   - 'kotlin/040-KotlinFunctionAndLambda'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: HTTPS token、credential helper、SSH 密钥生成验证与多账号 host 别名配置
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

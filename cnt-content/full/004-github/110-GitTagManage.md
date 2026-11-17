@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以清单驱动方式按标签全生命周期讲解 git tag 的创建、查看、推送、删除与检出，覆盖附注标签与轻量标签的区别和语义化版本规范，适合零基础学习者。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

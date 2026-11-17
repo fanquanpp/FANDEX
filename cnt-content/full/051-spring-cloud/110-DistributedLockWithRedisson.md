@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-cloud/090-DistributedTransactionSeata'
   - 'spring-boot/110-AspectOrientedProgramming'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'redis/250-RedlockDistributedLock'
   - 'spring-cloud/100-EventDrivenMessaging'

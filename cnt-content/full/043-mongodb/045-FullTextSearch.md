@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: text 索引的建立与限制、$text 查询与相关性评分、与正则查询的性能取舍、Atlas Search 边界
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

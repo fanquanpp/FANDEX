@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 资源建模、统一响应与业务错误码、请求验证、版本化与幂等键：把「能跑的接口」升级为「好用的 API 契约」的设计篇，附完整订单 API 推演与练习
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

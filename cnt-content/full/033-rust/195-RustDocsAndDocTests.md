@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 三斜线文档注释与模块级文档、doctest 锁住示例、cargo doc 本地构建、docs.rs 构建差异排查
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'rust/140-RustEcosystemProject'
   - 'rust/120-RustTestingDebugging'

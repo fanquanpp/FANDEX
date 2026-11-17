@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 理解 Godot 资源的数据容器本质与共享缓存机制，学会自定义 Resource 并保存为 .tres 数据文件
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: ['godot/020-NodesScenesAndInstancing', 'godot/055-AutoloadAndSceneManagement']
 prerequisites: ['godot/020-NodesScenesAndInstancing']
 ---

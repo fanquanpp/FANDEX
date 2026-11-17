@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C 字符串专篇：char 数组与 '\0' 终止符心智模型、字面量与 char* 的存储差异、string.h 全家（strlen/strcpy/strncpy/strcat/strcmp/strchr/strstr/strtok/strerror）逐个可跑示例、sizeof 与 strlen 混用陷阱，附日志解析、配置键值切分、argv 分词与提取数字实战。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'c/120-ArrayDetailed'
   - 'c/150-PointerArrayDifference'

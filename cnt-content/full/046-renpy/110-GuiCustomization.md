@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 替换图片与调整 gui.rpy、options.rpy 变量给游戏改头换面，理解九宫格边框机制
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'renpy/080-ScreensAndScreenLanguage'
   - 'renpy/115-StyleSystemAndStyleProperties'

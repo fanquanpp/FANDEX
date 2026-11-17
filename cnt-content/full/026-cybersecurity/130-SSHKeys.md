@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'SSH 密钥实战：ed25519 密钥生成、authorized_keys 管理与权限加固、ssh-agent 转发、SSH 证书与跳板机'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/520-SecurityBaseline'
   - 'cybersecurity/050-AsymmetricEncryption'

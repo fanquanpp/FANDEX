@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 从特权级到 hypervisor 再到 namespace 与 cgroup：容器到底虚拟化了什么、与虚拟机的本质区别、GOMAXPROCS 与 JVM 内存感知失败的 OS 根源，附 cgroup 实操与练习
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

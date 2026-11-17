@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: std::format与格式化
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'cpp/490-CppRegex'
   - 'cpp/500-CppDateTime'

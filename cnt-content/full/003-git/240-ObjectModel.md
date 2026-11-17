@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: Git 对象模型详解：blob、tree、commit、tag 四种对象的结构、关系与手工构造实验。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'git/150-GitRemoteRepoOperation'
   - 'git/170-DistributedVCSPrinciple'

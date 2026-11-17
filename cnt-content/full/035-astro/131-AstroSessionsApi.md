@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 用 Astro Session API 把"不透明 sessionId 换取身份"落成可运行实现：Astro.session、存储驱动与 Cookie 机制。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/130-AstroMiddleware'
   - 'astro/100-AstroFormsActions'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: gh CLI 脚本化与自动化组合：--json + jq 的输出字段选择与模板、shell 脚本与 GitHub Actions 中的自动化模式（gh pr checks 判定、gh run watch、批量 Issue 治理）、token 最小权限与脚本安全习惯、常见脚本错误对策。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'github/440-GitHubCLI'
   - 'github/450-GhCliAuth'

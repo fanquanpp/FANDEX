@@ -6,7 +6,7 @@ module: 'spring-boot'
 category: 后端技术
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'ai-llm/030-FirstLlmApiCall'
   - 'ai-llm/110-ToolCallingDesign'

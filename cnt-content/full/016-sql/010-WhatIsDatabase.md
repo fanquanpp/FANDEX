@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 面向零基础读者建立数据库、表、行、列、DBMS 的完整心智模型，理解为什么不用文件和 Excel 存数据，并写出第一条查询语句。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'sql/020-OverviewStandard'
   - 'sql/030-SQLFirstSteps'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: server:defer 指令、fallback 占位与请求期渲染——在整页静态输出的站点里嵌一块按请求渲染的个性化内容
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/060-IslandsClientComponents'
   - 'astro/131-AstroSessionsApi'

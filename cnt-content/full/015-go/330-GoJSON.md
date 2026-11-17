@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: encoding/json详解
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/340-GoDatabase'
   - 'go/470-GoHTTP'

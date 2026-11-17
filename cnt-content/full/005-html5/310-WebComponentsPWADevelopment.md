@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Web Components 组件体系：Custom Elements、Shadow DOM、HTML Templates、slot 插槽、样式隔离与生命周期。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'html5/220-EmbeddedContent'
   - 'html5/160-ProgressMeter'

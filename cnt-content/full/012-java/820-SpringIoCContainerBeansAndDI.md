@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: IoC 容器的形式化模型与依赖图构建、BeanDefinition 注册、循环依赖三级缓存、Bean 生命周期全流程、三种依赖注入方式、作用域与条件装配、自动配置机制；含 BeanPostProcessor 实战与 Bean 内存泄漏、启动慢优化案例。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/825-SpringAOP'
   - 'java/827-SpringDeclarativeTransactions'

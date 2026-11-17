@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 认识 Ren'Py 视觉小说引擎的定位版本与许可证，完成安装并创建第一个可运行的项目
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related: ['renpy/020-FirstScriptSayAndCharacters', 'renpy/130-BuildingDistributions']
 prerequisites: []
 ---

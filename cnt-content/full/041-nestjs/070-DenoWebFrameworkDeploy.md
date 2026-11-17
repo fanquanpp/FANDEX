@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 用 Hono 构建 REST API，接入 Deno KV 存储与定时任务；部署一节讲清 Deno Deploy 平台现状与 Docker 自托管路线。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'nestjs/030-DenoPermissionsSecurity'
   - 'nestjs/050-DenoKVQueues'

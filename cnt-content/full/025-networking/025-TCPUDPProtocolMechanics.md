@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 面向运维排障的 TCP/UDP——握手挥手、状态机、TIME_WAIT/CLOSE_WAIT 治理、可靠传输与选型
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

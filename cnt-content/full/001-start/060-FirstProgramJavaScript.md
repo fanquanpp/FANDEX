@@ -9,7 +9,7 @@ prerequisites:
   - 'start/040-TerminalAndShellBasics'
   - 'start/050-LearnHowToLearnProgramming'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'javascript/010-WhatIsJavaScript'
   - 'start/070-FirstProgramPython'

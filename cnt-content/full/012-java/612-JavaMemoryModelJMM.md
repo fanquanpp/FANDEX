@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: JMM 的形式化模型与诞生背景、主内存与工作内存抽象、原子性/可见性/有序性三大特性、happens-before 八条规则、内存屏障、volatile 与 final 的语义、双重检查锁定的正确写法；附 JVM 与 C++11/Go/Rust 内存模型的横向对比。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/610-JVMRuntimeDataAreasAndObjectLayout'
   - 'java/510-ConcurrencyDetailed'

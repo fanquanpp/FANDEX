@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: classic PAT 与 fine-grained PAT 的差异与迁移、Actions 的 GITHUB_TOKEN、GitHub App 与 OAuth App 的选型边界，配「CI 用哪种令牌」与「第三方 App 该批多少权限」两个决策场景。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

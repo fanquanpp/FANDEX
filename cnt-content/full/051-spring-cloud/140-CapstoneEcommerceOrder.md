@@ -8,7 +8,7 @@ difficulty: advanced
 prerequisites:
   - 'spring-cloud/090-DistributedTransactionSeata'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'spring-cloud/120-MicroserviceAuth'
   - 'spring-cloud/130-MonitoringAlerting'

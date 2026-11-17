@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-11-17'
 related:
   - 'python/010-WhatIsPython'
   - 'sql/010-WhatIsDatabase'

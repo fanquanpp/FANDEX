@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 分清 define 与 default 的保存语义，掌握常量与玩家状态两条声明路线与三条官方警告
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

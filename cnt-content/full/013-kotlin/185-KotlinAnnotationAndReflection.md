@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 注解声明（Target/Retention/Repeatable）、kotlin-reflect 与 KClass/KProperty 的用法、成本与编译期替代方案。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 平台工程：平台即产品、内部开发者门户（IDP）、黄金路径、Backstage 与效能度量。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'devops/010-OverviewLinuxBasics'
   - 'devops/140-CICDPipeline'

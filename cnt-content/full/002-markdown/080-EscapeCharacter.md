@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Markdown 转义机制：反斜杠的可转义字符集、行尾硬换行、HTML 实体与表格管道符等常见陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/040-BasicTextFormat'
   - 'markdown/120-Strikethrough'

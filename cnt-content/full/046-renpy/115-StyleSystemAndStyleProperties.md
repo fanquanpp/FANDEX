@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 状态前缀、样式继承、style 语句子句与 Shift+I 检查器：界面外观的最终执行层
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

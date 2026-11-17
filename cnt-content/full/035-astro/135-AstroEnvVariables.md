@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 astro:env schema 声明环境变量：类型校验、secret/public 分离，与 PUBLIC_ 旧法的对照迁移。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/080-BuildDeploy'
   - 'astro/131-AstroSessionsApi'

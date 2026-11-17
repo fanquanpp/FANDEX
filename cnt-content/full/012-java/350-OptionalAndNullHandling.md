@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Optional 的创建与安全取值、map/flatMap 链式取值、orElse 与 orElseGet 家族的求值差异、ifPresentOrElse 与 or（Java 9+）、什么时候该返回 Optional、什么时候是反模式；用用户查询、嵌套 DTO、遗留代码迁移三个场景落地。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/290-LambdaFunctionalProgramming'
   - 'java/300-StreamAPI'

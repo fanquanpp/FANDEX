@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: border-radius 完整原理：1-4 值语法、椭圆半径、百分比计算、圆角裁剪规则与常见形状实现。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/250-CSS3GridGridLayout'
   - 'css/330-CSSAnimationTransition'

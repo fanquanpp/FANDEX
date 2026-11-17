@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: action 协议、动作族清单、keysym 与 focus 导航、draggroup 拖放：屏幕交互的完整协议层
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

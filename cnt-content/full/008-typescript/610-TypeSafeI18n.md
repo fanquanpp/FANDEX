@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 构建类型安全的i18n系统
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/600-TypeSafeFormValidation'
   - 'typescript/620-TypeSafeRoute'

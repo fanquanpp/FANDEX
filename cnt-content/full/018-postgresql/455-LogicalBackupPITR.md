@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: pg_dump/pg_restore/pg_dumpall 逻辑备份线：自定义格式与并行恢复、schema-only 与数据子集策略、WAL 归档、PITR 演练与恢复演练 checklist
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

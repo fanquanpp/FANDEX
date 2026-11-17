@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'SQL 注入检测与防御命令：注入类型与探测手法、sqlmap 自动化测试、参数化查询与数据库最小权限加固'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/280-WebSecurityDeep'
   - 'cybersecurity/190-XSSAttack'

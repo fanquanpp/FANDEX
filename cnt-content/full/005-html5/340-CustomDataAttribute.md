@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: data-*
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/350-MicrodataJSONLD'
   - 'html5/280-CrossDocumentCommunication'

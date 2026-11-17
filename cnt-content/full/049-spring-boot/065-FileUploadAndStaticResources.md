@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/060-SpringMvcRestApi'
   - 'spring-boot/050-ConfigurationManagement'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'spring-boot/070-UnifiedResponseExceptionHandling'
   - 'spring-boot/190-CapstoneBlogApi'

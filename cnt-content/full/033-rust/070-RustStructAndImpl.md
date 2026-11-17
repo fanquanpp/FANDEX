@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 结构体定义与初始化简写、元组与单元结构体、impl 方法与关联函数、derive(Debug) 打印调试
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'rust/050-RustOwnershipBorrowing'
   - 'rust/075-RustEnumAndPatternMatching'

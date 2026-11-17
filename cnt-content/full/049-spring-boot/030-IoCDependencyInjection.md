@@ -8,7 +8,7 @@ difficulty: intermediate
 prerequisites:
   - 'spring-boot/020-FirstApplication'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'spring-boot/040-AutoConfigurationInternals'
   - 'spring-boot/110-AspectOrientedProgramming'

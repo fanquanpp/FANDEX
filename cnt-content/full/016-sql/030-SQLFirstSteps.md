@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 从环境搭建到亲手建库建表、写入并查出第一行数据，完成一次完整的 SQL 初体验。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'sql/040-DataQueryBasics'
   - 'sql/120-DML'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C 程序测试：assert 的契约语义与 NDEBUG 陷阱、测试文件组织（每模块一 test.c）、三步手写最小断言框架、Unity/CMocka/libcheck 选型对比，并接入 Makefile 目标与 CI 警告门禁形成质量闭环。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'c/470-BuildSystem'
   - 'c/485-StaticAnalysisAndSanitizers'

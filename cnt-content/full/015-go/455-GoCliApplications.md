@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 从 os.Args 到 flag 再到 cobra 的命令行演进、配置优先级合并、go:embed 打包静态资源——手写一个 frontmatter 校验 CLI（--check 与 --fix 子命令）的全过程
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

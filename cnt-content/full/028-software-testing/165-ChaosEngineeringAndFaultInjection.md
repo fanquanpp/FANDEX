@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 稳定态假设、实验设计（假设/爆炸半径/中止条件）、注入对象与工具（Chaos Mesh/Litmus/AWS FIS）、与压力及灾备测试的分工。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

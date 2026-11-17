@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: DevOps/SRE 理念、核心实践闭环与本模块学习地图——动手部分已拆分至 Linux 系统管理等专篇
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'devops/015-LinuxSystemManagement'
   - 'devops/310-OnCallPractice'

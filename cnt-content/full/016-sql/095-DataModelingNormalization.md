@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 从 ER 建模到关系模式：1NF/2NF/3NF/BCNF 的判定与分解，主外键与联合主键设计，反范式的取舍——用商品管理系统与学生成绩库两个真实项目讲
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

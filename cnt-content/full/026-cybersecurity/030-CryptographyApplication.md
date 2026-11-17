@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 密码学应用：PKI体系、数字证书、TLS协议、密钥管理与密码工程
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/020-SecurityModelFramework'
   - 'cybersecurity/210-CSRFAttack'

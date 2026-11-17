@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 把 2022 到 2026 四年版本演进按「3.12 语法表达力、3.13 性能与自由线程实验、3.14 自由线程转正与延迟注解、3.15 懒导入与不可变字典」串成时间线，逐特性配前后对照代码并标注版本下限（PEP 695/701/649/750/779/734/810/814），练习含 TypeVar 改写与 t-string 转义器。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

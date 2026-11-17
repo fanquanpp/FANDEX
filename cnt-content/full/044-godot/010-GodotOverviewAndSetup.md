@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 认识 Godot 4.7 免费开源游戏引擎，完成下载安装并创建第一个项目，熟悉编辑器界面与运行流程
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-11-17'
 related: ['godot/020-NodesScenesAndInstancing', 'godot/030-FirstScriptAndLifecycle']
 prerequisites: []
 ---

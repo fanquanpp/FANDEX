@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 性能瓶颈定位、节点与滤镜优化、懒加载、SVGO 压缩、缓存与渲染优化，以及何时切换到 Canvas。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'svg/130-SVGCSSStyling'
   - 'svg/150-SVGJavaScriptInteraction'

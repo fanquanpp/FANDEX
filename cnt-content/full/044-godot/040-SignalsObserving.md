@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 Godot 信号的观察者模式解耦节点，掌握声明连接发射与编辑器连线两种方式
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-11-17'
 related:
   - 'godot/030-FirstScriptAndLifecycle'
   - 'gdscript/090-SignalsAwaitCoroutines'

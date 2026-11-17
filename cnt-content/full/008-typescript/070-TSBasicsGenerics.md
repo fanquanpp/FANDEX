@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第四课：泛型函数与推断、泛型接口与类、约束 extends、keyof 与工厂函数，对齐官方 TypeScript Handbook。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'typescript/060-TSBasicsClasses'
   - 'typescript/220-FunctionGeneric'

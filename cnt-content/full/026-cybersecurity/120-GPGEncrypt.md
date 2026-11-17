@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'GPG 实战命令：密钥生成与导出、文件加解密、数字签名与验签、公钥交换与信任模型'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/050-AsymmetricEncryption'
   - 'cybersecurity/110-OpenSSLEncrypt'

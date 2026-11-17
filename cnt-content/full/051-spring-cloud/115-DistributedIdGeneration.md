@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: UUID/雪花/号段三种方案取舍、雪花位分配与时钟回拨处理、workerId 多机分配
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

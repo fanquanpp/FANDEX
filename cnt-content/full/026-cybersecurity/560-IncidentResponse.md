@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 应急响应：事件分类、取证分析（内存 Volatility、磁盘时间线、流量 Wireshark/tcpdump）、Linux/Windows 日志分析、遏制策略、恢复流程与复盘
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/530-CloudSecurity'
   - 'cybersecurity/550-SOC'

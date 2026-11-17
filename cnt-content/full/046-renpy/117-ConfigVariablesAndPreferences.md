@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 集中梳理 Ren'Py config.* 分类速查（窗口标题/存档目录/开发者开关/性能参数）与 preferences 运行时读写（text_cps/afm/音量），标注 config 只能在 init 阶段改、preferences 可运行时改的分界
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

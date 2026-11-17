@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: '内嵌 HTML 的机制与边界：块级行内规则、GitHub 消毒白名单、details 折叠与实用标签，及安全注意事项。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/160-SubscriptSuperscript'
   - 'markdown/050-LinkImage'

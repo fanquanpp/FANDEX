@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 用一个真实的 51 行 PowerShell 还原工具讲工程化脚本范式（param、严格模式、台账驱动、三态日志），用 4 行批处理的真实笔误讲大小写陷阱，附与 bash 的方言差异表。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'shell/140-CrossPlatformCommandLine'
   - 'shell/150-ShellBasics'

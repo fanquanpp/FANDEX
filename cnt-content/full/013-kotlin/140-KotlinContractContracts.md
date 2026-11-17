@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin 契约机制的形式化语义、编译器交互、效果系统与工程实践
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-16'
 related:
   - 'kotlin/070-KotlinScopeFunction'
   - 'kotlin/290-FlowReactiveStream'

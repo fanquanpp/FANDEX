@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 深入解析 CSS margin 合并、塌陷机制及 BFC 块格式化上下文的工程实践
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'css/170-PriorityCalculation'
   - 'css/040-StyleSheetImportMethod'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 开发环境搭建：操作系统与终端选择、编辑器、Git、运行时工具链安装与统一验证
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'shell/140-CrossPlatformCommandLine'
   - 'shell/110-EnvVerificationChecklist'

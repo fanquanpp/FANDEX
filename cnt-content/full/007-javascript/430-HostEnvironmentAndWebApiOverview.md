@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 浏览器宿主环境与 Web API 的分层总览：ECMAScript 内核之外还有什么、宿主对象五元组模型、各能力族（网络、存储、观察器、线程、设备能力）的设计动机与演化时间线，以及通往各专篇的导读地图，附 Geolocation 与 Notification 两个设备能力示例。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'javascript/410-DOMOperationEvent'
   - 'javascript/420-BOMBrowserObjectModel'

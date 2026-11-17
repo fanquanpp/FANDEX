@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: JUnit 5、Kotest、MockK 与 Android 测试的集成与工程用法。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'kotlin/395-KotlinCoroutineTesting'
   - 'kotlin/390-KotlinTest'

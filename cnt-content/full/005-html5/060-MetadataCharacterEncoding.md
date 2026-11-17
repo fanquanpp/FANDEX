@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: meta、title、link、UTF-8
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'html5/040-DocTypeDeclaration'
   - 'html5/245-WebStorage'

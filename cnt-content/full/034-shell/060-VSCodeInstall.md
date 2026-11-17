@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: VS Code 安装配置：三平台安装、code 命令行、扩展管理与 settings.json 常用配置
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'shell/050-IDEEditorSelection'
   - 'shell/070-PluginEcosystem'

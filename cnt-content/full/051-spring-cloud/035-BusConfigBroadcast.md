@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Bus 的事件广播模型、busrefresh 与单实例 refresh 的对照、binder 配置与静默失效排错，附 Nacos 推送主线与拉取式配置源的判定
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: App Router 两组高级文件约定：@slot 平行路由（并行渲染、default.tsx 兜底、独立 loading/error）与拦截路由（(.) (..) (...) 约定），配仪表盘多面板与商品模态框两个经典场景
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

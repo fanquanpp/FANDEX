@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Mermaid图表语法：流程图、时序图、甘特图、类图与状态图的完整用法。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/160-SubscriptSuperscript'
   - 'markdown/210-LaTeXMathFormula'

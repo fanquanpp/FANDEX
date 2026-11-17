@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C 代码静态分析与 Sanitizers 四件套：编译器警告分级、cppcheck/clang-tidy 工作流、ASan/UBSan/TSan/MSan 原理与实战、CI 警告门禁。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'c/470-BuildSystem'
   - 'c/495-DynamicDebuggingGDB'

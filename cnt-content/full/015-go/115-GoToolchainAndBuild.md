@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: go 命令全家桶：go test/vet/fmt/doc、构建标签与文件名约定、交叉编译、go work 多模块、GOTOOLCHAIN 版本管理、cgo 与 go:generate——构建与工具链专篇
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: typescript-eslint 与类型感知规则：flat config 接入、parserOptions.project 的代价与收益、no-floating-promises 明星规则、与 tsc 严格模式的分工，以 FANDEX 仓库真实配置为例。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

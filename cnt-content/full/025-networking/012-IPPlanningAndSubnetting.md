@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: IPv4/IPv6 地址规划、CIDR 手算、VLSM 分配与 NAT/NAPT 地址转换
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

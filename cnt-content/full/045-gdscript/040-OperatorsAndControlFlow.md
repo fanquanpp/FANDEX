@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 理解运算符优先级与短路求值，掌握 if while for 与 match 模式匹配的完整语法
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-11-17'
 related:
   - 'gdscript/030-BasicDataTypesConversion'
   - 'gdscript/050-FunctionsAndCallable'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 把一个三层应用安全放上云：动手划 VPC 与子网、收口安全组、理解 NAT 与路由，理解「能被公网访问的」与「绝不能被公网访问的」如何物理隔开。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/010-CloudComputingBasics'
   - 'cloud-computing/045-CloudStorageFundamentals'

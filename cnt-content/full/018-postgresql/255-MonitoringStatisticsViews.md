@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: pg_stat_statements 深用、pg_stat_activity 会话诊断、死元组观察、日志分析与 pgBadger，附可复制的日常巡检清单
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

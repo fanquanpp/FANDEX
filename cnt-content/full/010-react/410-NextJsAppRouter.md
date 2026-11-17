@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Next.js App Router 详解：文件约定、布局与模板、并行/拦截路由、加载态、错误态与路由级数据获取。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'react/390-ReactCompilerAutoMemoization'
   - 'react/400-ServerClientComponents'

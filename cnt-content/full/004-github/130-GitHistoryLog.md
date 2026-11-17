@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以侦探查案驱动方式讲解 git log 的各类查看姿势与 git diff、git show、git blame、git reflog 的取证技巧，覆盖历史筛选、差异对比与引用日志，适合零基础学习者。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

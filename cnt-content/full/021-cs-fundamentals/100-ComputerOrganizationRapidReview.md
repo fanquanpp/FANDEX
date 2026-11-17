@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 计算机组成原理考点速通：指令系统、CPU 数据通路、控制器、流水线、存储体系与 I/O 七大块一张图复习，每节配深读篇链接
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cs-fundamentals/050-DigitalLogic'
   - 'cs-fundamentals/540-DiscreteMathematics'

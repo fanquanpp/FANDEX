@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: extern "C" 与 unsafe 声明、#[repr(C)] 结构体布局、CString/CStr 边界字符串、Box::into_raw/from_raw 的内存责任、#[no_mangle] 导出、build.rs 链接 C 库，以及被 Python/Node 调用的形态。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'rust/200-RustUnsafeRust'
   - 'rust/150-RustSmartPointers'

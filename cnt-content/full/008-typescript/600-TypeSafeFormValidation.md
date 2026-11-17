@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 构建类型安全的表单验证系统
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'typescript/580-TypeSafeStateManagement'
   - 'typescript/570-TypeSafeAPIClient'

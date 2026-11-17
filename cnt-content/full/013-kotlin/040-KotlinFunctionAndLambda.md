@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 函数定义、扩展函数、Lambda 表达式、高阶函数、内联函数与 SAM 转换。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'kotlin/020-KotlinOverviewEnvSetup'
   - 'kotlin/030-KotlinBasicSyntax'

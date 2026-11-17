@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'TDD 红-绿-重构循环与三定律实战、测试清单驱动设计、适用边界与常见误用。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'software-testing/030-TestLevels'
   - 'software-testing/190-TestDouble'

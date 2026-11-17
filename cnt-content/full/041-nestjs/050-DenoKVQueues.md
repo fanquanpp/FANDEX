@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 内置零配置数据库：强一致 KV、原子事务与消息队列。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'nestjs/070-DenoWebFrameworkDeploy'
   - 'nestjs/040-DenoStdLibNpmCompatibility'

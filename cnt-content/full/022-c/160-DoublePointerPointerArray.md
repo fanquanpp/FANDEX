@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C 语言二级指针（多级间接寻址）的完整工程体系：形式化定义与内存模型、输出参数与二级指针游走等工程模式、内存安全与严格别名、陷阱调试性能全景，附 Unix main/SQLite/Redis 案例与跨语言对比。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'c/250-FunctionCallStackFrame'
   - 'c/150-PointerArrayDifference'

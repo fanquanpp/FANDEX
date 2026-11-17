@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C#值类型与引用类型详解：struct vs class。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'csharp/270-DILifecycle'
   - 'csharp/390-GCGeneration'

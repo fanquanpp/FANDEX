@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 流分类标记、队列调度、限速整形与拥塞避免——让语音在带宽争抢中活下来
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

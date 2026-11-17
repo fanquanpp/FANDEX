@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'OpenSSL 证书命令：生成私钥与 CSR、自签与 CA 签发、证书链查看与验证、PEM/DER/PKCS12 格式转换'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/080-DigitalCertificate'
   - 'cybersecurity/110-OpenSSLEncrypt'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: Pod 状态机逐状态排查路径、kubectl describe/events/logs 信息层次、ephemeral container 调试、节点 NotReady 处置——从"上线后 Pod 起不来"讲起
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 'GitHub Copilot 深度解析：补全/Chat/agent mode/coding agent 四种工作形态、订阅计划、提示词工程、copilot-instructions、代码审查衔接与组织策略。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'github/210-IssuesTemplateTagMilestone'
   - 'github/180-PullRequestCompleteCollaborationFlow'

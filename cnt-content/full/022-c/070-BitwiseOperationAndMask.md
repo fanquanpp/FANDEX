@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用「8 个开关塞进 1 个字节」掌握六个位运算符与掩码四件套：权限标志实战贯穿全文，-8 >> 1 的算术/逻辑右移实验、UBSan 当场抓越界移位、Brian Kernighan 置位计数、异或交换的同地址陷阱、大小端探针小实验，最后看 C23 的 0b 字面量、数字分隔符与 stdbit.h 函数族。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'c/240-BitField'
   - 'c/260-ConstAndVolatileQualifiers'

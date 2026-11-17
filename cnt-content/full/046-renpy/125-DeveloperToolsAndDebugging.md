@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: Shift+D 菜单、Shift+O 控制台、lint 静态检查、Shift+R 热重载与 Skip 跳过的工程化用法
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

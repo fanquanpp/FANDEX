@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 云原生概览：定义与成熟度、12-Factor、容器化与编排概览、可观测性概览。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/030-PublicCloudPrivateCloudHybridCloud'
   - 'cloud-computing/070-DockerDeepAnalysis'

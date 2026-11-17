@@ -10,7 +10,7 @@ prerequisites:
   - 'mysql/110-SQLDataOperationQuery'
   - 'spring-boot/030-IoCDependencyInjection'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'spring-boot/100-TransactionManagement'
   - 'spring-boot/040-AutoConfigurationInternals'

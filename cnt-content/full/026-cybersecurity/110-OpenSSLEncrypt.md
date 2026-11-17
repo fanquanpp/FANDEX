@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'OpenSSL 加解密命令：对称加解密（AES-GCM/CBC）、口令派生（PBKDF2/scrypt）、非对称加解密与数字信封'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/040-SymmetricEncryption'
   - 'cybersecurity/050-AsymmetricEncryption'

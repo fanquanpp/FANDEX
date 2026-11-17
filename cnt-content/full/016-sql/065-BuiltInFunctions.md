@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 字符串、数值、日期、条件表达式四族函数：CONCAT_WS 跳 NULL、字节与字符之别、DATEDIFF 与 TIMESTAMPDIFF、NULLIF 除零保护与 CASE 两形态
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 运行时数据区五大区域、对象内存布局（Mark Word/压缩指针/对齐填充）、堆分代与对象晋升、垃圾回收算法与现代收集器（G1/ZGC/Shenandoah）、生产内存问题排查与调优案例；JMM 规范层内容见 612 篇。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'java/612-JavaMemoryModelJMM'
   - 'java/600-JVMGC'

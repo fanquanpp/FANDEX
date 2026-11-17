@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从 570 性能篇拆出的 Stream 专篇：Readable/Writable/Transform/Duplex 四种流、pipe 与 pipeline 的错误传播、背压机制与 drain 事件、大日志文件逐行处理，附管线复杂度、RxJS 对比与背压治理案例。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

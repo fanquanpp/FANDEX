@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 零基础第一课：用 Docker 五分钟跑起 MongoDB，理解文档模型并写出第一句增删改查。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-11-17'
 related:
   - 'mongodb/020-MongoDBCRUDOperations'
   - 'mongodb/050-MongoDBSchemaDesign'

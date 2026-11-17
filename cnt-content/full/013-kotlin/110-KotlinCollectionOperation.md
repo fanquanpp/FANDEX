@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 集合函数式操作
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'kotlin/340-KotlinSerialization'
   - 'kotlin/140-KotlinContractContracts'

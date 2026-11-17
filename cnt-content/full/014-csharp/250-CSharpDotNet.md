@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: .NET 平台本位：Framework 到 .NET 10 的演化史、平台架构、AOT 编译限制、跨语言生态对比、项目结构分层与部署运维。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'csharp/010-WhatIsCSharp'
   - 'csharp/255-ConfigurationAndLogging'

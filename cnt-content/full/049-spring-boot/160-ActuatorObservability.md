@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/050-ConfigurationManagement'
   - 'spring-boot/040-AutoConfigurationInternals'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'spring-boot/150-AsyncScheduling'
   - 'spring-boot/180-PackagingDeployment'

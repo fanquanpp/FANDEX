@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: async 函数返回值的推断规则、Awaited 的语义（复用 infer 篇的 MyAwaited）、PromiseLike 与 thenable、catch 分支 unknown 的处理，以及轮询与事件回调中的异步类型陷阱。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

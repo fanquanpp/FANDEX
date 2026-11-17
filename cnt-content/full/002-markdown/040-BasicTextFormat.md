@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: '强调语法精讲：斜体/粗体的星号与下划线差异、词内强调规则、删除线与上标下标等扩展格式。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/020-HeadingSyntax'
   - 'markdown/030-ParagraphLineBreak'

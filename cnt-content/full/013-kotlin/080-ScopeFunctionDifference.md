@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin 作用域函数深度解析：let、run、with、apply、also 的设计哲学、形式化定义与工程实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'kotlin/040-KotlinFunctionAndLambda'
   - 'kotlin/050-KotlinClassObject'

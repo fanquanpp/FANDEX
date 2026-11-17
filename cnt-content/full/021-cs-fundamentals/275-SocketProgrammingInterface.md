@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: socket/bind/listen/accept 五步与 UDP 无连接对照：为什么服务端有两个 socket、网络字节序陷阱、手写 TCP 回显服务与局域网 UDP 广播发现协议，附粘包复现与练习
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

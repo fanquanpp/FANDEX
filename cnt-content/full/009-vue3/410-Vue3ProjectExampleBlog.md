@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 综合运用组合式 API、Pinia 与 Vue Router 的个人博客项目。
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'vue3/325-Vue3PerformanceToolkit'
   - 'vue3/145-DynamicComponentPatterns'

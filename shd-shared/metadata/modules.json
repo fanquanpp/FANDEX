@@ -523,12 +523,12 @@
         },
         {
           "label": "当前版本手册",
-          "url": "https://www.postgresql.org/docs/17/",
+          "url": "https://www.postgresql.org/docs/18/",
           "type": "api"
         },
         {
           "label": "SQL 命令",
-          "url": "https://www.postgresql.org/docs/17/sql-commands.html",
+          "url": "https://www.postgresql.org/docs/18/sql-commands.html",
           "type": "api"
         }
       ]

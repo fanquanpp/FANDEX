@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: '@WebSocketGateway 与连接生命周期、房间与广播、网关内握手鉴权、与拦截器/异常过滤器的语义差异，以及与微服务传输层的选型对比。'
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'nestjs/205-AuthJwtAndPassport'
   - 'nestjs/240-MicroservicesAndHealth'

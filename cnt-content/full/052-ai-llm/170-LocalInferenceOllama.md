@@ -6,7 +6,7 @@ module: 'ai-llm'
 category: 计算机科学
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-10-29'
+updated: '2026-11-17'
 related:
   - 'ai-llm/020-ModelLandscapeSelection'
   - 'ai-llm/160-FinetuningWhenHow'

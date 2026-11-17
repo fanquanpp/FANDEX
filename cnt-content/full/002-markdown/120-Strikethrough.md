@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: GFM 删除线语法：规则细节、与 HTML 标签的语义分工、跨平台兼容与工程用法。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/040-BasicTextFormat'
   - 'markdown/080-EscapeCharacter'

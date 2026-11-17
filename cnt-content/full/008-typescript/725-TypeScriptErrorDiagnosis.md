@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 按错误码组织的 TypeScript 高频编译错误速查：TS2304/TS2307/TS2339/TS2345/TS2531/TS2551/TS2769/TS18048/TS2589 的触发场景、报错原文、三层排查法与修法。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

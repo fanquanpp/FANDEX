@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 队列/主题/事件总线概念对比、投递语义、可见性超时、死信队列、扇出过滤与顺序性保证。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

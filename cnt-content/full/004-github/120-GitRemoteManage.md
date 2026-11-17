@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以多设备协作场景驱动讲解 git remote 系列命令（查看、添加、修改、删除远程关联），覆盖 origin/upstream 双远程、fork 工作流与凭证管理，适合零基础学习者。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

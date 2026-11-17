@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 声明式配置管理、Inventory/Playbook/Role、模板渲染与批量运维脚本，Terraform 管资源、Ansible 管主机内配置的分工。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: charter 设计、session-based test management、探索与脚本的互补边界、探索发现固化为自动化用例的路径。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

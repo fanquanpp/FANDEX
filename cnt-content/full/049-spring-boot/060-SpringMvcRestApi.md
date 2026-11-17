@@ -9,7 +9,7 @@ prerequisites:
   - 'spring-boot/030-IoCDependencyInjection'
   - 'spring-boot/050-ConfigurationManagement'
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-17'
 related:
   - 'spring-boot/070-UnifiedResponseExceptionHandling'
   - 'spring-boot/080-BeanValidation'

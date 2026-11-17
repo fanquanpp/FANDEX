@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Markdown编辑器核心功能：实时预览、快捷键操作与高效编辑技巧。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-16'
 related:
   - 'markdown/210-LaTeXMathFormula'
   - 'markdown/220-Mermaid'

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: Image Solid Composite ConditionSwitch 等 displayable 族与 layer zorder camera 的全局调度
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

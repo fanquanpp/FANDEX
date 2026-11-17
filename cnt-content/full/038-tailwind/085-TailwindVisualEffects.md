@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Tailwind CSS v4 视觉层系统讲解：scale/rotate/translate/skew 变换与独立属性机制、filter 与 backdrop-filter 全族、mask 遮罩、mix-blend 混合模式、clip-path 几何切割与 scroll-driven animations，配商品图悬停放大、毛玻璃导航栏等工程例子
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

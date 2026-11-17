@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 属性规则体系——行尾标准化、binary 标记、diff/merge 驱动、导出与语言统计标注
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related: []
 prerequisites: []
 ---

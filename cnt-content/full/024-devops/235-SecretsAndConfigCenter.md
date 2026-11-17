@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 配置管理的原则与工具版图、集中式配置中心（Nacos/Spring Cloud Config）、多环境管理（Kustomize overlay）、密钥治理（Vault/K8s Secrets/ESO）
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 理解 Ren'Py 自动保存什么不保存什么，用 File 动作搭建存档界面；persistent 跨会话数据的完整工程：字段演进、与存档的本质区别、成就与画廊解锁参考实现、MultiPersistent
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'renpy/080-ScreensAndScreenLanguage'
   - 'renpy/117-ConfigVariablesAndPreferences'

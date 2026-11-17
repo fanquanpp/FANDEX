@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 用 astro:assets 打通本地图与远程海报的全局优化管线，配置远程域名白名单与响应式图。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'astro/130-AstroMiddleware'
 prerequisites: []

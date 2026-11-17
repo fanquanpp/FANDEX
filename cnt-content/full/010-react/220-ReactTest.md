@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 组件测试与 E2E 专篇：Vitest + Testing Library 技术栈、按角色查询的行为测试法、异步与网络 mock（MSW）、Hook 测试、Playwright 端到端测试、常见反模式与调试技巧。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-16'
 related:
   - 'react/200-ReactForm'
   - 'react/210-ReactTypeScript'

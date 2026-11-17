@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Shell 场景的网络诊断速查：ping/traceroute 连通性、dig/nslookup 的 DNS 排查、ss/lsof/netstat 三代端口占用、curl 排查姿态与 ufw 防火墙，附跨平台命令对照。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'shell/140-CrossPlatformCommandLine'
   - 'shell/120-TroubleshootingGuide'

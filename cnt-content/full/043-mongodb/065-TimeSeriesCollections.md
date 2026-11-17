@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: timeSeries 集合的创建与参数、桶存储与查询行为、granularity 调整与 TTL 生命周期管理
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related: []
 prerequisites: []
 ---

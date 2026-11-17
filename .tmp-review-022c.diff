@@ -1,0 +1,2307 @@
+diff --git a/cnt-content/full/022-c/010-CZeroBasisStart.md b/cnt-content/full/022-c/010-CZeroBasisStart.md
+index ad4a3771..e6e64529 100644
+--- a/cnt-content/full/022-c/010-CZeroBasisStart.md
++++ b/cnt-content/full/022-c/010-CZeroBasisStart.md
+@@ -169,12 +169,29 @@ int main(void) {
+ - GCC 官方手册：https://gcc.gnu.org/onlinedocs/
+ - C 语言参考（cppreference C 版）：https://en.cppreference.com/w/c
+ 
+-## 11. 自我检查
++## 11. 遮码自检
+ 
+-- 能不看教程完成「装 gcc、写 hello.c、两步运行」全流程；
+-- 能说出编译型与解释型在运行方式上的一句话差别；
+-- 能读懂一条 `文件:行:列 + 诊断` 格式的编译报错并修复；
+-- 已完成三个修改实验。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 不看教程，完成「装 gcc、写 hello.c、两步运行」全流程（默写命令）。
++2. 一句话说清编译型与解释型在运行方式上的差别。
++3. 给你一条 `hello.c:5:9: error: expected ';'` 格式的报错，第一步看哪里？
++4. 第 6 节的三个修改实验完成了吗？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++```bash
++gcc --version          # 1) 先确认编译器已就位
++gcc hello.c -o hello   # 编译：gcc 把源码翻译成可执行文件
++./hello                # 运行：产出的是 hello，不是 hello.c
++```
++
++2. 编译型先由编译器整本翻译成机器码再运行；解释型由解释器边读边执行——C 属于前者。
++3. 从最前面的 `文件:行:列` 定位到那一行那一列，再看后半句诊断说什么；编译错误是最早也最便宜的反馈，改掉就重编。
++4. 修改实验是本篇的肌肉记忆环节——只看不做等于没学，没完成就回第 6 节补上。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/020-CLanguageOverview.md b/cnt-content/full/022-c/020-CLanguageOverview.md
+index 6b3dc212..75ecdb0c 100644
+--- a/cnt-content/full/022-c/020-CLanguageOverview.md
++++ b/cnt-content/full/022-c/020-CLanguageOverview.md
+@@ -67,6 +67,8 @@ gcc hello.o -o hello         # 阶段四：链接（把库里的 printf 接进
+ | C17 | 2017 | 仅缺陷修订，无新特性 |
+ | C23 | 2023 | `nullptr`、`auto`、数字分隔符、`bool` 成关键字（[专篇详解](/c/520-C23CoreFeatures)） |
+ 
++表中取约定俗成的「名字年份」（C17 草稿 2017 年定稿、C23 特性 2023 年冻结）；正式发布年份看 ISO 编号——C17 是 ISO/IEC 9899:2018，C23 是 ISO/IEC 9899:2024（2024 年 10 月 31 日发布，本模块各篇的口径与此一致）。
++
+ 编译器对标准的支持度随版本不同，写代码前用 `gcc -std=c23` 这类开关显式声明目标标准；支持矩阵的查法在 C23 深水区篇有完整演示（验证于 2026-09，以 [cppreference C 页](https://en.cppreference.com/w/c) 为准）。
+ 
+ ## 5. 对照表：C 在语言地图上的位置
+@@ -114,12 +116,24 @@ gcc hello.o -o hello         # 阶段四：链接（把库里的 printf 接进
+ - cppreference C 语言参考（每篇的权威查证处）：https://en.cppreference.com/w/c
+ - GCC 手册（分阶段开关都在这里）：https://gcc.gnu.org/onlinedocs/
+ 
+-## 11. 自我检查
++## 11. 遮码自检
++
++遮住上文示例与表格、先自己答，再展开对照。
++
++1. 用三个关键词说出 C 的哲学，并各举一个「代价」的例子。
++2. 不看表说出五个标准里至少三个的年份与代表作。
++3. 独立走完四阶段流水线，说出每步的产物。
++4. 「为什么内核用 C 不用 Python」给三层理由。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 小（标准库小 → 一切基础设施自己造）、快（零运行时 → 没有护栏，错误直接进机器）、信任程序员（自由 → UB 不设防，坑就是代价）。
++2. 任选：C89（1989，第一个 ISO 标准）、C99（1999，stdint.h/行注释）、C11（2011，threads.h/_Atomic）、C17（2018，纯缺陷修订）、C23（2024 发布，nullptr/constexpr/#embed）。
++3. 预处理（.i：宏展开、头文件内联）→ 编译（.s：汇编）→ 汇编（.o：目标文件）→ 链接（可执行文件）；编译报错在中间两层，链接报错（undefined reference）在最后。
++4. 内核要直接摸硬件（Python 有 VM 与 GC 垫层）、内存与时间每一字节都可预算（Python 的对象头与解释器调度不可预算）、几十年的 C 代码与 ABI 生态要延续（语言迁移成本大于收益）。
+ 
+-- 能用三个关键词说出 C 的哲学并各举一个「代价」例子；
+-- 能不看表说出五个标准里至少三个的年份与代表作；
+-- 能独立走完四阶段流水线并说出每步产物是什么；
+-- 能对「为什么内核用 C 不用 Python」给出三层理由。
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/030-ProgramStructureBasicSyntax.md b/cnt-content/full/022-c/030-ProgramStructureBasicSyntax.md
+index 5e1d9f80..1e73f97b 100644
+--- a/cnt-content/full/022-c/030-ProgramStructureBasicSyntax.md
++++ b/cnt-content/full/022-c/030-ProgramStructureBasicSyntax.md
+@@ -166,12 +166,32 @@ int main(void) {
+ - printf 家族权威页（cppreference）：https://en.cppreference.com/w/c/io/printf
+ - C 关键字总表：https://en.cppreference.com/w/c/keyword
+ 
+-## 11. 自我检查
++## 11. 遮码自检
+ 
+-- 能默写最小程序并通过编译；
+-- 能用 %d/%s/%f/%c/%.2f 完成一份对齐的成绩单输出；
+-- 三类编译报错各自知道第一步看哪里；
+-- 已完成三个修改实验并保留代码在 c-lab 目录。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 默写能通过编译的最小程序（`-Wall -Wextra` 下零警告）。
++2. 用 %d/%s/%f/%c/%.2f 写一份对齐的成绩单输出——先遮住上文的 printf 示例。
++3. 三类编译报错（语法错、声明缺失、链接错）各自第一步看哪里？
++4. 三个修改实验完成了吗？代码是否保留在 c-lab 目录？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++```c
++#include <stdio.h>
++
++int main(void) {
++    printf("Hello, C!\n");
++    return 0;
++}
++```
++
++2. 关键是占位符与实参数量、类型双对齐：`printf("%-10s%5.1f\n", "Alice", 92.5);`，`%.2f` 控制小数位、负号控制左对齐。
++3. 语法错看报错的 `文件:行:列`；声明缺失（隐式声明警告）看 `main` 之前是否漏了函数声明或头文件；链接错（undefined reference）说明只声明了没定义，检查 .c 是否一起编译。
++4. 修改实验是语法课的必要环节，代码留档才能对照后续篇目复用。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/040-DataTypeDetailed.md b/cnt-content/full/022-c/040-DataTypeDetailed.md
+index 8210f2e4..58064f71 100644
+--- a/cnt-content/full/022-c/040-DataTypeDetailed.md
++++ b/cnt-content/full/022-c/040-DataTypeDetailed.md
+@@ -439,13 +439,32 @@ bool nearly_equal(double a, double b, double epsilon) {
+ - 算术类型与整数提升规则（cppreference C）：https://zh.cppreference.com/w/c/language/arithmetic_types
+ - IEEE 754 位布局图解（Steve Hollasch）：https://steve.hollasch.net/cgindex/coding/ieeefloat.html
+ 
+-## 15. 自我检查
++## 15. 遮码自检
+ 
+-- 能解释同一份 sizes.c 为什么在 64 位 Windows 与 Linux 上打印出不同的 long 大小；
+-- 能说出 int 的最小宽度保证，并用 limits.h 在自己机器上验证真实边界；
+-- 能演示无符号回绕与有符号溢出的区别，并用 UBSan 抓到一行带文件名与行号的实录；
+-- 能画出 double 的 1 + 11 + 52 位段图，解释 0.1 + 0.2 为什么不等于 0.3，并写出 epsilon 比较；
+-- 拿到一个新需求，能按第 4 节速查表选对类型并说出理由。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 同一份 sizes.c，为什么 64 位 Windows 与 64 位 Linux 打印出的 long 大小不同？
++2. int 的最小宽度保证是多少？用 limits.h 在自己机器上验证真实边界（默写关键两行）。
++3. 无符号回绕与有符号溢出的行为差在哪？UBSan 命令怎么写？
++4. 画出 double 的位段图，解释 0.1 + 0.2 为什么不等于 0.3，并写出 epsilon 比较。
++5. 拿到「存文件尺寸」的需求，按第 4 节速查表选哪个类型？为什么？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 数据模型不同：Windows 是 LLP64，long 只有 32 位；Linux/macOS 是 LP64，long 64 位。两边 long long 都是 64 位，指针都是 64 位。
++2. 标准只承诺最小宽度：int 至少 16 位，long long 至少 64 位。验证：
++
++```c
++#include <limits.h>
++printf("INT_MIN=%d INT_MAX=%d\n", INT_MIN, INT_MAX);
++```
++
++3. 无符号按 2^N 回绕，是良定义行为；有符号溢出是未定义行为。UBSan 开关：`gcc -fsanitize=undefined -g`，报错自带文件名与行号。
++4. double = 1 位符号 + 11 位指数 + 52 位尾数；0.1 的二进制是无限循环小数，存进去就有舍入误差，所以 `fabs(a - b) < 1e-9`（epsilon）比较，不用 `==`。
++5. `size_t`（或 `uint64_t`）：尺寸天然非负、与指针同宽，`sizeof` 的返回类型就是它。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/050-VariableConstant.md b/cnt-content/full/022-c/050-VariableConstant.md
+index 91ba9896..13d45003 100644
+--- a/cnt-content/full/022-c/050-VariableConstant.md
++++ b/cnt-content/full/022-c/050-VariableConstant.md
+@@ -429,12 +429,24 @@ int main(void) {
+ - cppreference：整数常量（进制前缀、后缀、C23 二进制与数字分隔符）：https://en.cppreference.com/w/c/language/integer_constant
+ - cppreference：存储期与存储类说明符（static/extern/register 语义）：https://en.cppreference.com/w/c/language/storage_duration
+ 
+-## 11. 自我检查
++## 11. 遮码自检
+ 
+-- 能不看资料说清：声明与定义、初始化与赋值，各差在哪一行什么场景；
+-- 能解释 zero.c 里 g、s、local 三个值为什么是那样，以及「static 变量默认 0」的实现在哪一段；
+-- 面对一张 #define 与 const 的对比表，能填满并举出一个该用 const 的场景与一个必须用枚举的场景；
+-- 能向同事讲清 `char *s` 与 `char s[]` 接住 "hello" 后的区别，以及为什么字面量要配 const 指针。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 不看资料说清：声明与定义、初始化与赋值，各差在哪一行、什么场景？
++2. zero.c 里 g、s、local 三个值为什么是那样？「static 变量默认 0」靠什么机制？
++3. #define 与 const 各有什么长短？举一个该用 const 的场景与一个必须用枚举的场景。
++4. `char *s` 与 `char s[]` 接住 "hello" 后有什么区别？为什么字面量要配 const 指针？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 声明只介绍名字（`extern int x;`），定义才分配存储（`int x = 1;`）——差在是否分配内存；初始化是诞生时的第一个值，赋值是之后的覆盖——差在只发生一次还是随时发生。
++2. g 与 s 是静态对象（全局、static 局部），静态存储期默认清零，所以打印 0；local 是自动对象住栈上，值不确定。「默认 0」的实现是可执行文件里 .bss 段的清零约定，不是运行时逐个赋值。
++3. const 有类型、编译器能查错、调试器可见，适合「有类型的常量」；#define 无类型无作用域，适合条件编译与文本替换场景。必须用枚举的场景：要一组编译期整数常量且配 switch（case 标签要求整型常量表达式，const 变量在 C 里不算）。
++4. `char *s = "hello";` 指向只读的无名静态数组，写它是 UB；`char s[] = "hello";` 把内容拷进本栈上可写数组。字面量配 `const char *` 是让编译器替你拦下写操作。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/055-ScopeStorageLinkage.md b/cnt-content/full/022-c/055-ScopeStorageLinkage.md
+index 14f7af34..32b187b8 100644
+--- a/cnt-content/full/022-c/055-ScopeStorageLinkage.md
++++ b/cnt-content/full/022-c/055-ScopeStorageLinkage.md
+@@ -512,12 +512,24 @@ int main(void) {
+ - cppreference：存储期与存储类说明符（四种存储期、static/extern/register 逐条语义）：https://en.cppreference.com/w/c/language/storage_duration
+ - cppreference：外部定义与暂定定义（tentative definition 规则原文）：https://en.cppreference.com/w/c/language/extern
+ 
+-## 14. 自我检查
++## 14. 遮码自检
+ 
+-- 给任意一行变量声明，能说出它的作用域、存储期、链接性三属性，并指出会被谁遮蔽；
+-- 能解释 counter.c 里 ticket 为什么记得住值、初始化为什么只执行一次；
+-- 看到 multiple definition 报错能定位并修复，说得出头文件里放 extern 声明的理由；
+-- 能纠正两个流行误传：「C23 删除了 register」（没有）与「volatile 能保证线程安全」（那是 _Atomic 与锁的事）。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 给任意一行变量声明，说出它的作用域、存储期、链接性三属性，并指出会被谁遮蔽（拿 `static int count;` 在函数外、`int i;` 在函数内各练一遍）。
++2. counter.c 里 ticket 为什么记得住上次的值？初始化为什么只执行一次？
++3. 看到 multiple definition 报错怎么定位、怎么修？头文件里为什么放 extern 声明而不是定义？
++4. 纠正两个流行误传：「C23 删除了 register」与「volatile 能保证线程安全」。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 文件作用域的 `static int count;`：作用域是声明点到文件尾，存储期静态，链接性内部；函数内的 `int i;`：块作用域，自动存储期，无链接，会被内层同名声明遮蔽（-Wshadow 会报）。
++2. ticket 是 static 局部变量，存储期从自动改为静态、活在数据段，所以函数返回后值还在；静态对象只初始化一次，`static int ticket = 0;` 的初始化在程序启动时完成，每次调用那句代码时直接跳过。
++3. multiple definition 说明同一个符号有两个定义——多半是头文件里写了定义（没加 static/extern）被多个 .c 包含。修法：头文件只放 `extern int g_count;` 声明，定义留在恰好一个 .c 里；链接性靠声明说「别处有」，定义只此一份。
++4. register 还在标准里，硬约束只剩「不可取地址」；volatile 只保证每次都真读写内存、不保证多步操作的原子性——线程安全靠 _Atomic 与锁。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/060-OperatorExpression.md b/cnt-content/full/022-c/060-OperatorExpression.md
+index 13b9c34d..2d98ca81 100644
+--- a/cnt-content/full/022-c/060-OperatorExpression.md
++++ b/cnt-content/full/022-c/060-OperatorExpression.md
+@@ -515,12 +515,24 @@ for (size_t i = n - 1; i >= 0; i--) {   /* size_t 永远 >= 0 */
+ - sizeof（操作数不求值与 size_t）：https://en.cppreference.com/w/c/language/sizeof.html
+ - fmod（浮点取余）：https://en.cppreference.com/w/c/numeric/math/fmod.html
+ 
+-## 13. 自我检查
++## 13. 遮码自检
+ 
+-- 能说出 `10 / 3`、`-10 / 3`、`-7 % 3` 的值与依据的两条规则；
+-- 能默写转换阶梯的前后各三层，并解释 `sizeof('A')` 为什么是 4；
+-- 能向同事讲清 `a < b < c` 错在哪、`i = i++` 为什么编译器想怎么算都合法、怎么改一定对；
+-- 能用 `-Wall` 与 `-fsanitize=undefined` 抓出本文演示的两类事故，并说出 `-Wparentheses` 提示的是哪条优先级规则。
++遮住上文示例代码与下面的答案栏，先自己算、先自己答，再展开对照。
++
++1. 口算 `10 / 3`、`-10 / 3`、`-7 % 3`，说出依据的两条规则。
++2. 默写寻常算术转换阶梯的前后各三层，并解释 `sizeof('A')` 为什么是 4。
++3. `a < b < c` 错在哪？`i = i++` 为什么编译器想怎么算都合法？怎么改一定对？
++4. 用 `-Wall` 与 `-fsanitize=undefined` 各抓本文演示的哪类事故？`-Wparentheses` 提示的是哪条规则？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `10 / 3 == 3`、`-10 / 3 == -3`、`-7 % 3 == -1`。规则：整数除法自 C99 起向零截断；余数符号跟随左操作数。
++2. 后三层 char/short 先整型提升为 int，int → unsigned int → long；前三层 long → unsigned long → double（以本机 64 位口径为准）。`'A'` 是 char，经过整型提升变成 int，所以 `sizeof('A')` 是 4。
++3. `a < b < c` 先算 `a < b` 得 0 或 1，再拿它和 c 比——不是数学上的连续比较；要写 `a < b && b < c`。`i = i++` 在两个序列点之间修改同一对象两次，标准不规定顺序，任何结果都「合法」；拆开写（`i = i + 1;` 或 `i++;`）是唯一万能解。
++4. `-Wall` 抓 `=` 误当 `==` 与可读性问题；`-fsanitize=undefined` 抓有符号溢出、越界移位这类 UB；`-Wparentheses` 提示的是「&& 优先级高于 ||」「比较与赋值混写」这类需要括号澄清的优先级组合。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/070-BitwiseOperationAndMask.md b/cnt-content/full/022-c/070-BitwiseOperationAndMask.md
+index da64d67c..ce17d3b8 100644
+--- a/cnt-content/full/022-c/070-BitwiseOperationAndMask.md
++++ b/cnt-content/full/022-c/070-BitwiseOperationAndMask.md
+@@ -533,12 +533,30 @@ printf("0x%08X\n", x);
+ - C23 `<stdbit.h>` 头文件总览（函数族与 `__STDC_VERSION_STDBIT_H__` 宏）：https://en.cppreference.com/w/c/header/stdbit
+ - Beej's Guide to C Programming（位运算章节的入门讲法可对照）：https://beej.us/guide/bgc/
+ 
+-## 13. 自我检查
++## 13. 遮码自检
+ 
+-- 能把任意 unsigned 值在二进制与十六进制间换算，并默写 `print_bits` 的循环体；
+-- 能徒手写出第 n 位置位、清零、翻转、检测四个公式，并说出各自用哪个运算符、为什么；
+-- 能向同事讲清三件事：负数右移为什么不能赌、`1 << 31` 与 `1u << 31` 差在哪、UBSan 怎么抓越界移位；
+-- 能实现 Kernighan 置位计数与 2 的幂判断，并说出异或交换在 `a == b` 时为什么自杀。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 把 0x5A 换算成二进制，再默写 `print_bits` 的循环体。
++2. 徒手写出第 n 位置位、清零、翻转、检测四个公式，并说出各自用哪个运算符。
++3. 负数右移为什么不能赌？`1 << 31` 与 `1u << 31` 差在哪？UBSan 怎么抓越界移位？
++4. 实现 Kernighan 置位计数与 2 的幂判断，并解释异或交换在 `a == b` 时为什么自杀。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 0x5A = 0101 1010。
++
++```c
++for (int i = 31; i >= 0; i--)
++    putchar((v >> i & 1) ? '1' : '0');
++```
++
++2. 置位 `x |= 1u << n`（| 合并）；清零 `x &= ~(1u << n)`（& 配反码抹掉）；翻转 `x ^= 1u << n`（^ 对 1 取反、对 0 保留）；检测 `if (x & (1u << n))`（& 提取那一位）。
++3. 负数右移是算术还是逻辑右移由实现定义，可移植代码先转无符号再移；`1 << 31` 对 int 左移进符号位是 UB，写 `1u << 31` 就是良定义的无符号移位；`gcc -fsanitize=undefined` 会对越界移位当场报「shift exponent is too large」。
++4. `while (n) { n &= n - 1; count++; }` 每次消掉最低位的 1；`n > 0 && (n & (n - 1)) == 0` 判 2 的幂。异或交换当 a、b 是同一变量（或同一数组元素）时，第一步 `a ^= a` 把它清成 0，值当场蒸发——先判地址不同才可用。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/080-ControlFlow.md b/cnt-content/full/022-c/080-ControlFlow.md
+index c4c4e383..5a2585c7 100644
+--- a/cnt-content/full/022-c/080-ControlFlow.md
++++ b/cnt-content/full/022-c/080-ControlFlow.md
+@@ -563,12 +563,24 @@ int days_in_month(int year, int month, int *ok) {
+ - GCC Case Ranges（区间 case 的 GNU 扩展说明）：https://gcc.gnu.org/onlinedocs/gcc/Case-Ranges.html
+ - GCC 警告选项（-Wparentheses、-Wempty-body 等）：https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+ 
+-## 12. 自我检查
++## 12. 遮码自检
+ 
+-- 能默写三种分档写法，并讲清 switch 与 if 链的选型依据；
+-- 能解释悬空 else 配对规则、switch 穿透语义，知道 `[[fallthrough]]` 放在哪一行；
+-- 能把一段嵌套循环在 for/while/do-while 之间互化，说出 continue 在两者里的不同落点；
+-- 看到 `if (x = 5)`、`for (...);`、`while (x != 1.0) x += 0.1;` 能立刻指出病灶与修法。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 默写对一段成绩做三档分类的三种写法（if 链、switch、嵌套三目），并说出 switch 与 if 链的选型依据。
++2. 悬空 else 跟谁配对？switch 忘写 break 会发生什么？故意穿透时 `[[fallthrough]]` 放哪一行？
++3. 把一段嵌套循环在 for 与 while 之间互化，说出 continue 在两者里的不同落点。
++4. 看到 `if (x = 5)`、`for (...);`、`while (x != 1.0) x += 0.1;`，各指出病灶与修法。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. if 链管任意条件与范围判断；switch 管单个整型表达式的离散取值， case 多时查表更快、漏 case 编译器可查（-Wswitch）。三个值以上的离散分档优先 switch。
++2. 悬空 else 跟最近的、还没有 else 的 if 配对（写大括号消除歧义）；忘 break 会继续执行下面所有 case 的语句直到遇到 break 或结尾；`[[fallthrough]];` 单独占一行、放在故意穿透的 case 末尾。
++3. continue 在 for 里跳到「步进表达式」再判条件，在 while/do-while 里直接跳到条件判断——所以 while 版必须把步进手动挪进循环体，否则死循环。
++4. `if (x = 5)` 是赋值不是比较，恒真且污染 x——写 `if (x == 5)`，配 `-Wall` 拦；`for (...);` 的分号是空循环体，后面块永远只跑一次——删分号；`x != 1.0` 拿浮点做等值判断，累积误差让它永不成立——改 `while (x < 1.0)` 或对差值取绝对值。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/090-FunctionDetailed.md b/cnt-content/full/022-c/090-FunctionDetailed.md
+index 254cfa6e..56e7cb31 100644
+--- a/cnt-content/full/022-c/090-FunctionDetailed.md
++++ b/cnt-content/full/022-c/090-FunctionDetailed.md
+@@ -388,13 +388,26 @@ int binary_search(const int a[], int low, int high, int target);
+ - 函数声明（C23 起空括号等价 (void)）：https://en.cppreference.com/w/c/language/function_declaration
+ - GCC 警告选项（-Wreturn-local-addr、隐式声明按错误处理）：https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+ 
+-## 13. 自我检查
++## 13. 遮码自检
+ 
+-- 能把一段重复两次以上的 main 逻辑拆成函数，写出原型并让编译器抓出调用处的类型错误；
+-- 能向同事解释 swap 为什么失败、什么场景必须传地址、数组传参为什么必须带长度；
+-- 看到「函数返回了局部变量的地址」能指出病灶，并说出 `-Wreturn-local-addr` 警告；
+-- 能手写带基准情况的递归函数，用计数实验说清 fib(30) 的 269 万次调用浪费在哪；
+-- 会用 argc/argv 写命令行程序，会用退出码向脚本报告成败。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 把一段重复两次以上的 main 逻辑拆成函数：先写原型再写定义，让编译器抓出调用处的类型错误。
++2. swap(int a, int b) 为什么失败？什么场景必须传地址？数组传参为什么必须另带长度？
++3. 「函数返回了局部变量的地址」病灶在哪？编译器会怎么警告？
++4. 手写一个带基准情况的递归函数，并用计数实验说清 fib(30) 的 269 万次调用浪费在哪。
++5. argc/argv 怎么用？退出码怎么向脚本报告成败？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 原型如 `double avg(int arr[], int n);` 放 main 之前——原型是给编译器的合同，调用处实参类型不符直接报错，不用等链接期。
++2. C 只有传值调用，形参是复印件，换复印件动不了原件；要改调用方的变量必须传地址（`swap(&a, &b)` 配 `int *`）；数组传参退化为首元素地址，函数里拿不到长度，所以长度必须作为独立参数传入。
++3. 返回了栈上局部变量的地址，函数返回后那块栈就作废了——悬空指针。GCC 会发 `-Wreturn-local-addr` 警告，但程序「没崩」不代表正确，那是作废内存暂时没人动。
++4. 基准情况 + 递归步，如 `if (n <= 1) return n; return fib(n-1) + fib(n-2);`。给 fib 加调用计数打印：fib(30) 调 269 万次，因为 fib(28) 这类子问题被反复重算几十万次——浪费在重复子问题，循环版只要 30 次加法。
++5. `int main(int argc, char *argv[])`：argc 是参数个数，argv[0] 是程序名、argv[1..] 是参数；`return 3;` 让 `echo $?` 读到 3，脚本据此分支——0 是约定俗成的「成功」。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/095-CRecursionAndDivideConquer.md b/cnt-content/full/022-c/095-CRecursionAndDivideConquer.md
+index c3697fb0..1a1b63db 100644
+--- a/cnt-content/full/022-c/095-CRecursionAndDivideConquer.md
++++ b/cnt-content/full/022-c/095-CRecursionAndDivideConquer.md
+@@ -346,13 +346,26 @@ int bs(const int *a, int lo, int hi, int t) {
+ - 往后：[函数调用栈帧](/c/250-FunctionCallStackFrame) 解释本文反复出现的"每层帧多大、栈为何向下生长"；递归是理解 [指针深度解析](/c/140-PointerDeep) 中链式结构（链表、树）遍历的钥匙，也是毕业项目（595 篇）里哈希表 rehash 类"自我重复"逻辑的思维底座；
+ - 更远：分治在算法模块有完整的复杂度分析（主定理）；解析器、目录树遍历、JSON 嵌套结构处理，本质都是本文的递归加了不同的数据形态。
+ 
+-## 10. 自我检查
++## 10. 遮码自检
+ 
+-- 能画出 factorial(4) 的栈展开两阶段图，并解释地址为什么递减；
+-- 能独立写出汉诺塔并说出 2^n - 1 的来源；
+-- 能说出基准情况、间接递归原型、大结构体传参、溢出四个坑的对策；
+-- 实测过自己平台的栈深，能给出一个数量级；
+-- 能写出防溢出中点的二分查找，并指出 (lo+hi)/2 的错法。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 画出 factorial(4) 的栈展开两阶段图，解释帧地址为什么递减。
++2. 独立写出汉诺塔，并说出总步数 2^n - 1 的来源。
++3. 基准情况、间接递归、大结构体传参、栈溢出四个坑，对策各是什么？
++4. 你自己平台的栈深是多少？给一个实测的数量级。
++5. 写出防溢出的中点写法，并指出 `(lo + hi) / 2` 错在哪。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 进入段：factorial(4) 到 factorial(0) 逐层压栈、每层帧在更低地址（栈向下生长）；退出段：从 factorial(0) 起逐层返回、逐层带回结果相乘。
++2. `hanoi(n, from, to, via)`：`hanoi(n-1, from, via, to); move(from, to); hanoi(n-1, via, to, from);`。步数满足 T(n) = 2T(n-1) + 1，展开即 2^n - 1。
++3. 基准不可达会无限递归——先写基准再写递归步并用最小输入验证；间接递归（f 调 g、g 调 f）必须先给对方原型；大结构体每层复制一次——传指针；深度不可控的数据（用户输入规模）改循环，栈深以实测为准。
++4. 参考本文的计数实验代码：Linux 默认 8 MB 数量级、Windows 主流 1 MB 量级——但以你自己机器的实测输出为准，别背数字。
++5. `mid = lo + (hi - lo) / 2;`。`(lo + hi) / 2` 在两者都接近 INT_MAX 时加法先溢出（有符号溢出是 UB），和还没除就炸了。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/100-VarargsFunction.md b/cnt-content/full/022-c/100-VarargsFunction.md
+index 13eab14d..f3c365a6 100644
+--- a/cnt-content/full/022-c/100-VarargsFunction.md
++++ b/cnt-content/full/022-c/100-VarargsFunction.md
+@@ -461,12 +461,24 @@ my_printf("%d %c\n", 'A', 65);
+ - va_arg 的未定义行为条款：https://en.cppreference.com/w/c/variadic/va_arg
+ - stdarg(3) 手册页：https://man7.org/linux/man-pages/man3/stdarg.3.html
+ 
+-## 自我检查
++## 遮码自检
+ 
+-- 能默写四件套的使用顺序，并解释 va_start 的第二个参数为什么是最后一个具名参数；
+-- 能复述默认参数提升表，指出 `va_arg(ap, float)` 错在哪、正确写法是什么；
+-- 能给显式个数、格式串、哨兵三种约定各举一个标准库实例与其经典事故；
+-- 能用 v 前缀加 vsnprintf 写一个可转发的日志函数，并用 format 属性让它接受编译器检查。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 默写 va 四件套的使用顺序，并解释 va_start 的第二个参数为什么必须是最后一个具名参数。
++2. 复述默认参数提升表：`va_arg(ap, float)` 错在哪？正确写法是什么？
++3. 给显式个数、格式串、哨兵三种约定各举一个标准库实例与其经典事故。
++4. 用 v 前缀加 vsnprintf 写一个可转发的日志函数，并用 format 属性让它接受编译器检查。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `va_list ap; va_start(ap, last); ... va_arg(ap, type) ...; va_end(ap);`。va_start 要靠最后一个具名参数的地址定位可变参数区的起点，写错参数就没有起点。
++2. char/short 提升为 int，float 提升为 double——`va_arg(ap, float)` 读的尺寸与实际放进去的 double 不一致，是 UB；正确写法 `va_arg(ap, double)`。
++3. 显式个数如 `printf(n 个参数)` 自家统计、事故是 count 与实参对不上；格式串如 `printf("%d", x)`、事故是格式串与实参类型不匹配（`%s` 喂 int）或格式串来自外部输入；哨兵如 execl 的 `(char *)NULL`、事故是忘写哨兵导致越读。
++4. `void log_msg(const char *fmt, ...) __attribute__((format(printf, 1, 2)));`，实现里 `va_start(ap, fmt); vsnprintf(buf, sizeof buf, fmt, ap); va_end(ap);`——v 前缀族接收 va_list，format 属性把编译器的检查借回来。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/110-EnumTypedef.md b/cnt-content/full/022-c/110-EnumTypedef.md
+index 6dede54f..3f1855cf 100644
+--- a/cnt-content/full/022-c/110-EnumTypedef.md
++++ b/cnt-content/full/022-c/110-EnumTypedef.md
+@@ -422,12 +422,24 @@ ST_COUNT 哨兵让表尺寸自动跟随枚举增长；「枚举连续」这个
+ - typedef（别名语义与复杂声明示例）：https://en.cppreference.com/w/c/language/typedef
+ - GCC 警告选项（-Wswitch 与 -Wswitch-enum）：https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+ 
+-## 自我检查
++## 遮码自检
+ 
+-- 能把一份魔数 int 状态代码重构成枚举版本，说出新增的两类编译期检查（拼错名字、switch 漏 case）；
+-- 能用三步读法解释 `typedef int (*Comparator)(const void *, const void *);` 声明的是什么类型；
+-- 能说出 typedef 与 #define 的两条本质差异，并复述「typedef 不创建新类型」的 Celsius/Fahrenheit 反例；
+-- 能解释 error_string 为什么先做范围检查，以及 X-Macro 解决了什么漂移问题。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 把一份用 `int status = 2;` 当状态码的代码重构成枚举版本，说出新增的哪两类编译期检查。
++2. 用三步读法解释 `typedef int (*Comparator)(const void *, const void *);` 声明的是什么。
++3. typedef 与 #define 的两条本质差异是什么？「typedef 不创建新类型」用 Celsius/Fahrenheit 反例怎么讲？
++4. error_string 为什么先做范围检查？X-Macro 解决了什么漂移问题？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `typedef enum { STATUS_OK = 0, STATUS_EMPTY, STATUS_OVERFLOW } Status;`。新增检查：拼错名字（不存在的枚举常量直接编译报错，魔数不会）；switch 漏 case（-Wswitch 对穷举枚举的 switch 点名缺失分支）。
++2. 三步读法：遮住 typedef → `int (*Comparator)(const void *, const void *)` 是一个变量声明；变量名 Comparator → 类型是函数指针，指「收两个 const void * 返回 int」的比较函数；typedef 把变量名升格为类型名——之后 `Comparator cmp = compare_by_score;`。
++3. 差异一：typedef 有类型语义（编译器检查、可调试），#define 是无类型文本替换；差异二：typedef 遵守作用域，宏从定义行生效到文件尾。反例：`typedef float Celsius; typedef float Fahrenheit;` 两者互赋照样通过——同一底层类型的两个别名，不是两个新类型。
++4. 枚举弱类型，清单外的整数照样能赋进来，错误码转字符串的表按索引取值，越界索引读到数组外——所以先 `if (code < 0 || code >= MAX_ERR)` 挡住。X-Macro 让枚举常量、名字表、错误串三处数据只有一份来源，新增错误码不会漏改任何一处（不漂移）。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/120-ArrayDetailed.md b/cnt-content/full/022-c/120-ArrayDetailed.md
+index 6a034423..a5cf43e9 100644
+--- a/cnt-content/full/022-c/120-ArrayDetailed.md
++++ b/cnt-content/full/022-c/120-ArrayDetailed.md
+@@ -527,12 +527,26 @@ printf("max=%d at (%d,%d)\n", best, row_best, col_best);
+ - 数组声明（含 VLA 与 `__STDC_NO_VLA__`，cppreference C）：https://en.cppreference.com/w/c/language/array
+ - 初始化（含指定初始化器语义，cppreference C）：https://en.cppreference.com/w/c/language/init
+ 
+-## 12. 自我检查
++## 12. 遮码自检
+ 
+-- 能默写五种初始化写法，并说清每种写法里「没写到」的元素是什么值；
+-- 能用偏移量模型解释下标为什么从 0 开始，并算出 `a[i]` 的字节地址；
+-- 拿到一份 stack-buffer-overflow 报告，能在三行内指出出错行、写入大小与被越界的变量；
+-- 能向同事讲清 `sizeof a / sizeof a[0]` 为什么进了函数就失效，以及三个「不能」各自的替代写法。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 默写五种初始化写法，并说清每种写法里「没写到」的元素是什么值。
++2. 用偏移量模型解释下标为什么从 0 开始，并算出 `int a[5];` 里 `a[3]` 的字节地址（设 a 为 0x1000）。
++3. 拿到一份 stack-buffer-overflow 的 ASan 报告，三行内指出出错行、写入大小与被越界的变量。
++4. `sizeof a / sizeof a[0]` 为什么进了函数就失效？
++5. 数组的三个「不能」（整体赋值、== 比较、整体传值）各自的替代写法是什么？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 全零初始化 `int a[5] = {0};` 只写首元素、其余清零；部分初始化 `int a[5] = {1, 2};` 没写到的清零；完全初始化逐个给出；指定初始化器 `int a[5] = {[2] = 7};` 跳位处清零；省略长度 `int a[] = {1,2,3};` 长度由列表数出来。规则一句话：初始化列表一旦出现，没覆盖的元素保证清零。
++2. `a[i]` 是「首地址 + i × 元素大小」——下标是偏移量，第一个元素偏移 0，所以从 0 开始。`a[3]` = 0x1000 + 3 × 4 = 0x100C。
++3. 报告三段：WRITE of size N 与出错偏移告诉你写了多大；#0 帧的 `文件:行号` 是出错行；变量名出现在「Address ... is located in stack of function/frame」与代码行对照里。
++4. 数组传参退化为指针，`sizeof a` 变成 8（指针大小）而不是整个数组的字节数——商就不是元素个数了。所以长度必须作为参数单独传，或用哨兵（字符串的 '\0'）。
++5. 整体赋值 → 循环逐元素或 memcpy；== 比较 → 循环逐个比较或 memcmp；整体传值 → 传首元素指针加长度（或包进 struct——结构体可以整体赋值传值）。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/125-CStringsHandling.md b/cnt-content/full/022-c/125-CStringsHandling.md
+index 1d32a92a..1adc5c45 100644
+--- a/cnt-content/full/022-c/125-CStringsHandling.md
++++ b/cnt-content/full/022-c/125-CStringsHandling.md
+@@ -624,13 +624,26 @@ int keep_line(char *line, const char *level) {   /* line 会被就地改写 */
+ - 空终止字符串工具（strtok_r 等 POSIX 扩展）：https://man7.org/linux/man-pages/man3/strtok.3.html
+ - `strncpy` 的终止符行为说明（C 标准原文的通俗版）：https://en.cppreference.com/w/c/string/byte/strncpy
+ 
+-## 12. 自我检查
++## 12. 遮码自检
+ 
+-- 能解释「n 字节最多安全存 n-1 个字符」的原因，并写出手工填字符数组后补 `'\0'` 的代码；
+-- 能在 30 秒内说出 `sizeof(a)`、`strlen(a)`、`sizeof(p)` 对 `char a[20] = "hello"; char *p = a;` 各是多少，以及为什么函数里 `sizeof(a)` 不可信；
+-- 能默写 `strncpy` 需要手动补终止符的理由，和 `strncat` 与它行为不对称的事实；
+-- 能解释 `strcmp(a, b) == 0` 与 `a == b` 的区别，以及为什么不能写 `== 1`；
+-- 能不查资料写出「拷贝、按分隔符切分（strtok_r）、判等、提取数字」四段骨架代码，并说出每个函数的一个坑。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 为什么「n 字节的数组最多安全存 n-1 个字符」？手工逐个填字符后还差哪一步？
++2. `char a[20] = "hello"; char *p = a;`——`sizeof(a)`、`strlen(a)`、`sizeof(p)` 各是多少？进函数后 `sizeof(a)` 还可信吗？
++3. `strncpy` 为什么要手动补终止符？它与 `strncat` 的行为怎么不对称？
++4. `strcmp(a, b) == 0` 与 `a == b` 差在哪？为什么不写 `== 1`？
++5. 不查资料写出「拷贝、按分隔符切分（strtok_r）、判等、提取数字」四段骨架，并各说一个坑。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 数组 n 字节，终止符 `'\0'` 要占最后一格，留给正文的就是 n-1；字符串函数靠扫描到 `'\0'` 才停，没有终止符就一路越界。手工填完必须补 `a[5] = '\0';`。
++2. `sizeof(a)` 是 20（数组身份，问容量）；`strlen(a)` 是 5（扫描内容，遇 '\0' 停）；`sizeof(p)` 是 8（指针大小）。进函数后数组退化为指针，`sizeof(a)` 变 8，不可信。
++3. `strncpy` 只保证拷到 n 个字节、源短时才补零——源长时目标没有 '\0'，必须手动 `dst[n-1] = '\0'`；`strncat` 恰好相反：它保证追加后必有终止符，所以容量按「剩余空间 - 1」算。
++4. `strcmp` 比较内容，返回负/零/正——`== 0` 才是相等；`a == b` 比较的是两个指针（地址），地址相等才有真。不能写 `== 1`，因为标准只保证符号不保证具体值，正数可能是 1 也可能是别的。
++5. 拷贝：`char buf[32]; strncpy(buf, src, sizeof buf - 1); buf[sizeof buf - 1] = '\0';`（坑：strncpy 不补终止符）。切分：`char *tok = strtok_r(buf, ", ", &save); while (tok) { ...; tok = strtok_r(NULL, ", ", &save); }`（坑：原地改串、必须传可写缓冲区）。判等：`if (strcmp(a, b) == 0)`（坑：别用 ==，那是比地址）。提取数字：`long v = strtol(p, &end, 10); if (end == p) /* 没解析到 */;`（坑：atoi 失败无法区分，strtol 要检查 end 与 errno）。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/130-StructAndUnion.md b/cnt-content/full/022-c/130-StructAndUnion.md
+index 88d630e3..e5e58302 100644
+--- a/cnt-content/full/022-c/130-StructAndUnion.md
++++ b/cnt-content/full/022-c/130-StructAndUnion.md
+@@ -502,12 +502,30 @@ h.s = 0x0102;
+ - 赋值运算符（含「结构体里的数组可以赋值」注记）：https://en.cppreference.com/w/c/language/operator_assignment
+ - 相等运算符（含「结构体不可 ==、memcmp 不可靠」注记）：https://en.cppreference.com/w/c/language/operator_comparison
+ 
+-## 14. 自我检查
++## 14. 遮码自检
+ 
+-- 能写出 tag 声明、typedef 简化、指定初始化器、结构体数组的完整小例子；
+-- 能向同事解释结构体赋值拷贝了什么、传参拷贝了什么、什么时候该改传 const 指针；
+-- 能说出 `==` 比较结构体为什么是编译错误、memcmp 为什么不可靠，替代方案怎么选；
+-- 能从零写出 tag + union 变体记录，说出匿名 union 是哪个标准引入、使用纪律是什么，并用成员顺序解释 sizeof 的差异。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 写出 tag 声明、typedef 简化、指定初始化器、结构体数组各一个完整小例子。
++2. 结构体赋值拷贝了什么？传参拷贝了什么？什么时候该改传 const 指针？
++3. `==` 比较结构体为什么是编译错误？memcmp 为什么不可靠？替代方案怎么选？
++4. 从零写出 tag + union 变体记录；匿名 union 是哪个标准引入的？用成员顺序解释 sizeof 的差异。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++```c
++struct Point { int x, y; };                        /* tag 声明 */
++typedef struct { double score; } Score;            /* typedef 简化 */
++struct Point p = { .y = 3, .x = 1 };               /* 指定初始化器，抗成员重排 */
++struct Point pts[3] = { {1,2}, {3,4}, {5,6} };     /* 结构体数组 */
++```
++
++2. 赋值逐成员拷贝（含数组成员一起搬）；传参按 sizeof 复制整个结构体——大结构体改传 `const struct Point *`，既省拷贝又防误改。
++3. C 对结构体没有 == 运算符，直接编译报错；memcmp 连 padding 一起比，padding 是不定值，字段相等也可能判不等。替代：逐成员比较（语义清晰）；确要字节比较，先 memset 清零整个结构体再赋值。
++4. `typedef enum { SHAPE_CIRCLE, SHAPE_RECT } ShapeKind; struct Shape { ShapeKind kind; union { double r; struct { double w, h; } rect; }; };`——读 kind 决定 union 里哪个成员有效。匿名 union 是 C11 引入，省掉 `.u.r` 的 u 那层名字，纪律是只写当前 kind 对应的成员。sizeof 差异：double r 与 rect（16 字节）共享一块，union 取最大成员按对齐补齐；成员排列不同、对齐要求不同，sizeof 随之变化。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/140-PointerDeep.md b/cnt-content/full/022-c/140-PointerDeep.md
+index 69c32baa..b5cde429 100644
+--- a/cnt-content/full/022-c/140-PointerDeep.md
++++ b/cnt-content/full/022-c/140-PointerDeep.md
+@@ -543,12 +543,24 @@ printf("%p %p %p\n", (void *)(pi + 1), (void *)(pd + 1), (void *)(pc + 1));
+ - NULL 宏的定义与可选实现（cppreference C）：https://en.cppreference.com/w/c/types/NULL
+ - printf 转换说明（%p 的参数类型约定）（cppreference C）：https://en.cppreference.com/w/c/io/printf
+ 
+-## 15. 自我检查
++## 15. 遮码自检
+ 
+-- 能向同事讲清 swap_bad 与 swap 的差别，并顺手画出 `p`、`*p`、`&a` 三者的关系；
+-- 看到 `const int *const p` 能不假思索说出「内容和指向都锁死」，并写出一行会触发编译错误的使用；
+-- 能说出 `p + 1` 在 `int *` 与 `double *` 上各跨多少字节，`p2 - p1` 的结果类型与打印格式；
+-- 能解释为什么 `%p` 要写 `(void *)`、为什么 `void *` 不能解引用、为什么 free 后要置 NULL。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 讲清 swap_bad 与 swap 的差别，画出 `p`、`*p`、`&a` 三者的关系。
++2. `const int *const p` 读出什么含义？写一行会触发编译错误的使用。
++3. `p + 1` 在 `int *` 与 `double *` 上各跨多少字节？`p2 - p1` 的结果类型与打印格式是什么？
++4. 为什么 `%p` 要写 `(void *)`？为什么 `void *` 不能解引用？为什么 free 后要置 NULL？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. swap_bad 传的是值的复印件，换复印件动不了原件；swap 传地址，函数里 `*pa`、`*pb` 直达原件。关系图：`p` 是装地址的变量，`*p` 是那个地址指向的对象，`&a` 是取 a 的地址——`&` 与 `*` 一进一出互逆。
++2. 星号左 const 保护内容，星号右 const 锁死指针——两者都有就是内容和指向全锁。`*p = 1;`（改内容）与 `p = q;`（改指向）都会编译报错。
++3. 指针算术按元素大小跨步：`int *` 跨 4 字节，`double *` 跨 8 字节；`p2 - p1` 结果类型是 `ptrdiff_t`，打印用 `%td`，值是元素个数不是字节数。
++4. `%p` 的参数约定是 `void *`，其余指针类型严格说类型不匹配（某些平台会出问题）；`void *` 只知道「这里有个地址」，不知道类型与宽度，解引用无从解释字节；free 后置 NULL 让后续误用 `*p` 当场崩在空指针——错误立刻暴露，而不是悄悄踩作废内存。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/150-PointerArrayDifference.md b/cnt-content/full/022-c/150-PointerArrayDifference.md
+index 9eface43..480a2192 100644
+--- a/cnt-content/full/022-c/150-PointerArrayDifference.md
++++ b/cnt-content/full/022-c/150-PointerArrayDifference.md
+@@ -640,13 +640,26 @@ printf("%d\n", 2[arr]);        /* 打印什么？能编译吗？ */
+ - 算术运算符（指针相减、哨兵与越界边界）（cppreference C）：https://en.cppreference.com/w/c/language/operator_arithmetic
+ - GCC 警告选项（-Warray-parameter、-Wsizeof-pointer-div 等）：https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+ 
+-## 14. 自我检查
++## 14. 遮码自检
+ 
+-- 能不看资料复述退化规则与三条例外，并用 `&arr + 1` 跨 40 字节的实验验证 `&arr` 的类型；
+-- 能解释 `void f(int a[10])` 与 `void f(int *a)` 为什么是同一个函数，并说出「长度另传」的接口惯例；
+-- 拿到 `char *s = "hi"` 与 `char a[] = "hi"`，能指出两者的存储位置、各自的 `sizeof`，以及哪个能改；
+-- 能向同事演示「二维数组当 `int **` 传」为什么崩在 `0x200000001` 这样的地址，并给出正确形参；
+-- 能写出运行时行列数的两种动态二维数组实现，并说出各自适用场景与释放顺序。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 复述退化规则与三条例外；用 `&arr + 1` 跨 40 字节的实验验证 `&arr` 的类型（`int arr[10]`）。
++2. `void f(int a[10])` 与 `void f(int *a)` 为什么是同一个函数？接口惯例怎么定？
++3. `char *s = "hi"` 与 `char a[] = "hi"`：存储位置、各自的 sizeof、哪个能改？
++4. 演示「二维数组当 `int **` 传」为什么崩在 `0x200000001` 这样的地址，正确形参是什么？
++5. 写出运行时行列数的两种动态二维数组实现，说清各自适用场景与释放顺序。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 退化：多数场合数组名自动变成首元素指针。例外三则：`sizeof arr` 得整个数组（10 × 4 = 40）；`&arr` 得数组指针、类型是 `int (*)[10]`，跨步是整个数组——`&arr + 1` 移动 40 字节；字面量初始化 `char a[] = "hi"` 是拷贝不是指过去。
++2. 形参里的数组声明一律被调整为指针，`int a[10]` 形同 `int *a`，所以是同一个函数。接口惯例：数组参数旁必配长度参数（`void f(int a[], size_t n)`），因为函数内部拿不到原数组的长度信息。
++3. `s` 指向只读段的字面量，`sizeof s` 是 8，改 `s[0]` 是 UB；`a` 是栈上可写拷贝，`sizeof a` 是 3（含 '\0'），改 `a[0]` 合法。
++4. 二维数组内存是连续的 `i * N + j` 布局，元素是 int；`int **` 期望「装指针的数组」——函数里把 int 元素当成 8 字节指针去解引用，地址被拼成 `0x200000001` 这类乱码。正确形参：`void f(int a[][10], size_t rows)` 或 `void f(int (*a)[10], size_t rows)`，行宽必须写死。
++5. 指针数组：先 `int **m = malloc(rows * sizeof *m);` 再逐行 `m[i] = malloc(cols * sizeof **m);`——参差数组友好，从内到外逐行 free 再 free 外层。连续一维：`int *m = malloc(rows * cols * sizeof *m);` 用 `m[i * cols + j]` 寻址——规则矩阵、缓存友好、一次 free。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/160-DoublePointerPointerArray.md b/cnt-content/full/022-c/160-DoublePointerPointerArray.md
+index d971cf7b..169a54cb 100644
+--- a/cnt-content/full/022-c/160-DoublePointerPointerArray.md
++++ b/cnt-content/full/022-c/160-DoublePointerPointerArray.md
+@@ -1109,6 +1109,27 @@ Java 的"二级引用"通过对象数组实现，但无需 `&` 运算符。
+ 4. **阅读大型项目**：理解 Linux 内核、SQLite、Redis 等 C 项目的代码风格
+ 5. **设计 C API**：基于二级指针设计清晰的接口契约与所有权语义
+ 
++## 遮码自检
++
++遮住上文示例代码与下面的答案栏，先自己画、先自己写，再展开对照。
++
++1. 画出 `char *argv[]` 在内存里的两层结构：argv 本身是什么、每个槽里放什么。
++2. 为什么「链表头插/删除链头」必须传 `Node **` 而不是 `Node *`？写出修改链头的核心两行。
++3. `int **m` 与 `int (*m)[10]` 都能用 `m[i][j]` 访问，寻址过程差在哪？各自的释放方式？
++4. main 里 `char **envp` 逐项打印到 NULL 哨兵——写出循环体。
++5. 一个返回 `char **` 的 API，谁负责 free？契约怎么写进文档才算数？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. argv 是「装 char * 的数组」的首地址（栈上变量，本身占 8 字节）；每个槽里放一个字符串的首地址，字符串本体在别处；末槽是 NULL 哨兵。两层寻址：先取 argv[i] 得到指针，再解引用得到字符。
++2. 函数要修改的是调用方的「链头指针本身」——传 `Node *` 只拿到复印件，改完随函数退场。核心两行：`new->next = *head; *head = new;`（head 是 `Node **`）。
++3. `int **m`：m[i] 先解一次引用取到行指针（行指针散落堆上），再解一次引用取元素——参差数组，逐行 free 再 free 外层。`int (*m)[10]`：寻址公式 `(i * 10 + j) * sizeof(int)`，一块连续内存——一次 free。
++4. `for (char **e = envp; *e != NULL; e++) printf("%s\n", *e);`——哨兵以内合法，走到 NULL 即停。
++5. 所有权必须写明：如「返回的指针数组与每个元素都由调用方 free；函数内部不保留引用」。只写「记得释放」不算契约——分配方式（一次 malloc 还是逐行）、元素深度、哨兵有无，都要成文。
++
++</details>
++
+ C 语言的指针机制看似原始，实则提供了精确控制内存的能力。在现代高级语言纷纷用引用、智能指针、GC 隐藏指针细节的背景下，理解 C 的二级指针不仅是为了编写 C 代码，更是为了深刻理解所有编程语言的内存模型。
+ 
+ 本文结合 ISO/IEC 9899:2024（C23）最新标准与 Linux 内核、SQLite、Redis 等工业级项目的工程实践，系统讲解了二级指针与指针数组的形式化定义、内存模型、工程模式、内存安全、陷阱分析与跨语言对比。与本文配套的三篇：指针数组与数组指针的边界、动态二维数组实现在 [指针与数组的区别](/c/150-PointerArrayDifference)；链表与节点式结构在 [C 链表与节点式数据结构](/c/165-CLinkedListImplementation)；字符串与 `argv` 分词在 [C 字符串处理](/c/125-CStringsHandling)。
+diff --git a/cnt-content/full/022-c/165-CLinkedListImplementation.md b/cnt-content/full/022-c/165-CLinkedListImplementation.md
+index 38b2f3d9..8baa8d06 100644
+--- a/cnt-content/full/022-c/165-CLinkedListImplementation.md
++++ b/cnt-content/full/022-c/165-CLinkedListImplementation.md
+@@ -918,13 +918,26 @@ void test_remove_head_without_special_case(void) {
+ - 链表数据结构条目（cppreference 无链表页，Wikipedia Linked list 供概念对照）：https://en.wikipedia.org/wiki/Linked_list
+ - glibc malloc 手册（节点分配行为）：https://www.gnu.org/software/libc/manual/html_node/Malloc-Examples.html
+ 
+-## 16. 自我检查
++## 16. 遮码自检
+ 
+-- 能画出「头插三个节点」每一步的内存图，并解释 `list_push_front` 的参数为什么必须是 `Node **`；
+-- 能用二级指针游走写出免特判的按值删除，并说清 `indirect` 每一轮指向什么；
+-- 能对照传统写法与游走写法，数出两者的分支数量差，并解释为什么分支少 bug 就少；
+-- 能说出双向链表相对单向链表多出的成本，以及 LRU 为什么必须双向；
+-- 能列出 free 纪律清单中的全部七条，并解释「先存 next 再 free」违反时的 ASan 报告长什么样。
++遮住上文示例代码与下面的答案栏，先自己画、先自己写，再展开对照。
++
++1. 画出「头插三个节点」每一步的内存图，解释 `list_push_front` 的参数为什么必须是 `Node **`。
++2. 用二级指针游走写出免特判的按值删除，说清 `indirect` 每一轮指向什么。
++3. 对照传统写法与游走写法，数出两者的分支数量差；为什么分支少 bug 就少？
++4. 双向链表比单向多出什么成本？LRU 为什么必须双向？
++5. 列出 free 纪律七条；「先存 next 再 free」违反时 ASan 报什么？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 每步：新节点 malloc 出来 → `new->next = *head;` 指向旧链头 → `*head = new;` 接管链头。参数必须 `Node **`：函数要修改的是调用方的「链头指针本身」，传 `Node *` 只拿到指针复印件，函数返回后链头原地不动。
++2. `Node **indirect = head; while (*indirect && (*indirect)->value != v) indirect = &(*indirect)->next; Node *dead = *indirect; if (dead) *indirect = dead->next; free(dead);`。indirect 每一轮指向「指向当前节点的那个指针」——第一轮是链头指针，之后是上一个节点的 next 字段。
++3. 传统写法要特判「删的是头」多一组 if；游走写法头与中间走同一条路径，4 分支降到 2 分支。每个 if 都是一条只有特定输入才会踩的路径，测试覆盖难度随分支数指数上升——分支少 bug 就少。
++4. 多一个 prev 指针（每节点 8 字节）与插入删除时两侧都要改。LRU 淘汰尾巴时要 O(1) 摘掉尾节点并维护倒数第二节点的 next——单向链表拿不到前驱，只能 O(n) 回头找，双向才能双向 O(1)。
++5. 七条：先存 next 再 free；从链上摘干净再 free；销毁整表用二级指针接住头；双向链表两侧指针都要改；头尾双指针同步收口；所有权写进接口文档；开发期常开 ASan。违反时 ASan 报 heap-use-after-free：你 free 掉的节点的 next 字段成了被读的作废内存，报告直接点名分配与释放的行号。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/170-FunctionPointerCallback.md b/cnt-content/full/022-c/170-FunctionPointerCallback.md
+index 85ff6d0a..89497b7f 100644
+--- a/cnt-content/full/022-c/170-FunctionPointerCallback.md
++++ b/cnt-content/full/022-c/170-FunctionPointerCallback.md
+@@ -501,12 +501,24 @@ int (*fn)(int) = (int (*)(int))dlsym(handle, "answer");   /* handle 来自 dlope
+ - 函数指针章节（Beej's Guide to C Programming）：https://beej.us/guide/bgc/html/split/pointers-iii-pointers-to-pointers-and-more.html
+ - dlsym 与 void 转换边界的 POSIX 原文（APPLICATION USAGE 节）：https://pubs.opengroup.org/onlinepubs/9799919799/functions/dlsym.html
+ 
+-## 12. 自我检查
++## 12. 遮码自检
+ 
+-- 能遮住代码写出 `int (*fp)(int, int)` 的声明并解释括号的作用，能区分它与 `int *f(int)`；
+-- 能为 int、double、字符串各写一个 qsort 比较器，并说出减法版错在哪、`(a > b) - (a < b)` 为什么安全；
+-- 能解释 void *ctx 模式解决什么问题，以及「函数指针 + 上下文」与闭包的对应关系；
+-- 能说出类型不匹配、调用空指针的后果，以及对象指针与函数指针互转在 ISO C 与 POSIX 下各自的边界。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 遮住代码写出 `int (*fp)(int, int)` 的声明，解释括号的作用；它与 `int *f(int)` 差在哪？
++2. 为 int、double、字符串各写一个 qsort 比较器；减法版错在哪？`(a > b) - (a < b)` 为什么安全？
++3. void *ctx 模式解决什么问题？「函数指针 + 上下文」与闭包怎么对应？
++4. 类型不匹配、调用空指针各有什么后果？对象指针与函数指针互转的边界在 ISO C 与 POSIX 下各是什么？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `int (*fp)(int, int);`——括号把 `*fp` 绑成一个整体，读作「fp 是指针，指向收两个 int 返回 int 的函数」。`int *f(int)` 没有 inner 括号，f 是「收 int 返回 int * 的函数」，函数先于指针结合。
++2. int：`return (a > b) - (a < b);`；double：`return (a > b) - (a < b);`；字符串：`return strcmp(sa, sb);`。减法版 `*pa - *pb` 在两个 int 一正一负且绝对值大时下溢/上溢（有符号溢出是 UB）；比较版只产 -1/0/1，永不溢出。
++3. 回调只能传一个函数指针，C 没有闭包——ctx 把「回调要记忆的数据」打包成指针一起传，等价于闭包捕获的环境变量。
++4. 签名不匹配（少收多传）是 UB，x86-64 上常表现为栈错乱或垃圾返回值；调用 NULL 是「jump to invalid address」，ASan 点名 wild jump。ISO C 里对象指针与函数指针互转是 UB（两个地址空间）；POSIX 把 dlsym 的返回值显式转成函数指针定为可行，是唯一的官方桥梁。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/180-FunctionPointerCallbackJumpTable.md b/cnt-content/full/022-c/180-FunctionPointerCallbackJumpTable.md
+index 8448984a..e146cc48 100644
+--- a/cnt-content/full/022-c/180-FunctionPointerCallbackJumpTable.md
++++ b/cnt-content/full/022-c/180-FunctionPointerCallbackJumpTable.md
+@@ -425,12 +425,24 @@ static void dispatch_cmd(int id, int x) {
+ - 函数指针声明与间接调用（Beej's Guide to C Programming）：https://beej.us/guide/bgc/html/split/pointers-iii-pointers-to-pointers-and-more.html
+ - 函数指针作为对象：可入数组、可赋值、可传参（cppreference C）：https://en.cppreference.com/w/c/language/pointer
+ 
+-## 11. 自我检查
++## 11. 遮码自检
+ 
+-- 能把一个多分支 switch 分发器重构成表驱动，说清「改了哪些地方、没改哪些地方」；
+-- 能解释指定初始化器为什么比按位置初始化安全，以及漏写的槽是什么值、由此引出哪条防御纪律；
+-- 能按分发频率与可维护性，为具体场景在表驱动、switch、if-else 链之间给出选择和理由；
+-- 能读懂一次「调用 NULL 函数指针」的 ASan 报告（认出 wild jump 指纹），写出边界检查加判空的两级防御。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 把一个二十个 case 的 switch 分发器重构成表驱动：说清改了哪些地方、没改哪些地方。
++2. 指定初始化器为什么比按位置初始化安全？漏写的槽是什么值？由此引出哪条防御纪律？
++3. 分发频率与可维护性两个维度上，表驱动、switch、if-else 链怎么选？给理由。
++4. 「调用 NULL 函数指针」的 ASan 报告长什么样（wild jump 指纹）？写出两级防御代码。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 改的：分发处缩成一行查表调用 `handlers[cmd](arg);`，加命令只加一行表项；没改的：每个命令的实现函数原封不动——「有哪些分支」从控制流搬进了数据。
++2. 指定初始化器 `[CMD_HELP] = cmd_help` 按枚举名字绑定槽位，成员重排、枚举增删都不会错位；漏写的槽自动初始化为 NULL（指针数组的零初始化保证）。防御纪律：调用前判空 `if (handlers[cmd]) handlers[cmd](arg);`——NULL 槽静默存在，不判空就是段错误。
++3. 低频分发（命令解析、菜单、协议命令）选表驱动——可维护性赢，加命令不改分发器；case 密集且是热路径的选 switch——编译器本就会把它优化成跳转表，性能更好且无需判空；条件互相重叠、涉及范围的判断选 if-else 链——表驱动要求索引是离散枚举。
++4. ASan 报 SEGV，栈顶帧是 wild jump / 未知地址跳转（PC 指向不可执行地址）。两级防御：先边界检查 `if (cmd < 0 || cmd >= CMD_MAX)`，再判空 `if (handlers[cmd])`——把崩溃变成报错。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/200-DynamicMemoryManagement.md b/cnt-content/full/022-c/200-DynamicMemoryManagement.md
+index 381ee0bd..15c9b775 100644
+--- a/cnt-content/full/022-c/200-DynamicMemoryManagement.md
++++ b/cnt-content/full/022-c/200-DynamicMemoryManagement.md
+@@ -310,12 +310,34 @@ int main(void) {
+ - malloc / calloc / realloc / free（cppreference C）：https://zh.cppreference.com/w/c/memory/malloc
+ - malloc 手册页（含实现细节、陷阱与环境变量）：https://man7.org/linux/man-pages/man3/malloc.3.html
+ 
+-## 12. 自我检查
++## 12. 遮码自检
+ 
+-- 能不看资料写出「分配 n 个 int、判 NULL、用完 free、置 NULL」的完整片段；
+-- 能说出 malloc 与 calloc 各适合什么场合，realloc 为什么必须用临时指针接返回值；
+-- 能用 ASan 跑出自己的泄漏，并指出报告里「分配于哪一行」；
+-- 能向同事讲清 free 后置 NULL 防住哪两类事故。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 不看资料写出「分配 n 个 int、判 NULL、用完 free、置 NULL」的完整片段。
++2. malloc 与 calloc 各适合什么场合？realloc 为什么必须用临时指针接返回值？
++3. 用 ASan 跑出自己的泄漏，指出报告里「分配于哪一行」的位置。
++4. free 后置 NULL 防住哪两类事故？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++```c
++int *p = malloc((size_t)n * sizeof *p);
++if (p == NULL) {
++    /* 分配失败：降级或退出，绝不解引用 */
++    return -1;
++}
++/* ... 使用 p ... */
++free(p);
++p = NULL;
++```
++
++2. malloc 要快、要不清零的原始内存；calloc 要清零的内存（且对 n*size 的乘法溢出做检查）。realloc 可能整块搬迁：用 `p = realloc(p, ...)` 接时，若 realloc 返回 NULL，原地址已丢失——泄漏且悬空。临时指针接住返回值，成功才覆盖原指针。
++3. `gcc -fsanitize=address -g demo.c -o demo && ./demo`。泄漏报告里 #0 帧的 `文件:行号` 就是分配发生的那一行——LeakSanitizer 把「分配于哪一行」直接写给你。
++4. 事故一：同一块内存 free 两次（double free，分配器当场报错或静默损坏）；事故二：use-after-free（读到作废内存里的垃圾，行为未定义）。置 NULL 后这两种误用都变成一眼可见的空指针解引用崩溃。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/210-ProcessMemoryLayoutAndErrors.md b/cnt-content/full/022-c/210-ProcessMemoryLayoutAndErrors.md
+index 8750b781..9d6aefb2 100644
+--- a/cnt-content/full/022-c/210-ProcessMemoryLayoutAndErrors.md
++++ b/cnt-content/full/022-c/210-ProcessMemoryLayoutAndErrors.md
+@@ -264,12 +264,24 @@ printf("%d\n", *p);
+ - free 手册页（含未定义行为清单）：https://man7.org/linux/man-pages/man3/free.3.html
+ - AddressSanitizer 官方 wiki（原理与更多用法）：https://github.com/google/sanitizers/wiki/AddressSanitizer
+ 
+-## 10. 自我检查
++## 10. 遮码自检
+ 
+-- 能默画五段布局并说出每段的管理者，能用 map.c 式的打印验证；
+-- 拿到一份 heap-use-after-free 报告，能在三行内指出分配、释放、出错的位置；
+-- 能向同事讲清 `p = realloc(p, ...)` 错在哪，以及为什么临时指针能救；
+-- 能解释「未定义行为」为什么表现为偶现，ASan 为什么能把偶现变必现。
++遮住上文示例代码与下面的答案栏，先自己画、先自己答，再展开对照。
++
++1. 默画五段布局并说出每段的管理者；用 map.c 式的打印（各段地址）验证。
++2. 拿到一份 heap-use-after-free 报告，三行内指出分配、释放、出错的位置。
++3. `p = realloc(p, ...)` 错在哪？为什么临时指针能救？
++4. 「未定义行为」为什么表现为偶现？ASan 为什么能把偶现变必现？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 五段：text（代码，加载器铺，只读）、data（已初始化全局/静态，加载器）、bss（未初始化全局/静态，加载器清零）、stack（自动变量，运行时自动进出、向下生长）、heap（malloc 的地界，你管）。验证：打印 text 段函数地址、bss 段全局变量地址、栈局部变量地址与 malloc 返回地址，比较高低。
++2. 报告三段照读：READ/WRITE of size N（出错操作）；#0 帧的 `文件:行号` 是出错位置；「freed by thread」与「previously allocated by thread」两段各给释放与分配的行号。
++3. realloc 失败时返回 NULL 但原块还在——`p = realloc(p, ...)` 一旦失败，p 被 NULL 覆盖，原块地址永久丢失：既泄漏又再无机会释放。临时指针 `tmp = realloc(p, n); if (tmp) p = tmp;` 保住了原地址，失败可继续用旧块。
++4. UB 的现场是「作废内存恰好没人动」——复用时机不同结果就不同，所以偶现；ASan 在每次 free 时把那块内存隔离并灌毒（红区），任何再访问立即触发报告——时机从「碰巧」变成「必然」。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/220-MemoryAlignmentDeepDive.md b/cnt-content/full/022-c/220-MemoryAlignmentDeepDive.md
+index 12806db1..955c9a64 100644
+--- a/cnt-content/full/022-c/220-MemoryAlignmentDeepDive.md
++++ b/cnt-content/full/022-c/220-MemoryAlignmentDeepDive.md
+@@ -247,12 +247,24 @@ int load(FILE *f, struct Packet *p) {
+ - _Alignas（cppreference C）：https://zh.cppreference.com/w/c/language/_Alignas
+ - offsetof 手册页：https://man7.org/linux/man-pages/man3/offsetof.3.html
+ 
+-## 12. 自我检查
++## 12. 遮码自检
+ 
+-- 能向同事解释 CPU 为什么要求对齐，以及 x86 与部分 ARM 对不对齐访问的两种态度；
+-- 能用三条规则手工推算 struct Parse 这类结构体的 sizeof，并说出尾部填充为谁而设；
+-- 能用 alignof 与 offsetof 验证自己的推算；
+-- 能说出 #pragma pack 的适用场景与代价，以及 _Alignas 的方向（把对齐调大）。
++遮住上文示例代码与下面的答案栏，先自己算、先自己答，再展开对照。
++
++1. CPU 为什么要求对齐？x86 与部分 ARM 对「不对齐访问」各是什么态度？
++2. 用三条规则手工推算一个 char + int + short 顺序排列的结构体的 sizeof，并说出尾部填充为谁而设。
++3. 用 alignof 与 offsetof 写验证代码，核对自己的推算。
++4. #pragma pack 的适用场景与代价是什么？_Alignas 往哪个方向调？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. CPU 按整字/整块读写内存，跨块的访问要么多花一次访存、要么直接故障——对齐让一次访存拿完整数据。x86 宽容（不对齐也能跑，只是变慢，SSE 等指令仍要求对齐）；部分 ARM 严格（不对齐触发总线错误，直接崩溃）。
++2. 规则：成员对齐（每个成员放在自身对齐值的倍数上）、整体补齐（总大小是最大对齐值的倍数）、对齐值取最大成员。char 在偏移 0，int 对齐 4 → 跳到偏移 4 占 4 字节，short 对齐 2 → 偏移 8 占 2 字节，尾部补 2 字节凑成 12（最大对齐 4 的倍数）。尾部填充为的是数组里下一个元素也落在 4 的倍数上。
++3. `printf("%zu %zu %zu", sizeof(struct S), _Alignof(struct S), offsetof(struct S, member));`——三个数字与手算逐一对照。
++4. `#pragma pack(1)` 取消填充，用于与文件格式、协议、寄存器逐字节对话；代价是不对齐访问变慢甚至崩溃，只在文件与协议必需时使用。_Alignas 把对齐调大（如 16/32/64），服务 SIMD 与 DMA 的整行对齐——它不会把对齐调小。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/230-AlignmentMemoryLayout.md b/cnt-content/full/022-c/230-AlignmentMemoryLayout.md
+index 16335274..939cf824 100644
+--- a/cnt-content/full/022-c/230-AlignmentMemoryLayout.md
++++ b/cnt-content/full/022-c/230-AlignmentMemoryLayout.md
+@@ -270,12 +270,24 @@ printf("%zu %zu\n", sizeof(struct Log), sizeof(struct LogGood));
+ - 位域的布局由实现定义（cppreference C）：https://zh.cppreference.com/w/c/language/bit_fields
+ - stdint.h 定宽整数类型手册页：https://man7.org/linux/man-pages/man3/stdint.h.0p.html
+ 
+-## 11. 自我检查
++## 11. 遮码自检
+ 
+-- 能对 Log 这类结构体手工推算两个排序方向的 sizeof，并说出尾部填充的去向；
+-- 能向同事解释为什么含指针或 long 的结构体不能直接写进存档；
+-- 能不看资料写出 put_u32le，并说出每个字节转 uint32_t 的原因；
+-- 面对「结构体直接 fwrite 行不行」，能给出四个理由（padding、偏移、字节序、指针）。
++遮住上文示例代码与下面的答案栏，先自己算、先自己写，再展开对照。
++
++1. 对一个含 char、double、int 成员的结构体，手工推算按对齐值降序与乱序两种排列的 sizeof，并说出尾部填充的去向。
++2. 为什么含指针或 long 的结构体不能直接写进存档？
++3. 不看资料写出 put_u32le（把 uint32_t 按小端写入文件），并说出每个字节为什么要转 uint32_t。
++4. 「结构体直接 fwrite 行不行」——给出四个理由。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 降序（double, int, char）：8 + 4 + 1 + 尾部 3 = 16；乱序（char, double, int）：char 在 0，double 对齐 8 跳到 8 占 8 字节，int 对齐 4 落在 16 占 4，共 20，尾部补 4 凑成 24（最大对齐 8 的倍数）。尾部填充为的是数组里下一个元素仍落在最大对齐值的倍数上。
++2. 指针宽度 8 字节（64 位）但存的是本进程运行时的地址，存档里毫无意义；long 在 Windows 32 位、Linux 64 位——同一结构体两个平台 sizeof 不同，读回来就错位。布局天然随平台漂移，存档必须显式编码。
++3. `void put_u32le(FILE *f, uint32_t v) { fputc(v & 0xFF, f); fputc((v >> 8) & 0xFF, f); fputc((v >> 16) & 0xFF, f); fputc((v >> 24) & 0xFF, f); }`。每字节先与 0xFF 是因为 fputc 的参数是 int，先截到低 8 位保证只写一个字节、不受符号扩展影响。
++4. padding 是不定值（sizeof 与实际有效字节不等）；成员偏移随平台对齐规则变；字节序（int 是大端还是小端）由平台决定；指针/long 等类型宽度随数据模型变——四条都让「原样字节」读不回来。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/240-BitField.md b/cnt-content/full/022-c/240-BitField.md
+index 30d7d24e..7fcc8175 100644
+--- a/cnt-content/full/022-c/240-BitField.md
++++ b/cnt-content/full/022-c/240-BitField.md
+@@ -556,12 +556,24 @@ printf("%d\n", s.flag);
+ - Microsoft Learn: C Bit Fields（MSVC 的实现定义行为，含跨存储单元示例）：https://learn.microsoft.com/en-us/cpp/c-language/c-bit-fields
+ - C23 公开草案 N3220（6.7.2.1 Structure and union specifications）：https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf
+ 
+-## 12. 自我检查
++## 12. 遮码自检
+ 
+-- 能默写位域声明，说出存储单元、无名位域与 `: 0` 的作用，并解释为什么 `&f.a` 编译不过；
+-- 能列出实现定义三件事，并在自家编译器上各设计一个验证实验（打印原始字节、比较 sizeof、写符号性测试）；
+-- 能向同事讲清「位域为什么不能直接 fwrite 进文件」，并写出等价的显式序列化；
+-- 拿到寄存器映射需求，能按取舍表给出位域或掩码的选择与理由，并说出 volatile 位域的三个争议点。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 默写位域声明；说出存储单元、无名位域与 `: 0` 的作用，并解释为什么 `&f.a` 编译不过。
++2. 列出实现定义三件事，并在自家编译器上各设计一个验证实验。
++3. 「位域为什么不能直接 fwrite 进文件」怎么讲？写出等价的显式序列化。
++4. 寄存器映射需求：位域还是掩码？volatile 位域有哪些争议点？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `struct Flags { unsigned version : 3; unsigned : 2; unsigned type : 4; };`。位域以存储单元（如 unsigned 的 4 字节）为单位分配；无名位域是占位不取名；`: 0` 强制跳到下一个存储单元。`&f.a` 编译不过：位域不是从字节边界起步的完整对象，没有地址可取。
++2. 三件事：位序（先低位还是高位字节）、能否跨存储单元、int 位域的符号性。验证实验：把结构体 memset 后置值再打印原始字节（验位序与跨单元）、比较 sizeof（验单元划分）、对 `int a : 3` 赋 7 打印（验符号性，-1 还是 7）。
++3. 位域的比特排布是本机实现定义的——GCC 与 MSVC 对同一结构体 sizeof 可以是 8 与 12，写进文件读回来字段全部错位。显式序列化：`buf[0] = (version << 5) | type;` 之类移位掩码逐字段打包，接收端按位拆开。
++4. 本机内存里的结构、经 `_Static_assert(sizeof(struct X) == N)` 静态断言钉死的寄存器视图可用位域；跨机器数据用掩码。volatile 位域争议：写一个位域是读-改-写三步，volatile 只保证每步访存、不提供原子性，中断与多线程共享寄存器时可能丢更新——引擎厂商立场不同，稳妥做法是掩码 + 局部变量一次写回。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/250-FunctionCallStackFrame.md b/cnt-content/full/022-c/250-FunctionCallStackFrame.md
+index 6519fb18..12c118ad 100644
+--- a/cnt-content/full/022-c/250-FunctionCallStackFrame.md
++++ b/cnt-content/full/022-c/250-FunctionCallStackFrame.md
+@@ -516,12 +516,24 @@ frames.c:17:5:int main	16	48	static
+ - pthread_create 手册页（线程默认栈大小与 RLIMIT_STACK 的关系）：https://man7.org/linux/man-pages/man3/pthread_create.3.html
+ - AddressSanitizer 文档（检测范围与栈开销）：https://clang.llvm.org/docs/AddressSanitizer.html
+ 
+-## 自我检查
++## 遮码自检
+ 
+-- 能画出 main 到 f 再到 g 期间的帧图，说清 call、push rbp、ret 各把栈的哪一格动了；
+-- 能用打印地址的实验量出相邻帧间距，并解释它为什么约等于帧大小；
+-- 能不看资料说出两套 x86-64 调用约定各自的参数寄存器个数，以及 Windows 那 32 字节 shadow space 是谁留、归谁用；
+-- 能把「递归崩在几十万层」「大数组一行就崩」「stack smashing detected」三个现象各自对应到栈的哪个机制，并各自给出修复手段。
++遮住上文示例代码与下面的答案栏，先自己画、先自己答，再展开对照。
++
++1. 画出 main 到 f 再到 g 期间的帧图，说清 call、push rbp、ret 各把栈的哪一格动了。
++2. 用打印地址的实验量出相邻帧间距，解释它为什么约等于帧大小。
++3. 两套 x86-64 调用约定各用几个寄存器传参？Windows 的 32 字节 shadow space 谁留、归谁用？
++4. 「递归崩在几十万层」「大数组一行就崩」「stack smashing detected」各自对应栈的哪个机制？修复手段？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. call 把返回地址压栈；序言 push rbp 把旧帧指针压栈并把 rsp 设为新帧底；局部变量在帧内更低地址；ret 弹回返回地址、整帧随 rsp 复位退场。帧从高地址（旧）向低地址（新）生长。
++2. 打印相邻两层递归里同一变量的地址，差值约等于一帧的大小——每层递归完整复制一份序言+局部变量。
++3. System V（Linux/macOS）：6 个整型寄存器（rdi/rsi/rdx/rcx/r8/r9）；Windows x64：4 个（rcx/rdx/r8/r9）外加调用方在栈上预留 32 字节 shadow space，供被调方把寄存器参数转存（也作对齐空间）。
++4. 递归几十万层崩：栈预算 = 每帧成本 × 深度，8 MB/1 MB 用尽——自限深度或改迭代；大数组一行就崩：单个局部变量超过剩余栈——改 malloc 上堆；stack smashing detected：越界写踩穿了 canary（守在返回地址前）——找到溢出的数组边界，修越界本身，canary 只是报警器。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/260-ConstAndVolatileQualifiers.md b/cnt-content/full/022-c/260-ConstAndVolatileQualifiers.md
+index 17541188..abc9846e 100644
+--- a/cnt-content/full/022-c/260-ConstAndVolatileQualifiers.md
++++ b/cnt-content/full/022-c/260-ConstAndVolatileQualifiers.md
+@@ -461,12 +461,24 @@ printf("%d\n", *view);
+ - 字符串字面量（cppreference C，「改写字面量是未定义行为」原文）：https://en.cppreference.com/w/c/language/string_literal
+ - GCC 文档 Volatiles（volatile 访问在序列点间的合并/重排自由度）：https://gcc.gnu.org/onlinedocs/gcc/Volatiles.html
+ 
+-## 11. 自我检查
++## 11. 遮码自检
+ 
+-- 能默画 2x2 正交表，并为四个象限各举一个真实对象；
+-- 能向同事讲清 `const char *` 形参承诺了什么、没承诺什么，以及字符串字面量为什么不能写；
+-- 能解释「本文件的 const int 可被折叠、extern const 不行」的原因，知道 C23 用什么补这个缺口；
+-- 能写出 volatile sig_atomic_t 的信号标志程序，并说出 volatile 的三条边界各错在哪。
++遮住上文示例代码与下面的答案栏，先自己画、先自己写，再展开对照。
++
++1. 默画 const 与 volatile 的 2x2 正交表，四个象限各举一个真实对象。
++2. `const char *` 形参承诺了什么、没承诺什么？字符串字面量为什么不能写？
++3. 「本文件的 const int 可被折叠、extern const 不行」原因是什么？C23 用什么补这个缺口？
++4. 写出 volatile sig_atomic_t 的信号标志程序；volatile 的三条边界各错在哪？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. const 只读 + 非 volatile：字符串字面量指向的只读数据；const + volatile：内存映射的只读状态寄存器；非 const 非 volatile：普通局部变量；非 const + volatile：MMIO 寄存器、信号标志。const 管该不该写，volatile 管看得见吗，两者正交。
++2. 承诺：函数不通过这个指针改你传的对象；没承诺：对象真的是只读的（调用方可以传非 const 对象进来，函数内部转手给别的「没封死」的指针仍可能改）。字面量住只读段，写它是 UB。
++3. 本文件里初始化可见，编译器直接把 `const int N = 100;` 折叠成立即数；extern 的定义在别的编译单元，编译本文件时看不见初始化器，只能按变量对待（C 的 const 不是编译期常量）。C23 的 `constexpr` 补上这个缺口。
++4. `static volatile sig_atomic_t got = 0; void on_int(int sig) { got = 1; } int main(void) { signal(SIGINT, on_int); while (!got) { } ... }`。三条边界：以为它原子——读改写仍是多步，计数器要 _Atomic；以为它管顺序——内存序要 acquire/release 或锁；以为它是锁——两个 volatile 变量之间没有联合保证，并发正确性归锁。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/270-VolatileKeyword.md b/cnt-content/full/022-c/270-VolatileKeyword.md
+index 09ea1af7..bb02d19c 100644
+--- a/cnt-content/full/022-c/270-VolatileKeyword.md
++++ b/cnt-content/full/022-c/270-VolatileKeyword.md
+@@ -519,12 +519,24 @@ unsigned int *q = (unsigned int *)fifo;    /* 强转：拦不住，此后 *q 不
+ - setjmp（cppreference C，非 volatile 局部变量跳回后值不确定）：https://en.cppreference.com/w/c/program/setjmp
+ - GCC 文档 Volatiles（序列点间的合并/重排自由度、非 volatile 访问不受排序约束）：https://gcc.gnu.org/onlinedocs/gcc/Volatiles.html
+ 
+-## 12. 自我检查
++## 12. 遮码自检
+ 
+-- 能不看资料复现第 1 节实验，并指出 -O2 汇编里「读被提出循环」的那一行；
+-- 能用 as-if 规则与 C11 6.8.5 解释编译器四种优化各自的合法性来源；
+-- 能逐条援引 C17 7.14.1.1 与 7.13.2.1，说清信号处理器与 setjmp 场景的担保边界；
+-- 面对一段共享代码，能在三分钟内指出 volatile、`_Atomic`、锁各自的职责层，并指出错位用法。
++遮住上文示例代码与下面的答案栏，先自己跑、先自己答，再展开对照。
++
++1. 复现第 1 节实验：非 volatile 标志的死循环在 -O2 下怎么变？在汇编里指出「读被提出循环」的那一行。
++2. 用 as-if 规则与 C11 6.8.5 解释：外提、常量折叠、死存储消除、空循环缩并各凭什么合法？
++3. 逐条援引 C17 7.14.1.1 与 7.13.2.1，说清信号处理器与 setjmp 场景的担保边界。
++4. 三分钟口算法：一段共享代码里 volatile、`_Atomic`、锁各管哪层？指出错位用法。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. -O2 下 `while (!done) { }` 编成「读一次 → 无限循环」：汇编里条件跳转之前的 load 只出现一次、循环体内没有 load——普通变量不是可观察行为，读一次与读多次无差别。加 volatile 后每次迭代都有 load。
++2. as-if 规则授权一切「可观察行为不变」的变换；C11 6.8.5 规定循环必须「前进」且控制表达式涉及可观察行为——普通变量的读写不算可观察行为，于是外提合法、死存储（写了没人读）消除合法、无副作用空循环可缩并。
++3. 7.14.1.1：信号处理器只能读写无锁原子对象或 `volatile sig_atomic_t`，除此外访问其他对象行为未定义；7.13.2.1：长跳回后，非 volatile 自动对象（被修改过）的值不确定——跨 setjmp 的局部变量必须 volatile。
++4. volatile 管每次访问真实发生（编译器层）；_Atomic 管单变量操作不可分割与内存序（语言层）；锁管一段代码独占执行（多变量联合保证）。错位用法：拿 volatile 当原子计数器（丢更新）、拿两个 volatile 做检查-行动（两变量间无联合保证）、拿 volatile 当锁（不阻塞、不互斥）。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/280-GenericSelection.md b/cnt-content/full/022-c/280-GenericSelection.md
+index 186b7e12..9426193a 100644
+--- a/cnt-content/full/022-c/280-GenericSelection.md
++++ b/cnt-content/full/022-c/280-GenericSelection.md
+@@ -496,12 +496,24 @@ printf("%s\n", _Generic((3.14f), float: "float", double: "double", default: "?")
+ - Clang 的 C23 支持状态（typeof 对应提案 N2927/N2930）：https://clang.llvm.org/c_status.html
+ - Modern C（Jens Gustedt，C23 版免费在线，泛型选择章节）：https://gustedt.gitlabpages.inria.fr/modern-c/
+ 
+-## 11. 自我检查
++## 11. 遮码自检
+ 
+-- 能不看资料写出「函数族 + _Generic + 宏」三件套的伪重载骨架，并说出每个部件的职责；
+-- 能用 `i++` 实验向同事证明控制表达式不求值，并解释为什么伪重载宏的参数只求值一次；
+-- 看到 `duplicate type ... in '_Generic'` 与 `not compatible with any association` 两类报错，能各说出一条成因与修法；
+-- 能说出 `const int`、`int[10]`、函数名进开关前的三步整形，以及 `&arr` 为什么能保住数组身份。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 不看资料写出「函数族 + _Generic + 宏」三件套的伪重载骨架，说出每个部件的职责。
++2. 用 `i++` 实验证明控制表达式不求值；伪重载宏的参数为什么只求值一次？
++3. `duplicate type ... in '_Generic'` 与 `not compatible with any association` 两类报错各怎么来的、怎么修？
++4. `const int`、`int[10]`、函数名进开关前经历哪三步整形？`&arr` 为什么能保住数组身份？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 函数族 `double abs_d(double); int abs_i(int);` 保证类型安全与单次求值；`_Generic((x), int: abs_i, double: abs_d, default: abort)` 做编译期类型分派；`#define ABS(x) _Generic(...)` 给统一名字。宏是门面，查表选函数，函数干活。
++2. `printf("%d", _Generic(i++, int: 0, default: 1))` 打印后 i 不变——控制表达式只取类型不取值。宏参数只传给 _Generic 一处（或先把 `(x)` 求值进临时变量再查类型），所以不重复求值；若宏里把 `(x)` 展开多处，副作用就重复了——这正是三件套要规避的。
++3. duplicate type：两个关联类型相同（如同时列 int 与 const int 被剥离后重合）——删重复项或加一层实际类型不同的包装；not compatible：控制表达式的类型剥完形后不匹配任何关联且无 default——补 default 分支，或核对自己的类型假设。
++4. 剥离三步：剥顶层限定符（const int 变 int）、数组转首元素指针（int[10] 变 int *）、函数名转函数指针。`&arr` 的类型是「指向整个数组的指针」，不在「数组自动转指针」的剥离名单里，所以能进开关与 int[10] 区分。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/290-PreprocessorMacro.md b/cnt-content/full/022-c/290-PreprocessorMacro.md
+index 2e98c314..9b5b801c 100644
+--- a/cnt-content/full/022-c/290-PreprocessorMacro.md
++++ b/cnt-content/full/022-c/290-PreprocessorMacro.md
+@@ -783,12 +783,24 @@ int x = B;      /* x 是几？ */
+ - Linux 内核编码风格第 12 章（do-while(0) 与宏命名）：https://www.kernel.org/doc/html/latest/process/coding-style.html
+ - Modern C（Jens Gustedt，C23 版免费在线）：https://gustedt.gitlabpages.inria.fr/modern-c/
+ 
+-## 自我检查
++## 遮码自检
+ 
+-- 能用 `gcc -E` 取出任意一段代码的预处理产物，并指着展开结果解释每个宏变成了什么；
+-- 能不看资料说出 `#include` 两种写法的搜索路径顺序、头文件守卫三写法及各自的可移植性代价；
+-- 拿到 `HALF(2 + 2) == 3` 式的静默算错，能在两分钟内用 `-E` 定位到缺括号的宏；
+-- 能向同事讲清 do { } while (0) 解决什么问题、`__VA_OPT__` 与 `##__VA_ARGS__` 各自的来历。
++遮住上文示例代码与下面的答案栏，先自己跑、先自己答，再展开对照。
++
++1. 用 `gcc -E` 取出一段含宏的代码，指着展开结果解释每个宏变成了什么。
++2. `#include` 两种写法的搜索路径顺序是什么？头文件守卫三写法及各自的可移植性代价？
++3. `HALF(2 + 2) == 3` 式的静默算错，两分钟内用 `-E` 定位到缺括号的宏——写出定位过程。
++4. do { } while (0) 解决什么问题？`__VA_OPT__` 与 `##__VA_ARGS__` 各自的来历？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `gcc -E demo.c`（可加 `-o demo.i`）：宏在产物里已替换成原文文本、#include 处是头文件全文、注释消失——逐处对照源码讲「文本替换」四个字。
++2. `#include "x.h"` 先查当前文件目录再查系统路径；`#include <x.h>` 只查系统路径。守卫三写法：传统 `#ifndef/#define/#endif`（全平台通吃）、`#pragma once`（GCC/Clang/MSVC 都认但非标准）、二者并用（守卫保正确，once 省编译器重复读文件）。
++3. `gcc -E demo.c | grep -n "2 + 2"`——展开产物里看到 `2 + 2 / 2 == 3`，一眼定位 HALF 宏体缺括号；修法 `#define HALF(x) ((x) / 2)`，每处参数与整体都加括号。
++4. do-while(0) 让多语句宏在无大括号的 if/else 里保持单一语句（吞掉分号歧义）；`##__VA_ARGS__` 是 GNU 扩展（也进了部分实现），用来吃掉零参数时的尾逗号，移植性差；C23 的 `__VA_OPT__(,)` 是标准答案——有变参才展开逗号。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/300-InlineFunctionMacro.md b/cnt-content/full/022-c/300-InlineFunctionMacro.md
+index 0e6bd678..fcde00aa 100644
+--- a/cnt-content/full/022-c/300-InlineFunctionMacro.md
++++ b/cnt-content/full/022-c/300-InlineFunctionMacro.md
+@@ -353,12 +353,24 @@ printf("r=%d\n", r);
+ - Modern C（Jens Gustedt，C23 版免费在线，inline 与存储类章节）：https://gustedt.gitlabpages.inria.fr/modern-c/
+ - Beej's Guide to C Programming（内联与预处理入门向）：https://beej.us/guide/bgc/
+ 
+-## 11. 自我检查
++## 11. 遮码自检
+ 
+-- 能用 objdump 复现「-O0 有 call、-O2 无 call」的实验，并解释为什么没标 inline 的小函数也被展开；
+-- 能不看资料画出 C99 inline 三种写法的语义表，并把 `undefined reference to 'sq'` 与 `multiple definition of 'sq'` 各归因到一条规则的违反；
+-- 能对着对照表说出「这个需求该用宏还是 static inline」，并给出宏不可替代的三个能力各一例；
+-- 能解释内联的两种代价与「递归/大函数不该内联」的原因，说出内核编码规范那句准则。
++遮住上文示例代码与下面的答案栏，先自己跑、先自己答，再展开对照。
++
++1. 用 objdump 复现「-O0 有 call、-O2 无 call」的实验，并解释为什么没标 inline 的小函数也被展开。
++2. 画出 C99 inline 三种写法的语义表；把 `undefined reference to 'sq'` 与 `multiple definition of 'sq'` 各归因到一条规则的违反。
++3. 「这个需求该用宏还是 static inline」怎么判？宏不可替代的三个能力各举一例。
++4. 内联的两种代价是什么？递归与大函数为什么不该内联？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `gcc -O0 -g demo.c -o d0 && objdump -d d0 | grep call` 能看到 `call sq`；`-O2` 版没有 call——函数体已抄进调用处。原因：inline 关键字不是开关，优化等级才是——-O2 下编译器按启发式自动内联所有值得抄的小函数。
++2. 语义表：裸 inline 头文件内联定义（不产外部符号，须恰好一个 .c 补外部定义）；extern inline 声明点明外部定义在别处；static inline 内部链接、每 TU 一份副本。undefined reference：头文件里写裸 inline 却没有任何 TU 提供外部定义——违反「内联定义不算数」；multiple definition：GNU89 语义下裸 inline 在每个包含它的 TU 各发一份外部定义——违反「外部定义唯一」。`static inline` 两种规则下都只产内部副本，一笔勾销分歧。
++3. 判据：类型敏感、要调试器可见、参数只求值一次 → static inline；需要代码生成、编译期探测、参数当左值 → 宏。三例：`#define STRINGIFY(x) #x`（字符串化，函数做不到）、`__has_include` 类编译期探测（函数进不了预处理期）、`SWAP(t, a, b)` 把参数当左值取地址（函数拿不到调用方的左值身份）。
++4. 代价一：代码膨胀（二进制变大、指令缓存压力上升）；代价二：编译变慢。递归展开会无穷倒推（编译器按深度限制截断），大函数展开膨胀远超省下的调用开销——都不值得。记住分工：内联是优化不是指令，inline 关键字真正管的是链接语义。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/310-MultiFileCompilation.md b/cnt-content/full/022-c/310-MultiFileCompilation.md
+index 1dbc7dc5..abf40007 100644
+--- a/cnt-content/full/022-c/310-MultiFileCompilation.md
++++ b/cnt-content/full/022-c/310-MultiFileCompilation.md
+@@ -660,12 +660,24 @@ int twice(int x) { return 2 * x; }
+ - nm 与符号类型字母（GNU Binutils）：https://sourceware.org/binutils/docs/binutils/nm.html
+ - -fcommon / -fno-common 的现行默认（GCC）：https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html
+ 
+-## 自我检查
++## 遮码自检
+ 
+-- 能说出翻译单元的组成，并解释为什么两个 .c 各自定义同名的 static 函数互不冲突；
+-- 能不看资料写出「.h 只放声明/类型/宏、.c 放定义、守卫齐全」的模块三件套；
+-- 拿到一条 undefined reference，会先 nm 相关 .o 再动手改代码，并能说出至少三种成因；
+-- 能解释头文件里写定义为什么会 multiple definition，以及 extern 变量的初始化为什么只写在定义文件。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 翻译单元由什么组成？为什么两个 .c 各自定义同名的 static 函数互不冲突？
++2. 不看资料写出「.h 只放声明/类型/宏、.c 放定义、守卫齐全」的模块三件套。
++3. 拿到一条 undefined reference，先做什么再动手改代码？说出至少三种成因。
++4. 头文件里写定义为什么会 multiple definition？extern 变量的初始化为什么只写在定义文件？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 一个 .c 文件加上它递归包含的所有头文件。static 把符号降为内部链接，每个翻译单元各有一份互不可见——两个 TU 各自的 static f 都是「文件内的 f」，符号表上根本不冲突。
++2. math_ops.h：`#ifndef MATH_OPS_H #define MATH_OPS_H` + 函数原型 `double add(double, double);` + 类型定义 + `#endif`；math_ops.c：`#include "math_ops.h"` + `double add(double a, double b) { return a + b; }`；main.c：`#include "math_ops.h"` 后调用。头文件无任何定义。
++3. 先 `gcc -c` 各自编译通过，再 `nm main.o | grep U` 看「有 U 没人接」的符号——U 声明在、没人定义。三种成因：函数/变量压根没实现；.c 忘了加进编译命令；签名不一致（C++ 还要考虑 name mangling）。
++4. 头文件被多个 .c 包含，每个 TU 各得到一份定义，链接时同名外部符号撞车。extern 声明不分配存储，若头文件里写 `extern int g = 1;` 那就成了定义——初始化属于定义，定义必须只在一个 .c：`int g = 1;`，头文件只留 `extern int g;`。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/320-DynamicStaticLibrary.md b/cnt-content/full/022-c/320-DynamicStaticLibrary.md
+index 78b767a4..169b3301 100644
+--- a/cnt-content/full/022-c/320-DynamicStaticLibrary.md
++++ b/cnt-content/full/022-c/320-DynamicStaticLibrary.md
+@@ -406,12 +406,29 @@ LD_DEBUG 是加载器的自曝开关：`LD_DEBUG=libs ./app` 打印库搜索全
+ - ldd 手册页（定义与不可用于不可信程序的警告）：https://man7.org/linux/man-pages/man1/ldd.1.html
+ - POSIX dlsym 规范（void* 与函数指针转换的保证）：https://pubs.opengroup.org/onlinepubs/9799919799/functions/dlsym.html
+ 
+-## 自我检查
++## 遮码自检
+ 
+-- 能不看资料写出「-c 编译、ar rcs 打包、-L 加 -l 链接」三步，并说出 -lutils 会展开成什么名字；
+-- 能解释 gcc -L. -lutils main.o 为什么报 undefined reference，以及 --start-group 或重复列库为什么能救；
+-- 能搭出 libx.so.1.0.0 / libx.so.1 / libx.so 三件套，并用 readelf -d 与 ldd 指出 SONAME、NEEDED 分别在哪；
+-- 拿到 cannot open shared object file，能按三顺位说出三种修法各自的适用场景，并说出 ldd 与 readelf -d 的分工。
++遮住上文示例代码与下面的答案栏，先自己跑、先自己答，再展开对照。
++
++1. 不看资料写出「-c 编译、ar rcs 打包、-L 加 -l 链接」三步；-lutils 会展开成什么名字？
++2. `gcc -L. -lutils main.o` 为什么报 undefined reference？--start-group 或重复列库为什么能救？
++3. 搭出 libx.so.1.0.0 / libx.so.1 / libx.so 三件套；用 readelf -d 与 ldd 指出 SONAME、NEEDED 分别在哪。
++4. 拿到 cannot open shared object file：按三顺位说出三种修法的适用场景；ldd 与 readelf -d 的分工？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++```bash
++gcc -c utils.c -o utils.o          # 1) 编出目标文件
++ar rcs libutils.a utils.o          # 2) 打包成静态库（s 建符号索引）
++gcc main.o -L. -lutils -o prog     # 3) -L 指搜索路径，-l 展开为 libutils.a
++```
++
++2. 链接器从左到右处理：先扫 main.o 记下 U，再扫 libutils.a 时按索引补符号——但若写成 `-lutils main.o`（库在左），扫库时还没有 U 需求，库白扫一遍。--start-group 让 ld 对组内归档反复扫描到符号收敛，重复列库同理——都靠「再扫一遍」接住前向依赖。
++3. `gcc -shared -fPIC -Wl,-soname,libx.so.1 -o libx.so.1.0.0 x.c`；`ln -s libx.so.1.0.0 libx.so.1; ln -s libx.so.1 libx.so`。`readelf -d libx.so.1.0.0 | grep SONAME` 看真身的 SONAME；`readelf -d prog | grep NEEDED` 看可执行文件依赖哪个 soname；`ldd prog` 显示运行时实际解析到的全路径——静态账本与运行时实况分工。
++4. 三顺位：LD_LIBRARY_PATH（临时验证、别写进部署）；/etc/ld.so.conf + ldconfig（系统级正确做法）；-Wl,-rpath 嵌入 $ORIGIN（随应用自带的库，部署可复制）。ldd 谨慎用于不可信程序（跑它的加载器，有副作用风险）；readelf -d 纯读文件零风险，CI 里用后者。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/330-ProcessAndPipe.md b/cnt-content/full/022-c/330-ProcessAndPipe.md
+index 977e935c..3203c2df 100644
+--- a/cnt-content/full/022-c/330-ProcessAndPipe.md
++++ b/cnt-content/full/022-c/330-ProcessAndPipe.md
+@@ -503,12 +503,24 @@ printf("world\n");
+ 
+ 进阶书目：W. Richard Stevens《UNIX 环境高级编程》第 8 章（进程）与 Michael Kerrisk《Linux/UNIX 系统编程手册》第 24 至 28 章，是本文主题的两部权威参考。
+ 
+-## 13. 自我检查
++## 13. 遮码自检
+ 
+-- 能对别人讲清 `ls | grep .c` 从敲下回车到屏幕出字的全过程，指认每一步用了哪个系统调用；
+-- 能默写「fork 返回三种值各给谁」，并解释为什么 fork 前要 fflush；
+-- 给一张 STAT 为 Z 的 ps 截图，能说出成因、后果与两种修法；
+-- 能不看书写出 pipe + fork + dup2 + exec + waitpid 的管道样板，并指出「谁必须关闭哪个描述符」。
++遮住上文示例代码与下面的答案栏，先自己讲、先自己写，再展开对照。
++
++1. 讲清 `ls | grep .c` 从敲下回车到屏幕出字的全过程，指认每一步用了哪个系统调用。
++2. 默写 fork 返回的三种值各给谁；为什么 fork 前要 fflush？
++3. ps 截图里 STAT 为 Z：成因、后果、两种修法。
++4. 不看书默写 pipe + fork + dup2 + exec + waitpid 管道样板，并指出「谁必须关闭哪个描述符」。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. shell 解析竖线 → pipe() 建内核管道 → fork 两次 → 子进程 1 dup2(pfd[1], 1) 后 exec("ls")，子进程 2 dup2(pfd[0], 0) 后 exec("grep") → 父进程 waitpid 收尸 → ls 的 stdout 写进管道（write），grep 从 stdin 读出（read）匹配行再 write 回自己的 stdout。涉及：pipe、fork、dup2、execve、waitpid、write/read。
++2. 返回 -1 给父进程（失败）；返回 0 给子进程；返回子进程 PID 给父进程。fork 复制的是整个 stdio 缓冲区：若缓冲区里还有没刷出的文本，父子各刷一份——先 fflush 清空再分身。
++3. Z = 僵尸：子进程已退出，父进程没 wait，进程表里的条目还挂着。后果：占 PID 与进程表项，多了会耗尽。修法：父进程 wait/waitpid；或不等收尸的父进程退出让 init/systemd 接管。
++4. 样板（见第 5 节）：父进程 pipe 后 fork；写端进程 exec 前必须 dup2(pfd[1], 1) 并关闭 pfd[0]（否则读端永不见 EOF）；读端进程 dup2(pfd[0], 0) 并关闭 pfd[1]（否则写端没真正关、SIGPIPE/EOF 语义都乱）。规则：不用的那一端一律立刻关闭。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/340-SignalHandling.md b/cnt-content/full/022-c/340-SignalHandling.md
+index a6949466..b5d36233 100644
+--- a/cnt-content/full/022-c/340-SignalHandling.md
++++ b/cnt-content/full/022-c/340-SignalHandling.md
+@@ -448,12 +448,24 @@ sigprocmask(SIG_UNBLOCK, &block, NULL); /* 解除屏蔽：处理器执行几次
+ - sigaltstack 手册页（备用信号栈与 SIGSTKSZ）：https://man7.org/linux/man-pages/man2/sigaltstack.2.html
+ - POSIX.1-2017 2.4.3 Signal Concepts（异步信号安全函数的权威清单）：https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_04
+ 
+-## 12. 自我检查
++## 12. 遮码自检
+ 
+-- 能画出「按键 → 终端驱动 → SIGINT → 处置表 → 处理器/终止」的完整链路，并指出默认动作的三类；
+-- 能说清 signal 与 sigaction 的差别、SA_RESTART 有无时系统调用的两种命运；
+-- 能背出处理器两条铁律，并对「处理器里 printf 为什么会死锁」给出逐行时序分析；
+-- 能默写 reaper.c 的骨架，解释为什么要循环 waitpid、为什么要保护 errno。
++遮住上文示例代码与下面的答案栏，先自己画、先自己写，再展开对照。
++
++1. 画出「按键 → 终端驱动 → SIGINT → 处置表 → 处理器/终止」的完整链路，指出默认动作的三类。
++2. signal 与 sigaction 差在哪？SA_RESTART 有无时系统调用的两种命运？
++3. 背出处理器两条铁律；对「处理器里 printf 死锁」给出逐行时序分析。
++4. 默写 reaper.c 骨架；为什么要循环 waitpid？为什么要保护 errno？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. Ctrl+C → 终端驱动产生 SIGINT → 内核按处置表分发 → 默认动作（终止）或已注册处理器。默认动作三类：终止进程（SIGINT/SIGTERM）、忽略（SIGCHLD/SIGURG）、终止并转储核心（SIGSEGV/SIGABRT）。
++2. signal 的行为标准留给实现决定（历史包袱）；sigaction 每项行为显式指定。无 SA_RESTART：被信号打断的系统调用返回 -1 且 errno 为 EINTR，由调用方重启；有 SA_RESTART：内核自动重启该系统调用，调用方无感知。
++3. 铁律：只读写 volatile sig_atomic_t 或无锁原子；只调异步信号安全函数。时序：主线程在 printf 里持有 stdout 内部锁 → 信号打断，处理器内又调 printf → 尝试取同一把锁 → 锁已被「自己」持有，死锁——malloc/free 撞堆同理。
++4. 骨架：`struct sigaction sa = { .sa_handler = on_chld, .sa_flags = SA_RESTART | SA_NOCLDSTOP }; sigaction(SIGCHLD, &sa, NULL); void on_chld(int s) { int saved = errno; while (waitpid(-1, NULL, WNOHANG) > 0) ; errno = saved; }`。循环：一次 SIGCHLD 可能对应多个已退出子进程（信号不排队）；保护 errno：处理器打断了主流程，主流程可能正靠 errno 判断错误，弄脏它就是埋雷。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/350-SharedMemorySemaphore.md b/cnt-content/full/022-c/350-SharedMemorySemaphore.md
+index 27a57933..5bc2e606 100644
+--- a/cnt-content/full/022-c/350-SharedMemorySemaphore.md
++++ b/cnt-content/full/022-c/350-SharedMemorySemaphore.md
+@@ -434,12 +434,24 @@ System V IPC 只是 Unix 进程间共享内存的一个门派。写代码时你
+ - ftok 手册页（路径要求、项目字符、碰撞可能）：https://man7.org/linux/man-pages/man3/ftok.3.html
+ - ipcs 手册页（查看 System V IPC 设施）：https://man7.org/linux/man-pages/man1/ipcs.1.html
+ 
+-## 自我检查
++## 遮码自检
+ 
+-- 能不看资料说出 key、shmid、挂接地址三者各是什么，为什么不能把裸指针存进共享区；
+-- 能亲手完成「init、两个 writer 并发自增、reader 读结果」的完整编排，并解释 counter 为什么恒等于 200000；
+-- 能向同事讲清信号量 P/V 与「进程自己写循环检查标志」的差别，以及 SEM_UNDO 防的是什么；
+-- 拿到一台「灵异现象」频出的机器，会用 ipcs/ipcrm 排查与清理遗留的 System V IPC 对象。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. key、shmid、挂接地址三者各是什么？为什么不能把裸指针存进共享区？
++2. 亲手完成「init、两个 writer 并发自增、reader 读结果」的编排，并解释 counter 为什么恒等于 200000。
++3. 信号量 P/V 与「进程自己写循环检查标志」差在哪？SEM_UNDO 防的是什么？
++4. 「灵异现象」频出的机器：ipcs/ipcrm 怎么排查与清理？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. key 是跨进程的命名（ftok 由路径与项目字符生成）；shmid 是内核段句柄（shmget 的返回值）；挂接地址是本进程地址空间里的虚地址（shmat 的返回值，各进程不同）。裸指针只有在本进程地址空间里才有意义——别的进程挂接的基址不同，存进去的指针在它那里就是野地址；共享区里只能存偏移或数据。
++2. init 用 semctl SETVAL 把信号量置 1（互斥信号量）；writer 在 P 与 V 之间读-改-写 counter，两 writer 各 100000 次；reader 最后读到 200000。原因：任何时刻只有临界区内的一个 writer 在动 counter，读-改-写不会穿插——信号量把「丢更新」挡在了门外。
++3. P 拿不到时进程睡眠进内核等待队列，不占 CPU；自旋循环检查标志空转烧 CPU 且可能一直抢不到。SEM_UNDO：进程退出时内核自动回滚它对信号量的改动——防止持锁进程崩溃后信号量永远 0、所有人卡死。
++4. `ipcs -s/-m` 列出遗留对象与属主 PID；`ipcrm -m <shmid>` / `ipcrm -s <semid>` 清理。排查思路：nattch 为 0 仍存在的段就是没人认领的遗留物——「创建者初始化、最后走的人删除」没执行。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/360-ThreadConcurrency.md b/cnt-content/full/022-c/360-ThreadConcurrency.md
+index 9f9e874f..49c3fe47 100644
+--- a/cnt-content/full/022-c/360-ThreadConcurrency.md
++++ b/cnt-content/full/022-c/360-ThreadConcurrency.md
+@@ -304,12 +304,24 @@ Config *get_config(void) {
+ - ThreadSanitizer 总览（GCC 文档 -fsanitize=thread 条目所引）：https://github.com/google/sanitizers/wiki#threadsanitizer
+ - pthreads 总览手册页（线程共享模型与线程 ID 的权威口径）：https://man7.org/linux/man-pages/man7/pthreads.7.html
+ 
+-## 自我检查
++## 遮码自检
+ 
+-- 能用一句话向同事讲清线程与 fork 子进程的区别，并指出局部变量为什么天然安全；
+-- 能在纸上画时序表解释丢失的更新，说出竞态条件与数据竞争两个术语的区别；
+-- 能背出数据竞争导致未定义行为的四个「冲突动作」条件，以及加锁为什么能消除它；
+-- 拿到一个偶现错值的程序，会用 TSan 编译、读懂报告里两个执行流的冲突现场。
++遮住上文示例代码与下面的答案栏，先自己画、先自己答，再展开对照。
++
++1. 一句话讲清线程与 fork 子进程的区别；局部变量为什么天然安全？
++2. 在纸上画时序表解释丢失的更新；竞态条件与数据竞争两个术语差在哪？
++3. 背出数据竞争判 UB 的四个「冲突动作」条件；加锁为什么能消除它？
++4. 偶现错值的程序：TSan 怎么编译？报告里两个执行流的冲突现场怎么读？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. fork 复制整个进程（新地址空间），pthread_create 只在同一地址空间里加一条执行流。局部变量在各线程自己的栈上，别的线程没有指针够不着——天然隔离。
++2. 时序表：A 读 counter=5 → B 读 counter=5 → A 写 6 → B 写 6 → 两次自增只落一次。竞态条件是「结果依赖执行顺序」的逻辑缺陷；数据竞争是无同步地并发访问同一内存且至少一个是写——C11 判后者为未定义行为，丢账只是表象。
++3. 四条件：两个执行流、访问同一内存位置、无 happens-before 同步、至少一个是写。加锁后第二个线程必须等第一个释放才能进临界区，lock/unlock 建立起先后关系（同步于锁），「无同步」这一条被掐断——冲突不再存在。
++4. `gcc -fsanitize=thread -g demo.c -o demo && ./demo`。报告给出「WARNING: ThreadSanitizer: data race」与两条调用栈（各自线程读到/写到冲突地址的 文件:行号）及「Read/Write of size N at 0x... by thread T2 ... previous write by thread T1」——两条栈就是冲突现场。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/370-POSIXThread.md b/cnt-content/full/022-c/370-POSIXThread.md
+index c9e02034..6a1ffc8f 100644
+--- a/cnt-content/full/022-c/370-POSIXThread.md
++++ b/cnt-content/full/022-c/370-POSIXThread.md
+@@ -380,12 +380,24 @@ worker 里 `int *p = (int *)arg; printf("got %d\n", *p);`，期望 0 到 3 各
+ - GCC -pthread 选项（预处理与链接两头生效的官方口径）：https://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html
+ - glibc 2.34 发布说明（libpthread 并入 libc 的来龙去脉）：https://sourceware.org/glibc/wiki/Release/2.34
+ 
+-## 自我检查
++## 遮码自检
+ 
+-- 能默写 pthread_create 的四参数表，并用 strerror 写出正确的错误处理；
+-- 能向同事讲清 join 与 detach 的取舍、忘 join 的资源后果、main return 对所有线程意味着什么；
+-- 能徒手写出「等待方 while 加 wait、通知方先改条件再 signal」的条件变量骨架，并解释两个「必须」；
+-- 拿到一份生产者消费者代码，能逐行指出锁、两个条件变量各自的等待方与通知方，并用 TSan 验收。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 默写 pthread_create 的四参数表；用 strerror 写出正确的错误处理。
++2. join 与 detach 怎么取舍？忘 join 的资源后果是什么？main return 对所有线程意味着什么？
++3. 徒手写「等待方 while 加 wait、通知方先改条件再 signal」的条件变量骨架，解释两个「必须」。
++4. 给一份生产者消费者代码，逐行指出锁与两个条件变量各自的等待方、通知方，并用 TSan 验收。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `int rc = pthread_create(&tid, NULL, worker, arg); if (rc != 0) { fprintf(stderr, "create: %s\n", strerror(rc)); }`。四参数：线程 ID 出参、属性（NULL 为默认）、起点函数（`void *(*fn)(void *)`）、传给它的唯一 void * 参数。
++2. join：需要拿返回值/确认收尾时用；detach：后台线程永不汇合时用，二选一。忘 join：线程描述符与栈资源挂着（等同僵尸），泄漏。main 一 return（或 exit）整个进程终结、所有线程当场死亡——要等线程先 pthread_exit。
++3. `pthread_mutex_lock(&m); while (!ready) pthread_cond_wait(&cv, &m); /* 用数据 */ pthread_mutex_unlock(&m);` / `pthread_mutex_lock(&m); ready = 1; pthread_cond_signal(&cv); pthread_mutex_unlock(&m);`。必须 while：wait 可能虚假唤醒或条件又被抢走，醒来必须重查；必须先改条件再 signal：先 signal 后改条件，等待方醒来一看条件没变又睡回去，通知永久丢失。
++4. 锁保护队列两端；not_full 的等待方是生产者、通知方是消费者（取出后）；not_empty 的等待方是消费者、通知方是生产者（放入后）。验收：`gcc -fsanitize=thread -g` 编译跑全量用例，报告安静即过。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/380-AtomicAndMemoryModel.md b/cnt-content/full/022-c/380-AtomicAndMemoryModel.md
+index a44391bc..2e75d9b4 100644
+--- a/cnt-content/full/022-c/380-AtomicAndMemoryModel.md
++++ b/cnt-content/full/022-c/380-AtomicAndMemoryModel.md
+@@ -431,12 +431,24 @@ void shared_release(SharedObject *obj) {
+ - C 原子操作库总览（stdatomic.h 全家族）：https://en.cppreference.com/w/c/atomic
+ - Modern C（Jens Gustedt，C23 版，线程与原子章节）：https://gustedt.gitlabpages.inria.fr/modern-c/
+ 
+-## 11. 自我检查
++## 11. 遮码自检
+ 
+-- 能向同事讲清 `counter++` 丢更新的三步交错，并分别用 `_Atomic` 与互斥锁修复；
+-- 能默写发布-订阅模板：数据先写、release 置标志；acquire 读标志、再读数据；
+-- 能说出 weak 与 strong CAS 的唯一差别，以及为什么循环里用 weak；
+-- 拿到一个新需求，能按第 5 节分工表判断该用原子还是锁，并说出「两个原子变量之间没有联合保证」这句话的含义。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 讲清 `counter++` 丢更新的三步交错，并分别用 `_Atomic` 与互斥锁修复。
++2. 默写发布-订阅模板：数据先写、release 置标志；acquire 读标志、再读数据。
++3. weak 与 strong CAS 的唯一差别是什么？循环里为什么用 weak？
++4. 按第 5 节分工表判断一个新需求该用原子还是锁；「两个原子变量之间没有联合保证」是什么意思？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 交错三步：A 读 5、B 读 5、A 写 6、B 写 6——丢一次更新。修复：`_Atomic unsigned counter = 0;` 用 `atomic_fetch_add(&counter, 1)` 把读-加-写变成不可分割；或两线程都 `pthread_mutex_lock(&m); counter++; pthread_mutex_unlock(&m);`。单变量要原子，多步要锁。
++2. `atomic_store_explicit(&data, 42, memory_order_release); atomic_store(&flag, 1);` / `while (!atomic_load(&flag)) ; r = atomic_load(&data);`——订阅侧 acquire 读到标志后，发布侧在 release 之前的所有写都保证可见。
++3. weak 版允许伪失败（值相等也报失败），strong 不允许；伪失败无争用时也偶发。循环里伪失败只是多转一圈重试；strong 在 LL/SC 架构上反而要内层重试循环——所以循环用 weak。
++4. 判断：单变量的计数、标志、无锁结构 → 原子；多变量联合视图、检查-行动、复杂不变量 → 锁。「没有联合保证」：对 a、b 各自原子，也挡不住「读 a 与读 b 之间被别人改」——两变量的联合状态可能撕裂，联合保证必须加锁。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/390-SocketNetworkProgramming.md b/cnt-content/full/022-c/390-SocketNetworkProgramming.md
+index a6a4e37b..9786e23a 100644
+--- a/cnt-content/full/022-c/390-SocketNetworkProgramming.md
++++ b/cnt-content/full/022-c/390-SocketNetworkProgramming.md
+@@ -445,12 +445,24 @@ IPv4 地址 32 位早已耗尽，IPv6 用 128 位地址接棒。代码层面增
+ - htonl(3)（字节序转换四函数与 endianness 背景）：https://man7.org/linux/man-pages/man3/htonl.3.html
+ - getaddrinfo(3)（主机名与服务解析）：https://man7.org/linux/man-pages/man3/getaddrinfo.3.html
+ 
+-## 14. 自我检查
++## 14. 遮码自检
+ 
+-- 能不看资料默写 socket/bind/listen/accept 五步服务器，并说出每个函数成功与失败时的返回值；
+-- 能向同事解释 accept 返回新 fd 的语义，以及监听 fd 与连接 fd 的分工；
+-- 能复述 read 三态（正数、0、-1）各自的含义，并写出 recv_n；
+-- 面对 Address already in use，能按三因顺序排查；面对「偶现消息错乱」，能指出消息边界必须由应用层协议约定。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 默写 socket/bind/listen/accept 五步服务器；说出每个函数成功与失败时的返回值。
++2. accept 返回新 fd 的语义是什么？监听 fd 与连接 fd 的分工？
++3. 复述 read 三态（正数、0、-1）各自的含义，并写出 recv_n。
++4. Address already in use 按哪三因排查？「偶现消息错乱」的根因是什么？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `sockfd = socket(AF_INET, SOCK_STREAM, 0)`：成功 fd、失败 -1（errno）；`bind(sockfd, (struct sockaddr *)&addr, sizeof addr)`：成功 0、失败 -1；`listen(sockfd, backlog)`：成功 0、失败 -1；`connfd = accept(sockfd, ...)`：成功新 fd、失败 -1；之后 read/write 收发。
++2. accept 从完成队列取出一个连接，返回专属于它的连接 fd——监听 fd 只负责「排队」，永远不读写；连接 fd 才是这条会话的读写通道，一个连接一个 fd，用完 close。
++3. 正数 = 实传字节数（可能小于请求）；0 = 对端有序关闭（EOF）；-1 = 出错查 errno（EINTR 重试、EAGAIN 非阻塞无数据）。recv_n 循环到收满或 EOF：`while (got < n) { ssize_t r = read(fd, buf + got, n - got); if (r == 0) break; if (r < 0) { if (errno == EINTR) continue; return -1; } got += r; }`
++4. 三因：旧进程还没退（ss -ltnp 查占用）；TIME_WAIT 残留（SO_REUSEADDR）；特权端口（<1024 需要 root 或 CAP_NET_BIND_SERVICE）。消息错乱：TCP 只是字节流，两次 send 可能被一次 read 读走——边界必须由应用层协议（定长或长度前缀 + recv_n）维护。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/400-FileSystemOperation.md b/cnt-content/full/022-c/400-FileSystemOperation.md
+index ff8284b5..dea8e242 100644
+--- a/cnt-content/full/022-c/400-FileSystemOperation.md
++++ b/cnt-content/full/022-c/400-FileSystemOperation.md
+@@ -603,12 +603,24 @@ printf("%zd %zd %zd\n", n1, n2, n3);
+ - rename 手册页（原子替换与 EXDEV）：https://man7.org/linux/man-pages/man2/rename.2.html
+ - readdir 的 POSIX 规范（errno 惯用法）：https://pubs.opengroup.org/onlinepubs/9699919799/functions/readdir.html
+ 
+-## 13. 自我检查
++## 13. 遮码自检
+ 
+-- 能不查资料写出 cp_sys.c 的完整骨架，并用 strace 解释 stdio 版与它 read 次数的差距；
+-- 能默写 read_n 的循环结构，说出 read 返回值三种身份的处理方式与 EINTR 分支的作用；
+-- 能解释 sparse.dat 为什么 ls 与 du 说不通，O_APPEND 为什么不能自己用 lseek 拼；
+-- 能向同事讲清硬链接与符号链接的差别，以及「unlink 之后程序还能读出数据」的机制。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 不查资料写出 cp_sys.c 的完整骨架；用 strace 解释 stdio 版与它 read 次数的差距。
++2. 默写 read_n 的循环结构；read 返回值三种身份各怎么处理？EINTR 分支的作用？
++3. sparse.dat 为什么 ls 与 du 说不通？O_APPEND 为什么不能自己用 lseek 拼？
++4. 硬链接与符号链接的差别？「unlink 之后程序还能读出数据」的机制是什么？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `int in = open(src, O_RDONLY); int out = open(dst, O_WRONLY|O_CREAT|O_TRUNC, 0644); while ((r = read(in, buf, sizeof buf)) > 0) write(out, buf, r); close(in); close(out);`。stdio 版对 1 字节一次的 fgetc 有用户态缓冲，strace 里系统调用次数远少；cp_sys 每次read 是真系统调用——把 buf 开大（如 64KB）减少次数。
++2. `while (got < n) { ssize_t r = read(fd, buf + got, n - got); if (r < 0) { if (errno == EINTR) continue; return -1; } if (r == 0) break; got += r; }`。三身份：-1 出错查 errno；0 到 EOF；正数是实传字节（可能小于请求，磁盘/网络/管道都可能部分读）。EINTR 分支：信号打断的系统调用不是错误，重试。
++3. 稀疏文件：越过文件尾的 lseek + write 只落最后一个字节，中间的洞不占磁盘块——ls 看逻辑大小（很大），du 看实际占用块（很小），两者说不通是特性不是 bug。O_APPEND 由内核把「跳到末尾 + 写」做成原子动作，多进程追加不会互相覆盖；自己 lseek(END) 再 write 两步之间会被插队。
++4. 硬链接：同一 inode 的另一个名字（同分区、不能对目录）；符号链接：存路径的小文件（跨分区、可指向目录、可悬空）。unlink 删的是「名字」，inode 引用计数减一；数据与 inode 要等计数为 0 且没有进程打开它才释放——打开着的 fd 仍能一直读到数据（临时文件模式：open 后立刻 unlink，退出自动消失）。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/410-CrossPlatformProgramming.md b/cnt-content/full/022-c/410-CrossPlatformProgramming.md
+index 1082034b..7850bc6a 100644
+--- a/cnt-content/full/022-c/410-CrossPlatformProgramming.md
++++ b/cnt-content/full/022-c/410-CrossPlatformProgramming.md
+@@ -490,12 +490,24 @@ printf("%zu %zu %zu\n", sizeof(long), sizeof(p), sizeof(*p));
+ - WSAStartup 的调用契约（必须是第一个 Winsock 函数）：https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsastartup
+ - MSVC 对各 C/C++ 标准的支持动态（版本更新页）：https://learn.microsoft.com/en-us/cpp/overview/what-s-new-for-visual-cpp-in-visual-studio
+ 
+-## 13. 自我检查
++## 13. 遮码自检
+ 
+-- 能把一份 MSVC 报错清单按五类归因，并对每类给出第几节的搭桥手段；
+-- 能默写七张对照表中任意三张，说出对应领域的迁移策略一句；
+-- 能解释 Windows 文本模式的三个暗改动作，并说出哪些 fopen 模式串是安全的；
+-- 能向同事讲清 LLP64 陷阱的本质（long 不是平台字长），以及兼容层与业务代码的边界划在哪。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 把一份 MSVC 报错清单按五类归因，并对每类给出对应小节的搭桥手段。
++2. 默写七张对照表中任意三张，说出对应领域的一句迁移策略。
++3. Windows 文本模式的三个暗改动作是什么？哪些 fopen 模式串是安全的？
++4. LLP64 陷阱的本质是什么？兼容层与业务代码的边界划在哪？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 五类：缺声明/头（微软前缀函数换 CRT 或条件包含）、C 标准缺口（MSVC C17 基线 + 特性探测）、类型宽度（long 换 int32_t/int64_t）、POSIX 无（对照表找 Win32 对应物）、链接库缺（ws2_32.lib 等 pragma/链接项）——对应第 2 节方言、第 4 节七张表、第 5 节数据模型、第 6 节兼容层。
++2. 任选三张（文件、进程、线程、动态库、信号、套接字、时间），各给一句：如线程 → CreateThread 换 _beginthreadex 或 C11 threads.h；套接字 → Winsock 要 WSAStartup 与 closesocket；信号 → 用控制台控制句柄或标志轮询替代 SIGINT。
++3. 暗改：\n 与 \r\n 互转；读到 Ctrl+Z（0x1A）当 EOF；写时行尾补 \r。安全模式串：一律加 b（"rb"、"wb"）关掉翻译；正斜杠路径双平台通用。
++4. long 在 Windows 是 32 位（LLP64），在 Linux 是 64 位（LP64）——「long = 指针宽度」的假设只对后者成立；精确宽度一律 int32_t/int64_t/intptr_t。边界：全部差异收敛进 portability.h 或每平台一个 .c，业务代码一个 #ifdef 都不见；CI 每个目标平台编译一遍才算数。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/420-CPosixSystemCall.md b/cnt-content/full/022-c/420-CPosixSystemCall.md
+index d8091277..395759e8 100644
+--- a/cnt-content/full/022-c/420-CPosixSystemCall.md
++++ b/cnt-content/full/022-c/420-CPosixSystemCall.md
+@@ -321,3 +321,24 @@ int main(void) {
+ - 信号与 fd 交互的经典组合是"自管道技巧"：信号处理函数只 write 一个字节，主循环统一消费。
+ - mmap 适合随机访问大文件与共享内存，但顺序读大文件时普通 read + 大缓冲往往更快，别为了"高级"而选型。
+ - 与标准库层的分界：纯算法、字符串、内存用 C 标准库即可移植；一旦涉及进程/信号/套接字就离开可移植区，见 [C 标准库速查手册](/c/440-CStandardLibrary)。
++
++## 遮码自检
++
++遮住上文速查表与下面的答案栏，先自己默写、再展开对照。
++
++1. 不查表写出「读整个文件到缓冲区」的系统调用层骨架，并指出循环退出条件为什么不能只写 `while (n_read == size)`。
++2. fork + exec + wait 三段式：exec 失败为什么用 `_exit` 而不是 `exit`？父进程不 wait 会怎样？
++3. `open(path, O_CREAT)` 少了什么？close 的返回值为什么也要检查？
++4. 自管道技巧解决什么问题？写出信号处理器里的那一行。
++5. mmap 映射大文件随机访问与 read 循环顺序读，各自赢在哪？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `while ((n = read(fd, buf + total, size - total)) > 0) total += n; if (n < 0 && errno != EINTR) /* 真错误 */;`。read 是部分读契约：管道/网络/大文件都可能一次返回少于请求——只有「返回 0 才是 EOF」，正数也要继续循环，返回值三态缺一不可。
++2. exec 失败时子进程的 stdio 缓冲可能复制了父进程未刷出的内容，`exit` 会再刷一遍造成重复输出且执行 atexit——`_exit` 直接进内核不碰缓冲。父进程不 wait：子进程变僵尸，进程表条目永久占坑，PID 耗尽是慢性病。
++3. 少了第三参 mode：O_CREAT 创建新文件时需要权限（如 0644），两参形式是 UB 级误用，还要过 umask。close 失败意味着内核缓冲的数据可能没真正落盘（尤其 NFS），写入型程序必须检查——那才是数据完整性的一环。
++4. 信号处理器不能安全调用大部分函数，只可靠地 write：`void on_sig(int s) { const char b = 1; write(sig_pipe[1], &b, 1); }`——把「信号到达」变成可 poll/read 的字节，主循环统一消费，避免在半空中做复杂事。
++5. mmap 随机访问赢：按页懒加载、指针直取任意偏移、多进程 MAP_SHARED 共享零拷贝；read + 大缓冲顺序读赢：readahead 预读连续流、无缺页中断开销——顺序大文件别为「高级」选 mmap。
++
++</details>
+diff --git a/cnt-content/full/022-c/430-StdioFileIO.md b/cnt-content/full/022-c/430-StdioFileIO.md
+index 9d7c59dd..24f2d548 100644
+--- a/cnt-content/full/022-c/430-StdioFileIO.md
++++ b/cnt-content/full/022-c/430-StdioFileIO.md
+@@ -484,12 +484,24 @@ bytes 1966
+ - fread（返回项数语义与 feof/ferror 分工）：https://en.cppreference.com/w/c/io/fread.html
+ - perror 与 strerror（错误信息打印）：https://en.cppreference.com/w/c/io/perror.html
+ 
+-## 13. 自我检查
++## 13. 遮码自检
+ 
+-- 能背出七种 fopen 模式中 r/w/a 的三条行为差异，说出 `a+` 的读与写各从哪里开始；
+-- 能解释 `int ch = fgetc(fp)` 里的 int 为什么不能换成 char，并说出这与整型提升的关系；
+-- 能复述 feof 误用多读一次的完整机理，默写两种正确读循环；
+-- 能说出 abort 与正常退出对缓冲区的不同待遇，以及忘掉 fclose 的两个后果。
++遮住上文示例代码与下面的答案栏，先自己背、先自己写，再展开对照。
++
++1. 背出 r/w/a 三条行为差异；`a+` 的读与写各从哪里开始？
++2. `int ch = fgetc(fp)` 里的 int 为什么不能换成 char？与整型提升有什么关系？
++3. 复述 feof 误用多读一次的完整机理；默写两种正确读循环。
++4. abort 与正常退出对缓冲区的不同待遇？忘掉 fclose 的两个后果？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. r：必须存在，从头读；w：不存在则建、存在则清空、从头写；a：不存在则建、写总是追加到末尾。`a+`：读从文件头开始，写永远追加到末尾（写位置由实现决定，追加前 fseek 无用）。
++2. fgetc 失败返回 EOF 即 -1；char 若无符号，提升后永远是 0 到 255，-1 根本存不进来，EOF 判不出来；若有符号，合法字节 0xFF 会被误判成 EOF——所以必须 int，256 个字符值加 EOF 都装得下。
++3. 机理：最后一次合法读取已到尾部，while (feof(fp)) 还没为真于是再读一次——读到 EOF 才置位，这一次的缓冲内容还是上一次的旧数据，被当新数据处理。正确循环：`while ((ch = fgetc(fp)) != EOF)` 或 `while (fgets(line, sizeof line, fp) != NULL)`——用返回值判断，feof 只事后区分「正常到尾」还是出错。
++4. abort 不冲刷缓冲区（数据当场蒸发）；正常 return/exit 走 atexit 并冲刷。忘 fclose：缓冲区里的数据没落盘（内容丢失）；fd/FILE 对象泄漏（打开句柄用尽）。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/440-CStandardLibrary.md b/cnt-content/full/022-c/440-CStandardLibrary.md
+index 2946ca9b..ee204df5 100644
+--- a/cnt-content/full/022-c/440-CStandardLibrary.md
++++ b/cnt-content/full/022-c/440-CStandardLibrary.md
+@@ -383,3 +383,24 @@ int main(void) {
+ - `size_t` 无符号回绕、EOF 必须用 int 接、ctype 函数参数要先转 unsigned char——这三类类型层陷阱编译器通常不会警告。
+ - 解析不可信输入的完整链条：fgets 读行 -> strtok_r 切分 -> strtol 带错误检测，比 scanf/atoi 系列可控得多。
+ - 比较函数、类型宽限（long 转换）、浮点误差等"约定值"在不同平台上语义一致，是标准库可移植性的核心价值；涉及文件系统、进程、信号时才退回到 POSIX 层，见 [POSIX 系统调用速查](/c/420-CPosixSystemCall)。
++
++## 遮码自检
++
++遮住上文速查表与示例、先自己答，再展开对照。
++
++1. 四大常备头文件各管什么？指针型函数与整型返回函数的失败信号各是什么？
++2. `size_t` 无符号回绕怎么把「判断剩余空间」写炸？给安全写法。
++3. 为什么 EOF 必须用 int 接？ctype 函数的参数为什么要先转 unsigned char？
++4. 不查表默写「fgets → strtok_r → strtol 带错误检测」的解析链条。
++5. 涉及进程、信号、套接字时为什么离开标准库、退回 POSIX 层？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. stdio 输入输出、string 字节串、stdlib 内存/转换/排序、math 数学。指针型失败返回 NULL（fopen/malloc/strchr），整型失败返回 -1 或 EOF（fgetc/printf）——用前必须检查，没有例外。
++2. `if (size - used < 10)` 在 used > size 时回绕成巨大的无符号数，判断恒真/恒假——边界判断用 `used <= size - 10` 前先保证 size >= used，或全部改用有符号ptrdiff_t 比较。
++3. EOF 是 -1：char 无符号时 -1 存不进来、有符号时 0xFF 会误判成 EOF，只有 int 同时装下 256 个字符值与 EOF。ctype 的参数要求以 unsigned char 值传入：直接传带符号 char（负值）是 UB，`isalpha((unsigned char)c)`。
++4. `if (!fgets(line, sizeof line, fp)) goto eof; char *tok = strtok_r(line, ", ", &save); while (tok) { char *end; long v = strtol(tok, &end, 10); if (end == tok || *end != '\0') goto bad; tok = strtok_r(NULL, ", ", &save); }`——每一步失败可见，不静默吞错。
++5. 标准库只承诺九大头的可移植契约；进程/信号/套接字是操作系统的地界（POSIX 或 Win32 各一套）——跨平台代码要么条件编译两套实现，要么收敛进 portability 层。
++
++</details>
+diff --git a/cnt-content/full/022-c/450-SafeFunctionBoundsCheck.md b/cnt-content/full/022-c/450-SafeFunctionBoundsCheck.md
+index 8068dee6..6c6f6cb9 100644
+--- a/cnt-content/full/022-c/450-SafeFunctionBoundsCheck.md
++++ b/cnt-content/full/022-c/450-SafeFunctionBoundsCheck.md
+@@ -365,12 +365,24 @@ void log_msg(const char *user, const char *msg) {
+ - AddressSanitizer 官方 wiki：https://github.com/google/sanitizers/wiki/AddressSanitizer
+ - MITRE CWE 弱点分类（CWE-120 系缓冲区溢出条目）：https://cwe.mitre.org/
+ 
+-## 12. 自我检查
++## 12. 遮码自检
+ 
+-- 能背出危险函数地图五行的「危险函数与替代」，并解释 `gets` 为何被整条删除；
+-- 能写出 strncpy 源串过长时不补 `\0` 的复现实验，并说出两种修法；
+-- 能向同事讲清「函数内部为什么拿不到缓冲区大小」以及 `sizeof(指针)` 误用的后果；
+-- 能说出 Annex K 的生态现状（MSVC 有、glibc/musl 拒绝）并据此给出跨平台选型：默认 `snprintf`。
++遮住上文示例代码与下面的答案栏，先自己背、先自己写，再展开对照。
++
++1. 背出危险函数地图五行的「危险函数与替代」；`gets` 为什么被整条删除？
++2. 写出 strncpy 源串过长时不补 `\0` 的复现实验，并说两种修法。
++3. 「函数内部为什么拿不到缓冲区大小」？`sizeof(指针)` 误用的后果？
++4. Annex K 的生态现状如何？跨平台选型为什么默认 snprintf？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. gets → fgets（C11 已删除）；strcpy/strcat → snprintf 或 strlcpy 族；sprintf → snprintf；scanf("%s") → fgets 加 sscanf（配宽度限定）；strcpy 家族无法防 → vsnprintf 两遍法。gets 连边界参数都没有，标准委员会删掉后任何合规编译器都不提供——写了直接链接失败。
++2. `char dst[8]; strncpy(dst, "0123456789", sizeof dst);` 后 dst 无 '\0'，printf(dst) 越界读。修法一：`dst[sizeof dst - 1] = '\0';` 手动补；修法二：换 `snprintf(dst, sizeof dst, "%s", src)`，永远终止、截断可判。
++3. 数组传参退化为指针，函数内只有首地址、没有长度信息——所以容量必须作为独立参数传。`sizeof(p)` 对指针算出 8（指针大小），拿它当缓冲区容量，写入超过真实分配的内存就是溢出。
++4. Annex K（*_s 函数）只有 MSVC 实现完整，glibc/musl 拒绝纳入；跨平台代码以 snprintf（永远终止、返回值判截断）与小封装（fail-safe 的 xsnprintf）为主，不赌 _s 系列的存在。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/460-I18nAndL10n.md b/cnt-content/full/022-c/460-I18nAndL10n.md
+index 57f2a8b6..a80288fe 100644
+--- a/cnt-content/full/022-c/460-I18nAndL10n.md
++++ b/cnt-content/full/022-c/460-I18nAndL10n.md
+@@ -273,12 +273,24 @@ void truncate_utf8(char *s, size_t max_bytes) {
+ - GNU gettext 手册（翻译流程权威文档）：https://www.gnu.org/software/gettext/manual/
+ - Unicode 标准与 UTF-8 规范：https://www.unicode.org/versions/
+ 
+-## 13. 自我检查
++## 13. 遮码自检
+ 
+-- 能解释 `strlen("中文") == 6` 与 `wprintf` 输出为空的机制，并各给一行修复；
+-- 能默画「字节 vs 字符 vs 码点」三层关系，说出 UTF-8 变长规则对截断与容量的影响；
+-- 能说出 `wchar_t` 在两大平台的宽度与编码，解释为什么宽字符不能落盘；
+-- 能走通 gettext 的四步流水线，说清 `bindtextdomain` 与 `textdomain` 各管什么。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 解释 `strlen("中文") == 6` 与 `wprintf` 输出为空的机制，各给一行修复。
++2. 默画「字节 vs 字符 vs 码点」三层关系；UTF-8 变长规则对截断与容量有什么影响？
++3. `wchar_t` 在两大平台的宽度与编码各是什么？宽字符为什么不能落盘？
++4. 走通 gettext 四步流水线；`bindtextdomain` 与 `textdomain` 各管什么？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. UTF-8 里每个汉字 3 字节，「中文」共 6 字节，strlen 数的是字节不是字符——修复是「想清楚要数什么」，数显示宽度用 wcwidth 类工具。wprintf 为空：没调 `setlocale(LC_ALL, "");`，默认 "C" locale 下宽字符转换失败——一行修复就是开头加 setlocale。
++2. 字节是存储单位，字符是用户感知单位，码点是 Unicode 的抽象编号；UTF-8 用 1-4 字节变长编码一个码点。影响：按字节截断可能把一个多字节字符拦腰截断（尾部乱码），要在码点边界截；容量按「字符数 × 1」算必然不够，中文文本按最坏 4 字节/字符留余量。
++3. Linux 上 4 字节 UTF-32，Windows 上 2 字节 UTF-16——宽度与编码都随平台变。落盘的文件要与平台无关：宽字符写盘后另一平台读回来编码对不上，所以文件与网络一律 UTF-8，宽字符只活在本机内存。
++4. 四步：源码里包 `_("...")` → xgettext 扫出 .pot → 翻译成 .po 并 msgfmt 编译成 .mo → 运行时 bindtextdomain 告诉去哪个目录找翻译、textdomain 声明当前用哪个翻译包、setlocale 选语言。bindtextdomain 管路径（域 → 目录），textdomain 管选中哪个域。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/470-BuildSystem.md b/cnt-content/full/022-c/470-BuildSystem.md
+index 3bf6b957..bd4ed82b 100644
+--- a/cnt-content/full/022-c/470-BuildSystem.md
++++ b/cnt-content/full/022-c/470-BuildSystem.md
+@@ -415,12 +415,32 @@ report:
+ - CMake 官方教程（从最小项目到库、安装、测试的逐步指南）：https://cmake.org/cmake/help/latest/guide/tutorial/index.html
+ - cmake_minimum_required 命令文档（策略版本与弃用时间线）：https://cmake.org/cmake/help/latest/command/cmake_minimum_required.html
+ 
+-## 自我检查
++## 遮码自检
+ 
+-- 能默写「目标: 依赖 + tab 命令」的最小 Makefile，并说出 make 判定重建的那句话（目标不存在或依赖比目标新）；
+-- 能解释 -MMD -MP 与 -include $(DEPS) 联手解决什么问题，并复现「改头文件没重编」的完整现场；
+-- 能给一段 target_link_libraries 写出 PUBLIC/PRIVATE/INTERFACE 各自的传播后果，并说出 CMake 自动处理链接顺序的机制所在（生成阶段排 -l）；
+-- 拿到 missing separator 与 No cmake_minimum_required 两类报错，能各自在一分钟内定位原因并修复。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 默写「目标: 依赖 + tab 命令」的最小 Makefile，并说出 make 判定重建的那句话。
++2. -MMD -MP 与 -include $(DEPS) 联手解决什么问题？复现「改头文件没重编」的完整现场。
++3. target_link_libraries 的 PUBLIC/PRIVATE/INTERFACE 各自传播什么后果？链接顺序由哪个阶段处理？
++4. missing separator 与 No cmake_minimum_required 两类报错，各一分钟内定位并修复。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++```makefile
++app: main.o utils.o
++	cc main.o utils.o -o app
++clean:
++	rm -f app *.o
++.PHONY: clean
++```
++
++判定句：目标不存在，或任一依赖比目标新（时间戳）就重建。
++2. 联手把「头文件也是依赖」这件事自动化：编译时 -MMD 生成 .d 依赖清单（-MP 给头文件配假目标防删除报错），-include 把 .d 收编进规则图。现场：先 make 出 app → touch utils.h → make → 输出显示什么都没做——因为规则里没有 .h；加上两条后 touch utils.h 触发重编。
++3. PUBLIC：本目标用且下游继承（编进自己的编译行、也传给链接我的目标）；PRIVATE：只有自己用；INTERFACE：自己不用、只传下游（纯头文件库）。链接顺序由 CMake 的生成阶段排好 -l 顺序，用户不用操心。
++4. missing separator：命令行没用 tab（缩进用了空格）——改成真 tab；No cmake_minimum_required：CMakeLists 缺策略版本声明——文件首行补 `cmake_minimum_required(VERSION 3.16)`（CMake 4.0 起对 3.5 以下声明直接报错）。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/480-CUnitTesting.md b/cnt-content/full/022-c/480-CUnitTesting.md
+index 901bf3bb..1eb11bb9 100644
+--- a/cnt-content/full/022-c/480-CUnitTesting.md
++++ b/cnt-content/full/022-c/480-CUnitTesting.md
+@@ -447,13 +447,26 @@ size_t str_trim(char *s) {
+ - CMocka 文档（Apache-2.0 许可）：https://cmocka.org/
+ - libcheck 文档（LGPL-2.1+ 许可）：https://libcheck.github.io/check/
+ 
+-## 11. 自我检查
++## 11. 遮码自检
+ 
+-- 能说出 assert 与错误码的分界线，并举出一个「不该用 assert」的场景（用户输入、资源失败）；
+-- 能解释 `-DNDEBUG` 陷阱的成因与两条防线；
+-- 能不看资料默写 `MT_CHECK` 宏，并解释 `do { } while (0)` 与 `#cond` 的作用；
+-- 能为一个「带边界检查的字符串函数」列出至少五条契约断言；
+-- 能说出手写框架升级到 Unity/CMocka/libcheck 的三个触发条件。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. assert 与错误码的分界线在哪？举一个不该用 assert 的场景。
++2. `-DNDEBUG` 陷阱怎么形成的？两条防线是什么？
++3. 不看资料默写 MT_CHECK 宏，解释 `do { } while (0)` 与 `#cond` 的作用。
++4. 给「带边界检查的字符串函数」列至少五条契约断言。
++5. 手写框架升级到 Unity/CMocka/libcheck 的三个触发条件？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. assert 管不可能发生的事（内部不变量、程序员的错）；错误码管可能发生的事（用户输入、文件不存在、内存不足）。不该用 assert 的场景：校验用户输入——release 版 assert 蒸发后校验就没了。
++2. 成因：NDEBUG 让 assert 展开为空，测试二进制若开 NDEBUG，断言集体蒸发、测试恒绿。防线一：测试构建命令里永远不出现 -DNDEBUG；防线二：框架的断言宏不依赖 assert，自己实现失败即打印并返回非 0。
++3. `#define MT_CHECK(cond) do { if (!(cond)) { fprintf(stderr, "FAIL %s:%d: %s\n", __FILE__, __LINE__, #cond); exit(1); } } while (0)`。do-while(0)：让宏在无大括号 if/else 里仍是单条语句（吃掉分号歧义）；#cond 把条件表达式字符串化，失败信息直接显示代码原文。
++4. 空串（返回安全/明确错误）；长度恰等于容量（截断且终止）；长度超容量（截断 + 返回值可判）；目标指针 NULL（拒绝而非崩溃）；源串无终止符风险（带 n 上限不越读）。
++5. 断言丰富到需要 fixture/分组（Unity）；要 mock 掉文件系统或网络（CMocka）；测试单元可能真段错误、需要进程隔离继续跑（libcheck）。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/485-StaticAnalysisAndSanitizers.md b/cnt-content/full/022-c/485-StaticAnalysisAndSanitizers.md
+index ed331146..b4406977 100644
+--- a/cnt-content/full/022-c/485-StaticAnalysisAndSanitizers.md
++++ b/cnt-content/full/022-c/485-StaticAnalysisAndSanitizers.md
+@@ -1518,6 +1518,28 @@ CI 只对「新增警告」失败；每周安排清理日削减基线，而不
+ - Valgrind Manual: http://valgrind.org/docs/manual/manual.html
+ - cppcheck Manual: http://cppcheck.sourceforge.net/manual.pdf
+ - clang-tidy: https://clang.llvm.org/extra/clang-tidy/
++
++## 遮码自检
++
++遮住上文工具清单与命令、先自己答，再展开对照。
++
++1. 编译期四道防线的顺序与分工：警告、静态分析、Sanitizer、fuzzing 各抓哪类问题？
++2. 默写 `-Wall -Wextra -Werror -g` 的含义；为什么调试信息 -g 要常开？
++3. ASan 与 Valgrind 的取舍：速度、环境要求、能抓的问题各差在哪？UBSan 抓什么？
++4. `-fsanitize=thread` 与 `-fsanitize=address` 能一起开吗？为什么？
++5. CI 里接入 cppcheck 与 clang-tidy 的两条命令各依赖什么？存量警告怎么管理？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 顺序即成本递增：警告（-Wall，编译期零运行成本，抓低级失误）→ 静态分析（cppcheck/clang-tidy，跨函数路径推理，抓逻辑隐患）→ Sanitizer（运行时插桩，抓内存/UB/数据竞争的实况）→ fuzzing（海量随机输入喂给带 Sanitizer 的程序，抓深层可达缺陷）。
++2. -Wall 常用警告全开、-Wextra 额外警告、-Werror 把警告升级为错误（新代码必须零警告）、-g 生成调试信息——没有 -g，崩溃时 ASan/GDB 报告里只有地址没有 文件:行号。
++3. ASan：编译期插桩，约 2 倍慢、要重编译，抓 heap/stack/overflow、use-after-free、泄漏；Valgrind：二进制翻译，约 10-50 倍慢、不用重编译，memcheck 还能抓未初始化值（加 --track-origins）。UBSan 抓有符号溢出、越界移位、空指针解引用等未定义行为且开销小——日常开发常开。
++4. 不能：TSan 与 ASan 用了不兼容的插桩机制，同时开会在运行期直接拒绝——分两次跑（构建开关切换），一次抓内存一次抓竞争。
++5. cppcheck：`cppcheck --enable=warning,error --error-exitcode=1 src/`（error 级直接失败）；clang-tidy：`cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON` 先导出编译数据库，再 `run-clang-tidy -p build`。存量警告生成基线清单进仓库，CI 只对新增警告失败，每周清理削减基线。
++
++</details>
++
+ ## 参考与致谢
+ 
+ - GCC Warning Options: https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+diff --git a/cnt-content/full/022-c/495-DynamicDebuggingGDB.md b/cnt-content/full/022-c/495-DynamicDebuggingGDB.md
+index c6874074..df304301 100644
+--- a/cnt-content/full/022-c/495-DynamicDebuggingGDB.md
++++ b/cnt-content/full/022-c/495-DynamicDebuggingGDB.md
+@@ -1117,6 +1117,28 @@ gcc -g -pthread deadlock.c -o deadlock && gdb ./deadlock
+ - 阅读 GDB 源码中 `gdb/testsuite/` 的测试用例,学习各种调试技巧
+ - 阅读开源项目(如 Redis、Nginx)的 CI 配置,学习工业级工具链集成
+ - 参与 OSS-Fuzz 项目,实战 fuzzing 与 sanitizer
++
++## 遮码自检
++
++遮住上文命令清单、先自己默写，再展开对照。
++
++1. 默写五步最小调试循环：编译到断点、断住、看局部变量、单步、继续到结束。
++2. `break main` 后 `run`，怎么打印一个结构体与它指向的字符串？指针显示成裸地址时缺了什么？
++3. watch（监视点）与 break 的分工是什么？什么时候 watch 一发入魂？
++4. 程序崩溃后拿到 core 文件，怎么让它「复活」到崩溃现场？gdb 的运行命令是什么？
++5. 多线程程序里 `info threads`、`thread N`、`bt` 三件套怎么用？死锁现场看什么？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `gcc -g -O0 demo.c -o demo`（可调试版）→ `gdb ./demo` → `break main` → `run` → `print x` / `info locals` → `next`（不进函数）/ `step`（进函数）→ `continue` 直到退出。
++2. `print st`（结构体整体）、`print st.name`（字段）、`print *ptr`（解引用）。裸地址说明编译时没带 -g——GDB 没有类型与符号信息，只能当数字看。
++3. break 是「执行到某行停下」，watch 是「某个表达式变值时停下」。当不知道哪一行改坏了数据、只知道「这个变量的值何时错了」时，watch 一发入魂——先让它跑，变化点自己冒出来。
++4. `gdb ./demo core`（或 `gdb ./demo -c core`）加载现场，`bt` 直接看崩溃时的调用栈——栈顶帧就是事故行。core 大小受 RLIMIT_CORE 限制，生产环境用 systemd-coredump 或 coredumpctl 取。
++5. `info threads` 列出全部线程及当前停点；`thread N` 切到目标线程；`bt` 看该线程的栈。死锁现场：多个线程都停在 pthread_mutex_lock（futex_wait），打印各自持有的锁构成环路——修复方向是统一加锁顺序或 trylock + 回退。
++
++</details>
++
+ ## 参考与致谢
+ 
+ - GDB Manual: https://sourceware.org/gdb/current/onlinedocs/gdb/
+diff --git a/cnt-content/full/022-c/510-CValgrind.md b/cnt-content/full/022-c/510-CValgrind.md
+index 4cf715a2..95875777 100644
+--- a/cnt-content/full/022-c/510-CValgrind.md
++++ b/cnt-content/full/022-c/510-CValgrind.md
+@@ -423,4 +423,27 @@ ASAN_OPTIONS=detect_leaks=1 ./app
+ - 长驻服务的内存问题用 massif 看增长趋势比看单次退出摘要更有效；多线程问题优先 helgrind，嫌慢再试 drd。
+ - 工具链组合拳：日常开发 ASan（快），提交前 Valgrind（全），两者互补而非互替；原理层面的内存错误分类见 [内存管理](/c/210-ProcessMemoryLayoutAndErrors)。
+ 
++## 遮码自检
++
++遮住上文命令与报告样例、先自己默写，再展开对照。
++
++1. 默写标准姿势两步：编译开关与运行命令；报告只看哪两处？
++2. 一次 invalid read 报告，怎么在 30 秒内读出「现场在哪、内存从哪来」？
++3. definitely lost / indirectly lost / still reachable 三档分别意味着什么？各怎么处置？
++4. `--track-origins=yes` 抓什么问题？代价是什么？什么时候开？
++5. Callgrind、Massif、Helgrind 各自回答什么问题？与 memcheck 什么关系？
++6. CI 门禁那行命令怎么写？为什么 memcheck 报告要配高覆盖率测试？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `gcc -g -O0 demo.c -o demo` → `valgrind --leak-check=full ./demo`。只看 ERROR SUMMARY（错误计数）与 LEAK SUMMARY（泄漏分档）两处，正文按需展开。
++2. 先看错误类型（Invalid read of size N）→ 第一个 at 的 `文件:行号` 是出错现场 → 往下翻「was allocated by」段，alloc'd 的 `文件:行号` 是这块内存的出生地——修哪、谁共享这块内存，两处都指明。
++3. definitely lost：指针全丢、无救——必修；indirectly lost：跟着 definitely 丢的内层结构——修完前者自然消；still reachable：退出时还有指针指着（全局缓存、池）——可解释则不修，要彻底干净再登记清理路径。
++4. 抓 Conditional jump or move depends on uninitialised value 这类「未初始化值」问题：它会回溯出「这个脏值从哪次 malloc 出来没初始化」。代价显著变慢，日常回归不开，只在这种报告出现时加开关复跑。
++5. Callgrind 答「时间花在哪个函数」（逐函数 cycle 计数）；Massif 答「堆内存为什么涨」（随时间的堆快照）；Helgrind/DRD 答「线程间有没有竞争与死锁」（数据竞争检测）。它们与 memcheck 共用 Valgrind 的二进制翻译底座，换 tool 开关即换问题域。
++6. `valgrind --leak-check=full --error-exitcode=1 ./app`——有错误就非零退出，门禁生效。memcheck 只能看见「运行到的路径」，低覆盖率的运行没报错不等于没错误——测试要先把代码跑透，报告才有说服力。
++
++</details>
++
+ 
+diff --git a/cnt-content/full/022-c/520-C23CoreFeatures.md b/cnt-content/full/022-c/520-C23CoreFeatures.md
+index ecc29bb8..34404515 100644
+--- a/cnt-content/full/022-c/520-C23CoreFeatures.md
++++ b/cnt-content/full/022-c/520-C23CoreFeatures.md
+@@ -359,12 +359,36 @@ buggy_std.c:13:16: error: 'nullptr' undeclared (first use in this function)
+ - WG14 官方文档库（标准草案与提案原文）：https://www.open-std.org/jtc1/sc22/wg14/
+ - GCC 手册 C 方言选项（`-std` 全部取值）：https://gcc.gnu.org/onlinedocs/gcc/C-Dialect-Options.html
+ 
+-## 15. 自我检查
++## 15. 遮码自检
+ 
+-- 能不看资料写出「打印 `__STDC_VERSION__` 并判断是否为 C23」的探针程序；
+-- 能一口气说出五个特性的名字，并各用一句话讲清它解决了什么旧别扭；
+-- 看到 `unknown type name 'bool'` 能立刻给出两个可能原因并按顺序排查；
+-- 能说清 C23 的 `auto` 与 C++ 的 `auto` 至少两处不同。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 不看资料写出「打印 `__STDC_VERSION__` 并判断是否为 C23」的探针程序。
++2. 一口气说出五个特性的名字，各用一句话讲清它解决的旧别扭。
++3. 看到 `unknown type name 'bool'`，两个可能原因是什么？按什么顺序排查？
++4. C23 的 `auto` 与 C++ 的 `auto` 至少两处不同？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++```c
++#include <stdio.h>
++int main(void) {
++    printf("__STDC_VERSION__ = %ldL\n", (long)__STDC_VERSION__);
++#if __STDC_VERSION__ >= 202311L
++    puts("C23 on");
++#else
++    puts("pre-C23");
++#endif
++    return 0;
++}
++```
++
++2. 数字分隔符 `1'000'000`（长数字可数）；`nullptr`（空指针有了自己的类型与字面量）；`bool`/`true`/`false` 关键字化（不再借住 stdbool.h）；`auto`（类型名只写一遍，编译器从初始化推导）；`[[attributes]]`（如 [[deprecated]]、[[fallthrough]]，约定变成编译警告）。
++3. 原因一：标准没开（命令缺 -std=c23，默认还是 gnu17/gnu23 看编译器版本）；原因二：编译器太旧（GCC 13 及以下根本不认）。先查探针打印的 __STDC_VERSION__，再看 gcc --version——分清「标准没开」与「编译器太旧」。
++4. 差异一：C23 的 auto 只能从初始化器推导，且用于对象声明；C++ 的 auto 还能用于函数返回值、参数模板等。差异二：C23 中不带存储类说明符的 auto 声明才有推导语义，`auto int x;` 这类旧式用法（存储类含义）不合法——两个世界同名不同义。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/530-C23NewFeatures.md b/cnt-content/full/022-c/530-C23NewFeatures.md
+index 07f19e5a..d5bef453 100644
+--- a/cnt-content/full/022-c/530-C23NewFeatures.md
++++ b/cnt-content/full/022-c/530-C23NewFeatures.md
+@@ -357,13 +357,36 @@ assert(add_score(1000, 233, &out) == 1 && out == 1233);
+ - cppreference #embed 与 `<stdckdint.h>`：https://en.cppreference.com/w/c/preprocessor/embed 、https://en.cppreference.com/w/c/header/stdckdint.h
+ - WG14 官方文档库（C2y 草案与提案原文）：https://www.open-std.org/jtc1/sc22/wg14/
+ 
+-## 16. 自我检查
++## 16. 遮码自检
+ 
+-- 能不看资料写出 `#embed` 嵌入文件并用 `sizeof` 打印大小的最小程序；
+-- 能说清 `#define`、`const`、`constexpr` 三者的边界，并解释 `constexpr int m = n;`（n 为运行期变量）为什么不合法；
+-- 能说出「陌生机器确认特性可用性」的三个命令各查什么；
+-- 能按顺序复述三步升级法，并说明警告清零为什么必须发生在切标准之前；
+-- 面对一条「C2y 新特性」资讯，能判断它处在提案、草案还是定稿层。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 不看资料写出 `#embed` 嵌入文件并用 sizeof 打印大小的最小程序。
++2. `#define`、`const`、`constexpr` 三者的边界在哪？`constexpr int m = n;`（n 为运行期变量）为什么不合法？
++3. 「陌生机器确认特性可用性」的三个命令各查什么？
++4. 按顺序复述三步升级法；警告清零为什么必须发生在切标准之前？
++5. 面对一条「C2y 新特性」资讯，怎么判断它在提案、草案还是定稿层？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++```c
++#include <stdio.h>
++static const unsigned char logo[] = {
++#embed "logo.bin"
++};
++int main(void) {
++    printf("size = %zu\n", sizeof logo);
++    return 0;
++}
++```
++
++2. #define 是预处理期无类型文本替换；const 是有类型的只读变量（本编译单元可见时才折叠）；constexpr 是真编译期常量、可进类型系统（数组维度、静态断言）。运行期变量 n 在编译期没有值，constexpr 要求初始化器在翻译期可求值——不合法。
++3. `printf __STDC_VERSION__` 探针程序查标准模式；`gcc --version` / `clang --version` 查编译器能力；`#if __has_include(<stdckdint.h>)` 或查 cppreference 支持页查具体特性的实现状态。
++4. 三步：先在新编译器同标准下把警告清零（-Wall -Wextra -Werror）→ 逐目录切新标准并固化（_Static_assert 钉住行为）→ 最后才碰语言新特性。警告清零先行：切标准会让旧代码的新警告淹没真正的问题，先把「基线安静」建立起来才有判断力。
++5. 看它在 WG14 文档库的编号与阶段：编号 N 开头是提案/工作文件（还在讨论）；进入工作草案（如 C2y 的 n34xx 系列文本）是草案层；只有 ISO 正式发布（像 C23 的 ISO/IEC 9899:2024）才是定稿——编译器开关（-std=c2y）只是提前验证，不代表稳定。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/540-AttributeCompilerExtension.md b/cnt-content/full/022-c/540-AttributeCompilerExtension.md
+index 0baac4e9..e638e834 100644
+--- a/cnt-content/full/022-c/540-AttributeCompilerExtension.md
++++ b/cnt-content/full/022-c/540-AttributeCompilerExtension.md
+@@ -280,12 +280,24 @@ printf("%u\n", h->len);
+ - GCC 变量属性文档（packed/aligned 等）：https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html
+ - GCC 函数属性（constructor/format/noreturn 等）：https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html
+ 
+-## 11. 自我检查
++## 11. 遮码自检
+ 
+-- 能写出带 `format` 属性的日志包装并让它抓出一个真实格式串错误；
+-- 能背出 C23 五个常用标准属性各自管什么，并知道扩展写法 `[[gnu::...]]` 的命名空间含义；
+-- 能说出 `packed` 的用途、代价（未对齐访问）与 `aligned` 「只抬不压」的规则；
+-- 能用宏隔离写出跨编译器的属性抽象，并说出「未知属性被忽略」带来的静默失效风险与自查法。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 写出带 format 属性的日志包装，并让它抓出一个真实格式串错误。
++2. 背出 C23 五个常用标准属性各管什么；`[[gnu::...]]` 的命名空间含义是什么？
++3. packed 的用途与代价？aligned「只抬不压」是什么规则？
++4. 用宏隔离写出跨编译器的属性抽象；「未知属性被忽略」的风险怎么自查？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `__attribute__((format(printf, 1, 2))) void log_msg(const char *fmt, ...);` 之后写 `log_msg("%s", 42);`——编译器把「格式串第 1 个 %s 对上第 2 个参数是 int」报成警告。三个数字：格式串位置、变参起点、printf 风格。
++2. deprecated 管迁移警告、nodiscard 管忽略返回值警告、fallthrough 管贯穿声明、noreturn 管不返回承诺、maybe_unused 管未用警告。`[[gnu::packed]]` 把属性限定在 gnu 命名空间——编译器只认自己命名空间里的扩展属性，标准家族与厂商扩展互不污染，保留字冲突也少。
++3. packed 去掉成员间填充（跨协议/寄存器对话），代价是成员可能未对齐——不对齐访问在某些架构直接总线错误，性能普遍下降。aligned 只能把对齐往大调：类型对齐 4，`aligned(8)` 合法；`aligned(2)` 不降——对齐是承诺不是请求。
++4. `#if defined(__GNUC__) #define NOINLINE __attribute__((noinline)) #elif defined(_MSC_VER) #define NOINLINE __declspec(noinline) #else #define NOINLINE #endif`——业务代码只见 NOINLINE。自查：故意写一个应触发属性的调用（如 deprecated 函数照用），若编译器一声不吭，说明该编译器忽略了这个属性——别赌它生效，用「故意错误」验证。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/550-EmbeddedCProgramming.md b/cnt-content/full/022-c/550-EmbeddedCProgramming.md
+index 0a084e92..b187209d 100644
+--- a/cnt-content/full/022-c/550-EmbeddedCProgramming.md
++++ b/cnt-content/full/022-c/550-EmbeddedCProgramming.md
+@@ -378,13 +378,26 @@ static void delay(int n) {
+ - GNU ld 手册（--gc-sections 垃圾回收未用输入段的权威定义）：https://sourceware.org/binutils/docs/ld/Options.html
+ - gcc(1) 手册页（-ffunction-sections/-fdata-sections 与 -Os 的官方文本）：https://man7.org/linux/man-pages/man1/gcc.1.html
+ 
+-## 14. 自我检查
++## 14. 遮码自检
+ 
+-- 能向同事讲清「64KB Flash、16KB RAM」的账怎么算：text/data/bss 各占哪边，-Os 与段回收各省哪一部分；
+-- 能写出三重限定的寄存器声明并逐层解释，说清 `|=` 为什么不原子、原子置位/复位寄存器好在哪；
+-- 能不看资料复述上电到 main 的链条：向量表头两字、搬 .data、清 .bss，并解释 `> RAM AT > FLASH` 的两套地址；
+-- 能说出 ISR 三条纪律，以及 printf 与 malloc 进 ISR 分别会踩坏什么；
+-- 能解释看门狗为什么不能在定时器中断里无脑喂，以及裸机栈溢出为什么表现为「不相干的变量被改」。
++遮住上文示例代码与下面的答案栏，先自己算、先自己写，再展开对照。
++
++1. 「64KB Flash、16KB RAM」的账怎么算：text/data/bss 各占哪边？-Os 与段回收各省哪部分？
++2. 写出三重限定的寄存器声明并逐层解释；`|=` 为什么不原子？置位/复位寄存器好在哪？
++3. 复述上电到 main 的链条：向量表头两字、搬 .data、清 .bss；`> RAM AT > FLASH` 的两套地址各是什么？
++4. ISR 三条纪律是什么？printf 与 malloc 进 ISR 各踩坏什么？
++5. 看门狗为什么不能在定时器中断里无脑喂？裸机栈溢出为什么表现为「不相干的变量被改」？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. text（代码与常量）与 data 的初值镜像在 Flash；data 运行副本、bss（清零区）在 RAM。size 输出三段与总计；-Os 省的是 text 的体积（换更小代码）；-ffunction-sections/-fdata-sections + --gc-sections 省的是没被引用的函数/变量的段（链接期回收）。
++2. `#define GPIO_BSRR (*(volatile uint32_t *)0x40020018)`。volatile：每次访问真实发生（禁止缓存进寄存器）；uint32_t：宽度与外设字宽精确一致；指针解引用：把整数地址当内存访问。`|=` 是读-改-写三步，中断一插队就丢更新；置位/复位寄存器一次写一个字完成原子置位或清位，硬件保证无读步骤。
++3. 向量表头两字：栈顶指针、复位向量（Reset_Handler 地址）；启动代码把 .data 的初值从 Flash 拷到 RAM、把 .bss 清零，然后调 main。链接脚本 `> RAM AT > FLASH`：VMA 是运行时地址（RAM），LMA 是加载地址（Flash）——拷贝方向就是按这两套地址差算出来的。
++4. 三条：短（几十微秒级）、只碰 volatile 标志（逻辑放主循环）、临界区保护共享数据（关中断配对）。printf 走 UART 可能阻塞几十毫秒且不可重入；malloc 撞堆账本——堆一旦在中断里损坏，主流程随后任意时刻崩。
++5. 看门狗的意义是「程序卡死时重启」：在定时器中断里喂，即使主循环死了中断照样跑——看门狗永远不超时，等于白养。裸机栈溢出是栈指针越过栈底往相邻段写，踩到的正是别的全局变量——所以症状是「不相干的变量被改」而不是报错。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/560-CAssemblyInteraction.md b/cnt-content/full/022-c/560-CAssemblyInteraction.md
+index 2afb0c89..011c1f6d 100644
+--- a/cnt-content/full/022-c/560-CAssemblyInteraction.md
++++ b/cnt-content/full/022-c/560-CAssemblyInteraction.md
+@@ -468,12 +468,24 @@ bad_get:
+ - x86-64 System V ABI（调用约定权威出处，现行版本由该仓库维护）：https://gitlab.com/x86-psABIs/x86-64ABI
+ - Writing portable ARM64 assembly（Darwin 平台 C 符号加下划线前缀的实例讨论）：https://ariadne.space
+ 
+-## 自我检查
++## 遮码自检
+ 
+-- 能不看资料说出扩展 asm 四段各放什么，%0 与 %%eax 的区别；
+-- 能解释 Linux、macOS、Windows 三处符号名的差异，以及为什么跨平台汇编离不开预处理宏；
+-- 能预测「带输出但输出未用、无 volatile 的扩展 asm」在 -O2 下的命运，并说出 "memory" clobber 防住的是哪一层重排；
+-- 能对着一份按 32 位约定写的汇编，指出它在 64 位下会怎么坏。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 扩展 asm 四段各放什么？%0 与 %%eax 的区别？
++2. Linux、macOS、Windows 三处的符号名差异？跨平台汇编为什么离不开预处理宏？
++3. 「带输出但输出未用、无 volatile」的扩展 asm 在 -O2 下的命运？"memory" clobber 防住哪一层重排？
++4. 对着一份按 32 位约定写的汇编，指出它在 64 位下会怎么坏。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `asm volatile ("..." : 输出 : 输入 : clobber)`——汇编模板、被写的操作数、被读的操作数、被破坏的资源清单。%0 是操作数占位符，编译器按约束把它分派到寄存器或内存；%%eax 硬编码具体寄存器（两个 % 是转义），编译器没法替它分配。
++2. Linux 无前缀（foo）；macOS 前缀下划线（_foo）；Windows 按约定也可能不同修饰。同一份 .s 三平台三个名字——用宏 `#ifdef __APPLE__ #define SYM(x) _##x #else #define SYM(x) x #endif` 在预处理期把名字折进去。
++3. -O2 会把它整个删掉：输出没人用，编译器认为这段代码没有可观察效果。volatile 防删除（保留执行）；"memory" 防的是编译器层的重排——告诉编译器内存被不知名地改写，它不敢把 asm 前后的内存访问跨越它重排（CPU 运行时重排是另一层，那是内存序的事）。
++4. 32 位栈帧布局 push ebp/mov ebp, esp 在 64 位是 push rbp；参数从栈上取（32 位 cdecl）在 64 位 System V 下应该从 rdi/rsi/rdx 取——取错地方读到垃圾；返回值塞 eax 只写低 32 位，rax 高位是垃圾。调用约定与寄存器宽度整套换血，必须按 64 位 ABI 重写。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/570-CAdvancedSystemProgramming.md b/cnt-content/full/022-c/570-CAdvancedSystemProgramming.md
+index b98b3115..4558a5af 100644
+--- a/cnt-content/full/022-c/570-CAdvancedSystemProgramming.md
++++ b/cnt-content/full/022-c/570-CAdvancedSystemProgramming.md
+@@ -471,13 +471,26 @@ double rate = count / elapsed;                   /* 速率变负，限速窗口
+ - getrlimit(2)：软限/硬限、RLIMIT_STACK 与 /proc/pid/limits：https://man7.org/linux/man-pages/man2/getrlimit.2.html
+ - clock_gettime(3)：CLOCK_REALTIME 与 CLOCK_MONOTONIC 的精确语义：https://man7.org/linux/man-pages/man3/clock_gettime.3.html
+ 
+-## 自我检查
++## 遮码自检
+ 
+-- 能对着 LD_DEBUG 的输出说出 ld.so 加载 .so 的四个阶段，并解释 LD_PRELOAD 抢注符号的原理；
+-- 能不看资料写出 MAP_SHARED 加 MAP_ANONYMOUS 的 mmap 调用，并说出为什么映射要建在 fork 之前；
+-- 能说出 getuid 与 geteuid 各回答什么问题，setuid 位在 exec 时改变了什么、没改变什么；
+-- 能默写守护进程化七步各自的理由，并说出为什么第二次 fork 之后「永远拿不回终端」；
+-- 能解释软限与硬限的关系、ulimit 与 getrlimit 的对应，以及「线上限额与 shell 不一致」该看哪个文件。
++遮住上文示例代码与下面的答案栏，先自己写、先自己答，再展开对照。
++
++1. 对着 LD_DEBUG 的输出说出 ld.so 加载 .so 的四个阶段；LD_PRELOAD 抢注符号的原理？
++2. 不看资料写出 MAP_SHARED 加 MAP_ANONYMOUS 的 mmap 调用；映射为什么必须建在 fork 之前？
++3. getuid 与 geteuid 各回答什么问题？setuid 位在 exec 时改变什么、不改变什么？
++4. 默写守护进程化七步及各自理由；为什么第二次 fork 后「永远拿不回终端」？
++5. 软限与硬限的关系？ulimit 与 getrlimit 怎么对应？「线上限额与 shell 不一致」看哪个文件？
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 四阶段：按 NEEDED/搜索顺序定位文件 → mmap 映射进地址空间 → 重定位（符号配平、填 GOT/PLT）→ 跑 .init/构造器再交棒 main。LD_PRELOAD 的库排在最前，先登记的符号先占位，后面的同名符号查表命中前者——「抢注」；setuid 程序的 secure-execution 会忽略它。
++2. `void *p = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);`。fork 复制的是进程的映射表：fork 前建立的共享映射父子指向同一物理页；fork 后各自 mmap 出来的是两块不相干的匿名内存——「互通」必须先建后 fork。
++3. getuid 答「谁启动了我」；geteuid 答「内核检查权限时把我当谁」。exec 带 setuid 位的程序时，有效 UID 换成文件属主（提权），真实 UID 不变——权力换了，出身没换。
++4. 七步：fork（脱离 shell 会话）→ setsid（自成会话、丢控制终端）→ 再 fork（确保永远不重新获得终端）→ umask(0)（自己定权限）→ chdir("/")（不占挂载点）→ 重定向 0/1/2 到 /dev/null（没有终端可读写）→ syslog 替 printf。第二次 fork 后新进程不是会话首进程，即使误开终端也拿不到控制终端。
++5. 软限是当前生效值（超过得 SIGXCPU/SIGXFSZ），硬限是软限能调的天花板；普通进程只能把软限压到 [0, 硬限]。`ulimit -s` 对应 RLIMIT_STACK。线上进程的生效限额以 /proc/self/limits 为准——shell 的 ulimit 只管自己启动的进程，systemd 服务的限额在 unit 配置里。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/580-CProjectExampleStudentGradeSystem.md b/cnt-content/full/022-c/580-CProjectExampleStudentGradeSystem.md
+index 321892e2..bb8da020 100644
+--- a/cnt-content/full/022-c/580-CProjectExampleStudentGradeSystem.md
++++ b/cnt-content/full/022-c/580-CProjectExampleStudentGradeSystem.md
+@@ -448,12 +448,40 @@ int main(void) {
+ - scanf 宽度说明（cppreference C）：https://en.cppreference.com/w/c/io/scanf
+ - fscanf 系列的手册页（man7）：https://man7.org/linux/man-pages/man3/scanf.3.html
+ 
+-## 14. 自我检查
++## 14. 遮码自检
++
++遮住上文示例代码与下面的答案栏，先自己画、先自己写，再展开对照。
++
++1. 从需求白板直接画出 Student/StudentList 的数据模型，说出不用链表的理由。
++2. 复述本篇四个 bug 的机制：比较器副作用、信任文件长度、fread 不查返回值、realloc 直接赋值。
++3. 二进制存档的两个可移植性坑是什么？「随手存档」与「跨机交换」各选什么格式、为什么？
++4. 把本程序拆成三个文件并配一个增量编译的 Makefile。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. `typedef struct { char name[32]; int id; double score; } Student; typedef struct { Student *items; size_t count, cap; } StudentList;`——动态数组而非链表：数据量按行读写、要下标遍历与 qsort，连续内存对缓存友好，且省去逐节点 malloc/free 的复杂度。
++2. 比较器副作用：qsort 的比较器会被调用任意次、任意顺序，里面改全局状态输出就乱套；信任文件长度：文件头里的 count 直接拿来 malloc/read，坏文件当场堆溢出——先验范围再用；fread 不查返回值：读一半的文件继续用，数据残缺也不自知——返回值必须等于请求项数；realloc 直接赋值：失败返回 NULL 覆盖原指针，数据全丢——临时指针接。
++3. 两坑：结构体 padding 不定值与类型宽度随平台变（long/指针）；字节序随平台变。随手存档用二进制 fwrite——快、省事，只在本机自产自销；跨机交换用文本（每行一条记录，字段定界）——人类可查、平台无关。
++4. student.h（类型 + 原型 + 守卫）、student.c（实现）、main.c（菜单与 main）；Makefile：
++
++```makefile
++CC = gcc
++CFLAGS = -Wall -Wextra -g -MMD -MP
++OBJS = main.o student.o
++DEPS = $(OBJS:.o=.d)
++
++grade: $(OBJS)
++	$(CC) $(OBJS) -o $@
++%.o: %.c
++	$(CC) $(CFLAGS) -c $< -o $@
++-include $(DEPS)
++.PHONY: clean
++clean:
++	rm -f grade *.o *.d
++```
+ 
+-- 能从需求白板直接画出 Student/StudentList 的数据模型，说出不用链表的理由；
+-- 能复述本篇四个 bug 各自的机制：比较器副作用、信任文件长度、fread 不查返回值、realloc 直接赋值；
+-- 能说出二进制存档的两个可移植性坑，并给「随手存档」与「跨机交换」各选一种格式并说明理由；
+-- 能把本程序拆成三个文件并配一个增量编译的 Makefile。
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/590-CLanguageTheory.md b/cnt-content/full/022-c/590-CLanguageTheory.md
+index 689dfa9b..9ecf90ab 100644
+--- a/cnt-content/full/022-c/590-CLanguageTheory.md
++++ b/cnt-content/full/022-c/590-CLanguageTheory.md
+@@ -399,19 +399,33 @@ for (;;) { }          /* B */
+ 
+ - C 内存对象模型研究组对 C11 6.5p6/p7（有效类型与严格别名）的原文引述（WG14 N2294）：https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2294.htm
+ - cppreference C：for 循环的「前进保证」（C11 6.8.5p6 的工程表述与空循环示例）：https://en.cppreference.com/w/c/language/for
+-- GCC 文档：-fstrict-aliasing 的默认开启级别与 union 类型双关立场：https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/Optimize-Options.html
++- GCC 文档：-fstrict-aliasing 的默认开启级别与 union 类型双关立场：https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
+ - LLVM 博客《What Every C Programmer Should Know About Undefined Behavior》（编译器利用 UB 优化的第一手出处）：https://blog.llvm.org/2011/05/what-every-c-programmer-should-know.html
+ - LWN《Fun with NULL pointers, part 1》（内核判空被优化删除的事故全程复盘）：https://lwn.net/Articles/342330/
+ - cppreference C：一致性与 hosted / freestanding 环境：https://en.cppreference.com/w/c/language/conformance
+ 
+-## 13. 自我检查
++## 13. 遮码自检
+ 
+-- 能画出「源码 → 抽象机语义 → as-if → 可观察行为」的授权链，并指出 volatile 在哪一环截断它；
+-- 能默写 C11 6.5p7 的五类允许访问，判断一段类型双关代码是否违规，并给出两种修法；
+-- 能把「字节序」「参数求值顺序」「i = i++」「负数右移」逐项归入三分法，并说出标准依据与已学篇章；
+-- 能解释 C11 6.8.5p6 对空转循环的后果，以及 while(1) 为什么豁免；
+-- 能说清头文件作为「契约」与分离编译代价模型的关系，以及 LTO 在补什么课；
+-- 能对着 -std= 开关与 __STDC_HOSTED__ 说出当前代码落在哪个标准、哪种环境。
++遮住上文示例代码与下面的答案栏，先自己画、先自己答，再展开对照。
++
++1. 画出「源码 → 抽象机语义 → as-if → 可观察行为」的授权链，指出 volatile 在哪一环截断它。
++2. 默写 C11 6.5p7 的五类允许访问；给一段「struct A 指针读 struct B 内存」的类型双关定性并给两种修法。
++3. 把「字节序」「参数求值顺序」「i = i++」「负数右移」逐项归入三分法（UB / unspecified / implementation-defined），说出标准依据。
++4. C11 6.8.5p6 对空转循环的后果是什么？while(1) 为什么豁免？
++5. 头文件「契约」与分离编译代价模型是什么关系？LTO 在补什么课？
++6. 对着 -std= 开关与 __STDC_HOSTED__，说出当前代码落在哪个标准、哪种环境。
++
++<details>
++<summary>参考答案（先自己写再看）</summary>
++
++1. 链条：源码按抽象机语义执行 → 实现可以任意变换，只要可观察行为（volatile 访问、落盘数据、交互 I/O）不变。volatile 的访问本身是可观察行为——在「变换不得动它」这一环被截断。
++2. 五类：与对象有效类型兼容的类型；兼容限定版本的类型；signed/unsigned 对应类型；字符类型（char/unsigned char）；聚合体成员递归适用。「struct A * 读 struct B」不在五类内——违规 UB。修法：memcpy 拷贝字节，或经 union 成员访问。
++3. 字节序：implementation-defined（必须文档化）；参数求值顺序：unspecified（任取但不许失败）；i = i++：UB（序列点间二次修改）；负数右移：implementation-defined。出处分别是 6.2.6.1/3.5、6.5、6.5.2.4、6.5.7 一线（细节见 070 与 060 各篇的展开）。
++4. 循环体若不做 I/O、不碰 volatile、不碰原子，实现可以认定它「不前进」而整体删除。while(1) 的控制表达式是常量，标准明文不要求它满足前进条件——空转合法、豁免删除。
++5. 分离编译按翻译单元独立翻译：头文件是编译器眼中的「契约书」（声明即承诺定义存在）；代价是跨单元的优化与检查失效——LTO 把多个 TU 的中间表示合起来再优化，补的就是这道课。
++6. `gcc -std=c23` 打印 __STDC_VERSION__ == 202311L 即 C23；`__STDC_HOSTED__ == 1` 是 hosted（全标准库），0 是 freestanding（九个头文件的嵌入式疆界）。
++
++</details>
+ 
+ ## 本章总结
+ 
+diff --git a/cnt-content/full/022-c/595-CCapstoneProject.md b/cnt-content/full/022-c/595-CCapstoneProject.md
+index f3fba782..2844b7c8 100644
+--- a/cnt-content/full/022-c/595-CCapstoneProject.md
++++ b/cnt-content/full/022-c/595-CCapstoneProject.md
+@@ -127,6 +127,27 @@ assert(map_get(&m, "gone") == NULL);
+ 4. 把墓碑当 bug 修掉——留标记是对的第一步，错的是不把墓碑算进负载因子；
+ 5. README 只写构建命令——复杂度表与扩容策略，才是别人敢把你的库编进固件的理由。
+ 
++## 遮码自检
++
++开工前与验收前各过一遍：遮住上文提示区，先自己说思路，再展开对照。
++
++1. 动态数组扩容的搬家成本怎么摊薄？为什么 1.5 倍或 2 倍增长能把 n 次追加摊成 O(n)？
++2. 开放寻址里「删了之后查不到」的事故怎么发生的？墓碑（tombstone）机制怎么救，代价是什么？
++3. 负载因子的定义是什么？为什么墓碑要算进去？扩容触发线定多少、为什么？
++4. 哈希函数写 `key[0] % bucket_count` 会出什么事故？验收用的分布检查怎么做？
++5. vec 与 map 的 API 契约里，「所有权」要写清哪几件事？
++
++<details>
++<summary>参考答案（先自己说再看）</summary>
++
++1. 每次容量翻倍，n 个元素总共搬家的总次数是 1 + 2 + 4 + ... ≤ 2n——摊还到每次追加是 O(1)，整个生命周期 O(n)。固定 +N 增长则总搬家是 O(n²)。
++2. 开放寻址的探测链靠「连续占用」传递：直接清空一个槽，链就断了，排在它后面的同桶元素再也查不到。墓碑：删的位置留一个「已删」标记，探测时继续走、插入时可复用——代价是表里「名义占用」只增不减，墓碑要计入负载因子，否则扩容永远不触发、探测链越来越长。
++3. 负载因子 = 实际占用（含活元素 + 墓碑）÷ 桶数。触发线常见 0.7-0.75：太高探测链暴涨（缓存不友好、性能跳水），太低内存浪费——写进 README 的是你实测的理由，不是抄来的数字。
++4. 所有键的首字符集中在小集合（如英文文件名）时几乎全部挤进同一两个桶，哈希表退化成链表——先按桶打印分布（每桶元素数的直方图），确认大致均匀再谈性能；哈希函数选 FNV-1a 这类一行的现成公式，别手搓「发明」。
++5. 四件事：谁分配谁释放（库分配的字符串由调用方 free 还是有 discard 接口）；value 里放指针时深拷贝还是浅引用；迭代过程中插入/删除的行为（是否使迭代器失效）；出参指针的生命周期（下一次插入/扩容后是否还有效）。
++
++</details>
++
+ ## 完成后你能做什么
+ 
+ 你拥有一个「扩容可量化、删除可证明、百万级压力零泄漏」的纯 C 数据结构库——指针、动态内存、结构体、对齐四项能力在此闭环。往下走：把库接到文件上做持久化（[文件 I/O 操作](/c/430-StdioFileIO)），带进并发场景（[线程与并发](/c/360-ThreadConcurrency)），或者读 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)，把同一套纪律带进只有几十 KB 堆的固件世界——FoloToy-calendar 就是那个方向的活例子。
+diff --git a/cnt-content/full/022-c/600-CLearningSummary.md b/cnt-content/full/022-c/600-CLearningSummary.md
+index 0ae9c29f..4f48898b 100644
+--- a/cnt-content/full/022-c/600-CLearningSummary.md
++++ b/cnt-content/full/022-c/600-CLearningSummary.md
+@@ -458,7 +458,9 @@ printf("%d\n", total_plays);   /* 值不确定 */
+ int total_plays = 0;
+ ```
+ 
+-## 自检清单
++## 遮码自检
++
++遮住上文示例与下面的答案栏，逐条自问自答；打不了勾的条目，回到对应篇章补课。
+ 
+ - [ ] 能说出 gcc 预处理、编译、汇编、链接四个阶段各自的产物与典型报错
+ - [ ] 能手算一个结构体的字段偏移与总大小，并解释对齐填充
+@@ -471,6 +473,22 @@ int total_plays = 0;
+ - [ ] 能用 gdb 设置断点、单步执行、打印指针指向的内容
+ - [ ] 至少说出 C23 的三个新特性（`constexpr`、`nullptr`、`#embed` 等）及其用途
+ 
++<details>
++<summary>参考答案（先自己答再看）</summary>
++
++- 四阶段：预处理产出 .i（宏展开/头文件内联，报 unknown type name 多半在这）、编译产出 .s、汇编产出 .o（undefined reference 不在这层）、链接产出可执行（undefined reference 与 multiple definition 都在这层）。
++- 三条规则：成员对齐（放自身对齐值倍数）、整体补齐（总大小是最大对齐倍数）、对齐值取最大——尾部填充为的是数组里下一个元素仍对齐。
++- `sizeof(数组)` 是整个数组的字节数，`sizeof(指针)` 是 8；数组传参退化为指针，长度必须另传。
++- 分配即判 NULL → 使用 → free → 置 NULL；realloc 失败返回 NULL 但原块还在，直接 `p = realloc(p, n)` 会把原地址永久弄丢——临时变量接住、成功才覆盖。
++- `typedef int (*Cmp)(const void *, const void *); void sort(int a[], int n, Cmp cmp);`——回调让「怎么比」由调用方注入。
++- 守卫挡同一 TU 重复包含；extern 声明说「定义在别处」；链接器按符号表把 U 与 T/D 配对——声明管编译期、定义管链接期。
++- `mtx_t m; mtx_init(&m, mtx_plain); mtx_lock(&m); counter++; mtx_unlock(&m);`——成对加锁，所有访问点同一把锁。
++- `valgrind --leak-check=full ./prog`：报告里「definitely lost」是要修的泄漏，#0 帧的 文件:行号 就是分配点。
++- gdb 三步：`break 文件:行` 设断点、`n`/`s` 单步（s 进函数）、`p *ptr` 解引用打印。
++- `constexpr` 编译期常量进类型系统；`nullptr` 有类型的空指针；`#embed` 把文件当字节列表嵌进源码。
++
++</details>
++
+ ## 后续学习路径
+ 
+ 1. 重读 [多文件编译](/c/310-MultiFileCompilation)，把项目从单文件重构为头文件加实现文件加 CMake 的标准布局。

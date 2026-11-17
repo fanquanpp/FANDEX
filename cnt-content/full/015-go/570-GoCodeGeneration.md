@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: go generate与代码生成：Stringer、mockgen、sqlc、protobuf、wire 等工具与 AST 解析
 author: fanquanpp
-updated: '2026-10-11'
+updated: '2026-11-16'
 related:
   - 'go/620-GoCGO'
   - 'go/630-GoWasm'

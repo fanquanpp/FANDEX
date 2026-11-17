@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: '部署模型四象限：公有云/私有云/混合云/多云的架构、典型模式与选型权衡。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cloud-computing/050-VirtualizationTech'
   - 'cloud-computing/190-CloudArchitectureDesign'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: tmux 的会话/窗口/面板三层模型、attach/detach 断线续连、复制模式滚回缓冲、最小 .tmux.conf，以及与 nohup/setsid/systemd 的分工边界。
 author: fanquanpp
-updated: '2026-10-07'
+updated: '2026-11-17'
 related:
   - 'shell/220-ProcessJobControl'
   - 'shell/230-ProcessManage'

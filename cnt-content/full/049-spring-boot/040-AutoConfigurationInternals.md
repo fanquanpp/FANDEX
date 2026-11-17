@@ -8,7 +8,7 @@ difficulty: advanced
 prerequisites:
   - 'spring-boot/030-IoCDependencyInjection'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-11-17'
 related:
   - 'spring-boot/020-FirstApplication'
   - 'spring-boot/050-ConfigurationManagement'

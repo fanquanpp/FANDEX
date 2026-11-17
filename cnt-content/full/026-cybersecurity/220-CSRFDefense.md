@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'CSRF 防御命令与配置：SameSite Cookie 属性、CSRF Token 实现与轮换、Origin/Referer 校验与双提交模式'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-11-17'
 related:
   - 'cybersecurity/210-CSRFAttack'
   - 'cybersecurity/200-XSSDefense'
