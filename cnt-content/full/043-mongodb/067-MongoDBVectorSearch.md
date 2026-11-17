@@ -165,7 +165,7 @@ limit 是「最终返回几条」，numCandidates 是「内部最多考察多少
 
 ## 7. 混合检索：$rankFusion 融合向量与全文
 
-向量检索擅长语义（「怎么重启服务」能召回写着 reboot 的文档），全文检索擅长精确词（产品代号、报错码、人名）。RAG 进阶阶段常把两路检索融合、各取所长。Atlas Vector Search 的 $rankFusion 阶段把多个检索管道的结果按排名融合（默认采用 Reciprocal Rank Fusion 类算法，权重与细节以官方文档为准）：
+向量检索擅长语义（「怎么重启服务」能召回写着 reboot 的文档），全文检索擅长精确词（产品代号、报错码、人名）。RAG 进阶阶段常把两路检索融合、各取所长。$rankFusion 阶段在 MongoDB 8.0 及以上的部署上可用（Atlas 自 8.0 起支持；自管部署要等 8.2 起的 mongot 才能带上它），它把多个检索管道的结果按排名融合（默认采用 Reciprocal Rank Fusion 类算法，权重与细节以官方文档为准）：
 
 ```javascript
 const result = await db.docs.aggregate([
@@ -256,10 +256,11 @@ async function ask(userQuestion, tenantId) {
 
 ## 9. 自管版本怎么办：替代路线
 
-Atlas Vector Search 是 Atlas（MongoDB 官方云）上的能力，**社区版与多数自管部署没有它**。选型前先确认自己的部署形态：
+Atlas Vector Search 先是 Atlas（MongoDB 官方云）专属能力；**MongoDB 8.2 起，Search 与 Vector Search 以公共预览形式进入社区版与企业进阶版**——由独立的 `mongot` 进程（Apache Lucene 内核）与 `mongod` 并肩运行，`$vectorSearch` 阶段语法与 Atlas 一致，客户端照旧只连 `mongod`。选型前先确认自己的部署形态：
 
-- 用 Atlas 或愿意迁 Atlas：直接用本篇方案；
-- 必须自管、且关系数据库也在技术栈里：PostgreSQL 的 pgvector 是最常被对比的替代——「向量与业务数据同库」的思路一致，见 [PostgreSQL 向量检索](/postgresql/320-KNNVectorIndex)；
+- 用 Atlas：直接用本篇方案；
+- 自管 MongoDB 8.2+：可按官方指引部署 `mongot` 试用（公共预览期的功能边界与许可条款以官方文档为准）；
+- 旧版本 MongoDB 或暂不想引入 `mongot`：PostgreSQL 的 pgvector 是最常被对比的替代——「向量与业务数据同库」的思路一致，见 [PostgreSQL 向量检索](/postgresql/320-KNNVectorIndex)；
 - 检索本身就是核心产品（以图搜图、大规模推荐召回）：考虑专用向量库，它们在超大规模 ANN 与专项调优上更强，代价是回到第 1 节的双系统成本。
 
 判断题不是「哪个更先进」，而是「检索需求的大小是否值得引入一个独立系统」。绝大多数 RAG 数据层的向量规模，用数据库自带的向量能力就够了。
@@ -299,6 +300,7 @@ Atlas Vector Search 是 Atlas（MongoDB 官方云）上的能力，**社区版�
 ## 12. 官方文档
 
 - Atlas Vector Search（索引参数、$vectorSearch、$rankFusion 的权威语法）：https://www.mongodb.com/docs/atlas/atlas-vector-search/
+- 自管 Search 与 Vector Search（mongot 部署与兼容性要求）：https://www.mongodb.com/docs/search/self-managed/current/
 - MongoDB 手册 - 聚合管道：https://www.mongodb.com/docs/manual/aggregation/
 
 ## 13. 自检清单

@@ -136,17 +136,17 @@ rs.status()  // 稍等几秒，members 里出现 PRIMARY 即成功
 # docker-compose.yml：同一网络里跑三个 mongod
 services:
   mongo1:
-    image: mongo:8.0
+    image: mongo:9.0
     command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports: ["30001:27017"]
     networks: [mongonet]
   mongo2:
-    image: mongo:8.0
+    image: mongo:9.0
     command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports: ["30002:27017"]
     networks: [mongonet]
   mongo3:
-    image: mongo:8.0
+    image: mongo:9.0
     command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports: ["30003:27017"]
     networks: [mongonet]

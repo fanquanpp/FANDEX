@@ -253,7 +253,28 @@ Date.now() - t1        // 明显变慢，每次插入要维护 4 棵树
 4. 给 `createdAt` 建 `expireAfterSeconds: 5` 的 TTL 索引，插入一条
    文档，观察它在大约何时消失，验证「60 秒巡检」的说法。
 
-## 9. 一句话记住
+## 9. 练习与自检
+
+遮码自检：先遮住答案栏，自己写出答案或命令，再展开对照。
+
+1. explain 输出里判断"索引用得健康"看哪两个数字的比值？`COLLSCAN` 与 `IXSCAN` 各代表什么？
+2. 查询模板是"等值 status + 排序 createdAt + 范围 age"，按 ESR 写出复合索引；范围字段为什么必须放最后？
+3. 覆盖查询的判读标志是什么？要满足哪两个条件才能达成？
+4. TTL 索引的两个常见误解是什么？
+5. `$ne` 与非锚定正则为什么用不上索引？
+
+<details>
+<summary>参考答案（先自己写再看）</summary>
+
+1. 看 `nReturned` 与 `totalDocsExamined` 的比值，越接近 1 越健康；`COLLSCAN` 是全集合逐条扫描（没索引可走），`IXSCAN` 是沿 B 树索引定位后再按需回表（FETCH）。
+2. `db.coll.createIndex({ status: 1, createdAt: -1, age: 1 })`。等值把搜索范围锁定到字典的一小段，段内次序字段天然有序（排序免费）；范围一开扫，后面字段的有序性就没了——所以范围放最后，把"免排序"的红利留给排序字段。
+3. 判读标志：`winningPlan` 出现 `PROJECTION_COVERED` 且 `totalDocsExamined: 0`。条件：查询要的字段全在索引里，且投影显式排除 `_id`（否则 `_id` 不在索引里就得回表）。
+4. 误解一：TTL 是精确倒计时——实际后台任务约每 60 秒巡检一次，删除有分钟级延迟；误解二：字段存字符串也能过期——TTL 要求字段值是 BSON 日期类型，存字符串不会触发过期。
+5. `$ne` 的语义是"除它之外的一大片"，索引区间是补集，优化器宁可全扫；非锚定正则（不以 `^` 开头或带 `i`）找不到索引前缀，只能逐条比对。
+
+</details>
+
+## 10. 一句话记住
 
 > 慢查询先跑 `explain("executionStats")`：看到 `COLLSCAN` 或
 > `totalDocsExamined` 远大于 `nReturned` 就建索引；复合索引按
