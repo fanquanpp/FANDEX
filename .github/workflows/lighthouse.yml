@@ -66,7 +66,7 @@ jobs:
       # mermaid 块退化为客户端动态渲染，Lighthouse 会量到退化页。key 与 deploy.yml
       # 同构（sha 级 + 前缀回退），两条工作流共享同一份渲染缓存。
       - name: Restore mermaid render cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: node_modules/.cache/mermaid-dual
           key: mermaid-${{ github.sha }}
