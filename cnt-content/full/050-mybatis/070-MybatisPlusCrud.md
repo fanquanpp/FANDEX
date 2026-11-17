@@ -38,13 +38,13 @@ related:
 
 ## 2. 准备现场：选对启动器，认全三注解
 
-依赖选 mybatis-plus-spring-boot3-starter（Spring Boot 3 专用坐标，以 3.5.12 为例）：
+依赖选 mybatis-plus-spring-boot3-starter（Spring Boot 3 专用坐标，以 3.5.18 为例；Boot 4 工程对应 mybatis-plus-spring-boot4-starter）：
 
 ```xml
 <dependency>
     <groupId>com.baomidou</groupId>
     <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
-    <version>3.5.12</version>
+    <version>3.5.18</version>
 </dependency>
 ```
 
