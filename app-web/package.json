@@ -89,7 +89,7 @@
     "gray-matter": "catalog:",
     "mermaid": "^12.3.0",
     "pagefind": "^1.6.0",
-    "playwright": "1.65.0",
+    "playwright": "1.65.1",
     "rollup-plugin-visualizer": "catalog:",
     "sharp": "^0.35.5",
     "typescript": "catalog:",
